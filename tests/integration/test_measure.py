@@ -63,3 +63,35 @@ def test_measure_pari_error_exits_backend(capsys):
     code, out, err = _run(["measure", "--sizes", "1", "--seeds", "1", "--json"], capsys)
     assert code == exits.BACKEND and out == ""
     assert "PariError" in err
+
+
+MALFORMED_CHILD = "import sys; sys.stdin.read(); sys.stdout.write('not a document\\n')"
+DIVERGENT_CHILD = (
+    "import io, json, sys; from cairn.skills import toy_curve; "
+    "buf = io.StringIO(); toy_curve.main(stdin=sys.stdin, stdout=buf, stderr=sys.stderr); "
+    "doc = json.loads(buf.getvalue()); doc['tries'] += 1; sys.stdout.write(json.dumps(doc))"
+)
+
+
+@pytest.mark.parametrize(
+    ("child", "needle"),
+    [(MALFORMED_CHILD, "wrote malformed output"), (DIVERGENT_CHILD, "differs from the in-process run")],
+    ids=["malformed-output", "differs-from-in-process"],
+)
+def test_measure_bad_launch_output_exits_backend(monkeypatch, capsys, child, needle):
+    monkeypatch.setattr(measure, "LAUNCH_ARGV", (sys.executable, "-c", child))
+    code, out, err = _run(["measure", "--sizes", "30", "--seeds", "1", "--json"], capsys)
+    assert code == exits.BACKEND and out == ""
+    assert needle in err and "cairn doctor" in err
+
+
+def test_measure_negative_seeds_exits_user_input(capsys):
+    code, out, err = _run(["measure", "--sizes", "30", "--seeds", "-1", "--json"], capsys)
+    assert code == exits.USER_INPUT and out == ""
+    assert "--seeds must be >= 0" in err and "cairn measure --help" in err
+
+
+def test_measure_zero_seeds_is_an_empty_table(capsys):
+    code, out, err = _run(["measure", "--sizes", "30,40", "--seeds", "0", "--json"], capsys)
+    assert code == exits.OK, err
+    assert json.loads(out)["rows"] == []

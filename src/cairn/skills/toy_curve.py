@@ -231,12 +231,12 @@ def check_postcondition(out):
     E = pari.pari.ellinit([out.a, out.b], out.p)
     if not bool(pari.pari.isprime(out.n)):
         raise PostconditionFailed("isprime", f"n = {out.n} is not prime")
-    if len(pari.pari.ellmul(E, list(out.P), out.n)) != 1:
-        raise PostconditionFailed("ellmul", f"[n]P is not the identity for n = {out.n}")
     if (out.n - (out.p + 1)) ** 2 > 4 * out.p:
         raise PostconditionFailed("hasse", f"n = {out.n} is outside [p+1-2sqrt(p), p+1+2sqrt(p)] for p = {out.p}")
     if not bool(pari.pari.ellisoncurve(E, list(out.P))):
         raise PostconditionFailed("ellisoncurve", f"P = {out.P} is not on the curve")
+    if len(pari.pari.ellmul(E, list(out.P), out.n)) != 1:
+        raise PostconditionFailed("ellmul", f"[n]P is not the identity for n = {out.n}")
     return out
 
 
@@ -250,14 +250,13 @@ def run(bits, seed):
     curve = (a, b, p)
     confirm, P = _settle(bits, E, curve)
     out = ToyCurveOutput(bits, seed, p, a, b, n, P, tries, _cross_check("untested"), STATUS_OK)
+    check_postcondition(out)
     if confirm is not None and confirm["result"] != n:
         out = _disagree(out, _transcript(search_call, curve, n), confirm)
-    else:
-        check_postcondition(out)
-        if bits <= SEA_SEARCH_ABOVE_BITS:
-            sea = _transcript("ellsea", curve, int(pari.ellsea(E)))
-            card = _transcript("ellcard", curve, n)
-            out = _disagree(out, card, sea) if sea["result"] != n else ToyCurveOutput(bits, seed, p, a, b, n, P, tries, _cross_check("agree"), STATUS_OK)
+    elif bits <= SEA_SEARCH_ABOVE_BITS:
+        sea = _transcript("ellsea", curve, int(pari.ellsea(E)))
+        card = _transcript("ellcard", curve, n)
+        out = _disagree(out, card, sea) if sea["result"] != n else ToyCurveOutput(bits, seed, p, a, b, n, P, tries, _cross_check("agree"), STATUS_OK)
     wall_ms = round((time.monotonic() - start) * 1000, 3)
     lg.info("run", bits=bits, seed=seed, tries=tries, n_bits=n.bit_length(), cross_check=out.cross_check["result"], status=out.status, wall_ms=wall_ms)
     if out.status == STATUS_DISAGREE:

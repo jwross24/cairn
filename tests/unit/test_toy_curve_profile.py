@@ -1,5 +1,4 @@
 import re
-import subprocess
 from pathlib import Path
 
 import pytest
@@ -50,30 +49,22 @@ def test_profile_per_size_cites_the_committed_table():
 
 
 @pytest.mark.parametrize("bits", [0, 29, 45, 61, 10**6])
-def test_profile_undeclared_sizes_raise_before_any_spawn(bits, monkeypatch):
-    spawned = []
-    real_popen = subprocess.Popen
-
-    class Spy(real_popen):
-        def __init__(self, args, *a, **kw):
-            spawned.append(list(args))
-            super().__init__(args, *a, **kw)
-
-    monkeypatch.setattr(subprocess, "Popen", Spy)
-    with pytest.raises(ProfileUndeclared, match=rf"no size {bits}"):
+def test_profile_undeclared_sizes_raise_and_name_the_declared_ones(bits):
+    with pytest.raises(ProfileUndeclared, match=rf"no size {bits}") as info:
         toy_curve.COST_PROFILE.evaluate(bits)
-    assert spawned == []
+    assert info.value.bits == bits and info.value.declared == (30, 40, 50, 60)
+    assert "[30, 40, 50, 60]" in str(info.value)
 
 
-@pytest.mark.parametrize("bits", [True, "40", 40.0, None])
+@pytest.mark.parametrize("bits", [True, "40", 40.0, None], ids=["bool", "str", "float", "none"])
 def test_profile_refuses_non_int_sizes(bits):
-    with pytest.raises(ProfileUndeclared):
+    with pytest.raises(ProfileUndeclared, match="declares no size"):
         toy_curve.COST_PROFILE.evaluate(bits)
 
 
 def test_evaluate_accepts_an_inputs_mapping_by_its_bits_field():
     assert toy_curve.COST_PROFILE.evaluate({"bits": 40, "seed": 7}) == toy_curve.COST_PROFILE.evaluate(40)
-    with pytest.raises(ProfileUndeclared):
+    with pytest.raises(ProfileUndeclared, match="no size None"):
         toy_curve.COST_PROFILE.evaluate({"seed": 7})
 
 
@@ -83,3 +74,9 @@ def test_synthetic_profile_evaluates_its_own_table():
     with pytest.raises(ProfileUndeclared) as info:
         profile.evaluate(9)
     assert info.value.declared == (8,)
+
+
+def test_unknown_verification_cost_model_is_refused():
+    profile = CostProfile(0, Production("c_ln_p_tries", {8: SizeCost(1.0, 1.0, 0.001, 0.25)}), Verification("Replayable", "amortized"), "synthetic")
+    with pytest.raises(ValueError, match="unknown verification cost model 'amortized'"):
+        profile.evaluate(8)

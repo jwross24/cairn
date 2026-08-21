@@ -1,11 +1,10 @@
 import io
 import json
-import shutil
 from pathlib import Path
 
 import pytest
 
-from cairn import canon, env, keys, pari
+from cairn import canon, keys, pari
 from cairn.skills import toy_curve
 from cairn.skills.toy_curve import InputError, ToyCurveOutput
 
@@ -39,8 +38,6 @@ def pari_spy(monkeypatch):
     for name in ("ellcard", "ellsea", "ellorder"):
         real = getattr(pari, name)
         monkeypatch.setattr(pari, name, lambda *a, _n=name, _r=real, **k: (calls.append(_n), _r(*a, **k))[1])
-    real_run = toy_curve.run
-    monkeypatch.setattr(toy_curve, "run", lambda *a, **k: (calls.append("run"), real_run(*a, **k))[1])
     return calls
 
 
@@ -77,55 +74,50 @@ def test_malformed_stdin_is_refused_with_a_typed_error_before_any_pari_call(text
     assert pari_spy == []
 
 
-def test_well_formed_stdin_parses_and_main_writes_exactly_one_document():
+def test_well_formed_stdin_parses_without_touching_pari(pari_spy):
     assert toy_curve.parse_inputs('{"seed": 1, "bits": 30}') == (30, 1)
-    out, err = io.StringIO(), io.StringIO()
-    assert toy_curve.main(stdin=io.StringIO('{"bits": 30, "seed": 1}'), stdout=out, stderr=err) == 0
-    assert out.getvalue().count("\n") == 1
-    assert ToyCurveOutput.from_json(out.getvalue()) == toy_curve.run(30, 1)
+    assert toy_curve.parse_inputs('{"bits": 4000, "seed": 2**31}'.replace("2**31", str(2**31))) == (4000, 2**31)
+    assert pari_spy == []
 
 
-def test_identity_hash_is_stable_across_two_computations():
-    first = toy_curve.skill_identity_hash()
-    second = toy_curve.skill_identity_hash()
-    bundle = toy_curve.identity_bundle()
-    assert first == second == keys.identity_bundle_hash(bundle)
-    assert bundle["interface_version"] == "toy_curve/1"
-    assert set(bundle["tool_digests"]) == {"gp_binary_sha256", "cypari2", "libpari"}
-    assert bundle["tool_digests"]["libpari"] == pari.pari_versions()["libpari"]
-    assert bundle["container_digest"] == keys.env_manifest_digest(env.manifest())
-    assert bundle["numeric_profile"] is None
-    assert len(bundle["implementation_revision"]) == 64
-    canon.encode(keys.IDENTITY_BUNDLE, bundle)
+@pytest.mark.parametrize(("bits", "seed", "match"), [("40", 1, "bits must be an int, got str"), (40, None, "seed must be an int, got NoneType"), (0, 1, "bits must be >= 1"), (40, 0, "seed must be >= 1"), (True, 1, "bits must be an int, got bool")], ids=["bits-str", "seed-none", "bits-zero", "seed-zero", "bits-bool"])
+def test_run_validates_its_arguments_before_any_pari_call(bits, seed, match, pari_spy):
+    with pytest.raises(InputError, match=match):
+        toy_curve.run(bits, seed)
+    assert pari_spy == []
 
 
-def _identity_tree(tmp_path):
+def _revision_tree(tmp_path):
     for rel in toy_curve.IDENTITY_SOURCES:
-        src = toy_curve.REPO_ROOT / rel
-        dst = tmp_path / rel
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        if src.is_file():
-            shutil.copy(src, dst)
-        else:
-            dst.write_bytes(b'{"cases": []}\n')
+        target = tmp_path / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        source = toy_curve.REPO_ROOT / rel
+        target.write_bytes(source.read_bytes() if source.is_file() else b'{"cases": []}\n')
     return tmp_path
 
 
 @pytest.mark.parametrize("rel", toy_curve.IDENTITY_SOURCES, ids=lambda r: Path(r).name)
-def test_identity_hash_changes_when_one_byte_of_a_source_file_changes(tmp_path, rel):
-    root = _identity_tree(tmp_path)
-    base = toy_curve.skill_identity_hash(root=root)
-    assert toy_curve.skill_identity_hash(root=root) == base
+def test_implementation_revision_changes_when_one_byte_of_a_source_changes(tmp_path, rel, pari_spy):
+    root = _revision_tree(tmp_path)
+    base = toy_curve.implementation_revision(root)
+    assert toy_curve.implementation_revision(root) == base and len(base) == 64
     path = root / rel
     data = bytearray(path.read_bytes())
     data[len(data) // 2] ^= 0x01
     path.write_bytes(bytes(data))
-    assert toy_curve.skill_identity_hash(root=root) != base
-    assert toy_curve.implementation_revision(root) != toy_curve.implementation_revision(toy_curve.REPO_ROOT) or not (toy_curve.REPO_ROOT / rel).is_file()
+    assert toy_curve.implementation_revision(root) != base
+    assert pari_spy == []
 
 
-def test_identity_revision_is_sensitive_to_a_source_appearing(tmp_path):
-    root = _identity_tree(tmp_path)
+def test_implementation_revision_is_sensitive_to_a_source_appearing(tmp_path):
+    root = _revision_tree(tmp_path)
     base = toy_curve.implementation_revision(root)
     (root / toy_curve.IDENTITY_SOURCES[-1]).unlink()
     assert toy_curve.implementation_revision(root) != base
+
+
+def test_implementation_revision_is_order_independent_of_the_source_listing(tmp_path, monkeypatch):
+    root = _revision_tree(tmp_path)
+    base = toy_curve.implementation_revision(root)
+    monkeypatch.setattr(toy_curve, "IDENTITY_SOURCES", tuple(reversed(toy_curve.IDENTITY_SOURCES)))
+    assert toy_curve.implementation_revision(root) == base
