@@ -1,9 +1,10 @@
 import json
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from cairn import canon, keys, log
 from cairn.canon import BOOL, INT, NON_EMPTY_STR, STR, Field, List, Map, Optional, Set, Struct
-from cairn.substrate import HashCollision, SubstrateError, UnknownNode, _now, blob_hash
+from cairn.substrate import HashCollision, SubstrateError, _now, blob_hash
 
 lg = log.get("claims")
 
@@ -444,6 +445,12 @@ def write_review_verdict(sub, verdict):
     canonical = review_verdict_canonical(verdict)
     with sub._tx():
         sub._put_node("review_verdict", canonical, verdict.hash, "Replayable", verdict.reviewer)
+        existing = sub.conn.execute(
+            "SELECT row_id FROM review_verdicts WHERE record_digest = ? AND file_offset = ?", (verdict.record_digest, verdict.file_offset)
+        ).fetchone()
+        if existing is not None:
+            lg.info("write", table="review_verdicts", hash=verdict.hash, status="exists", row_id=existing["row_id"])
+            return existing["row_id"]
         cur = sub.conn.execute(
             "INSERT INTO review_verdicts (statement_hash, reviewer, verdict, checklist_template_hash, gate_bundle_hash, at, supersedes, record_digest, file_offset) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
@@ -597,3 +604,21 @@ def has_cost_model(sub, statement_hash):
     if row is None:
         raise UnknownStatement(f"no claim statement {statement_hash}")
     return row[0] is not None
+
+
+def read_record(path, offset):
+    data = Path(path).read_bytes()
+    if offset < 0 or offset + 8 > len(data):
+        return None
+    length = int.from_bytes(data[offset : offset + 8], "little")
+    body = data[offset + 8 : offset + 8 + length]
+    return body if len(body) == length else None
+
+
+def verdict_matches_file(row, path):
+    record = read_record(path, row["file_offset"])
+    return record is not None and blob_hash(record) == row["record_digest"]
+
+
+def visible_review_verdicts(sub, statement_hash, path):
+    return [row for row in review_verdicts_for(sub, statement_hash) if verdict_matches_file(row, path)]
