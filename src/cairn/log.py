@@ -8,6 +8,14 @@ _logger = logging.getLogger(LOGGER_NAME)
 _stderr_handler = None
 
 
+class _StderrHandler(logging.Handler):
+    def emit(self, record):
+        try:
+            sys.stderr.write(self.format(record) + "\n")
+        except ValueError:
+            pass
+
+
 class JsonFormatter(logging.Formatter):
     def format(self, record):
         data = {
@@ -25,7 +33,7 @@ def configure(level=None):
     name = (level or os.environ.get("CAIRN_LOG") or "INFO").upper()
     _logger.setLevel(getattr(logging, name, logging.INFO))
     if _stderr_handler is None:
-        _stderr_handler = logging.StreamHandler(sys.stderr)
+        _stderr_handler = _StderrHandler()
         _stderr_handler.setFormatter(JsonFormatter())
         _logger.addHandler(_stderr_handler)
     return _logger.level

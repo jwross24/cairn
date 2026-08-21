@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from cairn import canon, cli, keys, log
+from cairn import canon, cli, exits, keys, log
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_VECTORS = REPO_ROOT / "tests" / "vectors" / "canon_kat.json"
@@ -48,13 +48,15 @@ def _configure(parser):
 
 def _run(ns):
     failures = run(ns.vectors)
-    if failures:
+    if ns.json:
+        cli.emit_json("kat", {"which": ns.which, "vectors": str(ns.vectors), "ok": not failures, "failures": failures})
+    elif failures:
         print("FAIL")
         for line in failures:
             print(line)
-        return 1
-    print("PASS")
-    return 0
+    else:
+        print("PASS")
+    return exits.GATE_REFUSED if failures else exits.OK
 
 
-cli.register("kat", _configure, _run)
+cli.register("kat", _configure, _run, summary="run the canonicalizer known-answer vectors (a gate self-test); exit 2 on any mismatch", read_only=True, json=True)

@@ -1,0 +1,26 @@
+usage: cairn [-h] [--db PATH] [--bundle PATH] [--pin PATH] [--attest PATH]
+             [--log LEVEL] [--version] [--robot-help]
+             COMMAND ...
+
+positional arguments:
+  COMMAND
+    capabilities  describe the CLI contract: commands, exit codes, env vars,
+                  paths
+    env           report the toolchain (python, cypari2/libpari, blake3, gp
+                  path)
+    kat           run the canonicalizer known-answer vectors (a gate self-
+                  test); exit 2 on any mismatch
+    robot-docs    print the paste-ready agent handbook
+
+options:
+  -h, --help      show this help message and exit
+  --db PATH       substrate SQLite file
+  --bundle PATH   gate bundle SQLite file
+  --pin PATH      gate-bundle pin file
+  --attest PATH   attestation file
+  --log LEVEL     log level for the JSON records on stderr
+  --version       print the version and exit
+  --robot-help    print the agent handbook (same as: cairn robot-docs)
+
+Structured output: add --json to any read-side command. Contract: cairn
+capabilities --json. Agent handbook: cairn robot-docs.

@@ -150,7 +150,7 @@ def test_kat_cli_exit_codes(tmp_path, capsys):
     assert cli.main(["kat", "canon"]) == 0
     assert capsys.readouterr().out.strip() == "PASS"
     copy = _drifted_copy(tmp_path, _break_equals)
-    assert cli.main(["kat", "canon", "--vectors", str(copy)]) == 1
+    assert cli.main(["kat", "canon", "--vectors", str(copy)]) == 2
     assert capsys.readouterr().out.startswith("FAIL")
 
 
