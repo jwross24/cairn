@@ -41,7 +41,7 @@ def run(path=DEFAULT_VECTORS):
 
 
 def _configure(parser):
-    parser.add_argument("which", choices=["canon"])
+    parser.add_argument("which", nargs="?", default="canon", choices=["canon"])
     parser.add_argument("--vectors", default=str(DEFAULT_VECTORS))
 
 
