@@ -200,6 +200,8 @@ def test_config_defaults_and_bundle_form():
     assert from_bundle.bundle_hash == "ff" * 32 and from_bundle.accept == verifier.DEFAULT_ACCEPT
     with pytest.raises(VerifierConfigError, match="missing"):
         VerifierConfig.from_bundle({"backend_path": pari.GP_BIN, "stack_ceiling": "64M", "timeout_s": 30}, cfg.script, "ff" * 32)
+    with pytest.raises(VerifierConfigError, match="mapping"):
+        VerifierConfig.from_bundle("backend_path=gp", cfg.script, "ff" * 32)
 
 
 @pytest.mark.parametrize(
@@ -241,6 +243,27 @@ def test_script_is_materialized_once_per_process_as_0444_outside_the_repo():
     assert not os.path.realpath(path).startswith(str(ROOT))
     other = verifier.materialize_script(default_config(bundle_hash="11" * 32))
     assert other != path and os.path.basename(os.path.dirname(other)).startswith("cairn-bundle-" + "11" * 32)
+
+
+def test_run_with_an_object_that_is_not_an_instance_is_refused(popen_spy, run_gp_spy):
+    result = Verifier().run(object(), 3)
+    assert (result.accepted, result.reason, result.rc, result.gate_result) == (False, "bad-field", None, "refused")
+    assert popen_spy == [] and run_gp_spy == []
+
+
+def test_crash_selftest_refuses_a_bad_instance_pre_spawn(popen_spy, run_gp_spy):
+    result = Verifier().crash_selftest(Instance(2, 1, 1, 3, (0, 1), (0, 1)))
+    assert (result.accepted, result.reason, result.rc, result.gate_result) == (False, "bad-field", None, "refused")
+    assert popen_spy == [] and run_gp_spy == []
+
+
+def test_a_stale_materialized_path_is_rematerialized():
+    cfg = default_config(bundle_hash="22" * 32)
+    path = verifier.materialize_script(cfg)
+    os.remove(path)
+    fresh = verifier.materialize_script(cfg)
+    assert Path(fresh).read_bytes() == cfg.script
+    assert stat.S_IMODE(os.stat(fresh).st_mode) == 0o444
 
 
 def test_verifier_registers_no_cli_subcommand():

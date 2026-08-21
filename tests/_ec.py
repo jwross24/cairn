@@ -42,3 +42,6 @@ def instance(c, Q):
 
 def pair(c, x):
     return instance(c, mul(c, c["P"], x)), x
+def breaks_pre_spawn_rules(fields):
+    p, a, b, n, Px, Py, Qx, Qy, x = fields
+    return not (x < n and p > 3 and all(0 <= v < p for v in (a, b, Px, Py, Qx, Qy)) and (n - p - 1) ** 2 <= 4 * p)

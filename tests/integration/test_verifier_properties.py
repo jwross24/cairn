@@ -56,13 +56,8 @@ def check_mr_s_n_composite(c, x, k):
     _ok(_ec.instance(c, _ec.neg(c, kQ)), (c["n"] - (k * x) % c["n"]) % c["n"])
 
 
-def _breaks_pre_spawn_rules(fields):
-    p, a, b, n, Px, Py, Qx, Qy, x = fields
-    return not (x < n and p > 3 and all(0 <= v < p for v in (a, b, Px, Py, Qx, Qy)) and (n - p - 1) ** 2 <= 4 * p)
-
-
 def check_mr_perm(base_fields, permuted, spy):
-    assert _breaks_pre_spawn_rules(permuted)
+    assert _ec.breaks_pre_spawn_rules(permuted)
     before = len(spy)
     result = Verifier().run_fields(permuted)
     assert (result.accepted, result.reason, result.gate_result) == (False, "bad-field", "refused"), (result.reason, permuted)
@@ -86,7 +81,7 @@ def test_mr_s_cell_p_plus_1_on_curve60():
 
 def test_mutant_driver_reduces_x_mod_p_is_killed_by_mr_s():
     check_mr_s(CURVE60, 1, P_PLUS_1)
-    with verifier_mutants.driver_reduces_x_mod_p(), pytest.raises(AssertionError):
+    with verifier_mutants.driver_reduces_x_mod_p(), pytest.raises(AssertionError, match="xP-ne-Q"):
         check_mr_s(CURVE60, 1, P_PLUS_1)
 
 
@@ -101,7 +96,7 @@ def test_mr_n_negation(name, data):
 
 def test_mutant_validator_off_by_one_x_lt_n_minus_1_is_killed_by_mr_n():
     check_mr_n(CURVE60, 1)
-    with verifier_mutants.validator_off_by_one_x_lt_n_minus_1(), pytest.raises(AssertionError):
+    with verifier_mutants.validator_off_by_one_x_lt_n_minus_1(), pytest.raises(AssertionError, match="bad-field"):
         check_mr_n(CURVE60, 1)
 
 
@@ -128,14 +123,14 @@ def test_mutant_script_compares_x_coordinate_only_is_killed_by_mr_q_prime():
     inst, x = _ec.pair(CURVE60, 2)
     minus_q = _ec.neg(CURVE60, inst.Q)
     check_mr_q_prime(CURVE60, x, minus_q)
-    with verifier_mutants.script_compares_x_coordinate_only(), pytest.raises(AssertionError):
+    with verifier_mutants.script_compares_x_coordinate_only(), pytest.raises(AssertionError, match="True, None"):
         check_mr_q_prime(CURVE60, x, minus_q)
 
 
 def test_mutant_script_without_xP_eq_Q_is_killed_by_mr_q_prime():
     other = _ec.mul(CURVE60, CURVE60["P"], 7)
     check_mr_q_prime(CURVE60, 2, other)
-    with verifier_mutants.script_without_xP_eq_Q(), pytest.raises(AssertionError):
+    with verifier_mutants.script_without_xP_eq_Q(), pytest.raises(AssertionError, match="True, None"):
         check_mr_q_prime(CURVE60, 2, other)
 
 
@@ -157,7 +152,7 @@ def distinguishable_permutations(draw):
     order = draw(st.permutations(range(verifier.ARITY)))
     assume(list(order) != list(range(verifier.ARITY)))
     permuted = tuple(base[i] for i in order)
-    assume(_breaks_pre_spawn_rules(permuted))
+    assume(_ec.breaks_pre_spawn_rules(permuted))
     return base, permuted
 
 
@@ -187,7 +182,7 @@ def test_n_x_swap_example_is_refused_only_by_x_lt_n():
 def test_mutant_validator_skips_x_lt_n_is_killed_by_mr_perm(run_gp_spy):
     base, swapped = _n_x_swap_example()
     check_mr_perm(base, swapped, run_gp_spy)
-    with verifier_mutants.validator_skips_x_lt_n(), pytest.raises(AssertionError):
+    with verifier_mutants.validator_skips_x_lt_n(), pytest.raises(AssertionError, match="nQ-not-O"):
         check_mr_perm(base, swapped, run_gp_spy)
     assert run_gp_spy and run_gp_spy[-1]["args"][0].endswith("/verify.gp")
     assert run_gp_spy[-1]["stdin"] == verifier.render_line(swapped)

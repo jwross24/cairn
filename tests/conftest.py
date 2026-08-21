@@ -119,8 +119,11 @@ def run_gp_spy(monkeypatch):
     real = cairn.pari.run_gp
 
     def spy(args, stdin, **kw):
-        calls.append({"args": list(args), "stdin": stdin, **kw})
-        return real(args, stdin, **kw)
+        record = {"args": list(args), "stdin": stdin, **kw}
+        calls.append(record)
+        rc, out, err = real(args, stdin, **kw)
+        record.update(rc=rc, stdout=out, stderr=err)
+        return rc, out, err
 
     monkeypatch.setattr(cairn.pari, "run_gp", spy)
     return calls

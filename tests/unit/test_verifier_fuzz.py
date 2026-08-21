@@ -56,6 +56,7 @@ def check_validator(fields):
         assert reason == "bad-arity"
     elif reason is None:
         assert all(isinstance(v, int) and not isinstance(v, bool) and v >= 0 for v in fields)
+        assert not _ec.breaks_pre_spawn_rules(fields)
 
 
 def check_run_fields(fields, spy):
@@ -84,7 +85,7 @@ def check_run(instance, x, spy):
 
 def check_classifier(rc, stdout, stderr):
     accepted, reason, reasons = verifier.classify(rc, stdout, stderr)
-    assert accepted == (rc == 0 and stdout.strip() == "OK" and stderr == "")
+    assert accepted == (rc == 0 and stdout.strip() == "OK" and stderr == ""), f"accepted={accepted} for rc={rc!r} stdout={stdout!r} stderr={stderr!r}"
     if accepted:
         assert (reason, reasons) == (None, ())
         return
@@ -127,14 +128,14 @@ for _rc, _out, _err in [OVERFLOW_8M, STARTUP_2M, (-9, "", ""), (0, "OK\n", "warn
 
 def test_mutant_accept_rc0_only_is_killed_by_the_classifier_property():
     check_classifier(*OVERFLOW_8M)
-    with verifier_mutants.accept_rc0_only(), pytest.raises(AssertionError):
+    with verifier_mutants.accept_rc0_only(), pytest.raises(AssertionError, match="accepted=True"):
         check_classifier(*OVERFLOW_8M)
 
 
 @pytest.mark.parametrize(("rc", "stdout", "stderr"), [(0, "FAIL OK", ""), (0, "NOT OK", ""), (0, "OK\nextra", ""), (0, "OK", "stderr bytes")], ids=["FAIL-OK", "NOT-OK", "OK-extra-line", "OK-with-stderr"])
 def test_mutant_accept_if_OK_substring_is_killed_by_the_classifier_property(rc, stdout, stderr):
     check_classifier(rc, stdout, stderr)
-    with verifier_mutants.accept_if_OK_substring(), pytest.raises(AssertionError):
+    with verifier_mutants.accept_if_OK_substring(), pytest.raises(AssertionError, match="accepted=True"):
         check_classifier(rc, stdout, stderr)
 
 
@@ -170,4 +171,7 @@ def test_corpus_holds_every_planted_negative_the_bead_names():
         "fields_hex_0x1f",
         "fields_leading_space_3",
         "fields_trailing_newline_3",
+        "fields_a_equals_p",
+        "fields_Px_equals_p",
+        "fields_Qy_equals_p",
     } <= names
