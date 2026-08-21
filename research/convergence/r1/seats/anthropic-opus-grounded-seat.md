@@ -44,7 +44,7 @@ libpari 2.17.2 — gave "**bit-identical** `p,a,b,N` and tries for every row… 
 two builds." A check that cannot disagree never raises: a silent-fail-open gate at Tier 0, where "nearly
 every refutation and orchestration decision lives." And the genuine cross-check inside `algorithm='all'` is
 BSGS vs SEA — two *algorithms*, not implementations — which the probe shows "is only independent for
-b ≤ 50", because at 60 bits `ellcard` *is* SEA. Independence evaporates at exactly the size §6 requires a
+b ≤ 50": at 60 bits `ellcard` *is* SEA, so independence evaporates at exactly the size §6 requires a
 method to complete at.
 
 ```diff
@@ -105,8 +105,8 @@ to find a gap is to read the proof.
 
 **Rationale.** §6(2) keeps a speedup whose CI clears `1 + 2·radius` — a ratio against *what* is never
 stated, and C6(d)'s source does not supply it either. §6(4) answers it wrongly: "beats BSGS at 50 bits" =
-"fewer than ~5×10⁷ group ops and under 1 GB". The best generic baseline named in the same sentence is rho
-at ≈1.25√n ≈ 4×10⁷ ops with negligible memory. A method costing 4.9×10⁷ ops and 900 MB passes the ladder
+"under ~5×10⁷ group ops and under 1 GB". The best generic baseline named in the same sentence is rho at
+≈1.25√n ≈ 4×10⁷ ops with negligible memory, so a method costing 4.9×10⁷ ops and 900 MB passes the ladder
 while being worse than plain rho on both axes. BSGS is the right *refutation floor*, the wrong
 *acceptance bar*.
 
@@ -155,32 +155,31 @@ while the tower above keeps its tag. (c) §3 says admission re-runs every node a
 of exactly what the tier system rations, uncharged by §5's `meet(parent, declared profile)`.
 
 ```diff
-   (i) a vendored known-answer corpus with a per-case ledger ... and a committed pass floor ...
+   (i) a vendored known-answer corpus ... and a committed pass floor ...
 +  A corpus authored by the worker that authored the skill is not a self-test: every skill declares
 +  `corpus_origin ∈ {upstream_vendored, independent_oracle, randomized_postcondition, author_supplied}`,
-+  and `author_supplied` alone caps the strongest tag its results may justify at CONJECTURE. Reaching
-+  STRONG-EMPIRICAL needs an upstream corpus, an independent implementation under proposal 1's axis
-+  rule, or a postcondition/metamorphic relation checked on inputs from a seed committed *after* the
-+  implementation revision is content-addressed.
++  and `author_supplied` alone caps its results at CONJECTURE. STRONG-EMPIRICAL needs an upstream corpus,
++  an independent implementation under proposal 1's axis rule, or a postcondition/metamorphic relation
++  checked on inputs from a seed committed *after* the implementation revision is content-addressed.
 -    PROVEN claim may carry a `justified_by` edge to a weaker premise.
-+    claim, of any class, may carry a `justified_by` edge at any depth to a strictly weaker premise. A
-+    failed re-verification downgrades the node *and* re-derives the tag of every claim transitively
-+    justified by it. `f` and `bits` are named in the gate config (M0: `f = 0.01`, `bits = 20`).
-+    Re-run policy is fixed by grade and tier and budgeted before launch: `Verifiable` ⇒ witness always
-+    checked; `Replayable` at Tier 0/1 ⇒ always re-run; `Replayable` at Tier 2/3 ⇒ re-run on admission
-+    only when the claim is promoted past CONJECTURE, else sampled with its tag capped meanwhile.
++    claim, of any class, may carry a `justified_by` edge at any depth to a strictly weaker premise; a
++    failed re-verification downgrades the node *and* re-derives every claim transitively justified by
++    it. `f` and `bits` are named in the gate config (M0: `f = 0.01`, `bits = 20`). Re-run policy is
++    fixed by grade and tier and budgeted before launch: `Verifiable` ⇒ witness always checked;
++    `Replayable` Tier 0/1 ⇒ always; Tier 2/3 ⇒ only when the claim is promoted past CONJECTURE, else
++    sampled with its tag capped meanwhile.
 ```
 
 ## 7 · M0's numbers, the milestone denominators, and P3's version hash · MED · §13, §15
 
 **Rationale.** (a) §13's profile "≈ c·ln p tries" sits beside "10 / 25 / 130 tries at 30/40/50 bits";
 `ln p` rises 1.67× over that range, the quoted draw 13×. The probe measured 20–220 at the same sizes and
-rules the means CONJECTURE, recommending ≥50 seeds — so as written, M0's first skill trips §5's own
+rules the means CONJECTURE, recommending ≥50 seeds — so M0's first skill trips §5's own
 measured-vs-declared alarm on its first run. (b) M1's "caught every time" has no denominator and no ruling
 on INCONCLUSIVE; M3's "stall" is undefined while §15 P3 hands three mechanism decisions to it. (c) §15
 P3(iii) proposes a tick table with RNG draws stored; the DBOS grounding names that shape's failure in the
-wild — the version hash covers workflow source but not *step bodies*, so "stale outputs replay silently."
-Cairn's workers rewrite their own step bodies, so this is P3's most exposed failure mode.
+wild — the version hash covers workflow source but not *step bodies*, so "stale outputs replay silently",
+and Cairn's workers rewrite their own step bodies.
 
 ```diff
 -    sizes; milliseconds below 60 bits), accept if the order is prime (acceptance ≈ c/ln p;
@@ -188,16 +187,16 @@ Cairn's workers rewrite their own step bodies, so this is P3's most exposed fail
 +    overflows), accept if the order is prime (acceptance ≈ c/ln p, so expected tries grow like `ln p`
 +    with a geometric spread whose sd equals its mean; observed draws span 20–220 at 30–50 bits and are
 +    not a profile — M0 measures the constant over ≥50 seeds per size before declaring one;
--*Done when:* a deliberately-planted false "advance" is caught every time.
-+*Done when:* across ≥30 planted advances spanning the three failure classes (false speedup,
-+valid-proof/wrong-statement, non-reproducible measurement) there are zero escapes — INCONCLUSIVE counts
-+as an escape — and no matched true advance is rejected.
--*Done when:* it reallocates off a stall unaided.
-+*Done when:* on ≥20 seeded runs containing a stalled branch — one whose gate-outcome yield over the
-+last `k` ticks lies inside §6's A/A null band — funding is withdrawn within `m` ticks unaided.
+-**M1** *Done when:* a deliberately-planted false "advance" is caught every time.
++**M1** *Done when:* across ≥30 planted advances spanning the three failure classes (false speedup,
++valid-proof/wrong-statement, non-reproducible measurement) there are zero escapes, INCONCLUSIVE counting
++as an escape, and no matched true advance is rejected.
+-**M3** *Done when:* it reallocates off a stall unaided.
++**M3** *Done when:* on ≥20 seeded runs containing a stalled branch — gate-outcome yield over the last
++`k` ticks inside §6's A/A null band — funding is withdrawn within `m` ticks unaided.
    (iii) one tick = ... with its RNG draws stored, so a crash resumes from the last step,
 +  with the *source hash of each step* in the tick record: replaying a recorded output from a step whose
-+  body has since changed is a silent stale read, and Cairn's workers rewrite their own step bodies.
++  body has changed is a silent stale read.
 ```
 
 ---
