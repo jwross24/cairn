@@ -7,3 +7,15 @@
 
 # beads tracker (global ignore excludes .beads; this repo commits it)
 !.beads/
+
+# python / uv
+.venv/
+__pycache__/
+*.pyc
+.hypothesis/
+*.actual
+
+# runtime state
+var/
+deploy/*
+!deploy/README.md

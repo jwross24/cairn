@@ -1,0 +1,144 @@
+import difflib
+import json
+import logging
+import os
+import sqlite3
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+import pytest
+from hypothesis import settings
+
+pytest_plugins = ["pytester"]
+
+ROOT = Path(os.environ.get("CAIRN_REPO_ROOT") or Path(__file__).resolve().parent.parent)
+GUARDED_DIRS = ("deploy", "var")
+VECTORS = ROOT / "tests" / "vectors"
+GOLDENS = ROOT / "tests" / "goldens"
+
+settings.register_profile("ci", max_examples=500, deadline=None, print_blob=True)
+settings.register_profile("dev", max_examples=50, deadline=None)
+settings.load_profile(os.environ.get("HYPOTHESIS_PROFILE", "ci"))
+
+
+class IsolationViolation(AssertionError):
+    pass
+
+
+def _snapshot(root):
+    seen = {}
+    for name in GUARDED_DIRS:
+        base = root / name
+        if not base.exists():
+            continue
+        for path in base.rglob("*"):
+            if path.is_file():
+                st = path.stat()
+                seen[str(path.relative_to(root))] = (st.st_size, st.st_mtime_ns)
+    return seen
+
+
+def _allowed_argv0():
+    import cairn.pari
+
+    return {sys.executable, os.path.realpath(sys.executable), cairn.pari.GP_BIN}
+
+
+@pytest.fixture(autouse=True)
+def isolation_guard(monkeypatch):
+    before = _snapshot(ROOT)
+    real_popen = subprocess.Popen
+
+    class GuardedPopen(real_popen):
+        def __init__(self, args, *a, **kw):
+            argv0 = args[0] if isinstance(args, (list, tuple)) else str(args).split()[0]
+            if str(argv0) not in _allowed_argv0():
+                raise IsolationViolation(f"subprocess outside the allow-list: {argv0}")
+            super().__init__(args, *a, **kw)
+
+    monkeypatch.setattr(subprocess, "Popen", GuardedPopen)
+    for key in list(os.environ):
+        if key.startswith("CAIRN_DB"):
+            monkeypatch.delenv(key)
+    yield
+    after = _snapshot(ROOT)
+    if before != after:
+        changed = sorted(set(before) ^ set(after) | {k for k in before if after.get(k) != before[k]})
+        raise IsolationViolation(f"test touched guarded paths: {changed}")
+
+
+class _JsonLineHandler(logging.Handler):
+    def __init__(self, path):
+        super().__init__(level=logging.DEBUG)
+        self.path = path
+
+    def emit(self, record):
+        data = {"ts": record.created, "level": record.levelname, "step": getattr(record, "step", None), "event": record.getMessage()}
+        data.update(getattr(record, "fields", {}) or {})
+        with open(self.path, "a") as fh:
+            fh.write(json.dumps(data, sort_keys=True, default=str) + "\n")
+
+
+@pytest.fixture(autouse=True)
+def json_test_log(tmp_path, request):
+    path = tmp_path / "test.log.jsonl"
+    handler = _JsonLineHandler(path)
+    logger = logging.getLogger("cairn")
+    previous = logger.level
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+    start = time.monotonic()
+    logger.debug("phase", extra={"step": "test", "fields": {"phase": "start", "test": request.node.nodeid}})
+    yield path
+    logger.debug("phase", extra={"step": "test", "fields": {"phase": "end", "test": request.node.nodeid, "wall_ms": round((time.monotonic() - start) * 1000, 3)}})
+    logger.removeHandler(handler)
+    logger.setLevel(previous)
+
+
+@pytest.fixture
+def db_snapshot():
+    def snap(conn_or_path, label):
+        conn = conn_or_path if isinstance(conn_or_path, sqlite3.Connection) else sqlite3.connect(f"file:{conn_or_path}?mode=ro", uri=True)
+        tables = [r[0] for r in conn.execute("select name from sqlite_master where type='table'")]
+        counts = {t: conn.execute(f'select count(*) from "{t}"').fetchone()[0] for t in tables}
+        logging.getLogger("cairn").info("db_snapshot", extra={"step": "test", "fields": {"label": label, "counts": counts}})
+        return counts
+
+    return snap
+
+
+def _golden_path(name):
+    path = Path(name)
+    if path.is_absolute():
+        return path
+    if str(name).endswith(".json"):
+        return VECTORS / name
+    return GOLDENS / f"{name}.golden"
+
+
+@pytest.fixture
+def assert_golden():
+    def check(name, text):
+        path = _golden_path(name)
+        if os.environ.get("UPDATE_GOLDENS") == "1":
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text)
+            return
+        expected = path.read_text() if path.exists() else ""
+        if expected != text:
+            actual = path.with_name(path.name + ".actual")
+            actual.write_text(text)
+            diff = "".join(difflib.unified_diff(expected.splitlines(True), text.splitlines(True), fromfile=str(path), tofile=str(actual)))
+            raise AssertionError(f"golden mismatch for {path.name}; rerun with UPDATE_GOLDENS=1 to accept\n{diff}")
+
+    return check
+
+
+@pytest.fixture
+def load_vector():
+    def load(name):
+        return json.loads((VECTORS / name).read_text())
+
+    return load

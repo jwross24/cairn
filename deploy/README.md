@@ -1,0 +1,1 @@
+Built gate bundle, its pin, and the attestation file live here at deployment (`cairn bundle build`, `cairn bundle pin`, `cairn attest init`). Everything but this file is gitignored; tests never touch this directory.
