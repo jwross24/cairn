@@ -8,12 +8,49 @@ Every mode assumes the standing constraints: `CLAUDE.md` invariants are not revi
 `/just-say-no-to-process-porn-and-ceremony` applies throughout; borrow mechanisms never
 code (ADR-024); Python via `uv` only; zero explanatory comments.
 
+**Skills each mode loads.** Name them in the prompt — a fresh session has none of them
+loaded, and the file paths below (`scripts/polish-round.sh`, `references/POLISH-ROUND.md`)
+live *inside* `/beads-workflow`, so they are dangling references until it is invoked.
+
+| skill | what it carries | modes |
+|---|---|---|
+| `/beads-br` | `br` CLI: always `--json`, sync is explicit, git is yours, no cycles | A B C D |
+| `/beads-bv` | `bv` graph triage: which bead is most accretive, and why | A B |
+| `/beads-workflow` | conversion + polish rounds; owns `scripts/polish-round.sh` and `references/POLISH-ROUND.md` | B C |
+| `/beads-compliance-and-completion-verification` | closed-bead audit; the pre-commit hook | A D |
+| `/optimal-tests` | the pre-close test audit that found a broken gate on every bead | A |
+| `/just-say-no-to-process-porn-and-ceremony` | honesty inventory, credit floor | all |
+
+## Choosing what to work on next (`/beads-bv`)
+
+Never run bare `bv` — it opens a TUI and blocks the session. Use:
+
+```bash
+bv --robot-plan | jq '.plan.tracks[].items[] | {id, priority, unblocks}'   # ranked, parallel-safe
+bv --robot-insights | jq '.Cycles'                                          # graph health
+br ready --json                                                             # unblocked, unranked
+```
+
+`--robot-plan` ranks by what a completion unblocks, which is the accretive question.
+Observed on this graph: it put `.10` (gate bundle/pin/tier gate, unblocks `.11`/`.12`/`.7`)
+above `.9` (unblocks nothing) — the right call, and faster than reading the dep tree.
+
+**Caveat, measured 2026-08-21:** `bv --robot-next` returned the *epic* `cairn-m0-e0s`
+(PageRank 71%, "unblocks 3 downstream issues"), which is not workable — an epic has the
+highest centrality by construction, since every child hangs off it. Use `--robot-plan` and
+take the highest-`unblocks` **leaf**, or filter epics out of `--robot-next` yourself.
+
 ---
 
 ## Mode A — Build the next M0 bead (the current mode)
 
 ```
-Read CLAUDE.md and `br show <bead-id> --json` in full. Claim it with `br update <bead-id> --claim`.
+Load /beads-br, /beads-bv, /beads-compliance-and-completion-verification and
+/just-say-no-to-process-porn-and-ceremony.
+
+Pick the work with `bv --robot-plan` (highest-unblocks LEAF, not the epic — see the caveat
+in research/SESSION-PROMPTS.md). Read CLAUDE.md and `br show <bead-id> --json` in full.
+Claim it with `br update <bead-id> --claim`.
 
 Build it exactly as the bead specifies, integration test first (real PARI via cypari2,
 real gp subprocess through cairn.pari.run_gp, real SQLite under tmp_path), unit tests
@@ -25,7 +62,7 @@ with a copy-pasteable next_command).
 If a probed fact disagrees with the bead text, do NOT force the test green: assert the
 observed truth, and tell me the disagreement.
 
-Before you propose closing: run `/optimal-tests --audit` over the bead's test files against
+Before you propose closing: load /optimal-tests and run it in --audit mode over the bead's test files against
 its acceptance criteria. Treat any "this protection is untested" finding as a hypothesis
 until you delete that protection in a scratch copy and show a test go red — then restore
 and verify byte-identical. Apply the findings, then close with evidence: every acceptance
@@ -51,6 +88,8 @@ PLAN §13 decomposes a milestone when the prior one closes; `CLAUDE.md` forbids
 pre-decomposing the research tree at any time.
 
 ```
+Load /beads-workflow, /beads-br, /beads-bv and /just-say-no-to-process-porn-and-ceremony.
+
 M<N-1> is closed. Read CLAUDE.md, PLAN.md §13 M<N>, and the M<N> epic's children (they are
 component-grain placeholders labeled needs-decomposition).
 
@@ -61,7 +100,7 @@ edges. Do NOT pre-decompose the research tree.
 
 Then run polish rounds until a round finds nothing: each round is a FRESH subagent (not
 you re-reading your own work), fed by `scripts/polish-round.sh`, applying the seven checks
-in the beads-workflow skill's references/POLISH-ROUND.md — especially "probe any doubtful
+in /beads-workflow's references/POLISH-ROUND.md — especially "probe any doubtful
 stack fact on this machine before prescribing it". Require a ROUND VERDICT line and tell
 each round that finding nothing is a successful result. Commit each round.
 ```
@@ -71,8 +110,11 @@ each round that finding nothing is a successful result. Commit each round.
 ## Mode C — Polish-only session (no implementation)
 
 ```
+Load /beads-workflow and /beads-br.
+
 Run polish rounds over the bead graph until a round finds nothing. Each round is a fresh
-subagent fed by scripts/polish-round.sh, applying references/POLISH-ROUND.md. The bar for
+subagent fed by /beads-workflow's scripts/polish-round.sh, applying its
+references/POLISH-ROUND.md. The bar for
 an edit after round ~5 is a concrete defect: a contradiction between two beads or between
 a bead and shipped code, a plan clause with no owner, a wrong or unprobed stack fact, a
 missing planted negative, a name used but never defined, a relation or observable that
@@ -87,6 +129,8 @@ the round counter, because it adds surface.
 ## Mode D — Honesty audit
 
 ```
+Load /just-say-no-to-process-porn-and-ceremony and /beads-compliance-and-completion-verification.
+
 Step back from everything this project's sessions have done. With fresh, impartial eyes and
 nothing to defend, apply /just-say-no-to-process-porn-and-ceremony in full: fill out all
 three worksheets in writing, and surface anything that could reasonably be construed as
