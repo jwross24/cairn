@@ -1,12 +1,8 @@
-import sys
-from pathlib import Path
-
 import pytest
 
 from cairn import substrate
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from _substrate_helpers import launch, open_writer, recipe  # noqa: E402
+from _substrate_helpers import launch, open_writer, recipe
 
 M1_STATUSES = ("SKILL_YANKED", "BUDGET_EXCEEDED", "INTERRUPTED")
 
@@ -18,7 +14,13 @@ def writer(tmp_path):
     sub.close()
 
 
-def test_every_m1_column_of_escrow_yank_records_and_salts_round_trips_byte_equal(writer, db_snapshot):
+ESCROW = "escrow"
+YANK_RECORDS = "yank_records"
+SALTS = "salts"
+
+
+@pytest.fixture
+def m1_rows(writer):
     key = writer.put_recipe(recipe(1))
     attempt = writer.start_attempt(key)
     escrow = {
@@ -43,12 +45,23 @@ def test_every_m1_column_of_escrow_yank_records_and_salts_round_trips_byte_equal
     writer.add_escrow(**escrow)
     writer.add_yank_record(**yank)
     writer.add_salt(**salt)
-    db_snapshot(writer.conn, "m1-columns")
-    for table, pk, expected in (("escrow", "attempt_id", escrow), ("yank_records", "yank_id", yank), ("salts", "class_key", salt)):
-        row = dict(writer.conn.execute(f"SELECT * FROM {table} WHERE {pk} = ?", (expected[pk],)).fetchone())
-        assert row == expected
-        assert {k: type(v) for k, v in row.items()} == {k: type(v) for k, v in expected.items()}
+    return writer, {ESCROW: ("attempt_id", escrow), YANK_RECORDS: ("yank_id", yank), SALTS: ("class_key", salt)}
+
+
+@pytest.mark.parametrize("table", [ESCROW, YANK_RECORDS, SALTS])
+def test_every_m1_column_round_trips_byte_equal(m1_rows, db_snapshot, table):
+    writer, rows = m1_rows
+    pk, expected = rows[table]
+    db_snapshot(writer.conn, f"m1-columns:{table}")
+    row = dict(writer.conn.execute(f"SELECT * FROM {table} WHERE {pk} = ?", (expected[pk],)).fetchone())
+    assert row == expected
+    assert {k: type(v) for k, v in row.items()} == {k: type(v) for k, v in expected.items()}
+
+
+def test_yank_record_makes_its_identity_yanked(m1_rows):
+    writer, _ = m1_rows
     assert writer.yanked("aa" * 32) is True
+    assert writer.yanked("bb" * 32) is False
 
 
 @pytest.mark.parametrize("status", M1_STATUSES)

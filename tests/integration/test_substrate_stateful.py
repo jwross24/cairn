@@ -1,7 +1,5 @@
 import itertools
 import sqlite3
-import sys
-from pathlib import Path
 
 import pytest
 from hypothesis import settings
@@ -10,9 +8,8 @@ from hypothesis.stateful import Bundle, RuleBasedStateMachine, invariant, rule, 
 
 from cairn import keys, substrate
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from _substrate_helpers import open_writer, recipe  # noqa: E402
-from mutants import substrate_mutants  # noqa: E402
+from _substrate_helpers import open_writer, recipe
+from mutants import substrate_mutants
 
 RECIPES = ("r0", "r1", "r2")
 BLOBS = {"b0": b"blob-0", "b1": b"blob-1", "b2": b"blob-2", "b3": b"blob-3"}
@@ -66,12 +63,17 @@ def build_machine(base_dir):
             self.model[name].append({"attempt_id": attempt_id, "status": "OK", "disowned": False, "inadmissible": False, "manifest": manifest, "manifest_hash": manifest_hash})
             return (name, attempt_id)
 
-        @rule(target=attempts, name=st.sampled_from(RECIPES))
-        def fail_launch(self, name):
+        @rule(target=attempts, name=st.sampled_from(RECIPES), manifest=st.sampled_from(sorted(MANIFESTS)))
+        def fail_launch(self, name, manifest):
             key = self._recipe_key(name)
+            artifacts = {}
+            for artifact, blob in MANIFESTS[manifest].items():
+                artifacts[artifact] = (self.sub.put_blob(BLOBS[blob]), len(BLOBS[blob]))
+                self.present.add(blob)
             attempt_id = self.sub.start_attempt(key)
-            self.sub.close_attempt(attempt_id, "FAIL")
-            self.model[name].append({"attempt_id": attempt_id, "status": "FAIL", "disowned": False, "inadmissible": False, "manifest": None, "manifest_hash": None})
+            manifest_hash = self.sub.put_output_manifest(artifacts, recipe_key=key)
+            self.sub.close_attempt(attempt_id, "FAIL", output_manifest_hash=manifest_hash)
+            self.model[name].append({"attempt_id": attempt_id, "status": "FAIL", "disowned": False, "inadmissible": False, "manifest": manifest, "manifest_hash": manifest_hash})
             return (name, attempt_id)
 
         @rule(ref=attempts)
@@ -148,11 +150,7 @@ def test_serve_agrees_with_shadow_model_under_launch_disown_loss_interleavings(t
     run_machine(tmp_path)
 
 
-def test_mutant_serve_ignores_disowned_is_killed(tmp_path):
-    with substrate_mutants.serve_ignores_disowned(), pytest.raises(AssertionError, match="served ineligible attempt"):
-        run_machine(tmp_path)
-
-
-def test_mutant_serve_ignores_missing_blob_is_killed(tmp_path):
-    with substrate_mutants.serve_ignores_missing_blob(), pytest.raises(AssertionError, match="served ineligible attempt"):
+@pytest.mark.parametrize("name", sorted(substrate_mutants.ALL))
+def test_mutant_is_killed(tmp_path, name):
+    with substrate_mutants.ALL[name](), pytest.raises(AssertionError, match="served ineligible attempt"):
         run_machine(tmp_path)

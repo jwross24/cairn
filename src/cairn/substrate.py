@@ -162,8 +162,10 @@ MISSING_BLOB_PREDICATE = (
 )
 
 
-def serve_sql(*, exclude_disowned=True, require_blobs=True):
-    predicates = ["a.recipe_key = ?", "a.status = 'OK'", "a.inadmissible = 0", "r.do_not_cache = 0", "a.output_manifest_hash IS NOT NULL"]
+def serve_sql(*, exclude_disowned=True, require_blobs=True, require_ok=True):
+    predicates = ["a.recipe_key = ?", "a.inadmissible = 0", "r.do_not_cache = 0", "a.output_manifest_hash IS NOT NULL"]
+    if require_ok:
+        predicates.append("a.status = 'OK'")
     if exclude_disowned:
         predicates.append("a.disowned_at IS NULL")
     if require_blobs:
@@ -233,9 +235,6 @@ class Substrate:
 
     @contextmanager
     def _tx(self):
-        if self.conn.in_transaction:
-            yield
-            return
         self.conn.execute("BEGIN IMMEDIATE")
         try:
             yield

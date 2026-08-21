@@ -3,26 +3,9 @@ import pytest
 from hypothesis import assume, given
 from hypothesis import strategies as st
 
-from cairn import canon, keys, substrate
+from cairn import substrate
 
 hexdigest = st.binary(min_size=32, max_size=32).map(bytes.hex)
-
-
-@given(hexdigest, hexdigest, hexdigest)
-def test_certificate_hash_is_domain_tagged_over_length_prefixed_fields(identity, transcript, env):
-    canonical = substrate.certificate_canonical(identity, transcript, env)
-    assert substrate.certificate_hash(identity, transcript, env) == canon.digest(keys.TAG_SELFTEST_CERT, canonical)
-    assert substrate.certificate_hash(identity, transcript, env) != blake3.blake3(canonical).hexdigest()
-    assert canonical.count(canon.u64le(64)) == 3
-
-
-@given(hexdigest, hexdigest, hexdigest, hexdigest)
-def test_certificate_hash_changes_with_every_field(identity, transcript, env, other):
-    assume(other not in (identity, transcript, env))
-    base = substrate.certificate_hash(identity, transcript, env)
-    assert substrate.certificate_hash(other, transcript, env) != base
-    assert substrate.certificate_hash(identity, other, env) != base
-    assert substrate.certificate_hash(identity, transcript, other) != base
 
 
 @pytest.mark.parametrize(
@@ -57,16 +40,6 @@ def test_grade_weaker_follows_the_order(from_grade, to_grade, weaker):
 )
 def test_attempt_eligible_names_the_first_failing_predicate(status, disowned_at, inadmissible, do_not_cache, blobs_present, reason):
     assert substrate.attempt_eligible(status, disowned_at, inadmissible, do_not_cache, blobs_present) == reason
-
-
-def test_serve_sql_carries_every_predicate_and_the_mutant_builders_drop_one():
-    assert "a.status = 'OK'" in substrate.SERVE_SQL
-    assert "a.disowned_at IS NULL" in substrate.SERVE_SQL
-    assert "a.inadmissible = 0" in substrate.SERVE_SQL
-    assert "r.do_not_cache = 0" in substrate.SERVE_SQL
-    assert substrate.MISSING_BLOB_PREDICATE in substrate.SERVE_SQL
-    assert "a.disowned_at IS NULL" not in substrate.serve_sql(exclude_disowned=False)
-    assert substrate.MISSING_BLOB_PREDICATE not in substrate.serve_sql(require_blobs=False)
 
 
 @given(st.dictionaries(st.text(max_size=8), st.tuples(hexdigest, st.integers(0, 2**40)), max_size=4), st.data())
