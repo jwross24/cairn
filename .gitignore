@@ -1,3 +1,9 @@
 .DS_Store
 .claude/.artifact-effectiveness.jsonl
 .claude/.artifact-effectiveness.jsonl.lock
+
+# bv (beads viewer) local config and caches
+.bv/
+
+# beads tracker (global ignore excludes .beads; this repo commits it)
+!.beads/

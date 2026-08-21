@@ -1653,6 +1653,23 @@ shows it binds.
   *Cairn*; Sage/PARI as the Tier-0/1 arithmetic backend; the M0 exemplar skill is the
   toy-curve generator; SQLite + BLAKE3 as the M0 store; Lean 4 + mathlib as the
   formalization stack.
+- **Operator decisions (confirmed; the ledger questions behind each are listed in
+  `research/KICKOFF-beads-and-M0.md`):** (1) PARI-only arithmetic at M0 with the
+  BSGS-vs-SEA algorithm-axis cross-check through 50 bits; a gmpy2 Hasse-interval BSGS
+  enters as the implementation axis at M1. (2) One 60-bit rho measured with cypari2 at M0;
+  a compiled rho/BSGS baseline is funded at M1 only if the interpreted rung cannot finish
+  inside the Tier-1 budget. (3) Tier-2 spend requires an open operator session until M3.
+  (4) The Reframer drafts claim-statement nodes; a human ratifies through the human path of
+  §4. (5) Skill yanks and `salt` issuance are human-only, like waivers. (6) A Linux
+  container enters at M1 with the formalization gate for the PROVEN gold tier; macOS
+  `fake-landrun` is dev-only before that. (7) §15 P5–P7 stay until their decide-by
+  milestones. (8) No separate OS user for the orchestrator before M3; at M0 the gate-bundle
+  pin is read-only by file permission. (9) A ticket carries its gate-bundle hash; a mismatch
+  re-mints the ticket. (10) The Tier-1 cumulative edge is set at M1 as a multiple of the
+  measured ladder per-run cost, starting at 4× (CONJECTURE). (11) Human review throughput
+  is a number the operator states before M4; none is assumed. (12) The fastest arithmetic
+  implementation for the clock-tolerance check is measured at M1 (gmpy2, cypari2, a C
+  reference) and recorded in the gate bundle.
 - **Invariants (not revisable by review):** §0, the gate layer's existence and immutability,
   the calibration taxonomy, the no-go checklist, the ladder, the verifier, and the honest
   baseline of §14 and `HANDOFF.md`. A proposed change that weakens any of them is flagged
