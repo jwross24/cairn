@@ -76,6 +76,15 @@ HYPOTHESIS_OBJECT = Struct(
     ],
 )
 
+SELFTEST_CERT = Struct(
+    "selftest_cert",
+    [
+        Field("identity_bundle_hash", STR),
+        Field("transcript_hash", STR),
+        Field("env_manifest_hash", STR),
+    ],
+)
+
 INSTANCE = Struct(
     "instance",
     [
@@ -109,6 +118,10 @@ def instance_hash(instance):
     return canon.hash_object(TAG_INSTANCE, INSTANCE, instance)
 
 
+def selftest_cert_hash(cert):
+    return canon.hash_object(TAG_SELFTEST_CERT, SELFTEST_CERT, cert)
+
+
 def node_hash(kind, canonical_bytes):
     return canon.digest(TAG_NODE, canon.encode(STR, kind) + canonical_bytes)
 
@@ -119,6 +132,7 @@ SCHEMAS = {
     "recipe": RECIPE,
     "hypothesis_object": HYPOTHESIS_OBJECT,
     "instance": INSTANCE,
+    "selftest_cert": SELFTEST_CERT,
 }
 
 HASHERS = {
@@ -127,6 +141,7 @@ HASHERS = {
     "recipe": recipe_key,
     "hypothesis_object": hypothesis_key,
     "instance": instance_hash,
+    "selftest_cert": selftest_cert_hash,
 }
 TAGS_BY_KIND = {
     "env_manifest": TAG_ENV_MANIFEST,
@@ -134,4 +149,5 @@ TAGS_BY_KIND = {
     "recipe": TAG_RECIPE_KEY,
     "hypothesis_object": TAG_HYPOTHESIS_KEY,
     "instance": TAG_INSTANCE,
+    "selftest_cert": TAG_SELFTEST_CERT,
 }

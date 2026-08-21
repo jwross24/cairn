@@ -49,6 +49,7 @@ IDENTITY = {
 }
 ENV = {"os": "macOS 26.6 Darwin 25.6.0 arm64", "python": "3.14.0", "cypari2": "2.2.4", "libpari": "2.17.2", "blake3": "1.0.9", "gp_binary_sha256": "ff" * 32}
 INSTANCE = {"p": 5, "a": 2, "b": 1, "n": 7, "P": [0, 1], "Q": [3, 3]}
+SELFTEST_CERT = {"identity_bundle_hash": "dd" * 32, "transcript_hash": "ee" * 32, "env_manifest_hash": "ff" * 32}
 
 VECTOR_SPECS = [
     ("recipe_a", "recipe", RECIPE_A, None),
@@ -58,6 +59,7 @@ VECTOR_SPECS = [
     ("identity_bundle", "identity_bundle", IDENTITY, None),
     ("env_manifest", "env_manifest", ENV, None),
     ("instance", "instance", INSTANCE, None),
+    ("selftest_cert", "selftest_cert", SELFTEST_CERT, None),
     ("node", "node", {"node_kind": "test", "payload": "payload"}, None),
 ]
 
@@ -94,6 +96,7 @@ def test_kat_runner_passes_on_committed_vectors(caplog):
     assert kat.run() == []
     names = [r.fields["name"] for r in caplog.records if r.getMessage() == "vector"]
     assert names == [spec[0] for spec in VECTOR_SPECS]
+    assert len(names) == 9
 
 
 def _drifted_copy(tmp_path, mutate):
