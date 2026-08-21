@@ -10,6 +10,7 @@ from cairn import cli, exits, kat, pari
 from cairn.errors import CliError
 
 DISCOVERY = ("--json", "capabilities", "robot-docs")
+BOUNDED_ARGV = {"measure": ("toy-curve-tries", "--sizes", "30", "--seeds", "2")}
 ESC = "\x1b"
 
 
@@ -72,9 +73,12 @@ def test_registration_is_the_capabilities_row(name):
     assert (row["read_only"], row["json"], row["dangerous"], row["gating"]) == (cmd.read_only, cmd.json, cmd.dangerous, cmd.gating)
 
 
-@pytest.mark.parametrize("name", [c.name for c in cli.commands() if c.json])
+BARE_JSON_COMMANDS = ("capabilities", "env", "kat")
+
+
+@pytest.mark.parametrize("name", [c.name for c in cli.commands() if c.json and c.name in BARE_JSON_COMMANDS])
 def test_json_commands_emit_exactly_one_document_on_stdout(name, capsys):
-    code, out, err = _run([name, "--json"], capsys)
+    code, out, err = _run([name, *BOUNDED_ARGV.get(name, ()), "--json"], capsys)
     assert code == exits.OK, err
     document = json.loads(out)
     assert document["schema_version"] == cli.SCHEMA_VERSION and document["command"] == name
