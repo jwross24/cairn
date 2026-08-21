@@ -1,0 +1,10 @@
+{
+ "expect": {
+  "accepted": true,
+  "reason": null
+ },
+ "kind": "classify",
+ "rc": 0,
+ "stderr": "",
+ "stdout": "OK\n"
+}

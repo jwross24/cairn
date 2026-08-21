@@ -1,0 +1,10 @@
+{
+ "expect": {
+  "accepted": false,
+  "reason": "backend-crash"
+ },
+ "kind": "classify",
+ "rc": 1,
+ "stderr": "",
+ "stdout": "OK\n"
+}

@@ -1,0 +1,10 @@
+{
+ "expect": {
+  "accepted": false,
+  "reason": "backend-crash"
+ },
+ "kind": "classify",
+ "rc": 0,
+ "stderr": "  ***   at top-level: crash_selftest(866004983247663323,218370429096\n  ***                 ^----------------------------------------------\n  ***   in function crash_selftest:\n  ***   ellcard(ellinit([a,b],p));print(\"OK\");quit(0)\n  ***   ^---------------------------------------------\n  *** ellcard: the PARI stack overflows !\n  current stack size: 8000000 (7.629 Mbytes)\n  [hint] set 'parisizemax' to a nonzero value in your GPRC\n\n",
+ "stdout": ""
+}

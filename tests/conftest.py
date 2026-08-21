@@ -98,6 +98,35 @@ def json_test_log(tmp_path, request):
 
 
 @pytest.fixture
+def popen_spy(monkeypatch):
+    spawned = []
+    base = subprocess.Popen
+
+    class Spy(base):
+        def __init__(self, args, *a, **kw):
+            spawned.append(list(args) if isinstance(args, (list, tuple)) else [str(args)])
+            super().__init__(args, *a, **kw)
+
+    monkeypatch.setattr(subprocess, "Popen", Spy)
+    return spawned
+
+
+@pytest.fixture
+def run_gp_spy(monkeypatch):
+    import cairn.pari
+
+    calls = []
+    real = cairn.pari.run_gp
+
+    def spy(args, stdin, **kw):
+        calls.append({"args": list(args), "stdin": stdin, **kw})
+        return real(args, stdin, **kw)
+
+    monkeypatch.setattr(cairn.pari, "run_gp", spy)
+    return calls
+
+
+@pytest.fixture
 def db_snapshot():
     def snap(conn_or_path, label):
         conn = conn_or_path if isinstance(conn_or_path, sqlite3.Connection) else sqlite3.connect(f"file:{conn_or_path}?mode=ro", uri=True)

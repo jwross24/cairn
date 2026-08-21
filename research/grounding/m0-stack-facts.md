@@ -115,9 +115,22 @@ Facts the rows pin:
 - `ellinit([0,1],2)` and `ellinit([0,1],3)` return `[]` (characteristic 2 and 3 are not short-Weierstrass curves), and any `ellisoncurve` on that `[]` dies with a fatal `incorrect type in checkell (t_VEC)` at rc 0 with empty stdout — the fact behind the verifier driver's `p > 3` pre-spawn rule (`cairn-m0-e0s.8`).
 - The 60-bit `ellcard` on `tests/vectors/curve60_seed1.json` overflows at `-s 8M` and answers `866004985024698433` at `-s 64M`. The same 8M overflow is also asserted by bead .1's `tests/integration/test_smoke.py::test_curve60_ellcard_under_8mb_default_stack_overflows_with_rc0`; this table carries it because it is this bead's planted negative.
 
-### 5a. `verify()`-OK-at-3M/8M/64M (reserved for `cairn-m0-e0s.8`)
+### 5a. `verify()`-OK-at-3M/8M/64M (`cairn-m0-e0s.8`)
 
-Row to be added at that bead's close by `tests/integration/test_verifier.py` on the bundle script: the verifier script never calls `ellcard`, so an 8 MB ceiling does not crash `verify()`; the forced-crash fixture is its `crash_selftest(p,a,b)` entry (a 60-bit `ellcard`). Not claimed here.
+Tests: `tests/integration/test_verifier.py::test_verify_is_ok_at_3M_8M_64M_on_curve60` (ids `3M`, `8M`, `64M`), `::test_startup_overflow_at_2M_is_backend_crash`, `::test_crash_selftest_at_8M_is_backend_crash_and_64M_control_is_ok`. Every row runs `cairn.pari.run_gp([<materialized verify.gp>], <stdin line>, stack=<stack>)` through `cairn.verifier.Verifier`, i.e. `gp -q -f -s <stack> /var/folders/.../cairn-bundle-<hash>-*/verify.gp` fed one stdin line; the script is the bundle source `src/cairn/gp/verify.gp`, materialized 0444 under a per-process `mkdtemp` directory. Instance: the committed 60-bit vector with `x = 123456789`, `Q = xP` computed in-test via cypari2 (`Q = (341876312860654437, 667641697060096934)`); the stdin line is `verify(866004983247663323,218370429096749092,332004879195750802,866004985024698433,649465449118648377,257340576278519516,341876312860654437,667641697060096934,123456789)`. The `gp_fact` and `crash_io` records in `test.log.jsonl` (step `verifier.test`) carry the command, rc, stdout and stderr; the verdict column is the driver's classification under the pinned accept predicate `{rc: 0, stdout: "OK", stderr_empty: true}`. gp 2.17.4, 2026-08-21.
+
+| id | stack | stdin | rc | stdout | stderr (fragment) | verdict | Tag |
+|---|---|---|---|---|---|---|---|
+| `verify-3M` | 3M | the `verify(...)` line | 0 | `OK\n` | `` (0 bytes) | accepted | PROVEN-by-probe |
+| `verify-8M` | 8M | same | 0 | `OK\n` | `` (0 bytes) | accepted | PROVEN-by-probe (planted control: a crash here means the stack facts moved and the crash fixture's premise is gone) |
+| `verify-64M` | 64M | same | 0 | `OK\n` | `` (0 bytes) | accepted | PROVEN-by-probe |
+| `verify-2M` | 2M | same | 1 | `### Errors on startup, exiting...\n\n\n` | `  ***   the PARI stack overflows !` + `current stack size: 2000000 (1.907 Mbytes)` | FAIL backend-crash | PROVEN-by-probe |
+| `crash_selftest-8M` | 8M | `crash_selftest(866004983247663323,218370429096749092,332004879195750802)` | 0 | `` | `  *** ellcard: the PARI stack overflows !` + `current stack size: 8000000 (7.629 Mbytes)` | FAIL backend-crash | PROVEN-by-probe (the gate's planted forced-crash fixture, `cairn-m0-e0s.11`) |
+| `crash_selftest-64M` | 64M | same | 0 | `OK\n` | `` (0 bytes) | accepted | PROVEN-by-probe (control: the crash entry is a live `ellcard`) |
+
+Facts the rows pin:
+- `verify()` never calls `ellcard`; on the 60-bit instance it prints `OK` under `-s 3M`, `-s 8M` and `-s 64M`, so `verify()` is not a crash fixture at any ceiling that starts gp. The forced-crash fixture is the script's `crash_selftest(p,a,b)` entry: a 60-bit `ellcard` that overflows 8 MB (rc 0, empty stdout, the overflow message on stderr) and answers at 64 MB.
+- Below gp's own startup need (`-s 2M`) the driver sees rc 1 with `### Errors on startup, exiting...` on stdout and classifies FAIL backend-crash; the accept predicate rejects it on rc, stdout and stderr alike.
 
 ## 6. PARI PRNG consumption by point-counting calls
 

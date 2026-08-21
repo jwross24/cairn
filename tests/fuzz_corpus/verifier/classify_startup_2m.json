@@ -1,0 +1,10 @@
+{
+ "expect": {
+  "accepted": false,
+  "reason": "backend-crash"
+ },
+ "kind": "classify",
+ "rc": 1,
+ "stderr": "  ***   the PARI stack overflows !\n  current stack size: 2000000 (1.907 Mbytes)\n  [hint] set 'parisizemax' to a nonzero value in your GPRC\n\n",
+ "stdout": "### Errors on startup, exiting...\n\n\n"
+}

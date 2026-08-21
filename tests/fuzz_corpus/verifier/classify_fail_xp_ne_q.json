@@ -1,0 +1,10 @@
+{
+ "expect": {
+  "accepted": false,
+  "reason": "xP-ne-Q"
+ },
+ "kind": "classify",
+ "rc": 1,
+ "stderr": "",
+ "stdout": "FAIL [\"xP-ne-Q\"]\n"
+}
