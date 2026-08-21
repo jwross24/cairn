@@ -1,0 +1,21 @@
+{
+ "expect": "CanonError",
+ "input": {
+  "bogus": 1,
+  "container_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "inputs": {
+   "x": [
+    "1111111111111111111111111111111111111111111111111111111111111111",
+    7
+   ]
+  },
+  "salt": "",
+  "seed": 1,
+  "skill_identity_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "tool_versions": {
+   "gp": "2.17.4"
+  }
+ },
+ "match": "bogus",
+ "schema": "recipe"
+}

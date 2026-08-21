@@ -1,0 +1,8 @@
+{
+ "expect": "equal",
+ "inputs": [
+  "\u00e9",
+  "e\u0301"
+ ],
+ "schema": "str"
+}

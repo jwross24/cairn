@@ -1,0 +1,14 @@
+{
+ "expect": "differ",
+ "inputs": [
+  [
+   "ab",
+   "c"
+  ],
+  [
+   "a",
+   "bc"
+  ]
+ ],
+ "schema": "list_str"
+}

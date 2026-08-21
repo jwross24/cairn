@@ -14,7 +14,7 @@ GLOBAL_DEFAULTS = {
     "attest": "deploy/attestations.log",
     "log": None,
 }
-COMMAND_MODULES = []
+COMMAND_MODULES = ["cairn.kat"]
 _SUBCOMMANDS = {}
 
 

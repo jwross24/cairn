@@ -1,0 +1,14 @@
+{
+ "expect": "differ",
+ "inputs": [
+  [
+   "61",
+   "0362"
+  ],
+  [
+   "6103",
+   "62"
+  ]
+ ],
+ "schema": "list_bytes_hex"
+}

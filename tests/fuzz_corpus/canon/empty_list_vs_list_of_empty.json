@@ -1,0 +1,10 @@
+{
+ "expect": "differ",
+ "inputs": [
+  [],
+  [
+   ""
+  ]
+ ],
+ "schema": "list_bytes"
+}
