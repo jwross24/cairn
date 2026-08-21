@@ -1,0 +1,25 @@
+usage: cairn measure [-h] [--db PATH] [--bundle PATH] [--pin PATH]
+                     [--attest PATH] [--log LEVEL] [--json]
+                     [--sizes BITS,BITS,...] [--seeds N]
+                     [{toy-curve-tries}]
+
+measure a skill's cost constant (toy-curve-tries: tries and subprocess wall
+over seeds 1..N per size)
+
+positional arguments:
+  {toy-curve-tries}     what to measure
+
+options:
+  -h, --help            show this help message and exit
+  --db PATH             substrate SQLite file
+  --bundle PATH         gate bundle SQLite file
+  --pin PATH            gate-bundle pin file
+  --attest PATH         attestation file
+  --log LEVEL           log level for the JSON records on stderr
+  --json, --robot       emit exactly one JSON document on stdout
+  --sizes BITS,BITS,...
+                        bit sizes to measure
+  --seeds N             seeds 1..N per size
+
+Structured output: add --json to any read-side command. Contract: cairn
+capabilities --json. Agent handbook: cairn robot-docs.

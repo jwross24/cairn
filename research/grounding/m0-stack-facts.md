@@ -145,9 +145,18 @@ Test: `tests/integration/test_grounding_gp.py::test_prng_consumption_of_point_co
 
 Every cell asserts the baseline draw `14991082624209354397` (module constant) and the treated draw listed in its row, in both backends, so gp and cypari2 agree cell for cell including the draw values by assertion (same libpari PRNG). Observation outside the asserted table, recorded for `cairn-m0-e0s.6`: on the 40-bit curve `ellsea(E,1)` left the final draw at 14991082624209354397 (no consumption) — its order is even, so the early-abort path returns at ℓ = 2 without reaching the randomized stage; that cell is curve-dependent and is not a row. The asserted facts are what the toy-curve skill pins its call sequence on: at 40 bits `ellcard` is PRNG-neutral and `ellsea` is not; at 60 bits both `ellcard` and `ellsea(E,1)` consume.
 
-### 6a. Tries table (reserved for `cairn-m0-e0s.6`)
+### 6a. Tries table (`cairn-m0-e0s.6`)
 
-The tries-per-bit-size table for the toy-curve search under the pinned call sequence is written by that bead at its close; `tests/vectors/curve60_seed1.json` carries `tries: 45` for 60 bits, seed 1. Not claimed here.
+Command: `uv run cairn measure toy-curve-tries --sizes 30,40,50,60 --seeds 50 --json` (`src/cairn/measure.py`; run 2026-08-21; seeds 1..50 per size; 122.7 s wall for the whole run). Per seed it runs `cairn.skills.toy_curve.run(bits, seed)` in-process (timed) and launches `python -m cairn.skills.toy_curve` as a fresh subprocess with `{"bits", "seed"}` on stdin (timed: interpreter start + cypari2 import + `allocatemem(64_000_000)` + the run), asserting the two outputs agree field for field. cypari2 2.2.4 / libpari 2.17.2, CPython 3.14.0, arm64 macOS 26.6. "per-try ms" = in-process wall summed over the size divided by tries summed over the size, so the accepted curve's cross-check (`ellsea(E)` through 50 bits) or confirm (`ellcard` at 60 bits), the point draw and the postcondition arm are amortized into it. Tag: STRONG-EMPIRICAL on this sample and this machine; CONJECTURE for means at other sizes or on other hardware.
+
+| bits | seeds | mean tries | sd tries | min | max | per-try ms | in-process mean wall s | subprocess mean wall s |
+|---|---|---|---|---|---|---|---|---|
+| 30 | 50 | 39.48 | 29.83 | 4 | 148 | 1.053 | 0.0416 | 0.1372 |
+| 40 | 50 | 50.60 | 46.22 | 1 | 260 | 1.096 | 0.0555 | 0.1338 |
+| 50 | 50 | 63.82 | 60.56 | 1 | 232 | 2.548 | 0.1626 | 0.2511 |
+| 60 | 50 | 87.90 | 78.93 | 9 | 340 | 8.992 | 0.7904 | 0.8777 |
+
+Shape: geometric (sd/mean = 0.76, 0.91, 0.95, 0.90), mean tries ≈ c·ln p with c ≈ 1.9, 1.8, 1.9, 2.1 for ln p ≈ 20.4, 27.4, 34.3, 41.2 (p ≈ 2^(bits−½)). The 3-seed bench rows of `pari-sage-toy-curve-backend.md` §2 (20–220 tries) sit inside these spreads and remain a sample, not a profile. `cairn.skills.toy_curve.COST_PROFILE.per_size` declares exactly the mean/sd/per-try/subprocess-wall cells of this table (`tests/unit/test_toy_curve_profile.py` parses this section and asserts the equality); the subprocess mean wall is the `mean_wall_s` that `CostProfile.evaluate(bits)` returns as `expected_wall_s`, `expected_core_s` and `expected_verification_core_s`, so the runner's 4× ceiling (cairn-m0-e0s.9) and the tier gate's boundary table (cairn-m0-e0s.10) see interpreter start included. At 60 bits the in-process wall is 0.79 s per seed rather than 0.3 ms × tries: `ellsea(E,1)` aborts only once a small prime divides the order, and the accepted curve pays a full SEA count plus the `ellcard` confirm. `tests/vectors/toy_curve_rows.json` (seeds 1–3, all four sizes) and `tests/vectors/curve60_seed1.json` (`tries: 45` at 60 bits, seed 1) are the exact goldens of the same call sequence.
 
 ## 7. CPython reap order: `communicate()` reaps
 

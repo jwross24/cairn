@@ -10,6 +10,8 @@ positional arguments:
                   path)
     kat           run the canonicalizer known-answer vectors (a gate self-
                   test); exit 2 on any mismatch
+    measure       measure a skill's cost constant (toy-curve-tries: tries and
+                  subprocess wall over seeds 1..N per size)
     robot-docs    print the paste-ready agent handbook
 
 options:
