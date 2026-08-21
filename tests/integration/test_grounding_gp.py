@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -5,13 +6,16 @@ import pytest
 from cairn import log, pari
 
 PROBE_GP = Path(__file__).resolve().parent / "gp" / "probe.gp"
+CURVE60_VECTOR = "curve60_seed1.json"
 ELLCARD60 = "print(ellcard(ellinit([{a},{b}],{p})))"
 STARTUP_FAIL_STDOUT = "### Errors on startup, exiting...\n\n\n"
 STARTUP_FAIL_STDERR = "the PARI stack overflows !"
+GP_VERSION_PREFIX = "2.17"
 
 GP_ROWS = [
     ("64M", "1/0", 0, "", "_/_: impossible inverse in gdiv: 0"),
     ("64M", "f3(1,2)", 0, "1 2 0\n", ""),
+    ("64M", "f3(1,2,3)", 0, "1 2 3\n", ""),
     ("64M", "ok()", 0, "OK\n", ""),
     ("64M", "fail()", 1, 'FAIL ["x"]\n', ""),
     ("8M", ELLCARD60, 0, "", "ellcard: the PARI stack overflows !"),
@@ -28,6 +32,7 @@ GP_ROWS = [
 GP_IDS = [
     "64M-div-by-zero-rc0-stderr",
     "64M-f3-two-args-zero-filled",
+    "64M-f3-three-args-control",
     "64M-ok-rc0-empty-stderr",
     "64M-fail-rc1-stdout-empty-stderr",
     "8M-ellcard60-overflow-rc0-stderr",
@@ -44,12 +49,13 @@ GP_IDS = [
 CURVE40 = {"p": 617956103213, "a": 574238428165, "b": 529421460422}
 PRNG_SEED = 1
 PRNG_PREFIX_DRAWS = 2
+PRNG_BASELINE_DRAW = 14991082624209354397
 
 PRNG_ROWS = [
-    (40, "ellcard", False),
-    (40, "ellsea", True),
-    (60, "ellcard", True),
-    (60, "ellsea1", True),
+    (40, "ellcard", False, 14991082624209354397),
+    (40, "ellsea", True, 11721172991787151380),
+    (60, "ellcard", True, 12458736420605239190),
+    (60, "ellsea1", True, 12458736420605239190),
 ]
 
 PRNG_CALLS = {
@@ -59,22 +65,31 @@ PRNG_CALLS = {
 }
 
 
-@pytest.fixture(scope="module")
-def curve60():
-    import json
+def _fill(template, curve60):
+    return template.format(**curve60) if "{" in template else template
 
-    return json.loads((Path(__file__).resolve().parent.parent / "vectors" / "curve60_seed1.json").read_text())
+
+def test_gp_version_short_is_2_17():
+    lg = log.get("grounding.gp")
+    argv = [pari.GP_BIN, "--version-short"]
+    proc = subprocess.run(argv, capture_output=True, text=True)
+    lg.info("gp_version", command=" ".join(argv), rc=proc.returncode, stdout=proc.stdout, stderr=proc.stderr, gp_bin=pari.GP_BIN, versions=pari.pari_versions())
+    assert proc.returncode == 0
+    assert proc.stdout.startswith(GP_VERSION_PREFIX)
 
 
 @pytest.mark.parametrize(("stack", "stdin_line", "expected_rc", "expected_stdout", "expected_stderr_fragment"), GP_ROWS, ids=GP_IDS)
-def test_gp_exit_arity_stack_and_small_p_facts(curve60, stack, stdin_line, expected_rc, expected_stdout, expected_stderr_fragment):
+def test_gp_exit_arity_stack_and_small_p_facts(load_vector, stack, stdin_line, expected_rc, expected_stdout, expected_stderr_fragment):
     lg = log.get("grounding.gp")
-    line = stdin_line.format(**curve60)
-    expected_out = expected_stdout.format(**curve60)
+    curve60 = load_vector(CURVE60_VECTOR)
+    line = _fill(stdin_line, curve60)
+    expected_out = _fill(expected_stdout, curve60)
+    argv = pari.gp_argv(stack) + [str(PROBE_GP)]
     rc, out, err = pari.run_gp([str(PROBE_GP)], line + "\n", stack=stack)
     lg.info(
         "gp_fact",
-        command=f"gp -q -f -s {stack} tests/integration/gp/probe.gp  <<< {line!r}",
+        command=f"{' '.join(argv)} <<< {line!r}",
+        argv=argv,
         stack=stack,
         stdin=line,
         rc=rc,
@@ -117,10 +132,14 @@ def _cypari2_final_draw(curve, call):
 
 
 @pytest.mark.parametrize("backend", ["gp", "cypari2"])
-@pytest.mark.parametrize(("bits", "call_name", "state_changes"), PRNG_ROWS, ids=[f"{b}bit-{c}-{'consumes' if s else 'leaves'}-prng" for b, c, s in PRNG_ROWS])
-def test_prng_consumption_of_point_counting_calls(curve60, bits, call_name, state_changes, backend):
+@pytest.mark.parametrize(
+    ("bits", "call_name", "state_changes", "expected_treated_draw"),
+    PRNG_ROWS,
+    ids=[f"{b}bit-{c}-{'consumes' if s else 'leaves'}-prng" for b, c, s, _d in PRNG_ROWS],
+)
+def test_prng_consumption_of_point_counting_calls(load_vector, bits, call_name, state_changes, expected_treated_draw, backend):
     lg = log.get("grounding.gp")
-    curve = _curve(bits, curve60)
+    curve = _curve(bits, load_vector(CURVE60_VECTOR))
     gp_expr, py_call = PRNG_CALLS[call_name]
     if backend == "gp":
         base_code, baseline = _gp_final_draw(curve, "")
@@ -141,4 +160,6 @@ def test_prng_consumption_of_point_counting_calls(curve60, bits, call_name, stat
         state_changed=baseline != treated,
         versions=pari.pari_versions(),
     )
+    assert baseline == PRNG_BASELINE_DRAW
+    assert treated == expected_treated_draw
     assert (baseline != treated) is state_changes

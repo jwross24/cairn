@@ -2,6 +2,7 @@ import sqlite3
 import sys
 import threading
 import time
+from contextlib import closing
 
 import pytest
 
@@ -20,9 +21,9 @@ READER_ROWS = [
 ]
 
 BUSY_ROWS = [
-    (500, None, "locked", 450, 4000),
+    (500, None, "locked", 450, 1500),
     (0, None, "locked", 0, 100),
-    (500, 200, "ok", 150, 4000),
+    (500, 200, "ok", 150, 1500),
 ]
 
 
@@ -47,17 +48,18 @@ def _fresh_db(tmp_path, journal_mode):
 def test_reader_against_uncommitted_writer_by_journal_mode_and_begin_kind(tmp_path, journal_mode, begin_kind, expected):
     lg = log.get("grounding.sqlite")
     path, writer = _fresh_db(tmp_path, journal_mode)
-    writer.execute(f"BEGIN {begin_kind}")
-    writer.execute("insert into t values (1)")
-    reader = _connect(path, READER_TIMEOUT_S)
-    start = time.monotonic()
-    try:
-        row = reader.execute("select count(*) from t").fetchone()
-        observed, detail = "reads", row[0]
-    except sqlite3.OperationalError as exc:
-        observed, detail = "locked", str(exc)
-    wait_ms = round((time.monotonic() - start) * 1000, 1)
-    writer.execute("ROLLBACK")
+    with closing(writer):
+        writer.execute(f"BEGIN {begin_kind}")
+        writer.execute("insert into t values (1)")
+        with closing(_connect(path, READER_TIMEOUT_S)) as reader:
+            start = time.monotonic()
+            try:
+                row = reader.execute("select count(*) from t").fetchone()
+                observed, detail = "reads", row[0]
+            except sqlite3.OperationalError as exc:
+                observed, detail = "locked", str(exc)
+            wait_ms = round((time.monotonic() - start) * 1000, 1)
+        writer.execute("ROLLBACK")
     lg.info(
         "reader_vs_writer",
         command=f"writer: PRAGMA journal_mode={journal_mode}; BEGIN {begin_kind}; INSERT (uncommitted) | reader(timeout={READER_TIMEOUT_S}s): SELECT count(*)",
@@ -86,29 +88,30 @@ def test_reader_against_uncommitted_writer_by_journal_mode_and_begin_kind(tmp_pa
 def test_second_writer_busy_timeout_under_wal(tmp_path, busy_timeout_ms, commit_after_ms, expected, min_wait_ms, max_wait_ms):
     lg = log.get("grounding.sqlite")
     path, a = _fresh_db(tmp_path, "WAL")
-    a.execute("BEGIN IMMEDIATE")
-    a.execute("insert into t values (1)")
     result = {}
 
     def second_writer():
-        b = _connect(path, busy_timeout_ms / 1000)
-        start = time.monotonic()
-        try:
-            b.execute("insert into t values (2)")
-            result["observed"], result["detail"] = "ok", "inserted"
-        except sqlite3.OperationalError as exc:
-            result["observed"], result["detail"] = "locked", str(exc)
-        result["wait_ms"] = round((time.monotonic() - start) * 1000, 1)
-        b.close()
+        with closing(_connect(path, busy_timeout_ms / 1000)) as b:
+            start = time.monotonic()
+            try:
+                b.execute("insert into t values (2)")
+                result["observed"], result["detail"] = "ok", "inserted"
+            except sqlite3.OperationalError as exc:
+                result["observed"], result["detail"] = "locked", str(exc)
+            result["wait_ms"] = round((time.monotonic() - start) * 1000, 1)
 
-    worker = threading.Thread(target=second_writer)
-    worker.start()
-    if commit_after_ms is not None:
-        time.sleep(commit_after_ms / 1000)
-        a.execute("COMMIT")
-    worker.join()
-    if commit_after_ms is None:
-        a.execute("ROLLBACK")
+    with closing(a):
+        a.execute("BEGIN IMMEDIATE")
+        a.execute("insert into t values (1)")
+        worker = threading.Thread(target=second_writer)
+        worker.start()
+        if commit_after_ms is not None:
+            time.sleep(commit_after_ms / 1000)
+            a.execute("COMMIT")
+        worker.join()
+        if commit_after_ms is None:
+            a.execute("ROLLBACK")
+        count = a.execute("select count(*) from t").fetchone()[0]
     lg.info(
         "busy_timeout",
         command=f"A: BEGIN IMMEDIATE; INSERT; {'COMMIT after ' + str(commit_after_ms) + ' ms' if commit_after_ms is not None else 'never commits'} | B(busy_timeout={busy_timeout_ms} ms): INSERT",
@@ -122,6 +125,6 @@ def test_second_writer_busy_timeout_under_wal(tmp_path, busy_timeout_ms, commit_
     assert min_wait_ms <= result["wait_ms"] <= max_wait_ms
     if expected == "locked":
         assert result["detail"] == "database is locked"
-        assert a.execute("select count(*) from t").fetchone()[0] == 0
+        assert count == 0
     else:
-        assert a.execute("select count(*) from t").fetchone()[0] == 2
+        assert count == 2

@@ -1,4 +1,6 @@
+import errno
 import os
+import resource
 import subprocess
 import sys
 
@@ -13,7 +15,7 @@ def test_communicate_reaps_so_wait4_raises_and_returncode_is_3():
     lg = log.get("grounding.subprocess")
     proc = subprocess.Popen(CHILD, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
-    with pytest.raises(ChildProcessError) as excinfo:
+    with pytest.raises(ChildProcessError, match="No child processes") as excinfo:
         os.wait4(proc.pid, 0)
     lg.info(
         "reap_after_communicate",
@@ -27,7 +29,7 @@ def test_communicate_reaps_so_wait4_raises_and_returncode_is_3():
     )
     assert proc.returncode == 3
     assert (out, err) == (b"", b"")
-    assert excinfo.value.errno == 10
+    assert excinfo.value.errno == errno.ECHILD
 
 
 def test_wait4_before_any_wait_returns_status_and_rusage_then_proc_wait_reports_0(tmp_path):
@@ -54,6 +56,6 @@ def test_wait4_before_any_wait_returns_status_and_rusage_then_proc_wait_reports_
     assert returncode_before is None
     assert pid == proc.pid
     assert exit_code == 3
-    assert rusage.ru_utime >= 0
+    assert isinstance(rusage, resource.struct_rusage)
     assert later == 0
     assert proc.returncode == 0

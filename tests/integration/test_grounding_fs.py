@@ -178,19 +178,29 @@ def test_mode_x_uappnd_x_op_by_owner(flagged_files, mode, flagged, op, expected_
         assert os.path.lexists(path)
         if op in ("append", "os_open_append", "open_w", "open_rplus", "truncate"):
             assert path.read_text() == SEED
+        if op == "chmod":
+            assert stat.S_IMODE(os.stat(path).st_mode) == mode
+        if op == "rename":
+            assert not os.path.lexists(str(path) + ".moved")
 
 
 @pytest.mark.parametrize(
-    ("role", "mode"),
-    [("pin", 0o444), ("attest", 0o644)],
-    ids=["pin-0444", "attest-0644"],
+    ("role", "mode", "truncate_errno_after_clear"),
+    [("pin", 0o444, errno.EACCES), ("attest", 0o644, None)],
+    ids=["pin-0444-truncate-EACCES-until-chmod", "attest-0644-truncate-OK"],
 )
-def test_owner_clears_uappnd_then_chmod_truncate_rename_unlink_succeed(flagged_files, role, mode):
+def test_owner_clears_uappnd_then_chmod_truncate_rename_unlink_succeed(flagged_files, role, mode, truncate_errno_after_clear):
     lg = log.get("grounding.fs")
     path = flagged_files(f"{role}.txt", mode, True)
     flags_before = os.stat(path).st_flags
     os.chflags(path, 0)
     flags_after = os.stat(path).st_flags
+    try:
+        os.truncate(path, 0)
+        truncate_errno, truncate_observed = None, "OK"
+    except PermissionError as exc:
+        truncate_errno, truncate_observed = exc.errno, f"{errno.errorcode[exc.errno]} {exc.strerror}"
+    size_after_truncate = os.path.getsize(path)
     os.chmod(path, 0o644)
     os.truncate(path, 0)
     moved = path.with_name(path.name + ".moved")
@@ -198,13 +208,18 @@ def test_owner_clears_uappnd_then_chmod_truncate_rename_unlink_succeed(flagged_f
     os.unlink(moved)
     lg.info(
         "owner_clears_flag",
-        command=f"chmod {mode:04o}; chflags uappnd; chflags nouappnd; chmod 0644; truncate; rename; unlink (same uid)",
+        command=f"chmod {mode:04o}; chflags uappnd; chflags nouappnd; truncate; chmod 0644; truncate; rename; unlink (same uid)",
         role=role,
+        mode=f"{mode:04o}",
         flags_before=flags_before,
         flags_after=flags_after,
-        observed="chflags nouappnd by the owner succeeded; chmod, truncate, rename, unlink then succeeded",
+        truncate_after_clear=truncate_observed,
+        size_after_truncate=size_after_truncate,
+        observed="chflags nouappnd by the owner succeeded; chmod 0644, truncate, rename, unlink then succeeded",
         **_env(),
     )
     assert flags_before & stat.UF_APPEND
     assert flags_after == 0
+    assert truncate_errno == truncate_errno_after_clear
+    assert size_after_truncate == (len(SEED) if truncate_errno_after_clear else 0)
     assert not os.path.lexists(path) and not os.path.lexists(moved)
