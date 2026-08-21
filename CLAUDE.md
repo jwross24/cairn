@@ -73,3 +73,21 @@ Each line below was established by hitting it. Verify rather than trust if a too
 `research/SESSION-PROMPTS.md` holds paste-ready openers for the five session types (build a
 bead · decompose a milestone · polish · honesty audit · research), the skills each loads, and
 the PLAN §10 summary of how subproblems get chosen. Research modes require M1 at minimum.
+
+### "Skill" means three different things here
+
+- **A Cairn skill** is a deterministic Python capability under `src/cairn/skills/`, run as
+  `python -m cairn.skills.<name>` with canonical JSON on stdin and stdout. Its identity is a
+  hash over `{interface version, implementation revision, tool digests, container digest,
+  numeric profile}`; it ships a vendored known-answer corpus, a golden certificate and a
+  byte-equal double run. PLAN §2: a skill is "testable, cacheable, and reproducible in a way
+  an agent never is" — that determinism is what every downstream gate binds to.
+- **A worker role template** (the Skeptic's checklist, PLAN §4) is prompt text, but it is
+  read-only, claim-agnostic and pinned in the gate bundle — not loaded from a skills
+  directory. Arrives with the workers at M1.
+- **A Claude Code skill** (`/beads-workflow`, `/optimal-tests`, `/beads-br`) is a tool for
+  *building* Cairn and never runs inside it. `/research-software` (PLAN §12) is the one the
+  plan names, for stack truth before wiring; it "touches no math."
+
+A Claude Code skill cannot be a Cairn skill: a prompt is non-deterministic, so it cannot be
+content-addressed, cannot produce a byte-equal double run, and cannot be cached by recipe key.
