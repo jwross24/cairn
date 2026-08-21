@@ -1,0 +1,210 @@
+import errno
+import os
+import platform
+import stat
+import sys
+
+import pytest
+
+from cairn import log
+
+pytestmark = pytest.mark.skipif(sys.platform != "darwin", reason="uappnd is a macOS/BSD chflags bit; the Linux chattr +a probe belongs to the M1 container bead")
+
+SEED = "seed\n"
+
+
+def _append(path):
+    with open(path, "a") as fh:
+        fh.write("x\n")
+
+
+def _os_open_append(path):
+    fd = os.open(path, os.O_WRONLY | os.O_APPEND)
+    try:
+        os.write(fd, b"y\n")
+    finally:
+        os.close(fd)
+
+
+def _open_w(path):
+    with open(path, "w") as fh:
+        fh.write("z")
+
+
+def _open_rplus(path):
+    with open(path, "r+") as fh:
+        fh.write("z")
+
+
+def _truncate(path):
+    os.truncate(path, 0)
+
+
+def _chmod(path):
+    os.chmod(path, 0o600)
+
+
+def _unlink(path):
+    os.unlink(path)
+
+
+def _rename(path):
+    os.rename(path, str(path) + ".moved")
+
+
+OPS = {
+    "append": _append,
+    "os_open_append": _os_open_append,
+    "open_w": _open_w,
+    "open_rplus": _open_rplus,
+    "truncate": _truncate,
+    "chmod": _chmod,
+    "unlink": _unlink,
+    "rename": _rename,
+}
+
+EFFECTS = {
+    "append": lambda p: open(p).read() == SEED + "x\n",
+    "os_open_append": lambda p: open(p).read() == SEED + "y\n",
+    "open_w": lambda p: open(p).read() == "z",
+    "open_rplus": lambda p: open(p).read() == "zeed\n",
+    "truncate": lambda p: os.path.getsize(p) == 0,
+    "chmod": lambda p: stat.S_IMODE(os.stat(p).st_mode) == 0o600,
+    "unlink": lambda p: not os.path.lexists(p),
+    "rename": lambda p: not os.path.lexists(p) and os.path.lexists(str(p) + ".moved"),
+}
+
+ROLES = {
+    (0o644, True): "attest",
+    (0o444, True): "pin",
+    (0o444, False): "readonly",
+    (0o644, False): "control",
+}
+
+ROWS = [
+    (0o644, True, "append", None),
+    (0o644, True, "os_open_append", None),
+    (0o644, True, "open_w", errno.EPERM),
+    (0o644, True, "open_rplus", errno.EPERM),
+    (0o644, True, "truncate", errno.EPERM),
+    (0o644, True, "chmod", errno.EPERM),
+    (0o644, True, "unlink", errno.EPERM),
+    (0o644, True, "rename", errno.EPERM),
+    (0o444, True, "append", errno.EACCES),
+    (0o444, True, "os_open_append", errno.EACCES),
+    (0o444, True, "open_w", errno.EPERM),
+    (0o444, True, "open_rplus", errno.EPERM),
+    (0o444, True, "truncate", errno.EPERM),
+    (0o444, True, "chmod", errno.EPERM),
+    (0o444, True, "unlink", errno.EPERM),
+    (0o444, True, "rename", errno.EPERM),
+    (0o444, False, "append", errno.EACCES),
+    (0o444, False, "os_open_append", errno.EACCES),
+    (0o444, False, "open_w", errno.EACCES),
+    (0o444, False, "open_rplus", errno.EACCES),
+    (0o444, False, "truncate", errno.EACCES),
+    (0o444, False, "chmod", None),
+    (0o444, False, "unlink", None),
+    (0o444, False, "rename", None),
+    (0o644, False, "append", None),
+    (0o644, False, "os_open_append", None),
+    (0o644, False, "open_w", None),
+    (0o644, False, "open_rplus", None),
+    (0o644, False, "truncate", None),
+    (0o644, False, "chmod", None),
+    (0o644, False, "unlink", None),
+    (0o644, False, "rename", None),
+]
+
+
+def _row_id(mode, flagged, op, expected_errno):
+    outcome = "OK" if expected_errno is None else errno.errorcode[expected_errno]
+    return f"{ROLES[(mode, flagged)]}-{mode:04o}-{'uappnd' if flagged else 'noflag'}-{op}-{outcome}"
+
+
+@pytest.fixture
+def flagged_files(tmp_path):
+    created = []
+
+    def make(name, mode, flagged):
+        path = tmp_path / name
+        path.write_text(SEED)
+        os.chmod(path, mode)
+        if flagged:
+            os.chflags(path, stat.UF_APPEND)
+        created.append(path)
+        return path
+
+    yield make
+    for path in created:
+        for candidate in (path, path.with_name(path.name + ".moved")):
+            if os.path.lexists(candidate):
+                os.chflags(candidate, 0)
+                os.chmod(candidate, 0o644)
+
+
+def _env():
+    return {"os": f"{platform.system()} {platform.mac_ver()[0]} {platform.release()} {platform.machine()}", "uid": os.getuid()}
+
+
+@pytest.mark.parametrize(
+    ("mode", "flagged", "op", "expected_errno"),
+    ROWS,
+    ids=[_row_id(*row) for row in ROWS],
+)
+def test_mode_x_uappnd_x_op_by_owner(flagged_files, mode, flagged, op, expected_errno):
+    lg = log.get("grounding.fs")
+    path = flagged_files(f"{ROLES[(mode, flagged)]}.txt", mode, flagged)
+    assert bool(os.stat(path).st_flags & stat.UF_APPEND) is flagged
+    try:
+        OPS[op](path)
+        observed_errno, observed = None, "OK"
+    except PermissionError as exc:
+        observed_errno, observed = exc.errno, f"{errno.errorcode[exc.errno]} {exc.strerror}"
+    lg.info(
+        "mode_flag_op",
+        command=f"chmod {mode:04o}; {'chflags uappnd; ' if flagged else ''}{op}",
+        mode=f"{mode:04o}",
+        uappnd=flagged,
+        op=op,
+        observed=observed,
+        expected="OK" if expected_errno is None else errno.errorcode[expected_errno],
+        **_env(),
+    )
+    assert observed_errno == expected_errno
+    if expected_errno is None:
+        assert EFFECTS[op](path)
+    else:
+        assert os.path.lexists(path)
+        if op in ("append", "os_open_append", "open_w", "open_rplus", "truncate"):
+            assert path.read_text() == SEED
+
+
+@pytest.mark.parametrize(
+    ("role", "mode"),
+    [("pin", 0o444), ("attest", 0o644)],
+    ids=["pin-0444", "attest-0644"],
+)
+def test_owner_clears_uappnd_then_chmod_truncate_rename_unlink_succeed(flagged_files, role, mode):
+    lg = log.get("grounding.fs")
+    path = flagged_files(f"{role}.txt", mode, True)
+    flags_before = os.stat(path).st_flags
+    os.chflags(path, 0)
+    flags_after = os.stat(path).st_flags
+    os.chmod(path, 0o644)
+    os.truncate(path, 0)
+    moved = path.with_name(path.name + ".moved")
+    os.rename(path, moved)
+    os.unlink(moved)
+    lg.info(
+        "owner_clears_flag",
+        command=f"chmod {mode:04o}; chflags uappnd; chflags nouappnd; chmod 0644; truncate; rename; unlink (same uid)",
+        role=role,
+        flags_before=flags_before,
+        flags_after=flags_after,
+        observed="chflags nouappnd by the owner succeeded; chmod, truncate, rename, unlink then succeeded",
+        **_env(),
+    )
+    assert flags_before & stat.UF_APPEND
+    assert flags_after == 0
+    assert not os.path.lexists(path) and not os.path.lexists(moved)
