@@ -62,8 +62,7 @@ a rival to the harness. Every honesty property must be an enforced check, becaus
   profile or a tolerance. Every corpus declares its origin, `corpus_origin ∈
   {upstream_vendored, independent_oracle, randomized_postcondition, author_supplied}`; a
   corpus supplied only by the worker that authored the skill is not a self-test, and
-  `author_supplied` alone caps the skill's results at CONJECTURE (a ceiling `justify` reads
-  from the revision's self-test record, §7) — STRONG-EMPIRICAL needs
+  `author_supplied` alone caps the skill's results at CONJECTURE — STRONG-EMPIRICAL needs
   an upstream corpus, an independent implementation under the axis rule below, or a
   postcondition or metamorphic relation checked on inputs drawn from a seed committed
   *after* the implementation revision is content-addressed. Tier-0 arithmetic skills verify
@@ -182,7 +181,7 @@ a rival to the harness. Every honesty property must be an enforced check, becaus
     follows; and because it is appended to the substrate's append-only record sequence when
     the branch opens (an order the hash-chained log below carries tamper-evidently from
     M2), pre-registration (§6 step 0) is an order of records — the ladder refuses a rung
-    whose hypothesis object does not precede the gate's entropy commitment for that run —
+    whose hypothesis object does not precede the gate's entropy commitment for that rung —
     never a statement of intent. *Why:* the recipe key carries the seed and can never match
     across the ladder's fresh instances, so a ledger keyed on it would have no teeth; and
     "tests the model and never a curve fitted afterward" is checkable only if the model's
@@ -323,19 +322,16 @@ tag mean something.
     original evidence node keeps its rows and gains an append-only `superseded_by` pointer
     to the new table; the entry itself is never rewritten.
     `AlreadySettled` = the proposal opens a new branch on a hypothesis key that a branch
-    already holds — an active or parked one — or on a key whose claim statement stands at
-    PROVEN or STRONG-EMPIRICAL, whatever the status of the branch that earned it (promoted,
-    or withdrawn afterwards: a withdrawal erases no gate outcome, below, so a worker that
-    withdraws its branch once the KEEP has landed frees no key), or opens a branch whose
-    method identity and claimed cost model equal such a standing holder's and whose declared
-    parameter region is contained in the holder's (the axis-aligned inclusion the REFUTED
-    reach below uses), a claim the holder's evidence already covers under `justify`'s
-    population rule (§7) — and is not a superseding object: it is parked with blocker
-    `already_settled`, which clears when a superseding hypothesis object with the attributed
-    difference statement the `supersedes_refuted_review` path requires is recorded, when the
-    standing claim statement moves to `refuted` (§7), or when the holding branch withdraws
-    while its claim statement stands below STRONG-EMPIRICAL; the holding branch's own launches
-    never see this answer, and gate-owned re-runs (the Skeptic's, the auditor's, a null-control
+    already holds — an active or parked one, or a promoted one whose claim statement stands
+    at PROVEN or STRONG-EMPIRICAL — or opens a branch whose method identity and claimed
+    cost model equal such a promoted holder's and whose declared parameter region is
+    contained in the holder's (the axis-aligned inclusion the REFUTED reach below uses), a
+    claim the holder's evidence already covers under `justify`'s population rule (§7) — and
+    is not a superseding object: it is parked with
+    blocker `already_settled`, which clears when a superseding hypothesis object with the
+    attributed difference statement the `supersedes_refuted_review` path requires is
+    recorded, or when the holding branch withdraws; the holding branch's own launches never
+    see this answer, and gate-owned re-runs (the Skeptic's, the auditor's, a null-control
     re-measurement) are not branch fundings. Every REFUTED/PARKED entry carries
     `{hypothesis key, refutation_kind ∈ {formal (a machine-checked negation or a §8
     no-go), measured (a ladder or counterexample-hunt result on a declared family, sizes
@@ -381,10 +377,6 @@ tag mean something.
     obligation that must be resolved — a terminal status (refuted / promoted / withdrawn)
     — or handed off to a park under a typed blocker, which holds the obligation until its
     clearing predicate revives the branch; a park is a hand-off and not a terminal status.
-    `promoted` is written by the gate layer when `justify` (§7) first derives STRONG-EMPIRICAL
-    or PROVEN for the branch's claim statement, never by a worker or the orchestrator (which
-    cannot mark `proven`, below), so the status follows the tag and no party can hold a key
-    by declaring success.
     A worker that exits leaving one neither resolved nor handed off produces a `Leaked`
     record that is
     counted and escalated — fail-fast in tests; in production a human-queue item of class
@@ -459,10 +451,7 @@ tag mean something.
     `AuditOnly` output, and each gate's self-test includes a fixture proving that a waiver
     cannot advance a claim or a tier; a green result whose provenance is weaker than
     required (dry run, missing raw output, stale tool digest) cannot strengthen a claim.
-    The gate plan, the no-go set, the non-goal sets of skill corpora, the waivable-check set
-    (which operational checks a waiver may let continue as `AuditOnly`; a waiver itself is a
-    human-path record, below, never a pinned field, since the bundle is pinned at deployment
-    and a waiver is issued at runtime),
+    The gate plan, the no-go set, the non-goal sets of skill corpora, the waiver registry,
     the ladder plan (sizes, trial counts, the comparison protocol of §6 with its tolerances,
     the hold-out instance count `m`, the per-rung memory cap, the per-trial patience ceiling,
     the fit and hold-out split), the worker role templates, the budget ceiling multiplier
@@ -493,8 +482,7 @@ tag mean something.
     what keeps them from being dissolved by the worker they gate.
   - *Human path:* every human-attested node — a `review_verdict` (§7), a `nogo_review` (§8),
     a waiver, an expert sign-off (§10), a yank-reach ruling or a Tier-2 revision admission
-    (§2), an acknowledgment that closes a human-queue item holding no blocker (§10) — enters
-    the system through one route. The operator, as the operator's own OS user,
+    (§2) — enters the system through one route. The operator, as the operator's own OS user,
     appends the canonical record to an operator-owned, append-only **attestation file** held
     beside the gate-bundle pin, a file the orchestrator's process user can read and cannot
     write; the harness writer mirrors the record as a substrate row carrying the record's
@@ -560,8 +548,7 @@ status ≠ OK or the node was disowned; a branch reaching a terminal status retu
 unreserved grant and never the escrow of an admissible node it produced, so a withdrawn
 branch's Tier-2 node stays re-runnable when `justify` waits on it months later, and the
 auditor's exhaustive Tier-2/3 pass (§7) spends every such escrow within one audit cycle, so
-an unspent reservation outlives its branch by at most that cycle from M4 (before the
-auditor exists it stands until `justify` draws it); every later
+an unspent reservation outlives its branch by at most that cycle; every later
 re-verification of a node is funded from
 the standing per-cycle audit line the gate bundle names (§7), never from the node's escrow.
 *Why:* a gate whose compute is unbudgeted
@@ -574,21 +561,10 @@ to rot. A spawned worker's budget
 is the meet of its parent's remaining budget and the skill's declared profile; a retry or
 restart is launched only if the remaining budget can afford it. The gate also charges every
 non-refused launch's production cost to its hypothesis key under the ticket that admitted
-it — the declared cost at launch, reconciled to the execution receipt's measured cost (§3)
-when the attempt closes, so an understated declaration misstates the key's charge by no more
-than the attempt in flight — and the boundary table names a *cumulative edge* per ticket
-tier over the charge of a worker's fresh launches: the worker launch that would carry that
-charge under the key's current best ticket past the edge is `TierRefused` until the next
-tier's ticket exists. Gate-owned launches — the ladder's rungs, a null-control or
-retry-predicate re-measurement, the auditor's draws — and re-runs of recorded recipes (the
-Skeptic's, the reproducibility gate's) are charged to the key and never compared against the
-edge: their counts, arms and patience ceilings are ladder-plan fields and a re-run of a
-recorded recipe is no new work, so neither is a launch a worker can shard, while an edge that
-metered them would refuse the second ladder run on a key — after INCONCLUSIVE, for a new
-revision, or as the re-measurement a retry predicate names — and the refused run is the one
-that mints the ticket that lifts the edge. M1 sets the Tier-1 edge as a multiple of the
-ladder's measured per-run cost and records it beside the trial count it derives (§6). *Why:*
-a tier derived per launch is satisfiable by sharding — a 90-bit validation rho
+it, and the boundary table names a *cumulative edge* per ticket tier: the launch that would
+carry the key's charge under its current best ticket past that edge is `TierRefused` until
+the next tier's ticket exists (M1 sets the Tier-1 edge above the ladder's own cost on one
+key). *Why:* a tier derived per launch is satisfiable by sharding — a 90-bit validation rho
 as a thousand honest one-core-minute walks, each on the Tier-1 ticket, no `TierRefused`, no
 drift signal, no KEEP ever required — and §0 lets the orchestrator set the branch grant
 that funds it, so the per-launch rule alone is not cheap-before-expensive. The granted budget is a hard
@@ -645,8 +621,7 @@ Tier 2 as B under a repointed branch. A launch is refused when the declared tier
 ticket's tier by more than one, when the declared cost exceeds the remaining budget, when
 the required ticket is absent, when the launch revision is yanked or holds no recorded
 self-test certificate, or when the declared tier is lower than the tier the bundle's
-boundary table assigns its production cost (the ladder's ≤ 50-bit rungs, admitted on the
-Tier-1 ticket above, excepted). The ticket lattice is total, so the gate has a
+boundary table assigns its production cost. The ticket lattice is total, so the gate has a
 branch for
 every launch: Tier 0 needs no ticket; Tier 1's ticket is the launch's hypothesis object — and
 the claim statement node where a claim exists — recorded in the substrate, with the §8
@@ -673,10 +648,7 @@ refusal is a
 `TierRefused` record the ledger keeps, not an exception the orchestrator can catch and retry
 around: the branch stays active, and the orchestrator's next tick funds the tier-below work
 that would produce the ticket or parks the branch with `budget_preempt` (never withdraws
-it; withdrawal is the worker's or the human's act, §4) — where the absent ticket is a human
-verdict (a Tier-2 formalization run without its `review_verdict`, a Tier-3 request without
-its sign-off) no tier-below work produces it, and the refusal enqueues the human-queue item
-of that class (§10) for the statement hash — an
+it; withdrawal is the worker's or the human's act, §4) — an
 unchanged re-submission is refused again, and repeated `TierRefused` records on one
 hypothesis key are an input to the drift monitors of §15 P4, never a claim input; a branch
 flagged by §8 holds no ticket above Tier 1. *Why:* "each tier's admission
@@ -732,11 +704,7 @@ fixed input). (2) It gates on distributions, not runs: at the 30/40/50-bit rungs
 single run calibrates nothing), each rung's mean checked against the pre-registered model
 (the in-sample check below), the sorted-distribution shape recorded against the model's
 declared shape as a diagnostic column — a departure beyond the ladder plan's tolerance
-surfaces on the human queue as a `shape_departure` item (§10) and is never a verdict
-predicate; the defect class is a truncated or bimodal distribution a mean check cannot see,
-the short-walk bias the source protocol sorts its walks to avoid, and the class retires if
-by M3 no such item has preceded a REJECT or yank the verdict predicates missed, the column
-staying as table data — and an A/A null arm — the
+surfaces on the human queue and is never a verdict predicate — and an A/A null arm — the
 baseline run against itself in the same harness, same
 trial count, same instance stream, the two arms differing only in the method seeds the gate
 draws for them — whose CI radius sets the decision band. The ladder plan fixes the
@@ -834,11 +802,8 @@ the hold-out run. (3) It reports group operations against `√n`, never seconds,
 count is the gate's measurement, never the claimant's: the ladder runs every method —
 claimant and baseline alike — against a gate-owned group-arithmetic object (the baseline
 arithmetic skill, instrumented) that counts every addition, doubling and inversion, and a
-ladder-tested method's allow-list (a gate-bundle template, §4, instantiated per dispatch
-and named in the dispatch record) names no arithmetic backend but the gate-owned counted
-object and the uncounted backends the hypothesis object declares (whose rungs are
-INCONCLUSIVE at best, below), no network egress and no writable path but the gate-owned
-scratch path. A count
+ladder-tested method's allow-list (a gate-bundle object, §4) names no other arithmetic
+backend, no network egress and no writable path but the gate-owned scratch path. A count
 the method
 reports about itself is a diagnostic column, and a divergence from the gate's count beyond
 the ladder plan's tolerance is REJECT. The harness records CPU-seconds per trial — user and
@@ -858,12 +823,8 @@ extracted coordinates with its own faster arithmetic and issues dummy counted ca
 inside the tolerance; so the counted object is compiled, M1 records the ratio of its
 per-operation cost to the fastest implementation available on the build machine, the ladder
 plan's clock tolerance times that ratio must stay below the KEEP band's excess over 1
-(`2·radius`, the most a method could hide and still be caught by the band) — checked at plan
-load against the design radius the plan's trial count targets (a ladder-plan field M1
-records with the count), a plan failing it refusing to start (§4: invalid gate config fails
-closed), and again at every rung against the measured A/A radius, the tolerance applied
-there being the smaller of the plan's value and `2·radius/ratio`, so a tighter band tightens
-the clock rather than opening a gap beneath it — and the ladder's
+(`2·radius`, the most a method could hide and still be caught by the band) — a plan failing
+that inequality refuses to start (§4: invalid gate config fails closed) — and the ladder's
 self-test plants a method that does its own coordinate arithmetic and issues dummy counted
 calls, which must not reach KEEP. The reference rate is measured by the gate on the rung's
 own instances: at the ≤ 50-bit rungs it is the A/A arm's rate; at the 60-bit rung, which
@@ -871,9 +832,8 @@ runs no baseline arm, it is a gate-owned calibration run of the counted arithmet
 a fixed operation count on the rung's instances, never a baseline distribution — recorded
 in the table, so the clock check applies at every rung including the one where the
 claimant runs alone. A method
-that needs an uncounted backend declares it in its hypothesis object (the allow-list above
-admits it on that declaration and on nothing else), and its rungs are INCONCLUSIVE at best
-until a counted implementation exists. *Why:* every other ladder input —
+that needs an uncounted backend declares it in its hypothesis object, and its rungs are
+INCONCLUSIVE at best until a counted implementation exists. *Why:* every other ladder input —
 instances, nonce, seeds, patience ceiling, memory, verdict — is gate-owned, and the KEEP
 band is computed from this one; a number produced by the party being gated is the
 hallucinated-ablation-table failure under another name. (4) Two
@@ -960,11 +920,7 @@ at 50 bits is not an advance, and the wrong bar because a method costing 4.9×10
     with any other verdict justifies nothing — where "repro node" means the reproducibility
     record the §3 policy
     attaches to the table's own attempt (a second agreeing attempt or a passed witness check)
-    and a table without it has ceiling CONJECTURE, and the class a table justifies is about
-    the typed statement — the method identity the table names, its cost model, the
-    population measured — and never about why the executable is fast, so a mechanism or
-    novelty attribution carried in the informal statement is the Librarian's and the human's
-    question (§10), not a calibration class; sampled or statistical evidence → at most
+    and a table without it has ceiling CONJECTURE; sampled or statistical evidence → at most
     STRONG-EMPIRICAL on its declared population — except for a statement whose typed fields
     carry a cost model, which takes STRONG-EMPIRICAL from a `ladder_table` produced by a
     ladder gate run and from no other kind (a `statistical` or `repro_node` offered for it
@@ -980,14 +936,7 @@ at 50 bits is not an advance, and the wrong bar because a method costing 4.9×10
     interval, declared parameter ranges (axis-aligned intervals), assumption set
     (content-addressed assumption identifiers)}`), producer identity (the §2 identity
     bundle hash or the gate-run record), the
-    producer's own tag}`; the maximum class is a function of `kind` and — where the producer
-    is a certified skill rather than a gate-bundle object or a gate run — of that revision's
-    self-test standing (§2): a revision whose self-test record carries no STRONG-EMPIRICAL
-    basis covering the attempt's inputs (every corpus origin `author_supplied`, no
-    randomized-postcondition arm, no cross-check whose declared independent range contains
-    them) caps the node at CONJECTURE, the ceiling §2 states and `justify` enforces, since a
-    bit-identical re-run of an author-tuned skill proves determinism and not correctness; and
-    coverage is a
+    producer's own tag}`; the maximum class is a function of `kind`, and coverage is a
     structural comparison of the population and assumption fields against the statement's
     scope field, never a text match — interval containment on numeric fields, equality on
     categorical ones and set inclusion on assumptions, the comparison the §4 reach uses — so
@@ -1213,13 +1162,8 @@ So this is the highest-leverage layer, and it's explicitly human-anchored.
   `supersedes_refuted_review`, `null_control_pending`, `clock_inconclusive`,
   `shape_departure` (§6), `leaked` (§4), `cost_drift` (§15 P4),
   `audit_shortfall`), the branch or statement hash it blocks and the blocker that holds it,
-  and its enqueue time; an item closes by a human-path record (§4), by its blocker clearing,
-  or — for an item that holds no blocker (`leaked`, `clock_inconclusive`, `shape_departure`,
-  `cost_drift`, `audit_shortfall`) — when the branch, rung or audit cycle it names reaches a
-  terminal status, re-runs or next meets its target, or by an attributed `acknowledgment`
-  record through the human path naming the item; it closes by no other path, so the depth
-  and age below cannot be edited down. The orchestrator may read queue depth and age and
-  prefer branches whose next
+  and its enqueue time; an item closes only by a human-path record (§4) or by its blocker
+  clearing. The orchestrator may read queue depth and age and prefer branches whose next
   step needs no human input — a strategy choice it makes freely, never a reason to lower a
   scrutiny class, skip a gate or request a waiver — and depth and age are drift-monitor
   inputs (§15 P4), never gate inputs. *Autonomy envelope:* with no human session open the
@@ -1241,12 +1185,7 @@ So this is the highest-leverage layer, and it's explicitly human-anchored.
   standing assertion; and a *submission* — the egress of a recovered `x` for the target or
   for any instance — is the verifier's passing node (§13) on the instance the claim
   statement node names, or nothing, which is what "no
-  submit, ever" (§4) names — and only where that instance is one the human path registered
-  (the target, a problem-queue entry) or the gate's instance-maker drew (§6): a passing node
-  on an instance the worker chose is rendered as a finding about that instance, never as a
-  submission, since a worker that mints `(P, x·P)` pairs can mint true submissions by
-  volume, §9's forbidden state; a passing node on any other instance is not
-  egress-eligible.
+  submit, ever" (§4) names; a passing node on any other instance is not egress-eligible.
   The renderer and its refusal predicate are gate-bundle fields
   with the §4 planted pair (an artifact asserting an unregistered claim must FAIL, a fully
   referenced one must PASS); the submission rule lands with the verifier at M0, the renderer
@@ -1419,9 +1358,7 @@ textbook, so this costs little.
   computed fact (a curve order) with its
   repro node is admitted by `justify` to STRONG-EMPIRICAL, while a `statistical` or
   `repro_node` offered for a statement carrying a cost model returns the CONJECTURE ceiling
-  (§7), the same computed fact from a revision whose every corpus origin is `author_supplied`
-  with no postcondition arm and no covering cross-check returns that ceiling (§7), and a
-  `Verifiable` node whose only verifier ships in its producer's revision is
+  (§7), and a `Verifiable` node whose only verifier ships in its producer's revision is
   graded `AuditOnly` and returns that ceiling (§3); the tier-gate fixtures: a
   (synthetic) `KEEP_IN_SAMPLE` table admits the 60-bit rung of its own hypothesis key and
   is refused for every other Tier-2 launch, a KEEP table is refused for a launch whose
@@ -1430,9 +1367,9 @@ textbook, so this costs little.
   declaring Tier 1 for a production cost the boundary table assigns Tier 2 is refused, a
   claim carrying both a cost model and a correctness conjecture is refused Tier 2 while
   either its KEEP table or its SURVIVED record is absent, a Tier-3 request holding KEEP and
-  no Tier-2 node is refused, a branch on the Tier-1 ticket whose worker launches would carry
-  its hypothesis key's charge past the boundary table's Tier-1 cumulative edge is refused at
-  the crossing launch while a second ladder run on the same key is admitted (§5), and a
+  no Tier-2 node is refused, a branch on the Tier-1 ticket whose launches would carry its
+  hypothesis key's charge past the boundary table's Tier-1 cumulative edge is refused at the
+  crossing launch (§5), and a
   claim whose hypothesis
   object names the target family with a cost model below the generic bound is routed to the
   router's top class and holds no Tier-3 ticket without the §10 sign-off; the escrow and
@@ -1464,16 +1401,15 @@ textbook, so this costs little.
   hunt's KILLED, while the preflight that reads it arrives at M2 — the
   in-sample check, the memory cap at the floor rungs and the memory-model check with the
   gate's RSS-and-scratch measurement, the compiled counted object with its recorded rate
-  ratio and the clock and wall-clock checks, the ladder-tested method's allow-list (no
-  undeclared arithmetic backend, no network, no writable path but the scratch path), patience
+  ratio and the clock and wall-clock checks, the ladder-tested method's allow-list (no other
+  arithmetic backend, no network, no writable path but the scratch path), patience
   ceiling,
   A/A null arm and out-of-sample rung, the per-rung reference rate of the clock check,
   per-trial replay grades and the table's reproducibility record, the budget ceiling and
   the verification escrow's reservation, spend and release with yank reach and `disowned`
   propagation (§2, §3, §5),
   the counterexample-hunt
-  record (§7), the human queue as a typed object with its closing rule and the
-  `acknowledgment` record (§10, §4), the `review_verdict` node and its
+  record (§7), the human queue as a typed object (§10), the `review_verdict` node and its
   place in the PROVEN derivation (§7),
   the formalization gate's challenge/solution protocol (§7) with its gate-compiled
   Challenge, its gate-owned axiom computation, the claim-statement-to-formal-statement
@@ -1482,15 +1418,13 @@ textbook, so this costs little.
   fixture corpus is sized — the statement pre-filters,
   the reproducibility gate's re-run policy (§3) with the `Verifiable` owner rule, the
   transitive `justified_by` query of §7 that fixture (h) exercises (the auditor's sampling
-  cadence arrives at M4), the cost-model scoping of `justify`'s kind map and its
-  producer-standing ceiling (§7, §2), the
+  cadence arrives at M4), the cost-model scoping of `justify`'s kind map (§7), the
   cumulative edge of §5, the §7 disagreement protocol, the
   proportional-scrutiny router and the no-go checklist's presence check (§8) with the
   router as its consumer and the `nogo_review` node the tier gate reads, and the M1
   decision on the small-numbers floor (§15 P1).
-- **M2 — memory.** Dead-end ledger (refuted-by-hypothesis-key vs parked) + the Formalizer
-  worker + the statement-review workflow (the formalization gate and the pre-filters it
-  submits to are M1's). *Done when:* a parked branch auto-revives on blocker-clear; a
+- **M2 — memory.** Dead-end ledger (refuted-by-hypothesis-key vs parked) + formalizer +
+  statement-level review. *Done when:* a parked branch auto-revives on blocker-clear; a
   refuted hypothesis key is `Blocked` unaided; a proposal whose declared region contains a
   measured REFUTED point for the same method and cost model is `Blocked` though its key is
   fresh; a `supersedes` edge into a REFUTED version with an unmet retry predicate parks with
@@ -1501,8 +1435,7 @@ textbook, so this costs little.
   REJECT and `Blocked` when it did; a proposal differing from a `measured` REFUTED entry
   only in implementation revision is `Blocked`, while one differing from an
   `implementation` entry by a certified new revision is `Allowed`; a new branch opened on a
-  key a promoted branch holds — or whose claim statement stands at STRONG-EMPIRICAL after the
-  branch that earned it withdrew — or on a sub-region of such a holder's region with the
+  key a promoted branch holds, or on a sub-region of a promoted holder's region with the
   same method identity and cost model, parks with `already_settled` until a superseding
   object with its difference statement is recorded; a log truncated to an earlier valid prefix
   fails startup verification against the checkpoint — also when the truncated log has been
