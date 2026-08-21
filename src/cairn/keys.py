@@ -120,3 +120,18 @@ SCHEMAS = {
     "hypothesis_object": HYPOTHESIS_OBJECT,
     "instance": INSTANCE,
 }
+
+HASHERS = {
+    "env_manifest": env_manifest_digest,
+    "identity_bundle": identity_bundle_hash,
+    "recipe": recipe_key,
+    "hypothesis_object": hypothesis_key,
+    "instance": instance_hash,
+}
+TAGS_BY_KIND = {
+    "env_manifest": TAG_ENV_MANIFEST,
+    "identity_bundle": TAG_IDENTITY_BUNDLE,
+    "recipe": TAG_RECIPE_KEY,
+    "hypothesis_object": TAG_HYPOTHESIS_KEY,
+    "instance": TAG_INSTANCE,
+}

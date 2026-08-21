@@ -36,7 +36,10 @@ class _Str(Type):
     def encode(self, value):
         if not isinstance(value, str):
             raise CanonError(f"expected str, got {type(value).__name__}")
-        data = unicodedata.normalize("NFC", value).encode("utf-8")
+        try:
+            data = unicodedata.normalize("NFC", value).encode("utf-8")
+        except UnicodeEncodeError as exc:
+            raise CanonError(f"string is not UTF-8 encodable: {exc.reason}") from None
         return TAG_STR + length_prefix(data)
 
 
@@ -114,7 +117,15 @@ class _BlobRef(Type):
         if not isinstance(value, (list, tuple)) or len(value) != 2:
             raise CanonError("blob reference must be (hash, size)")
         digest, size = value
-        raw = bytes.fromhex(digest) if isinstance(digest, str) else bytes(digest)
+        if isinstance(digest, str):
+            try:
+                raw = bytes.fromhex(digest)
+            except ValueError:
+                raise CanonError("blob reference hash must be hex") from None
+        elif isinstance(digest, (bytes, bytearray)):
+            raw = bytes(digest)
+        else:
+            raise CanonError(f"blob reference hash must be hex str or bytes, got {type(digest).__name__}")
         if len(raw) != DIGEST_BYTES:
             raise CanonError("blob reference hash must be 32 bytes")
         if isinstance(size, bool) or not isinstance(size, int) or size < 0:

@@ -1,6 +1,5 @@
 {
- "blake3": "1.0.9",
- "generator": "UPDATE_GOLDENS=1 uv run pytest tests/unit/test_canon.py -k kat",
+ "generator": "UPDATE_GOLDENS=1 uv run pytest tests/unit/test_canon.py -k kat_vectors_match",
  "origin": "author_supplied",
  "vectors": [
   {

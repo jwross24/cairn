@@ -12,9 +12,10 @@ def compute(vector):
     if kind == "node":
         payload = canon.encode(canon.STR, vector["input"]["payload"])
         return keys.node_hash(vector["input"]["node_kind"], payload), (canon.encode(canon.STR, vector["input"]["node_kind"]) + payload).hex()
-    schema = keys.SCHEMAS[kind]
-    canonical = canon.encode(schema, vector["input"])
-    return canon.digest(vector["domain_tag"], canonical), canonical.hex()
+    if vector["domain_tag"] != keys.TAGS_BY_KIND[kind]:
+        raise canon.CanonError(f"{vector['name']}: domain tag {vector['domain_tag']} is not the {kind} tag")
+    canonical = canon.encode(keys.SCHEMAS[kind], vector["input"])
+    return keys.HASHERS[kind](vector["input"]), canonical.hex()
 
 
 def run(path=DEFAULT_VECTORS):
