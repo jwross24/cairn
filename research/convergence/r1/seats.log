@@ -1,0 +1,9 @@
+[multi-model] review: 4/4 ok
+  ✓ openrouter:openai/gpt-5.6-terra  84462ms  18653c
+  ✓ openrouter:x-ai/grok-4.5  145954ms  14938c
+  ✓ openrouter:z-ai/glm-5.2  66250ms  328c
+  ✓ openrouter:deepseek/deepseek-v4-flash-0731  124207ms  42454c
+[multi-model] wrote 4 files to /Users/jr843u/Documents/cairn/research/convergence/r1/seats
+[multi-model] review: 1/1 ok
+  ✓ openrouter:z-ai/glm-5.2  36951ms  7200c
+[multi-model] wrote 1 files to /Users/jr843u/Documents/cairn/research/convergence/r1/seats
