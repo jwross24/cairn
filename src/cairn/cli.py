@@ -45,10 +45,13 @@ class Command:
     dangerous: bool = False
     gating: str | None = None
     aliases: tuple = field(default_factory=tuple)
+    dry_run_default: bool = False
 
 
-def register(name, configure, run, *, summary, read_only, json, dangerous=False, gating=None, aliases=()):
-    _SUBCOMMANDS[name] = Command(name, configure, run, summary, read_only, json, dangerous, gating, tuple(aliases))
+def register(name, configure, run, *, summary, read_only, json, dangerous=False, gating=None, aliases=(), dry_run_default=False):
+    if dangerous and not gating:
+        raise ValueError(f"{name}: a dangerous command must name its gating flag")
+    _SUBCOMMANDS[name] = Command(name, configure, run, summary, read_only, json, dangerous, gating, tuple(aliases), dry_run_default)
 
 
 def unregister(name):
@@ -115,8 +118,19 @@ def build_parser():
         sub.__class__ = _Parser
         if cmd.json:
             sub.add_argument("--json", "--robot", dest="json", action="store_true", help="emit exactly one JSON document on stdout")
+        if cmd.dangerous:
+            sub.add_argument(cmd.gating, dest=_gating_dest(cmd.gating), action="store_true", help="required for the irreversible part of this command")
         cmd.configure(sub)
     return parser
+
+
+def _gating_dest(flag):
+    return flag.lstrip("-").replace("-", "_")
+
+
+def _refuse_ungated(cmd, ns):
+    if cmd.dangerous and not cmd.dry_run_default and not getattr(ns, _gating_dest(cmd.gating), False):
+        raise CliError(exits.GATE_REFUSED, f"{cmd.name} is irreversible and was invoked without {cmd.gating}; nothing was changed", next_command=f"cairn {cmd.name} {cmd.gating}")
 
 
 def resolve_command(name):
@@ -139,12 +153,12 @@ def now_iso():
 
 def refuse_overwrite(path, *, flag, command, force):
     if os.path.exists(path) and not force:
-        raise CliError(exits.USER_INPUT, f"{path} exists and would be overwritten", where=str(path), next_command=f"{command} {flag}")
+        raise CliError(exits.GATE_REFUSED, f"{path} exists and would be overwritten; nothing was changed", where=str(path), next_command=f"{command} {flag}")
 
 
 def require_yes(yes, *, plan, command):
     if not yes:
-        raise CliError(exits.USER_INPUT, f"refusing without --yes; plan: {plan}", next_command=f"{command} --yes")
+        raise CliError(exits.GATE_REFUSED, f"refusing the irreversible step without --yes; nothing was changed; plan: {plan}", next_command=f"{command} --yes")
 
 
 def capabilities_document():
@@ -156,7 +170,7 @@ def capabilities_document():
         "contract_version": CONTRACT_VERSION,
         "python": platform.python_version(),
         "commands": [
-            {"name": c.name, "summary": c.summary, "read_only": c.read_only, "json": c.json, "dangerous": c.dangerous, "gating": c.gating, "aliases": list(c.aliases)}
+            {"name": c.name, "summary": c.summary, "read_only": c.read_only, "json": c.json, "dangerous": c.dangerous, "gating": c.gating, "dry_run_default": c.dry_run_default, "aliases": list(c.aliases)}
             for c in commands()
         ],
         "exit_codes": {"cli": {str(k): v for k, v in exits.CLI.items()}, "doctor": {str(k): v for k, v in exits.DOCTOR.items()}},
@@ -294,15 +308,23 @@ def main(argv=None):
     cmd = resolve_command(ns.command)
     lg.info("command", command=cmd.name, db=ns.db, bundle=ns.bundle, pin=ns.pin, attest=ns.attest)
     try:
+        _refuse_ungated(cmd, ns)
         return cmd.run(ns)
     except CliError as err:
         return _render_error(err, lg)
     except AssertionError:
         raise
     except Exception as exc:
+        import sqlite3
+
         from cairn import pari
 
-        code = exits.ENVIRONMENT if isinstance(exc, pari.GpMissing) else exits.BACKEND
+        if isinstance(exc, pari.GpMissing):
+            code = exits.ENVIRONMENT
+        elif isinstance(exc, sqlite3.OperationalError) and "locked" in str(exc):
+            code = exits.CONFLICT
+        else:
+            code = exits.BACKEND
         err = CliError(code, f"{type(exc).__name__}: {exc}", next_command="cairn doctor")
         lg.debug("traceback", text=traceback.format_exc())
         return _render_error(err, lg)

@@ -8,10 +8,10 @@ CONFLICT = 5
 CLI = {
     OK: "OK",
     USER_INPUT: "USER_INPUT: bad arguments, malformed input, unknown id; the error names the exact command to run",
-    GATE_REFUSED: "GATE_REFUSED: a gate refused or a self-test failed (fail closed): KAT mismatch, bundle hash differs from the pin, TierRefused, verifier FAIL inside a gate run",
-    ENVIRONMENT: "ENVIRONMENT: a required binary, stack, file or database is missing or wrongly shaped (gp absent, PARI stack, bundle/pin/attestation file, substrate)",
-    BACKEND: "BACKEND: gp or a skill subprocess crashed, timed out, or returned malformed output",
-    CONFLICT: "CONFLICT: the single-writer lock is held by another process",
+    GATE_REFUSED: "GATE_REFUSED: a gate or safety gate refused, or a self-test failed (fail closed): KAT mismatch, bundle hash differs from the pin, TierRefused, a verifier FAIL inside a gate run, a dangerous operation invoked without its --yes/--force; state untouched",
+    ENVIRONMENT: "ENVIRONMENT: a required binary, stack, file or database is missing or wrongly shaped (gp absent, PARI stack, bundle/pin/attestation file, substrate, EPERM on a flagged file)",
+    BACKEND: "BACKEND: a subprocess the command needed died, timed out or returned malformed output outside any gate's classification, or an unexpected exception",
+    CONFLICT: "CONFLICT: a second writer holds the substrate (database is locked after the busy timeout)",
 }
 
 DOCTOR_HEALTHY = 0

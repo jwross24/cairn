@@ -143,9 +143,11 @@ def test_exit_codes_one_named_failure_each(tmp_path, capsys, monkeypatch, fixtur
     fixture_command("probe-backend", lambda ns: (_ for _ in ()).throw(pari.GpTimeout(0, 0.0)))
     code, out, err = _run(["probe-backend"], capsys)
     assert code == exits.BACKEND and "GpTimeout" in err
-    fixture_command("probe-lock", lambda ns: (_ for _ in ()).throw(CliError(exits.CONFLICT, "writer lock held by pid 1", next_command="wait, then retry")))
+    import sqlite3
+
+    fixture_command("probe-lock", lambda ns: (_ for _ in ()).throw(sqlite3.OperationalError("database is locked")))
     code, out, err = _run(["probe-lock"], capsys)
-    assert code == exits.CONFLICT and "wait, then retry" in err
+    assert code == exits.CONFLICT and "cairn doctor" in err
 
 
 def test_cli_error_record_and_human_line_carry_next_command(capsys):
@@ -154,17 +156,30 @@ def test_cli_error_record_and_human_line_carry_next_command(capsys):
     assert err.human() == "error: bundle hash differs from pin (deploy/gate-bundle.pin); run: cairn bundle pin --bundle B --pin P"
 
 
+def test_dangerous_fixture_is_refused_pre_run_without_its_gating_flag(fixture_command, capsys):
+    calls = []
+    fixture_command("danger", lambda ns: (calls.append(ns), exits.OK)[1], dangerous=True, gating="--yes", read_only=False, json=False)
+    code, out, err = _run(["danger"], capsys)
+    assert code == exits.GATE_REFUSED and calls == [] and "cairn danger --yes" in err and out == ""
+    code, out, err = _run(["danger", "--yes"], capsys)
+    assert code == exits.OK and len(calls) == 1
+    fixture_command("dry", lambda ns: (calls.append(ns), exits.OK)[1], dangerous=True, gating="--yes", read_only=False, json=False, dry_run_default=True)
+    assert _run(["dry"], capsys)[0] == exits.OK and len(calls) == 2
+    with pytest.raises(ValueError):
+        cli.register("ungated", lambda p: None, lambda ns: 0, summary="x", read_only=False, json=False, dangerous=True)
+
+
 def test_refuse_overwrite_and_require_yes_gate_dangerous_ops(tmp_path):
     target = tmp_path / "pin"
     target.write_text("x")
     cli.refuse_overwrite(tmp_path / "absent", flag="--force", command="cairn bundle pin", force=False)
     with pytest.raises(CliError) as info:
         cli.refuse_overwrite(target, flag="--force", command="cairn bundle pin", force=False)
-    assert info.value.code == exits.USER_INPUT and info.value.next_command == "cairn bundle pin --force"
+    assert info.value.code == exits.GATE_REFUSED and info.value.next_command == "cairn bundle pin --force"
     cli.refuse_overwrite(target, flag="--force", command="cairn bundle pin", force=True)
     with pytest.raises(CliError) as info:
         cli.require_yes(False, plan="delete 3 blobs", command="cairn gc")
-    assert info.value.next_command == "cairn gc --yes" and "delete 3 blobs" in info.value.what
+    assert info.value.code == exits.GATE_REFUSED and info.value.next_command == "cairn gc --yes" and "delete 3 blobs" in info.value.what
     cli.require_yes(True, plan="delete 3 blobs", command="cairn gc")
 
 
