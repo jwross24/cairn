@@ -19,3 +19,6 @@ __pycache__/
 var/
 deploy/*
 !deploy/README.md
+
+# Beads compliance audit dir (managed by /beads-compliance-and-completion-verification skill)
+/beads_compliance_audit/
