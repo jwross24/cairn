@@ -1,0 +1,8 @@
+{
+  "name": "truncated_length_prefix",
+  "why": "a file whose trailing length prefix is shorter than eight bytes yields no record, never a partial one",
+  "raw_hex": "0400000000",
+  "offset": 0,
+  "digest_hex": "0000000000000000000000000000000000000000000000000000000000000000",
+  "expected": false
+}

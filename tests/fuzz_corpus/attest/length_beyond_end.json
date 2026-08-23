@@ -1,0 +1,8 @@
+{
+  "name": "length_beyond_end",
+  "why": "a length prefix larger than the bytes that follow yields no record",
+  "raw_hex": "ff00000000000000616263",
+  "offset": 0,
+  "digest_hex": "0000000000000000000000000000000000000000000000000000000000000000",
+  "expected": false
+}

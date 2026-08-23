@@ -1,0 +1,8 @@
+{
+  "name": "forged_digest_row",
+  "why": "a substrate row whose record_digest names a record the file does not hold at that offset must stay invisible",
+  "records": ["7265636f7264416263"],
+  "offset": 0,
+  "digest_hex": "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
+  "expected": false
+}

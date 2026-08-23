@@ -1,0 +1,8 @@
+{
+  "name": "second_of_two_records",
+  "why": "two records back to back: each matches at its own offset and at no other",
+  "records": ["7265636f726441", "7265636f726442"],
+  "offset": 15,
+  "digest_of_record": 1,
+  "expected": true
+}

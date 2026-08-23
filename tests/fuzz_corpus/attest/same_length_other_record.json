@@ -1,0 +1,8 @@
+{
+  "name": "same_length_other_record",
+  "why": "two records of equal length: the digest of the second must not match at the offset of the first; a length-plus-any-record comparison would accept it",
+  "records": ["7265636f726441", "7265636f726442"],
+  "offset": 0,
+  "digest_of_record": 1,
+  "expected": false
+}

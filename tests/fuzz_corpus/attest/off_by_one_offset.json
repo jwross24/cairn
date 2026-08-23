@@ -1,0 +1,8 @@
+{
+  "name": "off_by_one_offset",
+  "why": "the digest of the record at offset 0 must not match when read from offset 1",
+  "records": ["7265636f7264416263"],
+  "offset": 1,
+  "digest_of_record": 0,
+  "expected": false
+}

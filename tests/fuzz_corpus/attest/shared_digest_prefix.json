@@ -1,0 +1,8 @@
+{
+  "name": "shared_digest_prefix",
+  "why": "a digest agreeing with the record's hash on its first eight hex characters and differing after must not match; a prefix comparison would accept it",
+  "records": ["7265636f726441"],
+  "offset": 0,
+  "digest_hex": "6ce93a8900000000000000000000000000000000000000000000000000000000",
+  "expected": false
+}
