@@ -21,6 +21,48 @@ live *inside* `/beads-workflow`, so they are dangling references until it is inv
 | `/optimal-tests` | the pre-close test audit that found a broken gate on every bead | A |
 | `/just-say-no-to-process-porn-and-ceremony` | honesty inventory, credit floor | all |
 
+## Keeping the main context clear
+
+A long session dies from reading, not from writing. What fills a context window is surveys —
+which modules exist, what the CLI registry expects, how a sibling test builds its fixtures —
+and the main agent needs a digest of those, never the file bodies. Modes B and C already push
+every polish round into a fresh subagent for the same reason; A and D get the same treatment.
+
+Delegate, and keep only the digest:
+
+- the pre-build survey: the modules the bead names, their public signatures, the conventions a
+  new file has to match (import style, mutant and corpus layout, fixture names)
+- the `/optimal-tests --audit` pass, which is read-only and whose product is a triage table
+- any "where is X defined" question whose answer is one line
+
+Keep in the main context, always:
+
+- every edit to source or tests
+- every command whose output becomes close evidence
+- each disagreement with the bead text, and the decision on each finding
+
+**A subagent's report is a claim, not evidence** (`/just-say-no-to-process-porn-and-ceremony`).
+Re-execute anything it cites before that output reaches a close comment, and read any diff it
+produced for weakened assertions, new mocks and regenerated goldens. A fresh subagent auditing
+tests the main agent wrote beats the main agent re-reading its own — that is the reason to
+delegate the audit, and it is still short of independent verification.
+
+The anti-ceremony rule binds here too: delegate to save context, never to look thorough. A
+subagent whose digest nobody reads is ceremony with a bigger token bill.
+
+## Deferred findings need an owner in the graph
+
+A finding recorded only in a close comment is a finding nobody picks up. Anything declined
+during the test audit, and every gap the No-Claim line names, has to be reachable from the bead
+graph: name the downstream bead that owns it, or create one with `br create` plus a `br dep`
+edge and name that.
+
+The bar is a real capability gap someone will implement — a platform the write boundary does not
+cover, a predicate deferred to the next milestone. A property of the system that a downstream
+bead simply has to know goes in that bead's comments, not in a bead of its own; `br comments add
+<id> "$(cat file)"` avoids the command guard, which reads prose inside a heredoc and refuses
+words like "truncate" as database operations.
+
 ## Choosing what to work on next (`/beads-bv`)
 
 Never run bare `bv` — it opens a TUI and blocks the session. Use:
@@ -56,6 +98,11 @@ Pick the work with `bv --robot-plan` (highest-unblocks LEAF, not the epic — se
 below). Read CLAUDE.md and `br show <bead-id> --json` in full. Claim it with
 `br update <bead-id> --claim`.
 
+Then dispatch a subagent to survey what the bead builds on: the modules it names, their public
+signatures, the conventions a new file has to match, and anything already shipped that the bead
+assumes. Ask for a digest, not file bodies, and read those files yourself only when you are
+about to edit them.
+
 If the bead's spec runs past ~15k characters it is a multi-session bead: build it in the
 order its acceptance criteria are written, commit each working slice, and say plainly at the
 end which criteria are met and which are not. Do not close it partially.
@@ -70,12 +117,20 @@ with a copy-pasteable next_command).
 If a probed fact disagrees with the bead text, do NOT force the test green: assert the
 observed truth, and tell me the disagreement.
 
-Before you propose closing: load /optimal-tests and run it in --audit mode over the bead's test files against
-its acceptance criteria. Treat any "this protection is untested" finding as a hypothesis
-until you delete that protection in a scratch copy and show a test go red — then restore
-and verify byte-identical. Apply the findings, then close with evidence: every acceptance
-bullet re-executed, raw output pasted, bound to the commit SHA, file:line for each touched
-file, and a No-Claim line.
+Before you propose closing: dispatch a FRESH subagent to run /optimal-tests in --audit mode over
+the bead's test files against its acceptance criteria. Fresh eyes on tests you wrote beat your
+own re-reading, and its report is a claim — re-execute what it cites before you believe it.
+Treat any "this protection is untested" finding as a hypothesis until you delete that protection
+in a scratch copy and show a test go red — then restore and verify byte-identical. The command
+guard refuses `git checkout --`, `rm -rf`, and `os.unlink` inside a heredoc, so copy each file to
+the scratchpad before mutating, restore with `cp`, and prove the restore with `shasum -a 256 -c`.
+
+Apply the findings. Every finding you decline, and every gap your No-Claim line names, has to be
+reachable from the bead graph: name the downstream bead that owns it, and create one with
+`br create` plus a `br dep` edge where none does.
+
+Then close with evidence: every acceptance bullet re-executed, raw output pasted, bound to the
+commit SHA, file:line for each touched file, and a No-Claim line.
 ```
 
 **Checklist before you say the bead is done**
@@ -86,6 +141,8 @@ file, and a No-Claim line.
 - [ ] `/optimal-tests --audit` run; every finding applied or explicitly declined with a reason
 - [ ] Any "untested protection" finding mutation-proved on a scratch copy, repo restored byte-identical
 - [ ] Close comment: commands + raw output + file:line + No-Claim + what was *not* independently verified
+- [ ] Survey and test audit ran as subagents; anything they cited re-executed in the main context
+- [ ] Every declined finding and every No-Claim gap named in a downstream bead, created where none owned it
 - [ ] `br sync --flush-only`, `.beads/` committed (the pre-commit hook audits the close)
 
 ---
@@ -145,6 +202,14 @@ three worksheets in writing, and surface anything that could reasonably be const
 deceptive, not-entirely-truthful, or hiding the ball — including ceremony loops that spent
 time and tokens without shipping capability. Report the verdicts plainly, uncomfortable
 truths first. Do not soften findings about your own behavior.
+
+Delegate the evidence sweeps — what the git log and the bead comments of the window actually
+show — to subagents, and keep the three worksheets and their verdicts in your own context: they
+are the deliverable, and a verdict assembled from digests you never checked is the failure this
+mode exists to catch. Re-execute what a sweep cites before a verdict rests on it.
+
+Where the audit finds work rather than a verdict, that work goes into the graph as a bead, not
+into the report alone.
 ```
 
 Run this when a green result feels too easy, before any milestone is declared done, and

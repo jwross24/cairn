@@ -41,6 +41,10 @@ Each line below was established by hitting it. Verify rather than trust if a too
 - **`br` text arguments starting with `-` need the `=` form.** `br create "T" -d "- bullet"`
   exits with `error: unexpected argument '- '`. Use `--description=`, `--acceptance-criteria=`,
   `--notes=`, `--design=`.
+- **`br create` takes no `--acceptance-criteria`.** It accepts `--description`/`-d` only;
+  set the field afterwards with `br update <id> --acceptance-criteria=...`. `br create`
+  also has no positional-only form for long titles starting with `-`; the `=` rule above
+  applies to every text flag on both commands.
 - **`br list --json` omits closed beads** (23 of 31 here). Pass `--all` or `--status closed`.
 - **`.beads/` is excluded by `~/.gitignore_global`.** This repo's `.gitignore` carries
   `!.beads/` to re-include it. `br sync --flush-only` before every `git add .beads/`.
