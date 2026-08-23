@@ -83,27 +83,32 @@ def test_each_record_matches_at_its_own_offset_and_nowhere_else(tmp_path_factory
         offset += attest.LENGTH_BYTES + len(body)
 
 
-@given(st.binary(max_size=64))
-def test_a_non_hex_digest_never_matches(digest):
-    assert attest._normalize_digest(digest) == digest.hex()
+@given(digest=st.binary(max_size=64))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_a_bytes_digest_matches_only_when_it_is_the_exact_raw_digest(tmp_path_factory, digest):
+    body = b"body"
+    path = _write(tmp_path_factory.mktemp("fuzz"), _framed([body]))
+    raw = bytes.fromhex(blob_hash(body))
+    assert attest.attestation_record_matches(path, 0, raw)
+    assert attest.attestation_record_matches(path, 0, digest) == (digest == raw)
 
 
 @pytest.mark.parametrize("wrong_type", [None, 1.5, [], {}], ids=["none", "float", "list", "dict"])
 def test_a_digest_of_the_wrong_type_raises_the_typed_error(tmp_path, wrong_type):
     path = _write(tmp_path, _framed([b"body"]))
-    with pytest.raises(attest.AttestationError):
+    with pytest.raises(attest.AttestationError, match="digest must be bytes or a hex str"):
         attest.attestation_record_matches(path, 0, wrong_type)
 
 
 @pytest.mark.parametrize("wrong_type", [None, 1.5, "0", True], ids=["none", "float", "str", "bool"])
 def test_an_offset_of_the_wrong_type_raises_the_typed_error(tmp_path, wrong_type):
     path = _write(tmp_path, _framed([b"body"]))
-    with pytest.raises(attest.AttestationError):
+    with pytest.raises(attest.AttestationError, match="offset must be an int"):
         attest.attestation_record_matches(path, wrong_type, blob_hash(b"body"))
 
 
 def test_an_unreadable_file_raises_the_typed_error(tmp_path):
-    with pytest.raises(attest.AttestationError):
+    with pytest.raises(attest.AttestationError, match="is unreadable"):
         attest.attestation_record_matches(tmp_path / "absent.log", 0, blob_hash(b"body"))
 
 

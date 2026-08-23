@@ -99,7 +99,7 @@ def test_edited_bundle_fails_closed_and_records_why(pinned_bundle, tmp_path, cap
     tampered = _writable_copy(bundle_path, tmp_path / "tampered.sqlite")
     _edit_one_row(tampered)
     with substrate.Substrate.open(tmp_path / "substrate.sqlite") as sub:
-        with pytest.raises(bundle.BundlePinMismatch):
+        with pytest.raises(bundle.BundlePinMismatch, match="does not match the pin"):
             bundle.open_for_gate(sub, tampered, pin_path)
         rows = [dict(r) for r in sub.conn.execute("SELECT * FROM gate_runs WHERE gate = 'bundle_open'")]
     assert len(rows) == 1
@@ -269,3 +269,91 @@ def test_appended_waiver_mirrors_no_substrate_row(pinned_bundle, tmp_path, clear
 def test_no_admission_check_is_waivable(pinned_bundle):
     gate = bundle.GateBundle.open(*pinned_bundle())
     assert gate.waivable_checks == []
+
+
+def test_pin_through_the_cli_writes_the_hash_and_the_operator_owned_modes(tmp_path, clear_flags, capsys):
+    bundle_path, pin_path = tmp_path / "gate-bundle.sqlite", tmp_path / "gate-bundle.pin"
+    clear_flags(pin_path)
+    build_code, build_out, _ = _run(["bundle", "build", "--src", str(SRC), *_paths(bundle_path, pin_path)], capsys)
+    assert build_code == exits.OK
+    digest = build_out.strip()
+
+    code, out, err = _run(["bundle", "pin", *_paths(bundle_path, pin_path)], capsys)
+    assert code == exits.OK
+    assert out.strip() == digest
+    assert pin_path.read_text().strip() == digest
+    assert stat.S_IMODE(os.stat(pin_path).st_mode) == 0o444
+    assert stat.S_IMODE(os.stat(bundle_path).st_mode) == 0o444
+    assert os.stat(pin_path).st_flags & stat.UF_APPEND
+    assert bundle.GateBundle.open(bundle_path, pin_path).hash == digest
+
+
+def test_show_without_json_prints_the_same_facts_as_the_document(pinned_bundle, capsys):
+    bundle_path, pin_path = pinned_bundle()
+    _, document, _ = _run(["bundle", "show", *_paths(bundle_path, pin_path), "--json"], capsys)
+    payload = json.loads(document)
+    code, out, err = _run(["bundle", "show", *_paths(bundle_path, pin_path)], capsys)
+    assert code == exits.OK
+    assert f"bundle_hash {payload['bundle_hash']}" in out
+    assert f"pin_hash    {payload['pin_hash']}" in out
+    assert "pin_match   true" in out
+    for row in payload["objects"]:
+        assert row["hash"] in out and row["kind"] in out
+
+
+@pytest.mark.parametrize(
+    ("src", "why"),
+    [("absent", "does not exist"), ("empty", "holds no")],
+    ids=["missing-directory", "no-json-object"],
+)
+def test_build_from_an_unusable_source_directory_exits_environment(tmp_path, capsys, src, why):
+    source = tmp_path / src
+    if src == "empty":
+        source.mkdir()
+    bundle_path = tmp_path / "gate-bundle.sqlite"
+    code, out, err = _run(["bundle", "build", "--src", str(source), "--bundle", str(bundle_path), "--pin", str(tmp_path / "p")], capsys)
+    assert code == exits.ENVIRONMENT
+    assert why in err and out == ""
+    assert not bundle_path.exists()
+
+
+def test_pin_without_a_bundle_exits_environment_and_names_build(tmp_path, capsys):
+    pin_path = tmp_path / "gate-bundle.pin"
+    code, out, err = _run(["bundle", "pin", "--bundle", str(tmp_path / "absent.sqlite"), "--pin", str(pin_path)], capsys)
+    assert code == exits.ENVIRONMENT
+    assert "cairn bundle build" in err and out == ""
+    assert not pin_path.exists()
+
+
+def test_append_without_an_initialized_attestation_file_exits_environment_and_names_init(pinned_bundle, tmp_path, capsys):
+    bundle_path, pin_path = pinned_bundle()
+    log_path = tmp_path / "attestations.log"
+    record = tmp_path / "waiver.json"
+    record.write_text(json.dumps({"target_kind": "hypothesis_key", "target": "e" * 64, "check": "tier_gate", "reason": "r", "issued_by": "operator", "expires_at": "2027-01-01T00:00:00Z"}))
+    code, out, err = _run(["attest", "append", "--kind", "waiver", "--record", str(record), *_paths(bundle_path, pin_path), "--attest", str(log_path)], capsys)
+    assert code == exits.ENVIRONMENT
+    assert "cairn attest init" in err and out == ""
+    assert not log_path.exists()
+
+
+def test_build_and_pin_emit_one_json_document_carrying_the_same_hash(tmp_path, clear_flags, capsys):
+    bundle_path, pin_path = tmp_path / "gate-bundle.sqlite", tmp_path / "gate-bundle.pin"
+    clear_flags(pin_path)
+    code, out, err = _run(["bundle", "build", "--src", str(SRC), *_paths(bundle_path, pin_path), "--json"], capsys)
+    built = json.loads(out)
+    assert code == exits.OK and built["sub"] == "build" and out.count("\n") == 1
+    code, out, err = _run(["bundle", "pin", *_paths(bundle_path, pin_path), "--json"], capsys)
+    pinned = json.loads(out)
+    assert code == exits.OK and pinned["sub"] == "pin" and out.count("\n") == 1
+    assert built["bundle_hash"] == pinned["bundle_hash"] == pin_path.read_text().strip()
+
+
+@pytest.mark.parametrize("missing", ["bundle", "pin"], ids=["no-bundle", "no-pin"])
+def test_attest_init_without_the_gate_artifacts_exits_environment(pinned_bundle, tmp_path, capsys, missing):
+    bundle_path, pin_path = pinned_bundle()
+    paths = {"bundle": bundle_path, "pin": pin_path, **{missing: tmp_path / f"absent-{missing}"}}
+    log_path = tmp_path / "attestations.log"
+    code, out, err = _run(["attest", "init", *_paths(paths["bundle"], paths["pin"]), "--attest", str(log_path)], capsys)
+    assert code == exits.ENVIRONMENT
+    assert f"absent-{missing}" in err and out == ""
+    assert not log_path.exists()
