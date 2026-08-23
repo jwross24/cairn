@@ -104,9 +104,10 @@ signatures, the conventions a new file has to match, and anything already shippe
 assumes. Ask for a digest, not file bodies, and read those files yourself only when you are
 about to edit them.
 
-If the bead's spec runs past ~15k characters it is a multi-session bead: build it in the
-order its acceptance criteria are written, commit each working slice, and say plainly at the
-end which criteria are met and which are not. Do not close it partially.
+Build in the order the acceptance criteria are written and commit each working slice, whatever
+the spec's length: a slice that passes its own tests is the unit of progress, and the commit is
+where the reasoning for it lives. If the session ends with the bead unfinished, say plainly
+which criteria are met and which are not, and leave it open. Never close it partially.
 
 Build it exactly as the bead specifies, integration test first (real PARI via cypari2,
 real gp subprocess through cairn.pari.run_gp, real SQLite under tmp_path), unit tests
