@@ -95,7 +95,8 @@ First establish a clean baseline: `git status --short` (expect empty) and `uv ru
 red, we deal with that first rather than attributing it to this bead's work later.
 
 Pick the work with `bv --robot-plan` (highest-unblocks LEAF, not the epic — see the caveat
-below). Read CLAUDE.md and `br show <bead-id> --json` in full. Claim it with
+below). Read CLAUDE.md and `br show <bead-id> --json` in full, its `comments` field included —
+a prior session carries findings forward there. Claim it with
 `br update <bead-id> --claim`.
 
 Then dispatch a subagent to survey what the bead builds on: the modules it names, their public
