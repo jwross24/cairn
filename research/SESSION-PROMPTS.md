@@ -48,9 +48,17 @@ take the highest-`unblocks` **leaf**, or filter epics out of `--robot-next` your
 Load /beads-br, /beads-bv, /beads-compliance-and-completion-verification and
 /just-say-no-to-process-porn-and-ceremony.
 
+First establish a clean baseline: `git status --short` (expect empty) and `uv run pytest -q`
+(expect all green). Tell me the numbers before you touch anything — if something is already
+red, we deal with that first rather than attributing it to this bead's work later.
+
 Pick the work with `bv --robot-plan` (highest-unblocks LEAF, not the epic — see the caveat
-in research/SESSION-PROMPTS.md). Read CLAUDE.md and `br show <bead-id> --json` in full.
-Claim it with `br update <bead-id> --claim`.
+below). Read CLAUDE.md and `br show <bead-id> --json` in full. Claim it with
+`br update <bead-id> --claim`.
+
+If the bead's spec runs past ~15k characters it is a multi-session bead: build it in the
+order its acceptance criteria are written, commit each working slice, and say plainly at the
+end which criteria are met and which are not. Do not close it partially.
 
 Build it exactly as the bead specifies, integration test first (real PARI via cypari2,
 real gp subprocess through cairn.pari.run_gp, real SQLite under tmp_path), unit tests
