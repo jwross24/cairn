@@ -174,3 +174,29 @@ def load_vector():
         return json.loads((VECTORS / name).read_text())
 
     return load
+
+
+@pytest.fixture
+def clear_flags():
+    flagged = []
+    yield flagged.append
+    for path in flagged:
+        if os.path.lexists(path):
+            os.chflags(path, 0)
+            os.chmod(path, 0o644)
+
+
+@pytest.fixture
+def pinned_bundle(tmp_path, clear_flags):
+    from cairn import bundle as bundle_module
+
+    def make(name="deploy", src=ROOT / "bundle"):
+        directory = tmp_path / name
+        directory.mkdir(parents=True, exist_ok=True)
+        bundle_path, pin_path = directory / "gate-bundle.sqlite", directory / "gate-bundle.pin"
+        bundle_module.build(src, bundle_path)
+        bundle_module.write_pin(bundle_path, pin_path)
+        clear_flags(pin_path)
+        return bundle_path, pin_path
+
+    return make

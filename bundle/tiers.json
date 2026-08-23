@@ -1,0 +1,10 @@
+{
+  "boundary_table": [
+    {"tier": 0, "max_core_s": 1},
+    {"tier": 1, "max_core_s": 3600},
+    {"tier": 2, "max_core_s": 3600000},
+    {"tier": 3, "max_core_s": null}
+  ],
+  "ceiling_multiplier": 4,
+  "tier1_cumulative_edge": null
+}

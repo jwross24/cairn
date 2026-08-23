@@ -30,7 +30,7 @@ ENV_VARS = {
     "NO_COLOR": "honored trivially: cairn never emits ANSI sequences",
 }
 DISCOVERY_HINT = "Structured output: add --json to any read-side command. Contract: cairn capabilities --json. Agent handbook: cairn robot-docs."
-COMMAND_MODULES = ["cairn.kat", "cairn.measure"]
+COMMAND_MODULES = ["cairn.kat", "cairn.measure", "cairn.bundle", "cairn.attest"]
 _SUBCOMMANDS = {}
 
 

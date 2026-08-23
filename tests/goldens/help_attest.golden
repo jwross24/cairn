@@ -1,0 +1,24 @@
+usage: cairn attest [-h] [--db PATH] [--bundle PATH] [--pin PATH]
+                    [--attest PATH] [--log LEVEL] [--json]
+                    SUBCOMMAND ...
+
+create and append to the operator-owned, append-only attestation file
+
+positional arguments:
+  SUBCOMMAND
+    init           create the append-only attestation file and write the gate
+                   plan's fixture waiver at record 0
+    append         append one operator record and mirror its digest and offset
+                   into the substrate
+
+options:
+  -h, --help       show this help message and exit
+  --db PATH        substrate SQLite file
+  --bundle PATH    gate bundle SQLite file
+  --pin PATH       gate-bundle pin file
+  --attest PATH    attestation file
+  --log LEVEL      log level for the JSON records on stderr
+  --json, --robot  emit exactly one JSON document on stdout
+
+Structured output: add --json to any read-side command. Contract: cairn
+capabilities --json. Agent handbook: cairn robot-docs.

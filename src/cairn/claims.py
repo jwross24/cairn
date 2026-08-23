@@ -607,17 +607,15 @@ def has_cost_model(sub, statement_hash):
 
 
 def read_record(path, offset):
-    data = Path(path).read_bytes()
-    if offset < 0 or offset + 8 > len(data):
-        return None
-    length = int.from_bytes(data[offset : offset + 8], "little")
-    body = data[offset + 8 : offset + 8 + length]
-    return body if len(body) == length else None
+    from cairn import attest
+
+    return attest.read_record(path, offset)
 
 
 def verdict_matches_file(row, path):
-    record = read_record(path, row["file_offset"])
-    return record is not None and blob_hash(record) == row["record_digest"]
+    from cairn import attest
+
+    return attest.attestation_record_matches(path, row["file_offset"], row["record_digest"])
 
 
 def visible_review_verdicts(sub, statement_hash, path):

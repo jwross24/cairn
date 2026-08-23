@@ -11,6 +11,7 @@ from cairn.errors import CliError
 
 DISCOVERY = ("--json", "capabilities", "robot-docs")
 BOUNDED_ARGV = {"measure": ("toy-curve-tries", "--sizes", "30", "--seeds", "2")}
+DEPLOY_ARGV = ("bundle", "attest")
 ESC = "\x1b"
 
 
@@ -73,9 +74,20 @@ def test_registration_is_the_capabilities_row(name):
     assert (row["read_only"], row["json"], row["dangerous"], row["gating"]) == (cmd.read_only, cmd.json, cmd.dangerous, cmd.gating)
 
 
+def _deploy_argv(name, tmp_path, pinned_bundle, clear_flags):
+    bundle_path, pin_path = pinned_bundle()
+    paths = ("--bundle", str(bundle_path), "--pin", str(pin_path))
+    if name == "bundle":
+        return ("show", *paths)
+    attest_path = tmp_path / "attestations.log"
+    clear_flags(attest_path)
+    return ("init", *paths, "--attest", str(attest_path))
+
+
 @pytest.mark.parametrize("name", [c.name for c in cli.commands() if c.json])
-def test_json_commands_emit_exactly_one_document_on_stdout(name, capsys):
-    code, out, err = _run([name, *BOUNDED_ARGV.get(name, ()), "--json"], capsys)
+def test_json_commands_emit_exactly_one_document_on_stdout(name, capsys, tmp_path, pinned_bundle, clear_flags):
+    argv = _deploy_argv(name, tmp_path, pinned_bundle, clear_flags) if name in DEPLOY_ARGV else BOUNDED_ARGV.get(name, ())
+    code, out, err = _run([name, *argv, "--json"], capsys)
     assert code == exits.OK, err
     document = json.loads(out)
     assert document["schema_version"] == cli.SCHEMA_VERSION and document["command"] == name

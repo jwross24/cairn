@@ -1,0 +1,6 @@
+{
+  "backend_path": "/opt/homebrew/bin/gp",
+  "stack_ceiling": "64M",
+  "timeout_s": 30,
+  "accept": {"rc": 0, "stdout": "OK", "stderr_empty": true}
+}

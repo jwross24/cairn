@@ -4,6 +4,9 @@ usage: cairn [-h] [--db PATH] [--bundle PATH] [--pin PATH] [--attest PATH]
 
 positional arguments:
   COMMAND
+    attest        create and append to the operator-owned, append-only
+                  attestation file
+    bundle        compile, pin and inspect the content-addressed gate bundle
     capabilities  describe the CLI contract: commands, exit codes, env vars,
                   paths
     env           report the toolchain (python, cypari2/libpari, blake3, gp

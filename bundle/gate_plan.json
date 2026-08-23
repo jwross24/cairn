@@ -1,0 +1,25 @@
+{
+  "steps": [
+    {"name": "canon_kat", "scope": "selftest", "expect": "pass"},
+    {"name": "verifier_xp_ne_q", "scope": "selftest", "expect": "fail"},
+    {"name": "verifier_forced_crash", "scope": "selftest", "expect": "fail"},
+    {"name": "waiver_cannot_advance", "scope": "selftest", "expect": "refused"},
+    {"name": "tier_gate", "scope": "admission", "expect": "admitted"}
+  ],
+  "fixtures": {
+    "waiver_hypothesis": {
+      "target_family": "toy_curve",
+      "claimed": {"kind": "gate-plan-fixture"},
+      "method_identity": {"interface_version": "toy_curve/1", "params": {}},
+      "declared_parameter_ranges": {"bits": [40, 40]},
+      "sampling_distribution": null
+    },
+    "crash_selftest": {
+      "p": "866004983247663323",
+      "a": "218370429096749092",
+      "b": "332004879195750802",
+      "overflow_stack": "8M",
+      "control_stack": "64M"
+    }
+  }
+}

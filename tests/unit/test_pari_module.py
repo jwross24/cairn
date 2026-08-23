@@ -52,14 +52,19 @@ def test_missing_gp_binary_raises_before_any_spawn(monkeypatch):
     assert spawned == []
 
 
+NESTED_SUBCOMMAND = {"bundle": ("show",), "attest": ("init",)}
+
+
 @pytest.mark.parametrize("name", cli.registered())
 def test_global_options_parse_before_or_after_subcommand(name):
     parser = cli.build_parser()
-    before = parser.parse_args(["--db", "X", "--bundle", "B", "--pin", "P", "--attest", "A", "--log", "DEBUG", name])
-    after = parser.parse_args([name, "--db", "X", "--bundle", "B", "--pin", "P", "--attest", "A", "--log", "DEBUG"])
+    head = list(NESTED_SUBCOMMAND.get(name, ()))
+    globals_argv = ["--db", "X", "--bundle", "B", "--pin", "P", "--attest", "A", "--log", "DEBUG"]
+    before = parser.parse_args([*globals_argv, name, *head])
+    after = parser.parse_args([name, *head, *globals_argv])
     picked = lambda ns: (ns.db, ns.bundle, ns.pin, ns.attest, ns.log)
     assert picked(before) == picked(after) == ("X", "B", "P", "A", "DEBUG")
-    defaults = parser.parse_args([name])
+    defaults = parser.parse_args([name, *head])
     assert picked(defaults) == tuple(cli.GLOBAL_DEFAULTS[k] for k in ("db", "bundle", "pin", "attest", "log"))
 
 

@@ -1,0 +1,27 @@
+usage: cairn bundle [-h] [--db PATH] [--bundle PATH] [--pin PATH]
+                    [--attest PATH] [--log LEVEL] [--json] [--force]
+                    SUBCOMMAND ...
+
+compile, pin and inspect the content-addressed gate bundle
+
+positional arguments:
+  SUBCOMMAND
+    build          compile bundle/*.json plus the verifier script into the
+                   gate bundle
+    pin            record the gate bundle's hash in the operator-owned pin
+                   file
+    show           print the bundle hash, the pin hash and every (kind, hash)
+                   row
+
+options:
+  -h, --help       show this help message and exit
+  --db PATH        substrate SQLite file
+  --bundle PATH    gate bundle SQLite file
+  --pin PATH       gate-bundle pin file
+  --attest PATH    attestation file
+  --log LEVEL      log level for the JSON records on stderr
+  --json, --robot  emit exactly one JSON document on stdout
+  --force          required for the irreversible part of this command
+
+Structured output: add --json to any read-side command. Contract: cairn
+capabilities --json. Agent handbook: cairn robot-docs.
