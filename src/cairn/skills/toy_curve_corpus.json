@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "pass_floor": 4,
+  "cases": [
+    {
+      "id": "F5",
+      "ledger": "pass",
+      "source": "PARI 2.17.4 usersch3.tex:29031-29032",
+      "postconditions": ["oncurve", "ellorder", "ellmul"],
+      "fields": {
+        "p": {"value": 5, "origin": "upstream_vendored"},
+        "a": {"value": -3, "origin": "upstream_vendored"},
+        "b": {"value": 1, "origin": "upstream_vendored"},
+        "n": {"value": 7, "origin": "upstream_vendored"},
+        "P": {"value": [0, 1], "origin": "author_supplied"},
+        "Q": {"value": [3, 3], "origin": "author_supplied"},
+        "x": {"value": 3, "origin": "author_supplied"}
+      }
+    },
+    {
+      "id": "GF101",
+      "ledger": "pass",
+      "source": "Sage 10.6 ell_point.py:4529-4537 + constructor.py:790-791",
+      "postconditions": ["oncurve", "ellorder", "ellmul"],
+      "fields": {
+        "p": {"value": 101, "origin": "upstream_vendored"},
+        "a": {"value": 90, "origin": "upstream_vendored"},
+        "b": {"value": 44, "origin": "upstream_vendored"},
+        "n": {"value": 89, "origin": "upstream_vendored"},
+        "P": {"value": [2, 38], "origin": "author_supplied"},
+        "Q": {"value": [12, 23], "origin": "author_supplied"},
+        "x": {"value": 2, "origin": "upstream_vendored"}
+      }
+    },
+    {
+      "id": "bits150",
+      "ledger": "pass",
+      "source": "Sage 10.6 ell_point.py:4680-4686",
+      "postconditions": ["oncurve", "ellcard", "ellorder", "order_kills"],
+      "fields": {
+        "p": {"value": 1427247692705959881058285969449495136382746771, "origin": "upstream_vendored"},
+        "a": {"value": 1, "origin": "upstream_vendored"},
+        "b": {"value": 1, "origin": "upstream_vendored"},
+        "n": {"value": 1427247692705959881058262545272474300628281448, "origin": "upstream_vendored"},
+        "P": {"value": [831623307675610677632782670796608848711856078, 42295786042873366706573292533588638217232964], "origin": "upstream_vendored"}
+      }
+    },
+    {
+      "id": "negative_control",
+      "ledger": "pass",
+      "source": "Sage 10.6 ell_point.py:822-827",
+      "postconditions": ["oncurve", "ellorder", "order_does_not_kill"],
+      "fields": {
+        "p": {"value": 419, "origin": "upstream_vendored"},
+        "a": {"value": 1, "origin": "upstream_vendored"},
+        "b": {"value": 0, "origin": "upstream_vendored"},
+        "n": {"value": 21, "origin": "upstream_vendored"},
+        "P": {"value": [-33, 8], "origin": "upstream_vendored"},
+        "Q": {"value": [10, 163], "origin": "author_supplied"}
+      }
+    }
+  ]
+}

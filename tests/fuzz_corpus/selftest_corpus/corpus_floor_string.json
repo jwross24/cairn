@@ -1,0 +1,181 @@
+{
+ "doc": {
+  "cases": [
+   {
+    "fields": {
+     "P": {
+      "origin": "author_supplied",
+      "value": [
+       0,
+       1
+      ]
+     },
+     "Q": {
+      "origin": "author_supplied",
+      "value": [
+       3,
+       3
+      ]
+     },
+     "a": {
+      "origin": "upstream_vendored",
+      "value": -3
+     },
+     "b": {
+      "origin": "upstream_vendored",
+      "value": 1
+     },
+     "n": {
+      "origin": "upstream_vendored",
+      "value": 7
+     },
+     "p": {
+      "origin": "upstream_vendored",
+      "value": 5
+     },
+     "x": {
+      "origin": "author_supplied",
+      "value": 3
+     }
+    },
+    "id": "F5",
+    "ledger": "pass",
+    "postconditions": [
+     "oncurve",
+     "ellorder",
+     "ellmul"
+    ],
+    "source": "PARI 2.17.4 usersch3.tex:29031-29032"
+   },
+   {
+    "fields": {
+     "P": {
+      "origin": "author_supplied",
+      "value": [
+       2,
+       38
+      ]
+     },
+     "Q": {
+      "origin": "author_supplied",
+      "value": [
+       12,
+       23
+      ]
+     },
+     "a": {
+      "origin": "upstream_vendored",
+      "value": 90
+     },
+     "b": {
+      "origin": "upstream_vendored",
+      "value": 44
+     },
+     "n": {
+      "origin": "upstream_vendored",
+      "value": 89
+     },
+     "p": {
+      "origin": "upstream_vendored",
+      "value": 101
+     },
+     "x": {
+      "origin": "upstream_vendored",
+      "value": 2
+     }
+    },
+    "id": "GF101",
+    "ledger": "pass",
+    "postconditions": [
+     "oncurve",
+     "ellorder",
+     "ellmul"
+    ],
+    "source": "Sage 10.6 ell_point.py:4529-4537 + constructor.py:790-791"
+   },
+   {
+    "fields": {
+     "P": {
+      "origin": "upstream_vendored",
+      "value": [
+       831623307675610677632782670796608848711856078,
+       42295786042873366706573292533588638217232964
+      ]
+     },
+     "a": {
+      "origin": "upstream_vendored",
+      "value": 1
+     },
+     "b": {
+      "origin": "upstream_vendored",
+      "value": 1
+     },
+     "n": {
+      "origin": "upstream_vendored",
+      "value": 1427247692705959881058262545272474300628281448
+     },
+     "p": {
+      "origin": "upstream_vendored",
+      "value": 1427247692705959881058285969449495136382746771
+     }
+    },
+    "id": "bits150",
+    "ledger": "pass",
+    "postconditions": [
+     "oncurve",
+     "ellcard",
+     "ellorder",
+     "order_kills"
+    ],
+    "source": "Sage 10.6 ell_point.py:4680-4686"
+   },
+   {
+    "fields": {
+     "P": {
+      "origin": "upstream_vendored",
+      "value": [
+       -33,
+       8
+      ]
+     },
+     "Q": {
+      "origin": "author_supplied",
+      "value": [
+       10,
+       163
+      ]
+     },
+     "a": {
+      "origin": "upstream_vendored",
+      "value": 1
+     },
+     "b": {
+      "origin": "upstream_vendored",
+      "value": 0
+     },
+     "n": {
+      "origin": "upstream_vendored",
+      "value": 21
+     },
+     "p": {
+      "origin": "upstream_vendored",
+      "value": 419
+     }
+    },
+    "id": "negative_control",
+    "ledger": "pass",
+    "postconditions": [
+     "oncurve",
+     "ellorder",
+     "order_does_not_kill"
+    ],
+    "source": "Sage 10.6 ell_point.py:822-827"
+   }
+  ],
+  "pass_floor": "4",
+  "schema_version": 1
+ },
+ "expect": "CorpusSchemaError",
+ "kind": "corpus",
+ "path": "$.pass_floor"
+}
