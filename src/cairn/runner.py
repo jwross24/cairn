@@ -7,7 +7,8 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from cairn import canon, keys, log
+from cairn import canon, cli, exits, keys, log
+from cairn.errors import CliError
 from cairn.substrate import blob_hash
 
 LOG_STEP = "runner"
@@ -259,3 +260,221 @@ def spawn_and_wait(
         timed_out=timed_out,
     )
     return launch
+
+
+class RunnerError(Exception):
+    pass
+
+
+class BudgetRefused(RunnerError):
+    def __init__(self, remaining, ceiling_s):
+        self.remaining = remaining
+        self.ceiling_s = ceiling_s
+        super().__init__(
+            f"remaining budget {remaining} cannot cover the ceiling {ceiling_s}"
+        )
+
+
+@dataclass(frozen=True)
+class Attempt:
+    attempt_id: str
+    recipe_key: str
+    status: str
+    output_manifest_hash: str = None
+    receipt_hash: str = None
+    served_from_cache: bool = False
+    launch: Launch = None
+    parsed: ParsedOutput = None
+    diverged: tuple = ()
+
+
+def startup_scan(sub, *, at=None):
+    rows = sub.conn.execute(
+        "SELECT attempt_id FROM attempts WHERE status = 'RUNNING' AND ended_at IS NULL ORDER BY rowid"
+    ).fetchall()
+    interrupted = [row["attempt_id"] for row in rows]
+    for attempt_id in interrupted:
+        sub.close_attempt(attempt_id, STATUS_INTERRUPTED, ended_at=at)
+    log.get(LOG_STEP).info(
+        "startup_scan", interrupted=interrupted, count=len(interrupted)
+    )
+    return interrupted
+
+
+def _artifacts(sub, stdout_bytes, scratch_dir):
+    artifacts = {"output.json": (sub.put_blob(stdout_bytes), len(stdout_bytes))}
+    root = Path(scratch_dir)
+    for dirpath, _, filenames in os.walk(root, followlinks=False):
+        for name in sorted(filenames):
+            path = Path(dirpath) / name
+            data = path.read_bytes()
+            artifacts[str(path.relative_to(root))] = (sub.put_blob(data), len(data))
+    return artifacts
+
+
+def _diverged(sub, recipe_key, replay):
+    if replay != "Replayable":
+        return ()
+    rows = sub.conn.execute(
+        "SELECT output_manifest_hash FROM attempts WHERE recipe_key = ? AND status = 'OK' AND disowned_at IS NULL AND replay_grade = 'Replayable'",
+        (recipe_key,),
+    ).fetchall()
+    manifests = {r["output_manifest_hash"] for r in rows if r["output_manifest_hash"]}
+    if len(manifests) < 2:
+        return ()
+    return tuple(sub.mark_non_reproducible(recipe_key))
+
+
+def launch(
+    sub,
+    skill_module,
+    recipe,
+    *,
+    bundle_hash,
+    evaluation,
+    ceiling_multiplier,
+    tool_digests,
+    scratch_root,
+    replay="Replayable",
+    skip_cache_lookup=False,
+    do_not_cache=False,
+    budget_remaining=None,
+    env_extra=None,
+    stdin_document=None,
+):
+    lg = log.get(LOG_STEP)
+    startup_scan(sub)
+    ceiling_s = ceiling_for(evaluation.expected_wall_s, ceiling_multiplier)
+    if budget_remaining is not None and budget_remaining < ceiling_s:
+        raise BudgetRefused(budget_remaining, ceiling_s)
+    recipe_key = sub.put_recipe(recipe, do_not_cache=do_not_cache)
+    if not skip_cache_lookup:
+        served = sub.serve(recipe_key)
+        if served is not None:
+            lg.info(
+                "launch",
+                recipe_key=recipe_key,
+                served=True,
+                attempt_id=served.attempt_id,
+            )
+            return Attempt(
+                served.attempt_id,
+                recipe_key,
+                STATUS_OK,
+                served.output_manifest_hash,
+                served_from_cache=True,
+            )
+    attempt_id = sub.start_attempt(
+        recipe_key, replay_grade=replay, skip_cache_lookup=skip_cache_lookup
+    )
+    sub.add_escrow(
+        attempt_id,
+        declared_production_cost=evaluation.expected_core_s,
+        declared_verification_cost=evaluation.expected_verification_core_s,
+        reserved=evaluation.expected_verification_core_s,
+        ceiling_multiplier=float(ceiling_multiplier),
+    )
+    attempt_dir = Path(scratch_root) / attempt_id
+    scratch_dir = attempt_dir / "scratch"
+    scratch_dir.mkdir(parents=True)
+    out_path, err_path = attempt_dir / "stdout", attempt_dir / "stderr"
+    document = {"bits": recipe["seed"]} if stdin_document is None else stdin_document
+    stdin_bytes = (
+        json.dumps(document, sort_keys=True, separators=(",", ":")) + "\n"
+    ).encode("utf-8")
+    before = allocated_bytes(scratch_dir)
+    run = spawn_and_wait(
+        skill_argv(skill_module, scratch_dir),
+        out_path,
+        err_path,
+        ceiling_s=ceiling_s,
+        env=child_env(env_extra),
+        stdin_bytes=stdin_bytes,
+    )
+    scratch_written = max(0, allocated_bytes(scratch_dir) - before)
+    stdout_bytes, stderr_bytes = out_path.read_bytes(), err_path.read_bytes()
+    parsed = parse_skill_output(stdout_bytes)
+    status = status_for(parsed, run.exit_status, run.wall_s, ceiling_s)
+    manifest = None
+    if parsed.well_formed:
+        manifest = sub.put_output_manifest(
+            _artifacts(sub, stdout_bytes, scratch_dir),
+            recipe_key=recipe_key,
+            input_blobs=[h for h, _ in recipe["inputs"].values()],
+        )
+    receipt = sub.put_receipt(
+        {
+            "gate_bundle_hash": bundle_hash,
+            "start_mono": run.start_mono,
+            "end_mono": run.end_mono,
+            "cpu_user_s": run.cpu_user_s,
+            "cpu_sys_s": run.cpu_sys_s,
+            "wall_s": run.wall_s,
+            "peak_rss_bytes": run.peak_rss_bytes,
+            "scratch_bytes_written": scratch_written,
+            "exit_status": run.exit_status,
+            "stdout_digest": blob_hash(stdout_bytes),
+            "stderr_digest": blob_hash(stderr_bytes),
+            "tool_digests_hash": tool_digests_hash(tool_digests),
+        }
+    )
+    sub.close_attempt(
+        attempt_id, status, output_manifest_hash=manifest, receipt_hash=receipt
+    )
+    diverged = _diverged(sub, recipe_key, replay) if status == STATUS_OK else ()
+    lg.info(
+        "launch",
+        recipe_key=recipe_key,
+        served=False,
+        attempt_id=attempt_id,
+        status=status,
+        wall_ms=round(run.wall_s * 1000, 3),
+        cpu_s=round(run.cpu_user_s + run.cpu_sys_s, 6),
+        rss=run.peak_rss_bytes,
+        scratch_bytes=scratch_written,
+        diverged=list(diverged),
+    )
+    return Attempt(
+        attempt_id, recipe_key, status, manifest, receipt, False, run, parsed, diverged
+    )
+
+
+def _configure(parser):
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        metavar="N",
+        help="report at most N interrupted attempt ids in the document",
+    )
+
+
+def _run(ns):
+    from cairn import substrate
+
+    if not os.path.exists(ns.db):
+        raise CliError(
+            exits.ENVIRONMENT,
+            f"the substrate {ns.db} does not exist",
+            where=str(ns.db),
+            next_command=f"cairn m0-run --db {ns.db}",
+        )
+    with substrate.Substrate.open(ns.db) as sub:
+        interrupted = startup_scan(sub)
+    shown = interrupted if ns.limit is None else interrupted[: ns.limit]
+    if getattr(ns, "json", False):
+        cli.emit_json("startup-scan", {"interrupted": shown, "count": len(interrupted)})
+    else:
+        for attempt_id in shown:
+            print(attempt_id)
+    return exits.OK
+
+
+cli.register(
+    "startup-scan",
+    _configure,
+    _run,
+    summary="move every attempt left RUNNING by a dead harness to INTERRUPTED before any new launch",
+    read_only=False,
+    json=True,
+)

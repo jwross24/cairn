@@ -20,6 +20,8 @@ positional arguments:
     selftest (self-test)
                         run a skill's vendored known-answer corpus and record
                         its certificate; exit 2 on any failure
+    startup-scan        move every attempt left RUNNING by a dead harness to
+                        INTERRUPTED before any new launch
 
 options:
   -h, --help            show this help message and exit

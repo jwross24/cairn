@@ -11,7 +11,7 @@ from cairn.errors import CliError
 
 DISCOVERY = ("--json", "capabilities", "robot-docs")
 BOUNDED_ARGV = {"measure": ("toy-curve-tries", "--sizes", "30", "--seeds", "2")}
-DEPLOY_ARGV = ("bundle", "attest", "selftest")
+DEPLOY_ARGV = ("bundle", "attest", "selftest", "startup-scan")
 ESC = "\x1b"
 
 
@@ -19,7 +19,9 @@ def _scrub(text):
     import importlib.metadata
     import platform
 
-    return text.replace(importlib.metadata.version("cairn"), "[VERSION]").replace(platform.python_version(), "[PYTHON]")
+    return text.replace(importlib.metadata.version("cairn"), "[VERSION]").replace(
+        platform.python_version(), "[PYTHON]"
+    )
 
 
 def _run(argv, capsys):
@@ -58,7 +60,9 @@ def test_top_help_golden(assert_golden, capsys):
 
 
 @pytest.mark.parametrize("name", cli.registered())
-def test_subcommand_help_exits_zero_and_names_discovery_surfaces(name, capsys, assert_golden):
+def test_subcommand_help_exits_zero_and_names_discovery_surfaces(
+    name, capsys, assert_golden
+):
     with pytest.raises(SystemExit) as info:
         cli.main([name, "--help"])
     out = capsys.readouterr().out
@@ -71,10 +75,22 @@ def test_subcommand_help_exits_zero_and_names_discovery_surfaces(name, capsys, a
 def test_registration_is_the_capabilities_row(name):
     cmd = cli.resolve_command(name)
     row = next(c for c in cli.capabilities_document()["commands"] if c["name"] == name)
-    assert (row["read_only"], row["json"], row["dangerous"], row["gating"]) == (cmd.read_only, cmd.json, cmd.dangerous, cmd.gating)
+    assert (row["read_only"], row["json"], row["dangerous"], row["gating"]) == (
+        cmd.read_only,
+        cmd.json,
+        cmd.dangerous,
+        cmd.gating,
+    )
 
 
 def _deploy_argv(name, tmp_path, pinned_bundle, clear_flags):
+    if name == "startup-scan":
+        from cairn import substrate
+
+        db = tmp_path / "substrate.sqlite"
+        with substrate.Substrate.open(db):
+            pass
+        return ("--db", str(db))
     bundle_path, pin_path = pinned_bundle()
     paths = ("--bundle", str(bundle_path), "--pin", str(pin_path))
     if name == "bundle":
@@ -87,12 +103,20 @@ def _deploy_argv(name, tmp_path, pinned_bundle, clear_flags):
 
 
 @pytest.mark.parametrize("name", [c.name for c in cli.commands() if c.json])
-def test_json_commands_emit_exactly_one_document_on_stdout(name, capsys, tmp_path, pinned_bundle, clear_flags):
-    argv = _deploy_argv(name, tmp_path, pinned_bundle, clear_flags) if name in DEPLOY_ARGV else BOUNDED_ARGV.get(name, ())
+def test_json_commands_emit_exactly_one_document_on_stdout(
+    name, capsys, tmp_path, pinned_bundle, clear_flags
+):
+    argv = (
+        _deploy_argv(name, tmp_path, pinned_bundle, clear_flags)
+        if name in DEPLOY_ARGV
+        else BOUNDED_ARGV.get(name, ())
+    )
     code, out, err = _run([name, *argv, "--json"], capsys)
     assert code == exits.OK, err
     document = json.loads(out)
-    assert document["schema_version"] == cli.SCHEMA_VERSION and document["command"] == name
+    assert (
+        document["schema_version"] == cli.SCHEMA_VERSION and document["command"] == name
+    )
     assert out.count("\n") == 1
     assert ESC not in out and ESC not in err
 
@@ -100,7 +124,15 @@ def test_json_commands_emit_exactly_one_document_on_stdout(name, capsys, tmp_pat
 def test_capabilities_lists_contract_sections(capsys):
     code, out, err = _run(["capabilities", "--json"], capsys)
     doc = json.loads(out)
-    assert set(doc) >= {"commands", "exit_codes", "env_vars", "default_paths", "global_options", "schema_version", "contract_version"}
+    assert set(doc) >= {
+        "commands",
+        "exit_codes",
+        "env_vars",
+        "default_paths",
+        "global_options",
+        "schema_version",
+        "contract_version",
+    }
     assert set(doc["exit_codes"]) == {"cli", "doctor"}
     assert doc["exit_codes"]["cli"] == {str(k): v for k, v in exits.CLI.items()}
 
@@ -114,7 +146,14 @@ def test_capabilities_is_deterministic(capsys):
 def test_robot_docs_prints_the_handbook(capsys):
     code, out, err = _run(["robot-docs"], capsys)
     assert code == exits.OK
-    for step in ("bundle build", "bundle pin", "attest init", "selftest toy-curve", "gate selftest", "m0-run"):
+    for step in (
+        "bundle build",
+        "bundle pin",
+        "attest init",
+        "selftest toy-curve",
+        "gate selftest",
+        "m0-run",
+    ):
         assert step in out
     assert "## Exit codes (cli)" in out and "## Never" in out
     flag = _run(["--robot-help"], capsys)[1]
@@ -130,7 +169,12 @@ def test_bare_invocation_prints_usage_and_hints_and_exits_user_input(capsys):
 
 @pytest.mark.parametrize(
     ("argv", "needle"),
-    [(["--jsno", "capabilities"], "--json"), (["capabilities", "--jsno"], "--json"), (["kta"], "kat"), (["kat", "cannon"], "canon")],
+    [
+        (["--jsno", "capabilities"], "--json"),
+        (["capabilities", "--jsno"], "--json"),
+        (["kta"], "kat"),
+        (["kat", "cannon"], "canon"),
+    ],
     ids=["flag-typo-before", "flag-typo-after", "subcommand-typo", "choice-typo"],
 )
 def test_typo_hints_name_the_intended_spelling(argv, needle, capsys):
@@ -141,7 +185,9 @@ def test_typo_hints_name_the_intended_spelling(argv, needle, capsys):
     assert "run: cairn" in err
 
 
-def test_exit_codes_one_named_failure_each(tmp_path, capsys, monkeypatch, fixture_command):
+def test_exit_codes_one_named_failure_each(
+    tmp_path, capsys, monkeypatch, fixture_command
+):
     code, out, err = _run(["kat", "--no-such"], capsys)
     assert code == exits.USER_INPUT and "next_command" in err
     copy = tmp_path / "canon_kat.json"
@@ -155,46 +201,102 @@ def test_exit_codes_one_named_failure_each(tmp_path, capsys, monkeypatch, fixtur
     code, out, err = _run(["probe-gp"], capsys)
     assert code == exits.ENVIRONMENT and "cairn doctor" in err
     monkeypatch.undo()
-    fixture_command("probe-backend", lambda ns: (_ for _ in ()).throw(pari.GpTimeout(0, 0.0)))
+    fixture_command(
+        "probe-backend", lambda ns: (_ for _ in ()).throw(pari.GpTimeout(0, 0.0))
+    )
     code, out, err = _run(["probe-backend"], capsys)
     assert code == exits.BACKEND and "GpTimeout" in err
     import sqlite3
 
-    fixture_command("probe-lock", lambda ns: (_ for _ in ()).throw(sqlite3.OperationalError("database is locked")))
+    fixture_command(
+        "probe-lock",
+        lambda ns: (_ for _ in ()).throw(
+            sqlite3.OperationalError("database is locked")
+        ),
+    )
     code, out, err = _run(["probe-lock"], capsys)
     assert code == exits.CONFLICT and "cairn doctor" in err
 
 
 def test_cli_error_record_and_human_line_carry_next_command(capsys):
-    err = CliError(exits.GATE_REFUSED, "bundle hash differs from pin", where="deploy/gate-bundle.pin", next_command="cairn bundle pin --bundle B --pin P")
+    err = CliError(
+        exits.GATE_REFUSED,
+        "bundle hash differs from pin",
+        where="deploy/gate-bundle.pin",
+        next_command="cairn bundle pin --bundle B --pin P",
+    )
     assert err.record()["next_command"] == "cairn bundle pin --bundle B --pin P"
-    assert err.human() == "error: bundle hash differs from pin (deploy/gate-bundle.pin); run: cairn bundle pin --bundle B --pin P"
+    assert (
+        err.human()
+        == "error: bundle hash differs from pin (deploy/gate-bundle.pin); run: cairn bundle pin --bundle B --pin P"
+    )
 
 
-def test_dangerous_fixture_is_refused_pre_run_without_its_gating_flag(fixture_command, capsys):
+def test_dangerous_fixture_is_refused_pre_run_without_its_gating_flag(
+    fixture_command, capsys
+):
     calls = []
-    fixture_command("danger", lambda ns: (calls.append(ns), exits.OK)[1], dangerous=True, gating="--yes", read_only=False, json=False)
+    fixture_command(
+        "danger",
+        lambda ns: (calls.append(ns), exits.OK)[1],
+        dangerous=True,
+        gating="--yes",
+        read_only=False,
+        json=False,
+    )
     code, out, err = _run(["danger"], capsys)
-    assert code == exits.GATE_REFUSED and calls == [] and "cairn danger --yes" in err and out == ""
+    assert (
+        code == exits.GATE_REFUSED
+        and calls == []
+        and "cairn danger --yes" in err
+        and out == ""
+    )
     code, out, err = _run(["danger", "--yes"], capsys)
     assert code == exits.OK and len(calls) == 1
-    fixture_command("dry", lambda ns: (calls.append(ns), exits.OK)[1], dangerous=True, gating="--yes", read_only=False, json=False, dry_run_default=True)
+    fixture_command(
+        "dry",
+        lambda ns: (calls.append(ns), exits.OK)[1],
+        dangerous=True,
+        gating="--yes",
+        read_only=False,
+        json=False,
+        dry_run_default=True,
+    )
     assert _run(["dry"], capsys)[0] == exits.OK and len(calls) == 2
     with pytest.raises(ValueError):
-        cli.register("ungated", lambda p: None, lambda ns: 0, summary="x", read_only=False, json=False, dangerous=True)
+        cli.register(
+            "ungated",
+            lambda p: None,
+            lambda ns: 0,
+            summary="x",
+            read_only=False,
+            json=False,
+            dangerous=True,
+        )
 
 
 def test_refuse_overwrite_and_require_yes_gate_dangerous_ops(tmp_path):
     target = tmp_path / "pin"
     target.write_text("x")
-    cli.refuse_overwrite(tmp_path / "absent", flag="--force", command="cairn bundle pin", force=False)
+    cli.refuse_overwrite(
+        tmp_path / "absent", flag="--force", command="cairn bundle pin", force=False
+    )
     with pytest.raises(CliError) as info:
-        cli.refuse_overwrite(target, flag="--force", command="cairn bundle pin", force=False)
-    assert info.value.code == exits.GATE_REFUSED and info.value.next_command == "cairn bundle pin --force"
+        cli.refuse_overwrite(
+            target, flag="--force", command="cairn bundle pin", force=False
+        )
+    assert (
+        info.value.code == exits.GATE_REFUSED
+        and info.value.next_command == "cairn bundle pin --force"
+    )
     cli.refuse_overwrite(target, flag="--force", command="cairn bundle pin", force=True)
     with pytest.raises(CliError) as info:
         cli.require_yes(False, plan="delete 3 blobs", command="cairn gc")
-    assert info.value.code == exits.GATE_REFUSED and info.value.next_command == "cairn gc --yes" and "delete 3 blobs" in info.value.what
+    assert (
+        info.value.code == exits.GATE_REFUSED
+        and info.value.next_command == "cairn gc --yes"
+        and "delete 3 blobs" in info.value.what
+    )
     cli.require_yes(True, plan="delete 3 blobs", command="cairn gc")
 
 
