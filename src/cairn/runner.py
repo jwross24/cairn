@@ -1,6 +1,7 @@
 import json
 import os
 import signal
+import stat
 import subprocess
 import sys
 import time
@@ -21,7 +22,6 @@ STATUS_DISAGREE = "DISAGREE"
 STATUS_BUDGET_EXCEEDED = "BUDGET_EXCEEDED"
 STATUS_SKILL_YANKED = "SKILL_YANKED"
 STATUS_INTERRUPTED = "INTERRUPTED"
-HARNESS_TERMINATED = (STATUS_BUDGET_EXCEEDED, STATUS_SKILL_YANKED, STATUS_INTERRUPTED)
 ENV_ALLOWLIST = ("PATH", "HOME", "LANG", "LC_ALL", "LC_CTYPE", "TMPDIR", "TZ")
 MAXRSS_UNIT_BYTES = ("darwin",)
 MAXRSS_UNIT_KB = ("linux", "freebsd", "openbsd", "netbsd", "sunos")
@@ -47,8 +47,6 @@ class ParsedOutput:
 
 
 def _decoded(stdout_bytes):
-    if isinstance(stdout_bytes, str):
-        return stdout_bytes
     if stdout_bytes.startswith(UTF8_BOM):
         raise ValueError("stdout starts with a UTF-8 BOM")
     return stdout_bytes.decode("utf-8")
@@ -133,10 +131,6 @@ def tool_digests_hash(tool_digests):
         "tool_digests",
         canon.encode(canon.Map(canon.STR, canon.STR), dict(tool_digests)),
     )
-
-
-def _lg():
-    return log.get(LOG_STEP)
 
 
 def skill_argv(module, scratch_dir):
@@ -259,6 +253,14 @@ def spawn_and_wait(
         rss=launch.peak_rss_bytes,
         timed_out=timed_out,
     )
+    if timed_out:
+        lg.warning(
+            "kill",
+            ceiling_s=ceiling_s,
+            terminated_at_s=round(terminated_at, 6),
+            wall_s=round(launch.wall_s, 6),
+            rc=launch.exit_status,
+        )
     return launch
 
 
@@ -310,19 +312,25 @@ def startup_scan(sub, *, at=None, dry_run=False):
 
 
 def _artifacts(sub, stdout_bytes, scratch_dir):
+    lg = log.get(LOG_STEP)
     artifacts = {"output.json": (sub.put_blob(stdout_bytes), len(stdout_bytes))}
     root = Path(scratch_dir)
-    for dirpath, _, filenames in os.walk(root, followlinks=False):
-        for name in sorted(filenames):
+    for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
+        for name in sorted(dirnames + filenames):
             path = Path(dirpath) / name
+            if not stat.S_ISREG(os.lstat(path).st_mode):
+                lg.warning(
+                    "artifact_skipped",
+                    path=str(path.relative_to(root)),
+                    reason="not a regular file",
+                )
+                continue
             data = path.read_bytes()
             artifacts[str(path.relative_to(root))] = (sub.put_blob(data), len(data))
     return artifacts
 
 
-def _diverged(sub, recipe_key, replay):
-    if replay != "Replayable":
-        return ()
+def _diverged(sub, recipe_key):
     rows = sub.conn.execute(
         "SELECT output_manifest_hash FROM attempts WHERE recipe_key = ? AND status = 'OK' AND disowned_at IS NULL AND replay_grade = 'Replayable'",
         (recipe_key,),
@@ -382,71 +390,85 @@ def launch(
         reserved=evaluation.expected_verification_core_s,
         ceiling_multiplier=float(ceiling_multiplier),
     )
-    attempt_dir = Path(scratch_root) / attempt_id
-    scratch_dir = attempt_dir / "scratch"
-    scratch_dir.mkdir(parents=True)
-    out_path, err_path = attempt_dir / "stdout", attempt_dir / "stderr"
-    document = {"bits": recipe["seed"]} if stdin_document is None else stdin_document
-    stdin_bytes = (
-        json.dumps(document, sort_keys=True, separators=(",", ":")) + "\n"
-    ).encode("utf-8")
-    before = allocated_bytes(scratch_dir)
-    run = spawn_and_wait(
-        skill_argv(skill_module, scratch_dir),
-        out_path,
-        err_path,
-        ceiling_s=ceiling_s,
-        env=child_env(env_extra),
-        stdin_bytes=stdin_bytes,
-    )
-    scratch_written = max(0, allocated_bytes(scratch_dir) - before)
-    stdout_bytes, stderr_bytes = out_path.read_bytes(), err_path.read_bytes()
-    parsed = parse_skill_output(stdout_bytes)
-    status = status_for(parsed, run.exit_status, run.wall_s, ceiling_s)
-    manifest = None
-    if parsed.well_formed:
-        manifest = sub.put_output_manifest(
-            _artifacts(sub, stdout_bytes, scratch_dir),
-            recipe_key=recipe_key,
-            input_blobs=[h for h, _ in recipe["inputs"].values()],
-            producer_identity=recipe["skill_identity_hash"],
-            replay_grade=replay,
+    try:
+        attempt_dir = Path(scratch_root) / attempt_id
+        scratch_dir = attempt_dir / "scratch"
+        scratch_dir.mkdir(parents=True)
+        out_path, err_path = attempt_dir / "stdout", attempt_dir / "stderr"
+        document = {} if stdin_document is None else stdin_document
+        stdin_bytes = (
+            json.dumps(document, sort_keys=True, separators=(",", ":")) + "\n"
+        ).encode("utf-8")
+        before = allocated_bytes(scratch_dir)
+        run = spawn_and_wait(
+            skill_argv(skill_module, scratch_dir),
+            out_path,
+            err_path,
+            ceiling_s=ceiling_s,
+            env=child_env(env_extra),
+            stdin_bytes=stdin_bytes,
         )
-    receipt = sub.put_receipt(
-        {
-            "gate_bundle_hash": bundle_hash,
-            "start_mono": run.start_mono,
-            "end_mono": run.end_mono,
-            "cpu_user_s": run.cpu_user_s,
-            "cpu_sys_s": run.cpu_sys_s,
-            "wall_s": run.wall_s,
-            "peak_rss_bytes": run.peak_rss_bytes,
-            "scratch_bytes_written": scratch_written,
-            "exit_status": run.exit_status,
-            "stdout_digest": blob_hash(stdout_bytes),
-            "stderr_digest": blob_hash(stderr_bytes),
-            "tool_digests_hash": tool_digests_hash(tool_digests),
-        }
-    )
-    sub.close_attempt(
-        attempt_id, status, output_manifest_hash=manifest, receipt_hash=receipt
-    )
-    diverged = _diverged(sub, recipe_key, replay) if status == STATUS_OK else ()
-    lg.info(
-        "launch",
-        recipe_key=recipe_key,
-        served=False,
-        attempt_id=attempt_id,
-        status=status,
-        wall_ms=round(run.wall_s * 1000, 3),
-        cpu_s=round(run.cpu_user_s + run.cpu_sys_s, 6),
-        rss=run.peak_rss_bytes,
-        scratch_bytes=scratch_written,
-        diverged=list(diverged),
-    )
-    return Attempt(
-        attempt_id, recipe_key, status, manifest, receipt, False, run, parsed, diverged
-    )
+        scratch_written = max(0, allocated_bytes(scratch_dir) - before)
+        stdout_bytes, stderr_bytes = out_path.read_bytes(), err_path.read_bytes()
+        parsed = parse_skill_output(stdout_bytes)
+        status = status_for(parsed, run.exit_status, run.wall_s, ceiling_s)
+        manifest = None
+        if parsed.well_formed:
+            manifest = sub.put_output_manifest(
+                _artifacts(sub, stdout_bytes, scratch_dir),
+                recipe_key=recipe_key,
+                input_blobs=[h for h, _ in recipe["inputs"].values()],
+                producer_identity=recipe["skill_identity_hash"],
+                replay_grade=replay,
+            )
+        receipt = sub.put_receipt(
+            {
+                "gate_bundle_hash": bundle_hash,
+                "start_mono": run.start_mono,
+                "end_mono": run.end_mono,
+                "cpu_user_s": run.cpu_user_s,
+                "cpu_sys_s": run.cpu_sys_s,
+                "wall_s": run.wall_s,
+                "peak_rss_bytes": run.peak_rss_bytes,
+                "scratch_bytes_written": scratch_written,
+                "exit_status": run.exit_status,
+                "stdout_digest": blob_hash(stdout_bytes),
+                "stderr_digest": blob_hash(stderr_bytes),
+                "tool_digests_hash": tool_digests_hash(tool_digests),
+            }
+        )
+        sub.close_attempt(
+            attempt_id, status, output_manifest_hash=manifest, receipt_hash=receipt
+        )
+        diverged = _diverged(sub, recipe_key) if status == STATUS_OK else ()
+        lg.info(
+            "launch",
+            recipe_key=recipe_key,
+            served=False,
+            attempt_id=attempt_id,
+            status=status,
+            wall_ms=round(run.wall_s * 1000, 3),
+            cpu_s=round(run.cpu_user_s + run.cpu_sys_s, 6),
+            rss=run.peak_rss_bytes,
+            scratch_bytes=scratch_written,
+            diverged=list(diverged),
+        )
+        return Attempt(
+            attempt_id,
+            recipe_key,
+            status,
+            manifest,
+            receipt,
+            False,
+            run,
+            parsed,
+            diverged,
+        )
+    except Exception:
+        if sub.get_attempt(attempt_id)["ended_at"] is None:
+            sub.close_attempt(attempt_id, STATUS_FAIL)
+            lg.warning("launch_aborted", attempt_id=attempt_id, recipe_key=recipe_key)
+        raise
 
 
 def _configure(parser):
@@ -475,8 +497,16 @@ def _run(ns):
             next_command=f"cairn selftest toy-curve --db {ns.db}",
         )
     dry_run = getattr(ns, "dry_run", False)
-    with substrate.Substrate.open(ns.db) as sub:
-        interrupted = startup_scan(sub, dry_run=dry_run)
+    try:
+        with substrate.Substrate.open(ns.db) as sub:
+            interrupted = startup_scan(sub, dry_run=dry_run)
+    except substrate.WriterAlreadyOpen as exc:
+        raise CliError(
+            exits.CONFLICT,
+            f"another writer already holds {ns.db}: {exc}",
+            where=str(ns.db),
+            next_command=f"cairn startup-scan --db {ns.db} --dry-run",
+        ) from None
     shown = interrupted if ns.limit is None else interrupted[: ns.limit]
     if getattr(ns, "json", False):
         cli.emit_json(

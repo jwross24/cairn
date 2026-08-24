@@ -37,10 +37,18 @@ UNDER_CEILING = {
     (-9, False, "DISAGREE"): "FAIL",
     (-9, False, None): "FAIL",
 }
+TABLE = {
+    **{(e, w, s, "under"): expected for (e, w, s), expected in UNDER_CEILING.items()},
+    **{
+        (e, w, s, "over"): "BUDGET_EXCEEDED"
+        for e in EXITS
+        for w in (True, False)
+        for s in SKILL_STATUSES
+    },
+}
 
 
-def _cell(exit_status, well_formed, skill_status, wall):
-    where = "over" if wall > CEILING else "under"
+def _cell(exit_status, well_formed, skill_status, where):
     shape = "wellformed" if well_formed else "malformed"
     return f"exit{exit_status}-{shape}-{skill_status}-{where}"
 
@@ -51,47 +59,33 @@ def _parsed(well_formed, skill_status):
     return ParsedOutput(True, skill_status, None, {"status": skill_status})
 
 
-UNDER_CASES = [
-    pytest.param(e, w, s, expected, id=_cell(e, w, s, UNDER))
-    for (e, w, s), expected in UNDER_CEILING.items()
-]
-OVER_CASES = [
-    pytest.param(e, w, s, id=_cell(e, w, s, OVER))
-    for e in EXITS
-    for w in (True, False)
-    for s in SKILL_STATUSES
+CASES = [
+    pytest.param(e, w, s, where, expected, id=_cell(e, w, s, where))
+    for (e, w, s, where), expected in TABLE.items()
 ]
 
 
-@pytest.mark.parametrize("exit_status,well_formed,skill_status,expected", UNDER_CASES)
-def test_the_status_table_under_the_ceiling(
-    exit_status, well_formed, skill_status, expected
-):
+@pytest.mark.parametrize("exit_status,well_formed,skill_status,where,expected", CASES)
+def test_the_status_table(exit_status, well_formed, skill_status, where, expected):
+    wall = UNDER if where == "under" else OVER
     assert (
         runner.status_for(
-            _parsed(well_formed, skill_status), exit_status, UNDER, CEILING
+            _parsed(well_formed, skill_status), exit_status, wall, CEILING
         )
         == expected
     )
 
 
-@pytest.mark.parametrize("exit_status,well_formed,skill_status", OVER_CASES)
-def test_every_cell_over_the_ceiling_is_budget_exceeded(
-    exit_status, well_formed, skill_status
-):
-    assert (
-        runner.status_for(
-            _parsed(well_formed, skill_status), exit_status, OVER, CEILING
-        )
-        == "BUDGET_EXCEEDED"
-    )
-
-
 def test_the_table_covers_every_cell_exactly_once():
-    assert len(UNDER_CASES) == len(OVER_CASES) == 24
-    assert set(UNDER_CEILING) == {
-        (e, w, s) for e in EXITS for w in (True, False) for s in SKILL_STATUSES
+    assert len(TABLE) == 48
+    assert set(TABLE) == {
+        (e, w, s, where)
+        for e in EXITS
+        for w in (True, False)
+        for s in SKILL_STATUSES
+        for where in ("under", "over")
     }
+    assert set(TABLE.values()) == {"OK", "FAIL", "DISAGREE", "BUDGET_EXCEEDED"}
 
 
 def test_every_terminal_status_the_runner_can_emit_is_reachable():
@@ -172,12 +166,12 @@ def test_the_child_environment_defaults_to_the_live_environment(monkeypatch):
     assert os.environ["CAIRN_DB"] == "/should/not/travel"
 
 
-def test_every_harness_terminated_status_is_terminal_and_never_ok():
+def test_the_runner_never_emits_skill_yanked_though_the_schema_admits_it():
     from cairn import substrate
 
-    assert set(runner.HARNESS_TERMINATED) <= set(substrate.TERMINAL_STATUSES)
-    assert runner.STATUS_OK not in runner.HARNESS_TERMINATED
     assert runner.STATUS_SKILL_YANKED in substrate.STATUSES
+    assert runner.STATUS_SKILL_YANKED not in set(UNDER_CEILING.values())
+    assert runner.STATUS_SKILL_YANKED != "BUDGET_EXCEEDED"
 
 
 @pytest.mark.parametrize(
@@ -187,12 +181,6 @@ def test_every_harness_terminated_status_is_terminal_and_never_ok():
 )
 def test_peak_rss_normalizes_to_bytes_on_both_platforms(platform, raw, expected):
     assert runner.maxrss_bytes(raw, platform) == expected
-
-
-def test_the_two_platforms_agree_on_one_measurement():
-    assert runner.maxrss_bytes(16449536, "darwin") == runner.maxrss_bytes(
-        16064, "linux"
-    )
 
 
 @pytest.mark.parametrize("platform", ["win32", "cygwin", "aix", "emscripten", ""])
@@ -253,25 +241,35 @@ def test_allocated_bytes_does_not_follow_a_symlink_out_of_the_tree(tmp_path):
     assert runner.allocated_bytes(root) - before < 1024 * 1024
 
 
-def test_signalling_a_pid_that_is_already_gone_is_not_an_error():
-    import os
-    import signal
-    import subprocess
-
-    proc = subprocess.Popen([sys.executable, "-c", "pass"])
-    os.wait4(proc.pid, 0)
-    proc.returncode = 0
-    runner._signal_group(proc.pid, proc.pid, signal.SIGKILL)
-
-
-def test_the_group_signal_falls_back_to_the_pid(monkeypatch):
+@pytest.mark.parametrize("raised", [ProcessLookupError, PermissionError])
+def test_the_group_signal_falls_back_to_the_pid(monkeypatch, raised):
     import os
     import signal
 
     killed = []
-    monkeypatch.setattr(
-        os, "killpg", lambda *a: (_ for _ in ()).throw(ProcessLookupError())
-    )
+    monkeypatch.setattr(os, "killpg", lambda *a: (_ for _ in ()).throw(raised()))
     monkeypatch.setattr(os, "kill", lambda pid, sig: killed.append((pid, sig)))
     runner._signal_group(4242, 99, signal.SIGKILL)
     assert killed == [(99, signal.SIGKILL)]
+
+
+@pytest.mark.parametrize("raised", [ProcessLookupError, PermissionError])
+def test_a_pid_that_is_gone_from_both_paths_is_swallowed(monkeypatch, raised):
+    import os
+    import signal
+
+    monkeypatch.setattr(os, "killpg", lambda *a: (_ for _ in ()).throw(raised()))
+    monkeypatch.setattr(
+        os, "kill", lambda *a: (_ for _ in ()).throw(ProcessLookupError())
+    )
+    runner._signal_group(4242, 99, signal.SIGKILL)
+
+
+def test_allocated_bytes_measures_what_is_already_there(tmp_path):
+    root = tmp_path / "scratch"
+    root.mkdir()
+    (root / "seeded.bin").write_bytes(b"s" * (1024 * 1024))
+    before = runner.allocated_bytes(root)
+    assert before >= 1024 * 1024
+    (root / "added.bin").write_bytes(b"a" * (512 * 1024))
+    assert runner.allocated_bytes(root) - before >= 512 * 1024

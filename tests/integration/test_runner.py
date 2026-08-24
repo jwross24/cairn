@@ -471,3 +471,266 @@ def test_an_attempt_carries_the_replay_grade_it_was_given(writer, tmp_path):
     attempt = _fixture_launch(writer, tmp_path, "skills.disagree", replay="Verifiable")
     assert writer.get_attempt(attempt.attempt_id)["replay_grade"] == "Verifiable"
     assert writer.effective_grade(attempt.output_manifest_hash) == "Verifiable"
+
+
+def test_the_child_is_asked_to_terminate_before_it_is_killed(writer, tmp_path):
+    attempt = _fixture_launch(
+        writer,
+        tmp_path,
+        "skills.traps_sigterm",
+        evaluation=Evaluation(0.125, 0.125, 0.125),
+    )
+    scratch = tmp_path / "runs" / attempt.attempt_id / "scratch"
+    assert (scratch / "sigterm_seen").read_text() == "term"
+    assert attempt.launch.exit_status == 0
+    assert attempt.status == "BUDGET_EXCEEDED"
+
+
+def test_a_grandchild_of_a_normally_exiting_child_is_still_swept(writer, tmp_path):
+    import os
+
+    attempt = _fixture_launch(writer, tmp_path, "skills.forks_then_exits")
+    assert attempt.status == "OK"
+    assert not attempt.launch.timed_out
+    scratch = tmp_path / "runs" / attempt.attempt_id / "scratch"
+    grandchild_pid = int((scratch / "grandchild_pid").read_text())
+    with pytest.raises(ProcessLookupError):
+        os.kill(grandchild_pid, 0)
+
+
+def test_an_exception_in_the_wait_loop_still_reaps_the_child(tmp_path, monkeypatch):
+    import os
+    import subprocess as sp
+
+    spawned = []
+    real_popen = sp.Popen
+
+    class Recording(real_popen):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            spawned.append(self.pid)
+
+    monkeypatch.setattr(sp, "Popen", Recording)
+    monkeypatch.setattr(runner.subprocess, "Popen", Recording)
+
+    ticks = []
+    real_sleep = runner.time.sleep
+
+    def exploding(seconds):
+        ticks.append(seconds)
+        if len(ticks) == 2:
+            raise KeyboardInterrupt("planted")
+        return real_sleep(seconds)
+
+    monkeypatch.setattr(runner.time, "sleep", exploding)
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    with pytest.raises(KeyboardInterrupt, match="planted"):
+        runner.spawn_and_wait(
+            runner.skill_argv("skills.sleep2", scratch),
+            tmp_path / "stdout",
+            tmp_path / "stderr",
+            ceiling_s=None,
+            env=runner.child_env({"PYTHONPATH": FIXTURES}),
+            stdin_bytes=b"{}",
+        )
+    assert len(spawned) == 1
+    with pytest.raises(ProcessLookupError):
+        os.kill(spawned[0], 0)
+
+
+def test_only_regular_files_under_scratch_become_artifacts(writer, tmp_path):
+    attempt = _fixture_launch(writer, tmp_path, "skills.scratch_shapes")
+    assert attempt.status == "OK"
+    members = {
+        r["child_hash"]
+        for r in writer.conn.execute(
+            "SELECT child_hash FROM lineage WHERE parent_hash = ? AND edge_kind = 'member'",
+            (attempt.output_manifest_hash,),
+        ).fetchall()
+    }
+    bodies = {writer.get_blob(h) for h in members}
+    assert b"OUTSIDE-THE-SCRATCH-DIR" not in bodies
+    assert {b"REAL", b"DEEP"} <= bodies
+    assert len(members) == 3
+
+
+def test_an_attempt_is_never_left_running_when_the_launch_raises(
+    writer, tmp_path, monkeypatch
+):
+    monkeypatch.setattr(
+        runner, "_artifacts", lambda *a: (_ for _ in ()).throw(OSError("planted"))
+    )
+    with pytest.raises(OSError, match="planted"):
+        _fixture_launch(writer, tmp_path, "skills.disagree")
+    rows = writer.conn.execute("SELECT status, ended_at FROM attempts").fetchall()
+    assert [r["status"] for r in rows] == ["FAIL"]
+    assert rows[0]["ended_at"] is not None
+
+
+def test_a_grant_that_exactly_covers_the_ceiling_is_accepted(writer, tmp_path):
+    evaluation = Evaluation(0.2, 0.2, 0.2)
+    attempt = _fixture_launch(
+        writer,
+        tmp_path,
+        "skills.disagree",
+        evaluation=evaluation,
+        budget_remaining=runner.ceiling_for(evaluation.expected_wall_s, 4),
+    )
+    assert attempt.status == "DISAGREE"
+
+
+def test_input_blobs_are_linked_to_the_manifest(writer, tmp_path):
+    payload = b"an input this recipe names"
+    digest = writer.put_blob(payload)
+    recipe = {**_recipe(seed=51), "inputs": {"seed.bin": (digest, len(payload))}}
+    attempt = _fixture_launch(writer, tmp_path, "skills.disagree", recipe=recipe)
+    edges = {
+        (r["parent_hash"], r["edge_kind"])
+        for r in writer.lineage_of(attempt.output_manifest_hash)
+    }
+    assert (digest, substrate.EDGE_INPUT) in edges
+
+
+def test_the_manifest_records_the_producing_skill_identity(writer, tmp_path):
+    attempt = _fixture_launch(writer, tmp_path, "skills.disagree")
+    node = writer.get_node(attempt.output_manifest_hash)
+    assert node["producer_identity"] == keys.identity_bundle_hash(IDENTITY)
+
+
+def test_an_unnamed_stdin_document_is_an_empty_object(writer, tmp_path):
+    attempt = runner.launch(
+        writer,
+        "skills.print_env",
+        _recipe(seed=61),
+        **_kw(tmp_path),
+    )
+    stdin_bytes = (tmp_path / "runs" / attempt.attempt_id / "stdin").read_bytes()
+    assert stdin_bytes == b"{}\n"
+
+
+def test_the_scratch_measurement_is_a_delta_not_an_absolute(writer, tmp_path):
+    attempt_ids = []
+    real_spawn = runner.spawn_and_wait
+
+    def preseeded(argv, out_path, err_path, **kwargs):
+        scratch = Path(argv[-1])
+        (scratch / "preexisting.bin").write_bytes(b"p" * (2 * 1024 * 1024))
+        attempt_ids.append(scratch)
+        return real_spawn(argv, out_path, err_path, **kwargs)
+
+    attempt = runner.launch(
+        writer,
+        "skills.disagree",
+        _recipe(seed=71),
+        stdin_document={"n": 1},
+        **_kw(tmp_path),
+    )
+    quiet = writer.get_receipt(attempt.receipt_hash)["scratch_bytes_written"]
+    assert quiet == 0
+
+
+def test_a_locked_substrate_exits_conflict(tmp_path, capsys):
+    db = tmp_path / "substrate.sqlite"
+    with substrate.Substrate.open(db):
+        code, out, err = _run(["startup-scan", "--db", str(db), "--json"], capsys)
+    assert code == exits.CONFLICT
+    assert out == ""
+
+
+def test_a_kill_logs_the_ceiling_and_the_elapsed_wall(writer, tmp_path, json_test_log):
+    _fixture_launch(
+        writer,
+        tmp_path,
+        "skills.sleep2",
+        evaluation=Evaluation(0.125, 0.125, 0.125),
+    )
+    records = [
+        json.loads(line)
+        for line in json_test_log.read_text().splitlines()
+        if line.strip() and json.loads(line).get("event") == "kill"
+    ]
+    assert len(records) == 1
+    assert records[0]["ceiling_s"] == pytest.approx(0.5)
+    assert records[0]["terminated_at_s"] >= 0.5
+    assert records[0]["wall_s"] >= records[0]["terminated_at_s"]
+
+
+def test_the_launch_log_names_the_cache_decision(writer, tmp_path, json_test_log):
+    _fixture_launch(writer, tmp_path, "skills.disagree", recipe=_recipe(seed=81))
+    _fixture_launch(writer, tmp_path, "skills.disagree", recipe=_recipe(seed=82))
+    records = [
+        json.loads(line)
+        for line in json_test_log.read_text().splitlines()
+        if line.strip() and json.loads(line).get("event") == "launch"
+    ]
+    assert [r["served"] for r in records] == [False, False]
+    assert all("attempt_id" in r for r in records)
+
+
+def test_signalling_a_reaped_pid_is_swallowed(tmp_path):
+    import os
+    import signal
+    import subprocess
+
+    proc = subprocess.Popen([sys.executable, "-c", "pass"])
+    os.wait4(proc.pid, 0)
+    proc.returncode = 0
+    with pytest.raises(ProcessLookupError):
+        os.kill(proc.pid, 0)
+    runner._signal_group(proc.pid, proc.pid, signal.SIGKILL)
+
+
+@pytest.mark.parametrize(
+    "grace,expected_exit",
+    [(1.5, 0), (0.0, -9)],
+    ids=["grace-lets-it-finish", "no-grace-kills-it"],
+)
+def test_the_grace_window_is_what_lets_a_slow_handler_finish(
+    tmp_path, grace, expected_exit
+):
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    run = runner.spawn_and_wait(
+        runner.skill_argv("skills.slow_sigterm", scratch),
+        tmp_path / "stdout",
+        tmp_path / "stderr",
+        ceiling_s=0.2,
+        env=runner.child_env({"PYTHONPATH": FIXTURES}),
+        stdin_bytes=b"{}",
+        grace=grace,
+    )
+    assert run.timed_out
+    assert run.exit_status == expected_exit
+
+
+def test_a_slower_tick_still_stops_the_child(tmp_path):
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    run = runner.spawn_and_wait(
+        runner.skill_argv("skills.sleep2", scratch),
+        tmp_path / "stdout",
+        tmp_path / "stderr",
+        ceiling_s=0.2,
+        env=runner.child_env({"PYTHONPATH": FIXTURES}),
+        stdin_bytes=b"{}",
+        tick=0.05,
+    )
+    assert run.timed_out and run.exit_status < 0
+    assert run.wall_s < 1.5
+
+
+def test_the_default_grace_window_lets_a_prompt_handler_finish(tmp_path):
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    run = runner.spawn_and_wait(
+        runner.skill_argv("skills.slow_sigterm", scratch),
+        tmp_path / "stdout",
+        tmp_path / "stderr",
+        ceiling_s=0.2,
+        env=runner.child_env({"PYTHONPATH": FIXTURES, "FIXTURE_SIGTERM_DELAY": "0.05"}),
+        stdin_bytes=b"{}",
+    )
+    assert run.timed_out
+    assert run.exit_status == 0
+    assert runner.GRACE_S > 0.05
