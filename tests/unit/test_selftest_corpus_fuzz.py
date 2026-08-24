@@ -32,6 +32,12 @@ json_values = st.recursive(
     lambda c: st.lists(c, max_size=4) | st.dictionaries(st.text(), c, max_size=4),
     max_leaves=12,
 )
+
+
+def _unknown_field(name):
+    return name not in selftest.SCALAR_FIELDS and name not in selftest.POINT_FIELDS
+
+
 non_integers = (
     st.text()
     | st.none()
@@ -67,34 +73,50 @@ def _replay_seeds(fn):
     return fn
 
 
+MUTATION_KINDS = [
+    "drop_origin",
+    "unknown_origin",
+    "bad_ledger",
+    "floor_above",
+    "floor_negative",
+    "floor_not_int",
+    "duplicate_id",
+    "empty_cases",
+    "drop_required_field",
+    "unknown_postcondition",
+    "postcondition_missing_field",
+    "bad_scalar_type",
+    "bad_point_shape",
+    "extra_field_key",
+    "field_not_object",
+    "case_not_object",
+    "drop_case_key",
+    "empty_id",
+    "empty_postconditions",
+    "fields_not_object",
+    "unknown_field_name",
+    "bad_schema_version",
+    "degenerate_modulus",
+    "degenerate_order",
+]
+
+
 @st.composite
 def mutated_corpus(draw):
     doc = copy.deepcopy(BASE)
     cases = doc["cases"]
-    kind = draw(
-        st.sampled_from(
-            [
-                "drop_origin",
-                "unknown_origin",
-                "bad_ledger",
-                "floor_above",
-                "floor_negative",
-                "floor_not_int",
-                "duplicate_id",
-                "empty_cases",
-            ]
-        )
-    )
+    pick = lambda: cases[draw(st.integers(0, len(cases) - 1))]  # noqa: E731
+    kind = draw(st.sampled_from(MUTATION_KINDS))
     if kind == "drop_origin":
-        case = cases[draw(st.integers(0, len(cases) - 1))]
+        case = pick()
         del case["fields"][draw(st.sampled_from(sorted(case["fields"])))]["origin"]
     elif kind == "unknown_origin":
-        case = cases[draw(st.integers(0, len(cases) - 1))]
+        case = pick()
         case["fields"][draw(st.sampled_from(sorted(case["fields"])))]["origin"] = draw(
             st.text().filter(lambda t: t not in selftest.ORIGINS)
         )
     elif kind == "bad_ledger":
-        cases[draw(st.integers(0, len(cases) - 1))]["ledger"] = draw(
+        pick()["ledger"] = draw(
             st.text().filter(lambda t: t not in selftest.LEDGER_VALUES)
         )
     elif kind == "floor_above":
@@ -104,9 +126,58 @@ def mutated_corpus(draw):
     elif kind == "floor_not_int":
         doc["pass_floor"] = draw(non_integers)
     elif kind == "duplicate_id":
-        cases.append(copy.deepcopy(cases[draw(st.integers(0, len(cases) - 1))]))
-    else:
+        cases.append(copy.deepcopy(pick()))
+    elif kind == "empty_cases":
         doc["cases"] = []
+    elif kind == "drop_required_field":
+        case = pick()
+        del case["fields"][draw(st.sampled_from(list(selftest.REQUIRED_FIELDS)))]
+    elif kind == "unknown_postcondition":
+        pick()["postconditions"] = [
+            draw(st.text(min_size=1).filter(lambda t: t not in selftest.POSTCONDITIONS))
+        ]
+    elif kind == "postcondition_missing_field":
+        case = next(c for c in cases if "x" in c["fields"])
+        case["postconditions"] = ["ellmul"]
+        del case["fields"]["x"]
+    elif kind == "bad_scalar_type":
+        pick()["fields"]["n"]["value"] = draw(non_integers)
+    elif kind == "bad_point_shape":
+        pick()["fields"]["P"]["value"] = draw(
+            st.one_of(
+                st.integers(),
+                st.lists(st.integers(), min_size=3, max_size=5),
+                st.lists(st.integers(), max_size=1),
+                st.lists(st.text(), min_size=2, max_size=2),
+            )
+        )
+    elif kind == "extra_field_key":
+        pick()["fields"]["p"]["note"] = draw(st.text())
+    elif kind == "field_not_object":
+        pick()["fields"]["p"] = draw(st.integers())
+    elif kind == "case_not_object":
+        cases[draw(st.integers(0, len(cases) - 1))] = draw(st.text() | st.integers())
+    elif kind == "drop_case_key":
+        del pick()[draw(st.sampled_from(list(selftest.CASE_KEYS)))]
+    elif kind == "empty_id":
+        pick()["id"] = ""
+    elif kind == "empty_postconditions":
+        pick()["postconditions"] = []
+    elif kind == "fields_not_object":
+        pick()["fields"] = draw(st.lists(st.text(), max_size=2) | st.text())
+    elif kind == "unknown_field_name":
+        pick()["fields"][draw(st.text(min_size=1).filter(_unknown_field))] = {
+            "value": 1,
+            "origin": "author_supplied",
+        }
+    elif kind == "degenerate_modulus":
+        pick()["fields"]["p"]["value"] = draw(st.integers(-50, 1))
+    elif kind == "degenerate_order":
+        pick()["fields"]["n"]["value"] = draw(st.integers(-50, 0))
+    else:
+        doc["schema_version"] = draw(
+            st.integers().filter(lambda v: v != selftest.SCHEMA_VERSION)
+        )
     return doc
 
 

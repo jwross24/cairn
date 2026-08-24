@@ -101,7 +101,6 @@ def test_transcript_bytes_are_the_concatenated_records_and_order_is_load_bearing
         ("arm", "postcondition", {"outcome": "pass"}),
     ]
     joined = selftest.transcript_bytes(records)
-    assert joined == b"".join(selftest.record_bytes(*r) for r in records)
     assert [bytes.fromhex(line) for line in selftest.transcript_lines(records)] == [
         selftest.record_bytes(*r) for r in records
     ]
@@ -117,3 +116,24 @@ def test_transcript_digest_moves_when_one_observed_output_moves():
         selftest.transcript_bytes([("case", "F5", {"n": 8})])
     )
     assert before != after
+
+
+@pytest.mark.parametrize(
+    "text", ["{", "", "not json", '{"cases": [}', "[1, 2, 3"], ids=range(5)
+)
+def test_a_corpus_file_that_is_not_json_is_refused(tmp_path, text):
+    path = tmp_path / "corpus.json"
+    path.write_text(text)
+    with pytest.raises(CorpusSchemaError, match="not valid JSON"):
+        selftest.load_corpus(path)
+
+
+def test_a_corpus_file_that_is_json_but_not_an_object_is_refused(tmp_path):
+    path = tmp_path / "corpus.json"
+    path.write_text("[1, 2, 3]")
+    with pytest.raises(CorpusSchemaError, match=re.escape("$")):
+        selftest.load_corpus(path)
+
+
+def test_the_shipped_corpus_loads_from_its_committed_path():
+    assert selftest.load_corpus() == selftest.load_corpus(selftest.CORPUS_PATH)

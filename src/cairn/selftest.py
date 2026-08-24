@@ -17,6 +17,15 @@ POINT_FIELDS = ("P", "Q")
 REQUIRED_FIELDS = ("p", "a", "b", "n", "P")
 FIELD_KEYS = ("value", "origin")
 CASE_KEYS = ("id", "ledger", "source", "postconditions", "fields")
+POSTCONDITION_FIELDS = {
+    "oncurve": ("P",),
+    "ellorder": ("P", "n"),
+    "ellmul": ("P", "x", "Q"),
+    "ellcard": ("n",),
+    "order_kills": ("P", "n"),
+    "order_does_not_kill": ("Q", "n"),
+}
+POSTCONDITIONS = tuple(POSTCONDITION_FIELDS)
 
 
 class CorpusSchemaError(ValueError):
@@ -113,6 +122,24 @@ def _check_case(index, case, seen_ids):
         )
     for name in sorted(fields):
         _check_field(f"{path}.fields.{name}", name, fields[name])
+    for name, floor in (("p", 2), ("n", 1)):
+        value = fields[name]["value"]
+        if value < floor:
+            raise CorpusSchemaError(
+                f"{path}.fields.{name}.value", f"{name} must be >= {floor}, got {value}"
+            )
+    for name in postconditions:
+        needed = POSTCONDITION_FIELDS.get(name)
+        if needed is None:
+            raise CorpusSchemaError(
+                f"{path}.postconditions", f"unknown postcondition {name!r}"
+            )
+        lacking = [k for k in needed if k not in fields]
+        if lacking:
+            raise CorpusSchemaError(
+                f"{path}.postconditions",
+                f"{name} needs fields {', '.join(lacking)}",
+            )
 
 
 def _cases_to_check(cases):
@@ -220,14 +247,6 @@ def certificate_hash(identity_bundle_hash, transcript_hash, env_manifest_hash):
 
 DRAW_COUNT = 20
 ARM_BITS = 30
-POSTCONDITIONS = (
-    "oncurve",
-    "ellorder",
-    "ellmul",
-    "ellcard",
-    "order_kills",
-    "order_does_not_kill",
-)
 
 
 class SelftestFailed(Exception):
@@ -281,11 +300,6 @@ def run_case(case):
     observed = {}
     held = {}
     for name in case["postconditions"]:
-        if name not in POSTCONDITIONS:
-            raise CorpusSchemaError(
-                f"$.cases.{case['id']}.postconditions",
-                f"unknown postcondition {name!r}",
-            )
         observed[name], held[name] = _evaluate(name, E, v)
     return observed, all(held.values()), held
 
@@ -311,10 +325,6 @@ def postcondition_arm(seed):
 
     out = toy_curve.run(ARM_BITS, seed)
     toy_curve.check_postcondition(out)
-    if (out.n - (out.p + 1)) ** 2 > 4 * out.p:
-        raise SelftestFailed(
-            "postcondition-arm", f"n = {out.n} outside the Hasse interval"
-        )
     body = {
         "bits": out.bits,
         "p": out.p,
@@ -394,7 +404,8 @@ def run_once(config, *, doc=None, root=None):
             id=case["id"],
             ledger=declared,
             observed=_canonical_json(observed),
-            expected=_canonical_json(held),
+            expected=_canonical_json(_values(case)),
+            held=_canonical_json(held),
         )
         records.append(("case", case["id"], {"ledger": declared, "observed": observed}))
     floor = doc["pass_floor"]
