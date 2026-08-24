@@ -384,3 +384,90 @@ def test_a_missing_substrate_names_a_command_that_exists(tmp_path, capsys):
     assert out == ""
     named = err.rsplit("run: ", 1)[1].strip().split()[1]
     assert named in {c.name for c in cli.commands()}
+
+
+def test_a_sigterm_immune_child_is_escalated_to_sigkill(writer, tmp_path):
+    attempt = _fixture_launch(
+        writer,
+        tmp_path,
+        "skills.sigterm_immune",
+        evaluation=Evaluation(0.125, 0.125, 0.125),
+    )
+    assert attempt.status == "BUDGET_EXCEEDED"
+    assert attempt.launch.exit_status == -9
+    assert attempt.launch.wall_s < 5.0
+    assert writer.get_receipt(attempt.receipt_hash)["exit_status"] == -9
+
+
+def test_the_group_sweep_leaves_no_stray_grandchild(writer, tmp_path):
+    import os
+
+    attempt = _fixture_launch(
+        writer,
+        tmp_path,
+        "skills.forks_a_grandchild",
+        evaluation=Evaluation(0.125, 0.125, 0.125),
+    )
+    assert attempt.status == "BUDGET_EXCEEDED"
+    scratch = tmp_path / "runs" / attempt.attempt_id / "scratch"
+    assert (scratch / "grandchild").exists()
+    grandchild_pid = int((scratch / "grandchild_pid").read_text())
+    with pytest.raises(ProcessLookupError):
+        os.kill(grandchild_pid, 0)
+
+
+def test_rusage_covers_the_child_and_what_the_child_reaped(writer, tmp_path):
+    alone = _fixture_launch(
+        writer, tmp_path, "skills.cpu_burner", recipe=_recipe(seed=21)
+    )
+    with_grandchild = _fixture_launch(
+        writer,
+        tmp_path,
+        "skills.cpu_burner",
+        recipe=_recipe(seed=22),
+        env_extra={"PYTHONPATH": FIXTURES, "FIXTURE_GRANDCHILD": "1"},
+    )
+    assert alone.status == with_grandchild.status == "OK"
+    assert with_grandchild.launch.cpu_user_s > alone.launch.cpu_user_s * 2
+
+
+def test_a_recipe_marked_do_not_cache_is_never_served(writer, tmp_path):
+    first = _fixture_launch(
+        writer, tmp_path, "skills.disagree", recipe=_recipe(seed=31), do_not_cache=True
+    )
+    assert writer.serve(first.recipe_key) is None
+    second = _fixture_launch(
+        writer, tmp_path, "skills.disagree", recipe=_recipe(seed=31), do_not_cache=True
+    )
+    assert not second.served_from_cache and second.attempt_id != first.attempt_id
+
+
+@pytest.mark.parametrize("replay", ["Verifiable", "AuditOnly"])
+def test_a_non_replayable_recipe_is_never_marked_non_reproducible(
+    writer, tmp_path, replay
+):
+    first = _fixture_launch(
+        writer,
+        tmp_path,
+        "skills.nondeterministic",
+        recipe=_recipe(seed=41),
+        replay=replay,
+    )
+    second = _fixture_launch(
+        writer,
+        tmp_path,
+        "skills.nondeterministic",
+        recipe=_recipe(seed=41),
+        replay=replay,
+        skip_cache_lookup=True,
+    )
+    assert second.output_manifest_hash != first.output_manifest_hash
+    assert second.diverged == ()
+    assert writer.get_attempt(second.attempt_id)["inadmissible"] == 0
+    assert writer.get_attempt(first.attempt_id)["replay_grade"] == replay
+
+
+def test_an_attempt_carries_the_replay_grade_it_was_given(writer, tmp_path):
+    attempt = _fixture_launch(writer, tmp_path, "skills.disagree", replay="Verifiable")
+    assert writer.get_attempt(attempt.attempt_id)["replay_grade"] == "Verifiable"
+    assert writer.effective_grade(attempt.output_manifest_hash) == "Verifiable"

@@ -409,6 +409,8 @@ def launch(
             _artifacts(sub, stdout_bytes, scratch_dir),
             recipe_key=recipe_key,
             input_blobs=[h for h, _ in recipe["inputs"].values()],
+            producer_identity=recipe["skill_identity_hash"],
+            replay_grade=replay,
         )
     receipt = sub.put_receipt(
         {

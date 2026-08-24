@@ -1,4 +1,5 @@
 import os
+import sys
 
 import pytest
 
@@ -192,3 +193,85 @@ def test_the_two_platforms_agree_on_one_measurement():
     assert runner.maxrss_bytes(16449536, "darwin") == runner.maxrss_bytes(
         16064, "linux"
     )
+
+
+@pytest.mark.parametrize("platform", ["win32", "cygwin", "aix", "emscripten", ""])
+def test_an_unrecognized_platform_refuses_to_guess_the_maxrss_unit(platform):
+    with pytest.raises(NotImplementedError, match="ru_maxrss units are unknown"):
+        runner.maxrss_bytes(1024, platform)
+
+
+@pytest.mark.parametrize(
+    "platform", ["linux", "freebsd14", "openbsd7", "netbsd9", "sunos5"]
+)
+def test_every_kilobyte_platform_is_scaled(platform):
+    assert runner.maxrss_bytes(1024, platform) == 1024 * 1024
+
+
+def test_skill_argv_is_the_interpreter_the_module_and_the_scratch_path(tmp_path):
+    argv = runner.skill_argv("cairn.skills.toy_curve", tmp_path / "scratch")
+    assert argv == [
+        sys.executable,
+        "-m",
+        "cairn.skills.toy_curve",
+        str(tmp_path / "scratch"),
+    ]
+
+
+def test_allocated_bytes_counts_blocks_not_apparent_size(tmp_path):
+    root = tmp_path / "scratch"
+    root.mkdir()
+    assert runner.allocated_bytes(root) == 0
+    (root / "dense.bin").write_bytes(b"d" * (1024 * 1024))
+    dense = runner.allocated_bytes(root)
+    assert dense >= 1024 * 1024
+
+    sparse = root / "sparse.bin"
+    with open(sparse, "wb") as handle:
+        handle.seek(100 * 1024 * 1024)
+        handle.write(b"x")
+    assert sparse.stat().st_size > 100 * 1024 * 1024
+    assert runner.allocated_bytes(root) - dense < 1024 * 1024
+
+
+def test_allocated_bytes_walks_nested_directories(tmp_path):
+    root = tmp_path / "scratch"
+    (root / "a" / "b").mkdir(parents=True)
+    before = runner.allocated_bytes(root)
+    (root / "a" / "b" / "deep.bin").write_bytes(b"z" * (512 * 1024))
+    assert runner.allocated_bytes(root) - before >= 512 * 1024
+
+
+def test_allocated_bytes_does_not_follow_a_symlink_out_of_the_tree(tmp_path):
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "big.bin").write_bytes(b"o" * (4 * 1024 * 1024))
+    root = tmp_path / "scratch"
+    root.mkdir()
+    before = runner.allocated_bytes(root)
+    (root / "escape").symlink_to(outside)
+    assert runner.allocated_bytes(root) - before < 1024 * 1024
+
+
+def test_signalling_a_pid_that_is_already_gone_is_not_an_error():
+    import os
+    import signal
+    import subprocess
+
+    proc = subprocess.Popen([sys.executable, "-c", "pass"])
+    os.wait4(proc.pid, 0)
+    proc.returncode = 0
+    runner._signal_group(proc.pid, proc.pid, signal.SIGKILL)
+
+
+def test_the_group_signal_falls_back_to_the_pid(monkeypatch):
+    import os
+    import signal
+
+    killed = []
+    monkeypatch.setattr(
+        os, "killpg", lambda *a: (_ for _ in ()).throw(ProcessLookupError())
+    )
+    monkeypatch.setattr(os, "kill", lambda pid, sig: killed.append((pid, sig)))
+    runner._signal_group(4242, 99, signal.SIGKILL)
+    assert killed == [(99, signal.SIGKILL)]
