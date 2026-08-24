@@ -262,15 +262,26 @@ def test_a_bumped_revision_is_not_certified(tmp_path, pinned_bundle, capsys):
     code, out, err = _run(["selftest", "toy-curve", *argv, "--json"], capsys)
     assert code == exits.OK, err
     certified_identity = json.loads(out)["identity_bundle_hash"]
-    bumped = {
-        **toy_curve.identity_bundle(),
-        "implementation_revision": "ab" * 32,
-    }
-    bumped_identity = keys.identity_bundle_hash(bumped)
+    tree = tmp_path / "bumped"
+    for rel in toy_curve.IDENTITY_SOURCES:
+        target = tree / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((toy_curve.REPO_ROOT / rel).read_bytes())
+    edited = tree / toy_curve.IDENTITY_SOURCES[0]
+    edited.write_bytes(edited.read_bytes() + b"\n")
+
+    bumped_identity = keys.identity_bundle_hash(toy_curve.identity_bundle(tree))
     assert bumped_identity != certified_identity
+    assert (
+        toy_curve.implementation_revision(tree) != toy_curve.implementation_revision()
+    )
+    assert selftest.arm_seed(
+        toy_curve.implementation_revision(tree)
+    ) != selftest.arm_seed(toy_curve.implementation_revision())
     with substrate.Substrate.open(tmp_path / "substrate.sqlite", role="reader") as sub:
         assert sub.certified(certified_identity)
         assert not sub.certified(bumped_identity)
+        assert sub.get_certificate(bumped_identity) is None
 
 
 def test_the_verifier_arm_refuses_every_wrong_draw(tmp_path, pinned_bundle):
