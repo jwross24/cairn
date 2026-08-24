@@ -1,0 +1,11 @@
+{
+ "arms": {
+  "postcondition": "pass",
+  "verifier": {
+   "fail": 20,
+   "ok": 20
+  }
+ },
+ "floor": 4,
+ "pass": 4
+}
