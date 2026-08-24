@@ -290,9 +290,10 @@ def test_identity_hash_moves_with_the_implementation_revision(tmp_path):
         target = tmp_path / rel
         target.parent.mkdir(parents=True, exist_ok=True)
         source = toy_curve.REPO_ROOT / rel
-        target.write_bytes(source.read_bytes() if source.is_file() else b'{"cases": []}\n')
+        assert source.is_file(), f"{rel} is named in IDENTITY_SOURCES but absent"
+        target.write_bytes(source.read_bytes())
     base = toy_curve.skill_identity_hash(root=tmp_path)
-    assert base != toy_curve.skill_identity_hash()
+    assert base == toy_curve.skill_identity_hash()
     path = tmp_path / toy_curve.IDENTITY_SOURCES[0]
     data = bytearray(path.read_bytes())
     data[len(data) // 2] ^= 0x01

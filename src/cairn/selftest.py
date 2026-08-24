@@ -1,6 +1,11 @@
 import json
 from pathlib import Path
 
+import blake3
+
+from cairn import canon, keys
+from cairn.canon import STR, Field, Struct
+
 SCHEMA_VERSION = 1
 CORPUS_PATH = Path(__file__).resolve().parent / "skills" / "toy_curve_corpus.json"
 ORIGINS = ("upstream_vendored", "author_supplied", "randomized_postcondition")
@@ -161,3 +166,50 @@ def field_origins(doc):
         }
         for case in doc["cases"]
     }
+
+
+TAG_TRANSCRIPT = "cairn/selftest-transcript/v1"
+SEED_LABEL = b"selftest-seed"
+RECORD = Struct(
+    "selftest_record",
+    [Field("kind", STR), Field("id", STR), Field("body", STR)],
+)
+
+
+def _canonical_json(body):
+    return json.dumps(body, sort_keys=True, separators=(",", ":"))
+
+
+def record_bytes(kind, record_id, body):
+    return canon.encode(
+        RECORD, {"kind": kind, "id": record_id, "body": _canonical_json(body)}
+    )
+
+
+def transcript_bytes(records):
+    return b"".join(record_bytes(*record) for record in records)
+
+
+def transcript_digest(transcript):
+    return canon.digest(TAG_TRANSCRIPT, transcript)
+
+
+def transcript_lines(records):
+    return [record_bytes(*record).hex() for record in records]
+
+
+def arm_seed(implementation_revision):
+    material = canon.length_prefix(
+        implementation_revision.encode("utf-8")
+    ) + canon.length_prefix(SEED_LABEL)
+    return int.from_bytes(blake3.blake3(material).digest()[:8], "big")
+
+
+def certificate_hash(identity_bundle_hash, transcript_hash, env_manifest_hash):
+    return keys.selftest_cert_hash(
+        {
+            "identity_bundle_hash": identity_bundle_hash,
+            "transcript_hash": transcript_hash,
+            "env_manifest_hash": env_manifest_hash,
+        }
+    )
