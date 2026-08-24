@@ -288,15 +288,23 @@ class Attempt:
     diverged: tuple = ()
 
 
-def startup_scan(sub, *, at=None):
+def running_attempts(sub):
     rows = sub.conn.execute(
         "SELECT attempt_id FROM attempts WHERE status = 'RUNNING' AND ended_at IS NULL ORDER BY rowid"
     ).fetchall()
-    interrupted = [row["attempt_id"] for row in rows]
-    for attempt_id in interrupted:
-        sub.close_attempt(attempt_id, STATUS_INTERRUPTED, ended_at=at)
+    return [row["attempt_id"] for row in rows]
+
+
+def startup_scan(sub, *, at=None, dry_run=False):
+    interrupted = running_attempts(sub)
+    if not dry_run:
+        for attempt_id in interrupted:
+            sub.close_attempt(attempt_id, STATUS_INTERRUPTED, ended_at=at)
     log.get(LOG_STEP).info(
-        "startup_scan", interrupted=interrupted, count=len(interrupted)
+        "startup_scan",
+        interrupted=interrupted,
+        count=len(interrupted),
+        dry_run=dry_run,
     )
     return interrupted
 
@@ -445,7 +453,12 @@ def _configure(parser):
         type=int,
         default=None,
         metavar="N",
-        help="report at most N interrupted attempt ids in the document",
+        help="report at most N attempt ids in the document",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="report what would be interrupted and change nothing; the transition is append-only and cannot be undone",
     )
 
 
@@ -455,15 +468,19 @@ def _run(ns):
     if not os.path.exists(ns.db):
         raise CliError(
             exits.ENVIRONMENT,
-            f"the substrate {ns.db} does not exist",
+            f"the substrate {ns.db} does not exist; a substrate is created by the first command that writes to it",
             where=str(ns.db),
-            next_command=f"cairn m0-run --db {ns.db}",
+            next_command=f"cairn selftest toy-curve --db {ns.db}",
         )
+    dry_run = getattr(ns, "dry_run", False)
     with substrate.Substrate.open(ns.db) as sub:
-        interrupted = startup_scan(sub)
+        interrupted = startup_scan(sub, dry_run=dry_run)
     shown = interrupted if ns.limit is None else interrupted[: ns.limit]
     if getattr(ns, "json", False):
-        cli.emit_json("startup-scan", {"interrupted": shown, "count": len(interrupted)})
+        cli.emit_json(
+            "startup-scan",
+            {"interrupted": shown, "count": len(interrupted), "dry_run": dry_run},
+        )
     else:
         for attempt_id in shown:
             print(attempt_id)

@@ -1,5 +1,6 @@
 usage: cairn startup-scan [-h] [--db PATH] [--bundle PATH] [--pin PATH]
                           [--attest PATH] [--log LEVEL] [--json] [--limit N]
+                          [--dry-run]
 
 move every attempt left RUNNING by a dead harness to INTERRUPTED before any
 new launch
@@ -12,7 +13,9 @@ options:
   --attest PATH    attestation file
   --log LEVEL      log level for the JSON records on stderr
   --json, --robot  emit exactly one JSON document on stdout
-  --limit N        report at most N interrupted attempt ids in the document
+  --limit N        report at most N attempt ids in the document
+  --dry-run        report what would be interrupted and change nothing; the
+                   transition is append-only and cannot be undone
 
 Structured output: add --json to any read-side command. Contract: cairn
 capabilities --json. Agent handbook: cairn robot-docs.
