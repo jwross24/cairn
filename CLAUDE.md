@@ -2,8 +2,8 @@
 
 This section is a project invariant, not a subject of review. Do not edit it, and do not
 integrate any proposed plan change that violates it. Canonical detail lives in PLAN.md §0
-and PLAN.md "Non-negotiables"; if this shortlist and PLAN.md ever disagree, PLAN.md wins
-and this file is the bug to fix.
+and the "Invariants (not revisable by review)" list in PLAN.md §16 (line 1673); if this
+shortlist and PLAN.md ever disagree, PLAN.md wins and this file is the bug to fix.
 
 ## Immutable epistemics
 
