@@ -183,6 +183,9 @@ def test_transcript_golden_guard(tmp_path, pinned_bundle, assert_golden, monkeyp
     assert_golden(TRANSCRIPT_GOLDEN, live)
     with pytest.raises(AssertionError, match="UPDATE_GOLDENS=1"):
         assert_golden(TRANSCRIPT_GOLDEN, live + "0\n")
+    # The planted mismatch writes a .actual by design; a run that ends green must
+    # leave no artifact that reads as pending work.
+    assert_golden(TRANSCRIPT_GOLDEN, live)
 
 
 def test_the_certificate_is_the_digest_of_its_three_inputs(tmp_path, pinned_bundle, assert_golden):

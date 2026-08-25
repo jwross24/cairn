@@ -199,13 +199,17 @@ def scrub_fixture():
 def assert_golden():
     def check(name, text):
         path = _golden_path(name)
+        actual = path.with_name(path.name + ".actual")
         if os.environ.get("UPDATE_GOLDENS") == "1":
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text)
+            actual.unlink(missing_ok=True)
             return
         expected = path.read_text() if path.exists() else ""
-        if expected != text:
-            actual = path.with_name(path.name + ".actual")
+        if expected == text:
+            # A leftover .actual from an earlier mismatch reads as pending work forever.
+            actual.unlink(missing_ok=True)
+        else:
             actual.write_text(text)
             diff = "".join(
                 difflib.unified_diff(
