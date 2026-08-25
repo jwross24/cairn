@@ -1,7 +1,10 @@
 import json
+import os
+import sqlite3
 from dataclasses import dataclass
 
-from cairn import claims, log, substrate
+from cairn import claims, cli, exits, log, substrate
+from cairn.errors import CliError
 
 lg = log.get("justify")
 
@@ -429,3 +432,64 @@ def derive_tag(sub, statement_hash, attest_path, *, actor=ACTOR):
         appended,
         refuted_by,
     )
+
+
+def _configure(parser):
+    parser.add_argument("--statement", required=True, help="claim statement hash whose tag is derived from every evidence node targeting it")
+
+
+def _payload(sub, derivation):
+    return {
+        "statement_hash": derivation.statement_hash,
+        "tag": derivation.tag,
+        "justified_by": derivation.justified_by,
+        "refuted_by": derivation.refuted_by,
+        "appended": derivation.appended,
+        "evidence": [
+            {"hash": row["hash"], "kind": row["kind"], "result": type(result).__name__, "detail": getattr(result, "cls", None) or getattr(result, "field", None) or getattr(result, "reason", None)}
+            for row, result in derivation.results
+        ],
+        "exit_code": exits.OK,
+    }
+
+
+def _run(ns):
+    if not os.path.exists(ns.attest):
+        raise CliError(
+            exits.ENVIRONMENT,
+            f"the attestation file {ns.attest} does not exist; a review verdict is visible only through its record",
+            where=str(ns.attest),
+            next_command=f"cairn attest init --attest {ns.attest} --bundle {ns.bundle} --pin {ns.pin}",
+        )
+    try:
+        with substrate.Substrate.open(ns.db) as sub:
+            derivation = derive_tag(sub, ns.statement, ns.attest)
+            payload = _payload(sub, derivation)
+    except substrate.WriterAlreadyOpen as exc:
+        raise CliError(exits.CONFLICT, f"another writer already holds {ns.db}: {exc}", where=str(ns.db), next_command=f"cairn justify --statement {ns.statement} --db {ns.db}") from None
+    except sqlite3.OperationalError as exc:
+        raise CliError(exits.ENVIRONMENT, f"the substrate {ns.db} could not be opened: {exc}", where=str(ns.db), next_command=f"cairn startup-scan --db {ns.db}") from None
+    except claims.UnknownStatement:
+        raise CliError(
+            exits.USER_INPUT,
+            f"no claim statement {ns.statement} in {ns.db}",
+            where=str(ns.statement),
+            next_command=f"cairn m0-run --db {ns.db} --bundle {ns.bundle} --pin {ns.pin} --attest {ns.attest} --json",
+        ) from None
+    if getattr(ns, "json", False):
+        cli.emit_json("justify", payload)
+    else:
+        print(f"{payload['statement_hash']} {payload['tag']} {payload['justified_by'] or '-'}")
+        for row in payload["evidence"]:
+            print(f"- {row['kind']} {row['hash']} {row['result']} {row['detail']}")
+    return exits.OK
+
+
+cli.register(
+    "justify",
+    _configure,
+    _run,
+    summary="derive a claim statement's calibration tag from every evidence node targeting it, and append the transition to its tag history",
+    read_only=False,
+    json=True,
+)

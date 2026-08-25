@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import attest, claims, justify, keys
+from cairn import attest, claims, exits, justify, keys
 from cairn.justify import CONJECTURE, PROVEN, SPECULATION, STRONG_EMPIRICAL
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -534,3 +534,159 @@ def test_the_strongest_covering_node_wins_and_a_weaker_one_never_lowers_it(
     assert (
         justify.derive_tag(writer, statement.hash, attest_path).tag == STRONG_EMPIRICAL
     )
+
+
+def _cli(argv, capsys):
+    from cairn import cli
+
+    code = cli.main(argv)
+    out, err = capsys.readouterr()
+    return code, out, err
+
+
+@pytest.fixture
+def cli_db(tmp_path, attest_path):
+    db = tmp_path / "cli.sqlite"
+    with open_writer(tmp_path, "cli.sqlite") as sub:
+        statement = _statement(sub, seed=30)
+        node = _ladder(sub, statement, _wide_population(statement), seed=30)
+    return db, statement, node
+
+
+def test_the_cli_prints_the_derived_tag_and_the_justifying_evidence(
+    cli_db, attest_path, capsys
+):
+    db, statement, node = cli_db
+    code, out, err = _cli(
+        [
+            "justify",
+            "--statement",
+            statement.hash,
+            "--db",
+            str(db),
+            "--attest",
+            str(attest_path),
+        ],
+        capsys,
+    )
+    assert code == exits.OK
+    assert out.splitlines()[0] == f"{statement.hash} {STRONG_EMPIRICAL} {node.hash}"
+    assert node.hash in out and "ladder_table" in out
+
+
+def test_the_cli_json_is_one_document_naming_every_evidence_node(
+    cli_db, attest_path, capsys
+):
+    db, statement, node = cli_db
+    with open_writer(db.parent, "cli.sqlite") as sub:
+        claims.write_evidence_node(
+            sub,
+            factories.evidence_node(
+                "model_proof",
+                statement.hash,
+                _wide_population(statement),
+                frozenset({"A1"}),
+                seed=31,
+            ),
+        )
+    code, out, err = _cli(
+        [
+            "justify",
+            "--statement",
+            statement.hash,
+            "--db",
+            str(db),
+            "--attest",
+            str(attest_path),
+            "--json",
+        ],
+        capsys,
+    )
+    assert code == exits.OK and out.count("\n") == 1
+    document = json.loads(out)
+    assert document["schema_version"] == 1 and document["command"] == "justify"
+    assert document["statement_hash"] == statement.hash
+    assert document["tag"] == STRONG_EMPIRICAL and document["justified_by"] == node.hash
+    assert {row["kind"] for row in document["evidence"]} == {
+        "ladder_table",
+        "model_proof",
+    }
+    assert {row["result"] for row in document["evidence"]} == {"Justification"}
+
+
+def test_a_statement_with_no_evidence_exits_zero_at_speculation(
+    tmp_path, attest_path, capsys
+):
+    db = tmp_path / "empty.sqlite"
+    with open_writer(tmp_path, "empty.sqlite") as sub:
+        statement = _statement(sub, seed=32)
+    code, out, err = _cli(
+        [
+            "justify",
+            "--statement",
+            statement.hash,
+            "--db",
+            str(db),
+            "--attest",
+            str(attest_path),
+            "--json",
+        ],
+        capsys,
+    )
+    assert code == exits.OK
+    assert json.loads(out)["tag"] == SPECULATION and json.loads(out)["evidence"] == []
+
+
+def test_an_unknown_statement_hash_exits_user_input(cli_db, attest_path, capsys):
+    db, _, _ = cli_db
+    code, out, err = _cli(
+        [
+            "justify",
+            "--statement",
+            "0" * 64,
+            "--db",
+            str(db),
+            "--attest",
+            str(attest_path),
+        ],
+        capsys,
+    )
+    assert code == exits.USER_INPUT and out == ""
+    assert "no claim statement" in err and "cairn m0-run" in err
+
+
+def test_a_substrate_that_cannot_be_opened_exits_environment(
+    tmp_path, attest_path, capsys
+):
+    code, out, err = _cli(
+        [
+            "justify",
+            "--statement",
+            "0" * 64,
+            "--db",
+            str(tmp_path / "absent" / "s.sqlite"),
+            "--attest",
+            str(attest_path),
+        ],
+        capsys,
+    )
+    assert code == exits.ENVIRONMENT and out == ""
+    assert "could not be opened" in err and "cairn startup-scan" in err
+
+
+def test_a_missing_attestation_file_exits_environment(cli_db, tmp_path, capsys):
+    db, statement, _ = cli_db
+    code, out, err = _cli(
+        [
+            "justify",
+            "--statement",
+            statement.hash,
+            "--db",
+            str(db),
+            "--attest",
+            str(tmp_path / "gone.log"),
+        ],
+        capsys,
+    )
+    assert code == exits.ENVIRONMENT and out == ""
+    assert "cairn attest init" in err

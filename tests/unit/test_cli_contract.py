@@ -11,7 +11,15 @@ from cairn.errors import CliError
 
 DISCOVERY = ("--json", "capabilities", "robot-docs")
 BOUNDED_ARGV = {"measure": ("toy-curve-tries", "--sizes", "30", "--seeds", "2")}
-DEPLOY_ARGV = ("bundle", "attest", "selftest", "startup-scan", "gate", "m0-run")
+DEPLOY_ARGV = (
+    "bundle",
+    "attest",
+    "selftest",
+    "startup-scan",
+    "gate",
+    "m0-run",
+    "justify",
+)
 ESC = "\x1b"
 
 
@@ -93,6 +101,35 @@ def _deploy_argv(name, tmp_path, pinned_bundle, clear_flags, capsys):
         return ("--db", str(db))
     bundle_path, pin_path = pinned_bundle()
     paths = ("--bundle", str(bundle_path), "--pin", str(pin_path))
+    if name == "justify":
+        from cairn import attest, claims, substrate
+
+        db = tmp_path / "substrate.sqlite"
+        statement = claims.ClaimStatement(
+            claim_id="cli-contract",
+            version=1,
+            informal="a statement with no evidence derives SPECULATION",
+            scope={
+                "target_family": "toy_curve",
+                "size_interval": [40, 40],
+                "param_ranges": {},
+                "assumption_set": set(),
+            },
+            quantities={"units": {}, "cost_model": None},
+        )
+        with substrate.Substrate.open(db) as sub:
+            claims.write_claim_statement(sub, statement)
+        log_path = tmp_path / "attestations.log"
+        clear_flags(log_path)
+        attest.init(log_path, "f" * 64)
+        return (
+            "--statement",
+            statement.hash,
+            "--db",
+            str(db),
+            "--attest",
+            str(log_path),
+        )
     if name == "bundle":
         return ("show", *paths)
     if name == "selftest":

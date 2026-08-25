@@ -1,0 +1,21 @@
+usage: cairn justify [-h] [--db PATH] [--bundle PATH] [--pin PATH]
+                     [--attest PATH] [--log LEVEL] [--json]
+                     --statement STATEMENT
+
+derive a claim statement's calibration tag from every evidence node targeting
+it, and append the transition to its tag history
+
+options:
+  -h, --help            show this help message and exit
+  --db PATH             substrate SQLite file
+  --bundle PATH         gate bundle SQLite file
+  --pin PATH            gate-bundle pin file
+  --attest PATH         attestation file
+  --log LEVEL           log level for the JSON records on stderr
+  --json, --robot       emit exactly one JSON document on stdout
+  --statement STATEMENT
+                        claim statement hash whose tag is derived from every
+                        evidence node targeting it
+
+Structured output: add --json to any read-side command. Contract: cairn
+capabilities --json. Agent handbook: cairn robot-docs.

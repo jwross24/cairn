@@ -52,13 +52,13 @@ def test_missing_gp_binary_raises_before_any_spawn(monkeypatch):
     assert spawned == []
 
 
-NESTED_SUBCOMMAND = {"bundle": ("show",), "attest": ("init",), "gate": ("selftest",)}
+REQUIRED_HEAD = {"bundle": ("show",), "attest": ("init",), "gate": ("selftest",), "justify": ("--statement", "0" * 64)}
 
 
 @pytest.mark.parametrize("name", cli.registered())
 def test_global_options_parse_before_or_after_subcommand(name):
     parser = cli.build_parser()
-    head = list(NESTED_SUBCOMMAND.get(name, ()))
+    head = list(REQUIRED_HEAD.get(name, ()))
     globals_argv = ["--db", "X", "--bundle", "B", "--pin", "P", "--attest", "A", "--log", "DEBUG"]
     before = parser.parse_args([*globals_argv, name, *head])
     after = parser.parse_args([name, *head, *globals_argv])
