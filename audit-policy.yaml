@@ -1,0 +1,80 @@
+# Project overrides for the beads compliance audit. The skill is vendored and not
+# ours; this file is the supported way to tune it, so upstream updates keep
+# arriving. scripts/_load-policy.sh resolves it with precedence
+# hardcoded < this file < CLI flags, and bootstrap-audit.sh copies it into a new
+# audit directory. Nothing here edits the skill.
+#
+# MEASURED 2026-08-25, and read this before trusting anything below: on a machine
+# whose `python3` lacks PyYAML, every field here is silently ignored.
+# scripts/_load-policy.sh parses with `python3 ... 2>/dev/null || true`, so the
+# ImportError is swallowed and the caller keeps its hardcoded default;
+# scripts/score-bead.py sets `yaml = None` on the same ImportError. On this
+# machine `python3` is Homebrew's python@3.14 and `import yaml` fails, so the
+# threshold and the weights below bind nowhere. The threshold still binds because
+# .githooks/pre-commit passes it as a CLI flag, and CLI beats YAML.
+#
+# To make the rest live, the operator installs PyYAML for the interpreter the
+# skill invokes, which is `python3` on PATH. That is a machine-global change to an
+# externally-managed Homebrew Python, so it is the operator's call, not the
+# agent's. cairn-cue carries it.
+
+# 700 stays until the waived phases actually run. On the pre-commit path,
+# single-bead-audit.sh runs Phase 4 and Phase 6 in stub mode and awards their 250
+# and 150 unearned, so 400 of 1000 points say nothing about the bead. Raising a
+# number over a stubbed measurement buys confidence, not assurance. Measured
+# 2026-08-25: cairn-qn9, a cleanup with no tests of its own, scored 970 while
+# cairn-m0-e0s.12, with 108 tests and six killed mutants, scored 760.
+threshold: 700
+remediation_policy: completion-debt
+
+# What a Cairn bead is: a harness slice whose product is code plus the tests that
+# prove it, closed with re-executed evidence. It ships no runbook, so the default
+# 100 for docs measures something this project does not produce; and Mode A
+# requires a close to name an open downstream bead for every No-Claim gap, so a
+# heavy integration weight penalizes the discipline the project mandates.
+#
+# What this cannot fix, stated so nobody reads more into it: RUBRIC.md marks a
+# dimension `n/a` and REDISTRIBUTES its weight when the spec extracts no items of
+# that kind. A bead whose prose the deterministic parser cannot read therefore
+# scores full marks on the dimensions it was never measured against. Weights move
+# the shares between dimensions; they do not close that escape. Extraction does.
+weights_by_type:
+  task:
+    implementation: 250
+    tests: 300
+    anti_theater: 200
+    test_depth: 200
+    docs: 25
+    integration: 25
+
+  bug:
+    implementation: 200
+    tests: 350
+    anti_theater: 200
+    test_depth: 200
+    docs: 25
+    integration: 25
+
+# A skipped platform is a platform nobody is testing. cairn-hcl exists because the
+# M0 write boundary is macOS-only and both write-boundary test files carry
+# skipif(sys.platform != "darwin"), so the degraded behavior is asserted nowhere.
+# A new platform skip in evidence is a claim that a gate ran when it did not.
+project_theater_patterns:
+  - id: P-platform-skip-hides-a-gate
+    signature: 'skipif\(sys\.platform'
+    file_glob: ['tests/**/*.py']
+    in_test_files: true
+    severity: MAJOR
+    rationale: 'cairn-hcl: the write boundary degrades silently off macOS and the suite says so nowhere; a platform skip must be paired with an assertion naming the degraded behavior'
+
+# Only meaningful on the parallel path; the pre-commit hook runs no subagents.
+# spec-quality-reviewer is on because the measured failure is extraction, not
+# scoring: Phase 2 warned "cairn-qn9 produced only 1 item(s) from a 2689-char body"
+# and spec.json in fact held zero.
+subagents:
+  spec-quality-reviewer: pre_claim_only
+  red-team-adversary: comprehensive_only
+  security-auditor: false
+  performance-auditor: false
+  migration-safety-reviewer: false
+  api-contract-checker: false
