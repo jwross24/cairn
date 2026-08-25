@@ -116,9 +116,3 @@ def test_blocks_name_wrong_step_mutant_is_killed():
     with gateplan_mutants.blocks_name_wrong_step():
         assert not _blocking_property_holds(FAIL_THEN_TWO)
 
-
-def test_a_blocked_step_is_never_executed():
-    steps = _synthetic(4)
-    observe, executed = _observer(["fail", "pass", "pass", "pass"])
-    list(gateplan.plan_outcomes(steps, observe))
-    assert executed == ["s0"]

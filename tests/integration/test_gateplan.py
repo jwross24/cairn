@@ -97,6 +97,9 @@ def test_a_weakened_accept_predicate_fails_the_crash_step_and_blocks_the_rest(tm
         if step.result == "blocked":
             assert step.reasons == (f"{gateplan.BLOCKED_PREFIX}verifier_selftest_crash",)
     assert [s.result for s in result.steps[:3]] == ["pass", "pass", "pass"]
+    assert failed.stdout_digest and failed.stderr_digest and failed.stdout_digest != failed.stderr_digest
+    assert f"observed:{failed.observed}" in failed.reasons
+    assert all(s.stdout_digest is None for s in result.steps if s.result == "blocked")
     sub.close()
 
 
@@ -151,21 +154,6 @@ def test_a_malformed_plan_row_in_the_bundle_fails_closed_with_no_gate_runs(tmp_p
     assert db_snapshot(sub.conn, "malformed-after")["gate_runs"] == before["gate_runs"]
     sub.close()
 
-
-def test_an_expected_result_mismatch_records_its_stdout_and_stderr_digests(tmp_path, plan_env, db_snapshot):
-    def weaken(directory):
-        path = directory / "verifier.json"
-        obj = json.loads(path.read_text())
-        obj["accept"] = WEAK_ACCEPT
-        path.write_text(json.dumps(obj))
-
-    src = _source_copy(tmp_path, "digests", weaken)
-    result, sub = _run_plan(plan_env, db_snapshot, "digests", src=src, name="digests")
-    failed = result.first_failure
-    assert failed.stdout_digest and failed.stderr_digest
-    assert failed.stdout_digest != failed.stderr_digest
-    assert f"observed:{failed.observed}" in failed.reasons
-    sub.close()
 
 
 def test_the_run_logs_exactly_one_record_per_step(plan_env, db_snapshot, caplog):
