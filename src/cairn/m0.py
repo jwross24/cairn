@@ -82,11 +82,16 @@ class SliceResult:
         return any(n.label == "C" for n in self.nodes)
 
 
+NEXT_CERTIFY = "certify"
+NEXT_GATE_SELFTEST = "gate-selftest"
+NEXT_DEBUG = "debug"
+
+
 class SliceRefused(Exception):
-    def __init__(self, reason, next_command):
+    def __init__(self, reason, next_step):
         super().__init__(reason)
         self.reason = reason
-        self.next_command = next_command
+        self.next_step = next_step
 
 
 def _draw(seed_bytes, bound, label):
@@ -191,13 +196,13 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
     plan_result = gateplan.GatePlan.from_bundle(gate_bundle).run(gate_bundle, sub, attest_path)
     if not plan_result.ok:
         failed = plan_result.first_failure
-        raise SliceRefused(f"gate-plan-failed:{failed.step}", "cairn gate selftest --json")
+        raise SliceRefused(f"gate-plan-failed:{failed.step}", NEXT_GATE_SELFTEST)
 
     identity = toy_curve.skill_identity_hash()
     certificate = sub.get_certificate(identity)
     lg.info("step", step=2, name="certified", skill_identity_hash=identity, certified=sub.certified(identity))
     if not sub.certified(identity):
-        raise SliceRefused(REASON_UNCERTIFIED, "cairn selftest toy-curve")
+        raise SliceRefused(REASON_UNCERTIFIED, NEXT_CERTIFY)
 
     hypothesis = _hypothesis(bits)
     hypothesis_key = keys.hypothesis_key(hypothesis)
@@ -216,7 +221,7 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
     decision = tiergate.TierGate(sub, gate_bundle).admit(launch)
     lg.info("step", step=3, name="tier_gate", result=type(decision).__name__, reasons=list(decision.reasons), gate_run=decision.gate_run_hash)
     if isinstance(decision, tiergate.TierRefused):
-        raise SliceRefused(f"tier-refused:{','.join(decision.reasons)}", "cairn selftest toy-curve")
+        raise SliceRefused(f"tier-refused:{','.join(decision.reasons)}", NEXT_CERTIFY)
 
     bundle_identity = toy_curve.identity_bundle()
     stdin_document = {"bits": bits, "seed": seed}
@@ -244,7 +249,7 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
     )
     lg.info("step", step=4, name="generator", attempt=attempt.attempt_id, status=attempt.status, cached=attempt.served_from_cache, manifest=attempt.output_manifest_hash)
     if attempt.status != "OK":
-        raise SliceRefused(f"attempt-{attempt.status}", "cairn m0-run --json --log DEBUG")
+        raise SliceRefused(f"attempt-{attempt.status}", NEXT_DEBUG)
 
     document = attempt.parsed.document if attempt.parsed is not None else _served_document(sub, attempt)
     node_a = sub.put_node(
@@ -302,7 +307,7 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
     positive = engine.run(gate_read, x)
     lg.info("step", step=6, name="verify", accepted=positive.accepted, reason=positive.reason, instance_hash=positive.instance_hash)
     if not positive.accepted:
-        raise SliceRefused(f"verifier-{positive.reason}", "cairn m0-run --json --log DEBUG")
+        raise SliceRefused(f"verifier-{positive.reason}", NEXT_DEBUG)
     node_c, node_d = _record_verifier_run(sub, gate_bundle, positive, arm="slice_positive")
     lg.info("step", step=7, name="gate_run", gate_run=node_d)
 
@@ -313,12 +318,12 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
     negative_nodes = []
     for arm, result in negatives:
         if result.accepted:
-            raise SliceRefused(f"negative-accepted:{arm}", "cairn m0-run --json --log DEBUG")
+            raise SliceRefused(f"negative-accepted:{arm}", NEXT_DEBUG)
         negative_nodes.append(_record_verifier_run(sub, gate_bundle, result, arm=arm)[0])
 
     named = engine.run(gate_read, verifier.Submission(x, P=gate_read.P, Q=gate_read.Q))
     if named.reason != "submitter-named-instance" or named.rc is not None:
-        raise SliceRefused("submitter-named-not-refused", "cairn m0-run --json --log DEBUG")
+        raise SliceRefused("submitter-named-not-refused", NEXT_DEBUG)
     refused_run = _refuse_verifier_run(sub, gate_bundle, named, arm="submitter_named")
     lg.info("step", step=8, name="negatives", negatives=negative_nodes, refused=refused_run)
 
@@ -342,22 +347,32 @@ def _served_document(sub, attempt):
         ).fetchall()
     ]
     if len(blobs) != 1:
-        raise SliceRefused(f"cached-manifest-carries-{len(blobs)}-artifacts", "cairn m0-run --skip-cache-lookup")
+        raise SliceRefused(f"cached-manifest-carries-{len(blobs)}-artifacts", NEXT_DEBUG)
     payload = sub.get_blob(blobs[0])
     if payload is None:
-        raise SliceRefused("cached-artifact-blob-absent", "cairn m0-run --skip-cache-lookup")
+        raise SliceRefused("cached-artifact-blob-absent", NEXT_DEBUG)
     return json.loads(payload)
 
 
 def _statement_units(sub, statement_hash):
     row = claims.get_claim_statement(sub, statement_hash)
     if row is None:
-        raise SliceRefused("statement-absent", "cairn m0-run --json --log DEBUG")
+        raise SliceRefused("statement-absent", NEXT_DEBUG)
     return json.loads(row["quantities"])["units"]
 
 
+def _next_command(ns, step):
+    paths = f"--db {ns.db} --bundle {ns.bundle} --pin {ns.pin}"
+    if step == NEXT_CERTIFY:
+        return f"cairn selftest toy-curve {paths}"
+    if step == NEXT_GATE_SELFTEST:
+        return f"cairn gate selftest --json {paths} --attest {ns.attest}"
+    return f"cairn m0-run --bits {ns.bits} --seed {ns.seed} --json --log DEBUG {paths} --attest {ns.attest}"
+
+
 def _configure(parser):
-    parser.add_argument("--bits", type=int, default=40, help="curve size the slice generates and verifies")
+    sizes = toy_curve.COST_PROFILE.declared_sizes()
+    parser.add_argument("--bits", type=int, default=40, choices=sizes, help=f"curve size the slice generates and verifies; the cost profile declares {', '.join(str(b) for b in sizes)}")
     parser.add_argument("--seed", type=int, default=1, help="generator seed; the same seed replays to the same node A")
     parser.add_argument("--skip-cache-lookup", action="store_true", help="record a fresh attempt even when the recipe is already cached")
 
@@ -388,7 +403,7 @@ def _run(ns):
     except gateplan.PlanInvalid as invalid:
         raise CliError(exits.GATE_REFUSED, f"the gate plan in bundle {gate_bundle.hash} is invalid ({invalid.reason}); no step ran", where=str(ns.bundle), next_command=bundle.repin_sequence(ns.bundle, ns.pin)) from None
     except SliceRefused as refused:
-        raise CliError(exits.GATE_REFUSED, f"the M0 slice refused: {refused.reason}", where=str(ns.db), next_command=refused.next_command) from None
+        raise CliError(exits.GATE_REFUSED, f"the M0 slice refused: {refused.reason}", where=str(ns.db), next_command=_next_command(ns, refused.next_step)) from None
     payload = {
         "nodes": [
             {"label": node.label, "kind": node.kind, "hash": node.hash, "replay_grade": node.replay_grade, "cost_tag": node.cost_tag, "selftest_ref": node.selftest_ref}

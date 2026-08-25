@@ -1,23 +1,24 @@
 usage: cairn m0-run [-h] [--db PATH] [--bundle PATH] [--pin PATH]
-                    [--attest PATH] [--log LEVEL] [--json] [--bits BITS]
-                    [--seed SEED] [--skip-cache-lookup]
+                    [--attest PATH] [--log LEVEL] [--json]
+                    [--bits {30,40,50,60}] [--seed SEED] [--skip-cache-lookup]
 
 run the M0 slice end to end: gate self-tests, a certified 40-bit generator, a
 derived instance, and a gate-read verification with its negatives
 
 options:
-  -h, --help           show this help message and exit
-  --db PATH            substrate SQLite file
-  --bundle PATH        gate bundle SQLite file
-  --pin PATH           gate-bundle pin file
-  --attest PATH        attestation file
-  --log LEVEL          log level for the JSON records on stderr
-  --json, --robot      emit exactly one JSON document on stdout
-  --bits BITS          curve size the slice generates and verifies
-  --seed SEED          generator seed; the same seed replays to the same node
-                       A
-  --skip-cache-lookup  record a fresh attempt even when the recipe is already
-                       cached
+  -h, --help            show this help message and exit
+  --db PATH             substrate SQLite file
+  --bundle PATH         gate bundle SQLite file
+  --pin PATH            gate-bundle pin file
+  --attest PATH         attestation file
+  --log LEVEL           log level for the JSON records on stderr
+  --json, --robot       emit exactly one JSON document on stdout
+  --bits {30,40,50,60}  curve size the slice generates and verifies; the cost
+                        profile declares 30, 40, 50, 60
+  --seed SEED           generator seed; the same seed replays to the same node
+                        A
+  --skip-cache-lookup   record a fresh attempt even when the recipe is already
+                        cached
 
 Structured output: add --json to any read-side command. Contract: cairn
 capabilities --json. Agent handbook: cairn robot-docs.
