@@ -30,7 +30,17 @@ ENV_VARS = {
     "NO_COLOR": "honored trivially: cairn never emits ANSI sequences",
 }
 DISCOVERY_HINT = "Structured output: add --json to any read-side command. Contract: cairn capabilities --json. Agent handbook: cairn robot-docs."
-COMMAND_MODULES = ["cairn.kat", "cairn.measure", "cairn.bundle", "cairn.attest", "cairn.selftest", "cairn.runner", "cairn.gateplan", "cairn.justify", "cairn.m0"]
+COMMAND_MODULES = [
+    "cairn.kat",
+    "cairn.measure",
+    "cairn.bundle",
+    "cairn.attest",
+    "cairn.selftest",
+    "cairn.runner",
+    "cairn.gateplan",
+    "cairn.justify",
+    "cairn.m0",
+]
 _SUBCOMMANDS = {}
 
 
@@ -48,10 +58,14 @@ class Command:
     dry_run_default: bool = False
 
 
-def register(name, configure, run, *, summary, read_only, json, dangerous=False, gating=None, aliases=(), dry_run_default=False):
+def register(
+    name, configure, run, *, summary, read_only, json, dangerous=False, gating=None, aliases=(), dry_run_default=False
+):
     if dangerous and not gating:
         raise ValueError(f"{name}: a dangerous command must name its gating flag")
-    _SUBCOMMANDS[name] = Command(name, configure, run, summary, read_only, json, dangerous, gating, tuple(aliases), dry_run_default)
+    _SUBCOMMANDS[name] = Command(
+        name, configure, run, summary, read_only, json, dangerous, gating, tuple(aliases), dry_run_default
+    )
 
 
 def unregister(name):
@@ -103,29 +117,57 @@ def globals_parent(*, suppress):
     parent.add_argument("--bundle", default=default("bundle"), metavar="PATH", help="gate bundle SQLite file")
     parent.add_argument("--pin", default=default("pin"), metavar="PATH", help="gate-bundle pin file")
     parent.add_argument("--attest", default=default("attest"), metavar="PATH", help="attestation file")
-    parent.add_argument("--log", default=default("log"), metavar="LEVEL", help="log level for the JSON records on stderr")
+    parent.add_argument(
+        "--log", default=default("log"), metavar="LEVEL", help="log level for the JSON records on stderr"
+    )
     return parent
 
 
 def json_parent():
     parent = argparse.ArgumentParser(add_help=False)
-    parent.add_argument("--json", "--robot", dest="json", action="store_true", default=argparse.SUPPRESS, help="emit exactly one JSON document on stdout")
+    parent.add_argument(
+        "--json",
+        "--robot",
+        dest="json",
+        action="store_true",
+        default=argparse.SUPPRESS,
+        help="emit exactly one JSON document on stdout",
+    )
     return parent
 
 
 def build_parser():
     _load_command_modules()
-    parser = _Parser(prog="cairn", parents=[globals_parent(suppress=False)], epilog=DISCOVERY_HINT, suggest_on_error=True)
+    parser = _Parser(
+        prog="cairn", parents=[globals_parent(suppress=False)], epilog=DISCOVERY_HINT, suggest_on_error=True
+    )
     parser.add_argument("--version", action="store_true", help="print the version and exit")
-    parser.add_argument("--robot-help", action="store_true", help="print the agent handbook (same as: cairn robot-docs)")
+    parser.add_argument(
+        "--robot-help", action="store_true", help="print the agent handbook (same as: cairn robot-docs)"
+    )
     subparsers = parser.add_subparsers(dest="command", metavar="COMMAND")
     for cmd in commands():
-        sub = subparsers.add_parser(cmd.name, aliases=cmd.aliases, parents=[globals_parent(suppress=True)], help=cmd.summary, description=cmd.summary, epilog=DISCOVERY_HINT, suggest_on_error=True)
+        sub = subparsers.add_parser(
+            cmd.name,
+            aliases=cmd.aliases,
+            parents=[globals_parent(suppress=True)],
+            help=cmd.summary,
+            description=cmd.summary,
+            epilog=DISCOVERY_HINT,
+            suggest_on_error=True,
+        )
         sub.__class__ = _Parser
         if cmd.json:
-            sub.add_argument("--json", "--robot", dest="json", action="store_true", help="emit exactly one JSON document on stdout")
+            sub.add_argument(
+                "--json", "--robot", dest="json", action="store_true", help="emit exactly one JSON document on stdout"
+            )
         if cmd.dangerous:
-            sub.add_argument(cmd.gating, dest=_gating_dest(cmd.gating), action="store_true", help="required for the irreversible part of this command")
+            sub.add_argument(
+                cmd.gating,
+                dest=_gating_dest(cmd.gating),
+                action="store_true",
+                help="required for the irreversible part of this command",
+            )
         cmd.configure(sub)
     return parser
 
@@ -136,7 +178,11 @@ def _gating_dest(flag):
 
 def _refuse_ungated(cmd, ns):
     if cmd.dangerous and not cmd.dry_run_default and not getattr(ns, _gating_dest(cmd.gating), False):
-        raise CliError(exits.GATE_REFUSED, f"{cmd.name} is irreversible and was invoked without {cmd.gating}; nothing was changed", next_command=f"cairn {cmd.name} {cmd.gating}")
+        raise CliError(
+            exits.GATE_REFUSED,
+            f"{cmd.name} is irreversible and was invoked without {cmd.gating}; nothing was changed",
+            next_command=f"cairn {cmd.name} {cmd.gating}",
+        )
 
 
 def resolve_command(name):
@@ -159,12 +205,21 @@ def now_iso():
 
 def refuse_overwrite(path, *, flag, command, force):
     if os.path.exists(path) and not force:
-        raise CliError(exits.GATE_REFUSED, f"{path} exists and would be overwritten; nothing was changed", where=str(path), next_command=f"{command} {flag}")
+        raise CliError(
+            exits.GATE_REFUSED,
+            f"{path} exists and would be overwritten; nothing was changed",
+            where=str(path),
+            next_command=f"{command} {flag}",
+        )
 
 
 def require_yes(yes, *, plan, command):
     if not yes:
-        raise CliError(exits.GATE_REFUSED, f"refusing the irreversible step without --yes; nothing was changed; plan: {plan}", next_command=f"{command} --yes")
+        raise CliError(
+            exits.GATE_REFUSED,
+            f"refusing the irreversible step without --yes; nothing was changed; plan: {plan}",
+            next_command=f"{command} --yes",
+        )
 
 
 def capabilities_document():
@@ -176,13 +231,37 @@ def capabilities_document():
         "contract_version": CONTRACT_VERSION,
         "python": platform.python_version(),
         "commands": [
-            {"name": c.name, "summary": c.summary, "read_only": c.read_only, "json": c.json, "dangerous": c.dangerous, "gating": c.gating, "dry_run_default": c.dry_run_default, "aliases": list(c.aliases)}
+            {
+                "name": c.name,
+                "summary": c.summary,
+                "read_only": c.read_only,
+                "json": c.json,
+                "dangerous": c.dangerous,
+                "gating": c.gating,
+                "dry_run_default": c.dry_run_default,
+                "aliases": list(c.aliases),
+            }
             for c in commands()
         ],
-        "exit_codes": {"cli": {str(k): v for k, v in exits.CLI.items()}, "doctor": {str(k): v for k, v in exits.DOCTOR.items()}},
+        "exit_codes": {
+            "cli": {str(k): v for k, v in exits.CLI.items()},
+            "doctor": {str(k): v for k, v in exits.DOCTOR.items()},
+        },
         "env_vars": ENV_VARS,
-        "global_options": {"--db": GLOBAL_DEFAULTS["db"], "--bundle": GLOBAL_DEFAULTS["bundle"], "--pin": GLOBAL_DEFAULTS["pin"], "--attest": GLOBAL_DEFAULTS["attest"], "--log": "INFO"},
-        "default_paths": {"db": GLOBAL_DEFAULTS["db"], "bundle": GLOBAL_DEFAULTS["bundle"], "pin": GLOBAL_DEFAULTS["pin"], "attest": GLOBAL_DEFAULTS["attest"], "gp_bin": pari.GP_BIN},
+        "global_options": {
+            "--db": GLOBAL_DEFAULTS["db"],
+            "--bundle": GLOBAL_DEFAULTS["bundle"],
+            "--pin": GLOBAL_DEFAULTS["pin"],
+            "--attest": GLOBAL_DEFAULTS["attest"],
+            "--log": "INFO",
+        },
+        "default_paths": {
+            "db": GLOBAL_DEFAULTS["db"],
+            "bundle": GLOBAL_DEFAULTS["bundle"],
+            "pin": GLOBAL_DEFAULTS["pin"],
+            "attest": GLOBAL_DEFAULTS["attest"],
+            "gp_bin": pari.GP_BIN,
+        },
         "stdout_is_data": True,
         "stderr_is_diagnostics": True,
         "emits_ansi": False,
@@ -197,7 +276,9 @@ def _capabilities_run(ns):
         return exits.OK
     print(f"cairn {doc['version']} (contract {doc['contract_version']})")
     for c in doc["commands"]:
-        flags = ", ".join(f for f, on in (("read-only", c["read_only"]), ("--json", c["json"]), ("dangerous", c["dangerous"])) if on)
+        flags = ", ".join(
+            f for f, on in (("read-only", c["read_only"]), ("--json", c["json"]), ("dangerous", c["dangerous"])) if on
+        )
         print(f"  {c['name']:<14} {c['summary']}  [{flags}]")
     print("exit codes (cli): " + "; ".join(f"{k}={v.split(':')[0]}" for k, v in doc["exit_codes"]["cli"].items()))
     print("full contract: cairn capabilities --json; handbook: cairn robot-docs")
@@ -237,7 +318,8 @@ def robot_docs_text():
     lines += [
         "",
         "## Global options (before or after the subcommand)",
-        "--db PATH, --bundle PATH, --pin PATH, --attest PATH, --log LEVEL; defaults: " + ", ".join(f"{k}={v}" for k, v in doc["global_options"].items()),
+        "--db PATH, --bundle PATH, --pin PATH, --attest PATH, --log LEVEL; defaults: "
+        + ", ".join(f"{k}={v}" for k, v in doc["global_options"].items()),
         "",
         "## Where artifacts land",
         "deploy/ (bundle, pin, attestation file; operator-owned, never hand-edited), var/ (substrate DB, locks), .doctor/ (doctor run artifacts, gitignored), tests/vectors + tests/goldens (committed known answers).",
@@ -279,9 +361,30 @@ def _env_run(ns):
     return exits.OK
 
 
-register("env", lambda p: None, _env_run, summary="report the toolchain (python, cypari2/libpari, blake3, gp path)", read_only=True, json=True)
-register("capabilities", lambda p: None, _capabilities_run, summary="describe the CLI contract: commands, exit codes, env vars, paths", read_only=True, json=True)
-register("robot-docs", lambda p: None, _robot_docs_run, summary="print the paste-ready agent handbook", read_only=True, json=False)
+register(
+    "env",
+    lambda p: None,
+    _env_run,
+    summary="report the toolchain (python, cypari2/libpari, blake3, gp path)",
+    read_only=True,
+    json=True,
+)
+register(
+    "capabilities",
+    lambda p: None,
+    _capabilities_run,
+    summary="describe the CLI contract: commands, exit codes, env vars, paths",
+    read_only=True,
+    json=True,
+)
+register(
+    "robot-docs",
+    lambda p: None,
+    _robot_docs_run,
+    summary="print the paste-ready agent handbook",
+    read_only=True,
+    json=False,
+)
 
 
 def _render_error(err, lg):

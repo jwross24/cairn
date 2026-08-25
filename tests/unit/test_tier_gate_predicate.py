@@ -75,7 +75,18 @@ def test_an_absent_ticket_is_not_also_two_above():
 def test_reasons_accumulate_without_short_circuiting():
     assert reasons(declared_tier=2, ticket_tier=0, certified=False) == (TIER_TWO_ABOVE, UNCERTIFIED)
     everything_else = tuple(r for r in REASON_ORDER if r not in (PROFILE_UNDECLARED, TICKET_ABSENT))
-    assert reasons(declared_tier=2, ticket_tier=0, certified=False, yanked=True, budget_ok=False, ticket_bundle_matches=False, cost_tier=3) == everything_else
+    assert (
+        reasons(
+            declared_tier=2,
+            ticket_tier=0,
+            certified=False,
+            yanked=True,
+            budget_ok=False,
+            ticket_bundle_matches=False,
+            cost_tier=3,
+        )
+        == everything_else
+    )
 
 
 TRUTH_TABLE_AXES = {
@@ -115,7 +126,9 @@ def test_an_axis_moves_only_the_reasons_it_is_declared_to_couple_to(axis):
             if value == row[axis]:
                 continue
             moved = set(tiergate.predicate_reasons(**row)) ^ set(tiergate.predicate_reasons(**{**row, axis: value}))
-            assert moved <= COUPLING[axis], f"{axis} {row[axis]!r}->{value!r} moved {sorted(moved - COUPLING[axis])} on {row}"
+            assert moved <= COUPLING[axis], (
+                f"{axis} {row[axis]!r}->{value!r} moved {sorted(moved - COUPLING[axis])} on {row}"
+            )
 
 
 def test_every_axis_actually_moves_each_reason_it_couples_to():
@@ -124,7 +137,9 @@ def test_every_axis_actually_moves_each_reason_it_couples_to():
         for axis, values in TRUTH_TABLE_AXES.items():
             for value in values:
                 if value != row[axis]:
-                    moved_by[axis] |= set(tiergate.predicate_reasons(**row)) ^ set(tiergate.predicate_reasons(**{**row, axis: value}))
+                    moved_by[axis] |= set(tiergate.predicate_reasons(**row)) ^ set(
+                        tiergate.predicate_reasons(**{**row, axis: value})
+                    )
     assert moved_by == COUPLING
 
 
@@ -132,7 +147,13 @@ def test_admitted_is_exactly_the_empty_reason_tuple():
     clean = [row for row in _rows() if tiergate.predicate_reasons(**row) == ()]
     assert clean
     for row in clean:
-        assert row["certified"] and not row["yanked"] and row["budget_ok"] and row["ticket_bundle_matches"] and row["profile_declared"]
+        assert (
+            row["certified"]
+            and not row["yanked"]
+            and row["budget_ok"]
+            and row["ticket_bundle_matches"]
+            and row["profile_declared"]
+        )
         assert row["declared_tier"] >= row["cost_tier"]
 
 
@@ -153,7 +174,16 @@ def test_every_reason_is_reachable_and_every_reachable_reason_is_named():
         (3_600_000.000001, 3),
         (10**12, 3),
     ],
-    ids=["zero", "edge-1-stays-0", "just-above-1", "edge-3600-stays-1", "just-above-3600", "edge-3.6e6-stays-2", "just-above-3.6e6", "far-above"],
+    ids=[
+        "zero",
+        "edge-1-stays-0",
+        "just-above-1",
+        "edge-3600-stays-1",
+        "just-above-3600",
+        "edge-3.6e6-stays-2",
+        "just-above-3.6e6",
+        "far-above",
+    ],
 )
 def test_the_boundary_table_lookup_at_its_edges(core_s, tier):
     assert tiergate.tier_for_cost(M0_BOUNDARY_TABLE, core_s) == tier

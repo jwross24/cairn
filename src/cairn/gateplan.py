@@ -57,7 +57,18 @@ VERIFIER_STEP_FIELDS = (*BASE_STEP_FIELDS, "fixture", "entry", "x", "stack")
 
 CORPUS_FIELDS = ("p", "a", "b", "n", "Px", "Py", "Qx", "Qy")
 CRASH_FIELDS = ("p", "a", "b")
-PROFILE_FIELDS = ("tier", "model", "bits", "mean_tries", "sd_tries", "per_try_s", "mean_wall_s", "grade", "cost_model", "source")
+PROFILE_FIELDS = (
+    "tier",
+    "model",
+    "bits",
+    "mean_tries",
+    "sd_tries",
+    "per_try_s",
+    "mean_wall_s",
+    "grade",
+    "cost_model",
+    "source",
+)
 
 
 class PlanInvalid(ValueError):
@@ -182,9 +193,32 @@ class GatePlan:
                 at=cli.now_iso(),
             )
             claims.write_gate_run(sub, run)
-            lg.info("step", step=step.step, kind=step.kind, expected=step.expect, observed=observed, result=result, reasons=list(reasons), run_id=run.hash, wall_ms=wall_ms)
+            lg.info(
+                "step",
+                step=step.step,
+                kind=step.kind,
+                expected=step.expect,
+                observed=observed,
+                result=result,
+                reasons=list(reasons),
+                run_id=run.hash,
+                wall_ms=wall_ms,
+            )
             lg.debug("step_digests", step=step.step, stdout_digest=digests[0], stderr_digest=digests[1])
-            results.append(StepResult(step.step, step.kind, step.expect, observed, result, reasons, run.hash, wall_ms, digests[0], digests[1]))
+            results.append(
+                StepResult(
+                    step.step,
+                    step.kind,
+                    step.expect,
+                    observed,
+                    result,
+                    reasons,
+                    run.hash,
+                    wall_ms,
+                    digests[0],
+                    digests[1],
+                )
+            )
         return PlanResult(tuple(results), gate_bundle.hash, gate_bundle.pin_hash)
 
 
@@ -243,7 +277,15 @@ def _verifier_step_at(index, row):
     stack = row.get("stack")
     if stack is not None and not _is_str(stack):
         raise PlanInvalid(f"step-field-wrong-type:{index}.stack")
-    return Step(step=row["step"], kind=row["kind"], expect=row["expect"], fixture=row["fixture"], entry=row["entry"], x=row.get("x"), stack=stack)
+    return Step(
+        step=row["step"],
+        kind=row["kind"],
+        expect=row["expect"],
+        fixture=row["fixture"],
+        entry=row["entry"],
+        x=row.get("x"),
+        stack=stack,
+    )
 
 
 def _fixtures(gate_bundle):
@@ -339,7 +381,14 @@ def _run_verifier(step, gate_bundle, fixtures):
         result = engine.crash_selftest(instance)
     else:
         raw = _fixture(fixtures, step.fixture, CORPUS_FIELDS)
-        instance = verifier.Instance(p=int(raw["p"]), a=int(raw["a"]), b=int(raw["b"]), n=int(raw["n"]), P=(int(raw["Px"]), int(raw["Py"])), Q=(int(raw["Qx"]), int(raw["Qy"])))
+        instance = verifier.Instance(
+            p=int(raw["p"]),
+            a=int(raw["a"]),
+            b=int(raw["b"]),
+            n=int(raw["n"]),
+            P=(int(raw["Px"]), int(raw["Py"])),
+            Q=(int(raw["Qx"]), int(raw["Qy"])),
+        )
         result = engine.run(instance, int(step.x))
     observed = EXPECT_OK if result.accepted else f"FAIL {result.reason}"
     return observed, tuple(result.reasons), (result.stdout_digest, result.stderr_digest)
@@ -378,12 +427,19 @@ def _run_tier_gate(gate_bundle, sub, fixtures):
 
 
 def _tickets_for(sub, hypothesis_key):
-    return sub.conn.execute("SELECT 1 FROM tickets WHERE hypothesis_key = ? LIMIT 1", (hypothesis_key,)).fetchone() is not None
+    return (
+        sub.conn.execute("SELECT 1 FROM tickets WHERE hypothesis_key = ? LIMIT 1", (hypothesis_key,)).fetchone()
+        is not None
+    )
 
 
 def _configure(parser):
     subs = parser.add_subparsers(dest="sub", metavar="SUBCOMMAND", required=True)
-    subs.add_parser("selftest", parents=[cli.globals_parent(suppress=True), cli.json_parent()], help="run the gate bundle's plan of planted-failure self-tests, blocking every step after the first failure")
+    subs.add_parser(
+        "selftest",
+        parents=[cli.globals_parent(suppress=True), cli.json_parent()],
+        help="run the gate bundle's plan of planted-failure self-tests, blocking every step after the first failure",
+    )
 
 
 def _run(ns):
@@ -414,7 +470,12 @@ def _run_selftest(ns):
         with substrate.Substrate.open(ns.db) as sub:
             result = plan.run(gate_bundle, sub, ns.attest)
     except substrate.WriterAlreadyOpen as exc:
-        raise CliError(exits.CONFLICT, f"another writer already holds {ns.db}: {exc}", where=str(ns.db), next_command=f"cairn gate selftest --db {ns.db}") from None
+        raise CliError(
+            exits.CONFLICT,
+            f"another writer already holds {ns.db}: {exc}",
+            where=str(ns.db),
+            next_command=f"cairn gate selftest --db {ns.db}",
+        ) from None
     except FixtureInvalid as invalid:
         raise CliError(
             exits.GATE_REFUSED,
@@ -423,11 +484,29 @@ def _run_selftest(ns):
             next_command=bundle.repin_sequence(ns.bundle, ns.pin),
         ) from None
     steps = [
-        {"step": s.step, "kind": s.kind, "expected": s.expected, "observed": s.observed, "result": s.result, "reasons": list(s.reasons), "run_id": s.run_id, "wall_ms": s.wall_ms}
+        {
+            "step": s.step,
+            "kind": s.kind,
+            "expected": s.expected,
+            "observed": s.observed,
+            "result": s.result,
+            "reasons": list(s.reasons),
+            "run_id": s.run_id,
+            "wall_ms": s.wall_ms,
+        }
         for s in result.steps
     ]
     if getattr(ns, "json", False):
-        cli.emit_json("gate", {"sub": "selftest", "ok": result.ok, "bundle_hash": result.bundle_hash, "pin_hash": result.pin_hash, "steps": steps})
+        cli.emit_json(
+            "gate",
+            {
+                "sub": "selftest",
+                "ok": result.ok,
+                "bundle_hash": result.bundle_hash,
+                "pin_hash": result.pin_hash,
+                "steps": steps,
+            },
+        )
     else:
         for s in result.steps:
             print(f"{s.result} {s.step} expected={s.expected} observed={s.observed} run={s.run_id}")

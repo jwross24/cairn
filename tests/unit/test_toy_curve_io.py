@@ -10,12 +10,33 @@ from cairn.skills.toy_curve import InputError, ToyCurveOutput
 
 CROSS_AGREE = {"axis": "algorithm", "independent_range": {"bits": [0, 50]}, "result": "agree"}
 CROSS_DISAGREE = {"axis": "algorithm", "independent_range": {"bits": [0, 50]}, "result": "disagree"}
-FIXED_OK = ToyCurveOutput(30, 1, 922854029, 736418726, 866050641, 922807351, (432221713, 837442395), 48, CROSS_AGREE, "OK")
+FIXED_OK = ToyCurveOutput(
+    30, 1, 922854029, 736418726, 866050641, 922807351, (432221713, 837442395), 48, CROSS_AGREE, "OK"
+)
 FIXED_DISAGREE = ToyCurveOutput(
-    40, 1, 945002525923, 52505748614, 460290291066, 945003441719, (177882803709, 442326880217), 40, CROSS_DISAGREE, "DISAGREE",
+    40,
+    1,
+    945002525923,
+    52505748614,
+    460290291066,
+    945003441719,
+    (177882803709, 442326880217),
+    40,
+    CROSS_DISAGREE,
+    "DISAGREE",
     (
-        {"call": "ellcard", "curve": [52505748614, 460290291066, 945002525923], "result": 945003441719, "digest": "aa" * 32},
-        {"call": "ellsea", "curve": [52505748614, 460290291066, 945002525923], "result": 945003441721, "digest": "bb" * 32},
+        {
+            "call": "ellcard",
+            "curve": [52505748614, 460290291066, 945002525923],
+            "result": 945003441719,
+            "digest": "aa" * 32,
+        },
+        {
+            "call": "ellsea",
+            "curve": [52505748614, 460290291066, 945002525923],
+            "result": 945003441721,
+            "digest": "bb" * 32,
+        },
     ),
 )
 MALFORMED = [
@@ -58,13 +79,36 @@ def test_two_fixed_outputs_have_different_manifests():
     assert FIXED_OK.manifest_hash() != FIXED_DISAGREE.manifest_hash()
 
 
-@pytest.mark.parametrize(("text", "reason"), [("", "not JSON"), ("[]", "not a JSON object"), ('{"bits": 30}', "does not match"), (FIXED_OK.to_json().replace('"status":"OK"', '"status":"OK","x":1'), "undeclared")])
+@pytest.mark.parametrize(
+    ("text", "reason"),
+    [
+        ("", "not JSON"),
+        ("[]", "not a JSON object"),
+        ('{"bits": 30}', "does not match"),
+        (FIXED_OK.to_json().replace('"status":"OK"', '"status":"OK","x":1'), "undeclared"),
+    ],
+)
 def test_from_json_refuses_malformed_output(text, reason):
     with pytest.raises(InputError, match=reason):
         ToyCurveOutput.from_json(text)
 
 
-@pytest.mark.parametrize(("text", "match"), MALFORMED, ids=["empty", "non-json", "array", "missing-seed", "bits-str", "bits-bool", "extra-key", "bits-zero", "seed-zero", "bits-float"])
+@pytest.mark.parametrize(
+    ("text", "match"),
+    MALFORMED,
+    ids=[
+        "empty",
+        "non-json",
+        "array",
+        "missing-seed",
+        "bits-str",
+        "bits-bool",
+        "extra-key",
+        "bits-zero",
+        "seed-zero",
+        "bits-float",
+    ],
+)
 def test_malformed_stdin_is_refused_with_a_typed_error_before_any_pari_call(text, match, pari_spy):
     with pytest.raises(InputError, match=match):
         toy_curve.parse_inputs(text)
@@ -80,7 +124,17 @@ def test_well_formed_stdin_parses_without_touching_pari(pari_spy):
     assert pari_spy == []
 
 
-@pytest.mark.parametrize(("bits", "seed", "match"), [("40", 1, "bits must be an int, got str"), (40, None, "seed must be an int, got NoneType"), (0, 1, "bits must be >= 1"), (40, 0, "seed must be >= 1"), (True, 1, "bits must be an int, got bool")], ids=["bits-str", "seed-none", "bits-zero", "seed-zero", "bits-bool"])
+@pytest.mark.parametrize(
+    ("bits", "seed", "match"),
+    [
+        ("40", 1, "bits must be an int, got str"),
+        (40, None, "seed must be an int, got NoneType"),
+        (0, 1, "bits must be >= 1"),
+        (40, 0, "seed must be >= 1"),
+        (True, 1, "bits must be an int, got bool"),
+    ],
+    ids=["bits-str", "seed-none", "bits-zero", "seed-zero", "bits-bool"],
+)
 def test_run_validates_its_arguments_before_any_pari_call(bits, seed, match, pari_spy):
     with pytest.raises(InputError, match=match):
         toy_curve.run(bits, seed)

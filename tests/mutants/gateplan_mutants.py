@@ -56,7 +56,13 @@ def continue_after_failure():
             if observed == step.expect:
                 yield step, observed, gateplan.RESULT_PASS, tuple(extra), digests
             else:
-                yield step, observed, gateplan.RESULT_FAIL, (gateplan.MISMATCH_REASON, f"observed:{observed}", *tuple(extra)), digests
+                yield (
+                    step,
+                    observed,
+                    gateplan.RESULT_FAIL,
+                    (gateplan.MISMATCH_REASON, f"observed:{observed}", *tuple(extra)),
+                    digests,
+                )
 
     with _swap(gateplan, "plan_outcomes", outcomes):
         yield
@@ -68,19 +74,29 @@ def blocks_name_wrong_step():
         blocker = None
         for step in steps:
             if blocker is not None:
-                yield step, gateplan.RESULT_BLOCKED, gateplan.RESULT_BLOCKED, (f"{gateplan.BLOCKED_PREFIX}{step.step}",), (None, None)
+                yield (
+                    step,
+                    gateplan.RESULT_BLOCKED,
+                    gateplan.RESULT_BLOCKED,
+                    (f"{gateplan.BLOCKED_PREFIX}{step.step}",),
+                    (None, None),
+                )
                 continue
             observed, extra, digests = observe(step)
             if observed == step.expect:
                 yield step, observed, gateplan.RESULT_PASS, tuple(extra), digests
             else:
-                yield step, observed, gateplan.RESULT_FAIL, (gateplan.MISMATCH_REASON, f"observed:{observed}", *tuple(extra)), digests
+                yield (
+                    step,
+                    observed,
+                    gateplan.RESULT_FAIL,
+                    (gateplan.MISMATCH_REASON, f"observed:{observed}", *tuple(extra)),
+                    digests,
+                )
                 blocker = step.step
 
     with _swap(gateplan, "plan_outcomes", outcomes):
         yield
-
-
 
 
 @contextmanager

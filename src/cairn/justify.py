@@ -194,10 +194,7 @@ def cross_check_covers(cross_check, inputs):
 def producer_capped(summary, inputs):
     if not isinstance(summary, dict):
         return False
-    if not all(
-        value == AUTHOR_SUPPLIED
-        for value in _origin_values(summary.get("corpus_origins"))
-    ):
+    if not all(value == AUTHOR_SUPPLIED for value in _origin_values(summary.get("corpus_origins"))):
         return False
     if summary.get("randomized_arm"):
         return False
@@ -214,11 +211,7 @@ def kind_class(
     approved=False,
 ):
     if kind == "lean_artifact":
-        return (
-            (PROVEN, "lean-artifact-approved")
-            if approved
-            else (None, REASON_HUMAN_REVIEW)
-        )
+        return (PROVEN, "lean-artifact-approved") if approved else (None, REASON_HUMAN_REVIEW)
     if kind == "ladder_table":
         if verdict == "KEEP" or (verdict == "KEEP_IN_SAMPLE" and in_sample_ok):
             if repro_passed:
@@ -244,9 +237,7 @@ def strongest(results):
     best = None
     for pair in results:
         result = pair[1]
-        if isinstance(result, Justification) and (
-            best is None or rank(result.cls) > rank(best[1].cls)
-        ):
+        if isinstance(result, Justification) and (best is None or rank(result.cls) > rank(best[1].cls)):
             best = pair
     return best
 
@@ -273,20 +264,14 @@ def justify(evidence, statement, ctx):
         evidence=evidence_hash,
         kind=kind,
         result=type(result).__name__,
-        detail=getattr(result, "cls", None)
-        or getattr(result, "field", None)
-        or getattr(result, "reason", None),
+        detail=getattr(result, "cls", None) or getattr(result, "field", None) or getattr(result, "reason", None),
     )
     return result
 
 
 def _judge(evidence, statement, ctx, kind, ceiling, evidence_hash):
-    if ctx.offered_class is not None and (
-        ceiling is None or rank(ctx.offered_class) > rank(ceiling)
-    ):
-        return LatticeViolation(
-            f"{kind}-cannot-justify-{ctx.offered_class}", evidence_hash
-        )
+    if ctx.offered_class is not None and (ceiling is None or rank(ctx.offered_class) > rank(ceiling)):
+        return LatticeViolation(f"{kind}-cannot-justify-{ctx.offered_class}", evidence_hash)
     if ctx.disowned:
         return Absent("disowned", evidence_hash)
     scope = _load(statement.get("scope"))
@@ -353,8 +338,7 @@ def _grade(sub, evidence_hash):
 def context_for(sub, evidence, statement, attest_path, *, offered_class=None):
     population = _load(evidence.get("population")) or {}
     approved = any(
-        row["verdict"] == "approve"
-        for row in claims.visible_review_verdicts(sub, statement["hash"], attest_path)
+        row["verdict"] == "approve" for row in claims.visible_review_verdicts(sub, statement["hash"], attest_path)
     )
     return Context(
         grade=_grade(sub, evidence.get("hash")),
@@ -392,20 +376,14 @@ def derive_tag(sub, statement_hash, attest_path, *, actor=ACTOR):
         ctx = context_for(sub, row, statement, attest_path)
         results.append((row, justify(row, statement, ctx)))
 
-    refuted_by = next(
-        (row["hash"] for row, result in results if isinstance(result, Refutation)), None
-    )
+    refuted_by = next((row["hash"] for row, result in results if isinstance(result, Refutation)), None)
     best = strongest(results)
     tag = best[1].cls if best is not None else SPECULATION
     if refuted_by is not None:
         tag = SPECULATION
 
     from_tag = _current_tag(sub, statement_hash)
-    justified_by = (
-        refuted_by
-        if refuted_by is not None
-        else (best[0]["hash"] if best is not None else None)
-    )
+    justified_by = refuted_by if refuted_by is not None else (best[0]["hash"] if best is not None else None)
     appended = tag != from_tag
     if appended:
         claims.append_tag_history(
@@ -506,9 +484,7 @@ def _run(ns):
     if getattr(ns, "json", False):
         cli.emit_json("justify", payload)
     else:
-        print(
-            f"{payload['statement_hash']} {payload['tag']} {payload['justified_by'] or '-'}"
-        )
+        print(f"{payload['statement_hash']} {payload['tag']} {payload['justified_by'] or '-'}")
         for row in payload["evidence"]:
             print(f"- {row['kind']} {row['hash']} {row['result']} {row['detail']}")
     return exits.OK

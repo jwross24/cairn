@@ -18,8 +18,23 @@ from _canon_decoder import decode, decode_int
 from mutants import canon_mutants
 
 CORPUS = Path(__file__).resolve().parent.parent / "fuzz_corpus" / "canon"
-SIMPLE_SCHEMAS = {"str": STR, "int": INT, "list_bytes": List(BYTES), "list_bytes_hex": List(BYTES), "list_str": List(STR)}
-LEAF_TYPES = {"INT": INT, "STR": STR, "BYTES": BYTES, "BOOL": BOOL, "BLOBREF": BLOBREF, "List(INT)": List(INT), "Map(STR,STR)": Map(STR, STR), "Set(INT)": Set(INT)}
+SIMPLE_SCHEMAS = {
+    "str": STR,
+    "int": INT,
+    "list_bytes": List(BYTES),
+    "list_bytes_hex": List(BYTES),
+    "list_str": List(STR),
+}
+LEAF_TYPES = {
+    "INT": INT,
+    "STR": STR,
+    "BYTES": BYTES,
+    "BOOL": BOOL,
+    "BLOBREF": BLOBREF,
+    "List(INT)": List(INT),
+    "Map(STR,STR)": Map(STR, STR),
+    "Set(INT)": Set(INT),
+}
 
 hexdigest = st.binary(min_size=32, max_size=32).map(bytes.hex)
 short_text = st.text(max_size=12)
@@ -46,14 +61,25 @@ hypotheses = st.fixed_dictionaries(
     {
         "target_family": short_text,
         "claimed": st.dictionaries(short_text, short_text, max_size=4),
-        "method_identity": st.fixed_dictionaries({"interface_version": short_text, "params": st.dictionaries(short_text, short_text, max_size=3)}),
-        "declared_parameter_ranges": st.dictionaries(short_text, st.lists(st.integers(), min_size=2, max_size=2), max_size=3),
+        "method_identity": st.fixed_dictionaries(
+            {"interface_version": short_text, "params": st.dictionaries(short_text, short_text, max_size=3)}
+        ),
+        "declared_parameter_ranges": st.dictionaries(
+            short_text, st.lists(st.integers(), min_size=2, max_size=2), max_size=3
+        ),
         "sampling_distribution": st.none() | short_text,
     }
 )
 payloads = st.recursive(
-    st.none() | st.booleans() | st.integers() | st.floats(allow_nan=False) | st.binary(max_size=8) | st.text(max_size=8),
-    lambda child: st.lists(child, max_size=4) | st.dictionaries(st.text(max_size=8), child, max_size=4) | st.tuples(child, child),
+    st.none()
+    | st.booleans()
+    | st.integers()
+    | st.floats(allow_nan=False)
+    | st.binary(max_size=8)
+    | st.text(max_size=8),
+    lambda child: (
+        st.lists(child, max_size=4) | st.dictionaries(st.text(max_size=8), child, max_size=4) | st.tuples(child, child)
+    ),
     max_leaves=30,
 )
 
@@ -254,7 +280,9 @@ def test_fuzz_round_trip_recovers_the_canonical_form(recipe):
 
 @given(st.text())
 def test_nfc_and_nfd_spellings_encode_identically(text):
-    assert canon.encode(STR, unicodedata.normalize("NFD", text)) == canon.encode(STR, unicodedata.normalize("NFC", text))
+    assert canon.encode(STR, unicodedata.normalize("NFD", text)) == canon.encode(
+        STR, unicodedata.normalize("NFC", text)
+    )
 
 
 def _corpus_cases():

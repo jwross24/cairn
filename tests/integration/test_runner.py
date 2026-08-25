@@ -61,9 +61,7 @@ def _fixture_launch(sub, tmp_path, module, **overrides):
     )
 
 
-def test_a_real_forty_bit_launch_records_a_receipt_with_live_measurements(
-    writer, tmp_path, db_snapshot
-):
+def test_a_real_forty_bit_launch_records_a_receipt_with_live_measurements(writer, tmp_path, db_snapshot):
     before = db_snapshot(writer.conn, "before")
     attempt = runner.launch(
         writer,
@@ -87,9 +85,7 @@ def test_a_real_forty_bit_launch_records_a_receipt_with_live_measurements(
 
     stdout_path = tmp_path / "runs" / attempt.attempt_id / "stdout"
     assert receipt["stdout_digest"] == blob_hash(stdout_path.read_bytes())
-    assert receipt["stderr_digest"] == blob_hash(
-        (tmp_path / "runs" / attempt.attempt_id / "stderr").read_bytes()
-    )
+    assert receipt["stderr_digest"] == blob_hash((tmp_path / "runs" / attempt.attempt_id / "stderr").read_bytes())
 
 
 def test_the_manifest_carries_the_skill_s_own_output_bytes(writer, tmp_path):
@@ -113,10 +109,7 @@ def test_the_manifest_carries_the_skill_s_own_output_bytes(writer, tmp_path):
 
 def test_the_manifest_is_linked_to_its_recipe(writer, tmp_path):
     attempt = _fixture_launch(writer, tmp_path, "skills.disagree")
-    edges = {
-        (r["parent_hash"], r["edge_kind"])
-        for r in writer.lineage_of(attempt.output_manifest_hash)
-    }
+    edges = {(r["parent_hash"], r["edge_kind"]) for r in writer.lineage_of(attempt.output_manifest_hash)}
     assert (attempt.recipe_key, substrate.EDGE_OUTPUT_OF) in edges
 
 
@@ -167,9 +160,7 @@ def test_skip_cache_lookup_records_a_fresh_attempt_that_agrees(writer, tmp_path)
 
 def test_two_disagreeing_attempts_mark_the_recipe_non_reproducible(writer, tmp_path):
     first = _fixture_launch(writer, tmp_path, "skills.nondeterministic")
-    second = _fixture_launch(
-        writer, tmp_path, "skills.nondeterministic", skip_cache_lookup=True
-    )
+    second = _fixture_launch(writer, tmp_path, "skills.nondeterministic", skip_cache_lookup=True)
     assert second.output_manifest_hash != first.output_manifest_hash
     assert set(second.diverged) == {first.attempt_id, second.attempt_id}
     for attempt_id in second.diverged:
@@ -179,9 +170,7 @@ def test_two_disagreeing_attempts_mark_the_recipe_non_reproducible(writer, tmp_p
     assert writer.serve(first.recipe_key) is None
 
 
-def test_a_fixture_exiting_three_fails_and_its_receipt_carries_the_real_exit(
-    writer, tmp_path
-):
+def test_a_fixture_exiting_three_fails_and_its_receipt_carries_the_real_exit(writer, tmp_path):
     attempt = _fixture_launch(writer, tmp_path, "skills.exit3")
     assert attempt.status == "FAIL"
     assert writer.get_receipt(attempt.receipt_hash)["exit_status"] == 3
@@ -212,9 +201,7 @@ def test_a_self_written_receipt_is_ignored(writer, tmp_path):
     assert receipt["peak_rss_bytes"] > 1
 
 
-def test_the_child_sees_no_substrate_path_and_no_inherited_secret(
-    writer, tmp_path, monkeypatch
-):
+def test_the_child_sees_no_substrate_path_and_no_inherited_secret(writer, tmp_path, monkeypatch):
     monkeypatch.setenv("CAIRN_DB", str(tmp_path / "substrate.sqlite"))
     monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "hunter2")
     attempt = _fixture_launch(writer, tmp_path, "skills.print_env")
@@ -224,21 +211,15 @@ def test_the_child_sees_no_substrate_path_and_no_inherited_secret(
     assert "AWS_SECRET_ACCESS_KEY" not in seen
     assert "VIRTUAL_ENV" not in seen and "PWD" not in seen
     assert str(tmp_path / "substrate.sqlite") not in json.dumps(attempt.parsed.document)
-    assert attempt.parsed.document["argv"] == [
-        str(tmp_path / "runs" / attempt.attempt_id / "scratch")
-    ]
+    assert attempt.parsed.document["argv"] == [str(tmp_path / "runs" / attempt.attempt_id / "scratch")]
 
 
-def test_a_megabyte_of_stderr_neither_deadlocks_nor_escapes_its_digest(
-    writer, tmp_path
-):
+def test_a_megabyte_of_stderr_neither_deadlocks_nor_escapes_its_digest(writer, tmp_path):
     attempt = _fixture_launch(writer, tmp_path, "skills.stderr_1mb")
     assert attempt.status == "OK"
     stderr_bytes = (tmp_path / "runs" / attempt.attempt_id / "stderr").read_bytes()
     assert len(stderr_bytes) == 1024 * 1024
-    assert writer.get_receipt(attempt.receipt_hash)["stderr_digest"] == blob_hash(
-        stderr_bytes
-    )
+    assert writer.get_receipt(attempt.receipt_hash)["stderr_digest"] == blob_hash(stderr_bytes)
 
 
 def test_bytes_written_under_scratch_are_measured(writer, tmp_path):
@@ -268,12 +249,8 @@ def test_a_malformed_document_fails_and_writes_no_manifest(writer, tmp_path):
 
 def test_escrow_is_reserved_at_launch_and_left_unsettled(writer, tmp_path):
     evaluation = toy_curve.COST_PROFILE.evaluate(40)
-    attempt = _fixture_launch(
-        writer, tmp_path, "skills.disagree", evaluation=evaluation
-    )
-    row = writer.conn.execute(
-        "SELECT * FROM escrow WHERE attempt_id = ?", (attempt.attempt_id,)
-    ).fetchone()
+    attempt = _fixture_launch(writer, tmp_path, "skills.disagree", evaluation=evaluation)
+    row = writer.conn.execute("SELECT * FROM escrow WHERE attempt_id = ?", (attempt.attempt_id,)).fetchone()
     assert row["declared_production_cost"] == evaluation.expected_core_s
     assert row["declared_verification_cost"] == evaluation.expected_verification_core_s
     assert row["reserved"] == evaluation.expected_verification_core_s
@@ -281,9 +258,7 @@ def test_escrow_is_reserved_at_launch_and_left_unsettled(writer, tmp_path):
     assert row["spent_at"] is None and row["released_at"] is None
 
 
-def test_a_grant_that_cannot_cover_the_ceiling_refuses_before_spawning(
-    writer, tmp_path, popen_spy
-):
+def test_a_grant_that_cannot_cover_the_ceiling_refuses_before_spawning(writer, tmp_path, popen_spy):
     evaluation = Evaluation(0.2, 0.2, 0.2)
     with pytest.raises(runner.BudgetRefused, match="cannot cover the ceiling"):
         _fixture_launch(
@@ -358,9 +333,7 @@ def test_the_startup_scan_command_honors_dry_run(tmp_path, capsys):
     with substrate.Substrate.open(db) as sub:
         key = sub.put_recipe(_recipe(seed=99))
         orphan = sub.start_attempt(key)
-    code, out, err = _run(
-        ["startup-scan", "--db", str(db), "--dry-run", "--json"], capsys
-    )
+    code, out, err = _run(["startup-scan", "--db", str(db), "--dry-run", "--json"], capsys)
     assert code == exits.OK, err
     assert json.loads(out)["dry_run"] is True
     with substrate.Substrate.open(db, role="reader") as sub:
@@ -417,9 +390,7 @@ def test_the_group_sweep_leaves_no_stray_grandchild(writer, tmp_path):
 
 
 def test_rusage_covers_the_child_and_what_the_child_reaped(writer, tmp_path):
-    burner_budget = Evaluation(
-        expected_wall_s=30.0, expected_core_s=30.0, expected_verification_core_s=0.0
-    )
+    burner_budget = Evaluation(expected_wall_s=30.0, expected_core_s=30.0, expected_verification_core_s=0.0)
     alone = _fixture_launch(
         writer,
         tmp_path,
@@ -440,20 +411,14 @@ def test_rusage_covers_the_child_and_what_the_child_reaped(writer, tmp_path):
 
 
 def test_a_recipe_marked_do_not_cache_is_never_served(writer, tmp_path):
-    first = _fixture_launch(
-        writer, tmp_path, "skills.disagree", recipe=_recipe(seed=31), do_not_cache=True
-    )
+    first = _fixture_launch(writer, tmp_path, "skills.disagree", recipe=_recipe(seed=31), do_not_cache=True)
     assert writer.serve(first.recipe_key) is None
-    second = _fixture_launch(
-        writer, tmp_path, "skills.disagree", recipe=_recipe(seed=31), do_not_cache=True
-    )
+    second = _fixture_launch(writer, tmp_path, "skills.disagree", recipe=_recipe(seed=31), do_not_cache=True)
     assert not second.served_from_cache and second.attempt_id != first.attempt_id
 
 
 @pytest.mark.parametrize("replay", ["Verifiable", "AuditOnly"])
-def test_a_non_replayable_recipe_is_never_marked_non_reproducible(
-    writer, tmp_path, replay
-):
+def test_a_non_replayable_recipe_is_never_marked_non_reproducible(writer, tmp_path, replay):
     first = _fixture_launch(
         writer,
         tmp_path,
@@ -563,12 +528,8 @@ def test_only_regular_files_under_scratch_become_artifacts(writer, tmp_path):
     assert len(members) == 3
 
 
-def test_an_attempt_is_never_left_running_when_the_launch_raises(
-    writer, tmp_path, monkeypatch
-):
-    monkeypatch.setattr(
-        runner, "_artifacts", lambda *a: (_ for _ in ()).throw(OSError("planted"))
-    )
+def test_an_attempt_is_never_left_running_when_the_launch_raises(writer, tmp_path, monkeypatch):
+    monkeypatch.setattr(runner, "_artifacts", lambda *a: (_ for _ in ()).throw(OSError("planted")))
     with pytest.raises(OSError, match="planted"):
         _fixture_launch(writer, tmp_path, "skills.disagree")
     rows = writer.conn.execute("SELECT status, ended_at FROM attempts").fetchall()
@@ -593,10 +554,7 @@ def test_input_blobs_are_linked_to_the_manifest(writer, tmp_path):
     digest = writer.put_blob(payload)
     recipe = {**_recipe(seed=51), "inputs": {"seed.bin": (digest, len(payload))}}
     attempt = _fixture_launch(writer, tmp_path, "skills.disagree", recipe=recipe)
-    edges = {
-        (r["parent_hash"], r["edge_kind"])
-        for r in writer.lineage_of(attempt.output_manifest_hash)
-    }
+    edges = {(r["parent_hash"], r["edge_kind"]) for r in writer.lineage_of(attempt.output_manifest_hash)}
     assert (digest, substrate.EDGE_INPUT) in edges
 
 
@@ -694,9 +652,7 @@ def test_signalling_a_reaped_pid_is_swallowed(tmp_path):
     [(1.5, 0), (0.0, -9)],
     ids=["grace-lets-it-finish", "no-grace-kills-it"],
 )
-def test_the_grace_window_is_what_lets_a_slow_handler_finish(
-    tmp_path, grace, expected_exit
-):
+def test_the_grace_window_is_what_lets_a_slow_handler_finish(tmp_path, grace, expected_exit):
     scratch = tmp_path / "scratch"
     scratch.mkdir()
     run = runner.spawn_and_wait(

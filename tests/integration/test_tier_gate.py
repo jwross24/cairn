@@ -36,7 +36,10 @@ def synthetic_profile(core_s, *, bits=40, tier=0):
     """
     return CostProfile(
         tier=tier,
-        production=Production(model="synthetic", per_size={bits: SizeCost(mean_tries=1.0, sd_tries=0.0, per_try_s=core_s, mean_wall_s=core_s)}),
+        production=Production(
+            model="synthetic",
+            per_size={bits: SizeCost(mean_tries=1.0, sd_tries=0.0, per_try_s=core_s, mean_wall_s=core_s)},
+        ),
         verification=Verification(grade="Verifiable", cost_model="same_as_production"),
         source="tests/integration/test_tier_gate.py",
     )
@@ -64,7 +67,9 @@ def record_hypothesis(sub, seed=0):
     return obj
 
 
-def launch(sub, *, declared_tier=0, core_s=0.1, budget=BUDGET_PLENTY, hypothesis_key=None, skill_identity_hash=None, bits=40):
+def launch(
+    sub, *, declared_tier=0, core_s=0.1, budget=BUDGET_PLENTY, hypothesis_key=None, skill_identity_hash=None, bits=40
+):
     return Launch(
         cost_profile=synthetic_profile(core_s, bits=bits),
         inputs=bits,
@@ -103,7 +108,9 @@ def test_a_tier_one_launch_with_a_recorded_hypothesis_object_is_admitted_and_min
     tier_gate, sub, gate_bundle = gate
     identity = certify(sub)
     obj = record_hypothesis(sub)
-    decision = tier_gate.admit(launch(sub, declared_tier=1, core_s=10, hypothesis_key=obj.hash, skill_identity_hash=identity))
+    decision = tier_gate.admit(
+        launch(sub, declared_tier=1, core_s=10, hypothesis_key=obj.hash, skill_identity_hash=identity)
+    )
     assert isinstance(decision, Admitted)
     rows = tickets(sub)
     assert len(rows) == 1
@@ -118,8 +125,12 @@ def test_a_second_admitted_launch_reads_the_existing_ticket_and_mints_no_duplica
     tier_gate, sub, _ = gate
     identity = certify(sub)
     obj = record_hypothesis(sub)
-    first = tier_gate.admit(launch(sub, declared_tier=1, core_s=10, hypothesis_key=obj.hash, skill_identity_hash=identity))
-    second = tier_gate.admit(launch(sub, declared_tier=1, core_s=10, hypothesis_key=obj.hash, skill_identity_hash=identity))
+    first = tier_gate.admit(
+        launch(sub, declared_tier=1, core_s=10, hypothesis_key=obj.hash, skill_identity_hash=identity)
+    )
+    second = tier_gate.admit(
+        launch(sub, declared_tier=1, core_s=10, hypothesis_key=obj.hash, skill_identity_hash=identity)
+    )
     assert isinstance(second, Admitted)
     assert second.ticket_hash == first.ticket_hash
     assert len(tickets(sub)) == 1
@@ -134,7 +145,9 @@ REFUSAL_CASES = [
 ]
 
 
-@pytest.mark.parametrize(("name", "delta", "expected", "needs_hypothesis"), REFUSAL_CASES, ids=[c[0] for c in REFUSAL_CASES])
+@pytest.mark.parametrize(
+    ("name", "delta", "expected", "needs_hypothesis"), REFUSAL_CASES, ids=[c[0] for c in REFUSAL_CASES]
+)
 def test_a_refused_launch_names_every_failed_predicate(gate, name, delta, expected, needs_hypothesis):
     tier_gate, sub, _ = gate
     identity = certify(sub)
@@ -168,7 +181,9 @@ def test_a_yanked_skill_is_refused(gate):
 def test_an_uncertified_tier_two_launch_names_both_reasons(gate):
     tier_gate, sub, _ = gate
     obj = record_hypothesis(sub)
-    decision = tier_gate.admit(launch(sub, declared_tier=2, core_s=10, hypothesis_key=obj.hash, skill_identity_hash="9" * 64))
+    decision = tier_gate.admit(
+        launch(sub, declared_tier=2, core_s=10, hypothesis_key=obj.hash, skill_identity_hash="9" * 64)
+    )
     assert decision.reasons == (TIER_TWO_ABOVE, UNCERTIFIED)
 
 
@@ -229,7 +244,9 @@ def test_a_waiver_produces_no_ticket_and_admits_no_tier(gate, tmp_path, clear_fl
     identity = certify(sub)
     obj = record_hypothesis(sub)
     assert keys.hypothesis_key(gate_bundle.waiver_hypothesis()) == waiver["target"]
-    decision = tier_gate.admit(launch(sub, declared_tier=2, core_s=10, hypothesis_key=obj.hash, skill_identity_hash=identity))
+    decision = tier_gate.admit(
+        launch(sub, declared_tier=2, core_s=10, hypothesis_key=obj.hash, skill_identity_hash=identity)
+    )
     assert isinstance(decision, TierRefused)
     assert TIER_TWO_ABOVE in decision.reasons
     assert tickets(sub) == []
@@ -266,7 +283,12 @@ def test_admitted_is_exactly_the_decision_whose_reasons_are_empty(gate):
         assert isinstance(decision, TierRefused) == (decision.reasons != ())
     assert [d.reasons for d in decisions] == [(), (), (BOUNDARY_TABLE,), (UNCERTIFIED,), (TIER_TWO_ABOVE,)]
     recorded = {(r["result"], r["reasons"]) for r in gate_runs(sub)}
-    assert recorded == {("admitted", "[]"), ("refused", json.dumps([BOUNDARY_TABLE])), ("refused", json.dumps([UNCERTIFIED])), ("refused", json.dumps([TIER_TWO_ABOVE]))}
+    assert recorded == {
+        ("admitted", "[]"),
+        ("refused", json.dumps([BOUNDARY_TABLE])),
+        ("refused", json.dumps([UNCERTIFIED])),
+        ("refused", json.dumps([TIER_TWO_ABOVE])),
+    }
 
 
 def test_two_indistinguishable_decisions_in_one_second_are_one_content_addressed_row(gate, monkeypatch):

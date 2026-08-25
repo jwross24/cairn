@@ -46,7 +46,20 @@ def test_writer_opens_in_wal_with_pragmas_and_schema(writer, json_test_log, db_s
     assert writer.conn.execute("PRAGMA synchronous").fetchone()[0] == 1
     assert writer.conn.execute("PRAGMA foreign_keys").fetchone()[0] == 1
     tables = {r[0] for r in writer.conn.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
-    assert {"blobs", "nodes", "lineage", "roots", "recipes", "attempts", "receipts", "skill_certificates", "yank_records", "salts", "escrow", "grade_history"} <= tables
+    assert {
+        "blobs",
+        "nodes",
+        "lineage",
+        "roots",
+        "recipes",
+        "attempts",
+        "receipts",
+        "skill_certificates",
+        "yank_records",
+        "salts",
+        "escrow",
+        "grade_history",
+    } <= tables
     db_snapshot(writer.conn, "fresh")
     records = [json.loads(line) for line in json_test_log.read_text().splitlines()]
     assert any(r.get("event") == "open" and r.get("journal_mode") == "wal" for r in records)
@@ -70,12 +83,20 @@ def test_weaken_grade_down_the_order_and_effective_grade_follows(writer, db_snap
     db_snapshot(writer.conn, "weakened")
     assert writer.effective_grade(node) == "AuditOnly"
     assert writer.get_node(node)["replay_grade"] == "Replayable"
-    assert [(h["from_grade"], h["to_grade"]) for h in writer.grade_history(node)] == [("Replayable", "Verifiable"), ("Verifiable", "AuditOnly")]
+    assert [(h["from_grade"], h["to_grade"]) for h in writer.grade_history(node)] == [
+        ("Replayable", "Verifiable"),
+        ("Verifiable", "AuditOnly"),
+    ]
 
 
 @pytest.mark.parametrize(
     ("start", "to", "match"),
-    [("AuditOnly", "Verifiable", "strengthen"), ("Verifiable", "Verifiable", "same grade"), ("Verifiable", "Replayable", "strengthen"), ("Replayable", "Replayable", "same grade")],
+    [
+        ("AuditOnly", "Verifiable", "strengthen"),
+        ("Verifiable", "Verifiable", "same grade"),
+        ("Verifiable", "Replayable", "strengthen"),
+        ("Replayable", "Replayable", "same grade"),
+    ],
 )
 def test_weaken_grade_refuses_strengthening_and_same_grade(writer, db_snapshot, start, to, match):
     node = writer.put_node("evidence", f"{start}->{to}".encode(), replay_grade=start)
@@ -120,7 +141,14 @@ def test_transplanted_certificate_row_is_uncertified(tmp_path, db_snapshot):
     with pytest.raises(sqlite3.IntegrityError, match="UNIQUE"):
         source.conn.execute(
             "INSERT INTO skill_certificates VALUES (?, ?, ?, ?, ?, ?)",
-            (identity_b, row["cert_hash"], row["transcript_hash"], row["env_manifest_hash"], row["selftest_summary"], row["at"]),
+            (
+                identity_b,
+                row["cert_hash"],
+                row["transcript_hash"],
+                row["env_manifest_hash"],
+                row["selftest_summary"],
+                row["at"],
+            ),
         )
     source.close()
     target = open_writer(tmp_path, "target.sqlite")
@@ -128,7 +156,14 @@ def test_transplanted_certificate_row_is_uncertified(tmp_path, db_snapshot):
         target.put_identity_bundle(IDENTITY_B)
         target.conn.execute(
             "INSERT INTO skill_certificates VALUES (?, ?, ?, ?, ?, ?)",
-            (identity_b, row["cert_hash"], row["transcript_hash"], row["env_manifest_hash"], row["selftest_summary"], row["at"]),
+            (
+                identity_b,
+                row["cert_hash"],
+                row["transcript_hash"],
+                row["env_manifest_hash"],
+                row["selftest_summary"],
+                row["at"],
+            ),
         )
         db_snapshot(target.conn, "transplanted")
         assert target.get_certificate(identity_b)["cert_hash"] == cert_a
@@ -143,7 +178,10 @@ def test_certificate_for_identity_without_node_is_refused(writer, db_snapshot):
     with pytest.raises(UnknownNode, match="has no nodes row"):
         writer.put_certificate(unknown, TRANSCRIPT_HASH, ENV_MANIFEST_HASH, SELFTEST_SUMMARY)
     with pytest.raises(sqlite3.IntegrityError, match="FOREIGN KEY"):
-        writer.conn.execute("INSERT INTO skill_certificates VALUES (?, ?, ?, ?, ?, ?)", (unknown, "11" * 32, TRANSCRIPT_HASH, ENV_MANIFEST_HASH, "{}", "now"))
+        writer.conn.execute(
+            "INSERT INTO skill_certificates VALUES (?, ?, ?, ?, ?, ?)",
+            (unknown, "11" * 32, TRANSCRIPT_HASH, ENV_MANIFEST_HASH, "{}", "now"),
+        )
     db_snapshot(writer.conn, "refused")
     assert writer.conn.execute("SELECT count(*) FROM skill_certificates").fetchone()[0] == 0
     assert writer.conn.execute("SELECT count(*) FROM nodes WHERE kind = 'skill_certificate'").fetchone()[0] == 0
@@ -384,13 +422,28 @@ def populated(writer):
     attempt = writer.start_attempt(key)
     artifacts = {"out": (writer.put_blob(b"x"), 1)}
     manifest = writer.put_output_manifest(artifacts, recipe_key=key)
-    writer.close_attempt(attempt, "OK", output_manifest_hash=manifest, receipt_hash=receipt, verifier_result_hash="55" * 32, certificate_hash="66" * 32)
+    writer.close_attempt(
+        attempt,
+        "OK",
+        output_manifest_hash=manifest,
+        receipt_hash=receipt,
+        verifier_result_hash="55" * 32,
+        certificate_hash="66" * 32,
+    )
     running = writer.start_attempt(key)
     identity, cert = certify(writer, IDENTITY_A)
     writer.weaken_grade(manifest, "Verifiable")
     writer.add_yank_record("yank-1", identity, "{}", record_digest="dd" * 32, file_offset=0)
     writer.add_salt("class-1", "salt-1", record_digest="dd" * 32, file_offset=1)
-    return writer, {"key": key, "attempt": attempt, "running": running, "manifest": manifest, "identity": identity, "cert": cert, "receipt": receipt}
+    return writer, {
+        "key": key,
+        "attempt": attempt,
+        "running": running,
+        "manifest": manifest,
+        "identity": identity,
+        "cert": cert,
+        "receipt": receipt,
+    }
 
 
 APPEND_ONLY_STATEMENTS = [
@@ -420,8 +473,14 @@ APPEND_ONLY_STATEMENTS = [
     ("attempts", "UPDATE attempts SET disowned_at = 'x', inadmissible = 1 WHERE attempt_id = :attempt"),
     ("attempts", "DELETE FROM attempts WHERE attempt_id = :attempt"),
     ("attempts", "UPDATE attempts SET status = 'OK', ended_at = 'x', recipe_key = 'other' WHERE attempt_id = :running"),
-    ("attempts", "UPDATE attempts SET status = 'OK', ended_at = 'x', replay_grade = 'AuditOnly' WHERE attempt_id = :running"),
-    ("attempts", "UPDATE attempts SET status = 'OK', ended_at = 'x', skip_cache_lookup = 1 WHERE attempt_id = :running"),
+    (
+        "attempts",
+        "UPDATE attempts SET status = 'OK', ended_at = 'x', replay_grade = 'AuditOnly' WHERE attempt_id = :running",
+    ),
+    (
+        "attempts",
+        "UPDATE attempts SET status = 'OK', ended_at = 'x', skip_cache_lookup = 1 WHERE attempt_id = :running",
+    ),
     ("attempts", "UPDATE attempts SET status = 'OK', ended_at = 'x', started_at = 'x' WHERE attempt_id = :running"),
     ("attempts", "UPDATE attempts SET status = 'OK', ended_at = 'x', disowned_at = 'x' WHERE attempt_id = :running"),
     ("attempts", "UPDATE attempts SET status = 'OK', ended_at = 'x', inadmissible = 1 WHERE attempt_id = :running"),
@@ -452,7 +511,11 @@ APPEND_ONLY_STATEMENTS = [
 ]
 
 
-@pytest.mark.parametrize(("table", "statement"), APPEND_ONLY_STATEMENTS, ids=[f"{t}:{s.split()[0]}:{i}" for i, (t, s) in enumerate(APPEND_ONLY_STATEMENTS)])
+@pytest.mark.parametrize(
+    ("table", "statement"),
+    APPEND_ONLY_STATEMENTS,
+    ids=[f"{t}:{s.split()[0]}:{i}" for i, (t, s) in enumerate(APPEND_ONLY_STATEMENTS)],
+)
 def test_append_only_triggers_refuse_update_and_delete(populated, db_snapshot, table, statement):
     sub, ids = populated
     before = db_snapshot(sub.conn, f"before:{table}")
@@ -579,7 +642,9 @@ def test_vocabulary_guards_refuse_a_value_outside_the_check_list(writer, tmp_pat
 
 def test_same_hash_planted_under_another_kind_is_a_collision(writer, db_snapshot):
     digest = substrate.node_hash_for("evidence", b"shared")
-    writer.conn.execute("INSERT INTO nodes VALUES (?, 'output_manifest', ?, 'Replayable', NULL, 'now')", (digest, b"shared"))
+    writer.conn.execute(
+        "INSERT INTO nodes VALUES (?, 'output_manifest', ?, 'Replayable', NULL, 'now')", (digest, b"shared")
+    )
     with pytest.raises(HashCollision, match="different bytes or kind"):
         writer.put_node("evidence", b"shared")
     db_snapshot(writer.conn, "kind-collision")
@@ -613,7 +678,9 @@ def test_every_refused_serve_logs_why_not(writer, json_test_log, db_snapshot, wh
     if setup != "no_recipe":
         key = writer.put_recipe(recipe(1), do_not_cache=setup == "do_not_cache")
     if setup not in ("no_recipe", "no_attempts"):
-        attempt, _ = launch(writer, key, "FAIL" if setup == "fail" else "OK", None if setup == "fail" else {"out": b"payload"})
+        attempt, _ = launch(
+            writer, key, "FAIL" if setup == "fail" else "OK", None if setup == "fail" else {"out": b"payload"}
+        )
         if setup == "disowned":
             writer.disown(attempt)
         if setup == "inadmissible":
@@ -622,5 +689,7 @@ def test_every_refused_serve_logs_why_not(writer, json_test_log, db_snapshot, wh
             writer.conn.execute("DELETE FROM blobs WHERE hash = ?", (substrate.blob_hash(b"payload"),))
     db_snapshot(writer.conn, setup)
     assert writer.serve(key) is None
-    decisions = [json.loads(line) for line in json_test_log.read_text().splitlines() if json.loads(line).get("event") == "serve"]
+    decisions = [
+        json.loads(line) for line in json_test_log.read_text().splitlines() if json.loads(line).get("event") == "serve"
+    ]
     assert decisions[-1] == {**decisions[-1], "served": False, "why_not": why_not, "recipe_key": key}

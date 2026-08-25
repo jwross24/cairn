@@ -54,20 +54,14 @@ def _wide_population(statement, size=(30, 60)):
 
 def _append_verdict(writer, attest_path, statement_hash, verdict="approve"):
     unplaced = factories.review_verdict(statement_hash, verdict=verdict, seed=3)
-    offset = attest.append_record(
-        attest_path, claims.review_verdict_canonical(unplaced)
-    )
-    placed = factories.review_verdict(
-        statement_hash, verdict=verdict, seed=3, file_offset=offset
-    )
+    offset = attest.append_record(attest_path, claims.review_verdict_canonical(unplaced))
+    placed = factories.review_verdict(statement_hash, verdict=verdict, seed=3, file_offset=offset)
     claims.write_review_verdict(writer, placed)
     return offset
 
 
 def _certify(writer, revision, summary):
-    identity = writer.put_identity_bundle(
-        {**IDENTITY_A, "implementation_revision": revision}
-    )
+    identity = writer.put_identity_bundle({**IDENTITY_A, "implementation_revision": revision})
     writer.put_certificate(identity, TRANSCRIPT_HASH, ENV_MANIFEST_HASH, summary)
     return identity
 
@@ -137,9 +131,7 @@ def case_grade_audit_only(writer, attest_path):
 
 def case_population_narrower_than_scope(writer, attest_path):
     statement = _statement(writer, seed=5)
-    node = _ladder(
-        writer, statement, _wide_population(statement, size=(40, 50)), seed=5
-    )
+    node = _ladder(writer, statement, _wide_population(statement, size=(40, 50)), seed=5)
     return statement, node, None
 
 
@@ -242,9 +234,7 @@ def case_lean_artifact_with_a_reject_verdict(writer, attest_path):
 
 def case_lean_artifact_with_forged_digest(writer, attest_path):
     statement = _statement(writer, seed=13)
-    claims.write_review_verdict(
-        writer, factories.review_verdict(statement.hash, seed=13, file_offset=0)
-    )
+    claims.write_review_verdict(writer, factories.review_verdict(statement.hash, seed=13, file_offset=0))
     node = factories.evidence_node(
         "lean_artifact",
         statement.hash,
@@ -261,17 +251,13 @@ def case_disowned_ladder_table(writer, attest_path):
     attempt_id = writer.start_attempt(keys.recipe_key(recipe(seed=14)))
     writer.close_attempt(attempt_id, "OK")
     writer.disown(attempt_id)
-    node = _ladder(
-        writer, statement, _wide_population(statement), seed=14, attempt_id=attempt_id
-    )
+    node = _ladder(writer, statement, _wide_population(statement), seed=14, attempt_id=attempt_id)
     return statement, node, None
 
 
 def case_author_supplied_producer(writer, attest_path):
     statement = _statement(writer, seed=15)
-    identity = _certify(
-        writer, "1a" * 32, factories.selftest_summary(AUTHOR_ORIGINS, False, None)
-    )
+    identity = _certify(writer, "1a" * 32, factories.selftest_summary(AUTHOR_ORIGINS, False, None))
     node = _ladder(
         writer,
         statement,
@@ -301,9 +287,7 @@ def case_producer_with_a_covering_cross_check(writer, attest_path):
 
 def case_gate_producer_is_never_capped(writer, attest_path):
     statement = _statement(writer, seed=19)
-    identity = _certify(
-        writer, "3c" * 32, factories.selftest_summary(AUTHOR_ORIGINS, False, None)
-    )
+    identity = _certify(writer, "3c" * 32, factories.selftest_summary(AUTHOR_ORIGINS, False, None))
     node = _ladder(
         writer,
         statement,
@@ -399,20 +383,14 @@ DONE_WHEN = [
     DONE_WHEN,
     ids=[build.__name__.removeprefix("case_") for build, *_ in DONE_WHEN],
 )
-def test_the_done_when_set(
-    writer, attest_path, db_snapshot, build, result_type, detail, tag
-):
+def test_the_done_when_set(writer, attest_path, db_snapshot, build, result_type, detail, tag):
     statement, node, offered = build(writer, attest_path)
     row = claims.get_evidence_node(writer, node.hash)
     stored = claims.get_claim_statement(writer, statement.hash)
     ctx = justify.context_for(writer, row, stored, attest_path, offered_class=offered)
     result = justify.justify(row, stored, ctx)
     assert type(result).__name__ == result_type
-    assert (
-        getattr(result, "cls", None)
-        or getattr(result, "field", None)
-        or getattr(result, "reason", None)
-    ) == detail
+    assert (getattr(result, "cls", None) or getattr(result, "field", None) or getattr(result, "reason", None)) == detail
 
     derived = justify.derive_tag(writer, statement.hash, attest_path)
     db_snapshot(writer.conn, "after-derive")
@@ -445,15 +423,11 @@ def test_a_waiver_naming_the_statement_moves_no_tag(writer, attest_path, db_snap
     assert len(list(attest.records(attest_path))) == 2
 
 
-def test_tag_history_holds_one_row_per_transition_and_refuses_update(
-    writer, attest_path
-):
+def test_tag_history_holds_one_row_per_transition_and_refuses_update(writer, attest_path):
     statement = _statement(writer, seed=21)
     justify.derive_tag(writer, statement.hash, attest_path)
     justify.derive_tag(writer, statement.hash, attest_path)
-    assert [
-        row["to_tag"] for row in claims.tag_history_for(writer, statement.hash)
-    ] == [SPECULATION]
+    assert [row["to_tag"] for row in claims.tag_history_for(writer, statement.hash)] == [SPECULATION]
 
     _ladder(writer, statement, _wide_population(statement), seed=21)
     justify.derive_tag(writer, statement.hash, attest_path)
@@ -470,14 +444,10 @@ def test_tag_history_holds_one_row_per_transition_and_refuses_update(
         )
 
 
-def test_a_downgrade_carries_the_refuting_evidence_and_moves_the_statement_to_refuted(
-    writer, attest_path
-):
+def test_a_downgrade_carries_the_refuting_evidence_and_moves_the_statement_to_refuted(writer, attest_path):
     statement = _statement(writer, seed=22)
     _ladder(writer, statement, _wide_population(statement), seed=22)
-    assert (
-        justify.derive_tag(writer, statement.hash, attest_path).tag == STRONG_EMPIRICAL
-    )
+    assert justify.derive_tag(writer, statement.hash, attest_path).tag == STRONG_EMPIRICAL
 
     hunt = factories.evidence_node(
         "counterexample_hunt_record",
@@ -511,9 +481,7 @@ def test_every_justify_call_logs_one_record(writer, attest_path, json_test_log):
 
     justify.derive_tag(writer, statement.hash, attest_path)
     records = [json.loads(line) for line in json_test_log.read_text().splitlines()]
-    justified = [
-        r for r in records if r["event"] == "justify" and r["step"] == "justify"
-    ]
+    justified = [r for r in records if r["event"] == "justify" and r["step"] == "justify"]
     derived = [r for r in records if r["event"] == "derive_tag"]
     assert len(justified) == 2
     assert {(r["evidence"], r["kind"], r["result"], r["detail"]) for r in justified} == {
@@ -529,9 +497,7 @@ def test_derive_tag_on_an_unknown_statement_raises(writer, attest_path):
         justify.derive_tag(writer, "9" * 64, attest_path)
 
 
-def test_the_strongest_covering_node_wins_and_a_weaker_one_never_lowers_it(
-    writer, attest_path
-):
+def test_the_strongest_covering_node_wins_and_a_weaker_one_never_lowers_it(writer, attest_path):
     statement = _statement(writer, seed=24)
     claims.write_evidence_node(
         writer,
@@ -546,9 +512,7 @@ def test_the_strongest_covering_node_wins_and_a_weaker_one_never_lowers_it(
     assert justify.derive_tag(writer, statement.hash, attest_path).tag == CONJECTURE
 
     _ladder(writer, statement, _wide_population(statement), seed=124)
-    assert (
-        justify.derive_tag(writer, statement.hash, attest_path).tag == STRONG_EMPIRICAL
-    )
+    assert justify.derive_tag(writer, statement.hash, attest_path).tag == STRONG_EMPIRICAL
 
     claims.write_evidence_node(
         writer,
@@ -560,9 +524,7 @@ def test_the_strongest_covering_node_wins_and_a_weaker_one_never_lowers_it(
             seed=224,
         ),
     )
-    assert (
-        justify.derive_tag(writer, statement.hash, attest_path).tag == STRONG_EMPIRICAL
-    )
+    assert justify.derive_tag(writer, statement.hash, attest_path).tag == STRONG_EMPIRICAL
 
 
 def _cli(argv, capsys):
@@ -582,9 +544,7 @@ def cli_db(tmp_path, attest_path):
     return db, statement, node
 
 
-def test_the_cli_prints_the_derived_tag_and_the_justifying_evidence(
-    cli_db, attest_path, capsys
-):
+def test_the_cli_prints_the_derived_tag_and_the_justifying_evidence(cli_db, attest_path, capsys):
     db, statement, node = cli_db
     code, out, err = _cli(
         [
@@ -605,9 +565,7 @@ def test_the_cli_prints_the_derived_tag_and_the_justifying_evidence(
     ]
 
 
-def test_the_cli_json_is_one_document_naming_every_evidence_node(
-    cli_db, attest_path, capsys
-):
+def test_the_cli_json_is_one_document_naming_every_evidence_node(cli_db, attest_path, capsys):
     db, statement, node = cli_db
     weak = factories.evidence_node(
         "model_proof",
@@ -636,17 +594,13 @@ def test_the_cli_json_is_one_document_naming_every_evidence_node(
     assert document["schema_version"] == 1 and document["command"] == "justify"
     assert document["statement_hash"] == statement.hash
     assert document["tag"] == STRONG_EMPIRICAL and document["justified_by"] == node.hash
-    assert {
-        (row["hash"], row["kind"], row["result"]) for row in document["evidence"]
-    } == {
+    assert {(row["hash"], row["kind"], row["result"]) for row in document["evidence"]} == {
         (node.hash, "ladder_table", "Justification"),
         (weak.hash, "model_proof", "Justification"),
     }
 
 
-def test_a_statement_with_no_evidence_exits_zero_at_speculation(
-    tmp_path, attest_path, capsys
-):
+def test_a_statement_with_no_evidence_exits_zero_at_speculation(tmp_path, attest_path, capsys):
     db = tmp_path / "empty.sqlite"
     with open_writer(tmp_path, "empty.sqlite") as sub:
         statement = _statement(sub, seed=32)
@@ -685,9 +639,7 @@ def test_an_unknown_statement_hash_exits_user_input(cli_db, attest_path, capsys)
     assert "no claim statement" in err and "cairn m0-run" in err
 
 
-def test_a_substrate_that_cannot_be_opened_exits_environment(
-    tmp_path, attest_path, capsys
-):
+def test_a_substrate_that_cannot_be_opened_exits_environment(tmp_path, attest_path, capsys):
     code, out, err = _cli(
         [
             "justify",

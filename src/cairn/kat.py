@@ -11,7 +11,9 @@ def compute(vector):
     kind = vector["kind"]
     if kind == "node":
         payload = canon.encode(canon.STR, vector["input"]["payload"])
-        return keys.node_hash(vector["input"]["node_kind"], payload), (canon.encode(canon.STR, vector["input"]["node_kind"]) + payload).hex()
+        return keys.node_hash(vector["input"]["node_kind"], payload), (
+            canon.encode(canon.STR, vector["input"]["node_kind"]) + payload
+        ).hex()
     if vector["domain_tag"] != keys.TAGS_BY_KIND[kind]:
         raise canon.CanonError(f"{vector['name']}: domain tag {vector['domain_tag']} is not the {kind} tag")
     canonical = canon.encode(keys.SCHEMAS[kind], vector["input"])
@@ -59,4 +61,11 @@ def _run(ns):
     return exits.GATE_REFUSED if failures else exits.OK
 
 
-cli.register("kat", _configure, _run, summary="run the canonicalizer known-answer vectors (a gate self-test); exit 2 on any mismatch", read_only=True, json=True)
+cli.register(
+    "kat",
+    _configure,
+    _run,
+    summary="run the canonicalizer known-answer vectors (a gate self-test); exit 2 on any mismatch",
+    read_only=True,
+    json=True,
+)

@@ -8,7 +8,10 @@ import pytest
 
 from cairn import log
 
-pytestmark = pytest.mark.skipif(sys.platform != "darwin", reason="uappnd is a macOS/BSD chflags bit; the Linux chattr +a probe belongs to the M1 container bead")
+pytestmark = pytest.mark.skipif(
+    sys.platform != "darwin",
+    reason="uappnd is a macOS/BSD chflags bit; the Linux chattr +a probe belongs to the M1 container bead",
+)
 
 SEED = "seed\n"
 
@@ -144,7 +147,10 @@ def flagged_files(tmp_path):
 
 
 def _env():
-    return {"os": f"{platform.system()} {platform.mac_ver()[0]} {platform.release()} {platform.machine()}", "uid": os.getuid()}
+    return {
+        "os": f"{platform.system()} {platform.mac_ver()[0]} {platform.release()} {platform.machine()}",
+        "uid": os.getuid(),
+    }
 
 
 @pytest.mark.parametrize(
@@ -189,7 +195,9 @@ def test_mode_x_uappnd_x_op_by_owner(flagged_files, mode, flagged, op, expected_
     [("pin", 0o444, errno.EACCES), ("attest", 0o644, None)],
     ids=["pin-0444-truncate-EACCES-until-chmod", "attest-0644-truncate-OK"],
 )
-def test_owner_clears_uappnd_then_chmod_truncate_rename_unlink_succeed(flagged_files, role, mode, truncate_errno_after_clear):
+def test_owner_clears_uappnd_then_chmod_truncate_rename_unlink_succeed(
+    flagged_files, role, mode, truncate_errno_after_clear
+):
     lg = log.get("grounding.fs")
     path = flagged_files(f"{role}.txt", mode, True)
     flags_before = os.stat(path).st_flags

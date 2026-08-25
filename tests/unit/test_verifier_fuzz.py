@@ -36,7 +36,7 @@ def _corpus(kind):
 
 def _with(field, value):
     i = verifier.FIELD_NAMES.index(field)
-    return (*BASE_FIELDS[:i], value, *BASE_FIELDS[i + 1:])
+    return (*BASE_FIELDS[:i], value, *BASE_FIELDS[i + 1 :])
 
 
 TARGETED_FIELDS = [
@@ -68,7 +68,11 @@ def check_run_fields(fields, spy):
         assert len(spy) == before
     else:
         assert len(spy) == before + 1
-        assert result.reason is None if result.accepted else result.reason in verifier.SCRIPT_REASONS + verifier.BACKEND_REASONS
+        assert (
+            result.reason is None
+            if result.accepted
+            else result.reason in verifier.SCRIPT_REASONS + verifier.BACKEND_REASONS
+        )
 
 
 def check_run(instance, x, spy):
@@ -85,7 +89,9 @@ def check_run(instance, x, spy):
 
 def check_classifier(rc, stdout, stderr):
     accepted, reason, reasons = verifier.classify(rc, stdout, stderr)
-    assert accepted == (rc == 0 and stdout.strip() == "OK" and stderr == ""), f"accepted={accepted} for rc={rc!r} stdout={stdout!r} stderr={stderr!r}"
+    assert accepted == (rc == 0 and stdout.strip() == "OK" and stderr == ""), (
+        f"accepted={accepted} for rc={rc!r} stdout={stdout!r} stderr={stderr!r}"
+    )
     if accepted:
         assert (reason, reasons) == (None, ())
         return
@@ -99,7 +105,9 @@ def check_classifier(rc, stdout, stderr):
 
 test_validator_never_raises_on_any_field_list = given(junk_fields)(check_validator)
 for _fields in TARGETED_FIELDS + [c["fields"] for c in _corpus("fields")]:
-    test_validator_never_raises_on_any_field_list = example(list(_fields))(test_validator_never_raises_on_any_field_list)
+    test_validator_never_raises_on_any_field_list = example(list(_fields))(
+        test_validator_never_raises_on_any_field_list
+    )
 
 
 @fixture_ok
@@ -109,12 +117,30 @@ def test_run_fields_never_spawns_on_a_refusal_and_never_raises(run_gp_spy, field
 
 
 for _fields in TARGETED_FIELDS + [c["fields"] for c in _corpus("fields")]:
-    test_run_fields_never_spawns_on_a_refusal_and_never_raises = example(list(_fields))(test_run_fields_never_spawns_on_a_refusal_and_never_raises)
+    test_run_fields_never_spawns_on_a_refusal_and_never_raises = example(list(_fields))(
+        test_run_fields_never_spawns_on_a_refusal_and_never_raises
+    )
 
 
 @fixture_ok
-@given(p=junk, a=junk, b=junk, n=junk, P=points, Q=points, x=st.one_of(junk, st.builds(Submission, junk, st.none() | points, st.none() | points)))
-@example(p=P60, a=CURVE60["a"], b=CURVE60["b"], n=N60, P=list(CURVE60["P"]), Q=list(BASE_INSTANCE.Q), x=Submission(X60, P=list(CURVE60["P"]), Q=list(BASE_INSTANCE.Q)))
+@given(
+    p=junk,
+    a=junk,
+    b=junk,
+    n=junk,
+    P=points,
+    Q=points,
+    x=st.one_of(junk, st.builds(Submission, junk, st.none() | points, st.none() | points)),
+)
+@example(
+    p=P60,
+    a=CURVE60["a"],
+    b=CURVE60["b"],
+    n=N60,
+    P=list(CURVE60["P"]),
+    Q=list(BASE_INSTANCE.Q),
+    x=Submission(X60, P=list(CURVE60["P"]), Q=list(BASE_INSTANCE.Q)),
+)
 @example(p=P60, a=CURVE60["a"], b=CURVE60["b"], n=N60, P=list(CURVE60["P"]), Q=list(BASE_INSTANCE.Q), x=N60)
 @example(p=2, a=1, b=1, n=3, P=[0, 1], Q=[0, 1], x=1)
 def test_run_on_junk_instances_never_spawns_on_a_refusal_and_never_raises(run_gp_spy, p, a, b, n, P, Q, x):
@@ -122,8 +148,22 @@ def test_run_on_junk_instances_never_spawns_on_a_refusal_and_never_raises(run_gp
 
 
 test_classifier_accepts_exactly_rc0_ok_empty_stderr = given(st.integers(-64, 255), io_text, io_text)(check_classifier)
-for _rc, _out, _err in [OVERFLOW_8M, STARTUP_2M, (-9, "", ""), (0, "OK\n", "warning\n"), (1, 'FAIL ["xP-ne-Q"]\n', ""), (0, "FAIL OK", ""), (0, "NOT OK", ""), (0, "OK\nextra", ""), (0, "OK", "x"), (0, "OK\n", ""), (0, b"OK", b"")] + [(c["rc"], c["stdout"], c["stderr"]) for c in _corpus("classify")]:
-    test_classifier_accepts_exactly_rc0_ok_empty_stderr = example(_rc, _out, _err)(test_classifier_accepts_exactly_rc0_ok_empty_stderr)
+for _rc, _out, _err in [
+    OVERFLOW_8M,
+    STARTUP_2M,
+    (-9, "", ""),
+    (0, "OK\n", "warning\n"),
+    (1, 'FAIL ["xP-ne-Q"]\n', ""),
+    (0, "FAIL OK", ""),
+    (0, "NOT OK", ""),
+    (0, "OK\nextra", ""),
+    (0, "OK", "x"),
+    (0, "OK\n", ""),
+    (0, b"OK", b""),
+] + [(c["rc"], c["stdout"], c["stderr"]) for c in _corpus("classify")]:
+    test_classifier_accepts_exactly_rc0_ok_empty_stderr = example(_rc, _out, _err)(
+        test_classifier_accepts_exactly_rc0_ok_empty_stderr
+    )
 
 
 def test_mutant_accept_rc0_only_is_killed_by_the_classifier_property():
@@ -132,7 +172,11 @@ def test_mutant_accept_rc0_only_is_killed_by_the_classifier_property():
         check_classifier(*OVERFLOW_8M)
 
 
-@pytest.mark.parametrize(("rc", "stdout", "stderr"), [(0, "FAIL OK", ""), (0, "NOT OK", ""), (0, "OK\nextra", ""), (0, "OK", "stderr bytes")], ids=["FAIL-OK", "NOT-OK", "OK-extra-line", "OK-with-stderr"])
+@pytest.mark.parametrize(
+    ("rc", "stdout", "stderr"),
+    [(0, "FAIL OK", ""), (0, "NOT OK", ""), (0, "OK\nextra", ""), (0, "OK", "stderr bytes")],
+    ids=["FAIL-OK", "NOT-OK", "OK-extra-line", "OK-with-stderr"],
+)
 def test_mutant_accept_if_OK_substring_is_killed_by_the_classifier_property(rc, stdout, stderr):
     check_classifier(rc, stdout, stderr)
     with verifier_mutants.accept_if_OK_substring(), pytest.raises(AssertionError, match="accepted=True"):

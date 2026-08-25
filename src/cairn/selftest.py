@@ -41,9 +41,7 @@ def _is_int(value):
 
 def _check_field(path, name, field):
     if not isinstance(field, dict):
-        raise CorpusSchemaError(
-            path, f"field must be an object, got {type(field).__name__}"
-        )
+        raise CorpusSchemaError(path, f"field must be an object, got {type(field).__name__}")
     missing = [k for k in FIELD_KEYS if k not in field]
     if missing:
         raise CorpusSchemaError(path, f"field is missing {', '.join(missing)}")
@@ -63,22 +61,14 @@ def _check_field(path, name, field):
                 f"{name} must be an integer, got {type(value).__name__}",
             )
         return
-    if (
-        not isinstance(value, list)
-        or len(value) != 2
-        or not all(_is_int(v) for v in value)
-    ):
-        raise CorpusSchemaError(
-            f"{path}.value", f"{name} must be a pair of integers, got {value!r}"
-        )
+    if not isinstance(value, list) or len(value) != 2 or not all(_is_int(v) for v in value):
+        raise CorpusSchemaError(f"{path}.value", f"{name} must be a pair of integers, got {value!r}")
 
 
 def _check_case(index, case, seen_ids):
     path = f"$.cases[{index}]"
     if not isinstance(case, dict):
-        raise CorpusSchemaError(
-            path, f"case must be an object, got {type(case).__name__}"
-        )
+        raise CorpusSchemaError(path, f"case must be an object, got {type(case).__name__}")
     missing = [k for k in CASE_KEYS if k not in case]
     if missing:
         raise CorpusSchemaError(path, f"case is missing {', '.join(missing)}")
@@ -107,33 +97,23 @@ def _check_case(index, case, seen_ids):
         )
     fields = case["fields"]
     if not isinstance(fields, dict):
-        raise CorpusSchemaError(
-            f"{path}.fields", f"fields must be an object, got {type(fields).__name__}"
-        )
+        raise CorpusSchemaError(f"{path}.fields", f"fields must be an object, got {type(fields).__name__}")
     unknown = sorted(set(fields) - set(SCALAR_FIELDS) - set(POINT_FIELDS))
     if unknown:
-        raise CorpusSchemaError(
-            f"{path}.fields", f"unknown fields {', '.join(unknown)}"
-        )
+        raise CorpusSchemaError(f"{path}.fields", f"unknown fields {', '.join(unknown)}")
     absent = [k for k in REQUIRED_FIELDS if k not in fields]
     if absent:
-        raise CorpusSchemaError(
-            f"{path}.fields", f"missing required fields {', '.join(absent)}"
-        )
+        raise CorpusSchemaError(f"{path}.fields", f"missing required fields {', '.join(absent)}")
     for name in sorted(fields):
         _check_field(f"{path}.fields.{name}", name, fields[name])
     for name, floor in (("p", 2), ("n", 1)):
         value = fields[name]["value"]
         if value < floor:
-            raise CorpusSchemaError(
-                f"{path}.fields.{name}.value", f"{name} must be >= {floor}, got {value}"
-            )
+            raise CorpusSchemaError(f"{path}.fields.{name}.value", f"{name} must be >= {floor}, got {value}")
     for name in postconditions:
         needed = POSTCONDITION_FIELDS.get(name)
         if needed is None:
-            raise CorpusSchemaError(
-                f"{path}.postconditions", f"unknown postcondition {name!r}"
-            )
+            raise CorpusSchemaError(f"{path}.postconditions", f"unknown postcondition {name!r}")
         lacking = [k for k in needed if k not in fields]
         if lacking:
             raise CorpusSchemaError(
@@ -148,20 +128,14 @@ def _cases_to_check(cases):
 
 def _check_floor(floor, count):
     if not _is_int(floor):
-        raise CorpusSchemaError(
-            "$.pass_floor", f"pass_floor must be an integer, got {type(floor).__name__}"
-        )
+        raise CorpusSchemaError("$.pass_floor", f"pass_floor must be an integer, got {type(floor).__name__}")
     if floor < 0 or floor > count:
-        raise CorpusSchemaError(
-            "$.pass_floor", f"pass_floor must be within [0, {count}], got {floor}"
-        )
+        raise CorpusSchemaError("$.pass_floor", f"pass_floor must be within [0, {count}], got {floor}")
 
 
 def check_corpus(doc):
     if not isinstance(doc, dict):
-        raise CorpusSchemaError(
-            "$", f"corpus must be an object, got {type(doc).__name__}"
-        )
+        raise CorpusSchemaError("$", f"corpus must be an object, got {type(doc).__name__}")
     missing = [k for k in ("schema_version", "pass_floor", "cases") if k not in doc]
     if missing:
         raise CorpusSchemaError("$", f"corpus is missing {', '.join(missing)}")
@@ -190,10 +164,7 @@ def load_corpus(path=CORPUS_PATH):
 
 def field_origins(doc):
     return {
-        case["id"]: {
-            name: field["origin"] for name, field in sorted(case["fields"].items())
-        }
-        for case in doc["cases"]
+        case["id"]: {name: field["origin"] for name, field in sorted(case["fields"].items())} for case in doc["cases"]
     }
 
 
@@ -211,9 +182,7 @@ def _canonical_json(body):
 
 
 def record_bytes(kind, record_id, body):
-    return canon.encode(
-        RECORD, {"kind": kind, "id": record_id, "body": _canonical_json(body)}
-    )
+    return canon.encode(RECORD, {"kind": kind, "id": record_id, "body": _canonical_json(body)})
 
 
 def transcript_bytes(records):
@@ -229,9 +198,7 @@ def transcript_lines(records):
 
 
 def arm_seed(implementation_revision):
-    material = canon.length_prefix(
-        implementation_revision.encode("utf-8")
-    ) + canon.length_prefix(SEED_LABEL)
+    material = canon.length_prefix(implementation_revision.encode("utf-8")) + canon.length_prefix(SEED_LABEL)
     return int.from_bytes(blake3.blake3(material).digest()[:8], "big")
 
 
@@ -309,9 +276,7 @@ def _draws(seed, bound, count, label):
     counter = 0
     while len(values) < count:
         material = (
-            canon.length_prefix(str(seed).encode("utf-8"))
-            + canon.length_prefix(label)
-            + counter.to_bytes(8, "big")
+            canon.length_prefix(str(seed).encode("utf-8")) + canon.length_prefix(label) + counter.to_bytes(8, "big")
         )
         value = int.from_bytes(blake3.blake3(material).digest(), "big") % bound
         if value >= 1:
@@ -355,17 +320,13 @@ def verifier_arm(out, config, seed):
         if driver.run(instance, x).accepted:
             ok += 1
         else:
-            raise SelftestFailed(
-                "verifier-arm", f"draw {index} with Q = xP was refused"
-            )
+            raise SelftestFailed("verifier-arm", f"draw {index} with Q = xP was refused")
         other = wrong[index]
         if other == x:
             other = x % (out.n - 1) + 1
         result = driver.run(instance, other)
         if result.accepted:
-            raise SelftestFailed(
-                "verifier-arm", f"draw {index} with x' != x was accepted"
-            )
+            raise SelftestFailed("verifier-arm", f"draw {index} with x' != x was accepted")
         failed += 1
         reasons[result.reason] = reasons.get(result.reason, 0) + 1
     if reasons != {"xP-ne-Q": DRAW_COUNT}:
@@ -378,11 +339,7 @@ def run_once(config, *, doc=None, root=None):
 
     lg = log.get(LOG_STEP)
     doc = load_corpus() if doc is None else check_corpus(doc)
-    revision = (
-        toy_curve.implementation_revision()
-        if root is None
-        else toy_curve.implementation_revision(root)
-    )
+    revision = toy_curve.implementation_revision() if root is None else toy_curve.implementation_revision(root)
     seed = arm_seed(revision) or 1
     records = []
     ledger = {}
@@ -410,9 +367,7 @@ def run_once(config, *, doc=None, root=None):
         records.append(("case", case["id"], {"ledger": declared, "observed": observed}))
     floor = doc["pass_floor"]
     if passes < floor:
-        raise SelftestFailed(
-            "floor", f"{passes} passing cases is below the floor {floor}"
-        )
+        raise SelftestFailed("floor", f"{passes} passing cases is below the floor {floor}")
     out, arm_body = postcondition_arm(seed)
     lg.info("arm", name="postcondition", seed=seed, observed=_canonical_json(arm_body))
     records.append(("arm", "postcondition", arm_body))
@@ -455,9 +410,7 @@ def certify(sub, config, *, doc=None, root=None):
             "double-run",
             f"transcript {first['transcript_hash']} differs from {second['transcript_hash']}",
         )
-    identity = (
-        toy_curve.identity_bundle() if root is None else toy_curve.identity_bundle(root)
-    )
+    identity = toy_curve.identity_bundle() if root is None else toy_curve.identity_bundle(root)
     identity_hash = keys.identity_bundle_hash(identity)
     env_hash = keys.env_manifest_digest(env.manifest())
     transcript_hash = first["transcript_hash"]

@@ -76,7 +76,12 @@ class _JsonLineHandler(logging.Handler):
         self.path = path
 
     def emit(self, record):
-        data = {"ts": record.created, "level": record.levelname, "step": getattr(record, "step", None), "event": record.getMessage()}
+        data = {
+            "ts": record.created,
+            "level": record.levelname,
+            "step": getattr(record, "step", None),
+            "event": record.getMessage(),
+        }
         data.update(getattr(record, "fields", {}) or {})
         with open(self.path, "a") as fh:
             fh.write(json.dumps(data, sort_keys=True, default=str) + "\n")
@@ -93,7 +98,17 @@ def json_test_log(tmp_path, request):
     start = time.monotonic()
     logger.debug("phase", extra={"step": "test", "fields": {"phase": "start", "test": request.node.nodeid}})
     yield path
-    logger.debug("phase", extra={"step": "test", "fields": {"phase": "end", "test": request.node.nodeid, "wall_ms": round((time.monotonic() - start) * 1000, 3)}})
+    logger.debug(
+        "phase",
+        extra={
+            "step": "test",
+            "fields": {
+                "phase": "end",
+                "test": request.node.nodeid,
+                "wall_ms": round((time.monotonic() - start) * 1000, 3),
+            },
+        },
+    )
     logger.removeHandler(handler)
     logger.setLevel(previous)
 
@@ -133,10 +148,16 @@ def run_gp_spy(monkeypatch):
 @pytest.fixture
 def db_snapshot():
     def snap(conn_or_path, label):
-        conn = conn_or_path if isinstance(conn_or_path, sqlite3.Connection) else sqlite3.connect(f"file:{conn_or_path}?mode=ro", uri=True)
+        conn = (
+            conn_or_path
+            if isinstance(conn_or_path, sqlite3.Connection)
+            else sqlite3.connect(f"file:{conn_or_path}?mode=ro", uri=True)
+        )
         tables = [r[0] for r in conn.execute("select name from sqlite_master where type='table'")]
         counts = {t: conn.execute(f'select count(*) from "{t}"').fetchone()[0] for t in tables}
-        logging.getLogger("cairn").info("db_snapshot", extra={"step": "test", "fields": {"label": label, "counts": counts}})
+        logging.getLogger("cairn").info(
+            "db_snapshot", extra={"step": "test", "fields": {"label": label, "counts": counts}}
+        )
         return counts
 
     return snap
@@ -186,7 +207,11 @@ def assert_golden():
         if expected != text:
             actual = path.with_name(path.name + ".actual")
             actual.write_text(text)
-            diff = "".join(difflib.unified_diff(expected.splitlines(True), text.splitlines(True), fromfile=str(path), tofile=str(actual)))
+            diff = "".join(
+                difflib.unified_diff(
+                    expected.splitlines(True), text.splitlines(True), fromfile=str(path), tofile=str(actual)
+                )
+            )
             raise AssertionError(f"golden mismatch for {path.name}; rerun with UPDATE_GOLDENS=1 to accept\n{diff}")
 
     return check

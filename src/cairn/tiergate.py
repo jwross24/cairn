@@ -72,7 +72,9 @@ def ordered_reasons(reasons):
     return tuple(r for r in REASON_ORDER if r in reasons)
 
 
-def predicate_reasons(*, declared_tier, ticket_tier, cost_tier, certified, yanked, budget_ok, ticket_bundle_matches, profile_declared):
+def predicate_reasons(
+    *, declared_tier, ticket_tier, cost_tier, certified, yanked, budget_ok, ticket_bundle_matches, profile_declared
+):
     """The tier gate's whole truth table, over resolved facts. No substrate, no bundle, no I/O."""
     reasons = set()
     if not profile_declared:
@@ -136,7 +138,8 @@ class TierGate:
             cost_tier=None if evaluation is None else tier_for_cost(self.boundary_table, evaluation.expected_core_s),
             certified=self.sub.certified(launch.skill_identity_hash),
             yanked=self.sub.yanked(launch.skill_identity_hash),
-            budget_ok=evaluation is None or evaluation.expected_core_s + evaluation.expected_verification_core_s <= launch.budget_remaining,
+            budget_ok=evaluation is None
+            or evaluation.expected_core_s + evaluation.expected_verification_core_s <= launch.budget_remaining,
             ticket_bundle_matches=not stale,
             profile_declared=evaluation is not None,
         )
@@ -162,11 +165,18 @@ class TierGate:
         )
 
         if reasons:
-            refusal_ids = tuple(claims.add_tier_refusal(self.sub, launch.hypothesis_key, launch.declared_tier, ticket_tier, reason) for reason in reasons)
+            refusal_ids = tuple(
+                claims.add_tier_refusal(self.sub, launch.hypothesis_key, launch.declared_tier, ticket_tier, reason)
+                for reason in reasons
+            )
             reminted = self._mint(launch, selected) if stale else None
             return TierRefused(launch, reasons, ticket_tier, run.hash, refusal_ids, reminted)
 
-        minted = self._mint(launch, selected) if selected is not None and recorded is None else (recorded["ticket_hash"] if recorded else None)
+        minted = (
+            self._mint(launch, selected)
+            if selected is not None and recorded is None
+            else (recorded["ticket_hash"] if recorded else None)
+        )
         return Admitted(launch, minted, ticket_tier, run.hash)
 
     def _mint(self, launch, selected):
@@ -181,5 +191,7 @@ class TierGate:
             bundle_hash=self.bundle.hash,
         )
         claims.write_ticket(self.sub, ticket)
-        lg.info("mint", ticket=ticket.hash, hypothesis_key=launch.hypothesis_key, tier=tier, bundle_hash=self.bundle.hash)
+        lg.info(
+            "mint", ticket=ticket.hash, hypothesis_key=launch.hypothesis_key, tier=tier, bundle_hash=self.bundle.hash
+        )
         return ticket.hash

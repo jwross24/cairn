@@ -31,9 +31,7 @@ def _cert(vector):
 def test_a_field_without_an_origin_is_refused_at_its_path(case_index, field_name):
     doc = copy.deepcopy(BASE)
     del doc["cases"][case_index]["fields"][field_name]["origin"]
-    with pytest.raises(
-        CorpusSchemaError, match=re.escape(f"$.cases[{case_index}].fields.{field_name}")
-    ):
+    with pytest.raises(CorpusSchemaError, match=re.escape(f"$.cases[{case_index}].fields.{field_name}")):
         selftest.check_corpus(doc)
 
 
@@ -63,17 +61,9 @@ def test_swapping_the_identity_hash_changes_the_certificate(load_vector):
         _vector(doc, "selftest_cert"),
         _vector(doc, "selftest_cert_transplanted"),
     )
-    assert (
-        original["input"]["transcript_hash"] == transplanted["input"]["transcript_hash"]
-    )
-    assert (
-        original["input"]["env_manifest_hash"]
-        == transplanted["input"]["env_manifest_hash"]
-    )
-    assert (
-        original["input"]["identity_bundle_hash"]
-        != transplanted["input"]["identity_bundle_hash"]
-    )
+    assert original["input"]["transcript_hash"] == transplanted["input"]["transcript_hash"]
+    assert original["input"]["env_manifest_hash"] == transplanted["input"]["env_manifest_hash"]
+    assert original["input"]["identity_bundle_hash"] != transplanted["input"]["identity_bundle_hash"]
     assert _cert(transplanted) == transplanted["expected"] != _cert(original)
 
 
@@ -112,15 +102,11 @@ def test_transcript_bytes_are_the_concatenated_records_and_order_is_load_bearing
 def test_transcript_digest_moves_when_one_observed_output_moves():
     records = [("case", "F5", {"n": 7})]
     before = selftest.transcript_digest(selftest.transcript_bytes(records))
-    after = selftest.transcript_digest(
-        selftest.transcript_bytes([("case", "F5", {"n": 8})])
-    )
+    after = selftest.transcript_digest(selftest.transcript_bytes([("case", "F5", {"n": 8})]))
     assert before != after
 
 
-@pytest.mark.parametrize(
-    "text", ["{", "", "not json", '{"cases": [}', "[1, 2, 3"], ids=range(5)
-)
+@pytest.mark.parametrize("text", ["{", "", "not json", '{"cases": [}', "[1, 2, 3"], ids=range(5))
 def test_a_corpus_file_that_is_not_json_is_refused(tmp_path, text):
     path = tmp_path / "corpus.json"
     path.write_text(text)

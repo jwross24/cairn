@@ -1,4 +1,3 @@
-
 from cairn import pari
 
 VENDORED_F5 = ([-3, 1], 5, 7)
@@ -23,7 +22,12 @@ def test_curve60_vector_matches_live_gp(assert_golden):
 def test_curve60_vector_is_the_probed_known_answer(load_vector):
     v = load_vector("curve60_seed1.json")
     assert v["tries"] == 45
-    assert (v["p"], v["a"], v["b"], v["n"]) == ("866004983247663323", "218370429096749092", "332004879195750802", "866004985024698433")
+    assert (v["p"], v["a"], v["b"], v["n"]) == (
+        "866004983247663323",
+        "218370429096749092",
+        "332004879195750802",
+        "866004985024698433",
+    )
     assert v["P"] == ["649465449118648377", "257340576278519516"]
 
 

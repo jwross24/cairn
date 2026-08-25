@@ -45,8 +45,13 @@ def _counts(db):
     try:
         tables = {r["name"] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         counts = {t: conn.execute(f'SELECT count(*) FROM "{t}"').fetchone()[0] for t in tables}
-        counts["nodes_by_kind"] = {r["kind"]: r["n"] for r in conn.execute("SELECT kind, count(*) n FROM nodes GROUP BY kind")}
-        counts["verifier_gate_runs"] = [(r["plan_step"], r["result"], json.loads(r["reasons"])) for r in conn.execute("SELECT * FROM gate_runs WHERE gate='verifier' ORDER BY rowid")]
+        counts["nodes_by_kind"] = {
+            r["kind"]: r["n"] for r in conn.execute("SELECT kind, count(*) n FROM nodes GROUP BY kind")
+        }
+        counts["verifier_gate_runs"] = [
+            (r["plan_step"], r["result"], json.loads(r["reasons"]))
+            for r in conn.execute("SELECT * FROM gate_runs WHERE gate='verifier' ORDER BY rowid")
+        ]
         return counts
     finally:
         conn.close()
@@ -84,7 +89,15 @@ def deploy(tmp_path, clear_flags, capsys):
         attest_init()
         certify()
 
-    return {"paths": paths, "flags": flags, "build_and_pin": build_and_pin, "attest_init": attest_init, "certify": certify, "m0_run": m0_run, "ready": ready}
+    return {
+        "paths": paths,
+        "flags": flags,
+        "build_and_pin": build_and_pin,
+        "attest_init": attest_init,
+        "certify": certify,
+        "m0_run": m0_run,
+        "ready": ready,
+    }
 
 
 def test_the_operator_sequence_produces_four_nodes_two_negatives_and_one_refusal(deploy, capsys, db_snapshot):
@@ -96,8 +109,18 @@ def test_the_operator_sequence_produces_four_nodes_two_negatives_and_one_refusal
     assert document["schema_version"] == cli.SCHEMA_VERSION and document["command"] == "m0-run"
     assert document["exit_code"] == exits.OK
     assert [node["label"] for node in document["nodes"]] == ["A", "B", "C", "D"]
-    assert [node["kind"] for node in document["nodes"]] == ["m0_generator", "m0_derivation", "verifier_result", "gate_run"]
-    assert [node["replay_grade"] for node in document["nodes"]] == ["Replayable", "Verifiable", "Verifiable", "Replayable"]
+    assert [node["kind"] for node in document["nodes"]] == [
+        "m0_generator",
+        "m0_derivation",
+        "verifier_result",
+        "gate_run",
+    ]
+    assert [node["replay_grade"] for node in document["nodes"]] == [
+        "Replayable",
+        "Verifiable",
+        "Verifiable",
+        "Replayable",
+    ]
     assert all(node["cost_tag"] == "tier0" and node["selftest_ref"] for node in document["nodes"])
     assert len({node["hash"] for node in document["nodes"]}) == 4
     assert document["served_from_cache"] is False
@@ -130,7 +153,10 @@ def test_the_operator_sequence_produces_four_nodes_two_negatives_and_one_refusal
 
     conn = _reader(deploy["paths"]["db"])
     try:
-        persisted = {node["hash"]: conn.execute("SELECT replay_grade FROM nodes WHERE hash = ?", (node["hash"],)).fetchone()[0] for node in document["nodes"][:3]}
+        persisted = {
+            node["hash"]: conn.execute("SELECT replay_grade FROM nodes WHERE hash = ?", (node["hash"],)).fetchone()[0]
+            for node in document["nodes"][:3]
+        }
     finally:
         conn.close()
     assert [persisted[node["hash"]] for node in document["nodes"][:3]] == ["Replayable", "Verifiable", "Verifiable"]
@@ -158,7 +184,10 @@ def test_the_slice_records_its_hypothesis_object_and_the_derivation_lineage(depl
     try:
         key = m0.keys.hypothesis_key(m0._hypothesis(40))
         assert conn.execute("SELECT count(*) FROM hypothesis_objects WHERE hash = ?", (key,)).fetchone()[0] == 1
-        edges = [(r["parent_hash"], r["edge_kind"]) for r in conn.execute("SELECT * FROM lineage WHERE child_hash = ?", (node_b,))]
+        edges = [
+            (r["parent_hash"], r["edge_kind"])
+            for r in conn.execute("SELECT * FROM lineage WHERE child_hash = ?", (node_b,))
+        ]
         assert (node_a, "derives") in edges
     finally:
         conn.close()
@@ -169,7 +198,9 @@ def test_the_derivation_commits_to_the_x_the_generator_output_determines(deploy,
     document = json.loads(deploy["m0_run"]("--bits", "40", "--seed", "1", "--json")[1])
     conn = _reader(deploy["paths"]["db"])
     try:
-        row = conn.execute("SELECT quantities FROM claim_statements WHERE hash = ?", (document["statement_hash"],)).fetchone()
+        row = conn.execute(
+            "SELECT quantities FROM claim_statements WHERE hash = ?", (document["statement_hash"],)
+        ).fetchone()
     finally:
         conn.close()
     units = json.loads(row["quantities"])["units"]
@@ -202,7 +233,9 @@ def test_the_same_seed_replays_from_cache_and_a_different_seed_derives_a_differe
     assert other["nodes"][0]["hash"] != first["nodes"][0]["hash"]
     assert other["instance_hash"] != first["instance_hash"]
     assert other["statement_hash"] != first["statement_hash"]
-    assert _curve(deploy["paths"]["db"], other["statement_hash"]) != _curve(deploy["paths"]["db"], first["statement_hash"])
+    assert _curve(deploy["paths"]["db"], other["statement_hash"]) != _curve(
+        deploy["paths"]["db"], first["statement_hash"]
+    )
 
     assert fresh["served_from_cache"] is False and fresh["attempt_id"] != first["attempt_id"]
     assert fresh["nodes"][0]["hash"] == first["nodes"][0]["hash"]
@@ -232,7 +265,11 @@ def test_the_green_run_logs_one_record_per_step_in_order(deploy, capsys, caplog)
     deploy["ready"]()
     caplog.set_level(logging.INFO, logger=log.LOGGER_NAME)
     assert deploy["m0_run"]("--json")[0] == exits.OK
-    records = [r for r in caplog.records if r.name == log.LOGGER_NAME and r.getMessage() == "step" and isinstance(r.fields.get("step"), int)]
+    records = [
+        r
+        for r in caplog.records
+        if r.name == log.LOGGER_NAME and r.getMessage() == "step" and isinstance(r.fields.get("step"), int)
+    ]
     assert [r.fields["step"] for r in records] == STEP_SEQUENCE
     named = {r.fields["step"]: r.fields["name"] for r in records}
     assert named[1] == "gate_plan" and named[6] == "verify" and named[9] == "summary"
@@ -261,8 +298,12 @@ ABORTS = [
 ]
 
 
-@pytest.mark.parametrize(("name", "setup_delta", "expected_reason", "gate_plan_rows"), ABORTS, ids=[a[0] for a in ABORTS])
-def test_each_abort_path_exits_gate_refused_before_any_skill_launch(deploy, capsys, name, setup_delta, expected_reason, gate_plan_rows):
+@pytest.mark.parametrize(
+    ("name", "setup_delta", "expected_reason", "gate_plan_rows"), ABORTS, ids=[a[0] for a in ABORTS]
+)
+def test_each_abort_path_exits_gate_refused_before_any_skill_launch(
+    deploy, capsys, name, setup_delta, expected_reason, gate_plan_rows
+):
     deploy["ready"]()
     setup_delta(deploy)
     code, out, err = deploy["m0_run"]("--json")
@@ -305,9 +346,23 @@ def test_the_module_entry_point_runs_the_slice_with_globals_before_the_subcomman
     deploy["ready"]()
     paths = deploy["paths"]
     argv = [
-        sys.executable, "-m", "cairn",
-        "--db", str(paths["db"]), "--bundle", str(paths["bundle"]), "--pin", str(paths["pin"]), "--attest", str(paths["attest"]),
-        "m0-run", "--bits", "40", "--seed", "1", "--json",
+        sys.executable,
+        "-m",
+        "cairn",
+        "--db",
+        str(paths["db"]),
+        "--bundle",
+        str(paths["bundle"]),
+        "--pin",
+        str(paths["pin"]),
+        "--attest",
+        str(paths["attest"]),
+        "m0-run",
+        "--bits",
+        "40",
+        "--seed",
+        "1",
+        "--json",
     ]
     proc = subprocess.run(argv, cwd=str(ROOT), capture_output=True, text=True, timeout=600)
     assert proc.returncode == exits.OK, proc.stderr
@@ -326,13 +381,19 @@ def _transcript(records):
             continue
         fields = record.fields
         if event == "step" and "name" not in fields:
-            lines.append(f"gate_step {fields['step']} expected={fields['expected']} observed={fields['observed']} result={fields['result']} reasons={fields['reasons']} run={fields['run_id']} wall_ms={fields['wall_ms']}")
+            lines.append(
+                f"gate_step {fields['step']} expected={fields['expected']} observed={fields['observed']} result={fields['result']} reasons={fields['reasons']} run={fields['run_id']} wall_ms={fields['wall_ms']}"
+            )
         elif event == "step":
             lines.append(f"step {fields['step']} {fields['name']}")
         elif event == "verifier_arm":
-            lines.append(f"verifier_arm {fields['arm']} accepted={fields['accepted']} reason={fields['reason']} gate_result={fields['gate_result']} node={fields['node']} gate_run={fields['gate_run']}")
+            lines.append(
+                f"verifier_arm {fields['arm']} accepted={fields['accepted']} reason={fields['reason']} gate_result={fields['gate_result']} node={fields['node']} gate_run={fields['gate_run']}"
+            )
         else:
-            lines.append(f"verifier_refused {fields['arm']} reasons={fields['reasons']} spawned={fields['spawned']} gate_run={fields['gate_run']}")
+            lines.append(
+                f"verifier_refused {fields['arm']} reasons={fields['reasons']} spawned={fields['spawned']} gate_run={fields['gate_run']}"
+            )
     return "\n".join(lines) + "\n"
 
 

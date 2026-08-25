@@ -5,7 +5,13 @@ from cairn import bundle, canon, tiergate
 
 @pytest.mark.parametrize(
     ("value", "path"),
-    [(0.01, r"\$"), ([1, 2.5], r"\$\[1\]"), ({"f": 0.01}, r"\$\.f"), ({"a": {"b": [1, 1.0]}}, r"\$\.a\.b\[1\]"), ({1.5: "x"}, r"\$\.1\.5")],
+    [
+        (0.01, r"\$"),
+        ([1, 2.5], r"\$\[1\]"),
+        ({"f": 0.01}, r"\$\.f"),
+        ({"a": {"b": [1, 1.0]}}, r"\$\.a\.b\[1\]"),
+        ({1.5: "x"}, r"\$\.1\.5"),
+    ],
     ids=["bare", "in-list", "in-map", "nested", "as-key"],
 )
 def test_a_float_anywhere_in_a_bundle_object_is_refused_and_its_location_named(value, path):
@@ -13,7 +19,9 @@ def test_a_float_anywhere_in_a_bundle_object_is_refused_and_its_location_named(v
         bundle.canonical_bytes("auditor", value)
 
 
-@pytest.mark.parametrize("value", [b"raw", {1: "int-key"}, {None: "none-key"}, set()], ids=["bytes", "int-key", "none-key", "set"])
+@pytest.mark.parametrize(
+    "value", [b"raw", {1: "int-key"}, {None: "none-key"}, set()], ids=["bytes", "int-key", "none-key", "set"]
+)
 def test_a_type_the_bundle_encoding_does_not_admit_is_refused(value):
     with pytest.raises(canon.CanonError):
         bundle.canonical_bytes("auditor", value)
@@ -29,7 +37,20 @@ def test_two_keys_that_normalize_to_one_are_refused():
 @pytest.mark.parametrize(
     "value",
     [None, True, False, 0, -1, 2**300, "", "x", [], {}, [None, True, 1, "s", [], {}], {"a": [1, {"b": None}]}],
-    ids=["none", "true", "false", "zero", "negative", "big-int", "empty-str", "str", "empty-list", "empty-map", "mixed-list", "nested"],
+    ids=[
+        "none",
+        "true",
+        "false",
+        "zero",
+        "negative",
+        "big-int",
+        "empty-str",
+        "str",
+        "empty-list",
+        "empty-map",
+        "mixed-list",
+        "nested",
+    ],
 )
 def test_every_admitted_shape_round_trips_through_the_decoder(value):
     assert bundle._decode(bundle.canonical_bytes("tiers", value)) == value
@@ -42,7 +63,7 @@ def test_key_order_in_the_source_does_not_move_the_canonical_bytes():
 
 
 def test_the_verifier_script_row_is_the_raw_file_bytes_not_an_encoding():
-    raw = b"verify(p)=\n{\n  print(\"OK\");\n}\n"
+    raw = b'verify(p)=\n{\n  print("OK");\n}\n'
     assert bundle.canonical_bytes(bundle.SCRIPT_KIND, raw) == raw
 
 

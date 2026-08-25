@@ -59,7 +59,16 @@ def build_machine(base_dir):
             attempt_id = self.sub.start_attempt(key)
             manifest_hash = self.sub.put_output_manifest(artifacts, recipe_key=key)
             self.sub.close_attempt(attempt_id, "OK", output_manifest_hash=manifest_hash)
-            self.model[name].append({"attempt_id": attempt_id, "status": "OK", "disowned": False, "inadmissible": False, "manifest": manifest, "manifest_hash": manifest_hash})
+            self.model[name].append(
+                {
+                    "attempt_id": attempt_id,
+                    "status": "OK",
+                    "disowned": False,
+                    "inadmissible": False,
+                    "manifest": manifest,
+                    "manifest_hash": manifest_hash,
+                }
+            )
             return (name, attempt_id)
 
         @rule(target=attempts, name=st.sampled_from(RECIPES), manifest=st.sampled_from(sorted(MANIFESTS)))
@@ -72,7 +81,16 @@ def build_machine(base_dir):
             attempt_id = self.sub.start_attempt(key)
             manifest_hash = self.sub.put_output_manifest(artifacts, recipe_key=key)
             self.sub.close_attempt(attempt_id, "FAIL", output_manifest_hash=manifest_hash)
-            self.model[name].append({"attempt_id": attempt_id, "status": "FAIL", "disowned": False, "inadmissible": False, "manifest": manifest, "manifest_hash": manifest_hash})
+            self.model[name].append(
+                {
+                    "attempt_id": attempt_id,
+                    "status": "FAIL",
+                    "disowned": False,
+                    "inadmissible": False,
+                    "manifest": manifest,
+                    "manifest_hash": manifest_hash,
+                }
+            )
             return (name, attempt_id)
 
         @rule(ref=attempts)
@@ -99,7 +117,9 @@ def build_machine(base_dir):
         def set_do_not_cache(self, name):
             if name in self.recipe_keys:
                 with pytest.raises(sqlite3.IntegrityError, match="append-only"):
-                    self.sub.conn.execute("UPDATE recipes SET do_not_cache = 1 WHERE recipe_key = ?", (self.recipe_keys[name],))
+                    self.sub.conn.execute(
+                        "UPDATE recipes SET do_not_cache = 1 WHERE recipe_key = ?", (self.recipe_keys[name],)
+                    )
                 return
             self.pending_do_not_cache.add(name)
 
@@ -123,7 +143,10 @@ def build_machine(base_dir):
             return [
                 e
                 for e in self.model[name]
-                if e["status"] == "OK" and not e["disowned"] and not e["inadmissible"] and all(b in self.present for b in MANIFESTS[e["manifest"]].values())
+                if e["status"] == "OK"
+                and not e["disowned"]
+                and not e["inadmissible"]
+                and all(b in self.present for b in MANIFESTS[e["manifest"]].values())
             ]
 
         def _check(self, name):
@@ -131,12 +154,18 @@ def build_machine(base_dir):
             served = self.sub.serve(key)
             eligible = self._eligible(name)
             if served is None:
-                assert eligible == [], f"{name}: serve returned None with eligible attempts {[e['attempt_id'] for e in eligible]}"
+                assert eligible == [], (
+                    f"{name}: serve returned None with eligible attempts {[e['attempt_id'] for e in eligible]}"
+                )
                 return
             by_id = {e["attempt_id"]: e for e in eligible}
-            assert served.attempt_id in by_id, f"{name}: served ineligible attempt {served.attempt_id}; model {self.model[name]}; present {sorted(self.present)}"
+            assert served.attempt_id in by_id, (
+                f"{name}: served ineligible attempt {served.attempt_id}; model {self.model[name]}; present {sorted(self.present)}"
+            )
             assert served.output_manifest_hash == by_id[served.attempt_id]["manifest_hash"]
-            assert served.attempt_id == eligible[-1]["attempt_id"], f"{name}: served {served.attempt_id}, most recent eligible is {eligible[-1]['attempt_id']}"
+            assert served.attempt_id == eligible[-1]["attempt_id"], (
+                f"{name}: served {served.attempt_id}, most recent eligible is {eligible[-1]['attempt_id']}"
+            )
 
     return SubstrateServeMachine
 

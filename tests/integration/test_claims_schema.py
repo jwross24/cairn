@@ -37,7 +37,9 @@ def populated(writer):
     claims.write_gate_run(writer, run)
     tk = factories.ticket(hypothesis_key=hyp.hash, node_hash=hyp.hash, seed=1)
     claims.write_ticket(writer, tk)
-    seq = claims.append_tag_history(writer, stmt.hash, None, "SPECULATION", None, "opened", "gate:justify", at=CREATED_AT)
+    seq = claims.append_tag_history(
+        writer, stmt.hash, None, "SPECULATION", None, "opened", "gate:justify", at=CREATED_AT
+    )
     refusal_id = claims.add_tier_refusal(writer, hyp.hash, 2, 0, "tier-two-above", at=CREATED_AT)
     return {
         "writer": writer,
@@ -72,7 +74,11 @@ def test_write_one_of_each_reads_back_byte_equal(populated, db_snapshot):
         "created_at": CREATED_AT,
     }
     hyp_row = claims.get_hypothesis_object(writer, hyp.hash)
-    assert hyp_row["claim_statement_hash"] == stmt.hash and hyp_row["supersedes"] is None and hyp_row["created_at"] == CREATED_AT
+    assert (
+        hyp_row["claim_statement_hash"] == stmt.hash
+        and hyp_row["supersedes"] is None
+        and hyp_row["created_at"] == CREATED_AT
+    )
     assert bytes(hyp_row["canonical"]) == claims.hypothesis_object_canonical(hyp)
     assert claims.get_evidence_node(writer, table.hash) == {
         "hash": table.hash,
@@ -144,7 +150,14 @@ def test_write_one_of_each_reads_back_byte_equal(populated, db_snapshot):
         }
     ]
     assert claims.tier_refusals_for(writer, hyp.hash) == [
-        {"id": populated["refusal_id"], "hypothesis_key": hyp.hash, "declared_tier": 2, "ticket_tier": 0, "reason": "tier-two-above", "at": CREATED_AT}
+        {
+            "id": populated["refusal_id"],
+            "hypothesis_key": hyp.hash,
+            "declared_tier": 2,
+            "ticket_tier": 0,
+            "reason": "tier-two-above",
+            "at": CREATED_AT,
+        }
     ]
 
 
@@ -200,7 +213,10 @@ IMMUTABLE_UPDATES = (
         ("tickets", "UPDATE tickets SET tier = 3 WHERE ticket_hash = :ticket"),
         ("tier_refusals", "UPDATE tier_refusals SET reason = 'edited' WHERE hypothesis_key = :hyp"),
     ]
-    + [(f"claim_statements-pin-{name}", f"UPDATE claim_statements SET status = 'refuted', {pin} WHERE hash = :stmt") for name, pin in TRANSITION_PINS]
+    + [
+        (f"claim_statements-pin-{name}", f"UPDATE claim_statements SET status = 'refuted', {pin} WHERE hash = :stmt")
+        for name, pin in TRANSITION_PINS
+    ]
     + [
         ("hypothesis_objects", "DELETE FROM hypothesis_objects WHERE hash = :hyp"),
         ("claim_statements", "DELETE FROM claim_statements WHERE hash = :stmt"),
@@ -258,7 +274,9 @@ CHECK_CASES = [
 ]
 
 
-@pytest.mark.parametrize(("table", "column", "bad_value", "match"), CHECK_CASES, ids=[f"{t}.{c}={v}" for t, c, v, _ in CHECK_CASES])
+@pytest.mark.parametrize(
+    ("table", "column", "bad_value", "match"), CHECK_CASES, ids=[f"{t}.{c}={v}" for t, c, v, _ in CHECK_CASES]
+)
 def test_undeclared_vocabulary_value_is_refused_by_the_check(populated, db_snapshot, table, column, bad_value, match):
     writer = populated["writer"]
     row = dict(writer.conn.execute(f"SELECT * FROM {table} LIMIT 1").fetchone())
@@ -293,11 +311,15 @@ def test_every_downgrade_needs_evidence_and_is_admitted_with_it(populated, db_sn
     writer, stmt = populated["writer"], populated["stmt"]
     with pytest.raises(sqlite3.IntegrityError, match="downgrade requires evidence"):
         claims.append_tag_history(writer, stmt.hash, from_tag, to_tag, None, "regressed", "gate:justify")
-    seq = claims.append_tag_history(writer, stmt.hash, from_tag, to_tag, populated["table"].hash, "regressed", "gate:justify")
+    seq = claims.append_tag_history(
+        writer, stmt.hash, from_tag, to_tag, populated["table"].hash, "regressed", "gate:justify"
+    )
     db_snapshot(writer.conn, f"downgrade-{from_tag}-{to_tag}")
-    assert [(r["from_tag"], r["to_tag"], r["evidence_hash"]) for r in claims.tag_history_for(writer, stmt.hash) if r["seq"] == seq] == [
-        (from_tag, to_tag, populated["table"].hash)
-    ]
+    assert [
+        (r["from_tag"], r["to_tag"], r["evidence_hash"])
+        for r in claims.tag_history_for(writer, stmt.hash)
+        if r["seq"] == seq
+    ] == [(from_tag, to_tag, populated["table"].hash)]
 
 
 @pytest.mark.parametrize(("from_tag", "to_tag"), PERMITTED_PAIRS, ids=[f"{a}->{b}" for a, b in PERMITTED_PAIRS])
@@ -305,7 +327,9 @@ def test_upgrades_and_no_ops_need_no_evidence(populated, db_snapshot, from_tag, 
     writer, stmt = populated["writer"], populated["stmt"]
     seq = claims.append_tag_history(writer, stmt.hash, from_tag, to_tag, None, "derived", "gate:justify")
     db_snapshot(writer.conn, f"upgrade-{from_tag}-{to_tag}")
-    assert [(r["from_tag"], r["to_tag"]) for r in claims.tag_history_for(writer, stmt.hash) if r["seq"] == seq] == [(from_tag, to_tag)]
+    assert [(r["from_tag"], r["to_tag"]) for r in claims.tag_history_for(writer, stmt.hash) if r["seq"] == seq] == [
+        (from_tag, to_tag)
+    ]
 
 
 def test_an_opening_row_with_no_from_tag_needs_no_evidence(populated):
@@ -315,7 +339,9 @@ def test_an_opening_row_with_no_from_tag_needs_no_evidence(populated):
 
 
 @pytest.mark.parametrize("to_status", claims.TERMINAL_STATEMENT_STATUSES)
-def test_status_moves_open_to_a_terminal_status_once_and_a_second_transition_is_refused(populated, db_snapshot, to_status):
+def test_status_moves_open_to_a_terminal_status_once_and_a_second_transition_is_refused(
+    populated, db_snapshot, to_status
+):
     writer, stmt = populated["writer"], populated["stmt"]
     claims.transition_status(writer, stmt.hash, to_status)
     assert claims.get_claim_statement(writer, stmt.hash)["status"] == to_status
@@ -350,9 +376,16 @@ def test_cost_model_round_trips_and_is_null_when_absent(writer, db_snapshot):
     db_snapshot(writer.conn, "cost-model")
     assert claims.has_cost_model(writer, with_model.hash) is True
     assert claims.has_cost_model(writer, without.hash) is False
-    extracted = writer.conn.execute("SELECT json_extract(quantities, '$.cost_model') FROM claim_statements WHERE hash = ?", (with_model.hash,)).fetchone()[0]
+    extracted = writer.conn.execute(
+        "SELECT json_extract(quantities, '$.cost_model') FROM claim_statements WHERE hash = ?", (with_model.hash,)
+    ).fetchone()[0]
     assert extracted == claims.to_json({"exponent": "1/2", "constant": "0.886", "crossover": 44})
-    assert writer.conn.execute("SELECT json_extract(quantities, '$.cost_model') FROM claim_statements WHERE hash = ?", (without.hash,)).fetchone()[0] is None
+    assert (
+        writer.conn.execute(
+            "SELECT json_extract(quantities, '$.cost_model') FROM claim_statements WHERE hash = ?", (without.hash,)
+        ).fetchone()[0]
+        is None
+    )
 
 
 def test_in_sample_sizes_round_trips_and_is_null_off_the_ladder(populated, db_snapshot):
@@ -407,7 +440,9 @@ def test_each_verdict_digest_names_the_bytes_at_its_own_offset(populated, attest
     ],
     ids=["flipped-byte", "truncated", "shifted", "empty"],
 )
-def test_a_verdict_is_absent_unless_its_digest_names_the_bytes_at_its_offset(populated, attested, db_snapshot, mutate, expected_visible):
+def test_a_verdict_is_absent_unless_its_digest_names_the_bytes_at_its_offset(
+    populated, attested, db_snapshot, mutate, expected_visible
+):
     writer, path = populated["writer"], attested["path"]
     path.write_bytes(mutate(path.read_bytes()))
     db_snapshot(writer.conn, "forged-attest")
@@ -484,7 +519,9 @@ def test_rewriting_an_identical_typed_row_is_a_no_op(populated, db_snapshot, tab
 def test_a_tier_refusal_without_a_ticket_tier_and_a_superseding_verdict_round_trip(populated, db_snapshot):
     writer, stmt, hyp = populated["writer"], populated["stmt"], populated["hyp"]
     refusal_id = claims.add_tier_refusal(writer, hyp.hash, 1, None, "ticket-absent", at=CREATED_AT)
-    superseding = factories.review_verdict(stmt.hash, verdict="reject", seed=13, supersedes=populated["verdict"].hash, file_offset=4096)
+    superseding = factories.review_verdict(
+        stmt.hash, verdict="reject", seed=13, supersedes=populated["verdict"].hash, file_offset=4096
+    )
     row_id = claims.write_review_verdict(writer, superseding)
     db_snapshot(writer.conn, "optional-columns")
     assert [(r["id"], r["ticket_tier"], r["reason"]) for r in claims.tier_refusals_for(writer, hyp.hash)] == [
@@ -492,4 +529,8 @@ def test_a_tier_refusal_without_a_ticket_tier_and_a_superseding_verdict_round_tr
         (refusal_id, None, "ticket-absent"),
     ]
     row = next(r for r in claims.review_verdicts_for(writer, stmt.hash) if r["row_id"] == row_id)
-    assert row["supersedes"] == populated["verdict"].hash and row["file_offset"] == 4096 and row["record_digest"] == superseding.record_digest
+    assert (
+        row["supersedes"] == populated["verdict"].hash
+        and row["file_offset"] == 4096
+        and row["record_digest"] == superseding.record_digest
+    )

@@ -73,13 +73,25 @@ def test_gp_version_short_is_2_17():
     lg = log.get("grounding.gp")
     argv = [pari.GP_BIN, "--version-short"]
     proc = subprocess.run(argv, capture_output=True, text=True)
-    lg.info("gp_version", command=" ".join(argv), rc=proc.returncode, stdout=proc.stdout, stderr=proc.stderr, gp_bin=pari.GP_BIN, versions=pari.pari_versions())
+    lg.info(
+        "gp_version",
+        command=" ".join(argv),
+        rc=proc.returncode,
+        stdout=proc.stdout,
+        stderr=proc.stderr,
+        gp_bin=pari.GP_BIN,
+        versions=pari.pari_versions(),
+    )
     assert proc.returncode == 0
     assert proc.stdout.startswith(GP_VERSION_PREFIX)
 
 
-@pytest.mark.parametrize(("stack", "stdin_line", "expected_rc", "expected_stdout", "expected_stderr_fragment"), GP_ROWS, ids=GP_IDS)
-def test_gp_exit_arity_stack_and_small_p_facts(load_vector, stack, stdin_line, expected_rc, expected_stdout, expected_stderr_fragment):
+@pytest.mark.parametrize(
+    ("stack", "stdin_line", "expected_rc", "expected_stdout", "expected_stderr_fragment"), GP_ROWS, ids=GP_IDS
+)
+def test_gp_exit_arity_stack_and_small_p_facts(
+    load_vector, stack, stdin_line, expected_rc, expected_stdout, expected_stderr_fragment
+):
     lg = log.get("grounding.gp")
     curve60 = load_vector(CURVE60_VECTOR)
     line = _fill(stdin_line, curve60)
@@ -137,7 +149,9 @@ def _cypari2_final_draw(curve, call):
     PRNG_ROWS,
     ids=[f"{b}bit-{c}-{'consumes' if s else 'leaves'}-prng" for b, c, s, _d in PRNG_ROWS],
 )
-def test_prng_consumption_of_point_counting_calls(load_vector, bits, call_name, state_changes, expected_treated_draw, backend):
+def test_prng_consumption_of_point_counting_calls(
+    load_vector, bits, call_name, state_changes, expected_treated_draw, backend
+):
     lg = log.get("grounding.gp")
     curve = _curve(bits, load_vector(CURVE60_VECTOR))
     gp_expr, py_call = PRNG_CALLS[call_name]

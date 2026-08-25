@@ -10,7 +10,10 @@ import pytest
 
 from cairn import attest, bundle, claims, cli, exits, substrate, verifier
 
-pytestmark = pytest.mark.skipif(sys.platform != "darwin", reason="uappnd is a macOS/BSD chflags bit; the Linux chattr +a boundary belongs to the M1 container bead")
+pytestmark = pytest.mark.skipif(
+    sys.platform != "darwin",
+    reason="uappnd is a macOS/BSD chflags bit; the Linux chattr +a boundary belongs to the M1 container bead",
+)
 
 SRC = bundle.REPO_ROOT / "bundle"
 EXPECTED_ACCEPT = {"rc": 0, "stdout": "OK", "stderr_empty": True}
@@ -89,7 +92,9 @@ def test_show_exits_gate_refused_after_a_bundle_edit(pinned_bundle, tmp_path, ca
 
 
 def test_show_exits_environment_when_an_artifact_is_missing(tmp_path, capsys):
-    code, out, err = _run(["bundle", "show", "--bundle", str(tmp_path / "absent.sqlite"), "--pin", str(tmp_path / "absent.pin")], capsys)
+    code, out, err = _run(
+        ["bundle", "show", "--bundle", str(tmp_path / "absent.sqlite"), "--pin", str(tmp_path / "absent.pin")], capsys
+    )
     assert code == exits.ENVIRONMENT
     assert out == "" and "absent.sqlite" in err
 
@@ -146,7 +151,9 @@ def test_attest_init_writes_the_fixture_waiver_at_record_zero(pinned_bundle, tmp
     bundle_path, pin_path = pinned_bundle()
     log_path = tmp_path / "attestations.log"
     clear_flags(log_path)
-    code, out, err = _run(["attest", "init", *_paths(bundle_path, pin_path), "--attest", str(log_path), "--json"], capsys)
+    code, out, err = _run(
+        ["attest", "init", *_paths(bundle_path, pin_path), "--attest", str(log_path), "--json"], capsys
+    )
     document = json.loads(out)
     gate = bundle.GateBundle.open(bundle_path, pin_path)
     assert code == exits.OK
@@ -176,7 +183,9 @@ def test_attest_init_fails_closed_on_a_pin_mismatch(pinned_bundle, tmp_path, cap
     tampered = _writable_copy(bundle_path, tmp_path / "tampered.sqlite")
     _edit_one_row(tampered)
     log_path = tmp_path / "attestations.log"
-    code, out, err = _run(["attest", "init", "--bundle", str(tampered), "--pin", str(pin_path), "--attest", str(log_path)], capsys)
+    code, out, err = _run(
+        ["attest", "init", "--bundle", str(tampered), "--pin", str(pin_path), "--attest", str(log_path)], capsys
+    )
     assert code == exits.GATE_REFUSED
     assert not log_path.exists()
     assert "chflags nouappnd" in err
@@ -207,7 +216,9 @@ def _apply(op, path):
 @pytest.mark.parametrize(
     ("role", "op", "refused"),
     [("pin", op, True) for op in PIN_OPS] + [("attest", op, True) for op in ATTEST_OPS] + [("attest", "open_a", False)],
-    ids=[f"pin-{op}-PermissionError" for op in PIN_OPS] + [f"attest-{op}-PermissionError" for op in ATTEST_OPS] + ["attest-open_a-OK"],
+    ids=[f"pin-{op}-PermissionError" for op in PIN_OPS]
+    + [f"attest-{op}-PermissionError" for op in ATTEST_OPS]
+    + ["attest-open_a-OK"],
 )
 def test_os_write_boundary_on_the_deployed_artifacts(pinned_bundle, tmp_path, clear_flags, capsys, role, op, refused):
     bundle_path, pin_path = pinned_bundle()
@@ -226,7 +237,9 @@ def test_os_write_boundary_on_the_deployed_artifacts(pinned_bundle, tmp_path, cl
         assert path.read_bytes() == before + b"x"
 
 
-def test_mirrored_review_verdict_is_visible_only_on_an_exact_digest_and_offset(pinned_bundle, tmp_path, clear_flags, capsys):
+def test_mirrored_review_verdict_is_visible_only_on_an_exact_digest_and_offset(
+    pinned_bundle, tmp_path, clear_flags, capsys
+):
     bundle_path, pin_path = pinned_bundle()
     log_path = tmp_path / "attestations.log"
     db_path = tmp_path / "substrate.sqlite"
@@ -234,15 +247,49 @@ def test_mirrored_review_verdict_is_visible_only_on_an_exact_digest_and_offset(p
     _run(["attest", "init", *_paths(bundle_path, pin_path), "--attest", str(log_path)], capsys)
     statement_hash = "a" * 64
     record = tmp_path / "verdict.json"
-    record.write_text(json.dumps({"statement_hash": statement_hash, "reviewer": "operator", "verdict": "approve", "checklist_template_hash": "b" * 64, "at": "2026-08-23T00:00:00Z"}))
-    code, out, err = _run(["attest", "append", "--kind", "review_verdict", "--record", str(record), *_paths(bundle_path, pin_path), "--attest", str(log_path), "--db", str(db_path), "--json"], capsys)
+    record.write_text(
+        json.dumps(
+            {
+                "statement_hash": statement_hash,
+                "reviewer": "operator",
+                "verdict": "approve",
+                "checklist_template_hash": "b" * 64,
+                "at": "2026-08-23T00:00:00Z",
+            }
+        )
+    )
+    code, out, err = _run(
+        [
+            "attest",
+            "append",
+            "--kind",
+            "review_verdict",
+            "--record",
+            str(record),
+            *_paths(bundle_path, pin_path),
+            "--attest",
+            str(log_path),
+            "--db",
+            str(db_path),
+            "--json",
+        ],
+        capsys,
+    )
     assert code == exits.OK
     offset = json.loads(out)["offset"]
     assert offset > 0
     with substrate.Substrate.open(db_path, role="reader") as sub:
         visible = attest.visible_review_verdicts(sub, statement_hash, log_path)
         assert [row["file_offset"] for row in visible] == [offset]
-    forged = claims.ReviewVerdict(statement_hash=statement_hash, reviewer="forger", verdict="approve", checklist_template_hash="c" * 64, gate_bundle_hash="d" * 64, at="2026-08-23T00:00:00Z", file_offset=offset)
+    forged = claims.ReviewVerdict(
+        statement_hash=statement_hash,
+        reviewer="forger",
+        verdict="approve",
+        checklist_template_hash="c" * 64,
+        gate_bundle_hash="d" * 64,
+        at="2026-08-23T00:00:00Z",
+        file_offset=offset,
+    )
     with substrate.Substrate.open(db_path) as sub:
         claims.write_review_verdict(sub, forged)
         stored = claims.review_verdicts_for(sub, statement_hash)
@@ -258,8 +305,35 @@ def test_appended_waiver_mirrors_no_substrate_row(pinned_bundle, tmp_path, clear
     clear_flags(log_path)
     _run(["attest", "init", *_paths(bundle_path, pin_path), "--attest", str(log_path)], capsys)
     record = tmp_path / "waiver.json"
-    record.write_text(json.dumps({"target_kind": "hypothesis_key", "target": "e" * 64, "check": "tier_gate", "reason": "operator waiver", "issued_by": "operator", "expires_at": "2027-01-01T00:00:00Z"}))
-    code, out, err = _run(["attest", "append", "--kind", "waiver", "--record", str(record), *_paths(bundle_path, pin_path), "--attest", str(log_path), "--db", str(db_path), "--json"], capsys)
+    record.write_text(
+        json.dumps(
+            {
+                "target_kind": "hypothesis_key",
+                "target": "e" * 64,
+                "check": "tier_gate",
+                "reason": "operator waiver",
+                "issued_by": "operator",
+                "expires_at": "2027-01-01T00:00:00Z",
+            }
+        )
+    )
+    code, out, err = _run(
+        [
+            "attest",
+            "append",
+            "--kind",
+            "waiver",
+            "--record",
+            str(record),
+            *_paths(bundle_path, pin_path),
+            "--attest",
+            str(log_path),
+            "--db",
+            str(db_path),
+            "--json",
+        ],
+        capsys,
+    )
     assert code == exits.OK
     assert json.loads(out)["row_id"] is None
     assert len(list(attest.records(log_path))) == 2
@@ -311,7 +385,9 @@ def test_build_from_an_unusable_source_directory_exits_environment(tmp_path, cap
     if src == "empty":
         source.mkdir()
     bundle_path = tmp_path / "gate-bundle.sqlite"
-    code, out, err = _run(["bundle", "build", "--src", str(source), "--bundle", str(bundle_path), "--pin", str(tmp_path / "p")], capsys)
+    code, out, err = _run(
+        ["bundle", "build", "--src", str(source), "--bundle", str(bundle_path), "--pin", str(tmp_path / "p")], capsys
+    )
     assert code == exits.ENVIRONMENT
     assert why in err and out == ""
     assert not bundle_path.exists()
@@ -319,18 +395,46 @@ def test_build_from_an_unusable_source_directory_exits_environment(tmp_path, cap
 
 def test_pin_without_a_bundle_exits_environment_and_names_build(tmp_path, capsys):
     pin_path = tmp_path / "gate-bundle.pin"
-    code, out, err = _run(["bundle", "pin", "--bundle", str(tmp_path / "absent.sqlite"), "--pin", str(pin_path)], capsys)
+    code, out, err = _run(
+        ["bundle", "pin", "--bundle", str(tmp_path / "absent.sqlite"), "--pin", str(pin_path)], capsys
+    )
     assert code == exits.ENVIRONMENT
     assert "cairn bundle build" in err and out == ""
     assert not pin_path.exists()
 
 
-def test_append_without_an_initialized_attestation_file_exits_environment_and_names_init(pinned_bundle, tmp_path, capsys):
+def test_append_without_an_initialized_attestation_file_exits_environment_and_names_init(
+    pinned_bundle, tmp_path, capsys
+):
     bundle_path, pin_path = pinned_bundle()
     log_path = tmp_path / "attestations.log"
     record = tmp_path / "waiver.json"
-    record.write_text(json.dumps({"target_kind": "hypothesis_key", "target": "e" * 64, "check": "tier_gate", "reason": "r", "issued_by": "operator", "expires_at": "2027-01-01T00:00:00Z"}))
-    code, out, err = _run(["attest", "append", "--kind", "waiver", "--record", str(record), *_paths(bundle_path, pin_path), "--attest", str(log_path)], capsys)
+    record.write_text(
+        json.dumps(
+            {
+                "target_kind": "hypothesis_key",
+                "target": "e" * 64,
+                "check": "tier_gate",
+                "reason": "r",
+                "issued_by": "operator",
+                "expires_at": "2027-01-01T00:00:00Z",
+            }
+        )
+    )
+    code, out, err = _run(
+        [
+            "attest",
+            "append",
+            "--kind",
+            "waiver",
+            "--record",
+            str(record),
+            *_paths(bundle_path, pin_path),
+            "--attest",
+            str(log_path),
+        ],
+        capsys,
+    )
     assert code == exits.ENVIRONMENT
     assert "cairn attest init" in err and out == ""
     assert not log_path.exists()

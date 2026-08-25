@@ -53,11 +53,7 @@ def comparator_assumptions_superset():
 def derive_takes_last_node():
     def strongest(results):
         return next(
-            (
-                pair
-                for pair in reversed(list(results))
-                if isinstance(pair[1], justify.Justification)
-            ),
+            (pair for pair in reversed(list(results)) if isinstance(pair[1], justify.Justification)),
             None,
         )
 

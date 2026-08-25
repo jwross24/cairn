@@ -15,7 +15,11 @@ families = st.sampled_from(["toy_curve", "planted_curve", "interval_dlp"])
 assumption_names = st.frozensets(st.sampled_from(["A1", "A2", "A3", "A4", "A5", "A6"]), min_size=1)
 sizes = st.tuples(st.integers(20, 60), st.integers(0, 20)).map(lambda t: (t[0], t[0] + t[1]))
 cost_models = st.none() | st.fixed_dictionaries(
-    {"exponent": st.sampled_from(["1/2", "1/3", "2/3"]), "constant": st.sampled_from(["0.886", "1.0", "2.5"]), "crossover": st.integers(30, 70)}
+    {
+        "exponent": st.sampled_from(["1/2", "1/3", "2/3"]),
+        "constant": st.sampled_from(["0.886", "1.0", "2.5"]),
+        "crossover": st.integers(30, 70),
+    }
 )
 
 
@@ -45,11 +49,19 @@ def mutate_one_field(stmt, field, data):
         return dataclasses.replace(stmt, supersedes=data.draw(hexdigest))
     if field == "scope.size_interval":
         lo, hi = stmt.scope["size_interval"]
-        return dataclasses.replace(stmt, scope={**stmt.scope, "size_interval": [lo, hi + data.draw(st.integers(1, 30))]})
+        return dataclasses.replace(
+            stmt, scope={**stmt.scope, "size_interval": [lo, hi + data.draw(st.integers(1, 30))]}
+        )
     if field == "scope.target_family":
         return dataclasses.replace(stmt, scope={**stmt.scope, "target_family": stmt.scope["target_family"] + "x"})
     if field == "scope.param_ranges":
-        return dataclasses.replace(stmt, scope={**stmt.scope, "param_ranges": {**stmt.scope["param_ranges"], "r": [1, data.draw(st.integers(2, 40))]}})
+        return dataclasses.replace(
+            stmt,
+            scope={
+                **stmt.scope,
+                "param_ranges": {**stmt.scope["param_ranges"], "r": [1, data.draw(st.integers(2, 40))]},
+            },
+        )
     if field == "scope.assumption_set":
         extra = factories.assumption_id(data.draw(st.text(min_size=1, max_size=8)))
         grown = frozenset(stmt.scope["assumption_set"]) | {extra}
@@ -57,7 +69,9 @@ def mutate_one_field(stmt, field, data):
             grown = frozenset(stmt.scope["assumption_set"]) | {factories.assumption_id("A7")}
         return dataclasses.replace(stmt, scope={**stmt.scope, "assumption_set": grown})
     if field == "quantities.units":
-        return dataclasses.replace(stmt, quantities={**stmt.quantities, "units": {**stmt.quantities["units"], "memory": "bytes"}})
+        return dataclasses.replace(
+            stmt, quantities={**stmt.quantities, "units": {**stmt.quantities["units"], "memory": "bytes"}}
+        )
     model = stmt.quantities["cost_model"]
     changed = {"exponent": "3/5", "constant": "9.9", "crossover": 99} if model is None else None
     if model is not None and field == "quantities.cost_model":

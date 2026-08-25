@@ -85,7 +85,9 @@ def test_reader_against_uncommitted_writer_by_journal_mode_and_begin_kind(tmp_pa
     BUSY_ROWS,
     ids=[f"timeout{t}-commit{c}-{o}" for t, c, o, _lo, _hi in BUSY_ROWS],
 )
-def test_second_writer_busy_timeout_under_wal(tmp_path, busy_timeout_ms, commit_after_ms, expected, min_wait_ms, max_wait_ms):
+def test_second_writer_busy_timeout_under_wal(
+    tmp_path, busy_timeout_ms, commit_after_ms, expected, min_wait_ms, max_wait_ms
+):
     lg = log.get("grounding.sqlite")
     path, a = _fresh_db(tmp_path, "WAL")
     result = {}

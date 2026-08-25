@@ -10,7 +10,13 @@ class CliError(Exception):
         self.next_command = next_command
 
     def record(self):
-        return {"code": self.code, "meaning": exits.CLI.get(self.code, "?"), "what": self.what, "where": self.where, "next_command": self.next_command}
+        return {
+            "code": self.code,
+            "meaning": exits.CLI.get(self.code, "?"),
+            "what": self.what,
+            "where": self.where,
+            "next_command": self.next_command,
+        }
 
     def human(self):
         parts = [f"error: {self.what}"]

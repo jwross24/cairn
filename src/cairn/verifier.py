@@ -182,7 +182,14 @@ class Instance:
         object.__setattr__(self, "Q", _point(self.Q, modulus))
 
     def as_dict(self):
-        return {"p": self.p, "a": self.a, "b": self.b, "n": self.n, "P": list(self.P) if isinstance(self.P, tuple) else self.P, "Q": list(self.Q) if isinstance(self.Q, tuple) else self.Q}
+        return {
+            "p": self.p,
+            "a": self.a,
+            "b": self.b,
+            "n": self.n,
+            "P": list(self.P) if isinstance(self.P, tuple) else self.P,
+            "Q": list(self.Q) if isinstance(self.Q, tuple) else self.Q,
+        }
 
     @property
     def instance_hash(self):
@@ -274,7 +281,7 @@ def fail_codes(stdout):
     for line in stdout.splitlines():
         if line.startswith(FAIL_PREFIX):
             seen = []
-            for token in CODE_TOKEN.findall(line[len(FAIL_PREFIX):]):
+            for token in CODE_TOKEN.findall(line[len(FAIL_PREFIX) :]):
                 if token in SCRIPT_REASONS and token not in seen:
                     seen.append(token)
             return tuple(seen)
@@ -293,7 +300,7 @@ def classify(rc, stdout, stderr, accept=DEFAULT_ACCEPT):
 def _hash_or_none(instance):
     try:
         return instance.instance_hash
-    except (canon.CanonError, AttributeError, TypeError):
+    except canon.CanonError, AttributeError, TypeError:
         return None
 
 
@@ -301,7 +308,9 @@ class Verifier:
     def __init__(self, config=None):
         self.config = config if config is not None else default_config()
         if self.config.backend_path != pari.GP_BIN:
-            raise VerifierConfigError(f"bundle backend_path {self.config.backend_path!r} is not the installed backend {pari.GP_BIN!r}")
+            raise VerifierConfigError(
+                f"bundle backend_path {self.config.backend_path!r} is not the installed backend {pari.GP_BIN!r}"
+            )
         self._log = log.get("verifier")
 
     def run(self, instance, x):
@@ -325,7 +334,9 @@ class Verifier:
         start = time.monotonic()
         instance_hash = _hash_or_none(instance)
         fields = (instance.p, instance.a, instance.b)
-        if any(not _is_int(v) or v < 0 for v in fields) or not (fields[0] > 3 and fields[1] < fields[0] and fields[2] < fields[0]):
+        if any(not _is_int(v) or v < 0 for v in fields) or not (
+            fields[0] > 3 and fields[1] < fields[0] and fields[2] < fields[0]
+        ):
             return self._refuse(instance_hash, None, "bad-field", start)
         line = "crash_selftest(" + ",".join(str(v) for v in fields) + ")\n"
         return self._spawn(line, instance_hash, None, start)
@@ -338,7 +349,9 @@ class Verifier:
         return self._spawn(render_line(fields), instance_hash, x, start)
 
     def _refuse(self, instance_hash, x, reason, start):
-        result = VerifierResult(instance_hash, x if _is_int(x) else None, False, reason, (reason,), None, None, None, self._wall(start))
+        result = VerifierResult(
+            instance_hash, x if _is_int(x) else None, False, reason, (reason,), None, None, None, self._wall(start)
+        )
         self._verdict(result)
         return result
 
@@ -349,13 +362,30 @@ class Verifier:
         try:
             rc, out, err = pari.run_gp([path], line, timeout_s=config.timeout_s, stack=config.stack_ceiling)
         except pari.GpTimeout:
-            result = VerifierResult(instance_hash, x, False, "timeout", ("timeout",), None, None, None, self._wall(start))
-            self._log.debug("gp", argv=argv, stdin_digest=_digest(line), stdout_digest=None, stderr_digest=None, timeout_s=config.timeout_s)
+            result = VerifierResult(
+                instance_hash, x, False, "timeout", ("timeout",), None, None, None, self._wall(start)
+            )
+            self._log.debug(
+                "gp",
+                argv=argv,
+                stdin_digest=_digest(line),
+                stdout_digest=None,
+                stderr_digest=None,
+                timeout_s=config.timeout_s,
+            )
             self._verdict(result)
             return result
         accepted, reason, reasons = classify(rc, out, err, config.accept)
-        result = VerifierResult(instance_hash, x, accepted, reason, reasons, _digest(out), _digest(err), rc, self._wall(start))
-        self._log.debug("gp", argv=argv, stdin_digest=_digest(line), stdout_digest=result.stdout_digest, stderr_digest=result.stderr_digest)
+        result = VerifierResult(
+            instance_hash, x, accepted, reason, reasons, _digest(out), _digest(err), rc, self._wall(start)
+        )
+        self._log.debug(
+            "gp",
+            argv=argv,
+            stdin_digest=_digest(line),
+            stdout_digest=result.stdout_digest,
+            stderr_digest=result.stderr_digest,
+        )
         self._verdict(result)
         return result
 

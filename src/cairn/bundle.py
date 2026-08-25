@@ -104,7 +104,9 @@ def build(src_dir, out_path):
     conn = sqlite3.connect(str(out))
     try:
         conn.executescript(SCHEMA)
-        conn.executemany("INSERT INTO objects (kind, canonical) VALUES (?, ?)", [(kind, canonical) for kind, canonical, _ in rows])
+        conn.executemany(
+            "INSERT INTO objects (kind, canonical) VALUES (?, ?)", [(kind, canonical) for kind, canonical, _ in rows]
+        )
         conn.commit()
     finally:
         conn.close()
@@ -118,7 +120,10 @@ def read_rows(path):
     conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
     try:
-        return [_row(r["kind"], bytes(r["canonical"])) for r in conn.execute("SELECT kind, canonical FROM objects ORDER BY kind")]
+        return [
+            _row(r["kind"], bytes(r["canonical"]))
+            for r in conn.execute("SELECT kind, canonical FROM objects ORDER BY kind")
+        ]
     finally:
         conn.close()
 
@@ -164,7 +169,14 @@ class GateBundle:
         rows = read_rows(path)
         digest = bundle_hash(rows)
         pin_hash = read_pin(pin_path)
-        lg.info("open", path=str(path), pin=str(pin_path), bundle_hash=digest, pin_hash=pin_hash, pin_match=digest == pin_hash)
+        lg.info(
+            "open",
+            path=str(path),
+            pin=str(pin_path),
+            bundle_hash=digest,
+            pin_hash=pin_hash,
+            pin_match=digest == pin_hash,
+        )
         if digest != pin_hash:
             raise BundlePinMismatch(digest, pin_hash, path, pin_path)
         return cls(path, pin_path, rows, digest, pin_hash)
@@ -269,7 +281,14 @@ def record_open_refusal(sub, mismatch):
         at=cli.now_iso(),
     )
     claims.write_gate_run(sub, run)
-    lg.info("open_refused", path=mismatch.path, pin=mismatch.pin_path, bundle_hash=mismatch.bundle_hash, pin_hash=mismatch.pin_hash, run_id=run.hash)
+    lg.info(
+        "open_refused",
+        path=mismatch.path,
+        pin=mismatch.pin_path,
+        bundle_hash=mismatch.bundle_hash,
+        pin_hash=mismatch.pin_hash,
+        run_id=run.hash,
+    )
     return run.hash
 
 
@@ -288,7 +307,12 @@ def repin_sequence(bundle_path, pin_path, src=DEFAULT_SRC):
 def open_or_refuse(ns, *, command):
     for path, what in ((ns.bundle, "gate bundle"), (ns.pin, "gate-bundle pin")):
         if not os.path.exists(path):
-            raise CliError(exits.ENVIRONMENT, f"the {what} {path} does not exist", where=str(path), next_command=repin_sequence(ns.bundle, ns.pin))
+            raise CliError(
+                exits.ENVIRONMENT,
+                f"the {what} {path} does not exist",
+                where=str(path),
+                next_command=repin_sequence(ns.bundle, ns.pin),
+            )
     try:
         return GateBundle.open(ns.bundle, ns.pin)
     except BundlePinMismatch as mismatch:
@@ -302,15 +326,30 @@ def open_or_refuse(ns, *, command):
 
 def sub_parent():
     parent = argparse.ArgumentParser(add_help=False)
-    parent.add_argument("--force", dest="force", action="store_true", default=argparse.SUPPRESS, help="required for the irreversible part of this command")
-    parent.add_argument("--json", "--robot", dest="json", action="store_true", default=argparse.SUPPRESS, help="emit exactly one JSON document on stdout")
+    parent.add_argument(
+        "--force",
+        dest="force",
+        action="store_true",
+        default=argparse.SUPPRESS,
+        help="required for the irreversible part of this command",
+    )
+    parent.add_argument(
+        "--json",
+        "--robot",
+        dest="json",
+        action="store_true",
+        default=argparse.SUPPRESS,
+        help="emit exactly one JSON document on stdout",
+    )
     return parent
 
 
 def _configure(parser):
     subs = parser.add_subparsers(dest="sub", metavar="SUBCOMMAND", required=True)
     parents = [cli.globals_parent(suppress=True), sub_parent()]
-    build_parser = subs.add_parser("build", parents=parents, help="compile bundle/*.json plus the verifier script into the gate bundle")
+    build_parser = subs.add_parser(
+        "build", parents=parents, help="compile bundle/*.json plus the verifier script into the gate bundle"
+    )
     build_parser.add_argument("--src", default=DEFAULT_SRC, metavar="DIR", help="directory of bundle source objects")
     subs.add_parser("pin", parents=parents, help="record the gate bundle's hash in the operator-owned pin file")
     subs.add_parser("show", parents=parents, help="print the bundle hash, the pin hash and every (kind, hash) row")
@@ -326,7 +365,9 @@ def _run_build(ns):
     try:
         digest = build(ns.src, ns.bundle)
     except BundleError as exc:
-        raise CliError(exits.ENVIRONMENT, str(exc), where=str(ns.src), next_command="cairn bundle build --src bundle/") from None
+        raise CliError(
+            exits.ENVIRONMENT, str(exc), where=str(ns.src), next_command="cairn bundle build --src bundle/"
+        ) from None
     if getattr(ns, "json", False):
         cli.emit_json("bundle", {"sub": "build", "bundle": str(ns.bundle), "src": str(ns.src), "bundle_hash": digest})
     else:
@@ -337,7 +378,12 @@ def _run_build(ns):
 def _run_pin(ns):
     force = getattr(ns, "force", False)
     if not os.path.exists(ns.bundle):
-        raise CliError(exits.ENVIRONMENT, f"the gate bundle {ns.bundle} does not exist", where=str(ns.bundle), next_command=f"cairn bundle build --src {DEFAULT_SRC} --bundle {ns.bundle}")
+        raise CliError(
+            exits.ENVIRONMENT,
+            f"the gate bundle {ns.bundle} does not exist",
+            where=str(ns.bundle),
+            next_command=f"cairn bundle build --src {DEFAULT_SRC} --bundle {ns.bundle}",
+        )
     cli.refuse_overwrite(ns.pin, flag="--force", command="cairn bundle pin", force=force)
     try:
         digest = write_pin(ns.bundle, ns.pin)
@@ -358,7 +404,12 @@ def _run_pin(ns):
 def _run_show(ns):
     missing = [p for p in (ns.bundle, ns.pin) if not os.path.exists(p)]
     if missing:
-        raise CliError(exits.ENVIRONMENT, f"missing gate artifact(s): {', '.join(str(m) for m in missing)}", where=str(missing[0]), next_command=repin_sequence(ns.bundle, ns.pin))
+        raise CliError(
+            exits.ENVIRONMENT,
+            f"missing gate artifact(s): {', '.join(str(m) for m in missing)}",
+            where=str(missing[0]),
+            next_command=repin_sequence(ns.bundle, ns.pin),
+        )
     rows = read_rows(ns.bundle)
     digest = bundle_hash(rows)
     pin_hash = read_pin(ns.pin)

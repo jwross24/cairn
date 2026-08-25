@@ -32,7 +32,9 @@ def _write(tmp_path, data, name="attestations.log"):
 def mutated_file(draw):
     bodies = draw(st.lists(st.binary(min_size=1, max_size=48), min_size=1, max_size=3))
     data = _framed(bodies)
-    how = draw(st.sampled_from(["intact", "truncate_prefix", "length_beyond_end", "zero_length", "shift_one", "tail_noise"]))
+    how = draw(
+        st.sampled_from(["intact", "truncate_prefix", "length_beyond_end", "zero_length", "shift_one", "tail_noise"])
+    )
     if how == "truncate_prefix":
         data += b"\x04\x00\x00"
     elif how == "length_beyond_end":
@@ -79,7 +81,10 @@ def test_each_record_matches_at_its_own_offset_and_nowhere_else(tmp_path_factory
         assert attest.attestation_record_matches(path, offset, digest)
         for wrong in (offset - 1, offset + 1, offset + 8):
             if wrong != offset:
-                assert not attest.attestation_record_matches(path, wrong, digest) or attest.read_record(path, wrong) == body
+                assert (
+                    not attest.attestation_record_matches(path, wrong, digest)
+                    or attest.read_record(path, wrong) == body
+                )
         offset += attest.LENGTH_BYTES + len(body)
 
 
@@ -114,7 +119,11 @@ def test_an_unreadable_file_raises_the_typed_error(tmp_path):
 
 def _corpus_case(case):
     data = bytes.fromhex(case["raw_hex"]) if "raw_hex" in case else _framed([bytes.fromhex(r) for r in case["records"]])
-    digest = case["digest_hex"] if "digest_hex" in case else blob_hash(bytes.fromhex(case["records"][case["digest_of_record"]]))
+    digest = (
+        case["digest_hex"]
+        if "digest_hex" in case
+        else blob_hash(bytes.fromhex(case["records"][case["digest_of_record"]]))
+    )
     return data, case["offset"], digest
 
 

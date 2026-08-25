@@ -14,17 +14,9 @@ from mutants import runner_mutants
 
 CORPUS = Path(__file__).resolve().parent.parent / "fuzz_corpus" / "runner"
 CEILING = 10.0
-fixture_ok = settings(
-    deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture]
-)
+fixture_ok = settings(deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
 
-leaves = (
-    st.none()
-    | st.booleans()
-    | st.integers()
-    | st.floats(allow_nan=False, allow_infinity=False)
-    | st.text()
-)
+leaves = st.none() | st.booleans() | st.integers() | st.floats(allow_nan=False, allow_infinity=False) | st.text()
 json_values = st.recursive(
     leaves,
     lambda c: st.lists(c, max_size=4) | st.dictionaries(st.text(), c, max_size=4),
@@ -50,9 +42,7 @@ def _replay_seeds(fn):
 def documents(draw):
     document = draw(st.dictionaries(st.text(max_size=8), json_values, max_size=4))
     if draw(st.booleans()):
-        document["status"] = draw(
-            st.sampled_from(["OK", "FAIL", "DISAGREE"]) | st.text() | st.integers()
-        )
+        document["status"] = draw(st.sampled_from(["OK", "FAIL", "DISAGREE"]) | st.text() | st.integers())
     if draw(st.booleans()):
         document["receipt"] = draw(json_values)
     return (json.dumps(document, sort_keys=True) + "\n").encode("utf-8")
@@ -95,9 +85,7 @@ def test_a_malformed_document_always_maps_to_fail(raw):
 @fixture_ok
 @given(raw=mangled, exit_status=st.integers(-64, 64), wall=st.floats(0.0, 100.0))
 def test_the_status_is_always_one_of_the_four(raw, exit_status, wall):
-    status = runner.status_for(
-        runner.parse_skill_output(raw), exit_status, wall, CEILING
-    )
+    status = runner.status_for(runner.parse_skill_output(raw), exit_status, wall, CEILING)
     assert status in ("OK", "FAIL", "DISAGREE", "BUDGET_EXCEEDED")
 
 
@@ -109,9 +97,7 @@ def test_every_seed_negative_is_refused(raw):
 
 
 def test_a_well_formed_document_survives_with_its_receipt_stripped():
-    parsed = runner.parse_skill_output(
-        b'{"status":"OK","p":"5","receipt":{"cpu_user_s":"9999"}}\n'
-    )
+    parsed = runner.parse_skill_output(b'{"status":"OK","p":"5","receipt":{"cpu_user_s":"9999"}}\n')
     assert parsed.well_formed and parsed.status == "OK"
     assert parsed.document == {"status": "OK", "p": "5"}
 
@@ -126,9 +112,7 @@ def test_mutant_status_default_ok_is_killed_by_a_document_with_no_status():
     raw = b'{"nope":1}'
     assert runner.status_for(runner.parse_skill_output(raw), 0, 0.0, CEILING) == "FAIL"
     with runner_mutants.status_default_ok():
-        assert (
-            runner.status_for(runner.parse_skill_output(raw), 0, 0.0, CEILING) == "OK"
-        )
+        assert runner.status_for(runner.parse_skill_output(raw), 0, 0.0, CEILING) == "OK"
 
 
 def test_mutant_receipt_trusted_is_killed_by_a_self_written_receipt():

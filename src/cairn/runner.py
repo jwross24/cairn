@@ -65,29 +65,19 @@ def parse_skill_output(stdout_bytes):
     if not text.strip():
         return ParsedOutput.malformed("stdout is empty")
     try:
-        document, end = json.JSONDecoder(parse_constant=_reject_constant).raw_decode(
-            text
-        )
+        document, end = json.JSONDecoder(parse_constant=_reject_constant).raw_decode(text)
     except RecursionError:
         return ParsedOutput.malformed("stdout nests deeper than the decoder allows")
     except (ValueError, TypeError) as exc:
         return ParsedOutput.malformed(f"stdout is not one JSON document: {exc}")
     if text[end:].strip():
-        return ParsedOutput.malformed(
-            "stdout carries trailing bytes after the document"
-        )
+        return ParsedOutput.malformed("stdout carries trailing bytes after the document")
     if not isinstance(document, dict):
-        return ParsedOutput.malformed(
-            f"stdout is not a JSON object, got {type(document).__name__}"
-        )
+        return ParsedOutput.malformed(f"stdout is not a JSON object, got {type(document).__name__}")
     status = document.get("status")
     if status not in SKILL_STATUSES:
-        return ParsedOutput.malformed(
-            f"status must be one of {SKILL_STATUSES}, got {status!r}"
-        )
-    return ParsedOutput.of(
-        {k: v for k, v in document.items() if k not in HARNESS_ONLY_KEYS}, status
-    )
+        return ParsedOutput.malformed(f"status must be one of {SKILL_STATUSES}, got {status!r}")
+    return ParsedOutput.of({k: v for k, v in document.items() if k not in HARNESS_ONLY_KEYS}, status)
 
 
 def status_for(parsed, exit_status, wall_s, ceiling_s):
@@ -216,11 +206,7 @@ def spawn_and_wait(
                     _signal_group(pgid, proc.pid, signal.SIGTERM)
                 elif timed_out and elapsed >= terminated_at + grace:
                     _signal_group(pgid, proc.pid, signal.SIGKILL)
-                remaining = (
-                    tick
-                    if ceiling_s is None
-                    else min(tick, max(0.0, ceiling_s - elapsed))
-                )
+                remaining = tick if ceiling_s is None else min(tick, max(0.0, ceiling_s - elapsed))
                 time.sleep(remaining or tick)
         finally:
             if not reaped:
@@ -271,9 +257,7 @@ class BudgetRefused(RunnerError):
     def __init__(self, remaining, ceiling_s):
         self.remaining = remaining
         self.ceiling_s = ceiling_s
-        super().__init__(
-            f"remaining budget {remaining} cannot cover the ceiling {ceiling_s}"
-        )
+        super().__init__(f"remaining budget {remaining} cannot cover the ceiling {ceiling_s}")
 
 
 @dataclass(frozen=True)
@@ -379,9 +363,7 @@ def launch(
                 served.output_manifest_hash,
                 served_from_cache=True,
             )
-    attempt_id = sub.start_attempt(
-        recipe_key, replay_grade=replay, skip_cache_lookup=skip_cache_lookup
-    )
+    attempt_id = sub.start_attempt(recipe_key, replay_grade=replay, skip_cache_lookup=skip_cache_lookup)
     sub.add_escrow(
         attempt_id,
         declared_production_cost=evaluation.expected_core_s,
@@ -395,9 +377,7 @@ def launch(
         scratch_dir.mkdir(parents=True)
         out_path, err_path = attempt_dir / "stdout", attempt_dir / "stderr"
         document = {} if stdin_document is None else stdin_document
-        stdin_bytes = (
-            json.dumps(document, sort_keys=True, separators=(",", ":")) + "\n"
-        ).encode("utf-8")
+        stdin_bytes = (json.dumps(document, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
         before = allocated_bytes(scratch_dir)
         run = spawn_and_wait(
             skill_argv(skill_module, scratch_dir),
@@ -436,9 +416,7 @@ def launch(
                 "tool_digests_hash": tool_digests_hash(tool_digests),
             }
         )
-        sub.close_attempt(
-            attempt_id, status, output_manifest_hash=manifest, receipt_hash=receipt
-        )
+        sub.close_attempt(attempt_id, status, output_manifest_hash=manifest, receipt_hash=receipt)
         diverged = _diverged(sub, recipe_key) if status == STATUS_OK else ()
         lg.info(
             "launch",

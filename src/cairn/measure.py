@@ -21,15 +21,25 @@ TABLE_RULE = "|---|---|---|---|---|---|---|---|---|"
 def launch(bits, seed):
     argv = list(LAUNCH_ARGV)
     start = time.monotonic()
-    proc = subprocess.run(argv, input=json.dumps({"bits": bits, "seed": seed}), capture_output=True, text=True, timeout=LAUNCH_TIMEOUT_S)
+    proc = subprocess.run(
+        argv, input=json.dumps({"bits": bits, "seed": seed}), capture_output=True, text=True, timeout=LAUNCH_TIMEOUT_S
+    )
     wall = time.monotonic() - start
     if proc.returncode != 0:
         tail = proc.stderr.strip().splitlines()[-1:] or [""]
-        raise CliError(exits.BACKEND, f"launch {' '.join(argv)} for bits={bits} seed={seed} exited {proc.returncode}: {tail[0]}", next_command="cairn doctor")
+        raise CliError(
+            exits.BACKEND,
+            f"launch {' '.join(argv)} for bits={bits} seed={seed} exited {proc.returncode}: {tail[0]}",
+            next_command="cairn doctor",
+        )
     try:
         out = toy_curve.ToyCurveOutput.from_json(proc.stdout)
     except toy_curve.InputError as exc:
-        raise CliError(exits.BACKEND, f"launch {' '.join(argv)} for bits={bits} seed={seed} wrote malformed output: {exc}", next_command="cairn doctor") from None
+        raise CliError(
+            exits.BACKEND,
+            f"launch {' '.join(argv)} for bits={bits} seed={seed} wrote malformed output: {exc}",
+            next_command="cairn doctor",
+        ) from None
     return wall, out
 
 
@@ -59,10 +69,29 @@ def toy_curve_tries(sizes, seeds):
             walls.append(time.monotonic() - start)
             tries.append(out.tries)
             launch_wall, sub = launch(bits, seed)
-            if (sub.p, sub.a, sub.b, sub.n, sub.P, sub.tries, sub.status) != (out.p, out.a, out.b, out.n, out.P, out.tries, out.status):
-                raise CliError(exits.BACKEND, f"subprocess output for bits={bits} seed={seed} differs from the in-process run", next_command="cairn doctor")
+            if (sub.p, sub.a, sub.b, sub.n, sub.P, sub.tries, sub.status) != (
+                out.p,
+                out.a,
+                out.b,
+                out.n,
+                out.P,
+                out.tries,
+                out.status,
+            ):
+                raise CliError(
+                    exits.BACKEND,
+                    f"subprocess output for bits={bits} seed={seed} differs from the in-process run",
+                    next_command="cairn doctor",
+                )
             launch_walls.append(launch_wall)
-            lg.debug("seed", bits=bits, seed=seed, tries=out.tries, wall_s=round(walls[-1], 4), launch_wall_s=round(launch_wall, 4))
+            lg.debug(
+                "seed",
+                bits=bits,
+                seed=seed,
+                tries=out.tries,
+                wall_s=round(walls[-1], 4),
+                launch_wall_s=round(launch_wall, 4),
+            )
         if tries:
             row = _row(bits, tries, walls, launch_walls)
             lg.info("size", **row)
@@ -85,7 +114,11 @@ def parse_sizes(text):
     try:
         return [int(part) for part in text.split(",") if part.strip()]
     except ValueError:
-        raise CliError(exits.USER_INPUT, f"--sizes must be comma-separated integers, got {text!r}", next_command="cairn measure --help") from None
+        raise CliError(
+            exits.USER_INPUT,
+            f"--sizes must be comma-separated integers, got {text!r}",
+            next_command="cairn measure --help",
+        ) from None
 
 
 def _configure(parser):
@@ -100,11 +133,28 @@ def _run(ns):
         raise CliError(exits.USER_INPUT, f"--seeds must be >= 0, got {ns.seeds}", next_command="cairn measure --help")
     rows = toy_curve_tries(sizes, ns.seeds)
     if ns.json:
-        cli.emit_json("measure", {"target": ns.target, "seeds": ns.seeds, "sizes": sizes, "launch_argv": list(LAUNCH_ARGV), "versions": pari.pari_versions(), "rows": rows})
+        cli.emit_json(
+            "measure",
+            {
+                "target": ns.target,
+                "seeds": ns.seeds,
+                "sizes": sizes,
+                "launch_argv": list(LAUNCH_ARGV),
+                "versions": pari.pari_versions(),
+                "rows": rows,
+            },
+        )
     else:
         for line in table_lines(rows):
             print(line)
     return exits.OK
 
 
-cli.register("measure", _configure, _run, summary="measure a skill's cost constant (toy-curve-tries: tries and subprocess wall over seeds 1..N per size)", read_only=True, json=True)
+cli.register(
+    "measure",
+    _configure,
+    _run,
+    summary="measure a skill's cost constant (toy-curve-tries: tries and subprocess wall over seeds 1..N per size)",
+    read_only=True,
+    json=True,
+)

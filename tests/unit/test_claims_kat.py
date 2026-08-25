@@ -31,7 +31,11 @@ def build_objects():
 
 
 def build_vectors():
-    canonicals = {"review_verdict": claims.review_verdict_canonical, "gate_run": claims.gate_run_canonical, "ticket": claims.ticket_canonical}
+    canonicals = {
+        "review_verdict": claims.review_verdict_canonical,
+        "gate_run": claims.gate_run_canonical,
+        "ticket": claims.ticket_canonical,
+    }
     vectors = []
     for kind, (obj, canonical) in build_objects().items():
         canonical = canonical if canonical is not None else canonicals[kind](obj)
@@ -53,7 +57,10 @@ def test_claims_kat_matches_golden(assert_golden):
     assert_golden(VECTOR_FILE, build_text())
 
 
-@pytest.mark.parametrize("kind", ["hypothesis_object", "claim_statement", "evidence_node", "repro_record", "review_verdict", "gate_run", "ticket"])
+@pytest.mark.parametrize(
+    "kind",
+    ["hypothesis_object", "claim_statement", "evidence_node", "repro_record", "review_verdict", "gate_run", "ticket"],
+)
 def test_committed_hash_recomputes_from_the_committed_canonical(kind, load_vector):
     vector = next(v for v in load_vector(VECTOR_FILE)["vectors"] if v["kind"] == kind)
     canonical = bytes.fromhex(vector["canonical_hex"])

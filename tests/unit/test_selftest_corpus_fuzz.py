@@ -16,17 +16,9 @@ from mutants import selftest_mutants
 
 CORPUS = Path(__file__).resolve().parent.parent / "fuzz_corpus" / "selftest_corpus"
 BASE = json.loads(selftest.CORPUS_PATH.read_text())
-fixture_ok = settings(
-    deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture]
-)
+fixture_ok = settings(deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
 
-leaves = (
-    st.none()
-    | st.booleans()
-    | st.integers()
-    | st.floats(allow_nan=False, allow_infinity=False)
-    | st.text()
-)
+leaves = st.none() | st.booleans() | st.integers() | st.floats(allow_nan=False, allow_infinity=False) | st.text()
 json_values = st.recursive(
     leaves,
     lambda c: st.lists(c, max_size=4) | st.dictionaries(st.text(), c, max_size=4),
@@ -61,10 +53,7 @@ def pari_spy(monkeypatch):
 
 
 def _seed_corpus():
-    return [
-        json.loads(p.read_text(encoding="utf-8"))
-        for p in sorted(CORPUS.glob("corpus_*.json"))
-    ]
+    return [json.loads(p.read_text(encoding="utf-8")) for p in sorted(CORPUS.glob("corpus_*.json"))]
 
 
 def _replay_seeds(fn):
@@ -116,9 +105,7 @@ def mutated_corpus(draw):
             st.text().filter(lambda t: t not in selftest.ORIGINS)
         )
     elif kind == "bad_ledger":
-        pick()["ledger"] = draw(
-            st.text().filter(lambda t: t not in selftest.LEDGER_VALUES)
-        )
+        pick()["ledger"] = draw(st.text().filter(lambda t: t not in selftest.LEDGER_VALUES))
     elif kind == "floor_above":
         doc["pass_floor"] = draw(st.integers(len(cases) + 1, len(cases) + 50))
     elif kind == "floor_negative":
@@ -133,9 +120,7 @@ def mutated_corpus(draw):
         case = pick()
         del case["fields"][draw(st.sampled_from(list(selftest.REQUIRED_FIELDS)))]
     elif kind == "unknown_postcondition":
-        pick()["postconditions"] = [
-            draw(st.text(min_size=1).filter(lambda t: t not in selftest.POSTCONDITIONS))
-        ]
+        pick()["postconditions"] = [draw(st.text(min_size=1).filter(lambda t: t not in selftest.POSTCONDITIONS))]
     elif kind == "postcondition_missing_field":
         case = next(c for c in cases if "x" in c["fields"])
         case["postconditions"] = ["ellmul"]
@@ -175,9 +160,7 @@ def mutated_corpus(draw):
     elif kind == "degenerate_order":
         pick()["fields"]["n"]["value"] = draw(st.integers(-50, 0))
     else:
-        doc["schema_version"] = draw(
-            st.integers().filter(lambda v: v != selftest.SCHEMA_VERSION)
-        )
+        doc["schema_version"] = draw(st.integers().filter(lambda v: v != selftest.SCHEMA_VERSION))
     return doc
 
 
@@ -205,9 +188,7 @@ def test_arbitrary_json_is_refused_typed_or_accepted_never_unhandled(doc, pari_s
 @fixture_ok
 @_replay_seeds
 @given(doc=mutated_corpus())
-def test_every_corpus_mutation_is_refused_with_a_path_before_any_pari_call(
-    doc, pari_spy
-):
+def test_every_corpus_mutation_is_refused_with_a_path_before_any_pari_call(doc, pari_spy):
     with pytest.raises(CorpusSchemaError) as info:
         selftest.check_corpus(doc)
     assert re.fullmatch(r"\$(\.[A-Za-z_]+|\[\d+\])*", info.value.path)

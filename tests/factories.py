@@ -65,7 +65,16 @@ def superseding_statement(statement, **kw):
     changes = {"supersedes": statement.hash, "version": statement.version + 1, **kw}
     fields = {
         name: getattr(statement, name)
-        for name in ("claim_id", "informal", "scope", "quantities", "formal_source", "source_claim_hash", "status", "created_at")
+        for name in (
+            "claim_id",
+            "informal",
+            "scope",
+            "quantities",
+            "formal_source",
+            "source_claim_hash",
+            "status",
+            "created_at",
+        )
     }
     return ClaimStatement(**{**fields, **changes})
 
@@ -75,7 +84,12 @@ def hypothesis_object(family="toy_curve", cost_model=None, claim_statement_hash=
     model = _cost_model(cost_model, rng) or DEFAULT_COST_MODEL
     fields = {
         "target_family": family,
-        "claimed": {"kind": "cost_model", "exponent": model["exponent"], "constant": model["constant"], "crossover": str(model["crossover"])},
+        "claimed": {
+            "kind": "cost_model",
+            "exponent": model["exponent"],
+            "constant": model["constant"],
+            "crossover": str(model["crossover"]),
+        },
         "method_identity": {"interface_version": f"{family}/1", "params": {"r": "20", "theta": "2^-10"}},
         "declared_parameter_ranges": {"bits": [30, 50]},
         "sampling_distribution": None,
@@ -95,7 +109,9 @@ def _producer(producer, rng):
     return producer, "skill"
 
 
-def evidence_node(kind, target_statement_hash, population, assumptions, verdict=None, repro=None, producer=None, seed=0, **kw):
+def evidence_node(
+    kind, target_statement_hash, population, assumptions, verdict=None, repro=None, producer=None, seed=0, **kw
+):
     rng = _rng(seed)
     identity, tag = _producer(producer, rng)
     fields = {
@@ -181,13 +197,26 @@ def ticket(hypothesis_key=None, tier=0, kind="hypothesis_object", seed=0, **kw):
 
 
 def selftest_summary(origins, randomized_arm, cross_check):
-    return {"corpus_origins": origins, "randomized_arm": randomized_arm, "cross_check": cross_check, "pass": 4, "floor": 4}
+    return {
+        "corpus_origins": origins,
+        "randomized_arm": randomized_arm,
+        "cross_check": cross_check,
+        "pass": 4,
+        "floor": 4,
+    }
 
 
 def instance_from_vector(name="curve60_seed1"):
     data = json.loads((VECTORS / f"{name}.json").read_text())
     point = [int(c) for c in data["P"]]
-    return {"p": int(data["p"]), "a": int(data["a"]), "b": int(data["b"]), "n": int(data["n"]), "P": point, "Q": list(point)}
+    return {
+        "p": int(data["p"]),
+        "a": int(data["a"]),
+        "b": int(data["b"]),
+        "n": int(data["n"]),
+        "P": point,
+        "Q": list(point),
+    }
 
 
 FAMILIES = ("toy_curve", "model_curve", "prime_field")
@@ -218,9 +247,7 @@ def scopes(draw):
         "target_family": draw(st.sampled_from(FAMILIES)),
         "size_interval": draw(size_intervals()),
         "param_ranges": {axis: draw(size_intervals()) for axis in axes},
-        "assumption_set": assumption_ids(
-            draw(st.frozensets(st.sampled_from(ASSUMPTION_NAMES)))
-        ),
+        "assumption_set": assumption_ids(draw(st.frozensets(st.sampled_from(ASSUMPTION_NAMES)))),
     }
 
 
@@ -236,12 +263,8 @@ def covering_populations(draw, scope):
     return {
         "target_family": scope["target_family"],
         "size_interval": widen(scope["size_interval"]),
-        "param_ranges": {
-            axis: widen(interval) for axis, interval in scope["param_ranges"].items()
-        },
-        "assumption_set": frozenset(draw(st.sets(st.sampled_from(held))))
-        if held
-        else frozenset(),
+        "param_ranges": {axis: widen(interval) for axis, interval in scope["param_ranges"].items()},
+        "assumption_set": frozenset(draw(st.sets(st.sampled_from(held)))) if held else frozenset(),
     }
 
 
@@ -249,19 +272,9 @@ def covering_populations(draw, scope):
 def narrowed_populations(draw, scope):
     population = draw(covering_populations(scope))
     axis = draw(st.sampled_from(["size_interval", *sorted(scope["param_ranges"])]))
-    target = (
-        scope["size_interval"]
-        if axis == "size_interval"
-        else scope["param_ranges"][axis]
-    )
-    wide = (
-        population["size_interval"]
-        if axis == "size_interval"
-        else population["param_ranges"][axis]
-    )
-    moved = (
-        [target[0] + 1, wide[1]] if draw(st.booleans()) else [wide[0], target[1] - 1]
-    )
+    target = scope["size_interval"] if axis == "size_interval" else scope["param_ranges"][axis]
+    wide = population["size_interval"] if axis == "size_interval" else population["param_ranges"][axis]
+    moved = [target[0] + 1, wide[1]] if draw(st.booleans()) else [wide[0], target[1] - 1]
     if axis == "size_interval":
         return {**population, "size_interval": moved}, "size_interval"
     return {
@@ -316,17 +329,13 @@ _INTERVALISH = st.one_of(
 @st.composite
 def arbitrary_records(draw):
     record = {
-        "target_family": draw(
-            st.one_of(st.sampled_from(FAMILIES), st.none(), st.integers())
-        ),
+        "target_family": draw(st.one_of(st.sampled_from(FAMILIES), st.none(), st.integers())),
         "size_interval": draw(_INTERVALISH),
         "param_ranges": draw(
             st.one_of(
                 st.none(),
                 st.integers(),
-                st.dictionaries(
-                    st.sampled_from((*PARAM_AXES, "extra")), _INTERVALISH, max_size=3
-                ),
+                st.dictionaries(st.sampled_from((*PARAM_AXES, "extra")), _INTERVALISH, max_size=3),
             )
         ),
         "assumption_set": draw(

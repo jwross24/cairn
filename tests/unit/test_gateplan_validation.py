@@ -55,7 +55,9 @@ def test_the_committed_plan_loads_and_carries_every_required_step():
 
 
 def _synthetic(count):
-    return tuple(gateplan.Step(step=f"s{i}", kind=gateplan.KIND_CANON_KAT, expect=gateplan.EXPECT_PASS) for i in range(count))
+    return tuple(
+        gateplan.Step(step=f"s{i}", kind=gateplan.KIND_CANON_KAT, expect=gateplan.EXPECT_PASS) for i in range(count)
+    )
 
 
 def _observer(outcomes):
@@ -115,4 +117,3 @@ def test_blocks_name_wrong_step_mutant_is_killed():
     assert _blocking_property_holds(FAIL_THEN_TWO)
     with gateplan_mutants.blocks_name_wrong_step():
         assert not _blocking_property_holds(FAIL_THEN_TWO)
-

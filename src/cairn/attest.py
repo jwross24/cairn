@@ -106,7 +106,11 @@ def records(path):
 def visible_review_verdicts(sub, statement_hash, path):
     from cairn import claims
 
-    return [row for row in claims.review_verdicts_for(sub, statement_hash) if attestation_record_matches(path, row["file_offset"], row["record_digest"])]
+    return [
+        row
+        for row in claims.review_verdicts_for(sub, statement_hash)
+        if attestation_record_matches(path, row["file_offset"], row["record_digest"])
+    ]
 
 
 def init(path, target):
@@ -124,7 +128,12 @@ def init(path, target):
 
 def _set_append_only(path):
     if not hasattr(os, "chflags"):
-        lg.warning("append_only_unavailable", path=str(path), platform=os.name, effect="the attestation file carries mode bits only")
+        lg.warning(
+            "append_only_unavailable",
+            path=str(path),
+            platform=os.name,
+            effect="the attestation file carries mode bits only",
+        )
         return False
     os.chflags(path, stat.UF_APPEND)
     return True
@@ -133,8 +142,14 @@ def _set_append_only(path):
 def _configure(parser):
     subs = parser.add_subparsers(dest="sub", metavar="SUBCOMMAND", required=True)
     parents = [cli.globals_parent(suppress=True), bundle.sub_parent()]
-    subs.add_parser("init", parents=parents, help="create the append-only attestation file and write the gate plan's fixture waiver at record 0")
-    append = subs.add_parser("append", parents=parents, help="append one operator record and mirror its digest and offset into the substrate")
+    subs.add_parser(
+        "init",
+        parents=parents,
+        help="create the append-only attestation file and write the gate plan's fixture waiver at record 0",
+    )
+    append = subs.add_parser(
+        "append", parents=parents, help="append one operator record and mirror its digest and offset into the substrate"
+    )
     append.add_argument("--kind", required=True, choices=list(KINDS))
     append.add_argument("--record", required=True, metavar="PATH", help="JSON file holding the record's fields")
 
@@ -153,7 +168,14 @@ def _run_init(ns):
         )
     gate = bundle.open_or_refuse(ns, command="cairn attest init")
     offset, waiver = init(ns.attest, gate.waiver_target())
-    payload = {"sub": "init", "attest": str(ns.attest), "offset": offset, "target": waiver["target"], "record_digest": blob_hash(waiver_canonical(waiver)), "bundle_hash": gate.hash}
+    payload = {
+        "sub": "init",
+        "attest": str(ns.attest),
+        "offset": offset,
+        "target": waiver["target"],
+        "record_digest": blob_hash(waiver_canonical(waiver)),
+        "bundle_hash": gate.hash,
+    }
     if getattr(ns, "json", False):
         cli.emit_json("attest", payload)
     else:
@@ -165,7 +187,12 @@ def _run_append(ns):
     from cairn import claims, substrate
 
     if not os.path.exists(ns.attest):
-        raise CliError(exits.ENVIRONMENT, f"the attestation file {ns.attest} does not exist", where=str(ns.attest), next_command=f"cairn attest init --attest {ns.attest}")
+        raise CliError(
+            exits.ENVIRONMENT,
+            f"the attestation file {ns.attest} does not exist",
+            where=str(ns.attest),
+            next_command=f"cairn attest init --attest {ns.attest}",
+        )
     gate = bundle.open_or_refuse(ns, command="cairn attest append")
     fields = json.loads(Path(ns.record).read_text())
     if ns.kind == "waiver":
@@ -179,7 +206,15 @@ def _run_append(ns):
         placed = claims.ReviewVerdict(**{**fields, "gate_bundle_hash": gate.hash, "file_offset": offset})
         with substrate.Substrate.open(ns.db) as sub:
             row = claims.write_review_verdict(sub, placed)
-    payload = {"sub": "append", "attest": str(ns.attest), "kind": ns.kind, "offset": offset, "record_digest": blob_hash(canonical), "row_id": row, "bundle_hash": gate.hash}
+    payload = {
+        "sub": "append",
+        "attest": str(ns.attest),
+        "kind": ns.kind,
+        "offset": offset,
+        "record_digest": blob_hash(canonical),
+        "row_id": row,
+        "bundle_hash": gate.hash,
+    }
     if getattr(ns, "json", False):
         cli.emit_json("attest", payload)
     else:

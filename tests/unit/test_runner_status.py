@@ -39,12 +39,7 @@ UNDER_CEILING = {
 }
 TABLE = {
     **{(e, w, s, "under"): expected for (e, w, s), expected in UNDER_CEILING.items()},
-    **{
-        (e, w, s, "over"): "BUDGET_EXCEEDED"
-        for e in EXITS
-        for w in (True, False)
-        for s in SKILL_STATUSES
-    },
+    **{(e, w, s, "over"): "BUDGET_EXCEEDED" for e in EXITS for w in (True, False) for s in SKILL_STATUSES},
 }
 
 
@@ -60,30 +55,20 @@ def _parsed(well_formed, skill_status):
 
 
 CASES = [
-    pytest.param(e, w, s, where, expected, id=_cell(e, w, s, where))
-    for (e, w, s, where), expected in TABLE.items()
+    pytest.param(e, w, s, where, expected, id=_cell(e, w, s, where)) for (e, w, s, where), expected in TABLE.items()
 ]
 
 
 @pytest.mark.parametrize(("exit_status", "well_formed", "skill_status", "where", "expected"), CASES)
 def test_the_status_table(exit_status, well_formed, skill_status, where, expected):
     wall = UNDER if where == "under" else OVER
-    assert (
-        runner.status_for(
-            _parsed(well_formed, skill_status), exit_status, wall, CEILING
-        )
-        == expected
-    )
+    assert runner.status_for(_parsed(well_formed, skill_status), exit_status, wall, CEILING) == expected
 
 
 def test_the_table_covers_every_cell_exactly_once():
     assert len(TABLE) == 48
     assert set(TABLE) == {
-        (e, w, s, where)
-        for e in EXITS
-        for w in (True, False)
-        for s in SKILL_STATUSES
-        for where in ("under", "over")
+        (e, w, s, where) for e in EXITS for w in (True, False) for s in SKILL_STATUSES for where in ("under", "over")
     }
     assert set(TABLE.values()) == {"OK", "FAIL", "DISAGREE", "BUDGET_EXCEEDED"}
 
@@ -189,9 +174,7 @@ def test_an_unrecognized_platform_refuses_to_guess_the_maxrss_unit(platform):
         runner.maxrss_bytes(1024, platform)
 
 
-@pytest.mark.parametrize(
-    "platform", ["linux", "freebsd14", "openbsd7", "netbsd9", "sunos5"]
-)
+@pytest.mark.parametrize("platform", ["linux", "freebsd14", "openbsd7", "netbsd9", "sunos5"])
 def test_every_kilobyte_platform_is_scaled(platform):
     assert runner.maxrss_bytes(1024, platform) == 1024 * 1024
 
@@ -259,9 +242,7 @@ def test_a_pid_that_is_gone_from_both_paths_is_swallowed(monkeypatch, raised):
     import signal
 
     monkeypatch.setattr(os, "killpg", lambda *a: (_ for _ in ()).throw(raised()))
-    monkeypatch.setattr(
-        os, "kill", lambda *a: (_ for _ in ()).throw(ProcessLookupError())
-    )
+    monkeypatch.setattr(os, "kill", lambda *a: (_ for _ in ()).throw(ProcessLookupError()))
     runner._signal_group(4242, 99, signal.SIGKILL)
 
 

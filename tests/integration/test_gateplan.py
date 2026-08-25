@@ -155,7 +155,6 @@ def test_a_malformed_plan_row_in_the_bundle_fails_closed_with_no_gate_runs(tmp_p
     sub.close()
 
 
-
 def test_the_run_logs_exactly_one_record_per_step(plan_env, db_snapshot, caplog):
     import logging
 
@@ -168,7 +167,9 @@ def test_the_run_logs_exactly_one_record_per_step(plan_env, db_snapshot, caplog)
     sub.close()
 
 
-def test_the_waiver_step_fails_when_record_zero_does_not_name_the_fixture_waiver(tmp_path, pinned_bundle, clear_flags, db_snapshot):
+def test_the_waiver_step_fails_when_record_zero_does_not_name_the_fixture_waiver(
+    tmp_path, pinned_bundle, clear_flags, db_snapshot
+):
     bundle_path, pin_path = pinned_bundle(name="wrong-waiver")
     gate_bundle = bundle.GateBundle.open(bundle_path, pin_path)
     attest_path = tmp_path / "wrong-waiver.log"
@@ -183,7 +184,9 @@ def test_the_waiver_step_fails_when_record_zero_does_not_name_the_fixture_waiver
     sub.close()
 
 
-def test_an_invalid_plan_spawns_no_gp_and_the_valid_prefix_mutant_shows_the_refusal_is_load_bearing(tmp_path, plan_env, db_snapshot, popen_spy):
+def test_an_invalid_plan_spawns_no_gp_and_the_valid_prefix_mutant_shows_the_refusal_is_load_bearing(
+    tmp_path, plan_env, db_snapshot, popen_spy
+):
     def drop(directory):
         path = directory / "gate_plan.json"
         obj = json.loads(path.read_text())
@@ -223,7 +226,10 @@ def test_the_crash_control_half_fails_the_plan_when_it_is_starved_of_stack(tmp_p
     failed = result.first_failure
     assert failed.step == "verifier_selftest_crash_control"
     assert failed.expected == "OK" and failed.observed == "FAIL backend-crash"
-    assert [s.step for s in result.steps if s.result == "blocked"] == ["waiver_cannot_advance", "tier_gate_selftest_two_above"]
+    assert [s.step for s in result.steps if s.result == "blocked"] == [
+        "waiver_cannot_advance",
+        "tier_gate_selftest_two_above",
+    ]
     sub.close()
 
 
@@ -302,7 +308,15 @@ def test_failed_and_blocked_steps_each_persist_their_gate_runs_row_with_reasons(
         assert json.loads(row["reasons"]) == list(step.reasons)
         if step.result == "blocked":
             assert json.loads(row["reasons"]) == ["blocked-by:verifier_selftest_crash"]
-    assert [rows[s.step]["result"] for s in result.steps] == ["pass", "pass", "pass", "fail", "blocked", "blocked", "blocked"]
+    assert [rows[s.step]["result"] for s in result.steps] == [
+        "pass",
+        "pass",
+        "pass",
+        "fail",
+        "blocked",
+        "blocked",
+        "blocked",
+    ]
     sub.close()
 
 

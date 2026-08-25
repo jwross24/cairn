@@ -25,7 +25,16 @@ json_values = st.recursive(
 )
 arbitrary_plans = st.lists(st.dictionaries(st.text(), json_values, max_size=4), max_size=6)
 
-PERTURBATIONS = ("duplicate_name", "bad_expect", "bad_kind", "extra_field", "bad_entry", "bad_x", "drop_field", "wrong_type_fixture")
+PERTURBATIONS = (
+    "duplicate_name",
+    "bad_expect",
+    "bad_kind",
+    "extra_field",
+    "bad_entry",
+    "bad_x",
+    "drop_field",
+    "wrong_type_fixture",
+)
 
 
 @st.composite
@@ -86,7 +95,9 @@ def test_a_near_miss_plan_either_loads_with_every_required_step_or_names_its_fir
     assert re.match(r"[a-z-]+(:|$)", reason), reason
 
 
-@pytest.mark.parametrize("plan_rows", [None, 0, "steps", 3.5, True, {}, {"steps": []}], ids=lambda v: type(v).__name__ + str(v)[:8])
+@pytest.mark.parametrize(
+    "plan_rows", [None, 0, "steps", 3.5, True, {}, {"steps": []}], ids=lambda v: type(v).__name__ + str(v)[:8]
+)
 def test_a_plan_that_is_not_a_list_is_refused_by_type(plan_rows):
     with pytest.raises(gateplan.PlanInvalid, match="plan-not-a-list:"):
         gateplan.GatePlan.load(plan_rows)
@@ -111,15 +122,45 @@ def test_the_committed_plan_loads_unchanged():
 
 
 MUTATIONS = {
-    "drop_required": (lambda rows: [r for r in rows if r["step"] != "verifier_selftest_crash"], "missing-required-selftest:verifier_selftest_crash"),
-    "duplicate_name": (lambda rows: [*rows[:2], {**rows[2], "step": rows[1]["step"]}, *rows[3:]], "duplicate-step-name:2.verifier_selftest_pass"),
-    "rename_expect": (lambda rows: [{k: v for k, v in r.items() if k != "expect"} | {"expected": r["expect"]} if i == 1 else r for i, r in enumerate(rows)], "step-missing-field:1.expect"),
-    "unknown_field": (lambda rows: [{**r, "scope": "selftest"} if i == 0 else r for i, r in enumerate(rows)], "unknown-step-field:0.'scope'"),
-    "unknown_kind": (lambda rows: [{**r, "kind": "handwave"} if i == 0 else r for i, r in enumerate(rows)], "unknown-step-kind:0.'handwave'"),
-    "expect_outside_vocabulary": (lambda rows: [{**r, "expect": "green"} if i == 1 else r for i, r in enumerate(rows)], "expect-outside-vocabulary:1.'green'"),
-    "step_fixture_name_wrong_type": (lambda rows: [{**r, "fixture": 7} if r.get("kind") == gateplan.KIND_VERIFIER else r for r in rows], "step-field-wrong-type:1.fixture"),
-    "entry_outside_vocabulary": (lambda rows: [{**r, "entry": "ellcard"} if r.get("kind") == gateplan.KIND_VERIFIER else r for r in rows], "unknown-verifier-entry:1.'ellcard'"),
-    "x_not_decimal": (lambda rows: [{**r, "x": "three"} if r.get("entry") == gateplan.ENTRY_VERIFY else r for r in rows], "step-field-wrong-type:1.x"),
+    "drop_required": (
+        lambda rows: [r for r in rows if r["step"] != "verifier_selftest_crash"],
+        "missing-required-selftest:verifier_selftest_crash",
+    ),
+    "duplicate_name": (
+        lambda rows: [*rows[:2], {**rows[2], "step": rows[1]["step"]}, *rows[3:]],
+        "duplicate-step-name:2.verifier_selftest_pass",
+    ),
+    "rename_expect": (
+        lambda rows: [
+            {k: v for k, v in r.items() if k != "expect"} | {"expected": r["expect"]} if i == 1 else r
+            for i, r in enumerate(rows)
+        ],
+        "step-missing-field:1.expect",
+    ),
+    "unknown_field": (
+        lambda rows: [{**r, "scope": "selftest"} if i == 0 else r for i, r in enumerate(rows)],
+        "unknown-step-field:0.'scope'",
+    ),
+    "unknown_kind": (
+        lambda rows: [{**r, "kind": "handwave"} if i == 0 else r for i, r in enumerate(rows)],
+        "unknown-step-kind:0.'handwave'",
+    ),
+    "expect_outside_vocabulary": (
+        lambda rows: [{**r, "expect": "green"} if i == 1 else r for i, r in enumerate(rows)],
+        "expect-outside-vocabulary:1.'green'",
+    ),
+    "step_fixture_name_wrong_type": (
+        lambda rows: [{**r, "fixture": 7} if r.get("kind") == gateplan.KIND_VERIFIER else r for r in rows],
+        "step-field-wrong-type:1.fixture",
+    ),
+    "entry_outside_vocabulary": (
+        lambda rows: [{**r, "entry": "ellcard"} if r.get("kind") == gateplan.KIND_VERIFIER else r for r in rows],
+        "unknown-verifier-entry:1.'ellcard'",
+    ),
+    "x_not_decimal": (
+        lambda rows: [{**r, "x": "three"} if r.get("entry") == gateplan.ENTRY_VERIFY else r for r in rows],
+        "step-field-wrong-type:1.x",
+    ),
 }
 
 
@@ -183,6 +224,10 @@ def test_loader_runs_valid_prefix_mutant_is_killed():
 
 def test_every_planted_mutant_is_exercised_by_a_kill_test():
     killed = set()
-    for path in (Path(__file__), Path(__file__).with_name("test_gateplan_validation.py"), ROOT / "tests" / "integration" / "test_gateplan.py"):
+    for path in (
+        Path(__file__),
+        Path(__file__).with_name("test_gateplan_validation.py"),
+        ROOT / "tests" / "integration" / "test_gateplan.py",
+    ):
         killed |= {name for name in gateplan_mutants.ALL if f"gateplan_mutants.{name}(" in path.read_text()}
     assert killed == set(gateplan_mutants.ALL), f"unexercised mutants: {sorted(set(gateplan_mutants.ALL) - killed)}"

@@ -104,7 +104,15 @@ def test_a_failing_step_exits_gate_refused_and_names_a_debug_next_command(tmp_pa
     assert code == exits.GATE_REFUSED
     document = json.loads(out)
     assert document["ok"] is False
-    assert [step["result"] for step in document["steps"]] == ["pass", "pass", "pass", "fail", "blocked", "blocked", "blocked"]
+    assert [step["result"] for step in document["steps"]] == [
+        "pass",
+        "pass",
+        "pass",
+        "fail",
+        "blocked",
+        "blocked",
+        "blocked",
+    ]
     assert "verifier_selftest_crash" in err and "every later step is blocked" in err
     assert "cairn gate selftest --json --log DEBUG" in err
 
@@ -125,7 +133,9 @@ def test_a_missing_attestation_file_exits_environment_and_names_attest_init(self
     assert "attestation file" in err and "cairn attest init" in err
 
 
-def test_a_bundle_that_does_not_match_its_pin_exits_gate_refused_with_the_repin_sequence(selftest_argv, capsys, tmp_path):
+def test_a_bundle_that_does_not_match_its_pin_exits_gate_refused_with_the_repin_sequence(
+    selftest_argv, capsys, tmp_path
+):
     argv = selftest_argv()
     stale = tmp_path / "stale.pin"
     stale.write_text("0" * 64 + "\n")

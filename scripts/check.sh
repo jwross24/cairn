@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# The one place that says what "green" means. The pre-commit hook and CI both
+# call this, so a gate can never be enforced in one and absent from the other.
+#
+#   scripts/check.sh --fast   format + lint + spelling   (seconds; the hook)
+#   scripts/check.sh          the above plus the suite   (minutes; CI)
+#
+# Every run appends one line per gate to .check.log with pass/fail/skip, so a
+# reader can tail it and see what actually fired. A gate whose tool is missing
+# DENIES; it never passes quietly.
+#
+# Bypass, named and logged: CAIRN_CHECK_SKIP='<reason>' scripts/check.sh
+set -uo pipefail
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+cd "$ROOT" || exit 3
+LOG="$ROOT/.check.log"
+STAMP() { date -u +%Y-%m-%dT%H:%M:%SZ; }
+say() { printf '%s %s\n' "$(STAMP)" "$*" >> "$LOG"; }
+
+if [ -n "${CAIRN_CHECK_SKIP:-}" ]; then
+  say "BYPASS all gates: $CAIRN_CHECK_SKIP"
+  echo "[check] BYPASSED: $CAIRN_CHECK_SKIP (logged to .check.log)" >&2
+  exit 0
+fi
+
+FAST=0
+[ "${1:-}" = "--fast" ] && FAST=1
+
+if ! command -v uv >/dev/null 2>&1; then
+  say "DENY infra: uv not on PATH"
+  echo "[check] uv is not installed; every gate runs through it." >&2
+  echo "        install: https://docs.astral.sh/uv/getting-started/installation/" >&2
+  exit 3
+fi
+
+FAILED=()
+
+gate() {
+  local name="$1"; shift
+  local out
+  if ! out="$("$@" 2>&1)"; then
+    say "FAIL $name"
+    printf '\n[check] FAIL %s\n%s\n' "$name" "$out" >&2
+    FAILED+=("$name")
+    return 1
+  fi
+  say "PASS $name"
+  printf '[check] pass %s\n' "$name"
+}
+
+gate format   uv run ruff format --check src tests scripts
+gate lint     uv run ruff check src tests
+gate spelling uv run codespell
+if [ "$FAST" = "1" ]; then
+  say "SKIP tests (--fast)"
+  printf '[check] skip tests (--fast; CI runs them)\n'
+else
+  gate tests uv run pytest -q
+fi
+
+if [ ${#FAILED[@]} -ne 0 ]; then
+  say "RESULT fail: ${FAILED[*]}"
+  printf '\n[check] FAILED: %s\n' "${FAILED[*]}" >&2
+  printf '        fix formatting: uv run ruff format src tests scripts\n' >&2
+  printf '        fix lint:       uv run ruff check --fix src tests\n' >&2
+  printf '        bypass (logged): CAIRN_CHECK_SKIP=%s scripts/check.sh\n' "'<reason>'" >&2
+  exit 1
+fi
+
+say "RESULT pass (fast=$FAST)"
+printf '[check] all gates pass\n'

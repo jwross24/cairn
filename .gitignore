@@ -25,6 +25,9 @@ deploy/*
 .coverage
 htmlcov/
 
+# scripts/check.sh writes one line per gate here; it is a local trace, not history.
+.check.log
+
 # Project invariants live here and are law for every session; the global ignore
 # excludes CLAUDE.md as local agent config, which this file is not.
 !CLAUDE.md

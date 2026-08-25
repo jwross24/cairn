@@ -102,12 +102,22 @@ def node_hash_for(kind, canonical):
 def certificate_canonical(identity_bundle_hash, transcript_hash, env_manifest_hash):
     return canon.encode(
         SELFTEST_CERT,
-        {"identity_bundle_hash": identity_bundle_hash, "transcript_hash": transcript_hash, "env_manifest_hash": env_manifest_hash},
+        {
+            "identity_bundle_hash": identity_bundle_hash,
+            "transcript_hash": transcript_hash,
+            "env_manifest_hash": env_manifest_hash,
+        },
     )
 
 
 def certificate_hash(identity_bundle_hash, transcript_hash, env_manifest_hash):
-    return keys.selftest_cert_hash({"identity_bundle_hash": identity_bundle_hash, "transcript_hash": transcript_hash, "env_manifest_hash": env_manifest_hash})
+    return keys.selftest_cert_hash(
+        {
+            "identity_bundle_hash": identity_bundle_hash,
+            "transcript_hash": transcript_hash,
+            "env_manifest_hash": env_manifest_hash,
+        }
+    )
 
 
 def output_manifest_canonical(artifacts):
@@ -274,22 +284,35 @@ class Substrate:
         return None if row is None else dict(row)
 
     def get_certificate(self, identity_bundle_hash):
-        row = self.conn.execute("SELECT * FROM skill_certificates WHERE identity_bundle_hash = ?", (identity_bundle_hash,)).fetchone()
+        row = self.conn.execute(
+            "SELECT * FROM skill_certificates WHERE identity_bundle_hash = ?", (identity_bundle_hash,)
+        ).fetchone()
         return None if row is None else dict(row)
 
     def lineage_of(self, child_hash):
-        rows = self.conn.execute("SELECT * FROM lineage WHERE child_hash = ? ORDER BY parent_hash, edge_kind", (child_hash,)).fetchall()
+        rows = self.conn.execute(
+            "SELECT * FROM lineage WHERE child_hash = ? ORDER BY parent_hash, edge_kind", (child_hash,)
+        ).fetchall()
         return [dict(r) for r in rows]
 
     def is_root(self, root_kind, node_hash):
-        return self.conn.execute("SELECT 1 FROM roots WHERE root_kind = ? AND node_hash = ?", (root_kind, node_hash)).fetchone() is not None
+        return (
+            self.conn.execute(
+                "SELECT 1 FROM roots WHERE root_kind = ? AND node_hash = ?", (root_kind, node_hash)
+            ).fetchone()
+            is not None
+        )
 
     def grade_history(self, node_hash):
-        rows = self.conn.execute("SELECT * FROM grade_history WHERE node_hash = ? ORDER BY seq", (node_hash,)).fetchall()
+        rows = self.conn.execute(
+            "SELECT * FROM grade_history WHERE node_hash = ? ORDER BY seq", (node_hash,)
+        ).fetchall()
         return [dict(r) for r in rows]
 
     def effective_grade(self, node_hash):
-        row = self.conn.execute("SELECT to_grade FROM grade_history WHERE node_hash = ? ORDER BY seq DESC LIMIT 1", (node_hash,)).fetchone()
+        row = self.conn.execute(
+            "SELECT to_grade FROM grade_history WHERE node_hash = ? ORDER BY seq DESC LIMIT 1", (node_hash,)
+        ).fetchone()
         if row is not None:
             return row[0]
         row = self.conn.execute("SELECT replay_grade FROM nodes WHERE hash = ?", (node_hash,)).fetchone()
@@ -304,10 +327,17 @@ class Substrate:
         ).fetchone()
         if row is None:
             return False
-        return certificate_hash(identity_bundle_hash, row["transcript_hash"], row["env_manifest_hash"]) == row["cert_hash"]
+        return (
+            certificate_hash(identity_bundle_hash, row["transcript_hash"], row["env_manifest_hash"]) == row["cert_hash"]
+        )
 
     def yanked(self, identity_bundle_hash):
-        return self.conn.execute("SELECT 1 FROM yank_records WHERE skill_identity_hash = ? LIMIT 1", (identity_bundle_hash,)).fetchone() is not None
+        return (
+            self.conn.execute(
+                "SELECT 1 FROM yank_records WHERE skill_identity_hash = ? LIMIT 1", (identity_bundle_hash,)
+            ).fetchone()
+            is not None
+        )
 
     def manifest_blobs_present(self, manifest_hash):
         row = self.conn.execute(
@@ -320,7 +350,13 @@ class Substrate:
         row = self.conn.execute(SERVE_SQL, (recipe_key,)).fetchone()
         if row is not None:
             served = Served(row["attempt_id"], row["output_manifest_hash"])
-            lg.info("serve", recipe_key=recipe_key, served=True, attempt_id=served.attempt_id, output_manifest_hash=served.output_manifest_hash)
+            lg.info(
+                "serve",
+                recipe_key=recipe_key,
+                served=True,
+                attempt_id=served.attempt_id,
+                output_manifest_hash=served.output_manifest_hash,
+            )
             return served
         lg.info("serve", recipe_key=recipe_key, served=False, why_not=self._why_not_served(recipe_key))
         return None
@@ -333,8 +369,15 @@ class Substrate:
         if not attempts:
             return "no_attempts"
         newest = attempts[-1]
-        present = newest["output_manifest_hash"] is not None and self.manifest_blobs_present(newest["output_manifest_hash"])
-        return attempt_eligible(newest["status"], newest["disowned_at"], newest["inadmissible"], recipe["do_not_cache"], present) or "no_eligible_attempt"
+        present = newest["output_manifest_hash"] is not None and self.manifest_blobs_present(
+            newest["output_manifest_hash"]
+        )
+        return (
+            attempt_eligible(
+                newest["status"], newest["disowned_at"], newest["inadmissible"], recipe["do_not_cache"], present
+            )
+            or "no_eligible_attempt"
+        )
 
     def put_blob(self, data):
         data = bytes(data)
@@ -346,7 +389,10 @@ class Substrate:
                     raise HashCollision(f"blob {digest} exists with different bytes")
                 lg.info("write", table="blobs", hash=digest, status="exists")
                 return digest
-            self.conn.execute("INSERT INTO blobs (hash, size, bytes, created_at) VALUES (?, ?, ?, ?)", (digest, len(data), data, _now()))
+            self.conn.execute(
+                "INSERT INTO blobs (hash, size, bytes, created_at) VALUES (?, ?, ?, ?)",
+                (digest, len(data), data, _now()),
+            )
         lg.info("write", table="blobs", hash=digest, status="inserted", size=len(data))
         return digest
 
@@ -380,9 +426,17 @@ class Substrate:
 
     def _add_lineage(self, child_hash, parent_hash, edge_kind):
         cur = self.conn.execute(
-            "INSERT OR IGNORE INTO lineage (child_hash, parent_hash, edge_kind) VALUES (?, ?, ?)", (child_hash, parent_hash, edge_kind)
+            "INSERT OR IGNORE INTO lineage (child_hash, parent_hash, edge_kind) VALUES (?, ?, ?)",
+            (child_hash, parent_hash, edge_kind),
         )
-        lg.info("write", table="lineage", hash=child_hash, parent=parent_hash, edge_kind=edge_kind, status="inserted" if cur.rowcount else "exists")
+        lg.info(
+            "write",
+            table="lineage",
+            hash=child_hash,
+            parent=parent_hash,
+            edge_kind=edge_kind,
+            status="inserted" if cur.rowcount else "exists",
+        )
 
     def add_root(self, root_kind, node_hash):
         if root_kind not in ROOT_KINDS:
@@ -391,8 +445,12 @@ class Substrate:
             self._add_root(root_kind, node_hash)
 
     def _add_root(self, root_kind, node_hash):
-        cur = self.conn.execute("INSERT OR IGNORE INTO roots (root_kind, node_hash) VALUES (?, ?)", (root_kind, node_hash))
-        lg.info("write", table="roots", hash=node_hash, root_kind=root_kind, status="inserted" if cur.rowcount else "exists")
+        cur = self.conn.execute(
+            "INSERT OR IGNORE INTO roots (root_kind, node_hash) VALUES (?, ?)", (root_kind, node_hash)
+        )
+        lg.info(
+            "write", table="roots", hash=node_hash, root_kind=root_kind, status="inserted" if cur.rowcount else "exists"
+        )
 
     def put_recipe(self, recipe, *, do_not_cache=False):
         canonical = canon.encode(keys.RECIPE, recipe)
@@ -428,7 +486,9 @@ class Substrate:
         canonical = canon.encode(keys.IDENTITY_BUNDLE, bundle)
         return self.put_node("identity_bundle", canonical)
 
-    def put_output_manifest(self, artifacts, *, recipe_key=None, input_blobs=(), producer_identity=None, replay_grade="Replayable"):
+    def put_output_manifest(
+        self, artifacts, *, recipe_key=None, input_blobs=(), producer_identity=None, replay_grade="Replayable"
+    ):
         canonical = output_manifest_canonical(artifacts)
         digest = keys.node_hash("output_manifest", canonical)
         with self._tx():
@@ -458,14 +518,23 @@ class Substrate:
                 lg.info("write", table="receipts", hash=digest, status="exists")
         return digest
 
-    def start_attempt(self, recipe_key, *, replay_grade="Replayable", skip_cache_lookup=False, attempt_id=None, started_at=None):
+    def start_attempt(
+        self, recipe_key, *, replay_grade="Replayable", skip_cache_lookup=False, attempt_id=None, started_at=None
+    ):
         attempt_id = attempt_id or uuid.uuid4().hex
         with self._tx():
             self.conn.execute(
                 "INSERT INTO attempts (attempt_id, recipe_key, status, replay_grade, skip_cache_lookup, started_at) VALUES (?, ?, 'RUNNING', ?, ?, ?)",
                 (attempt_id, recipe_key, replay_grade, int(bool(skip_cache_lookup)), started_at or _now()),
             )
-        lg.info("write", table="attempts", hash=attempt_id, recipe_key=recipe_key, status="RUNNING", skip_cache_lookup=int(bool(skip_cache_lookup)))
+        lg.info(
+            "write",
+            table="attempts",
+            hash=attempt_id,
+            recipe_key=recipe_key,
+            status="RUNNING",
+            skip_cache_lookup=int(bool(skip_cache_lookup)),
+        )
         return attempt_id
 
     def close_attempt(
@@ -484,15 +553,32 @@ class Substrate:
         with self._tx():
             cur = self.conn.execute(
                 "UPDATE attempts SET status = ?, ended_at = ?, output_manifest_hash = ?, receipt_hash = ?, verifier_result_hash = ?, certificate_hash = ? WHERE attempt_id = ?",
-                (status, ended_at or _now(), output_manifest_hash, receipt_hash, verifier_result_hash, certificate_hash, attempt_id),
+                (
+                    status,
+                    ended_at or _now(),
+                    output_manifest_hash,
+                    receipt_hash,
+                    verifier_result_hash,
+                    certificate_hash,
+                    attempt_id,
+                ),
             )
             if cur.rowcount == 0:
                 raise UnknownAttempt(f"no attempt {attempt_id}")
-        lg.info("write", table="attempts", hash=attempt_id, status=status, output_manifest_hash=output_manifest_hash, receipt_hash=receipt_hash)
+        lg.info(
+            "write",
+            table="attempts",
+            hash=attempt_id,
+            status=status,
+            output_manifest_hash=output_manifest_hash,
+            receipt_hash=receipt_hash,
+        )
 
     def disown(self, attempt_id, at=None):
         with self._tx():
-            cur = self.conn.execute("UPDATE attempts SET disowned_at = ? WHERE attempt_id = ?", (at or _now(), attempt_id))
+            cur = self.conn.execute(
+                "UPDATE attempts SET disowned_at = ? WHERE attempt_id = ?", (at or _now(), attempt_id)
+            )
             if cur.rowcount == 0:
                 raise UnknownAttempt(f"no attempt {attempt_id}")
         lg.info("write", table="attempts", hash=attempt_id, status="disowned")
@@ -512,7 +598,9 @@ class Substrate:
             ).fetchall()
             manifests = sorted({r["output_manifest_hash"] for r in rows if r["output_manifest_hash"] is not None})
             if len(manifests) < 2:
-                raise SubstrateError(f"recipe {recipe_key} has {len(manifests)} distinct OK Replayable manifest(s); divergence needs two")
+                raise SubstrateError(
+                    f"recipe {recipe_key} has {len(manifests)} distinct OK Replayable manifest(s); divergence needs two"
+                )
             for manifest in manifests:
                 self._add_root("divergence", manifest)
             marked = []
@@ -520,7 +608,9 @@ class Substrate:
                 if not row["inadmissible"]:
                     self.conn.execute("UPDATE attempts SET inadmissible = 1 WHERE attempt_id = ?", (row["attempt_id"],))
                     marked.append(row["attempt_id"])
-        lg.info("write", table="attempts", hash=recipe_key, status="non_reproducible", attempts=marked, manifests=manifests)
+        lg.info(
+            "write", table="attempts", hash=recipe_key, status="non_reproducible", attempts=marked, manifests=manifests
+        )
         return marked
 
     def weaken_grade(self, node_hash, to, *, reason=None):
@@ -553,28 +643,71 @@ class Substrate:
                 (identity_bundle_hash, cert_hash, transcript_hash, env_manifest_hash, selftest_summary, at or _now()),
             )
             self._add_root("certificate", cert_hash)
-        lg.info("write", table="skill_certificates", hash=cert_hash, identity_bundle_hash=identity_bundle_hash, status="inserted")
+        lg.info(
+            "write",
+            table="skill_certificates",
+            hash=cert_hash,
+            identity_bundle_hash=identity_bundle_hash,
+            status="inserted",
+        )
         return cert_hash
 
-    def add_yank_record(self, yank_id, skill_identity_hash, reach_predicate, *, record_digest, file_offset, ruling_ref=None, created_at=None):
+    def add_yank_record(
+        self,
+        yank_id,
+        skill_identity_hash,
+        reach_predicate,
+        *,
+        record_digest,
+        file_offset,
+        ruling_ref=None,
+        created_at=None,
+    ):
         with self._tx():
             self.conn.execute(
                 "INSERT INTO yank_records (yank_id, skill_identity_hash, reach_predicate, ruling_ref, record_digest, file_offset, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (yank_id, skill_identity_hash, reach_predicate, ruling_ref, record_digest, file_offset, created_at or _now()),
+                (
+                    yank_id,
+                    skill_identity_hash,
+                    reach_predicate,
+                    ruling_ref,
+                    record_digest,
+                    file_offset,
+                    created_at or _now(),
+                ),
             )
         lg.info("write", table="yank_records", hash=yank_id, skill_identity_hash=skill_identity_hash, status="inserted")
 
     def add_salt(self, class_key, salt, *, record_digest, file_offset):
         with self._tx():
             self.conn.execute(
-                "INSERT INTO salts (class_key, salt, record_digest, file_offset) VALUES (?, ?, ?, ?)", (class_key, salt, record_digest, file_offset)
+                "INSERT INTO salts (class_key, salt, record_digest, file_offset) VALUES (?, ?, ?, ?)",
+                (class_key, salt, record_digest, file_offset),
             )
         lg.info("write", table="salts", hash=class_key, status="inserted")
 
-    def add_escrow(self, attempt_id, *, declared_production_cost, declared_verification_cost, reserved, ceiling_multiplier, spent_at=None, released_at=None):
+    def add_escrow(
+        self,
+        attempt_id,
+        *,
+        declared_production_cost,
+        declared_verification_cost,
+        reserved,
+        ceiling_multiplier,
+        spent_at=None,
+        released_at=None,
+    ):
         with self._tx():
             self.conn.execute(
                 "INSERT INTO escrow (attempt_id, declared_production_cost, declared_verification_cost, reserved, spent_at, released_at, ceiling_multiplier) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (attempt_id, declared_production_cost, declared_verification_cost, reserved, spent_at, released_at, ceiling_multiplier),
+                (
+                    attempt_id,
+                    declared_production_cost,
+                    declared_verification_cost,
+                    reserved,
+                    spent_at,
+                    released_at,
+                    ceiling_multiplier,
+                ),
             )
         lg.info("write", table="escrow", hash=attempt_id, status="inserted")

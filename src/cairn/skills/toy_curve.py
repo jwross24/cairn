@@ -40,8 +40,12 @@ COST_PROFILE = CostProfile(
 
 INPUTS = Struct("toy_curve_inputs", [Field("bits", INT), Field("seed", INT)])
 TRANSCRIPT_BODY = Struct("order_transcript_body", [Field("call", STR), Field("curve", List(INT)), Field("result", INT)])
-TRANSCRIPT = Struct("order_transcript", [Field("call", STR), Field("curve", List(INT)), Field("result", INT), Field("digest", STR)])
-CROSS_CHECK = Struct("cross_check", [Field("axis", STR), Field("independent_range", Map(STR, List(INT))), Field("result", STR)])
+TRANSCRIPT = Struct(
+    "order_transcript", [Field("call", STR), Field("curve", List(INT)), Field("result", INT), Field("digest", STR)]
+)
+CROSS_CHECK = Struct(
+    "cross_check", [Field("axis", STR), Field("independent_range", Map(STR, List(INT))), Field("result", STR)]
+)
 OUTPUT = Struct(
     "toy_curve_output",
     [
@@ -95,7 +99,11 @@ class ToyCurveOutput:
             "n": self.n,
             "P": list(self.P),
             "tries": self.tries,
-            "cross_check": {"axis": self.cross_check["axis"], "independent_range": {k: list(v) for k, v in self.cross_check["independent_range"].items()}, "result": self.cross_check["result"]},
+            "cross_check": {
+                "axis": self.cross_check["axis"],
+                "independent_range": {k: list(v) for k, v in self.cross_check["independent_range"].items()},
+                "result": self.cross_check["result"],
+            },
             "status": self.status,
             "transcripts": None if self.transcripts is None else [dict(t) for t in self.transcripts],
         }
@@ -106,7 +114,9 @@ class ToyCurveOutput:
             doc[name] = str(doc[name])
         doc["P"] = [str(c) for c in doc["P"]]
         if doc["transcripts"] is not None:
-            doc["transcripts"] = [{**t, "curve": [str(c) for c in t["curve"]], "result": str(t["result"])} for t in doc["transcripts"]]
+            doc["transcripts"] = [
+                {**t, "curve": [str(c) for c in t["curve"]], "result": str(t["result"])} for t in doc["transcripts"]
+            ]
         return doc
 
     def to_json(self):
@@ -115,8 +125,22 @@ class ToyCurveOutput:
     @classmethod
     def from_dict(cls, doc):
         canon.encode(OUTPUT, doc)
-        transcripts = None if doc["transcripts"] is None else tuple({**t, "curve": list(t["curve"])} for t in doc["transcripts"])
-        return cls(doc["bits"], doc["seed"], doc["p"], doc["a"], doc["b"], doc["n"], tuple(doc["P"]), doc["tries"], doc["cross_check"], doc["status"], transcripts)
+        transcripts = (
+            None if doc["transcripts"] is None else tuple({**t, "curve": list(t["curve"])} for t in doc["transcripts"])
+        )
+        return cls(
+            doc["bits"],
+            doc["seed"],
+            doc["p"],
+            doc["a"],
+            doc["b"],
+            doc["n"],
+            tuple(doc["P"]),
+            doc["tries"],
+            doc["cross_check"],
+            doc["status"],
+            transcripts,
+        )
 
     @classmethod
     def from_json(cls, text):
@@ -131,7 +155,9 @@ class ToyCurveOutput:
                 doc[name] = int(doc[name])
             doc["P"] = [int(c) for c in doc["P"]]
             if doc.get("transcripts") is not None:
-                doc["transcripts"] = [{**t, "curve": [int(c) for c in t["curve"]], "result": int(t["result"])} for t in doc["transcripts"]]
+                doc["transcripts"] = [
+                    {**t, "curve": [int(c) for c in t["curve"]], "result": int(t["result"])} for t in doc["transcripts"]
+                ]
             return cls.from_dict(doc)
         except (KeyError, TypeError, ValueError, CanonError) as exc:
             raise InputError(f"output does not match {OUTPUT.name}: {exc}") from None
@@ -224,7 +250,11 @@ def _transcript(call, curve, result):
 
 
 def _cross_check(result):
-    return {"axis": CROSS_CHECK_AXIS, "independent_range": {k: list(v) for k, v in INDEPENDENT_RANGE.items()}, "result": result}
+    return {
+        "axis": CROSS_CHECK_AXIS,
+        "independent_range": {k: list(v) for k, v in INDEPENDENT_RANGE.items()},
+        "result": result,
+    }
 
 
 def check_postcondition(out):
@@ -256,16 +286,41 @@ def run(bits, seed):
     elif bits <= SEA_SEARCH_ABOVE_BITS:
         sea = _transcript("ellsea", curve, int(pari.ellsea(E)))
         card = _transcript("ellcard", curve, n)
-        out = _disagree(out, card, sea) if sea["result"] != n else ToyCurveOutput(bits, seed, p, a, b, n, P, tries, _cross_check("agree"), STATUS_OK)
+        out = (
+            _disagree(out, card, sea)
+            if sea["result"] != n
+            else ToyCurveOutput(bits, seed, p, a, b, n, P, tries, _cross_check("agree"), STATUS_OK)
+        )
     wall_ms = round((time.monotonic() - start) * 1000, 3)
-    lg.info("run", bits=bits, seed=seed, tries=tries, n_bits=n.bit_length(), cross_check=out.cross_check["result"], status=out.status, wall_ms=wall_ms)
+    lg.info(
+        "run",
+        bits=bits,
+        seed=seed,
+        tries=tries,
+        n_bits=n.bit_length(),
+        cross_check=out.cross_check["result"],
+        status=out.status,
+        wall_ms=wall_ms,
+    )
     if out.status == STATUS_DISAGREE:
         lg.info("disagree", bits=bits, seed=seed, transcript_digests=[t["digest"] for t in out.transcripts])
     return out
 
 
 def _disagree(out, first, second):
-    return ToyCurveOutput(out.bits, out.seed, out.p, out.a, out.b, out.n, out.P, out.tries, _cross_check("disagree"), STATUS_DISAGREE, (first, second))
+    return ToyCurveOutput(
+        out.bits,
+        out.seed,
+        out.p,
+        out.a,
+        out.b,
+        out.n,
+        out.P,
+        out.tries,
+        _cross_check("disagree"),
+        STATUS_DISAGREE,
+        (first, second),
+    )
 
 
 def implementation_revision(root=REPO_ROOT):
@@ -282,7 +337,11 @@ def identity_bundle(root=REPO_ROOT):
     return {
         "interface_version": INTERFACE_VERSION,
         "implementation_revision": implementation_revision(root),
-        "tool_digests": {"gp_binary_sha256": env.gp_binary_sha256(), "cypari2": versions["cypari2"], "libpari": versions["libpari"]},
+        "tool_digests": {
+            "gp_binary_sha256": env.gp_binary_sha256(),
+            "cypari2": versions["cypari2"],
+            "libpari": versions["libpari"],
+        },
         "container_digest": keys.env_manifest_digest(env.manifest()),
         "numeric_profile": None,
     }

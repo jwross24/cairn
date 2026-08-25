@@ -30,12 +30,23 @@ MODULE_ARGV = (sys.executable, "-m", "cairn.skills.toy_curve")
 
 def gp_script(bits, seed):
     if bits <= toy_curve.SEA_SEARCH_ABOVE_BITS:
-        return GP_SEARCH.format(seed=seed, lo=bits - 1, bits=bits, count="n = ellcard(E)", accept="isprime(n)", confirm="")
-    return GP_SEARCH.format(seed=seed, lo=bits - 1, bits=bits, count="n = ellsea(E, 1)", accept="n && isprime(n)", confirm='if(ellcard(E) != n, error("confirm"));')
+        return GP_SEARCH.format(
+            seed=seed, lo=bits - 1, bits=bits, count="n = ellcard(E)", accept="isprime(n)", confirm=""
+        )
+    return GP_SEARCH.format(
+        seed=seed,
+        lo=bits - 1,
+        bits=bits,
+        count="n = ellsea(E, 1)",
+        accept="n && isprime(n)",
+        confirm='if(ellcard(E) != n, error("confirm"));',
+    )
 
 
 def mutated(out, **fields):
-    return toy_curve.ToyCurveOutput(**{**out.to_dict(), "P": tuple(out.P), "cross_check": out.cross_check, "transcripts": None, **fields})
+    return toy_curve.ToyCurveOutput(
+        **{**out.to_dict(), "P": tuple(out.P), "cross_check": out.cross_check, "transcripts": None, **fields}
+    )
 
 
 @pytest.fixture(scope="module")
@@ -83,7 +94,10 @@ def test_rows_reproduce_the_grounding_brief_tries(outputs, bits, seed):
 
 
 def test_rows_golden_toy_curve_rows_json(outputs, assert_golden):
-    rows = [{"bits": bits, "seed": seed, "p": str(o.p), "a": str(o.a), "b": str(o.b), "n": str(o.n), "tries": o.tries} for (bits, seed), o in sorted(outputs.items())]
+    rows = [
+        {"bits": bits, "seed": seed, "p": str(o.p), "a": str(o.a), "b": str(o.b), "n": str(o.n), "tries": o.tries}
+        for (bits, seed), o in sorted(outputs.items())
+    ]
     assert_golden("toy_curve_rows.json", json.dumps({"rows": rows}, indent=2) + "\n")
 
 
@@ -133,7 +147,12 @@ def test_postcondition_arm_holds_on_every_output(outputs, bits, seed):
 
 @pytest.mark.parametrize(
     ("field", "clause"),
-    [("composite_n", "isprime"), ("far_prime_n", "hasse"), ("off_curve_point", "ellisoncurve"), ("other_prime_n", "ellmul")],
+    [
+        ("composite_n", "isprime"),
+        ("far_prime_n", "hasse"),
+        ("off_curve_point", "ellisoncurve"),
+        ("other_prime_n", "ellmul"),
+    ],
     ids=["composite-n", "n-outside-hasse", "P-off-curve", "n-not-the-order"],
 )
 def test_each_postcondition_clause_has_a_negative(sample, field, clause):

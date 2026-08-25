@@ -7,7 +7,17 @@ from cairn.profile import CostProfile, Evaluation, Production, ProfileUndeclared
 from cairn.skills import toy_curve
 
 BRIEF = Path(__file__).resolve().parent.parent.parent / "research" / "grounding" / "m0-stack-facts.md"
-COLUMNS = ("bits", "seeds", "mean_tries", "sd_tries", "min_tries", "max_tries", "per_try_ms", "in_process_mean_wall_s", "mean_wall_s")
+COLUMNS = (
+    "bits",
+    "seeds",
+    "mean_tries",
+    "sd_tries",
+    "min_tries",
+    "max_tries",
+    "per_try_ms",
+    "in_process_mean_wall_s",
+    "mean_wall_s",
+)
 
 
 def committed_table():
@@ -21,7 +31,9 @@ def committed_table():
         cells = [c.strip() for c in line.strip().strip("|").split("|")] if line.startswith("|") else []
         if len(cells) == len(COLUMNS) and cells[0].isdigit():
             row = dict(zip(COLUMNS, cells, strict=True))
-            rows[int(row["bits"])] = {k: (int(v) if k in ("bits", "seeds", "min_tries", "max_tries") else float(v)) for k, v in row.items()}
+            rows[int(row["bits"])] = {
+                k: (int(v) if k in ("bits", "seeds", "min_tries", "max_tries") else float(v)) for k, v in row.items()
+            }
     return rows
 
 
@@ -69,7 +81,12 @@ def test_evaluate_accepts_an_inputs_mapping_by_its_bits_field():
 
 
 def test_synthetic_profile_evaluates_its_own_table():
-    profile = CostProfile(0, Production("c_ln_p_tries", {8: SizeCost(1.0, 1.0, 0.001, 0.25)}), Verification("Replayable", "same_as_production"), "synthetic")
+    profile = CostProfile(
+        0,
+        Production("c_ln_p_tries", {8: SizeCost(1.0, 1.0, 0.001, 0.25)}),
+        Verification("Replayable", "same_as_production"),
+        "synthetic",
+    )
     assert profile.evaluate(8) == Evaluation(0.25, 0.25, 0.25)
     with pytest.raises(ProfileUndeclared) as info:
         profile.evaluate(9)
@@ -77,6 +94,11 @@ def test_synthetic_profile_evaluates_its_own_table():
 
 
 def test_unknown_verification_cost_model_is_refused():
-    profile = CostProfile(0, Production("c_ln_p_tries", {8: SizeCost(1.0, 1.0, 0.001, 0.25)}), Verification("Replayable", "amortized"), "synthetic")
+    profile = CostProfile(
+        0,
+        Production("c_ln_p_tries", {8: SizeCost(1.0, 1.0, 0.001, 0.25)}),
+        Verification("Replayable", "amortized"),
+        "synthetic",
+    )
     with pytest.raises(ValueError, match="unknown verification cost model 'amortized'"):
         profile.evaluate(8)

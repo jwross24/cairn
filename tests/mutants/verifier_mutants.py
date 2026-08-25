@@ -73,7 +73,9 @@ def accept_rc0_only():
 
 @contextmanager
 def accept_if_OK_substring():
-    with _swap(verifier.AcceptPredicate, "holds", lambda self, rc, stdout, stderr: isinstance(stdout, str) and "OK" in stdout):
+    with _swap(
+        verifier.AcceptPredicate, "holds", lambda self, rc, stdout, stderr: isinstance(stdout, str) and "OK" in stdout
+    ):
         yield
 
 

@@ -10,7 +10,14 @@ lg = log.get("claims")
 TAGS = ("SPECULATION", "CONJECTURE", "STRONG-EMPIRICAL", "PROVEN")
 STATEMENT_STATUSES = ("open", "refuted", "promoted", "withdrawn")
 TERMINAL_STATEMENT_STATUSES = STATEMENT_STATUSES[1:]
-EVIDENCE_KINDS = ("lean_artifact", "ladder_table", "repro_node", "counterexample_hunt_record", "statistical", "model_proof")
+EVIDENCE_KINDS = (
+    "lean_artifact",
+    "ladder_table",
+    "repro_node",
+    "counterexample_hunt_record",
+    "statistical",
+    "model_proof",
+)
 EVIDENCE_VERDICTS = ("KEEP", "KEEP_IN_SAMPLE", "REJECT", "INCONCLUSIVE", "SURVIVED", "KILLED", "INCOMPLETE")
 REPRO_KINDS = ("second_attempt_agree", "witness_check")
 REVIEW_VERDICTS = ("approve", "reject", "needs_revision")
@@ -26,7 +33,9 @@ SCOPE = Struct(
         Field("assumption_set", Set(STR)),
     ],
 )
-COST_MODEL = Struct("cost_model", [Field("exponent", NON_EMPTY_STR), Field("constant", NON_EMPTY_STR), Field("crossover", INT)])
+COST_MODEL = Struct(
+    "cost_model", [Field("exponent", NON_EMPTY_STR), Field("constant", NON_EMPTY_STR), Field("crossover", INT)]
+)
 QUANTITIES = Struct("quantities", [Field("units", Map(STR, STR)), Field("cost_model", Optional(COST_MODEL))])
 CLAIM_STATEMENT = Struct(
     "claim_statement",
@@ -58,7 +67,12 @@ EVIDENCE_NODE = Struct(
 )
 REPRO_RECORD = Struct(
     "repro_record",
-    [Field("attempt_id", NON_EMPTY_STR), Field("kind", NON_EMPTY_STR), Field("passed", BOOL), Field("at", NON_EMPTY_STR)],
+    [
+        Field("attempt_id", NON_EMPTY_STR),
+        Field("kind", NON_EMPTY_STR),
+        Field("passed", BOOL),
+        Field("at", NON_EMPTY_STR),
+    ],
 )
 REVIEW_VERDICT = Struct(
     "review_verdict",
@@ -170,7 +184,9 @@ def evidence_node_canonical(node):
 
 
 def repro_record_canonical(rec):
-    return canon.encode(REPRO_RECORD, {"attempt_id": rec.attempt_id, "kind": rec.kind, "passed": rec.passed, "at": rec.at})
+    return canon.encode(
+        REPRO_RECORD, {"attempt_id": rec.attempt_id, "kind": rec.kind, "passed": rec.passed, "at": rec.at}
+    )
 
 
 def review_verdict_canonical(verdict):
@@ -445,7 +461,8 @@ def write_review_verdict(sub, verdict):
     with sub._tx():
         sub._put_node("review_verdict", canonical, verdict.hash, "Replayable", verdict.reviewer)
         existing = sub.conn.execute(
-            "SELECT row_id FROM review_verdicts WHERE record_digest = ? AND file_offset = ?", (verdict.record_digest, verdict.file_offset)
+            "SELECT row_id FROM review_verdicts WHERE record_digest = ? AND file_offset = ?",
+            (verdict.record_digest, verdict.file_offset),
         ).fetchone()
         if existing is not None:
             lg.info("write", table="review_verdicts", hash=verdict.hash, status="exists", row_id=existing["row_id"])
@@ -524,7 +541,9 @@ def append_tag_history(sub, statement_hash, from_tag, to_tag, evidence_hash, jus
             (statement_hash, from_tag, to_tag, evidence_hash, justification, actor, at or _now()),
         )
         seq = cur.lastrowid
-    lg.info("write", table="tag_history", hash=statement_hash, status="inserted", seq=seq, from_tag=from_tag, to_tag=to_tag)
+    lg.info(
+        "write", table="tag_history", hash=statement_hash, status="inserted", seq=seq, from_tag=from_tag, to_tag=to_tag
+    )
     return seq
 
 
@@ -579,27 +598,37 @@ def get_ticket(sub, ticket_hash):
 
 
 def evidence_for(sub, statement_hash):
-    rows = sub.conn.execute("SELECT * FROM evidence_nodes WHERE target_statement_hash = ? ORDER BY rowid", (statement_hash,)).fetchall()
+    rows = sub.conn.execute(
+        "SELECT * FROM evidence_nodes WHERE target_statement_hash = ? ORDER BY rowid", (statement_hash,)
+    ).fetchall()
     return [dict(r) for r in rows]
 
 
 def review_verdicts_for(sub, statement_hash):
-    rows = sub.conn.execute("SELECT * FROM review_verdicts WHERE statement_hash = ? ORDER BY row_id", (statement_hash,)).fetchall()
+    rows = sub.conn.execute(
+        "SELECT * FROM review_verdicts WHERE statement_hash = ? ORDER BY row_id", (statement_hash,)
+    ).fetchall()
     return [dict(r) for r in rows]
 
 
 def tag_history_for(sub, statement_hash):
-    rows = sub.conn.execute("SELECT * FROM tag_history WHERE statement_hash = ? ORDER BY seq", (statement_hash,)).fetchall()
+    rows = sub.conn.execute(
+        "SELECT * FROM tag_history WHERE statement_hash = ? ORDER BY seq", (statement_hash,)
+    ).fetchall()
     return [dict(r) for r in rows]
 
 
 def tier_refusals_for(sub, hypothesis_key):
-    rows = sub.conn.execute("SELECT * FROM tier_refusals WHERE hypothesis_key = ? ORDER BY id", (hypothesis_key,)).fetchall()
+    rows = sub.conn.execute(
+        "SELECT * FROM tier_refusals WHERE hypothesis_key = ? ORDER BY id", (hypothesis_key,)
+    ).fetchall()
     return [dict(r) for r in rows]
 
 
 def has_cost_model(sub, statement_hash):
-    row = sub.conn.execute("SELECT json_extract(quantities, '$.cost_model') FROM claim_statements WHERE hash = ?", (statement_hash,)).fetchone()
+    row = sub.conn.execute(
+        "SELECT json_extract(quantities, '$.cost_model') FROM claim_statements WHERE hash = ?", (statement_hash,)
+    ).fetchone()
     if row is None:
         raise UnknownStatement(f"no claim statement {statement_hash}")
     return row[0] is not None

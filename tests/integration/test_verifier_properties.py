@@ -60,7 +60,10 @@ def check_mr_perm(base_fields, permuted, spy):
     assert _ec.breaks_pre_spawn_rules(permuted)
     before = len(spy)
     result = Verifier().run_fields(permuted)
-    assert (result.accepted, result.reason, result.gate_result) == (False, "bad-field", "refused"), (result.reason, permuted)
+    assert (result.accepted, result.reason, result.gate_result) == (False, "bad-field", "refused"), (
+        result.reason,
+        permuted,
+    )
     assert len(spy) == before
 
 

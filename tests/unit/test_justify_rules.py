@@ -30,10 +30,7 @@ def test_the_class_order_is_total_and_ascending():
         "PROVEN",
     )
     assert (SPECULATION, CONJECTURE, STRONG_EMPIRICAL, PROVEN) == justify.CLASSES
-    assert [
-        justify.rank(c)
-        for c in ("SPECULATION", "CONJECTURE", "STRONG-EMPIRICAL", "PROVEN")
-    ] == [0, 1, 2, 3]
+    assert [justify.rank(c) for c in ("SPECULATION", "CONJECTURE", "STRONG-EMPIRICAL", "PROVEN")] == [0, 1, 2, 3]
     assert justify.weakest(PROVEN, CONJECTURE) == CONJECTURE
     assert justify.weakest(CONJECTURE, PROVEN) == CONJECTURE
     assert justify.weakest(PROVEN, PROVEN) == PROVEN
@@ -224,14 +221,10 @@ def test_lean_artifact_with_an_approve_verdict_is_the_only_route_to_proven():
         "assumptions": [],
     }
     statement = {"hash": "s" * 64, "scope": _scope()}
-    assert isinstance(
-        justify.justify(evidence, statement, justify.Context()), justify.Pending
-    )
+    assert isinstance(justify.justify(evidence, statement, justify.Context()), justify.Pending)
     approved = justify.justify(evidence, statement, justify.Context(approved=True))
     assert isinstance(approved, justify.Justification) and approved.cls == PROVEN
-    assert {kind for kind, cls in justify.KIND_MAX_CLASS.items() if cls == PROVEN} == {
-        "lean_artifact"
-    }
+    assert {kind for kind, cls in justify.KIND_MAX_CLASS.items() if cls == PROVEN} == {"lean_artifact"}
 
 
 def test_a_class_above_the_kind_maximum_is_a_lattice_violation():
@@ -319,9 +312,7 @@ def test_a_capped_producer_pulls_a_strong_empirical_node_to_conjecture():
     )
     covered = justify.Context(
         repro_passed=True,
-        producer_summary=factories.selftest_summary(
-            AUTHOR_ORIGINS, False, COVERING_CROSS_CHECK
-        ),
+        producer_summary=factories.selftest_summary(AUTHOR_ORIGINS, False, COVERING_CROSS_CHECK),
         attempt_inputs=INPUTS,
     )
     assert justify.justify(evidence, statement, capped).cls == CONJECTURE
@@ -342,10 +333,7 @@ def test_a_refuted_statement_admits_no_positive_class():
         {"hash": "s" * 64, "scope": _scope()},
         justify.Context(repro_passed=True, statement_status="refuted"),
     )
-    assert (
-        isinstance(result, justify.LatticeViolation)
-        and result.reason == "refuted-statement"
-    )
+    assert isinstance(result, justify.LatticeViolation) and result.reason == "refuted-statement"
 
 
 def test_a_disowned_attempt_is_absent_while_an_audit_only_grade_is_not():
@@ -358,18 +346,14 @@ def test_a_disowned_attempt_is_absent_while_an_audit_only_grade_is_not():
         "in_sample_sizes": [30, 50],
     }
     statement = {"hash": "s" * 64, "scope": _scope()}
-    disowned = justify.justify(
-        evidence, statement, justify.Context(repro_passed=True, disowned=True)
-    )
+    disowned = justify.justify(evidence, statement, justify.Context(repro_passed=True, disowned=True))
     audit_only = justify.justify(
         evidence,
         statement,
         justify.Context(repro_passed=True, grade=justify.AUDIT_ONLY),
     )
     assert isinstance(disowned, justify.Absent) and disowned.reason == "disowned"
-    assert (
-        isinstance(audit_only, justify.Justification) and audit_only.cls == CONJECTURE
-    )
+    assert isinstance(audit_only, justify.Justification) and audit_only.cls == CONJECTURE
 
 
 def test_the_node_s_own_assumptions_join_the_population_s_for_coverage():
@@ -380,12 +364,8 @@ def test_the_node_s_own_assumptions_join_the_population_s_for_coverage():
         "population": _scope(assumptions=(A1,)),
         "assumptions": [A2],
     }
-    result = justify.justify(
-        evidence, {"hash": "s" * 64, "scope": _scope()}, justify.Context()
-    )
-    assert (
-        isinstance(result, justify.CoverageViolation) and result.field == "assumptions"
-    )
+    result = justify.justify(evidence, {"hash": "s" * 64, "scope": _scope()}, justify.Context())
+    assert isinstance(result, justify.CoverageViolation) and result.field == "assumptions"
 
 
 def test_keep_in_sample_needs_the_scope_inside_the_in_sample_sizes():
@@ -433,15 +413,11 @@ def test_a_population_that_is_not_a_plain_record(population, expected):
         "population": population,
         "assumptions": [],
     }
-    result = justify.justify(
-        evidence, {"hash": "s" * 64, "scope": _scope()}, justify.Context()
-    )
+    result = justify.justify(evidence, {"hash": "s" * 64, "scope": _scope()}, justify.Context())
     if expected is None:
         assert isinstance(result, justify.Justification)
     else:
-        assert (
-            isinstance(result, justify.CoverageViolation) and result.field == expected
-        )
+        assert isinstance(result, justify.CoverageViolation) and result.field == expected
 
 
 def test_a_scope_naming_no_parameter_ranges_constrains_only_its_size():
@@ -457,15 +433,11 @@ def test_a_scope_naming_no_parameter_ranges_constrains_only_its_size():
         "population": _scope(param_ranges={}),
         "assumptions": [],
     }
-    result = justify.justify(
-        evidence, {"hash": "s" * 64, "scope": scope}, justify.Context()
-    )
+    result = justify.justify(evidence, {"hash": "s" * 64, "scope": scope}, justify.Context())
     assert isinstance(result, justify.Justification)
 
 
-@pytest.mark.parametrize(
-    "origins", ["author_supplied", 7, None], ids=["a_bare_string", "a_number", "absent"]
-)
+@pytest.mark.parametrize("origins", ["author_supplied", 7, None], ids=["a_bare_string", "a_number", "absent"])
 def test_a_selftest_summary_whose_origins_are_not_a_collection_caps(origins):
     summary = factories.selftest_summary(origins, False, None)
     assert justify.producer_capped(summary, INPUTS) is True

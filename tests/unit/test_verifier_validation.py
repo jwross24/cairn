@@ -32,8 +32,16 @@ TRUTH_RC = (0, 1, -9)
 TRUTH_STDOUT = ("OK", "OK\n", 'FAIL ["xP-ne-Q"]', "", STARTUP_STDOUT)
 TRUTH_STDERR = ("", OVERFLOW_STDERR)
 TRUTH_TABLE = list(itertools.product(TRUTH_RC, TRUTH_STDOUT, TRUTH_STDERR))
-STDOUT_LABELS = {"OK": "OK", "OK\n": "OK-newline", 'FAIL ["xP-ne-Q"]': "FAIL-line", "": "empty", STARTUP_STDOUT: "startup-errors"}
-TRUTH_IDS = [f"rc{rc}-{STDOUT_LABELS[out]}-{'stderr-empty' if err == '' else 'stderr-overflow'}" for rc, out, err in TRUTH_TABLE]
+STDOUT_LABELS = {
+    "OK": "OK",
+    "OK\n": "OK-newline",
+    'FAIL ["xP-ne-Q"]': "FAIL-line",
+    "": "empty",
+    STARTUP_STDOUT: "startup-errors",
+}
+TRUTH_IDS = [
+    f"rc{rc}-{STDOUT_LABELS[out]}-{'stderr-empty' if err == '' else 'stderr-overflow'}" for rc, out, err in TRUTH_TABLE
+]
 
 
 def _inst60():
@@ -62,7 +70,11 @@ REFUSALS = [
     ("range-x-eq-n", lambda i, x: (i, i.n), "bad-field"),
     ("range-x-gt-n", lambda i, x: (i, i.n + 1), "bad-field"),
     ("hasse-n-above", lambda i, x: (Instance(i.p, i.a, i.b, _outside_hasse(i.p), i.P, i.Q), x), "bad-field"),
-    ("hasse-n-below", lambda i, x: (Instance(i.p, i.a, i.b, i.p + 1 - math.isqrt(4 * i.p) - 1, i.P, i.Q), x), "bad-field"),
+    (
+        "hasse-n-below",
+        lambda i, x: (Instance(i.p, i.a, i.b, i.p + 1 - math.isqrt(4 * i.p) - 1, i.P, i.Q), x),
+        "bad-field",
+    ),
     ("hasse-n-zero", lambda i, x: (Instance(i.p, i.a, i.b, 0, i.P, i.Q), 0), "bad-field"),
     ("submitter-named-P-and-Q", lambda i, x: (i, Submission(x, P=i.P, Q=i.Q)), "submitter-named-instance"),
     ("submitter-named-P-only", lambda i, x: (i, Submission(x, P=i.P)), "submitter-named-instance"),
@@ -76,7 +88,13 @@ def test_pre_spawn_refusal_table(popen_spy, run_gp_spy, label, build, expected):
     inst, x = build(*_inst60())
     result = Verifier().run(inst, x)
     assert isinstance(result, VerifierResult)
-    assert (result.accepted, result.reason, result.reasons, result.rc, result.gate_result) == (False, expected, (expected,), None, "refused")
+    assert (result.accepted, result.reason, result.reasons, result.rc, result.gate_result) == (
+        False,
+        expected,
+        (expected,),
+        None,
+        "refused",
+    )
     assert result.stdout_digest is None and result.stderr_digest is None
     assert popen_spy == [] and run_gp_spy == []
 
@@ -119,7 +137,19 @@ def test_truth_table_has_thirty_cells_and_exactly_two_accept():
         ({"rc": 0, "stdout": "OK", "stderr_empty": "yes"}, "stderr_empty must be"),
         ("rc=0", "mapping"),
     ],
-    ids=["no-rc", "no-stdout", "no-stderr_empty", "empty", "rc-str", "rc-null", "rc-bool", "rc-float", "stdout-int", "stderr_empty-str", "not-a-mapping"],
+    ids=[
+        "no-rc",
+        "no-stdout",
+        "no-stderr_empty",
+        "empty",
+        "rc-str",
+        "rc-null",
+        "rc-bool",
+        "rc-float",
+        "stdout-int",
+        "stderr_empty-str",
+        "not-a-mapping",
+    ],
 )
 def test_accept_predicate_refuses_missing_key_or_non_int_rc_at_construction(obj, message):
     with pytest.raises(VerifierConfigError, match=message):
@@ -145,7 +175,11 @@ def test_instance_reduces_coordinates_into_0_p_and_hashes_the_reduced_values():
     reduced = Instance(5, 2, 1, 7, (0, 1), (3, 3))
     assert (raw.a, raw.b, raw.P, raw.Q) == (2, 1, (0, 1), (3, 3))
     assert raw == reduced
-    assert raw.instance_hash == reduced.instance_hash == keys.instance_hash({"p": 5, "a": 2, "b": 1, "n": 7, "P": [0, 1], "Q": [3, 3]})
+    assert (
+        raw.instance_hash
+        == reduced.instance_hash
+        == keys.instance_hash({"p": 5, "a": 2, "b": 1, "n": 7, "P": [0, 1], "Q": [3, 3]})
+    )
     assert raw.instance_hash != keys.instance_hash({"p": 5, "a": 2, "b": 1, "n": 7, "P": [0, 1], "Q": [3, 8]})
     assert raw.fields(3) == (5, 2, 1, 7, 0, 1, 3, 3, 3)
     assert Instance(5, 2, 1, 7, [0, 1], [3, 3]).P == (0, 1)
@@ -184,16 +218,41 @@ def test_fail_codes_reads_only_the_script_vocabulary_from_a_fail_line():
     assert verifier.fail_codes("FAIL OK") == ()
     assert verifier.fail_codes('FAIL ["bad-field"]') == ()
     assert verifier.fail_codes('noise\nFAIL ["nQ-not-O"]\n') == ("nQ-not-O",)
-    assert verifier.fail_codes("OK") == () and verifier.fail_codes(b"FAIL [\"xP-ne-Q\"]") == () and verifier.fail_codes(None) == ()
+    assert (
+        verifier.fail_codes("OK") == ()
+        and verifier.fail_codes(b'FAIL ["xP-ne-Q"]') == ()
+        and verifier.fail_codes(None) == ()
+    )
 
 
 def test_reason_vocabulary_is_the_bead_list():
-    assert set(verifier.REASONS) == {"p-not-prime", "singular", "P-off-curve", "Q-off-curve", "nQ-not-O", "xP-ne-Q", "backend-crash", "timeout", "bad-arity", "bad-field", "submitter-named-instance"}
+    assert set(verifier.REASONS) == {
+        "p-not-prime",
+        "singular",
+        "P-off-curve",
+        "Q-off-curve",
+        "nQ-not-O",
+        "xP-ne-Q",
+        "backend-crash",
+        "timeout",
+        "bad-arity",
+        "bad-field",
+        "submitter-named-instance",
+    }
 
 
 def test_result_node_and_gate_result_shape():
     result = VerifierResult("ab" * 32, 3, True, None, (), "cd" * 32, "ef" * 32, 0, 0.017)
-    assert result.node() == {"instance_hash": "ab" * 32, "x": 3, "accepted": True, "reason": None, "stdout_digest": "cd" * 32, "stderr_digest": "ef" * 32, "rc": 0, "wall_s": 0.017}
+    assert result.node() == {
+        "instance_hash": "ab" * 32,
+        "x": 3,
+        "accepted": True,
+        "reason": None,
+        "stdout_digest": "cd" * 32,
+        "stderr_digest": "ef" * 32,
+        "rc": 0,
+        "wall_s": 0.017,
+    }
     assert result.gate_result == "pass"
     assert VerifierResult(None, 3, False, "bad-field", ("bad-field",), None, None, None, 0.0).gate_result == "refused"
     assert VerifierResult(None, 3, False, "backend-crash", ("backend-crash",), "x", "y", 0, 0.0).gate_result == "fail"
@@ -202,13 +261,29 @@ def test_result_node_and_gate_result_shape():
 
 def test_config_defaults_and_bundle_form():
     cfg = default_config()
-    assert (cfg.backend_path, cfg.stack_ceiling, cfg.timeout_s, cfg.accept) == (pari.GP_BIN, "64M", 30.0, verifier.DEFAULT_ACCEPT)
+    assert (cfg.backend_path, cfg.stack_ceiling, cfg.timeout_s, cfg.accept) == (
+        pari.GP_BIN,
+        "64M",
+        30.0,
+        verifier.DEFAULT_ACCEPT,
+    )
     assert cfg.script == (ROOT / "src" / "cairn" / "gp" / "verify.gp").read_bytes()
     assert cfg.bundle_hash == cfg.script_hash
-    from_bundle = VerifierConfig.from_bundle({"backend_path": pari.GP_BIN, "stack_ceiling": "64M", "timeout_s": 30, "accept": {"rc": 0, "stdout": "OK", "stderr_empty": True}}, cfg.script, "ff" * 32)
+    from_bundle = VerifierConfig.from_bundle(
+        {
+            "backend_path": pari.GP_BIN,
+            "stack_ceiling": "64M",
+            "timeout_s": 30,
+            "accept": {"rc": 0, "stdout": "OK", "stderr_empty": True},
+        },
+        cfg.script,
+        "ff" * 32,
+    )
     assert from_bundle.bundle_hash == "ff" * 32 and from_bundle.accept == verifier.DEFAULT_ACCEPT
     with pytest.raises(VerifierConfigError, match="missing"):
-        VerifierConfig.from_bundle({"backend_path": pari.GP_BIN, "stack_ceiling": "64M", "timeout_s": 30}, cfg.script, "ff" * 32)
+        VerifierConfig.from_bundle(
+            {"backend_path": pari.GP_BIN, "stack_ceiling": "64M", "timeout_s": 30}, cfg.script, "ff" * 32
+        )
     with pytest.raises(VerifierConfigError, match="mapping"):
         VerifierConfig.from_bundle("backend_path=gp", cfg.script, "ff" * 32)
 
@@ -227,7 +302,18 @@ def test_config_defaults_and_bundle_form():
         ({"backend_path": ""}, "backend_path"),
         ({"bundle_hash": ""}, "bundle_hash"),
     ],
-    ids=["stack-word", "stack-int", "timeout-zero", "timeout-negative", "timeout-str", "accept-dict", "script-empty", "script-str", "backend-empty", "bundle-hash-empty"],
+    ids=[
+        "stack-word",
+        "stack-int",
+        "timeout-zero",
+        "timeout-negative",
+        "timeout-str",
+        "accept-dict",
+        "script-empty",
+        "script-str",
+        "backend-empty",
+        "bundle-hash-empty",
+    ],
 )
 def test_config_refuses_malformed_fields_at_construction(overrides, message):
     with pytest.raises(VerifierConfigError, match=message):

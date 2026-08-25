@@ -74,23 +74,56 @@ def test_gp_cypari2_plumbing_one_library_twice(run_gp_spy):
 @pytest.mark.parametrize(
     ("label", "mutate", "expected"),
     [
-        ("Qy-plus-1-off-curve", lambda inst, x: (Instance(inst.p, inst.a, inst.b, inst.n, inst.P, (inst.Q[0], inst.Q[1] + 1)), x), ("Q-off-curve",)),
-        ("other-on-curve-point", lambda inst, x: (_ec.instance(CURVE60, _ec.mul(CURVE60, CURVE60["P"], x + 1)), x), ("xP-ne-Q",)),
+        (
+            "Qy-plus-1-off-curve",
+            lambda inst, x: (Instance(inst.p, inst.a, inst.b, inst.n, inst.P, (inst.Q[0], inst.Q[1] + 1)), x),
+            ("Q-off-curve",),
+        ),
+        (
+            "other-on-curve-point",
+            lambda inst, x: (_ec.instance(CURVE60, _ec.mul(CURVE60, CURVE60["P"], x + 1)), x),
+            ("xP-ne-Q",),
+        ),
         ("x-plus-1", lambda inst, x: (inst, x + 1), ("xP-ne-Q",)),
-        ("n-plus-2-inside-hasse", lambda inst, x: (Instance(inst.p, inst.a, inst.b, inst.n + 2, inst.P, inst.Q), x), ("nQ-not-O",)),
-        ("Py-plus-1-off-curve", lambda inst, x: (Instance(inst.p, inst.a, inst.b, inst.n, (inst.P[0], inst.P[1] + 1), inst.Q), x), ("P-off-curve",)),
+        (
+            "n-plus-2-inside-hasse",
+            lambda inst, x: (Instance(inst.p, inst.a, inst.b, inst.n + 2, inst.P, inst.Q), x),
+            ("nQ-not-O",),
+        ),
+        (
+            "Py-plus-1-off-curve",
+            lambda inst, x: (Instance(inst.p, inst.a, inst.b, inst.n, (inst.P[0], inst.P[1] + 1), inst.Q), x),
+            ("P-off-curve",),
+        ),
         ("p-composite-25", lambda inst, x: (Instance(25, 1, 1, 26, (0, 1), (0, 1)), 1), ("p-not-prime",)),
         ("singular-curve", lambda inst, x: (Instance(5, 0, 0, 6, (0, 0), (0, 0)), 1), ("singular",)),
         ("corpus-1-x-4", lambda inst, x: (Instance(5, 2, 1, 7, (0, 1), (3, 3)), 4), ("xP-ne-Q",)),
-        ("membership-first-n-plus-2-and-x-plus-1", lambda inst, x: (Instance(inst.p, inst.a, inst.b, inst.n + 2, inst.P, inst.Q), x + 1), ("nQ-not-O",)),
-        ("Py-and-Qy-both-off-curve", lambda inst, x: (Instance(inst.p, inst.a, inst.b, inst.n, (inst.P[0], inst.P[1] + 1), (inst.Q[0], inst.Q[1] + 1)), x), ("P-off-curve", "Q-off-curve")),
+        (
+            "membership-first-n-plus-2-and-x-plus-1",
+            lambda inst, x: (Instance(inst.p, inst.a, inst.b, inst.n + 2, inst.P, inst.Q), x + 1),
+            ("nQ-not-O",),
+        ),
+        (
+            "Py-and-Qy-both-off-curve",
+            lambda inst, x: (
+                Instance(inst.p, inst.a, inst.b, inst.n, (inst.P[0], inst.P[1] + 1), (inst.Q[0], inst.Q[1] + 1)),
+                x,
+            ),
+            ("P-off-curve", "Q-off-curve"),
+        ),
     ],
 )
 def test_planted_negatives_fail_with_the_script_reason(run_gp_spy, label, mutate, expected):
     inst, x = mutate(*_inst60())
     assert (inst.n - inst.p - 1) ** 2 <= 4 * inst.p
     result = Verifier().run(inst, x)
-    assert (result.accepted, result.reason, result.reasons, result.rc, result.gate_result) == (False, expected[0], expected, 1, "fail")
+    assert (result.accepted, result.reason, result.reasons, result.rc, result.gate_result) == (
+        False,
+        expected[0],
+        expected,
+        1,
+        "fail",
+    )
     assert run_gp_spy[-1]["stdout"] == _fail_line(expected)
     assert run_gp_spy[-1]["stderr"] == ""
 
@@ -143,7 +176,12 @@ def test_killed_child_rc_minus_9_is_backend_crash(monkeypatch):
     monkeypatch.setattr(subprocess, "Popen", KillAfterSpawn)
     inst, x = _inst60()
     result = Verifier().run(inst, x)
-    assert (result.accepted, result.reason, result.rc, result.gate_result) == (False, "backend-crash", -signal.SIGKILL, "fail")
+    assert (result.accepted, result.reason, result.rc, result.gate_result) == (
+        False,
+        "backend-crash",
+        -signal.SIGKILL,
+        "fail",
+    )
 
 
 def test_timeout_on_a_good_instance_is_timeout():
@@ -187,7 +225,12 @@ def test_every_run_logs_one_info_verdict_and_every_spawn_one_debug_gp_record(cap
     caplog.set_level(logging.DEBUG, logger=log.LOGGER_NAME)
     inst, x = _inst60()
     v = Verifier()
-    runs = [v.run(inst, x), v.run(inst, x + 1), v.run(Instance(2, 1, 1, 3, (0, 1), (0, 1)), 1), v.run(inst, Submission(x, P=inst.P, Q=inst.Q))]
+    runs = [
+        v.run(inst, x),
+        v.run(inst, x + 1),
+        v.run(Instance(2, 1, 1, 3, (0, 1), (0, 1)), 1),
+        v.run(inst, Submission(x, P=inst.P, Q=inst.Q)),
+    ]
     ours = [r for r in caplog.records if r.name == log.LOGGER_NAME and r.step == "verifier"]
     verdicts = [r for r in ours if r.getMessage() == "verdict"]
     assert len(verdicts) == len(runs)
@@ -196,5 +239,8 @@ def test_every_run_logs_one_info_verdict_and_every_spawn_one_debug_gp_record(cap
     assert all(r.levelno == logging.INFO for r in verdicts)
     spawns = [r for r in ours if r.getMessage() == "gp"]
     assert len(spawns) == 2
-    assert all(r.levelno == logging.DEBUG and {"argv", "stdin_digest", "stdout_digest", "stderr_digest"} <= set(r.fields) for r in spawns)
+    assert all(
+        r.levelno == logging.DEBUG and {"argv", "stdin_digest", "stdout_digest", "stderr_digest"} <= set(r.fields)
+        for r in spawns
+    )
     assert all(r.fields["argv"][:5] == pari.gp_argv("64M") for r in spawns)

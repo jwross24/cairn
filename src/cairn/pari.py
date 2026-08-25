@@ -63,7 +63,9 @@ def run_gp(args, stdin, *, timeout_s=DEFAULT_TIMEOUT_S, stack=DEFAULT_STACK):
     lg = log.get("gp")
     lg.debug("spawn", argv=argv, stdin_digest=_digest(stdin))
     start = time.monotonic()
-    proc = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, text=True)
+    proc = subprocess.Popen(
+        argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, text=True
+    )
     try:
         out, err = proc.communicate(stdin, timeout=timeout_s)
     except subprocess.TimeoutExpired:

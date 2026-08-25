@@ -38,7 +38,9 @@ def test_grade_weaker_follows_the_order(from_grade, to_grade, weaker):
         ("OK", None, 0, 0, False, "missing_blob"),
     ],
 )
-def test_attempt_eligible_names_the_first_failing_predicate(status, disowned_at, inadmissible, do_not_cache, blobs_present, reason):
+def test_attempt_eligible_names_the_first_failing_predicate(
+    status, disowned_at, inadmissible, do_not_cache, blobs_present, reason
+):
     assert substrate.attempt_eligible(status, disowned_at, inadmissible, do_not_cache, blobs_present) == reason
 
 
@@ -47,7 +49,11 @@ def test_output_manifest_hash_is_order_and_hex_bytes_invariant(artifacts, data):
     order = data.draw(st.permutations(list(artifacts)))
     permuted = {k: artifacts[k] for k in order}
     raw = {k: (bytes.fromhex(h), n) for k, (h, n) in artifacts.items()}
-    assert substrate.output_manifest_hash(permuted) == substrate.output_manifest_hash(artifacts) == substrate.output_manifest_hash(raw)
+    assert (
+        substrate.output_manifest_hash(permuted)
+        == substrate.output_manifest_hash(artifacts)
+        == substrate.output_manifest_hash(raw)
+    )
 
 
 def test_receipt_canonical_requires_every_field_and_fixes_float_spelling():

@@ -1,0 +1,46 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # The agent has no vault token and no corporate network. Anything that
+      # reads a secret must degrade rather than raise, or it hard-fails here
+      # while passing on a developer machine.
+      CAIRN_LOG: WARNING
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install PARI/GP
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pari-gp libpari-dev
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Sync the locked environment
+        run: uv sync --locked --all-groups
+
+      - name: Gates
+        run: scripts/check.sh
+
+      - name: The trace every gate left
+        if: always()
+        run: cat .check.log

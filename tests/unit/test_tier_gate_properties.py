@@ -33,7 +33,15 @@ def _is_subsequence(reasons, order=REASON_ORDER):
 
 
 @given(facts)
-@example({**dict.fromkeys(("certified", "budget_ok", "ticket_bundle_matches", "profile_declared"), True), "declared_tier": 0, "ticket_tier": None, "cost_tier": 0, "yanked": False})
+@example(
+    {
+        **dict.fromkeys(("certified", "budget_ok", "ticket_bundle_matches", "profile_declared"), True),
+        "declared_tier": 0,
+        "ticket_tier": None,
+        "cost_tier": 0,
+        "yanked": False,
+    }
+)
 def test_reasons_are_a_subsequence_of_the_fixed_order(row):
     reasons = tiergate.predicate_reasons(**row)
     assert _is_subsequence(reasons)
@@ -53,7 +61,11 @@ def test_repairing_the_standing_facts_removes_exactly_their_reasons_and_admits_i
     assert (after == set()) == (before <= STANDING)
 
 
-@pytest.mark.parametrize(("weakened", "value"), [("certified", False), ("yanked", True), ("budget_ok", False)], ids=["uncertified", "yanked", "no-budget"])
+@pytest.mark.parametrize(
+    ("weakened", "value"),
+    [("certified", False), ("yanked", True), ("budget_ok", False)],
+    ids=["uncertified", "yanked", "no-budget"],
+)
 @given(row=facts)
 def test_adding_a_failing_standing_yank_or_budget_predicate_never_removes_a_reason(row, weakened, value):
     before = set(tiergate.predicate_reasons(**row))
@@ -69,13 +81,27 @@ def test_a_launch_with_every_standing_predicate_failing_is_never_admitted(row):
 
 @pytest.mark.parametrize("edge", BOUNDARY_EDGES, ids=[f"edge-{e}" for e in BOUNDARY_EDGES])
 def test_a_cost_exactly_at_an_edge_stays_in_the_lower_tier(edge):
-    table = [{"tier": 0, "max_core_s": 1}, {"tier": 1, "max_core_s": 3600}, {"tier": 2, "max_core_s": 3_600_000}, {"tier": 3, "max_core_s": None}]
+    table = [
+        {"tier": 0, "max_core_s": 1},
+        {"tier": 1, "max_core_s": 3600},
+        {"tier": 2, "max_core_s": 3_600_000},
+        {"tier": 3, "max_core_s": None},
+    ]
     at_edge = tiergate.tier_for_cost(table, edge)
     assert tiergate.tier_for_cost(table, edge - 1) == at_edge
     assert tiergate.tier_for_cost(table, edge + 1) == at_edge + 1
 
 
-REFUSING = {"declared_tier": 2, "ticket_tier": 0, "cost_tier": 3, "certified": False, "yanked": True, "budget_ok": False, "ticket_bundle_matches": False, "profile_declared": True}
+REFUSING = {
+    "declared_tier": 2,
+    "ticket_tier": 0,
+    "cost_tier": 3,
+    "certified": False,
+    "yanked": True,
+    "budget_ok": False,
+    "ticket_bundle_matches": False,
+    "profile_declared": True,
+}
 
 
 def test_short_circuit_gate_mutant_is_killed():

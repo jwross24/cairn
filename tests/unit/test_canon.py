@@ -46,7 +46,14 @@ IDENTITY = {
     "container_digest": "cc" * 32,
     "numeric_profile": None,
 }
-ENV = {"os": "macOS 26.6 Darwin 25.6.0 arm64", "python": "3.14.0", "cypari2": "2.2.4", "libpari": "2.17.2", "blake3": "1.0.9", "gp_binary_sha256": "ff" * 32}
+ENV = {
+    "os": "macOS 26.6 Darwin 25.6.0 arm64",
+    "python": "3.14.0",
+    "cypari2": "2.2.4",
+    "libpari": "2.17.2",
+    "blake3": "1.0.9",
+    "gp_binary_sha256": "ff" * 32,
+}
 INSTANCE = {"p": 5, "a": 2, "b": 1, "n": 7, "P": [0, 1], "Q": [3, 3]}
 SELFTEST_CERT = {"identity_bundle_hash": "dd" * 32, "transcript_hash": "ee" * 32, "env_manifest_hash": "ff" * 32}
 SELFTEST_CERT_TRANSPLANTED = {**SELFTEST_CERT, "identity_bundle_hash": "aa" * 32}
@@ -72,7 +79,11 @@ def build_vectors():
         vector = {"name": name, "kind": kind, "domain_tag": tag, "input": value, "relation": relation}
         vector["expected"], vector["canonical_hex"] = kat.compute(vector)
         vectors.append(vector)
-    return {"generator": "UPDATE_GOLDENS=1 uv run pytest tests/unit/test_canon.py -k kat_vectors_match", "origin": "author_supplied", "vectors": vectors}
+    return {
+        "generator": "UPDATE_GOLDENS=1 uv run pytest tests/unit/test_canon.py -k kat_vectors_match",
+        "origin": "author_supplied",
+        "vectors": vectors,
+    }
 
 
 def test_kat_vectors_match_golden(assert_golden):
@@ -183,7 +194,13 @@ def test_permuted_insertion_order_hashes_identically():
         (keys.hypothesis_key, {**HYPOTHESIS, "declared_parameter_ranges": {"bits": [30, 60.0]}}, "float"),
         (keys.recipe_key, {k: v for k, v in RECIPE_A.items() if k != "salt"}, "missing"),
     ],
-    ids=["undeclared-field", "empty-container-digest-recipe", "empty-container-digest-identity", "float-in-key", "missing-field"],
+    ids=[
+        "undeclared-field",
+        "empty-container-digest-recipe",
+        "empty-container-digest-identity",
+        "float-in-key",
+        "missing-field",
+    ],
 )
 def test_key_refusals(hasher, obj, match):
     with pytest.raises(CanonError, match=match):
@@ -207,7 +224,21 @@ def test_key_refusals(hasher, obj, match):
         (Map(STR, INT), {"é": 1, "é": 2}, "duplicate key"),
         (List(INT), 7, "expected list"),
     ],
-    ids=["bool-as-int", "float-int", "surrogate-str", "non-str", "blobref-nonhex", "blobref-short", "blobref-none", "blobref-negative-size", "blobref-arity", "bool-type", "set-duplicate", "map-nfc-collision", "list-type"],
+    ids=[
+        "bool-as-int",
+        "float-int",
+        "surrogate-str",
+        "non-str",
+        "blobref-nonhex",
+        "blobref-short",
+        "blobref-none",
+        "blobref-negative-size",
+        "blobref-arity",
+        "bool-type",
+        "set-duplicate",
+        "map-nfc-collision",
+        "list-type",
+    ],
 )
 def test_leaf_type_rejections(typ, value, match):
     with pytest.raises(CanonError, match=match):

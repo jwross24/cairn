@@ -11,7 +11,14 @@ CORPUS_2 = {"name": "GF101", "p": 101, "a": 90, "b": 44, "n": 89, "P": (2, 38), 
 
 def curve60():
     v = json.loads((VECTORS / "curve60_seed1.json").read_text())
-    return {"name": "curve60", "p": int(v["p"]), "a": int(v["a"]), "b": int(v["b"]), "n": int(v["n"]), "P": tuple(int(c) for c in v["P"])}
+    return {
+        "name": "curve60",
+        "p": int(v["p"]),
+        "a": int(v["a"]),
+        "b": int(v["b"]),
+        "n": int(v["n"]),
+        "P": tuple(int(c) for c in v["P"]),
+    }
 
 
 def _curve(c):
@@ -42,6 +49,8 @@ def instance(c, Q):
 
 def pair(c, x):
     return instance(c, mul(c, c["P"], x)), x
+
+
 def breaks_pre_spawn_rules(fields):
     p, a, b, n, Px, Py, Qx, Qy, x = fields
     return not (x < n and p > 3 and all(0 <= v < p for v in (a, b, Px, Py, Qx, Qy)) and (n - p - 1) ** 2 <= 4 * p)
