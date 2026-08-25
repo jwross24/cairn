@@ -45,6 +45,20 @@ Each line below was established by hitting it. Verify rather than trust if a too
   set the field afterwards with `br update <id> --acceptance-criteria=...`. `br create`
   also has no positional-only form for long titles starting with `-`; the `=` rule above
   applies to every text flag on both commands.
+- **`br show`/`br list --json` return a JSON array, not an object.** `jq '.title'` fails with
+  "Cannot index array with string"; index `.[0]` first. `br list --all --json` has been seen
+  wrapped one level deeper still, so a defensive `if (.[0]|type)=="array" then .[0] else . end`
+  survives both shapes.
+- **zsh does not word-split an unquoted variable.** `P="--db X --pin Y"; cmd $P` passes one
+  argument, and the command fails in a way that reads as a defect in the code. Build argument
+  lists as arrays, or write the flags out. A pipeline also masks the exit code: `cmd | tail -1`
+  reports `tail`'s status, so capture `${PIPESTATUS[1]}` or redirect instead of piping when the
+  exit code is the evidence.
+- **Nesting `uv run` inside `$(...)` under an outer `uv run` pipeline yields empty output.**
+  Capture to a file and parse it in a second command.
+- **The scratch directory comes from `mktemp -d`.** The destructive-command guard refuses a
+  recursive force-delete anywhere outside the system temp roots, so a scratch tree that needs
+  clearing should be a fresh `mktemp -d` instead.
 - **`br list --json` omits closed beads** (23 of 31 here). Pass `--all` or `--status closed`.
 - **`.beads/` is excluded by `~/.gitignore_global`.** This repo's `.gitignore` carries
   `!.beads/` to re-include it. `br sync --flush-only` before every `git add .beads/`.

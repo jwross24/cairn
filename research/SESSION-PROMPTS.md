@@ -17,7 +17,7 @@ live *inside* `/beads-workflow`, so they are dangling references until it is inv
 | `/beads-br` | `br` CLI: always `--json`, sync is explicit, git is yours, no cycles | A B C D |
 | `/beads-bv` | `bv` graph triage: which bead is most accretive, and why | A B |
 | `/beads-workflow` | conversion + polish rounds; owns `scripts/polish-round.sh` and `references/POLISH-ROUND.md` | B C |
-| `/beads-compliance-and-completion-verification` | closed-bead audit; the pre-commit hook | A D |
+| `/beads-compliance-and-completion-verification` | closed-bead audit; Mode D's subject. Mode A gets it from the pre-commit hook, which runs unprompted | D |
 | `/optimal-tests` | the pre-close test audit that found a broken gate on every bead | A |
 | `/just-say-no-to-process-porn-and-ceremony` | honesty inventory, credit floor | all |
 
@@ -57,6 +57,10 @@ during the test audit, and every gap the No-Claim line names, has to be reachabl
 graph: name the downstream bead that owns it, or create one with `br create` plus a `br dep`
 edge and name that.
 
+The owning bead must still be **open** when the note is needed. A comment on the bead you are
+about to close is lost the moment you close it: pick the bead that will act on the finding, not
+the one you happen to be holding.
+
 The bar is a real capability gap someone will implement — a platform the write boundary does not
 cover, a predicate deferred to the next milestone. A property of the system that a downstream
 bead simply has to know goes in that bead's comments, not in a bead of its own; `br comments add
@@ -87,8 +91,7 @@ take the highest-`unblocks` **leaf**, or filter epics out of `--robot-next` your
 ## Mode A — Build the next M0 bead (the current mode)
 
 ```
-Load /beads-br, /beads-bv, /beads-compliance-and-completion-verification and
-/just-say-no-to-process-porn-and-ceremony.
+Load /beads-br, /beads-bv and /just-say-no-to-process-porn-and-ceremony.
 
 First establish a clean baseline: `git status --short` (expect empty) and `uv run pytest -q`
 (expect all green). Tell me the numbers before you touch anything — if something is already
@@ -103,6 +106,10 @@ Then dispatch a subagent to survey what the bead builds on: the modules it names
 signatures, the conventions a new file has to match, and anything already shipped that the bead
 assumes. Ask for a digest, not file bodies, and read those files yourself only when you are
 about to edit them.
+
+Run through to close-or-blocked in one pass. A committed slice is a checkpoint, not a place to
+hand back: surface mid-way only for a disagreement with the bead text or a decision that is the
+operator's, never to report progress.
 
 Build in the order the acceptance criteria are written and commit each working slice, whatever
 the spec's length: a slice that passes its own tests is the unit of progress, and the commit is
@@ -122,10 +129,10 @@ observed truth, and tell me the disagreement.
 Before you propose closing: dispatch a FRESH subagent to run /optimal-tests in --audit mode over
 the bead's test files against its acceptance criteria. Fresh eyes on tests you wrote beat your
 own re-reading, and its report is a claim — re-execute what it cites before you believe it.
-Treat any "this protection is untested" finding as a hypothesis until you delete that protection
-in a scratch copy and show a test go red — then restore and verify byte-identical. The command
-guard refuses `git checkout --`, `rm -rf`, and `os.unlink` inside a heredoc, so copy each file to
-the scratchpad before mutating, restore with `cp`, and prove the restore with `shasum -a 256 -c`.
+Treat any "this protection is untested" finding as a hypothesis until a mutation proves it:
+`scripts/mutation-check.sh <file> <old-text> <new-text> <pytest-targets>` exits 0 only when the
+mutation went red and the file came back byte-identical. CLAUDE.md's working notes carry the
+shell constraints it works around.
 
 Apply the findings. Every finding you decline, and every gap your No-Claim line names, has to be
 reachable from the bead graph: name the downstream bead that owns it, and create one with
@@ -141,7 +148,12 @@ commit SHA, file:line for each touched file, and a No-Claim line.
 - [ ] The bead's own positive observable run and pasted
 - [ ] The planted negative observed *failing* (not assumed)
 - [ ] `/optimal-tests --audit` run; every finding applied or explicitly declined with a reason
-- [ ] Any "untested protection" finding mutation-proved on a scratch copy, repo restored byte-identical
+- [ ] Any "untested protection" finding mutation-proved: `scripts/mutation-check.sh <file> <old> <new> <targets>`
+- [ ] Every new assertion proved able to fail. Ask of each: if the thing it guards were perfect,
+      would it still pass? If yes the oracle is wrong, not the code
+- [ ] Any regenerated golden: its diff read first, and the change is exactly the intended one
+- [ ] Honesty inventory filled out in writing before the close comment, and its disposition carried
+      into the report (`/just-say-no-to-process-porn-and-ceremony` names closing an item as a trigger)
 - [ ] Close comment: commands + raw output + file:line + No-Claim + what was *not* independently verified
 - [ ] Survey and test audit ran as subagents; anything they cited re-executed in the main context
 - [ ] Every declined finding and every No-Claim gap named in a downstream bead, created where none owned it
