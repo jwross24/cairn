@@ -36,12 +36,16 @@ fi
 
 FAILED=()
 
+# Output streams rather than being captured. A captured gate that hangs prints
+# nothing at all, which is how a 45-minute CI hang produced no diagnostic beyond
+# the step before it.
 gate() {
   local name="$1"; shift
-  local out
-  if ! out="$("$@" 2>&1)"; then
+  say "RUN $name"
+  printf '[check] run %s\n' "$name"
+  if ! "$@"; then
     say "FAIL $name"
-    printf '\n[check] FAIL %s\n%s\n' "$name" "$out" >&2
+    printf '[check] FAIL %s\n' "$name" >&2
     FAILED+=("$name")
     return 1
   fi
