@@ -81,9 +81,29 @@ def blocks_name_wrong_step():
         yield
 
 
+
+
+@contextmanager
+def tier_gate_skips_recording():
+    from cairn import claims
+
+    with _swap(claims, "write_hypothesis_object", lambda sub, obj: obj.hash):
+        yield
+
+
+@contextmanager
+def tier_gate_drops_refusal_rows():
+    from cairn import claims
+
+    with _swap(claims, "add_tier_refusal", lambda sub, key, declared, ticket, reason: None):
+        yield
+
+
 ALL = {
     "loader_skips_unknown_steps": loader_skips_unknown_steps,
     "loader_runs_valid_prefix": loader_runs_valid_prefix,
     "continue_after_failure": continue_after_failure,
     "blocks_name_wrong_step": blocks_name_wrong_step,
+    "tier_gate_skips_recording": tier_gate_skips_recording,
+    "tier_gate_drops_refusal_rows": tier_gate_drops_refusal_rows,
 }

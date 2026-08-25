@@ -206,7 +206,12 @@ class GateBundle:
         return verifier.VerifierConfig.from_bundle(self.object("verifier"), self.verifier_script, self.hash)
 
     def waiver_hypothesis(self):
-        return self.gate_plan["fixtures"]["waiver_hypothesis"]
+        plan = self.gate_plan
+        fixtures = plan.get("fixtures") if isinstance(plan, dict) else None
+        hypothesis = fixtures.get("waiver_hypothesis") if isinstance(fixtures, dict) else None
+        if not isinstance(hypothesis, dict):
+            raise BundleError(f"gate bundle {self.hash} carries no gate_plan.fixtures.waiver_hypothesis")
+        return hypothesis
 
     def waiver_target(self):
         return keys.hypothesis_key(self.waiver_hypothesis())
