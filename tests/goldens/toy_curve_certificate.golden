@@ -1,7 +1,3 @@
 {
- "certificate": "f7625198b5531c923dd255fdad2dac0aafe053b07dc0f52b3bca09bf498383c4",
- "env_manifest_hash": "86c5835539bb10bb4d2cb2862611e12476826b22bba202a75eed9c1e5a3d3c43",
- "identity_bundle_hash": "be2c35744546c25b33b3e70f4d70d92783e92ccc924ae07c793ea5aede7a6a89",
- "implementation_revision": "ae2b15b005211e540da5b104d3c156bae0a5f9ace0a094f797581fc2f0eb2419",
- "transcript_hash": "95164e55ddba5b240ef92f6eea681e3232fd92e59671de7222ea807b77b2d439"
+ "implementation_revision": "ae2b15b005211e540da5b104d3c156bae0a5f9ace0a094f797581fc2f0eb2419"
 }

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import bundle, cli, env, exits, keys, pari, selftest, substrate, verifier
+from cairn import bundle, canon, cli, env, exits, keys, pari, selftest, substrate, verifier
 from cairn.skills import toy_curve
 
 pytestmark = pytest.mark.skipif(
@@ -185,37 +185,23 @@ def test_transcript_golden_guard(tmp_path, pinned_bundle, assert_golden, monkeyp
         assert_golden(TRANSCRIPT_GOLDEN, live + "0\n")
 
 
-def test_certificate_golden_recomputes_from_the_golden_transcript(tmp_path, pinned_bundle, assert_golden, caplog):
+def test_the_certificate_is_the_digest_of_its_three_inputs(tmp_path, pinned_bundle, assert_golden):
     bundle_path, pin_path = pinned_bundle()
     with substrate.Substrate.open(tmp_path / "substrate.sqlite") as sub:
         result = selftest.certify(sub, _config(bundle_path, pin_path))
-    live_identity = result["identity_bundle_hash"]
-    live_env = keys.env_manifest_digest(env.manifest())
+    recomputed = canon.digest(
+        keys.TAG_SELFTEST_CERT,
+        substrate.certificate_canonical(
+            result["identity_bundle_hash"],
+            result["transcript_hash"],
+            keys.env_manifest_digest(env.manifest()),
+        ),
+    )
+    assert recomputed == result["certificate"]
     assert_golden(
         CERTIFICATE_GOLDEN,
-        json.dumps(
-            {
-                "certificate": result["certificate"],
-                "identity_bundle_hash": live_identity,
-                "env_manifest_hash": live_env,
-                "transcript_hash": result["transcript_hash"],
-                "implementation_revision": toy_curve.implementation_revision(),
-            },
-            indent=1,
-            sort_keys=True,
-        )
-        + "\n",
+        json.dumps({"implementation_revision": toy_curve.implementation_revision()}, indent=1, sort_keys=True) + "\n",
     )
-    golden = json.loads((GOLDENS / f"{CERTIFICATE_GOLDEN}.golden").read_text())
-    recomputed = selftest.certificate_hash(live_identity, golden["transcript_hash"], live_env)
-    assert result["certificate"] == recomputed
-    if (live_identity, live_env) == (
-        golden["identity_bundle_hash"],
-        golden["env_manifest_hash"],
-    ):
-        assert result["certificate"] == golden["certificate"]
-    else:
-        caplog.set_level("INFO", logger="cairn")
 
 
 def test_a_changed_expected_output_refuses_and_writes_no_certificate(tmp_path, pinned_bundle):
