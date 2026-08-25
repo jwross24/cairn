@@ -18,6 +18,8 @@ CLAIM_ID = "m0-slice"
 KIND_GENERATOR = "m0_generator"
 KIND_DERIVATION = "m0_derivation"
 KIND_VERIFIER_RESULT = "verifier_result"
+GRADE_REPLAYABLE = "Replayable"
+GRADE_VERIFIABLE = "Verifiable"
 REASON_UNCERTIFIED = "uncertified-revision"
 
 GENERATOR_NODE = Struct(
@@ -68,23 +70,44 @@ class SliceNode:
 
 
 @dataclass(frozen=True)
+class Arm:
+    arm: str
+    accepted: bool
+    reason: str | None
+    reasons: tuple
+    gate_result: str
+    node: str | None
+    gate_run: str
+    spawned: bool
+    instance_hash: str | None
+    stdout_digest: str | None
+    stderr_digest: str | None
+    rc: int | None
+
+
+@dataclass(frozen=True)
 class SliceResult:
     nodes: tuple
+    arms: tuple
     negatives: tuple
     refused_submission: str
     attempt_id: str
     served_from_cache: bool
     bundle_hash: str
     receipt_hash: str | None
-
-    @property
-    def accepted(self):
-        return any(n.label == "C" for n in self.nodes)
+    statement_hash: str
+    instance_hash: str
 
 
 NEXT_CERTIFY = "certify"
 NEXT_GATE_SELFTEST = "gate-selftest"
 NEXT_DEBUG = "debug"
+
+
+class SliceBackend(Exception):
+    def __init__(self, reason):
+        super().__init__(reason)
+        self.reason = reason
 
 
 class SliceRefused(Exception):
@@ -158,7 +181,7 @@ def _record_verifier_run(sub, gate_bundle, result, *, arm):
                 "arm": arm,
             },
         ),
-        replay_grade="Verifiable",
+        replay_grade=GRADE_VERIFIABLE,
     )
     run = claims.GateRun(
         gate="verifier",
@@ -248,6 +271,8 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
         skip_cache_lookup=skip_cache_lookup,
     )
     lg.info("step", step=4, name="generator", attempt=attempt.attempt_id, status=attempt.status, cached=attempt.served_from_cache, manifest=attempt.output_manifest_hash)
+    if attempt.status == "FAIL":
+        raise SliceBackend(f"attempt-{attempt.status}")
     if attempt.status != "OK":
         raise SliceRefused(f"attempt-{attempt.status}", NEXT_DEBUG)
 
@@ -297,7 +322,7 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
                 "source_node": node_a,
             },
         ),
-        replay_grade="Verifiable",
+        replay_grade=GRADE_VERIFIABLE,
     )
     sub.add_lineage(node_b, node_a, "derives")
     lg.info("step", step=5, name="derivation", instance_hash=instance.instance_hash, statement=statement.hash, node=node_b)
@@ -309,6 +334,7 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
     if not positive.accepted:
         raise SliceRefused(f"verifier-{positive.reason}", NEXT_DEBUG)
     node_c, node_d = _record_verifier_run(sub, gate_bundle, positive, arm="slice_positive")
+    arms = [_arm("slice_positive", positive, node_c, node_d)]
     lg.info("step", step=7, name="gate_run", gate_run=node_d)
 
     negatives = []
@@ -319,23 +345,37 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
     for arm, result in negatives:
         if result.accepted:
             raise SliceRefused(f"negative-accepted:{arm}", NEXT_DEBUG)
-        negative_nodes.append(_record_verifier_run(sub, gate_bundle, result, arm=arm)[0])
+        node, run_hash = _record_verifier_run(sub, gate_bundle, result, arm=arm)
+        negative_nodes.append(node)
+        arms.append(_arm(arm, result, node, run_hash))
 
     named = engine.run(gate_read, verifier.Submission(x, P=gate_read.P, Q=gate_read.Q))
     if named.reason != "submitter-named-instance" or named.rc is not None:
         raise SliceRefused("submitter-named-not-refused", NEXT_DEBUG)
     refused_run = _refuse_verifier_run(sub, gate_bundle, named, arm="submitter_named")
+    arms.append(_arm("submitter_named", named, None, refused_run))
     lg.info("step", step=8, name="negatives", negatives=negative_nodes, refused=refused_run)
 
     certificate_ref = certificate["cert_hash"]
     nodes = (
-        SliceNode("A", KIND_GENERATOR, node_a, "Replayable", "tier0", certificate_ref),
-        SliceNode("B", KIND_DERIVATION, node_b, "Verifiable", "tier0", certificate_ref),
-        SliceNode("C", KIND_VERIFIER_RESULT, node_c, "Verifiable", "tier0", certificate_ref),
-        SliceNode("D", "gate_run", node_d, "Replayable", "tier0", certificate_ref),
+        SliceNode("A", KIND_GENERATOR, node_a, _grade_of(sub, node_a), "tier0", certificate_ref),
+        SliceNode("B", KIND_DERIVATION, node_b, _grade_of(sub, node_b), "tier0", certificate_ref),
+        SliceNode("C", KIND_VERIFIER_RESULT, node_c, _grade_of(sub, node_c), "tier0", certificate_ref),
+        SliceNode("D", "gate_run", node_d, GRADE_REPLAYABLE, "tier0", certificate_ref),
     )
     lg.info("step", step=9, name="summary", nodes=[n.hash for n in nodes], attempt=attempt.attempt_id)
-    return SliceResult(nodes, tuple(negative_nodes), refused_run, attempt.attempt_id, attempt.served_from_cache, gate_bundle.hash, attempt.receipt_hash)
+    return SliceResult(nodes, tuple(arms), tuple(negative_nodes), refused_run, attempt.attempt_id, attempt.served_from_cache, gate_bundle.hash, attempt.receipt_hash, statement.hash, instance.instance_hash)
+
+
+def _arm(name, result, node, gate_run):
+    return Arm(name, result.accepted, result.reason, tuple(result.reasons), result.gate_result, node, gate_run, result.rc is not None, result.instance_hash, result.stdout_digest, result.stderr_digest, result.rc)
+
+
+def _grade_of(sub, node_hash):
+    row = sub.get_node(node_hash)
+    if row is None:
+        raise SliceRefused(f"node-absent:{node_hash}", NEXT_DEBUG)
+    return row["replay_grade"]
 
 
 def _served_document(sub, attempt):
@@ -402,9 +442,17 @@ def _run(ns):
         raise CliError(exits.CONFLICT, f"another writer already holds {ns.db}: {exc}", where=str(ns.db), next_command=f"cairn m0-run --db {ns.db}") from None
     except gateplan.PlanInvalid as invalid:
         raise CliError(exits.GATE_REFUSED, f"the gate plan in bundle {gate_bundle.hash} is invalid ({invalid.reason}); no step ran", where=str(ns.bundle), next_command=bundle.repin_sequence(ns.bundle, ns.pin)) from None
+    except SliceBackend as backend:
+        raise CliError(exits.BACKEND, f"the M0 slice could not complete: {backend.reason}", where=str(ns.db), next_command=_next_command(ns, NEXT_DEBUG)) from None
     except SliceRefused as refused:
         raise CliError(exits.GATE_REFUSED, f"the M0 slice refused: {refused.reason}", where=str(ns.db), next_command=_next_command(ns, refused.next_step)) from None
     payload = {
+        "arms": [
+            {"arm": a.arm, "accepted": a.accepted, "reason": a.reason, "reasons": list(a.reasons), "gate_result": a.gate_result, "node": a.node, "gate_run": a.gate_run, "spawned": a.spawned, "instance_hash": a.instance_hash, "stdout_digest": a.stdout_digest, "stderr_digest": a.stderr_digest, "rc": a.rc}
+            for a in result.arms
+        ],
+        "statement_hash": result.statement_hash,
+        "instance_hash": result.instance_hash,
         "nodes": [
             {"label": node.label, "kind": node.kind, "hash": node.hash, "replay_grade": node.replay_grade, "cost_tag": node.cost_tag, "selftest_ref": node.selftest_ref}
             for node in result.nodes
@@ -422,9 +470,11 @@ def _run(ns):
     else:
         for node in result.nodes:
             print(f"{node.label} {node.kind} {node.hash} {node.replay_grade} {node.cost_tag}")
-        for negative in result.negatives:
-            print(f"- FAIL negative {negative}")
-        print(f"- refused submitter-named {result.refused_submission}")
+        for arm in result.arms:
+            if arm.arm == "slice_positive":
+                continue
+            verdict = "refused" if arm.node is None else f"FAIL {arm.reason}"
+            print(f"- {verdict} {arm.arm} {arm.node or arm.gate_run}")
     return exits.OK
 
 
