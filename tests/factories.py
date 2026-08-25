@@ -5,15 +5,7 @@ from pathlib import Path
 
 from hypothesis import strategies as st
 
-from cairn.claims import (
-    ClaimStatement,
-    EvidenceNode,
-    GateRun,
-    HypothesisObject,
-    ReproRecord,
-    ReviewVerdict,
-    Ticket,
-)
+from cairn.claims import ClaimStatement, EvidenceNode, GateRun, HypothesisObject, ReproRecord, ReviewVerdict, Ticket
 from cairn.substrate import blob_hash
 
 VECTORS = Path(__file__).resolve().parent / "vectors"
@@ -38,15 +30,11 @@ def assumption_ids(names):
     return frozenset(assumption_id(n) for n in names)
 
 
-def scope(
-    family="toy_curve", size=(30, 50), assumptions=frozenset({"A1"}), param_ranges=None
-):
+def scope(family="toy_curve", size=(30, 50), assumptions=frozenset({"A1"}), param_ranges=None):
     return {
         "target_family": family,
         "size_interval": list(size),
-        "param_ranges": dict(param_ranges)
-        if param_ranges is not None
-        else {"bits": list(size)},
+        "param_ranges": dict(param_ranges) if param_ranges is not None else {"bits": list(size)},
         "assumption_set": assumption_ids(assumptions),
     }
 
@@ -59,24 +47,14 @@ def _cost_model(cost_model, rng):
     return dict(cost_model)
 
 
-def claim_statement(
-    family="toy_curve",
-    size=(30, 50),
-    assumptions=frozenset({"A1"}),
-    cost_model=None,
-    seed=0,
-    **kw,
-):
+def claim_statement(family="toy_curve", size=(30, 50), assumptions=frozenset({"A1"}), cost_model=None, seed=0, **kw):
     rng = _rng(seed)
     fields = {
         "claim_id": f"claim-{rng.randrange(16**8):08x}",
         "version": 1,
         "informal": f"rho on {family} costs c*sqrt(n) over {size[0]}-{size[1]} bits (case {rng.randrange(1000)})",
         "scope": scope(family, size, assumptions, kw.pop("param_ranges", None)),
-        "quantities": {
-            "units": {"cost": "core_s", "size": "bits"},
-            "cost_model": _cost_model(cost_model, rng),
-        },
+        "quantities": {"units": {"cost": "core_s", "size": "bits"}, "cost_model": _cost_model(cost_model, rng)},
         "created_at": CREATED_AT,
     }
     fields.update(kw)
@@ -87,42 +65,18 @@ def superseding_statement(statement, **kw):
     changes = {"supersedes": statement.hash, "version": statement.version + 1, **kw}
     fields = {
         name: getattr(statement, name)
-        for name in (
-            "claim_id",
-            "informal",
-            "scope",
-            "quantities",
-            "formal_source",
-            "source_claim_hash",
-            "status",
-            "created_at",
-        )
+        for name in ("claim_id", "informal", "scope", "quantities", "formal_source", "source_claim_hash", "status", "created_at")
     }
     return ClaimStatement(**{**fields, **changes})
 
 
-def hypothesis_object(
-    family="toy_curve",
-    cost_model=None,
-    claim_statement_hash=None,
-    supersedes=None,
-    seed=0,
-    **kw,
-):
+def hypothesis_object(family="toy_curve", cost_model=None, claim_statement_hash=None, supersedes=None, seed=0, **kw):
     rng = _rng(seed)
     model = _cost_model(cost_model, rng) or DEFAULT_COST_MODEL
     fields = {
         "target_family": family,
-        "claimed": {
-            "kind": "cost_model",
-            "exponent": model["exponent"],
-            "constant": model["constant"],
-            "crossover": str(model["crossover"]),
-        },
-        "method_identity": {
-            "interface_version": f"{family}/1",
-            "params": {"r": "20", "theta": "2^-10"},
-        },
+        "claimed": {"kind": "cost_model", "exponent": model["exponent"], "constant": model["constant"], "crossover": str(model["crossover"])},
+        "method_identity": {"interface_version": f"{family}/1", "params": {"r": "20", "theta": "2^-10"}},
         "declared_parameter_ranges": {"bits": [30, 50]},
         "sampling_distribution": None,
         "claim_statement_hash": claim_statement_hash,
@@ -141,17 +95,7 @@ def _producer(producer, rng):
     return producer, "skill"
 
 
-def evidence_node(
-    kind,
-    target_statement_hash,
-    population,
-    assumptions,
-    verdict=None,
-    repro=None,
-    producer=None,
-    seed=0,
-    **kw,
-):
+def evidence_node(kind, target_statement_hash, population, assumptions, verdict=None, repro=None, producer=None, seed=0, **kw):
     rng = _rng(seed)
     identity, tag = _producer(producer, rng)
     fields = {
@@ -162,9 +106,7 @@ def evidence_node(
         "producer_identity": identity,
         "producer_tag": tag,
         "verdict": verdict,
-        "repro_record_hash": repro
-        if repro is None or isinstance(repro, str)
-        else repro.hash,
+        "repro_record_hash": repro if repro is None or isinstance(repro, str) else repro.hash,
         "attempt_id": kw.pop("attempt_id", f"attempt-{rng.randrange(16**8):08x}"),
         "created_at": CREATED_AT,
     }
@@ -228,10 +170,7 @@ def ticket(hypothesis_key=None, tier=0, kind="hypothesis_object", seed=0, **kw):
     rng = _rng(seed)
     fields = {
         "hypothesis_key": hypothesis_key or _digest(rng),
-        "method_identity": {
-            "interface_version": "toy_curve/1",
-            "params": {"r": "20", "theta": "2^-10"},
-        },
+        "method_identity": {"interface_version": "toy_curve/1", "params": {"r": "20", "theta": "2^-10"}},
         "tier": tier,
         "kind": kind,
         "node_hash": _digest(rng),
@@ -242,26 +181,13 @@ def ticket(hypothesis_key=None, tier=0, kind="hypothesis_object", seed=0, **kw):
 
 
 def selftest_summary(origins, randomized_arm, cross_check):
-    return {
-        "corpus_origins": origins,
-        "randomized_arm": randomized_arm,
-        "cross_check": cross_check,
-        "pass": 4,
-        "floor": 4,
-    }
+    return {"corpus_origins": origins, "randomized_arm": randomized_arm, "cross_check": cross_check, "pass": 4, "floor": 4}
 
 
 def instance_from_vector(name="curve60_seed1"):
     data = json.loads((VECTORS / f"{name}.json").read_text())
     point = [int(c) for c in data["P"]]
-    return {
-        "p": int(data["p"]),
-        "a": int(data["a"]),
-        "b": int(data["b"]),
-        "n": int(data["n"]),
-        "P": point,
-        "Q": list(point),
-    }
+    return {"p": int(data["p"]), "a": int(data["a"]), "b": int(data["b"]), "n": int(data["n"]), "P": point, "Q": list(point)}
 
 
 FAMILIES = ("toy_curve", "model_curve", "prime_field")
