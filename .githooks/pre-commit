@@ -29,6 +29,35 @@ else
   exit 1
 fi
 
+# Beads this commit closes. Their declared test plan is checked deterministically
+# before the scored audit runs: the audit judges whether the tests are good, this
+# only answers whether the files the bead named are there at all.
+NEWLY_CLOSED="$(git diff --cached --unified=0 -- '.beads/*.jsonl' 2>/dev/null \
+  | uv run python -c '
+import re, sys
+ID_RE = re.compile(r"\"id\"\s*:\s*\"([a-z][a-z0-9_.-]*)\"")
+ST_RE = re.compile(r"\"status\"\s*:\s*\"([a-z_]+)\"")
+old, new = {}, {}
+for line in sys.stdin:
+    if line.startswith(("+++", "---")) or not line.startswith(("+", "-")):
+        continue
+    m_id, m_st = ID_RE.search(line), ST_RE.search(line)
+    if not (m_id and m_st):
+        continue
+    (new if line.startswith("+") else old)[m_id.group(1)] = m_st.group(1)
+for bid, st in new.items():
+    if st == "closed" and old.get(bid) != "closed":
+        print(bid)
+' | sort -u || true)"
+
+if [ -n "$NEWLY_CLOSED" ]; then
+  # shellcheck disable=SC2086
+  if ! scripts/bead-test-plan.sh $NEWLY_CLOSED; then
+    echo "[pre-commit] BLOCKED: a bead being closed names a test file that is absent or empty." >&2
+    exit 1
+  fi
+fi
+
 SKILL=""
 for cand in \
   ".claude/skills/beads-compliance-and-completion-verification" \
