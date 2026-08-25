@@ -1,7 +1,6 @@
 import copy
 import json
 import re
-import sqlite3
 import sys
 from pathlib import Path
 
@@ -12,7 +11,6 @@ from hypothesis import strategies as st
 from cairn import gateplan
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _substrate_helpers as helpers  # noqa: E402
 from mutants import gateplan_mutants  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -25,6 +23,39 @@ json_values = st.recursive(
     max_leaves=6,
 )
 arbitrary_plans = st.lists(st.dictionaries(st.text(), json_values, max_size=4), max_size=6)
+
+PERTURBATIONS = ("duplicate_name", "bad_expect", "bad_kind", "extra_field", "bad_entry", "bad_x", "drop_field", "wrong_type_fixture")
+
+
+@st.composite
+def near_miss_plans(draw):
+    rows = [dict(row) for row in COMMITTED]
+    mode = draw(st.sampled_from(["intact", "subset", "perturbed"]))
+    if mode == "subset":
+        keep = draw(st.lists(st.booleans(), min_size=len(rows), max_size=len(rows)))
+        return [row for row, flag in zip(rows, keep) if flag]
+    if mode == "intact":
+        return rows
+    index = draw(st.integers(min_value=0, max_value=len(rows) - 1))
+    how = draw(st.sampled_from(PERTURBATIONS))
+    row = rows[index]
+    if how == "duplicate_name" and index > 0:
+        row["step"] = rows[draw(st.integers(min_value=0, max_value=index - 1))]["step"]
+    elif how == "bad_expect":
+        row["expect"] = draw(st.none() | st.text() | st.integers())
+    elif how == "bad_kind":
+        row["kind"] = draw(st.none() | st.text() | st.integers())
+    elif how == "extra_field":
+        row[draw(st.sampled_from(["scope", "cmd", "note"]))] = draw(json_values)
+    elif how == "bad_entry" and row.get("kind") == gateplan.KIND_VERIFIER:
+        row["entry"] = draw(st.none() | st.text())
+    elif how == "bad_x" and row.get("entry") == gateplan.ENTRY_VERIFY:
+        row["x"] = draw(st.none() | st.text() | st.integers())
+    elif how == "wrong_type_fixture" and row.get("kind") == gateplan.KIND_VERIFIER:
+        row["fixture"] = draw(st.none() | st.integers() | st.lists(st.text(), max_size=2))
+    elif how == "drop_field":
+        row.pop(draw(st.sampled_from(sorted(row))), None)
+    return rows
 
 
 def _refusal(plan_rows):
@@ -41,13 +72,21 @@ def _committed_is_valid(reason):
 
 @given(plan_rows=arbitrary_plans)
 @settings(max_examples=500)
-def test_an_arbitrary_plan_document_is_either_refused_by_reason_or_carries_every_required_step(plan_rows):
+def test_an_arbitrary_plan_document_raises_nothing_but_plan_invalid(plan_rows):
+    reason = _refusal(plan_rows)
+    assert reason is None or (isinstance(reason, str) and re.match(r"[a-z-]+(:|$)", reason))
+
+
+@given(plan_rows=near_miss_plans())
+@settings(max_examples=500)
+def test_a_near_miss_plan_either_loads_with_every_required_step_or_names_its_first_bad_path(plan_rows):
     reason = _refusal(plan_rows)
     if reason is None:
         loaded = gateplan.GatePlan.load(plan_rows)
+        assert [step.step for step in loaded.steps] == [row["step"] for row in plan_rows]
         assert set(gateplan.REQUIRED_STEPS) <= {step.step for step in loaded.steps}
         return
-    assert isinstance(reason, str) and reason
+    assert re.match(r"[a-z-]+(:|$)", reason), reason
 
 
 @pytest.mark.parametrize("plan_rows", [None, 0, "steps", 3.5, True, {}, {"steps": []}], ids=lambda v: type(v).__name__ + str(v)[:8])
@@ -96,18 +135,10 @@ def test_every_mutation_of_the_committed_plan_is_refused_with_a_named_path(name)
     assert re.match(r"[a-z-]+:", reason), reason
 
 
-@given(plan_rows=arbitrary_plans)
+@given(plan_rows=st.one_of(arbitrary_plans, near_miss_plans()))
 @settings(max_examples=500, suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_refusing_a_plan_writes_no_gate_runs_row_and_spawns_no_subprocess(plan_rows, tmp_path_factory, popen_spy):
-    directory = tmp_path_factory.mktemp("noside")
-    sub = helpers.open_writer(directory)
-    sub.close()
+def test_validating_a_plan_never_spawns_a_subprocess(plan_rows, popen_spy):
     _refusal(plan_rows)
-    conn = sqlite3.connect(f"file:{directory / 'substrate.sqlite'}?mode=ro", uri=True)
-    try:
-        assert conn.execute("SELECT count(*) FROM gate_runs").fetchone()[0] == 0
-    finally:
-        conn.close()
     assert popen_spy == []
 
 

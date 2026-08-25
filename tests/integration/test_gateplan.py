@@ -9,7 +9,7 @@ from cairn import attest, bundle, claims, gateplan, keys, log
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import _substrate_helpers as helpers  # noqa: E402
-from mutants import verifier_mutants  # noqa: E402
+from mutants import gateplan_mutants, verifier_mutants  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 WEAK_ACCEPT = {"rc": 0, "stdout": None, "stderr_empty": False}
@@ -194,4 +194,26 @@ def test_the_waiver_step_fails_when_record_zero_does_not_name_the_fixture_waiver
     failed = result.first_failure
     assert failed.step == "waiver_cannot_advance" and failed.observed == "waiver-record-absent"
     assert [s.step for s in result.steps if s.result == "blocked"] == ["tier_gate_selftest_two_above"]
+    sub.close()
+
+
+def test_an_invalid_plan_spawns_no_gp_and_the_valid_prefix_mutant_shows_the_refusal_is_load_bearing(tmp_path, plan_env, db_snapshot, popen_spy):
+    def drop(directory):
+        path = directory / "gate_plan.json"
+        obj = json.loads(path.read_text())
+        obj["steps"] = [s for s in obj["steps"] if s["step"] != "verifier_selftest_crash_control"]
+        path.write_text(json.dumps(obj))
+
+    src = _source_copy(tmp_path, "load-bearing", drop)
+    gate_bundle, sub, attest_path = plan_env(name="load-bearing", src=src)
+    before = db_snapshot(sub.conn, "load-bearing-before")
+    spawns_at_start = len(popen_spy)
+    with pytest.raises(gateplan.PlanInvalid, match="missing-required-selftest:verifier_selftest_crash_control"):
+        gateplan.GatePlan.from_bundle(gate_bundle)
+    assert len(popen_spy) == spawns_at_start
+    assert db_snapshot(sub.conn, "load-bearing-refused")["gate_runs"] == before["gate_runs"]
+    with gateplan_mutants.loader_runs_valid_prefix():
+        gateplan.GatePlan.from_bundle(gate_bundle).run(gate_bundle, sub, attest_path)
+    assert len(popen_spy) > spawns_at_start
+    assert db_snapshot(sub.conn, "load-bearing-mutant")["gate_runs"] > before["gate_runs"]
     sub.close()
