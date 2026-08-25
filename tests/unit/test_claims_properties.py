@@ -7,8 +7,8 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import factories  # noqa: E402
-from mutants import claims_mutants  # noqa: E402
+import factories
+from mutants import claims_mutants
 
 hexdigest = st.binary(min_size=32, max_size=32).map(bytes.hex)
 families = st.sampled_from(["toy_curve", "planted_curve", "interval_dlp"])

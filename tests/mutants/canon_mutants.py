@@ -54,8 +54,7 @@ def untagged_hasher():
 def first_n_fields_encoder():
     def encode(self, value):
         out = [canon.TAG_STRUCT, canon.STR.encode(self.name)]
-        for field in self.fields[:-1]:
-            out.append(field.type.encode(value[field.name]))
+        out.extend(field.type.encode(value[field.name]) for field in self.fields[:-1])
         return b"".join(out)
 
     with _swap(canon.Struct, "encode", encode):

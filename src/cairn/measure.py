@@ -71,10 +71,14 @@ def toy_curve_tries(sizes, seeds):
 
 
 def table_lines(rows):
-    lines = [TABLE_HEADER, TABLE_RULE]
-    for r in rows:
-        lines.append(f"| {r['bits']} | {r['seeds']} | {r['mean_tries']:.2f} | {r['sd_tries']:.2f} | {r['min_tries']} | {r['max_tries']} | {r['per_try_ms']:.3f} | {r['in_process_mean_wall_s']:.4f} | {r['mean_wall_s']:.4f} |")
-    return lines
+    return [
+        TABLE_HEADER,
+        TABLE_RULE,
+        *(
+            f"| {r['bits']} | {r['seeds']} | {r['mean_tries']:.2f} | {r['sd_tries']:.2f} | {r['min_tries']} | {r['max_tries']} | {r['per_try_ms']:.3f} | {r['in_process_mean_wall_s']:.4f} | {r['mean_wall_s']:.4f} |"
+            for r in rows
+        ),
+    ]
 
 
 def parse_sizes(text):

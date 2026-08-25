@@ -20,9 +20,10 @@ from cairn.tiergate import (
     TierGate,
     TierRefused,
 )
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _substrate_helpers as helpers  # noqa: E402
-import factories  # noqa: E402
+import _substrate_helpers as helpers
+import factories
 
 BUDGET_PLENTY = 10_000_000.0
 METHOD_IDENTITY = {"interface_version": "toy_curve/1", "params": {"r": "20"}}
@@ -196,7 +197,7 @@ def test_a_stale_bundle_ticket_is_refused_once_reminted_and_admitted_on_the_next
         bundle_hash="0" * 64,
     )
     claims.write_ticket(sub, stale)
-    args = dict(declared_tier=1, core_s=10, hypothesis_key=obj.hash, skill_identity_hash=identity)
+    args = {"declared_tier": 1, "core_s": 10, "hypothesis_key": obj.hash, "skill_identity_hash": identity}
 
     refused = tier_gate.admit(launch(sub, **args))
     assert isinstance(refused, TierRefused)

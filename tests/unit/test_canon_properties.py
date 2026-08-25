@@ -12,8 +12,10 @@ from cairn import canon, keys
 from cairn.canon import BLOBREF, BOOL, BYTES, INT, STR, CanonError, List, Map, Set
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from _canon_decoder import decode, decode_int  # noqa: E402
-from mutants import canon_mutants  # noqa: E402
+import contextlib
+
+from _canon_decoder import decode, decode_int
+from mutants import canon_mutants
 
 CORPUS = Path(__file__).resolve().parent.parent / "fuzz_corpus" / "canon"
 SIMPLE_SCHEMAS = {"str": STR, "int": INT, "list_bytes": List(BYTES), "list_bytes_hex": List(BYTES), "list_str": List(STR)}
@@ -222,18 +224,14 @@ def test_mutant_fixed_width_int_encoder_is_killed_by_mr6():
 
 @given(st.sampled_from(sorted(LEAF_TYPES)), payloads)
 def test_fuzz_leaf_encoders_raise_only_canon_error(type_name, payload):
-    try:
+    with contextlib.suppress(CanonError):
         canon.encode(LEAF_TYPES[type_name], payload)
-    except CanonError:
-        pass
 
 
 @given(recipes, st.sampled_from(keys.RECIPE.names), payloads)
 def test_fuzz_spliced_recipe_field_raises_only_canon_error_or_encodes(recipe, field, payload):
-    try:
+    with contextlib.suppress(CanonError):
         canon.encode(keys.RECIPE, {**recipe, field: payload})
-    except CanonError:
-        pass
 
 
 @given(recipes, st.text(min_size=1, max_size=12).filter(lambda k: k not in keys.RECIPE.names))

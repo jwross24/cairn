@@ -8,7 +8,7 @@ import pytest
 from cairn import canon, claims, keys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import factories  # noqa: E402
+import factories
 
 VECTOR_FILE = "claims_kat.json"
 VECTORS_PATH = Path(__file__).resolve().parent.parent / "vectors" / VECTOR_FILE

@@ -9,7 +9,7 @@ from cairn import tiergate
 from cairn.tiergate import BUDGET, REASON_ORDER, TICKET_BUNDLE_MISMATCH, UNCERTIFIED, YANKED
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from mutants import tiergate_mutants  # noqa: E402
+from mutants import tiergate_mutants
 
 BOUNDARY_EDGES = (1, 3600, 3_600_000)
 

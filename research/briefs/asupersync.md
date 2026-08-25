@@ -19,7 +19,7 @@
 - **Epistemics risk.** None; strictly strengthens "replayable or inadmissible".
 
 ### M2. Seeded-lab determinism recipe (what to record)
-- **Mechanism.** One seed → xorshift64 scheduler RNG, separate `entropy_seed`, virtual clock from `Time::ZERO`, seeded hasher for every set/map on the hot path, one `rng.next_u64()` per step recorded to the trace (`src/lab/runtime.rs:2066-2135,3710-3720`; `src/lab/config.rs:123-179`). `TraceRecorder` records task scheduled/yielded/completed/spawned, time advanced, timer created/fired/cancelled, io ready/result/error, rng seed+values, chaos injections, waker wakes (`src/trace/recorder.rs:466-660`).
+- **Mechanism.** One seed → xorshift64 scheduler RNG, separate `entropy_seed`, virtual clock from `Time::ZERO`, seeded hasher for every set/map on the hot path, one `rng.next_u64()` per step recorded to the trace (`src/lab/runtime.rs:2066-2135,3710-3720`; `src/lab/config.rs:123-179`). `TraceRecorder` records task scheduled/yielded/completed/spawned, time advanced, `timer created/fired/cancelled`, io ready/result/error, rng seed+values, chaos injections, waker wakes (`src/trace/recorder.rs:466-660`).
 - **Home.** Skill interface self-tests (known-answer under fixed seed); reproducibility gate (the list of nondeterminism sources to pin).
 - **Cost.** Discipline more than code; the seeded-hasher requirement is easy to miss (they hit it: `:2112-2116` comment).
 - **Evidence.** PROVEN-in-source (same tests as M1; `tests/lab_determinism.rs` has 20+ same-seed tests, names at `:149-1181`).

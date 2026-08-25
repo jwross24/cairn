@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn.profile import CostProfile, Evaluation, ProfileUndeclared, Production, SizeCost, Verification
+from cairn.profile import CostProfile, Evaluation, Production, ProfileUndeclared, SizeCost, Verification
 from cairn.skills import toy_curve
 
 BRIEF = Path(__file__).resolve().parent.parent.parent / "research" / "grounding" / "m0-stack-facts.md"
@@ -14,13 +14,13 @@ def committed_table():
     text = BRIEF.read_text()
     start = text.index("### 6a.")
     section = text[start:]
-    end = re.search(r"^## ", section, re.M)
+    end = re.search(r"^## ", section, re.MULTILINE)
     section = section[: end.start()] if end else section
     rows = {}
     for line in section.splitlines():
         cells = [c.strip() for c in line.strip().strip("|").split("|")] if line.startswith("|") else []
         if len(cells) == len(COLUMNS) and cells[0].isdigit():
-            row = dict(zip(COLUMNS, cells))
+            row = dict(zip(COLUMNS, cells, strict=True))
             rows[int(row["bits"])] = {k: (int(v) if k in ("bits", "seeds", "min_tries", "max_tries") else float(v)) for k, v in row.items()}
     return rows
 

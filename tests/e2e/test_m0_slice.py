@@ -261,7 +261,7 @@ ABORTS = [
 ]
 
 
-@pytest.mark.parametrize("name,setup_delta,expected_reason,gate_plan_rows", ABORTS, ids=[a[0] for a in ABORTS])
+@pytest.mark.parametrize(("name", "setup_delta", "expected_reason", "gate_plan_rows"), ABORTS, ids=[a[0] for a in ABORTS])
 def test_each_abort_path_exits_gate_refused_before_any_skill_launch(deploy, capsys, name, setup_delta, expected_reason, gate_plan_rows):
     deploy["ready"]()
     setup_delta(deploy)

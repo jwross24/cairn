@@ -254,7 +254,7 @@ def robot_docs_text():
     return "\n".join(lines) + "\n"
 
 
-def _robot_docs_run(ns):
+def _robot_docs_run(ns):  # noqa: ARG001
     sys.stdout.write(robot_docs_text())
     return exits.OK
 

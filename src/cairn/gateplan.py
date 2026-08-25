@@ -53,7 +53,7 @@ MISMATCH_REASON = "expect-mismatch"
 BLOCKED_PREFIX = "blocked-by:"
 
 BASE_STEP_FIELDS = ("step", "kind", "expect")
-VERIFIER_STEP_FIELDS = BASE_STEP_FIELDS + ("fixture", "entry", "x", "stack")
+VERIFIER_STEP_FIELDS = (*BASE_STEP_FIELDS, "fixture", "entry", "x", "stack")
 
 CORPUS_FIELDS = ("p", "a", "b", "n", "Px", "Py", "Qx", "Qy")
 CRASH_FIELDS = ("p", "a", "b")
@@ -198,7 +198,7 @@ def plan_outcomes(steps, observe):
         if observed == step.expect:
             yield step, observed, RESULT_PASS, tuple(extra), digests
         else:
-            yield step, observed, RESULT_FAIL, (MISMATCH_REASON, f"observed:{observed}") + tuple(extra), digests
+            yield step, observed, RESULT_FAIL, (MISMATCH_REASON, f"observed:{observed}", *tuple(extra)), digests
             blocker = step.step
 
 

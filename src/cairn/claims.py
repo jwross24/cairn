@@ -1,6 +1,5 @@
 import json
 from dataclasses import dataclass, field
-from pathlib import Path
 
 from cairn import canon, keys, log
 from cairn.canon import BOOL, INT, NON_EMPTY_STR, STR, Field, List, Map, Optional, Set, Struct

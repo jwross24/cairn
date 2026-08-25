@@ -84,7 +84,7 @@ def test_gp_exit_arity_stack_and_small_p_facts(load_vector, stack, stdin_line, e
     curve60 = load_vector(CURVE60_VECTOR)
     line = _fill(stdin_line, curve60)
     expected_out = _fill(expected_stdout, curve60)
-    argv = pari.gp_argv(stack) + [str(PROBE_GP)]
+    argv = [*pari.gp_argv(stack), str(PROBE_GP)]
     rc, out, err = pari.run_gp([str(PROBE_GP)], line + "\n", stack=stack)
     lg.info(
         "gp_fact",

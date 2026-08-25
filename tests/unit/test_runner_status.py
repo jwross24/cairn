@@ -65,7 +65,7 @@ CASES = [
 ]
 
 
-@pytest.mark.parametrize("exit_status,well_formed,skill_status,where,expected", CASES)
+@pytest.mark.parametrize(("exit_status", "well_formed", "skill_status", "where", "expected"), CASES)
 def test_the_status_table(exit_status, well_formed, skill_status, where, expected):
     wall = UNDER if where == "under" else OVER
     assert (
@@ -109,7 +109,7 @@ def test_an_absent_ceiling_never_produces_budget_exceeded():
 
 
 @pytest.mark.parametrize(
-    "declared,multiplier,expected",
+    ("declared", "multiplier", "expected"),
     [(0.2, 4, 0.8), (0.1372, 4, 0.5488), (1.0, 1, 1.0), (0.0, 4, 0.0)],
     ids=["the-bead's-0.2s", "toy-curve-30-bit", "unit-multiplier", "zero-expectation"],
 )
@@ -175,7 +175,7 @@ def test_the_runner_never_emits_skill_yanked_though_the_schema_admits_it():
 
 
 @pytest.mark.parametrize(
-    "platform,raw,expected",
+    ("platform", "raw", "expected"),
     [("darwin", 16449536, 16449536), ("linux", 16064, 16449536)],
     ids=["macos-reports-bytes", "linux-reports-kilobytes"],
 )

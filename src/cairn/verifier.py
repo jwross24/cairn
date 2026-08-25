@@ -70,9 +70,7 @@ class AcceptPredicate:
             return False
         if self.stdout is not None and (not isinstance(stdout, str) or stdout.strip() != self.stdout):
             return False
-        if self.stderr_empty and stderr != "":
-            return False
-        return True
+        return not (self.stderr_empty and stderr != "")
 
 
 DEFAULT_ACCEPT = AcceptPredicate(0, "OK", True)
@@ -347,7 +345,7 @@ class Verifier:
     def _spawn(self, line, instance_hash, x, start):
         config = self.config
         path = materialize_script(config)
-        argv = pari.gp_argv(config.stack_ceiling) + [path]
+        argv = [*pari.gp_argv(config.stack_ceiling), path]
         try:
             rc, out, err = pari.run_gp([path], line, timeout_s=config.timeout_s, stack=config.stack_ceiling)
         except pari.GpTimeout:

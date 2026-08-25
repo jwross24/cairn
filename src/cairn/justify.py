@@ -448,7 +448,7 @@ def _configure(parser):
     )
 
 
-def _payload(sub, derivation):
+def _payload(derivation):
     return {
         "statement_hash": derivation.statement_hash,
         "tag": derivation.tag,
@@ -481,7 +481,7 @@ def _run(ns):
     try:
         with substrate.Substrate.open(ns.db) as sub:
             derivation = derive_tag(sub, ns.statement, ns.attest)
-            payload = _payload(sub, derivation)
+            payload = _payload(derivation)
     except substrate.WriterAlreadyOpen as exc:
         raise CliError(
             exits.CONFLICT,

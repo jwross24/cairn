@@ -10,7 +10,7 @@ from cairn import attest
 from cairn.substrate import blob_hash
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from mutants import attest_mutants  # noqa: E402
+from mutants import attest_mutants
 
 CORPUS = Path(__file__).resolve().parent.parent / "fuzz_corpus" / "attest"
 INT64 = 2**63
@@ -113,10 +113,7 @@ def test_an_unreadable_file_raises_the_typed_error(tmp_path):
 
 
 def _corpus_case(case):
-    if "raw_hex" in case:
-        data = bytes.fromhex(case["raw_hex"])
-    else:
-        data = _framed([bytes.fromhex(r) for r in case["records"]])
+    data = bytes.fromhex(case["raw_hex"]) if "raw_hex" in case else _framed([bytes.fromhex(r) for r in case["records"]])
     digest = case["digest_hex"] if "digest_hex" in case else blob_hash(bytes.fromhex(case["records"][case["digest_of_record"]]))
     return data, case["offset"], digest
 

@@ -12,7 +12,7 @@ from cairn import log, pari, verifier
 from cairn.verifier import Instance, Submission, Verifier, default_config
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _ec  # noqa: E402
+import _ec
 
 CURVE60 = _ec.curve60()
 X60 = 123456789

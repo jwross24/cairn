@@ -248,7 +248,7 @@ def covering_populations(draw, scope):
 @st.composite
 def narrowed_populations(draw, scope):
     population = draw(covering_populations(scope))
-    axis = draw(st.sampled_from(["size_interval"] + sorted(scope["param_ranges"])))
+    axis = draw(st.sampled_from(["size_interval", *sorted(scope["param_ranges"])]))
     target = (
         scope["size_interval"]
         if axis == "size_interval"
@@ -325,7 +325,7 @@ def arbitrary_records(draw):
                 st.none(),
                 st.integers(),
                 st.dictionaries(
-                    st.sampled_from(PARAM_AXES + ("extra",)), _INTERVALISH, max_size=3
+                    st.sampled_from((*PARAM_AXES, "extra")), _INTERVALISH, max_size=3
                 ),
             )
         ),

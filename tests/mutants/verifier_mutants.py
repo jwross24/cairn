@@ -35,7 +35,7 @@ def driver_reduces_x_mod_p():
 
     def render(fields):
         f = tuple(fields)
-        return real(f[:-1] + (f[-1] % f[0],))
+        return real((*f[:-1], f[-1] % f[0]))
 
     with _swap(verifier, "render_line", render):
         yield

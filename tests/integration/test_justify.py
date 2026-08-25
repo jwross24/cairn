@@ -9,14 +9,14 @@ from cairn import attest, claims, exits, justify, keys
 from cairn.justify import CONJECTURE, PROVEN, SPECULATION, STRONG_EMPIRICAL
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import factories  # noqa: E402
+import factories
 from _substrate_helpers import (
     ENV_MANIFEST_HASH,
     IDENTITY_A,
     TRANSCRIPT_HASH,
     open_writer,
     recipe,
-)  # noqa: E402
+)
 
 WAIVER_TARGET = "f" * 64
 COVERING_CROSS_CHECK = {"axis": "algorithm", "independent_range": {"bits": [0, 60]}}

@@ -351,7 +351,7 @@ def test_build_and_pin_emit_one_json_document_carrying_the_same_hash(tmp_path, c
 @pytest.mark.parametrize("missing", ["bundle", "pin"], ids=["no-bundle", "no-pin"])
 def test_attest_init_without_the_gate_artifacts_exits_environment(pinned_bundle, tmp_path, capsys, missing):
     bundle_path, pin_path = pinned_bundle()
-    paths = {"bundle": bundle_path, "pin": pin_path, **{missing: tmp_path / f"absent-{missing}"}}
+    paths = {"bundle": bundle_path, "pin": pin_path, missing: tmp_path / f"absent-{missing}"}
     log_path = tmp_path / "attestations.log"
     code, out, err = _run(["attest", "init", *_paths(paths["bundle"], paths["pin"]), "--attest", str(log_path)], capsys)
     assert code == exits.ENVIRONMENT

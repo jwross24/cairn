@@ -7,7 +7,7 @@ from cairn import justify
 from cairn.justify import CONJECTURE, PROVEN, SPECULATION, STRONG_EMPIRICAL
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import factories  # noqa: E402
+import factories
 
 A1 = factories.assumption_id("A1")
 A2 = factories.assumption_id("A2")

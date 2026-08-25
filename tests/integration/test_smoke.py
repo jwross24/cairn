@@ -1,4 +1,3 @@
-import pytest
 
 from cairn import pari
 

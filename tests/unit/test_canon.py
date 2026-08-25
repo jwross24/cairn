@@ -1,5 +1,4 @@
 import json
-import re
 import shutil
 import sys
 from pathlib import Path
@@ -10,7 +9,7 @@ from cairn import canon, cli, kat, keys
 from cairn.canon import BLOBREF, BOOL, INT, STR, CanonError, List, Map, Set
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from _canon_decoder import decode  # noqa: E402
+from _canon_decoder import decode
 
 VECTOR_FILE = "canon_kat.json"
 DIGEST_A = "11" * 32

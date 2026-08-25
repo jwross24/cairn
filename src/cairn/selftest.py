@@ -5,8 +5,8 @@ from pathlib import Path
 import blake3
 
 from cairn import canon, cli, exits, keys, log
-from cairn.errors import CliError
 from cairn.canon import STR, Field, Struct
+from cairn.errors import CliError
 
 SCHEMA_VERSION = 1
 CORPUS_PATH = Path(__file__).resolve().parent / "skills" / "toy_curve_corpus.json"

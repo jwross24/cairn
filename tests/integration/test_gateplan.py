@@ -9,8 +9,8 @@ import pytest
 from cairn import attest, bundle, claims, gateplan, kat, keys, log
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _substrate_helpers as helpers  # noqa: E402
-from mutants import gateplan_mutants, verifier_mutants  # noqa: E402
+import _substrate_helpers as helpers
+from mutants import gateplan_mutants, verifier_mutants
 
 ROOT = Path(__file__).resolve().parents[2]
 WEAK_ACCEPT = {"rc": 0, "stdout": None, "stderr_empty": False}
@@ -27,7 +27,7 @@ def plan_env(tmp_path, pinned_bundle, clear_flags, db_snapshot):
         sub = helpers.open_writer(tmp_path, name=f"{name}-substrate.sqlite")
         return gate_bundle, sub, attest_path
 
-    yield make
+    return make
 
 
 def _source_copy(tmp_path, name, edit):
@@ -310,7 +310,7 @@ def test_a_bundle_with_no_fixtures_block_is_refused_by_name_not_by_key_error(tmp
     src = _source_copy(tmp_path, "no-fixtures", lambda d: _edit_plan(d, lambda o: o.pop("fixtures")))
     bundle_path, pin_path = pinned_bundle(name="no-fixtures", src=src)
     gate_bundle = bundle.GateBundle.open(bundle_path, pin_path)
-    with pytest.raises(bundle.BundleError, match="gate_plan.fixtures.waiver_hypothesis"):
+    with pytest.raises(bundle.BundleError, match=r"gate_plan\.fixtures\.waiver_hypothesis"):
         gate_bundle.waiver_target()
 
 

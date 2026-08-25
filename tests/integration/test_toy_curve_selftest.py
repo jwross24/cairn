@@ -313,11 +313,10 @@ def test_a_field_without_an_origin_is_refused_before_any_case_runs(
     )
     doc = copy.deepcopy(selftest.load_corpus())
     del doc["cases"][1]["fields"]["P"]["origin"]
-    with substrate.Substrate.open(tmp_path / "substrate.sqlite") as sub:
-        with pytest.raises(
-            selftest.CorpusSchemaError, match=r"\$\.cases\[1\]\.fields\.P"
-        ):
-            selftest.certify(sub, _config(bundle_path, pin_path), doc=doc)
+    with substrate.Substrate.open(tmp_path / "substrate.sqlite") as sub, pytest.raises(
+        selftest.CorpusSchemaError, match=r"\$\.cases\[1\]\.fields\.P"
+    ):
+        selftest.certify(sub, _config(bundle_path, pin_path), doc=doc)
     assert calls == [] and reached == []
     assert _certificate_rows(tmp_path / "substrate.sqlite") == []
 
@@ -391,7 +390,7 @@ LEDGER_CASES = [
 
 
 @pytest.mark.parametrize(
-    "case_id,expected_ledger,postcondition",
+    ("case_id", "expected_ledger", "postcondition"),
     LEDGER_CASES,
     ids=["F5", "GF101", "bits150", "negative_control"],
 )
@@ -421,7 +420,7 @@ def _result(accepted, reason):
 
 
 @pytest.mark.parametrize(
-    "behavior,match",
+    ("behavior", "match"),
     [
         ("accept_everything", "was accepted"),
         ("refuse_everything", "was refused"),
@@ -472,16 +471,18 @@ def test_the_verifier_arm_drives_the_real_verifier_once_per_draw(
     assert submitted[0::2] == selftest._draws(
         seed, out.n, selftest.DRAW_COUNT, b"verifier-x"
     )
-    assert all(a != b for a, b in zip(submitted[0::2], submitted[1::2]))
+    assert all(a != b for a, b in zip(submitted[0::2], submitted[1::2], strict=True))
 
 
 def test_a_case_below_the_floor_refuses(tmp_path, pinned_bundle):
     bundle_path, pin_path = pinned_bundle()
     doc = copy.deepcopy(selftest.load_corpus())
     doc["cases"][2]["ledger"] = "known_gap"
-    with substrate.Substrate.open(tmp_path / "substrate.sqlite") as sub:
-        with pytest.raises(selftest.SelftestFailed, match="below the floor 4"):
-            selftest.certify(sub, _config(bundle_path, pin_path), doc=doc)
+    with (
+        substrate.Substrate.open(tmp_path / "substrate.sqlite") as sub,
+        pytest.raises(selftest.SelftestFailed, match="below the floor 4"),
+    ):
+        selftest.certify(sub, _config(bundle_path, pin_path), doc=doc)
     assert _certificate_rows(tmp_path / "substrate.sqlite") == []
 
 
@@ -498,9 +499,11 @@ def test_a_diverging_double_run_refuses(tmp_path, pinned_bundle, monkeypatch):
         return result
 
     monkeypatch.setattr(selftest, "run_once", drifting)
-    with substrate.Substrate.open(tmp_path / "substrate.sqlite") as sub:
-        with pytest.raises(selftest.SelftestFailed, match="double-run"):
-            selftest.certify(sub, _config(bundle_path, pin_path))
+    with (
+        substrate.Substrate.open(tmp_path / "substrate.sqlite") as sub,
+        pytest.raises(selftest.SelftestFailed, match="double-run"),
+    ):
+        selftest.certify(sub, _config(bundle_path, pin_path))
     assert _certificate_rows(tmp_path / "substrate.sqlite") == []
 
 

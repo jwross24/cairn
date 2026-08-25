@@ -10,7 +10,7 @@ from hypothesis import strategies as st
 from cairn import gateplan
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from mutants import gateplan_mutants  # noqa: E402
+from mutants import gateplan_mutants
 
 ROOT = Path(__file__).resolve().parents[2]
 COMMITTED = json.loads((ROOT / "bundle" / "gate_plan.json").read_text())["steps"]
@@ -41,7 +41,7 @@ REFUSALS = [
 ]
 
 
-@pytest.mark.parametrize("plan_rows,expected_reason", REFUSALS)
+@pytest.mark.parametrize(("plan_rows", "expected_reason"), REFUSALS)
 def test_an_invalid_plan_is_refused_before_any_step_runs(plan_rows, expected_reason):
     with pytest.raises(gateplan.PlanInvalid, match=expected_reason):
         gateplan.GatePlan.load(plan_rows)
@@ -59,7 +59,7 @@ def _synthetic(count):
 
 
 def _observer(outcomes):
-    scripted = dict(zip((f"s{i}" for i in range(len(outcomes))), outcomes))
+    scripted = dict(zip((f"s{i}" for i in range(len(outcomes))), outcomes, strict=True))
     seen = []
 
     def observe(step):

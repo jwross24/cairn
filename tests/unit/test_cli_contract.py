@@ -1,8 +1,4 @@
 import json
-import os
-import re
-import sys
-from pathlib import Path
 
 import pytest
 
@@ -137,7 +133,8 @@ def _deploy_argv(name, tmp_path, pinned_bundle, clear_flags, capsys):
     attest_path = tmp_path / "attestations.log"
     clear_flags(attest_path)
     if name in ("gate", "m0-run"):
-        from cairn import attest, bundle as bundle_mod
+        from cairn import attest
+        from cairn import bundle as bundle_mod
 
         gate_bundle = bundle_mod.GateBundle.open(bundle_path, pin_path)
         attest.init(attest_path, gate_bundle.waiver_target())
@@ -311,7 +308,7 @@ def test_dangerous_fixture_is_refused_pre_run_without_its_gating_flag(
         dry_run_default=True,
     )
     assert _run(["dry"], capsys)[0] == exits.OK and len(calls) == 2
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="gating"):
         cli.register(
             "ungated",
             lambda p: None,

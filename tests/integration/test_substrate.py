@@ -2,11 +2,27 @@ import json
 import sqlite3
 
 import pytest
+from _substrate_helpers import (
+    ENV_MANIFEST_HASH,
+    IDENTITY_A,
+    IDENTITY_B,
+    SELFTEST_SUMMARY,
+    TRANSCRIPT_HASH,
+    launch,
+    open_writer,
+    recipe,
+)
 
 from cairn import canon, keys, substrate
-from cairn.substrate import GradeError, HashCollision, HashMismatch, Substrate, UnknownAttempt, UnknownNode, WriterAlreadyOpen
-
-from _substrate_helpers import ENV_MANIFEST_HASH, IDENTITY_A, IDENTITY_B, SELFTEST_SUMMARY, TRANSCRIPT_HASH, launch, open_writer, recipe
+from cairn.substrate import (
+    GradeError,
+    HashCollision,
+    HashMismatch,
+    Substrate,
+    UnknownAttempt,
+    UnknownNode,
+    WriterAlreadyOpen,
+)
 
 NON_OK_STATUSES = ("RUNNING", "FAIL", "DISAGREE", "BUDGET_EXCEEDED", "SKILL_YANKED", "INTERRUPTED")
 

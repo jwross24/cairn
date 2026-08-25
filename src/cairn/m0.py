@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import blake3
 
 from cairn import bundle, canon, claims, cli, exits, gateplan, keys, log, pari, runner, substrate, tiergate, verifier
-from cairn.canon import BOOL, INT, NON_EMPTY_STR, Field, List, Map, Optional, STR, Struct
+from cairn.canon import BOOL, INT, NON_EMPTY_STR, STR, Field, List, Optional, Struct
 from cairn.errors import CliError
 from cairn.skills import toy_curve
 

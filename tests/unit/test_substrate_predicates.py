@@ -1,6 +1,6 @@
 import blake3
 import pytest
-from hypothesis import assume, given
+from hypothesis import given
 from hypothesis import strategies as st
 
 from cairn import substrate

@@ -9,10 +9,19 @@ from pathlib import Path
 import pytest
 
 from cairn import keys, pari, verifier
-from cairn.verifier import AcceptPredicate, Instance, Submission, Verifier, VerifierConfig, VerifierConfigError, VerifierResult, default_config
+from cairn.verifier import (
+    AcceptPredicate,
+    Instance,
+    Submission,
+    Verifier,
+    VerifierConfig,
+    VerifierConfigError,
+    VerifierResult,
+    default_config,
+)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _ec  # noqa: E402
+import _ec
 
 CURVE60 = _ec.curve60()
 X60 = 123456789
@@ -37,7 +46,7 @@ def _outside_hasse(p):
 
 REFUSALS = [
     ("arity-missing-Py", lambda i, x: (Instance(i.p, i.a, i.b, i.n, (i.P[0],), i.Q), x), "bad-arity"),
-    ("arity-extra-Qz", lambda i, x: (Instance(i.p, i.a, i.b, i.n, i.P, i.Q + (1,)), x), "bad-arity"),
+    ("arity-extra-Qz", lambda i, x: (Instance(i.p, i.a, i.b, i.n, i.P, (*i.Q, 1)), x), "bad-arity"),
     ("arity-P-not-a-point", lambda i, x: (Instance(i.p, i.a, i.b, i.n, 5, i.Q), x), "bad-arity"),
     ("type-x-str", lambda i, x: (i, "3"), "bad-field"),
     ("type-x-float", lambda i, x: (i, 3.0), "bad-field"),
@@ -160,13 +169,13 @@ def test_validate_fields_accepts_the_committed_60_bit_line_and_refuses_its_neigh
     inst, x = _inst60()
     fields = inst.fields(x)
     assert verifier.validate_fields(fields) is None
-    assert verifier.validate_fields(fields[:-1] + (inst.n,)) == "bad-field"
-    assert verifier.validate_fields(fields[:-1] + (inst.n - 1,)) is None
-    assert verifier.validate_fields(fields + (1,)) == "bad-arity"
+    assert verifier.validate_fields((*fields[:-1], inst.n)) == "bad-field"
+    assert verifier.validate_fields((*fields[:-1], inst.n - 1)) is None
+    assert verifier.validate_fields((*fields, 1)) == "bad-arity"
     assert verifier.validate_fields(()) == "bad-arity"
-    assert verifier.validate_fields((4,) + fields[1:]) == "bad-field"
-    assert verifier.validate_fields(fields[:3] + (inst.p + 1 + math.isqrt(4 * inst.p),) + fields[4:]) is None
-    assert verifier.validate_fields(fields[:3] + (_outside_hasse(inst.p),) + fields[4:]) == "bad-field"
+    assert verifier.validate_fields((4, *fields[1:])) == "bad-field"
+    assert verifier.validate_fields((*fields[:3], inst.p + 1 + math.isqrt(4 * inst.p), *fields[4:])) is None
+    assert verifier.validate_fields((*fields[:3], _outside_hasse(inst.p), *fields[4:])) == "bad-field"
 
 
 def test_fail_codes_reads_only_the_script_vocabulary_from_a_fail_line():

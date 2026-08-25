@@ -10,7 +10,7 @@ from cairn import runner
 from cairn.runner import ParsedOutput
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from mutants import runner_mutants  # noqa: E402
+from mutants import runner_mutants
 
 CORPUS = Path(__file__).resolve().parent.parent / "fuzz_corpus" / "runner"
 CEILING = 10.0
@@ -118,9 +118,8 @@ def test_a_well_formed_document_survives_with_its_receipt_stripped():
 
 def test_mutant_parser_json_loads_bare_is_killed_by_a_malformed_document():
     assert not runner.parse_skill_output(b"not json").well_formed
-    with runner_mutants.parser_json_loads_bare():
-        with pytest.raises(json.JSONDecodeError):
-            runner.parse_skill_output(b"not json")
+    with runner_mutants.parser_json_loads_bare(), pytest.raises(json.JSONDecodeError):
+        runner.parse_skill_output(b"not json")
 
 
 def test_mutant_status_default_ok_is_killed_by_a_document_with_no_status():

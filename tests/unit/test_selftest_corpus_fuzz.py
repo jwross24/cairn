@@ -12,7 +12,7 @@ from cairn import pari, selftest
 from cairn.selftest import CorpusSchemaError
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from mutants import selftest_mutants  # noqa: E402
+from mutants import selftest_mutants
 
 CORPUS = Path(__file__).resolve().parent.parent / "fuzz_corpus" / "selftest_corpus"
 BASE = json.loads(selftest.CORPUS_PATH.read_text())

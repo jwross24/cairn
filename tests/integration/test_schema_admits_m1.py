@@ -1,8 +1,7 @@
 import pytest
+from _substrate_helpers import launch, open_writer, recipe
 
 from cairn import substrate
-
-from _substrate_helpers import launch, open_writer, recipe
 
 M1_STATUSES = ("SKILL_YANKED", "BUDGET_EXCEEDED", "INTERRUPTED")
 

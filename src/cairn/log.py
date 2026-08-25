@@ -1,3 +1,4 @@
+import contextlib
 import json
 import logging
 import os
@@ -10,10 +11,8 @@ _stderr_handler = None
 
 class _StderrHandler(logging.Handler):
     def emit(self, record):
-        try:
+        with contextlib.suppress(ValueError):
             sys.stderr.write(self.format(record) + "\n")
-        except ValueError:
-            pass
 
 
 class JsonFormatter(logging.Formatter):

@@ -11,8 +11,8 @@ from cairn import verifier
 from cairn.verifier import Instance, Submission, Verifier
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _ec  # noqa: E402
-from mutants import verifier_mutants  # noqa: E402
+import _ec
+from mutants import verifier_mutants
 
 CORPUS = Path(__file__).resolve().parent.parent / "fuzz_corpus" / "verifier"
 CURVE60 = _ec.curve60()
@@ -36,7 +36,7 @@ def _corpus(kind):
 
 def _with(field, value):
     i = verifier.FIELD_NAMES.index(field)
-    return BASE_FIELDS[:i] + (value,) + BASE_FIELDS[i + 1 :]
+    return (*BASE_FIELDS[:i], value, *BASE_FIELDS[i + 1:])
 
 
 TARGETED_FIELDS = [

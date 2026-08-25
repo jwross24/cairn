@@ -6,11 +6,11 @@ from hypothesis import HealthCheck, assume, example, given, settings
 from hypothesis import strategies as st
 
 from cairn import pari, verifier
-from cairn.verifier import Instance, Verifier
+from cairn.verifier import Verifier
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import _ec  # noqa: E402
-from mutants import verifier_mutants  # noqa: E402
+import _ec
+from mutants import verifier_mutants
 
 CURVE60 = _ec.curve60()
 CURVES = {"curve60": CURVE60, "GF101": _ec.CORPUS_2}
@@ -159,7 +159,7 @@ def distinguishable_permutations(draw):
 def _n_x_swap_example():
     inst, _ = _ec.pair(CURVE60, P_PLUS_1)
     base = inst.fields(P_PLUS_1)
-    swapped = base[:3] + (base[8],) + base[4:8] + (base[3],)
+    swapped = (*base[:3], base[8], *base[4:8], base[3])
     return base, swapped
 
 
@@ -196,4 +196,4 @@ def test_every_named_mutant_is_listed():
         "script_without_xP_eq_Q",
         "validator_skips_x_lt_n",
     }
-    assert pari.GP_BIN == Verifier().config.backend_path
+    assert Verifier().config.backend_path == pari.GP_BIN

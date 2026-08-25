@@ -55,6 +55,10 @@ def test_missing_gp_binary_raises_before_any_spawn(monkeypatch):
 REQUIRED_HEAD = {"bundle": ("show",), "attest": ("init",), "gate": ("selftest",), "justify": ("--statement", "0" * 64)}
 
 
+def _picked(ns):
+    return (ns.db, ns.bundle, ns.pin, ns.attest, ns.log)
+
+
 @pytest.mark.parametrize("name", cli.registered())
 def test_global_options_parse_before_or_after_subcommand(name):
     parser = cli.build_parser()
@@ -62,10 +66,9 @@ def test_global_options_parse_before_or_after_subcommand(name):
     globals_argv = ["--db", "X", "--bundle", "B", "--pin", "P", "--attest", "A", "--log", "DEBUG"]
     before = parser.parse_args([*globals_argv, name, *head])
     after = parser.parse_args([name, *head, *globals_argv])
-    picked = lambda ns: (ns.db, ns.bundle, ns.pin, ns.attest, ns.log)
-    assert picked(before) == picked(after) == ("X", "B", "P", "A", "DEBUG")
+    assert _picked(before) == _picked(after) == ("X", "B", "P", "A", "DEBUG")
     defaults = parser.parse_args([name, *head])
-    assert picked(defaults) == tuple(cli.GLOBAL_DEFAULTS[k] for k in ("db", "bundle", "pin", "attest", "log"))
+    assert _picked(defaults) == tuple(cli.GLOBAL_DEFAULTS[k] for k in ("db", "bundle", "pin", "attest", "log"))
 
 
 def test_log_records_are_json_parseable_and_digests_only_at_debug(caplog):

@@ -12,7 +12,7 @@ from hypothesis import strategies as st
 from cairn import gateplan
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from mutants import gateplan_mutants  # noqa: E402
+from mutants import gateplan_mutants
 
 ROOT = Path(__file__).resolve().parents[2]
 CORPUS = ROOT / "tests" / "fuzz_corpus" / "gateplan"
@@ -34,7 +34,7 @@ def near_miss_plans(draw):
     mode = draw(st.sampled_from(["intact", "subset", "perturbed"]))
     if mode == "subset":
         keep = draw(st.lists(st.booleans(), min_size=len(rows), max_size=len(rows)))
-        return [row for row, flag in zip(rows, keep) if flag]
+        return [row for row, flag in zip(rows, keep, strict=True) if flag]
     if mode == "intact":
         return rows
     index = draw(st.integers(min_value=0, max_value=len(rows) - 1))
@@ -100,7 +100,7 @@ def test_an_empty_plan_is_refused():
 def test_a_ten_thousand_step_plan_is_refused_on_the_first_duplicate_not_by_running_out_of_memory():
     rows = copy.deepcopy(COMMITTED) * 1429
     assert len(rows) > 10_000
-    with pytest.raises(gateplan.PlanInvalid, match="duplicate-step-name:7."):
+    with pytest.raises(gateplan.PlanInvalid, match=r"duplicate-step-name:7\."):
         gateplan.GatePlan.load(rows)
 
 
@@ -112,7 +112,7 @@ def test_the_committed_plan_loads_unchanged():
 
 MUTATIONS = {
     "drop_required": (lambda rows: [r for r in rows if r["step"] != "verifier_selftest_crash"], "missing-required-selftest:verifier_selftest_crash"),
-    "duplicate_name": (lambda rows: rows[:2] + [{**rows[2], "step": rows[1]["step"]}] + rows[3:], "duplicate-step-name:2.verifier_selftest_pass"),
+    "duplicate_name": (lambda rows: [*rows[:2], {**rows[2], "step": rows[1]["step"]}, *rows[3:]], "duplicate-step-name:2.verifier_selftest_pass"),
     "rename_expect": (lambda rows: [{k: v for k, v in r.items() if k != "expect"} | {"expected": r["expect"]} if i == 1 else r for i, r in enumerate(rows)], "step-missing-field:1.expect"),
     "unknown_field": (lambda rows: [{**r, "scope": "selftest"} if i == 0 else r for i, r in enumerate(rows)], "unknown-step-field:0.'scope'"),
     "unknown_kind": (lambda rows: [{**r, "kind": "handwave"} if i == 0 else r for i, r in enumerate(rows)], "unknown-step-kind:0.'handwave'"),

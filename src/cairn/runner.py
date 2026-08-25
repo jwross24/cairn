@@ -1,3 +1,4 @@
+import contextlib
 import json
 import os
 import signal
@@ -150,10 +151,8 @@ def _signal_group(pgid, pid, sig):
     try:
         os.killpg(pgid, sig)
     except ProcessLookupError, PermissionError:
-        try:
+        with contextlib.suppress(ProcessLookupError):
             os.kill(pid, sig)
-        except ProcessLookupError:
-            pass
 
 
 @dataclass(frozen=True)

@@ -38,7 +38,7 @@ def bench_tries(root):
         seeds = [int(s) for s in cells[1].split(",")]
         column = cells[2] if bits <= SEA_SEARCH_ABOVE_BITS else cells[3]
         counts = [int(part.split("/")[0].strip().strip("*")) for part in column.split(",")]
-        rows.update(dict(zip(((bits, seed) for seed in seeds), counts)))
+        rows.update(dict(zip(((bits, seed) for seed in seeds), counts, strict=True)))
     return rows
 
 

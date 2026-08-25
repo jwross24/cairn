@@ -9,8 +9,8 @@ from cairn import justify
 from cairn.justify import CONJECTURE, PROVEN, STRONG_EMPIRICAL
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import factories  # noqa: E402
-from mutants import justify_mutants  # noqa: E402
+import factories
+from mutants import justify_mutants
 
 STATEMENT = "s" * 64
 

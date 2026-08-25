@@ -2,14 +2,13 @@ import itertools
 import sqlite3
 
 import pytest
+from _substrate_helpers import open_writer, recipe
 from hypothesis import settings
 from hypothesis import strategies as st
 from hypothesis.stateful import Bundle, RuleBasedStateMachine, invariant, rule, run_state_machine_as_test
+from mutants import substrate_mutants
 
 from cairn import keys, substrate
-
-from _substrate_helpers import open_writer, recipe
-from mutants import substrate_mutants
 
 RECIPES = ("r0", "r1", "r2")
 BLOBS = {"b0": b"blob-0", "b1": b"blob-1", "b2": b"blob-2", "b3": b"blob-3"}

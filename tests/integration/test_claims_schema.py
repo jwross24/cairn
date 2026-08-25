@@ -10,9 +10,9 @@ from cairn.claims import HashCollision, UnknownStatement
 from cairn.substrate import blob_hash
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import factories  # noqa: E402
-from _substrate_helpers import open_writer  # noqa: E402
-from factories import CREATED_AT  # noqa: E402
+import factories
+from _substrate_helpers import open_writer
+from factories import CREATED_AT
 
 
 @pytest.fixture

@@ -690,7 +690,7 @@ def test_signalling_a_reaped_pid_is_swallowed(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "grace,expected_exit",
+    ("grace", "expected_exit"),
     [(1.5, 0), (0.0, -9)],
     ids=["grace-lets-it-finish", "no-grace-kills-it"],
 )

@@ -24,7 +24,7 @@ def _cert(vector):
 
 
 @pytest.mark.parametrize(
-    "case_index,field_name",
+    ("case_index", "field_name"),
     [(0, "p"), (1, "P"), (2, "n"), (3, "Q")],
     ids=["F5.p", "GF101.P", "bits150.n", "negative_control.Q"],
 )

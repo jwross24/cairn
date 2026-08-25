@@ -105,7 +105,7 @@ COUPLING = {
 def _rows():
     names = tuple(TRUTH_TABLE_AXES)
     for values in itertools.product(*(TRUTH_TABLE_AXES[n] for n in names)):
-        yield dict(zip(names, values))
+        yield dict(zip(names, values, strict=True))
 
 
 @pytest.mark.parametrize("axis", list(TRUTH_TABLE_AXES), ids=list(TRUTH_TABLE_AXES))

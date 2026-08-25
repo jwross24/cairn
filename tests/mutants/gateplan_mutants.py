@@ -56,7 +56,7 @@ def continue_after_failure():
             if observed == step.expect:
                 yield step, observed, gateplan.RESULT_PASS, tuple(extra), digests
             else:
-                yield step, observed, gateplan.RESULT_FAIL, (gateplan.MISMATCH_REASON, f"observed:{observed}") + tuple(extra), digests
+                yield step, observed, gateplan.RESULT_FAIL, (gateplan.MISMATCH_REASON, f"observed:{observed}", *tuple(extra)), digests
 
     with _swap(gateplan, "plan_outcomes", outcomes):
         yield
@@ -74,7 +74,7 @@ def blocks_name_wrong_step():
             if observed == step.expect:
                 yield step, observed, gateplan.RESULT_PASS, tuple(extra), digests
             else:
-                yield step, observed, gateplan.RESULT_FAIL, (gateplan.MISMATCH_REASON, f"observed:{observed}") + tuple(extra), digests
+                yield step, observed, gateplan.RESULT_FAIL, (gateplan.MISMATCH_REASON, f"observed:{observed}", *tuple(extra)), digests
                 blocker = step.step
 
     with _swap(gateplan, "plan_outcomes", outcomes):
