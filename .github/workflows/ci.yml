@@ -20,10 +20,6 @@ jobs:
     # Linux; cairn-hcl owns the Linux arm. An ubuntu run fails before it starts.
     runs-on: macos-latest
     timeout-minutes: 45
-    env:
-      # The gates read stdout; the JSON log lines on stderr are noise in a CI
-      # transcript, and .check.log carries what actually fired.
-      CAIRN_LOG: WARNING
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
