@@ -19,6 +19,7 @@ live *inside* `/beads-workflow`, so they are dangling references until it is inv
 | `/beads-workflow` | conversion + polish rounds; owns `scripts/polish-round.sh` and `references/POLISH-ROUND.md` | B C |
 | `/beads-compliance-and-completion-verification` | closed-bead audit; Mode D's subject. Mode A gets it from the pre-commit hook, which runs unprompted | D |
 | `/optimal-tests` | the pre-close test audit that found a broken gate on every bead | A |
+| `/testing-metamorphic` · `/testing-fuzzing` · `/testing-golden-artifacts` · `/testing-conformance-harnesses` · `/testing-real-service-e2e-no-mocks` | the shape a declared test type actually takes; load the ones the bead's TEST PLAN names | A |
 | `/just-say-no-to-process-porn-and-ceremony` | honesty inventory, credit floor | all |
 
 ## Keeping the main context clear
@@ -125,6 +126,13 @@ the spec's length: a slice that passes its own tests is the unit of progress, an
 where the reasoning for it lives. If the session ends with the bead unfinished, say plainly
 which criteria are met and which are not, and leave it open. Never close it partially.
 
+Read the bead's TEST PLAN before writing any test, and load the `/testing-*` skill for each
+shape it names: metamorphic relations, fuzz-shaped robustness, golden artifacts, a conformance
+harness, real-service end-to-end. A bead that names a shape and gets a hand-rolled approximation
+of it is the failure this step prevents. `scripts/bead-test-plan.sh <bead-id>` reads the file
+paths back out of the bead and checks each one exists and collects; the pre-commit hook runs it
+for every bead a commit closes, so a plan that was never written blocks the close.
+
 Build it exactly as the bead specifies, integration test first (real PARI via cypari2,
 real gp subprocess through cairn.pari.run_gp, real SQLite under tmp_path), unit tests
 second. Zero mocks; the only fault injection allowed is at a seam the bead declares.
@@ -166,6 +174,9 @@ commit SHA, file:line for each touched file, and a No-Claim line.
 - [ ] Close comment: commands + raw output + file:line + No-Claim + what was *not* independently verified
 - [ ] Survey and test audit ran as subagents; anything they cited re-executed in the main context
 - [ ] Every declined finding and every No-Claim gap named in a downstream bead, created where none owned it
+- [ ] Every `/testing-*` skill the bead's TEST PLAN names was loaded before those tests were written
+- [ ] `scripts/bead-test-plan.sh <bead-id>` exits 0
+- [ ] `scripts/check.sh` green (format, lint, spelling, suite)
 - [ ] `br sync --flush-only`, `.beads/` committed (the pre-commit hook audits the close)
 
 ---

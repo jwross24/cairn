@@ -18,19 +18,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      # The agent has no vault token and no corporate network. Anything that
-      # reads a secret must degrade rather than raise, or it hard-fails here
-      # while passing on a developer machine.
+      # The gates read stdout; the JSON log lines on stderr are noise in a CI
+      # transcript, and .check.log carries what actually fired.
       CAIRN_LOG: WARNING
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Install PARI/GP
         run: |
           sudo apt-get update
           sudo apt-get install -y pari-gp libpari-dev
 
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d  # v10.0.1
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
