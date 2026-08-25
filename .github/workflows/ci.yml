@@ -15,8 +15,11 @@ permissions:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # macOS, because that is the platform M0 supports. The write boundary is set
+    # with os.chflags and stat.UF_APPEND, which exist on macOS and BSD and not on
+    # Linux; cairn-hcl owns the Linux arm. An ubuntu run fails before it starts.
+    runs-on: macos-latest
+    timeout-minutes: 45
     env:
       # The gates read stdout; the JSON log lines on stderr are noise in a CI
       # transcript, and .check.log carries what actually fired.
@@ -25,9 +28,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Install PARI/GP
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y pari-gp libpari-dev
+        run: brew install pari
 
       - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d  # v10.0.1
         with:
