@@ -23,9 +23,17 @@ def _scope(family="toy_curve", size=(30, 50), assumptions=(A1,), param_ranges=No
 
 
 def test_the_class_order_is_total_and_ascending():
-    assert justify.CLASSES == (SPECULATION, CONJECTURE, STRONG_EMPIRICAL, PROVEN)
-    ranks = [justify.rank(c) for c in justify.CLASSES]
-    assert ranks == sorted(ranks) == [0, 1, 2, 3]
+    assert justify.CLASSES == (
+        "SPECULATION",
+        "CONJECTURE",
+        "STRONG-EMPIRICAL",
+        "PROVEN",
+    )
+    assert (SPECULATION, CONJECTURE, STRONG_EMPIRICAL, PROVEN) == justify.CLASSES
+    assert [
+        justify.rank(c)
+        for c in ("SPECULATION", "CONJECTURE", "STRONG-EMPIRICAL", "PROVEN")
+    ] == [0, 1, 2, 3]
     assert justify.weakest(PROVEN, CONJECTURE) == CONJECTURE
     assert justify.weakest(CONJECTURE, PROVEN) == CONJECTURE
     assert justify.weakest(PROVEN, PROVEN) == PROVEN
@@ -168,6 +176,7 @@ def test_coverage_comparator(population, expected):
             "Absent",
         ),
         ("lean_artifact", None, None, "Replayable", False, "Pending"),
+        ("not_a_kind", None, True, "Replayable", False, "Absent"),
     ],
     ids=[
         "ladder_keep_repro",
@@ -186,6 +195,7 @@ def test_coverage_comparator(population, expected):
         "hunt_killed",
         "hunt_incomplete",
         "lean_artifact_unreviewed",
+        "unknown_kind",
     ],
 )
 def test_kind_to_max_class(kind, verdict, repro, grade, cost_model, expected):
@@ -224,11 +234,10 @@ def test_lean_artifact_with_an_approve_verdict_is_the_only_route_to_proven():
     }
 
 
-@pytest.mark.parametrize("offered", [PROVEN, STRONG_EMPIRICAL])
-def test_a_class_above_the_kind_maximum_is_a_lattice_violation(offered):
+def test_a_class_above_the_kind_maximum_is_a_lattice_violation():
     evidence = {
         "hash": "e" * 64,
-        "kind": "model_proof",
+        "kind": "statistical",
         "population": _scope(),
         "assumptions": [],
         "verdict": None,
@@ -236,17 +245,16 @@ def test_a_class_above_the_kind_maximum_is_a_lattice_violation(offered):
     result = justify.justify(
         evidence,
         {"hash": "s" * 64, "scope": _scope()},
-        justify.Context(offered_class=offered),
+        justify.Context(offered_class=PROVEN),
     )
-    assert isinstance(result, justify.LatticeViolation) and result.reason.endswith(
-        offered
-    )
+    assert isinstance(result, justify.LatticeViolation)
+    assert result.reason == "statistical-cannot-justify-PROVEN"
 
 
 def test_a_class_at_or_below_the_kind_maximum_is_not_a_lattice_violation():
     evidence = {
         "hash": "e" * 64,
-        "kind": "model_proof",
+        "kind": "statistical",
         "population": _scope(),
         "assumptions": [],
         "verdict": None,
@@ -254,9 +262,9 @@ def test_a_class_at_or_below_the_kind_maximum_is_not_a_lattice_violation():
     result = justify.justify(
         evidence,
         {"hash": "s" * 64, "scope": _scope()},
-        justify.Context(offered_class=CONJECTURE),
+        justify.Context(offered_class=STRONG_EMPIRICAL),
     )
-    assert isinstance(result, justify.Justification) and result.cls == CONJECTURE
+    assert isinstance(result, justify.Justification) and result.cls == STRONG_EMPIRICAL
 
 
 COVERING_CROSS_CHECK = {"axis": "algorithm", "independent_range": {"bits": [0, 50]}}
@@ -397,3 +405,67 @@ def test_keep_in_sample_needs_the_scope_inside_the_in_sample_sizes():
     outside = justify.justify(node([30, 45]), statement, ctx)
     assert isinstance(inside, justify.Justification) and inside.cls == STRONG_EMPIRICAL
     assert isinstance(outside, justify.Absent)
+
+
+@pytest.mark.parametrize(
+    ("population", "expected"),
+    [
+        (
+            '{"target_family": "toy_curve", "size_interval": [30, 50], "param_ranges": {"bits": [30, 50]}, "assumption_set": []}',
+            None,
+        ),
+        ("{not json at all", "population"),
+        ("[]", "population"),
+        ({**_scope(), "assumption_set": [["unhashable"]]}, "assumptions"),
+    ],
+    ids=[
+        "json_string",
+        "unparsable_json",
+        "json_but_not_a_record",
+        "unhashable_assumption",
+    ],
+)
+def test_a_population_that_is_not_a_plain_record(population, expected):
+    evidence = {
+        "hash": "e" * 64,
+        "kind": "repro_node",
+        "verdict": None,
+        "population": population,
+        "assumptions": [],
+    }
+    result = justify.justify(
+        evidence, {"hash": "s" * 64, "scope": _scope()}, justify.Context()
+    )
+    if expected is None:
+        assert isinstance(result, justify.Justification)
+    else:
+        assert (
+            isinstance(result, justify.CoverageViolation) and result.field == expected
+        )
+
+
+def test_a_scope_naming_no_parameter_ranges_constrains_only_its_size():
+    scope = {
+        "target_family": "toy_curve",
+        "size_interval": [30, 50],
+        "assumption_set": [A1],
+    }
+    evidence = {
+        "hash": "e" * 64,
+        "kind": "repro_node",
+        "verdict": None,
+        "population": _scope(param_ranges={}),
+        "assumptions": [],
+    }
+    result = justify.justify(
+        evidence, {"hash": "s" * 64, "scope": scope}, justify.Context()
+    )
+    assert isinstance(result, justify.Justification)
+
+
+@pytest.mark.parametrize(
+    "origins", ["author_supplied", 7, None], ids=["a_bare_string", "a_number", "absent"]
+)
+def test_a_selftest_summary_whose_origins_are_not_a_collection_caps(origins):
+    summary = factories.selftest_summary(origins, False, None)
+    assert justify.producer_capped(summary, INPUTS) is True

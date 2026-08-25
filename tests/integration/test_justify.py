@@ -299,6 +299,35 @@ def case_producer_with_a_covering_cross_check(writer, attest_path):
     return statement, node, None
 
 
+def case_gate_producer_is_never_capped(writer, attest_path):
+    statement = _statement(writer, seed=19)
+    identity = _certify(
+        writer, "3c" * 32, factories.selftest_summary(AUTHOR_ORIGINS, False, None)
+    )
+    node = _ladder(
+        writer,
+        statement,
+        _wide_population(statement),
+        seed=19,
+        producer=(identity, "gate"),
+    )
+    return statement, node, None
+
+
+def case_a_node_carrying_no_attempt(writer, attest_path):
+    statement = _statement(writer, seed=25)
+    node = factories.evidence_node(
+        "repro_node",
+        statement.hash,
+        _wide_population(statement),
+        frozenset({"A1"}),
+        seed=25,
+        attempt_id=None,
+    )
+    claims.write_evidence_node(writer, node)
+    return statement, node, None
+
+
 def case_refuted_statement_with_a_keep_table(writer, attest_path):
     statement = _statement(writer, seed=17)
     node = _ladder(writer, statement, _wide_population(statement), seed=17)
@@ -354,6 +383,8 @@ DONE_WHEN = [
         STRONG_EMPIRICAL,
         STRONG_EMPIRICAL,
     ),
+    (case_gate_producer_is_never_capped, "Justification", STRONG_EMPIRICAL, STRONG_EMPIRICAL),
+    (case_a_node_carrying_no_attempt, "Justification", STRONG_EMPIRICAL, STRONG_EMPIRICAL),
     (
         case_refuted_statement_with_a_keep_table,
         "LatticeViolation",
@@ -383,11 +414,10 @@ def test_the_done_when_set(
         or getattr(result, "reason", None)
     ) == detail
 
-    if offered is None:
-        derived = justify.derive_tag(writer, statement.hash, attest_path)
-        db_snapshot(writer.conn, "after-derive")
-        assert derived.tag == tag
-        assert claims.tag_history_for(writer, statement.hash)[-1]["to_tag"] == tag
+    derived = justify.derive_tag(writer, statement.hash, attest_path)
+    db_snapshot(writer.conn, "after-derive")
+    assert derived.tag == tag
+    assert claims.tag_history_for(writer, statement.hash)[-1]["to_tag"] == tag
 
 
 def test_a_waiver_naming_the_statement_moves_no_tag(writer, attest_path, db_snapshot):
@@ -430,7 +460,7 @@ def test_tag_history_holds_one_row_per_transition_and_refuses_update(
     justify.derive_tag(writer, statement.hash, attest_path)
     history = claims.tag_history_for(writer, statement.hash)
     assert [row["to_tag"] for row in history] == [SPECULATION, STRONG_EMPIRICAL]
-    assert [row["actor"] for row in history] == [justify.ACTOR, justify.ACTOR]
+    assert [row["actor"] for row in history] == ["gate:justify", "gate:justify"]
     assert history[-1]["evidence_hash"] is not None
 
     with pytest.raises(sqlite3.IntegrityError, match="append-only"):
@@ -461,6 +491,7 @@ def test_a_downgrade_carries_the_refuting_evidence_and_moves_the_statement_to_re
     derived = justify.derive_tag(writer, statement.hash, attest_path)
 
     assert derived.tag == SPECULATION and derived.refuted_by == hunt.hash
+    assert derived.justified_by == hunt.hash
     assert claims.get_claim_statement(writer, statement.hash)["status"] == "refuted"
     last = claims.tag_history_for(writer, statement.hash)[-1]
     assert last["from_tag"] == STRONG_EMPIRICAL and last["evidence_hash"] == hunt.hash
@@ -468,17 +499,15 @@ def test_a_downgrade_carries_the_refuting_evidence_and_moves_the_statement_to_re
 
 def test_every_justify_call_logs_one_record(writer, attest_path, json_test_log):
     statement = _statement(writer, seed=23)
-    _ladder(writer, statement, _wide_population(statement), seed=23)
-    claims.write_evidence_node(
-        writer,
-        factories.evidence_node(
-            "model_proof",
-            statement.hash,
-            _wide_population(statement),
-            frozenset({"A1"}),
-            seed=23,
-        ),
+    ladder = _ladder(writer, statement, _wide_population(statement), seed=23)
+    model = factories.evidence_node(
+        "model_proof",
+        statement.hash,
+        _wide_population(statement),
+        frozenset({"A1"}),
+        seed=23,
     )
+    claims.write_evidence_node(writer, model)
 
     justify.derive_tag(writer, statement.hash, attest_path)
     records = [json.loads(line) for line in json_test_log.read_text().splitlines()]
@@ -487,11 +516,11 @@ def test_every_justify_call_logs_one_record(writer, attest_path, json_test_log):
     ]
     derived = [r for r in records if r["event"] == "derive_tag"]
     assert len(justified) == 2
-    assert {r["kind"] for r in justified} == {"ladder_table", "model_proof"}
-    assert all(
-        r["statement"] == statement.hash and r["result"] and r["detail"]
-        for r in justified
-    )
+    assert {(r["evidence"], r["kind"], r["result"], r["detail"]) for r in justified} == {
+        (ladder.hash, "ladder_table", "Justification", STRONG_EMPIRICAL),
+        (model.hash, "model_proof", "Justification", CONJECTURE),
+    }
+    assert {r["statement"] for r in justified} == {statement.hash}
     assert len(derived) == 1 and derived[0]["to_tag"] == STRONG_EMPIRICAL
 
 
@@ -570,25 +599,25 @@ def test_the_cli_prints_the_derived_tag_and_the_justifying_evidence(
         capsys,
     )
     assert code == exits.OK
-    assert out.splitlines()[0] == f"{statement.hash} {STRONG_EMPIRICAL} {node.hash}"
-    assert node.hash in out and "ladder_table" in out
+    assert out.splitlines() == [
+        f"{statement.hash} {STRONG_EMPIRICAL} {node.hash}",
+        f"- ladder_table {node.hash} Justification {STRONG_EMPIRICAL}",
+    ]
 
 
 def test_the_cli_json_is_one_document_naming_every_evidence_node(
     cli_db, attest_path, capsys
 ):
     db, statement, node = cli_db
+    weak = factories.evidence_node(
+        "model_proof",
+        statement.hash,
+        _wide_population(statement),
+        frozenset({"A1"}),
+        seed=31,
+    )
     with open_writer(db.parent, "cli.sqlite") as sub:
-        claims.write_evidence_node(
-            sub,
-            factories.evidence_node(
-                "model_proof",
-                statement.hash,
-                _wide_population(statement),
-                frozenset({"A1"}),
-                seed=31,
-            ),
-        )
+        claims.write_evidence_node(sub, weak)
     code, out, err = _cli(
         [
             "justify",
@@ -607,11 +636,12 @@ def test_the_cli_json_is_one_document_naming_every_evidence_node(
     assert document["schema_version"] == 1 and document["command"] == "justify"
     assert document["statement_hash"] == statement.hash
     assert document["tag"] == STRONG_EMPIRICAL and document["justified_by"] == node.hash
-    assert {row["kind"] for row in document["evidence"]} == {
-        "ladder_table",
-        "model_proof",
+    assert {
+        (row["hash"], row["kind"], row["result"]) for row in document["evidence"]
+    } == {
+        (node.hash, "ladder_table", "Justification"),
+        (weak.hash, "model_proof", "Justification"),
     }
-    assert {row["result"] for row in document["evidence"]} == {"Justification"}
 
 
 def test_a_statement_with_no_evidence_exits_zero_at_speculation(
@@ -690,3 +720,44 @@ def test_a_missing_attestation_file_exits_environment(cli_db, tmp_path, capsys):
     )
     assert code == exits.ENVIRONMENT and out == ""
     assert "cairn attest init" in err
+
+
+def test_an_evidence_row_with_no_mirror_node_is_graded_replayable(writer, attest_path):
+    statement = _statement(writer, seed=40)
+    row = {
+        "hash": "4" * 64,
+        "kind": "ladder_table",
+        "verdict": "KEEP",
+        "population": claims.to_json(_wide_population(statement)),
+        "assumptions": claims.to_json([]),
+        "in_sample_sizes": claims.to_json([30, 60]),
+        "producer_identity": "5" * 64,
+        "producer_tag": "skill",
+        "attempt_id": None,
+        "repro_record_hash": None,
+    }
+    stored = claims.get_claim_statement(writer, statement.hash)
+    ctx = justify.context_for(writer, row, stored, attest_path)
+    assert writer.get_node(row["hash"]) is None
+    assert ctx.grade == "Replayable"
+    result = justify.justify(row, stored, ctx)
+    assert isinstance(result, justify.Justification) and result.cls == CONJECTURE
+
+
+def test_a_second_writer_exits_conflict(cli_db, attest_path, capsys):
+    db, statement, _ = cli_db
+    with open_writer(db.parent, "cli.sqlite"):
+        code, out, err = _cli(
+            [
+                "justify",
+                "--statement",
+                statement.hash,
+                "--db",
+                str(db),
+                "--attest",
+                str(attest_path),
+            ],
+            capsys,
+        )
+    assert code == exits.CONFLICT and out == ""
+    assert "another writer already holds" in err

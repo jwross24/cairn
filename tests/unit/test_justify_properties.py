@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from hypothesis import assume, given
+from hypothesis import example, given
 from hypothesis import strategies as st
 
 from cairn import justify
@@ -184,13 +184,43 @@ def test_mr_m_the_derived_class_never_exceeds_the_strongest_kind_ceiling(case):
     assert justify.rank(_derived(scope, nodes, ctx)) <= ceiling
 
 
-@given(covering_case(), st.data())
+LITERAL_SCOPE = {
+    "target_family": "toy_curve",
+    "size_interval": [30, 50],
+    "param_ranges": {"bits": [30, 50]},
+    "assumption_set": frozenset(),
+}
+LITERAL_POPULATION = {
+    **LITERAL_SCOPE,
+    "size_interval": [20, 60],
+    "param_ranges": {"bits": [20, 60]},
+}
+STATISTICAL_CASE = (
+    LITERAL_SCOPE,
+    LITERAL_POPULATION,
+    _evidence("statistical", None, LITERAL_POPULATION),
+    justify.Context(approved=True),
+)
+LADDER_CASE = (
+    LITERAL_SCOPE,
+    LITERAL_POPULATION,
+    _evidence("ladder_table", "KEEP", LITERAL_POPULATION, in_sample=[20, 60]),
+    justify.Context(repro_passed=True, approved=True),
+)
+UNCOVERED_SUMMARY = factories.selftest_summary(
+    {"F5": {"P": "author_supplied"}},
+    False,
+    {"axis": "algorithm", "independent_range": {"bits": [0, 10]}},
+)
+
+
+@given(covering_case(), st.sampled_from(justify.CLASSES))
+@example(STATISTICAL_CASE, PROVEN)
 def test_mr_l_a_class_above_the_kind_ceiling_is_refused_and_one_below_is_not(
-    case, data
+    case, offered
 ):
     scope, _, evidence, ctx = case
     ceiling = EXPECTED_CEILING[evidence["kind"]]
-    offered = data.draw(st.sampled_from(justify.CLASSES))
     result = justify.justify(
         evidence,
         _statement(scope),
@@ -235,20 +265,24 @@ def test_mr_c_no_result_ever_exceeds_the_kind_ceiling(case, summary):
         }
     )
     result = justify.justify(evidence, _statement(scope), with_producer)
-    assume(isinstance(result, justify.Justification))
+    if not isinstance(result, justify.Justification):
+        return
     assert justify.rank(result.cls) <= justify.rank(EXPECTED_CEILING[evidence["kind"]])
 
 
 @given(covering_case(), factories.producer_summaries())
+@example(LADDER_CASE, UNCOVERED_SUMMARY)
 def test_mr_c_a_producer_with_no_covering_basis_caps_at_conjecture(case, summary):
     scope, population, evidence, ctx = case
     inputs = population["param_ranges"]
-    assume(inputs and _expected_cap(summary, inputs))
+    if not (inputs and _expected_cap(summary, inputs)):
+        return
     with_producer = justify.Context(
         **{**ctx.__dict__, "producer_summary": summary, "attempt_inputs": inputs}
     )
     result = justify.justify(evidence, _statement(scope), with_producer)
-    assume(isinstance(result, justify.Justification))
+    if not isinstance(result, justify.Justification):
+        return
     assert justify.rank(result.cls) <= justify.rank(CONJECTURE)
 
 

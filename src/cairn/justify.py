@@ -433,7 +433,7 @@ def derive_tag(sub, statement_hash, attest_path, *, actor=ACTOR):
     return Derivation(
         statement_hash,
         tag,
-        best[0]["hash"] if best is not None else None,
+        justified_by,
         tuple(results),
         appended,
         refuted_by,
