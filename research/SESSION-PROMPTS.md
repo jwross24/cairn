@@ -98,6 +98,11 @@ First establish a clean baseline: `git status --short` (expect empty) and `uv ru
 (expect all green). Tell me the numbers before you touch anything — if something is already
 red, we deal with that first rather than attributing it to this bead's work later.
 
+A red baseline is its own bead-sized job, done first and committed separately: reproduce the
+failure with a command that exits 0 while it is present, fix it, invert the reproduction, and
+put both in that commit's message. Attributing it to this bead's work later is the failure
+this avoids, and a flaky threshold calibrated on an idle machine is the usual cause.
+
 Pick the work with `bv --robot-plan` (highest-unblocks LEAF, not the epic — see the caveat
 below). Read CLAUDE.md and `br show <bead-id> --json` in full, its `comments` field included —
 a prior session carries findings forward there. Claim it with
@@ -140,6 +145,12 @@ Every subcommand registers through `cli.register(...)` and inherits the contract
 cairn-m0-e0s.17 (stdout data / stderr diagnostics, exits from cairn/exits.py, CliError
 with a copy-pasteable next_command).
 
+Before editing any file in a skill's `IDENTITY_SOURCES` — `toy_curve` names `src/cairn/pari.py`,
+`src/cairn/skills/toy_curve.py` and its corpus — know that its bytes are hashed into
+`implementation_revision`. A cosmetic edit is a re-certification: the identity moves, seeded
+draws move with it, and the transcript and certificate goldens must be regenerated with their
+diffs read line by line. That is content addressing working, not a break, but it is never free.
+
 If a probed fact disagrees with the bead text, do NOT force the test green: assert the
 observed truth, and tell me the disagreement.
 
@@ -161,7 +172,6 @@ commit SHA, file:line for each touched file, and a No-Claim line.
 
 **Checklist before you say the bead is done**
 
-- [ ] `uv run pytest -q` green, tail pasted
 - [ ] The bead's own positive observable run and pasted
 - [ ] The planted negative observed *failing* (not assumed)
 - [ ] `/optimal-tests --audit` run; every finding applied or explicitly declined with a reason
@@ -175,9 +185,12 @@ commit SHA, file:line for each touched file, and a No-Claim line.
 - [ ] Survey and test audit ran as subagents; anything they cited re-executed in the main context
 - [ ] Every declined finding and every No-Claim gap named in a downstream bead, created where none owned it
 - [ ] Every `/testing-*` skill the bead's TEST PLAN names was loaded before those tests were written
-- [ ] `scripts/bead-test-plan.sh <bead-id>` exits 0
-- [ ] `scripts/check.sh` green (format, lint, spelling, suite)
-- [ ] `br sync --flush-only`, `.beads/` committed (the pre-commit hook audits the close)
+- [ ] `br sync --flush-only`, `.beads/` committed
+
+The commit is the gate for the rest. `.githooks/pre-commit` runs `scripts/check.sh --fast`
+(format, lint, spelling, types), then `scripts/bead-test-plan.sh` for every bead the commit
+closes, then the compliance audit. CI runs the same script with the suite. A line that a
+script already enforces does not belong on a checklist a tired reader skims.
 
 ---
 

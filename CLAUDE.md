@@ -59,14 +59,33 @@ Each line below was established by hitting it. Verify rather than trust if a too
 - **The scratch directory comes from `mktemp -d`.** The destructive-command guard refuses a
   recursive force-delete anywhere outside the system temp roots, so a scratch tree that needs
   clearing should be a fresh `mktemp -d` instead.
+- **A pipeline hides the exit code and the command proxy eats the output.** `scripts/mutation-check.sh ... | tail -1`
+  prints nothing at all, so a verdict that must be read goes to a file and the file is read back:
+  `cmd > /tmp/out 2>&1; tail -1 /tmp/out`.
+- **The destructive-command guard refuses the `git checkout` forms that discard a path.** Both the
+  bare-path and the `<ref> -- <path>` form are denied, and they are the usual way to drop a scratch
+  edit. Copy the file aside with `cp` before the edit and copy it back, or use `git reset --hard`
+  when the whole tree is disposable.
+- **The same guard matches the prose you write *about* it.** A note whose text quotes a refused
+  command is itself refused inside a heredoc. Write the prose to a file with the editor and splice
+  the file in; never type it into a shell argument.
+- **Editing anything in `toy_curve.IDENTITY_SOURCES` bumps the skill revision.** `src/cairn/pari.py`,
+  `src/cairn/skills/toy_curve.py` and the corpus are hashed into `implementation_revision`, so even a
+  formatting pass reseeds the randomized arm and moves the transcript and certificate goldens.
+- **The compliance audit's `audit-policy.yaml` binds nothing without PyYAML.** `_load-policy.sh` and
+  `score-bead.py` both swallow the ImportError, so the file resolves and is ignored in silence; the
+  `python3` on PATH here is Homebrew's and has no yaml. See `cairn-cue`.
 - **`br list --json` omits closed beads** (23 of 31 here). Pass `--all` or `--status closed`.
 - **`.beads/` is excluded by `~/.gitignore_global`.** This repo's `.gitignore` carries
   `!.beads/` to re-include it. `br sync --flush-only` before every `git add .beads/`.
 - **Never run bare `bv`** — it opens a TUI and blocks. `bv --robot-plan` ranks work by what a
   completion unblocks; take the highest-`unblocks` **leaf**, since an epic wins on PageRank
   by construction and is not workable.
-- **The compliance pre-commit hook is a copy, not a symlink.** Git ignores a hook whose
-  file lacks the executable bit; `.git/hooks/pre-commit` is `-rwxr-xr-x`.
+- **The hooks live in `.githooks/`, not `.git/hooks/`.** One `git config core.hooksPath .githooks`
+  per clone arms them, and `.git/hooks/` is then ignored entirely. `.githooks/pre-commit` runs
+  `scripts/check.sh --fast`, then `scripts/bead-test-plan.sh` for each bead the commit closes, then
+  the compliance audit, which it invokes through `bash` because the vendored asset ships without the
+  executable bit.
 - **`pyproject.toml` pins PyPI** (`[[tool.uv.index]] url = "https://pypi.org/simple"`,
   `default = true`) because `~/.config/uv/uv.toml` points at a corporate Artifactory that
   times out off-network. `cypari2` exposes no `__version__`; read it via `importlib.metadata`.
