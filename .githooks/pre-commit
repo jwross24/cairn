@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Two gates, in cost order. Install once per clone:
+#
+#   git config core.hooksPath .githooks
+#
+# 1. scripts/check.sh --fast — format, lint and spelling on the whole tree.
+# 2. The beads compliance audit, for any bead this commit closes.
+#
+# Both leave a trace (.check.log, .beads_hook.log). Neither passes quietly when
+# its tooling is missing: check.sh denies without uv, and the absence of the
+# compliance skill is reported rather than swallowed.
+#
+# Bypass, named and logged, per gate:
+#   CAIRN_CHECK_SKIP='<reason>' git commit …
+#   BEADS_HOOK_SKIP=1 git commit …
+set -uo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT" || exit 1
+
+if [ -x scripts/check.sh ]; then
+  if ! scripts/check.sh --fast; then
+    echo "[pre-commit] BLOCKED by scripts/check.sh; see the output above and .check.log" >&2
+    exit 1
+  fi
+else
+  echo "[pre-commit] scripts/check.sh is missing or not executable; refusing to commit blind." >&2
+  echo "             chmod +x scripts/check.sh, or bypass with CAIRN_CHECK_SKIP='<reason>'" >&2
+  exit 1
+fi
+
+SKILL=""
+for cand in \
+  ".claude/skills/beads-compliance-and-completion-verification" \
+  "$HOME/.claude/skills/beads-compliance-and-completion-verification" \
+  "$HOME/.codex/skills/beads-compliance-and-completion-verification"; do
+  if [ -d "$cand" ]; then SKILL="$cand"; break; fi
+done
+
+if [ -z "$SKILL" ]; then
+  printf '%s NO-SKILL beads compliance gate did not run\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .beads_hook.log
+  echo "[pre-commit] the beads compliance skill is not installed; its gate did not run (logged)." >&2
+  exit 0
+fi
+
+# Invoked through bash: the skill ships this asset without the executable bit,
+# and a hook that dies on EACCES is a gate that silently stopped running.
+exec bash "$SKILL/assets/pre-commit-hook.sh"
