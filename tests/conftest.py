@@ -2,6 +2,7 @@ import difflib
 import json
 import logging
 import os
+import re
 import sqlite3
 import subprocess
 import sys
@@ -148,6 +149,29 @@ def _golden_path(name):
     if str(name).endswith(".json"):
         return VECTORS / name
     return GOLDENS / f"{name}.golden"
+
+
+SCRUB_RULES = (
+    (re.compile(r"\b[0-9a-f]{64}\b"), "[HASH]"),
+    (re.compile(r"\b[0-9a-f]{32}\b"), "[ID]"),
+    (re.compile(r"(?<=wall_ms=)\d+"), "[MS]"),
+    (re.compile(r"/[\w./-]*/(?:pytest-of-\w+|T)/[\w./-]+"), "[PATH]"),
+)
+
+
+def scrub(text, *, bundle_hash=None, pin_hash=None):
+    if bundle_hash:
+        text = text.replace(bundle_hash, "[BUNDLE]")
+    if pin_hash:
+        text = text.replace(pin_hash, "[PIN]")
+    for pattern, replacement in SCRUB_RULES:
+        text = pattern.sub(replacement, text)
+    return text
+
+
+@pytest.fixture(name="scrub")
+def scrub_fixture():
+    return scrub
 
 
 @pytest.fixture

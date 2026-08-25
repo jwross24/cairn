@@ -200,3 +200,37 @@ def test_a_refusal_names_a_next_command_that_actually_resolves_it(deploy, capsys
     assert str(deploy["paths"]["db"]) in suggested
     assert _run(suggested[1:], capsys)[0] == exits.OK
     assert deploy["m0_run"]()[0] == exits.OK
+
+
+TRANSCRIPT_EVENTS = ("step", "verifier_arm", "verifier_refused")
+
+
+def _transcript(records):
+    lines = []
+    for record in records:
+        event = record.getMessage()
+        if event not in TRANSCRIPT_EVENTS or record.name != log.LOGGER_NAME:
+            continue
+        fields = record.fields
+        if event == "step" and "name" not in fields:
+            lines.append(f"gate_step {fields['step']} expected={fields['expected']} observed={fields['observed']} result={fields['result']} reasons={fields['reasons']}")
+        elif event == "step":
+            lines.append(f"step {fields['step']} {fields['name']}")
+        elif event == "verifier_arm":
+            lines.append(f"verifier_arm {fields['arm']} accepted={fields['accepted']} reason={fields['reason']} gate_result={fields['gate_result']}")
+        else:
+            lines.append(f"verifier_refused {fields['arm']} reasons={fields['reasons']} spawned={fields['spawned']}")
+    return "\n".join(lines) + "\n"
+
+
+def test_the_step_transcript_matches_its_golden_after_scrubbing(deploy, capsys, caplog, assert_golden, scrub):
+    deploy["build_and_pin"]()
+    deploy["attest_init"]()
+    deploy["certify"]()
+    caplog.set_level(logging.INFO, logger=log.LOGGER_NAME)
+    code, out, err = deploy["m0_run"]("--bits", "40", "--seed", "1", "--json")
+    assert code == exits.OK, err
+    document = json.loads(out)
+    transcript = scrub(_transcript(caplog.records), bundle_hash=document["bundle_hash"])
+    assert "[HASH]" not in transcript
+    assert_golden("m0_run_transcript", transcript)

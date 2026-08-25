@@ -1,0 +1,20 @@
+step 1 gate_plan
+gate_step canon_kat expected=pass observed=pass result=pass reasons=[]
+gate_step verifier_selftest_pass expected=OK observed=OK result=pass reasons=[]
+gate_step verifier_selftest_fail_xP_ne_Q expected=FAIL xP-ne-Q observed=FAIL xP-ne-Q result=pass reasons=['xP-ne-Q']
+gate_step verifier_selftest_crash expected=FAIL backend-crash observed=FAIL backend-crash result=pass reasons=['backend-crash']
+gate_step verifier_selftest_crash_control expected=OK observed=OK result=pass reasons=[]
+gate_step waiver_cannot_advance expected=no-ticket observed=no-ticket result=pass reasons=['ticket-absent', 'uncertified']
+gate_step tier_gate_selftest_two_above expected=TierRefused(tier-two-above) observed=TierRefused(tier-two-above) result=pass reasons=['tier-two-above', 'uncertified']
+step 2 certified
+step 3 tier_gate
+step 4 generator
+step 5 derivation
+step 6 verify
+verifier_arm slice_positive accepted=True reason=None gate_result=pass
+step 7 gate_run
+verifier_arm negative_coordinate accepted=False reason=Q-off-curve gate_result=fail
+verifier_arm negative_scalar accepted=False reason=xP-ne-Q gate_result=fail
+verifier_refused submitter_named reasons=['submitter-named-instance'] spawned=False
+step 8 negatives
+step 9 summary
