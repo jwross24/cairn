@@ -1,0 +1,23 @@
+usage: cairn gate [-h] [--db PATH] [--bundle PATH] [--pin PATH]
+                  [--attest PATH] [--log LEVEL] [--json]
+                  SUBCOMMAND ...
+
+run the gate bundle's declarative plan of planted-failure self-tests before
+any gate is trusted
+
+positional arguments:
+  SUBCOMMAND
+    selftest       run the gate bundle's plan of planted-failure self-tests,
+                   blocking every step after the first failure
+
+options:
+  -h, --help       show this help message and exit
+  --db PATH        substrate SQLite file
+  --bundle PATH    gate bundle SQLite file
+  --pin PATH       gate-bundle pin file
+  --attest PATH    attestation file
+  --log LEVEL      log level for the JSON records on stderr
+  --json, --robot  emit exactly one JSON document on stdout
+
+Structured output: add --json to any read-side command. Contract: cairn
+capabilities --json. Agent handbook: cairn robot-docs.

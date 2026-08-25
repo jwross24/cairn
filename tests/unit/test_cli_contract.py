@@ -11,7 +11,7 @@ from cairn.errors import CliError
 
 DISCOVERY = ("--json", "capabilities", "robot-docs")
 BOUNDED_ARGV = {"measure": ("toy-curve-tries", "--sizes", "30", "--seeds", "2")}
-DEPLOY_ARGV = ("bundle", "attest", "selftest", "startup-scan")
+DEPLOY_ARGV = ("bundle", "attest", "selftest", "startup-scan", "gate")
 ESC = "\x1b"
 
 
@@ -99,6 +99,12 @@ def _deploy_argv(name, tmp_path, pinned_bundle, clear_flags):
         return ("toy-curve", *paths, "--db", str(tmp_path / "substrate.sqlite"))
     attest_path = tmp_path / "attestations.log"
     clear_flags(attest_path)
+    if name == "gate":
+        from cairn import attest, bundle as bundle_mod
+
+        gate_bundle = bundle_mod.GateBundle.open(bundle_path, pin_path)
+        attest.init(attest_path, gate_bundle.waiver_target())
+        return ("selftest", *paths, "--attest", str(attest_path), "--db", str(tmp_path / "substrate.sqlite"))
     return ("init", *paths, "--attest", str(attest_path))
 
 

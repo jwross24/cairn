@@ -52,7 +52,7 @@ def test_missing_gp_binary_raises_before_any_spawn(monkeypatch):
     assert spawned == []
 
 
-NESTED_SUBCOMMAND = {"bundle": ("show",), "attest": ("init",)}
+NESTED_SUBCOMMAND = {"bundle": ("show",), "attest": ("init",), "gate": ("selftest",)}
 
 
 @pytest.mark.parametrize("name", cli.registered())

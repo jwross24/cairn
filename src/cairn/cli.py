@@ -30,7 +30,7 @@ ENV_VARS = {
     "NO_COLOR": "honored trivially: cairn never emits ANSI sequences",
 }
 DISCOVERY_HINT = "Structured output: add --json to any read-side command. Contract: cairn capabilities --json. Agent handbook: cairn robot-docs."
-COMMAND_MODULES = ["cairn.kat", "cairn.measure", "cairn.bundle", "cairn.attest", "cairn.selftest", "cairn.runner"]
+COMMAND_MODULES = ["cairn.kat", "cairn.measure", "cairn.bundle", "cairn.attest", "cairn.selftest", "cairn.runner", "cairn.gateplan"]
 _SUBCOMMANDS = {}
 
 
@@ -104,6 +104,12 @@ def globals_parent(*, suppress):
     parent.add_argument("--pin", default=default("pin"), metavar="PATH", help="gate-bundle pin file")
     parent.add_argument("--attest", default=default("attest"), metavar="PATH", help="attestation file")
     parent.add_argument("--log", default=default("log"), metavar="LEVEL", help="log level for the JSON records on stderr")
+    return parent
+
+
+def json_parent():
+    parent = argparse.ArgumentParser(add_help=False)
+    parent.add_argument("--json", "--robot", dest="json", action="store_true", default=argparse.SUPPRESS, help="emit exactly one JSON document on stdout")
     return parent
 
 

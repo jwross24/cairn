@@ -1,25 +1,56 @@
 {
   "steps": [
-    {"name": "canon_kat", "scope": "selftest", "expect": "pass"},
-    {"name": "verifier_xp_ne_q", "scope": "selftest", "expect": "fail"},
-    {"name": "verifier_forced_crash", "scope": "selftest", "expect": "fail"},
-    {"name": "waiver_cannot_advance", "scope": "selftest", "expect": "refused"},
-    {"name": "tier_gate", "scope": "admission", "expect": "admitted"}
+    {"step": "canon_kat", "kind": "canon_kat", "expect": "pass"},
+    {"step": "verifier_selftest_pass", "kind": "verifier", "fixture": "corpus_1", "entry": "verify", "x": "3", "expect": "OK"},
+    {"step": "verifier_selftest_fail_xP_ne_Q", "kind": "verifier", "fixture": "corpus_1", "entry": "verify", "x": "4", "expect": "FAIL xP-ne-Q"},
+    {"step": "verifier_selftest_crash", "kind": "verifier", "fixture": "curve60_seed1", "entry": "crash_selftest", "stack": "8M", "expect": "FAIL backend-crash"},
+    {"step": "verifier_selftest_crash_control", "kind": "verifier", "fixture": "curve60_seed1", "entry": "crash_selftest", "stack": "64M", "expect": "OK"},
+    {"step": "waiver_cannot_advance", "kind": "waiver_cannot_advance", "expect": "no-ticket"},
+    {"step": "tier_gate_selftest_two_above", "kind": "tier_gate", "expect": "TierRefused(tier-two-above)"}
   ],
   "fixtures": {
-    "waiver_hypothesis": {
-      "target_family": "toy_curve",
-      "claimed": {"kind": "gate-plan-fixture"},
-      "method_identity": {"interface_version": "toy_curve/1", "params": {}},
-      "declared_parameter_ranges": {"bits": [40, 40]},
-      "sampling_distribution": null
+    "corpus_1": {
+      "p": "5",
+      "a": "2",
+      "b": "1",
+      "n": "7",
+      "Px": "0",
+      "Py": "1",
+      "Qx": "3",
+      "Qy": "3"
     },
-    "crash_selftest": {
+    "curve60_seed1": {
       "p": "866004983247663323",
       "a": "218370429096749092",
-      "b": "332004879195750802",
-      "overflow_stack": "8M",
-      "control_stack": "64M"
-    }
+      "b": "332004879195750802"
+    },
+    "waiver_hypothesis": {
+      "target_family": "gate_plan_fixture",
+      "claimed": {"kind": "gate-plan-fixture"},
+      "method_identity": {"interface_version": "gate_plan_fixture/1", "params": {}},
+      "declared_parameter_ranges": {"bits": [2, 2]},
+      "sampling_distribution": null
+    },
+    "admitted_hypothesis": {
+      "target_family": "gate_plan_fixture",
+      "claimed": {"kind": "gate-plan-fixture"},
+      "method_identity": {"interface_version": "gate_plan_fixture/1", "params": {}},
+      "declared_parameter_ranges": {"bits": [1, 1]},
+      "sampling_distribution": null
+    },
+    "cost_profile": {
+      "tier": 0,
+      "model": "gate_plan_fixture",
+      "bits": 1,
+      "mean_tries": "1",
+      "sd_tries": "0",
+      "per_try_s": "0.01",
+      "mean_wall_s": "0.01",
+      "grade": "Verifiable",
+      "cost_model": "same_as_production",
+      "source": "bundle/gate_plan.json"
+    },
+    "budget_remaining": 1000000,
+    "skill_identity_hash": "d9ff5a899e822eb6f73aa5d0bf134611d4a89e7267b3fb1c0cee44ca7ba2dd41"
   }
 }

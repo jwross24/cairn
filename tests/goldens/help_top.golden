@@ -12,6 +12,8 @@ positional arguments:
                         vars, paths
     env                 report the toolchain (python, cypari2/libpari, blake3,
                         gp path)
+    gate                run the gate bundle's declarative plan of planted-
+                        failure self-tests before any gate is trusted
     kat                 run the canonicalizer known-answer vectors (a gate
                         self-test); exit 2 on any mismatch
     measure             measure a skill's cost constant (toy-curve-tries:
