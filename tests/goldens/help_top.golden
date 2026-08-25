@@ -16,6 +16,9 @@ positional arguments:
                         failure self-tests before any gate is trusted
     kat                 run the canonicalizer known-answer vectors (a gate
                         self-test); exit 2 on any mismatch
+    m0-run (run)        run the M0 slice end to end: gate self-tests, a
+                        certified 40-bit generator, a derived instance, and a
+                        gate-read verification with its negatives
     measure             measure a skill's cost constant (toy-curve-tries:
                         tries and subprocess wall over seeds 1..N per size)
     robot-docs          print the paste-ready agent handbook

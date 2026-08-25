@@ -11,7 +11,7 @@ from cairn.errors import CliError
 
 DISCOVERY = ("--json", "capabilities", "robot-docs")
 BOUNDED_ARGV = {"measure": ("toy-curve-tries", "--sizes", "30", "--seeds", "2")}
-DEPLOY_ARGV = ("bundle", "attest", "selftest", "startup-scan", "gate")
+DEPLOY_ARGV = ("bundle", "attest", "selftest", "startup-scan", "gate", "m0-run")
 ESC = "\x1b"
 
 
@@ -83,7 +83,7 @@ def test_registration_is_the_capabilities_row(name):
     )
 
 
-def _deploy_argv(name, tmp_path, pinned_bundle, clear_flags):
+def _deploy_argv(name, tmp_path, pinned_bundle, clear_flags, capsys):
     if name == "startup-scan":
         from cairn import substrate
 
@@ -99,12 +99,17 @@ def _deploy_argv(name, tmp_path, pinned_bundle, clear_flags):
         return ("toy-curve", *paths, "--db", str(tmp_path / "substrate.sqlite"))
     attest_path = tmp_path / "attestations.log"
     clear_flags(attest_path)
-    if name == "gate":
+    if name in ("gate", "m0-run"):
         from cairn import attest, bundle as bundle_mod
 
         gate_bundle = bundle_mod.GateBundle.open(bundle_path, pin_path)
         attest.init(attest_path, gate_bundle.waiver_target())
-        return ("selftest", *paths, "--attest", str(attest_path), "--db", str(tmp_path / "substrate.sqlite"))
+        db = tmp_path / "substrate.sqlite"
+        tail = (*paths, "--attest", str(attest_path), "--db", str(db))
+        if name == "gate":
+            return ("selftest", *tail)
+        _run(["selftest", "toy-curve", *paths, "--db", str(db)], capsys)
+        return ("--bits", "40", "--seed", "1", *tail)
     return ("init", *paths, "--attest", str(attest_path))
 
 
@@ -113,7 +118,7 @@ def test_json_commands_emit_exactly_one_document_on_stdout(
     name, capsys, tmp_path, pinned_bundle, clear_flags
 ):
     argv = (
-        _deploy_argv(name, tmp_path, pinned_bundle, clear_flags)
+        _deploy_argv(name, tmp_path, pinned_bundle, clear_flags, capsys)
         if name in DEPLOY_ARGV
         else BOUNDED_ARGV.get(name, ())
     )
