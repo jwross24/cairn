@@ -417,14 +417,22 @@ def test_the_group_sweep_leaves_no_stray_grandchild(writer, tmp_path):
 
 
 def test_rusage_covers_the_child_and_what_the_child_reaped(writer, tmp_path):
+    burner_budget = Evaluation(
+        expected_wall_s=30.0, expected_core_s=30.0, expected_verification_core_s=0.0
+    )
     alone = _fixture_launch(
-        writer, tmp_path, "skills.cpu_burner", recipe=_recipe(seed=21)
+        writer,
+        tmp_path,
+        "skills.cpu_burner",
+        recipe=_recipe(seed=21),
+        evaluation=burner_budget,
     )
     with_grandchild = _fixture_launch(
         writer,
         tmp_path,
         "skills.cpu_burner",
         recipe=_recipe(seed=22),
+        evaluation=burner_budget,
         env_extra={"PYTHONPATH": FIXTURES, "FIXTURE_GRANDCHILD": "1"},
     )
     assert alone.status == with_grandchild.status == "OK"
