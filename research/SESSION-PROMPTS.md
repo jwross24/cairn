@@ -107,6 +107,15 @@ signatures, the conventions a new file has to match, and anything already shippe
 assumes. Ask for a digest, not file bodies, and read those files yourself only when you are
 about to edit them.
 
+Give every survey and audit subagent this clause verbatim; without it a survey reports a
+confidently wrong defect roughly as often as a real one:
+
+> Execute a command that settles any claim about whether code is valid, runs, compiles,
+> imports or is broken, and cite the command. Your training data may predate this project's
+> runtime, so a construct that looks wrong to you may be valid here: the interpreter is the
+> authority, not your recollection. Prefix an unexecuted claim with "UNVERIFIED:" and name the
+> command that would settle it. Never report an unexecuted suspicion as a defect.
+
 Run through to close-or-blocked in one pass. A committed slice is a checkpoint, not a place to
 hand back: surface mid-way only for a disagreement with the bead text or a decision that is the
 operator's, never to report progress.
