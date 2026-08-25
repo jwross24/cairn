@@ -52,6 +52,9 @@ RESULT_BLOCKED = "blocked"
 MISMATCH_REASON = "expect-mismatch"
 BLOCKED_PREFIX = "blocked-by:"
 
+BASE_STEP_FIELDS = ("step", "kind", "expect")
+VERIFIER_STEP_FIELDS = BASE_STEP_FIELDS + ("fixture", "entry", "x", "stack")
+
 CORPUS_FIELDS = ("p", "a", "b", "n", "Px", "Py", "Qx", "Qy")
 CRASH_FIELDS = ("p", "a", "b")
 PROFILE_FIELDS = ("tier", "model", "bits", "mean_tries", "sd_tries", "per_try_s", "mean_wall_s", "grade", "cost_model", "source")
@@ -157,21 +160,18 @@ class GatePlan:
 
     def run(self, gate_bundle, sub, attest_path):
         fixtures = _fixtures(gate_bundle)
-        results = []
-        blocker = None
-        for step in self.steps:
+        elapsed = {}
+
+        def observe(step):
             start = time.monotonic()
-            if blocker is not None:
-                observed, reasons, digests = RESULT_BLOCKED, (f"{BLOCKED_PREFIX}{blocker}",), (None, None)
-                result = RESULT_BLOCKED
-            else:
-                observed, extra, digests = _execute(step, gate_bundle, sub, attest_path, fixtures)
-                if observed == step.expect:
-                    result, reasons = RESULT_PASS, tuple(extra)
-                else:
-                    result, reasons = RESULT_FAIL, (MISMATCH_REASON, f"observed:{observed}") + tuple(extra)
-                    blocker = step.step
-            wall_ms = int((time.monotonic() - start) * 1000)
+            try:
+                return _execute(step, gate_bundle, sub, attest_path, fixtures)
+            finally:
+                elapsed[step.step] = int((time.monotonic() - start) * 1000)
+
+        results = []
+        for step, observed, result, reasons, digests in plan_outcomes(self.steps, observe):
+            wall_ms = elapsed.get(step.step, 0)
             run = claims.GateRun(
                 gate=GATE,
                 bundle_hash=gate_bundle.hash,
@@ -188,6 +188,20 @@ class GatePlan:
         return PlanResult(tuple(results), gate_bundle.hash, gate_bundle.pin_hash)
 
 
+def plan_outcomes(steps, observe):
+    blocker = None
+    for step in steps:
+        if blocker is not None:
+            yield step, RESULT_BLOCKED, RESULT_BLOCKED, (f"{BLOCKED_PREFIX}{blocker}",), (None, None)
+            continue
+        observed, extra, digests = observe(step)
+        if observed == step.expect:
+            yield step, observed, RESULT_PASS, tuple(extra), digests
+        else:
+            yield step, observed, RESULT_FAIL, (MISMATCH_REASON, f"observed:{observed}") + tuple(extra), digests
+            blocker = step.step
+
+
 def _step_at(index, row):
     if not isinstance(row, dict):
         raise PlanInvalid(f"step-not-a-mapping:{index}.{type(row).__name__}")
@@ -201,8 +215,16 @@ def _step_at(index, row):
     if row["expect"] not in EXPECTATIONS:
         raise PlanInvalid(f"expect-outside-vocabulary:{index}.{row['expect']!r}")
     if row["kind"] == KIND_VERIFIER:
+        _reject_unknown_fields(index, row, VERIFIER_STEP_FIELDS)
         return _verifier_step_at(index, row)
+    _reject_unknown_fields(index, row, BASE_STEP_FIELDS)
     return Step(step=row["step"], kind=row["kind"], expect=row["expect"])
+
+
+def _reject_unknown_fields(index, row, allowed):
+    for key in sorted(row):
+        if key not in allowed:
+            raise PlanInvalid(f"unknown-step-field:{index}.{key!r}")
 
 
 def _verifier_step_at(index, row):

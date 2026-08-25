@@ -1,0 +1,5 @@
+{
+ "expect": "PlanInvalid",
+ "match": "plan-empty",
+ "steps": []
+}

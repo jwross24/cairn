@@ -1,0 +1,53 @@
+{
+ "expect": "PlanInvalid",
+ "match": "expect-outside-vocabulary:1.",
+ "steps": [
+  {
+   "step": "canon_kat",
+   "kind": "canon_kat",
+   "expect": "pass"
+  },
+  {
+   "step": "verifier_selftest_pass",
+   "kind": "verifier",
+   "fixture": "corpus_1",
+   "entry": "verify",
+   "x": "3",
+   "expect": null
+  },
+  {
+   "step": "verifier_selftest_fail_xP_ne_Q",
+   "kind": "verifier",
+   "fixture": "corpus_1",
+   "entry": "verify",
+   "x": "4",
+   "expect": "FAIL xP-ne-Q"
+  },
+  {
+   "step": "verifier_selftest_crash",
+   "kind": "verifier",
+   "fixture": "curve60_seed1",
+   "entry": "crash_selftest",
+   "stack": "8M",
+   "expect": "FAIL backend-crash"
+  },
+  {
+   "step": "verifier_selftest_crash_control",
+   "kind": "verifier",
+   "fixture": "curve60_seed1",
+   "entry": "crash_selftest",
+   "stack": "64M",
+   "expect": "OK"
+  },
+  {
+   "step": "waiver_cannot_advance",
+   "kind": "waiver_cannot_advance",
+   "expect": "no-ticket"
+  },
+  {
+   "step": "tier_gate_selftest_two_above",
+   "kind": "tier_gate",
+   "expect": "TierRefused(tier-two-above)"
+  }
+ ]
+}
