@@ -1,0 +1,536 @@
+import json
+import sqlite3
+import sys
+from pathlib import Path
+
+import pytest
+
+from cairn import attest, claims, justify, keys
+from cairn.justify import CONJECTURE, PROVEN, SPECULATION, STRONG_EMPIRICAL
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import factories  # noqa: E402
+from _substrate_helpers import (
+    ENV_MANIFEST_HASH,
+    IDENTITY_A,
+    TRANSCRIPT_HASH,
+    open_writer,
+    recipe,
+)  # noqa: E402
+
+WAIVER_TARGET = "f" * 64
+COVERING_CROSS_CHECK = {"axis": "algorithm", "independent_range": {"bits": [0, 60]}}
+AUTHOR_ORIGINS = {"F5": {"P": "author_supplied", "p": "author_supplied"}}
+
+
+@pytest.fixture
+def writer(tmp_path):
+    sub = open_writer(tmp_path)
+    yield sub
+    sub.close()
+
+
+@pytest.fixture
+def attest_path(tmp_path, clear_flags):
+    path = tmp_path / "attestations.log"
+    clear_flags(path)
+    attest.init(path, WAIVER_TARGET)
+    return path
+
+
+def _statement(writer, **kw):
+    statement = factories.claim_statement(seed=kw.pop("seed", 1), **kw)
+    claims.write_claim_statement(writer, statement)
+    return statement
+
+
+def _wide_population(statement, size=(30, 60)):
+    return {
+        **statement.scope,
+        "size_interval": list(size),
+        "param_ranges": {"bits": list(size)},
+    }
+
+
+def _append_verdict(writer, attest_path, statement_hash, verdict="approve"):
+    unplaced = factories.review_verdict(statement_hash, verdict=verdict, seed=3)
+    offset = attest.append_record(
+        attest_path, claims.review_verdict_canonical(unplaced)
+    )
+    placed = factories.review_verdict(
+        statement_hash, verdict=verdict, seed=3, file_offset=offset
+    )
+    claims.write_review_verdict(writer, placed)
+    return offset
+
+
+def _certify(writer, revision, summary):
+    identity = writer.put_identity_bundle(
+        {**IDENTITY_A, "implementation_revision": revision}
+    )
+    writer.put_certificate(identity, TRANSCRIPT_HASH, ENV_MANIFEST_HASH, summary)
+    return identity
+
+
+def _ladder(
+    writer,
+    statement,
+    population,
+    *,
+    repro=True,
+    verdict="KEEP",
+    in_sample=None,
+    attempt_id=None,
+    replay_grade="Replayable",
+    seed=0,
+    **kw,
+):
+    rng_attempt = attempt_id or f"attempt-{seed:08x}"
+    record = factories.repro_record(rng_attempt, passed=bool(repro))
+    if repro is not None:
+        claims.write_repro_record(writer, record)
+    node = factories.evidence_node(
+        "ladder_table",
+        statement.hash,
+        population,
+        frozenset(population["assumption_set"]),
+        verdict=verdict,
+        repro=None if repro is None else record,
+        seed=seed,
+        attempt_id=rng_attempt,
+        in_sample_sizes=list(in_sample or population["size_interval"]),
+        **kw,
+    )
+    claims.write_evidence_node(writer, node, replay_grade=replay_grade)
+    return node
+
+
+def case_ladder_keep_covering_with_passed_repro(writer, attest_path):
+    statement = _statement(writer)
+    node = _ladder(writer, statement, _wide_population(statement))
+    return statement, node, None
+
+
+def case_repro_absent(writer, attest_path):
+    statement = _statement(writer, seed=2)
+    node = _ladder(writer, statement, _wide_population(statement), repro=None, seed=2)
+    return statement, node, None
+
+
+def case_repro_failed(writer, attest_path):
+    statement = _statement(writer, seed=3)
+    node = _ladder(writer, statement, _wide_population(statement), repro=False, seed=3)
+    return statement, node, None
+
+
+def case_grade_audit_only(writer, attest_path):
+    statement = _statement(writer, seed=4)
+    node = _ladder(
+        writer,
+        statement,
+        _wide_population(statement),
+        seed=4,
+        replay_grade=justify.AUDIT_ONLY,
+    )
+    return statement, node, None
+
+
+def case_population_narrower_than_scope(writer, attest_path):
+    statement = _statement(writer, seed=5)
+    node = _ladder(
+        writer, statement, _wide_population(statement, size=(40, 50)), seed=5
+    )
+    return statement, node, None
+
+
+def case_extra_assumption(writer, attest_path):
+    statement = _statement(writer, seed=6)
+    population = {
+        **_wide_population(statement),
+        "assumption_set": factories.assumption_ids({"A1", "A2"}),
+    }
+    node = _ladder(writer, statement, population, seed=6)
+    return statement, node, None
+
+
+def case_family_mismatch(writer, attest_path):
+    statement = _statement(writer, seed=7)
+    population = {**_wide_population(statement), "target_family": "other_curve"}
+    node = _ladder(writer, statement, population, seed=7)
+    return statement, node, None
+
+
+def case_statistical_offered_for_proven(writer, attest_path):
+    statement = _statement(writer, seed=8)
+    node = factories.evidence_node(
+        "statistical",
+        statement.hash,
+        _wide_population(statement),
+        frozenset({"A1"}),
+        seed=8,
+    )
+    claims.write_evidence_node(writer, node)
+    return statement, node, PROVEN
+
+
+def case_statistical_for_a_cost_model_statement(writer, attest_path):
+    statement = _statement(writer, seed=9, cost_model=True)
+    node = factories.evidence_node(
+        "statistical",
+        statement.hash,
+        _wide_population(statement),
+        frozenset({"A1"}),
+        seed=9,
+    )
+    claims.write_evidence_node(writer, node)
+    return statement, node, None
+
+
+def case_keep_in_sample_covering(writer, attest_path):
+    statement = _statement(writer, seed=10)
+    node = _ladder(
+        writer,
+        statement,
+        _wide_population(statement),
+        seed=10,
+        verdict="KEEP_IN_SAMPLE",
+        in_sample=(30, 50),
+    )
+    return statement, node, None
+
+
+def case_keep_in_sample_not_covering(writer, attest_path):
+    statement = _statement(writer, seed=11)
+    node = _ladder(
+        writer,
+        statement,
+        _wide_population(statement),
+        seed=11,
+        verdict="KEEP_IN_SAMPLE",
+        in_sample=(30, 45),
+    )
+    return statement, node, None
+
+
+def case_lean_artifact_with_matching_verdict(writer, attest_path):
+    statement = _statement(writer, seed=12)
+    _append_verdict(writer, attest_path, statement.hash)
+    node = factories.evidence_node(
+        "lean_artifact",
+        statement.hash,
+        _wide_population(statement),
+        frozenset({"A1"}),
+        seed=12,
+    )
+    claims.write_evidence_node(writer, node)
+    return statement, node, None
+
+
+def case_lean_artifact_with_a_reject_verdict(writer, attest_path):
+    statement = _statement(writer, seed=18)
+    _append_verdict(writer, attest_path, statement.hash, verdict="reject")
+    node = factories.evidence_node(
+        "lean_artifact",
+        statement.hash,
+        _wide_population(statement),
+        frozenset({"A1"}),
+        seed=18,
+    )
+    claims.write_evidence_node(writer, node)
+    return statement, node, None
+
+
+def case_lean_artifact_with_forged_digest(writer, attest_path):
+    statement = _statement(writer, seed=13)
+    claims.write_review_verdict(
+        writer, factories.review_verdict(statement.hash, seed=13, file_offset=0)
+    )
+    node = factories.evidence_node(
+        "lean_artifact",
+        statement.hash,
+        _wide_population(statement),
+        frozenset({"A1"}),
+        seed=13,
+    )
+    claims.write_evidence_node(writer, node)
+    return statement, node, None
+
+
+def case_disowned_ladder_table(writer, attest_path):
+    statement = _statement(writer, seed=14)
+    attempt_id = writer.start_attempt(keys.recipe_key(recipe(seed=14)))
+    writer.close_attempt(attempt_id, "OK")
+    writer.disown(attempt_id)
+    node = _ladder(
+        writer, statement, _wide_population(statement), seed=14, attempt_id=attempt_id
+    )
+    return statement, node, None
+
+
+def case_author_supplied_producer(writer, attest_path):
+    statement = _statement(writer, seed=15)
+    identity = _certify(
+        writer, "1a" * 32, factories.selftest_summary(AUTHOR_ORIGINS, False, None)
+    )
+    node = _ladder(
+        writer,
+        statement,
+        _wide_population(statement),
+        seed=15,
+        producer=(identity, "skill"),
+    )
+    return statement, node, None
+
+
+def case_producer_with_a_covering_cross_check(writer, attest_path):
+    statement = _statement(writer, seed=16)
+    identity = _certify(
+        writer,
+        "2b" * 32,
+        factories.selftest_summary(AUTHOR_ORIGINS, False, COVERING_CROSS_CHECK),
+    )
+    node = _ladder(
+        writer,
+        statement,
+        _wide_population(statement),
+        seed=16,
+        producer=(identity, "skill"),
+    )
+    return statement, node, None
+
+
+def case_refuted_statement_with_a_keep_table(writer, attest_path):
+    statement = _statement(writer, seed=17)
+    node = _ladder(writer, statement, _wide_population(statement), seed=17)
+    claims.transition_status(writer, statement.hash, "refuted")
+    return statement, node, None
+
+
+DONE_WHEN = [
+    (
+        case_ladder_keep_covering_with_passed_repro,
+        "Justification",
+        STRONG_EMPIRICAL,
+        STRONG_EMPIRICAL,
+    ),
+    (case_repro_absent, "Justification", CONJECTURE, CONJECTURE),
+    (case_repro_failed, "Justification", CONJECTURE, CONJECTURE),
+    (case_grade_audit_only, "Justification", CONJECTURE, CONJECTURE),
+    (
+        case_population_narrower_than_scope,
+        "CoverageViolation",
+        "size_interval",
+        SPECULATION,
+    ),
+    (case_extra_assumption, "CoverageViolation", "assumptions", SPECULATION),
+    (case_family_mismatch, "CoverageViolation", "target_family", SPECULATION),
+    (
+        case_statistical_offered_for_proven,
+        "LatticeViolation",
+        "statistical-cannot-justify-PROVEN",
+        STRONG_EMPIRICAL,
+    ),
+    (
+        case_statistical_for_a_cost_model_statement,
+        "Justification",
+        CONJECTURE,
+        CONJECTURE,
+    ),
+    (case_keep_in_sample_covering, "Justification", STRONG_EMPIRICAL, STRONG_EMPIRICAL),
+    (
+        case_keep_in_sample_not_covering,
+        "Absent",
+        "table-verdict-KEEP_IN_SAMPLE",
+        SPECULATION,
+    ),
+    (case_lean_artifact_with_matching_verdict, "Justification", PROVEN, PROVEN),
+    (case_lean_artifact_with_a_reject_verdict, "Pending", "human_review", SPECULATION),
+    (case_lean_artifact_with_forged_digest, "Pending", "human_review", SPECULATION),
+    (case_disowned_ladder_table, "Absent", "disowned", SPECULATION),
+    (case_author_supplied_producer, "Justification", CONJECTURE, CONJECTURE),
+    (
+        case_producer_with_a_covering_cross_check,
+        "Justification",
+        STRONG_EMPIRICAL,
+        STRONG_EMPIRICAL,
+    ),
+    (
+        case_refuted_statement_with_a_keep_table,
+        "LatticeViolation",
+        "refuted-statement",
+        SPECULATION,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    ("build", "result_type", "detail", "tag"),
+    DONE_WHEN,
+    ids=[build.__name__.removeprefix("case_") for build, *_ in DONE_WHEN],
+)
+def test_the_done_when_set(
+    writer, attest_path, db_snapshot, build, result_type, detail, tag
+):
+    statement, node, offered = build(writer, attest_path)
+    row = claims.get_evidence_node(writer, node.hash)
+    stored = claims.get_claim_statement(writer, statement.hash)
+    ctx = justify.context_for(writer, row, stored, attest_path, offered_class=offered)
+    result = justify.justify(row, stored, ctx)
+    assert type(result).__name__ == result_type
+    assert (
+        getattr(result, "cls", None)
+        or getattr(result, "field", None)
+        or getattr(result, "reason", None)
+    ) == detail
+
+    if offered is None:
+        derived = justify.derive_tag(writer, statement.hash, attest_path)
+        db_snapshot(writer.conn, "after-derive")
+        assert derived.tag == tag
+        assert claims.tag_history_for(writer, statement.hash)[-1]["to_tag"] == tag
+
+
+def test_a_waiver_naming_the_statement_moves_no_tag(writer, attest_path, db_snapshot):
+    statement = _statement(writer, seed=20)
+    _ladder(writer, statement, _wide_population(statement), seed=20)
+    first = justify.derive_tag(writer, statement.hash, attest_path)
+    before = db_snapshot(writer.conn, "before-waiver")
+
+    waiver = {
+        "kind": "waiver",
+        "target_kind": "claim_statement",
+        "target": statement.hash,
+        "check": "tier_gate",
+        "reason": "operator waiver",
+        "issued_by": "operator",
+        "expires_at": "2027-01-01T00:00:00Z",
+    }
+    attest.append_record(attest_path, attest.waiver_canonical(waiver))
+
+    second = justify.derive_tag(writer, statement.hash, attest_path)
+    after = db_snapshot(writer.conn, "after-waiver")
+    assert second.tag == first.tag == STRONG_EMPIRICAL
+    assert not second.appended
+    assert after["tag_history"] == before["tag_history"]
+    assert len(list(attest.records(attest_path))) == 2
+
+
+def test_tag_history_holds_one_row_per_transition_and_refuses_update(
+    writer, attest_path
+):
+    statement = _statement(writer, seed=21)
+    justify.derive_tag(writer, statement.hash, attest_path)
+    justify.derive_tag(writer, statement.hash, attest_path)
+    assert [
+        row["to_tag"] for row in claims.tag_history_for(writer, statement.hash)
+    ] == [SPECULATION]
+
+    _ladder(writer, statement, _wide_population(statement), seed=21)
+    justify.derive_tag(writer, statement.hash, attest_path)
+    justify.derive_tag(writer, statement.hash, attest_path)
+    history = claims.tag_history_for(writer, statement.hash)
+    assert [row["to_tag"] for row in history] == [SPECULATION, STRONG_EMPIRICAL]
+    assert [row["actor"] for row in history] == [justify.ACTOR, justify.ACTOR]
+    assert history[-1]["evidence_hash"] is not None
+
+    with pytest.raises(sqlite3.IntegrityError, match="append-only"):
+        writer.conn.execute(
+            "UPDATE tag_history SET to_tag = ? WHERE seq = ?",
+            (SPECULATION, history[-1]["seq"]),
+        )
+
+
+def test_a_downgrade_carries_the_refuting_evidence_and_moves_the_statement_to_refuted(
+    writer, attest_path
+):
+    statement = _statement(writer, seed=22)
+    _ladder(writer, statement, _wide_population(statement), seed=22)
+    assert (
+        justify.derive_tag(writer, statement.hash, attest_path).tag == STRONG_EMPIRICAL
+    )
+
+    hunt = factories.evidence_node(
+        "counterexample_hunt_record",
+        statement.hash,
+        _wide_population(statement),
+        frozenset({"A1"}),
+        verdict="KILLED",
+        seed=22,
+    )
+    claims.write_evidence_node(writer, hunt)
+    derived = justify.derive_tag(writer, statement.hash, attest_path)
+
+    assert derived.tag == SPECULATION and derived.refuted_by == hunt.hash
+    assert claims.get_claim_statement(writer, statement.hash)["status"] == "refuted"
+    last = claims.tag_history_for(writer, statement.hash)[-1]
+    assert last["from_tag"] == STRONG_EMPIRICAL and last["evidence_hash"] == hunt.hash
+
+
+def test_every_justify_call_logs_one_record(writer, attest_path, json_test_log):
+    statement = _statement(writer, seed=23)
+    _ladder(writer, statement, _wide_population(statement), seed=23)
+    claims.write_evidence_node(
+        writer,
+        factories.evidence_node(
+            "model_proof",
+            statement.hash,
+            _wide_population(statement),
+            frozenset({"A1"}),
+            seed=23,
+        ),
+    )
+
+    justify.derive_tag(writer, statement.hash, attest_path)
+    records = [json.loads(line) for line in json_test_log.read_text().splitlines()]
+    justified = [
+        r for r in records if r["event"] == "justify" and r["step"] == "justify"
+    ]
+    derived = [r for r in records if r["event"] == "derive_tag"]
+    assert len(justified) == 2
+    assert {r["kind"] for r in justified} == {"ladder_table", "model_proof"}
+    assert all(
+        r["statement"] == statement.hash and r["result"] and r["detail"]
+        for r in justified
+    )
+    assert len(derived) == 1 and derived[0]["to_tag"] == STRONG_EMPIRICAL
+
+
+def test_derive_tag_on_an_unknown_statement_raises(writer, attest_path):
+    with pytest.raises(claims.UnknownStatement):
+        justify.derive_tag(writer, "9" * 64, attest_path)
+
+
+def test_the_strongest_covering_node_wins_and_a_weaker_one_never_lowers_it(
+    writer, attest_path
+):
+    statement = _statement(writer, seed=24)
+    claims.write_evidence_node(
+        writer,
+        factories.evidence_node(
+            "model_proof",
+            statement.hash,
+            _wide_population(statement),
+            frozenset({"A1"}),
+            seed=24,
+        ),
+    )
+    assert justify.derive_tag(writer, statement.hash, attest_path).tag == CONJECTURE
+
+    _ladder(writer, statement, _wide_population(statement), seed=124)
+    assert (
+        justify.derive_tag(writer, statement.hash, attest_path).tag == STRONG_EMPIRICAL
+    )
+
+    claims.write_evidence_node(
+        writer,
+        factories.evidence_node(
+            "model_proof",
+            statement.hash,
+            _wide_population(statement),
+            frozenset({"A1"}),
+            seed=224,
+        ),
+    )
+    assert (
+        justify.derive_tag(writer, statement.hash, attest_path).tag == STRONG_EMPIRICAL
+    )
