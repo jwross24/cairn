@@ -3,6 +3,7 @@ import logging
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -44,9 +45,14 @@ def gp_script(bits, seed):
 
 
 def mutated(out, **fields):
-    return toy_curve.ToyCurveOutput(
-        **{**out.to_dict(), "P": tuple(out.P), "cross_check": out.cross_check, "transcripts": None, **fields}
-    )
+    merged: dict[str, Any] = {
+        **out.to_dict(),
+        "P": tuple(out.P),
+        "cross_check": out.cross_check,
+        "transcripts": None,
+        **fields,
+    }
+    return toy_curve.ToyCurveOutput(**merged)
 
 
 @pytest.fixture(scope="module")

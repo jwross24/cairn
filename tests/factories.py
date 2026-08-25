@@ -2,6 +2,7 @@ import json
 import random
 import re
 from pathlib import Path
+from typing import Any
 
 from hypothesis import strategies as st
 
@@ -49,7 +50,7 @@ def _cost_model(cost_model, rng):
 
 def claim_statement(family="toy_curve", size=(30, 50), assumptions=frozenset({"A1"}), cost_model=None, seed=0, **kw):
     rng = _rng(seed)
-    fields = {
+    fields: dict[str, Any] = {
         "claim_id": f"claim-{rng.randrange(16**8):08x}",
         "version": 1,
         "informal": f"rho on {family} costs c*sqrt(n) over {size[0]}-{size[1]} bits (case {rng.randrange(1000)})",
@@ -63,7 +64,7 @@ def claim_statement(family="toy_curve", size=(30, 50), assumptions=frozenset({"A
 
 def superseding_statement(statement, **kw):
     changes = {"supersedes": statement.hash, "version": statement.version + 1, **kw}
-    fields = {
+    fields: dict[str, Any] = {
         name: getattr(statement, name)
         for name in (
             "claim_id",
@@ -82,7 +83,7 @@ def superseding_statement(statement, **kw):
 def hypothesis_object(family="toy_curve", cost_model=None, claim_statement_hash=None, supersedes=None, seed=0, **kw):
     rng = _rng(seed)
     model = _cost_model(cost_model, rng) or DEFAULT_COST_MODEL
-    fields = {
+    fields: dict[str, Any] = {
         "target_family": family,
         "claimed": {
             "kind": "cost_model",
@@ -114,7 +115,7 @@ def evidence_node(
 ):
     rng = _rng(seed)
     identity, tag = _producer(producer, rng)
-    fields = {
+    fields: dict[str, Any] = {
         "kind": kind,
         "target_statement_hash": target_statement_hash,
         "population": population,
@@ -155,7 +156,7 @@ def ladder_table_keep(statement, population, repro_passed=True, seed=0, **kw):
 
 def review_verdict(statement_hash, verdict="approve", seed=0, **kw):
     rng = _rng(seed)
-    fields = {
+    fields: dict[str, Any] = {
         "statement_hash": statement_hash,
         "reviewer": f"reviewer-{rng.randrange(16**4):04x}",
         "verdict": verdict,
@@ -170,7 +171,7 @@ def review_verdict(statement_hash, verdict="approve", seed=0, **kw):
 
 def gate_run(gate="tier_gate", result="admitted", reasons=(), seed=0, **kw):
     rng = _rng(seed)
-    fields = {
+    fields: dict[str, Any] = {
         "gate": gate,
         "bundle_hash": _digest(rng),
         "pin_hash": _digest(rng),
@@ -184,7 +185,7 @@ def gate_run(gate="tier_gate", result="admitted", reasons=(), seed=0, **kw):
 
 def ticket(hypothesis_key=None, tier=0, kind="hypothesis_object", seed=0, **kw):
     rng = _rng(seed)
-    fields = {
+    fields: dict[str, Any] = {
         "hypothesis_key": hypothesis_key or _digest(rng),
         "method_identity": {"interface_version": "toy_curve/1", "params": {"r": "20", "theta": "2^-10"}},
         "tier": tier,

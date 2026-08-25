@@ -34,8 +34,8 @@ UTF8_BOM = b"\xef\xbb\xbf"
 @dataclass(frozen=True)
 class ParsedOutput:
     well_formed: bool
-    status: str = None
-    reason: str = None
+    status: str | None = None
+    reason: str | None = None
     document: dict = field(default_factory=dict)
 
     @classmethod
@@ -189,7 +189,6 @@ def spawn_and_wait(
         )
         pgid = proc.pid
         reaped = False
-        timed_out = False
         terminated_at = None
         status = 0
         usage = None
@@ -200,11 +199,10 @@ def spawn_and_wait(
                     reaped = True
                     break
                 elapsed = time.monotonic() - start
-                if ceiling_s is not None and not timed_out and elapsed >= ceiling_s:
-                    timed_out = True
+                if ceiling_s is not None and terminated_at is None and elapsed >= ceiling_s:
                     terminated_at = elapsed
                     _signal_group(pgid, proc.pid, signal.SIGTERM)
-                elif timed_out and elapsed >= terminated_at + grace:
+                elif terminated_at is not None and elapsed >= terminated_at + grace:
                     _signal_group(pgid, proc.pid, signal.SIGKILL)
                 remaining = tick if ceiling_s is None else min(tick, max(0.0, ceiling_s - elapsed))
                 time.sleep(remaining or tick)
@@ -227,7 +225,7 @@ def spawn_and_wait(
         cpu_user_s=usage.ru_utime,
         cpu_sys_s=usage.ru_stime,
         peak_rss_bytes=maxrss_bytes(usage.ru_maxrss),
-        timed_out=timed_out,
+        timed_out=terminated_at is not None,
         argv=tuple(argv),
     )
     lg.info(
@@ -236,9 +234,9 @@ def spawn_and_wait(
         wall_ms=round(launch.wall_s * 1000, 3),
         cpu_s=round(launch.cpu_user_s + launch.cpu_sys_s, 6),
         rss=launch.peak_rss_bytes,
-        timed_out=timed_out,
+        timed_out=terminated_at is not None,
     )
-    if timed_out:
+    if terminated_at is not None:
         lg.warning(
             "kill",
             ceiling_s=ceiling_s,
@@ -265,11 +263,11 @@ class Attempt:
     attempt_id: str
     recipe_key: str
     status: str
-    output_manifest_hash: str = None
-    receipt_hash: str = None
+    output_manifest_hash: str | None = None
+    receipt_hash: str | None = None
     served_from_cache: bool = False
-    launch: Launch = None
-    parsed: ParsedOutput = None
+    launch: Launch | None = None
+    parsed: ParsedOutput | None = None
     diverged: tuple = ()
 
 

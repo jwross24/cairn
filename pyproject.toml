@@ -21,6 +21,7 @@ dev = [
     "hypothesis>=6.165.10",
     "pytest>=9.1.1",
     "ruff==0.16.4",
+    "ty==0.0.74",
 ]
 
 [[tool.uv.index]]
@@ -63,3 +64,6 @@ builtin = "clear,rare,en-GB_to_en-US"
 ignore-words-list = "aci"
 ignore-regex = "`[^`]*`"
 skip = "./.git,./.venv,./.beads,./uv.lock,./tests/goldens,./tests/vectors,./beads_compliance_audit,./bundle,./research/convergence,./deploy,./var"
+
+[tool.ty.environment]
+python-version = "3.14"

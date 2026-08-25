@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 from hypothesis import HealthCheck, assume, example, given, settings
@@ -13,7 +14,7 @@ import _ec
 from mutants import verifier_mutants
 
 CURVE60 = _ec.curve60()
-CURVES = {"curve60": CURVE60, "GF101": _ec.CORPUS_2}
+CURVES: dict[str, dict[str, Any]] = {"curve60": CURVE60, "GF101": _ec.CORPUS_2}
 GP_EXAMPLES = 40
 P_PLUS_1 = CURVE60["p"] + 1
 gp_settings = settings(max_examples=GP_EXAMPLES, deadline=None)

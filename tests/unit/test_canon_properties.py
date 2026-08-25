@@ -3,6 +3,7 @@ import re
 import sys
 import unicodedata
 from pathlib import Path
+from typing import Any
 
 import pytest
 from hypothesis import example, given
@@ -38,7 +39,7 @@ LEAF_TYPES = {
 
 hexdigest = st.binary(min_size=32, max_size=32).map(bytes.hex)
 short_text = st.text(max_size=12)
-RECIPE_EXAMPLE = {
+RECIPE_EXAMPLE: dict[str, Any] = {
     "skill_identity_hash": "aa" * 32,
     "inputs": {"b": ("11" * 32, 1), "a": ("22" * 32, 2)},
     "seed": 7,

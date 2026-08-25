@@ -1,3 +1,4 @@
+import dataclasses
 import json
 import sys
 from pathlib import Path
@@ -191,7 +192,7 @@ def test_a_profile_that_declares_no_such_size_refuses_and_leaves_the_cost_predic
     tier_gate, sub, _ = gate
     identity = certify(sub)
     undeclared = launch(sub, declared_tier=0, core_s=10_000_000, budget=0.0, skill_identity_hash=identity, bits=40)
-    undeclared = Launch(**{**undeclared.__dict__, "inputs": 41})
+    undeclared = dataclasses.replace(undeclared, inputs=41)
     decision = tier_gate.admit(undeclared)
     assert isinstance(decision, TierRefused)
     assert decision.reasons == (PROFILE_UNDECLARED,)

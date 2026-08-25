@@ -302,7 +302,7 @@ def run(bits, seed):
         status=out.status,
         wall_ms=wall_ms,
     )
-    if out.status == STATUS_DISAGREE:
+    if out.status == STATUS_DISAGREE and out.transcripts is not None:
         lg.info("disagree", bits=bits, seed=seed, transcript_digests=[t["digest"] for t in out.transcripts])
     return out
 

@@ -166,7 +166,8 @@ def test_mode_x_uappnd_x_op_by_owner(flagged_files, mode, flagged, op, expected_
         OPS[op](path)
         observed_errno, observed = None, "OK"
     except PermissionError as exc:
-        observed_errno, observed = exc.errno, f"{errno.errorcode[exc.errno]} {exc.strerror}"
+        code = errno.errorcode[exc.errno] if exc.errno is not None else "?"
+        observed_errno, observed = exc.errno, f"{code} {exc.strerror}"
     lg.info(
         "mode_flag_op",
         command=f"chmod {mode:04o}; {'chflags uappnd; ' if flagged else ''}{op}",
@@ -207,7 +208,8 @@ def test_owner_clears_uappnd_then_chmod_truncate_rename_unlink_succeed(
         os.truncate(path, 0)
         truncate_errno, truncate_observed = None, "OK"
     except PermissionError as exc:
-        truncate_errno, truncate_observed = exc.errno, f"{errno.errorcode[exc.errno]} {exc.strerror}"
+        code = errno.errorcode[exc.errno] if exc.errno is not None else "?"
+        truncate_errno, truncate_observed = exc.errno, f"{code} {exc.strerror}"
     size_after_truncate = os.path.getsize(path)
     os.chmod(path, 0o644)
     os.truncate(path, 0)

@@ -441,9 +441,3 @@ def main(argv=None):
 
 def entry():
     sys.exit(main())
-
-
-if __name__ == "__main__":
-    from cairn.cli import entry as _entry
-
-    _entry()

@@ -36,7 +36,7 @@ class Launch:
     budget_remaining: float
     hypothesis_key: str
     method_identity: dict
-    skill_identity_hash: str
+    skill_identity_hash: str | None
     declared_tier: int
     statement_hash: str | None = None
 

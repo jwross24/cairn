@@ -6,6 +6,7 @@ import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TypeIs
 
 import blake3
 
@@ -31,7 +32,7 @@ class VerifierConfigError(ValueError):
     pass
 
 
-def _is_int(value):
+def _is_int(value) -> TypeIs[int]:
     return isinstance(value, int) and not isinstance(value, bool)
 
 

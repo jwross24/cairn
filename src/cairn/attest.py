@@ -183,6 +183,40 @@ def _run_init(ns):
     return exits.OK
 
 
+VERDICT_RECORD_FIELDS = ("statement_hash", "reviewer", "verdict", "checklist_template_hash", "at", "supersedes")
+
+
+def _verdict_from(fields, gate_bundle_hash, file_offset):
+    from cairn import claims
+
+    unknown = sorted(set(fields) - set(VERDICT_RECORD_FIELDS))
+    if unknown:
+        raise CliError(
+            exits.USER_INPUT,
+            f"the review_verdict record carries fields no verdict has: {', '.join(unknown)}",
+            where=", ".join(unknown),
+            next_command=f"a review_verdict record carries {', '.join(VERDICT_RECORD_FIELDS)}",
+        )
+    missing = sorted(f for f in VERDICT_RECORD_FIELDS if f != "supersedes" and f not in fields)
+    if missing:
+        raise CliError(
+            exits.USER_INPUT,
+            f"the review_verdict record is missing: {', '.join(missing)}",
+            where=", ".join(missing),
+            next_command=f"a review_verdict record carries {', '.join(VERDICT_RECORD_FIELDS)}",
+        )
+    return claims.ReviewVerdict(
+        statement_hash=str(fields["statement_hash"]),
+        reviewer=str(fields["reviewer"]),
+        verdict=str(fields["verdict"]),
+        checklist_template_hash=str(fields["checklist_template_hash"]),
+        gate_bundle_hash=str(gate_bundle_hash),
+        at=str(fields["at"]),
+        supersedes=fields.get("supersedes"),
+        file_offset=file_offset,
+    )
+
+
 def _run_append(ns):
     from cairn import claims, substrate
 
@@ -200,10 +234,9 @@ def _run_append(ns):
         offset = append_record(ns.attest, canonical)
         row = None
     else:
-        verdict = claims.ReviewVerdict(**{**fields, "gate_bundle_hash": gate.hash, "file_offset": 0})
-        canonical = claims.review_verdict_canonical(verdict)
+        canonical = claims.review_verdict_canonical(_verdict_from(fields, gate.hash, 0))
         offset = append_record(ns.attest, canonical)
-        placed = claims.ReviewVerdict(**{**fields, "gate_bundle_hash": gate.hash, "file_offset": offset})
+        placed = _verdict_from(fields, gate.hash, offset)
         with substrate.Substrate.open(ns.db) as sub:
             row = claims.write_review_verdict(sub, placed)
     payload = {
