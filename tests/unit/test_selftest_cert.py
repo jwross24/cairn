@@ -50,6 +50,30 @@ def test_each_of_the_three_ledger_values_is_accepted(ledger):
     assert selftest.check_corpus(doc) is doc
 
 
+@pytest.mark.parametrize("origin", selftest.ORIGINS)
+def test_each_origin_plan_section_2_names_is_accepted(origin):
+    doc = copy.deepcopy(BASE)
+    doc["cases"][0]["fields"]["P"]["origin"] = origin
+    assert selftest.check_corpus(doc) is doc
+
+
+def test_the_origin_vocabulary_is_the_one_plan_section_2_names():
+    assert set(selftest.ORIGINS) == {
+        "upstream_vendored",
+        "independent_oracle",
+        "randomized_postcondition",
+        "author_supplied",
+    }
+
+
+@pytest.mark.parametrize("origin", ["", "vendored", "AUTHOR_SUPPLIED", "independent oracle", "oracle"])
+def test_an_origin_outside_the_vocabulary_is_refused_at_its_path(origin):
+    doc = copy.deepcopy(BASE)
+    doc["cases"][0]["fields"]["P"]["origin"] = origin
+    with pytest.raises(CorpusSchemaError, match=re.escape("$.cases[0].fields.P.origin")):
+        selftest.check_corpus(doc)
+
+
 def test_certificate_composition_matches_the_committed_vector(load_vector):
     vector = _vector(load_vector("canon_kat.json"), "selftest_cert")
     assert _cert(vector) == vector["expected"]

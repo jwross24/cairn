@@ -10,7 +10,7 @@ from cairn.errors import CliError
 
 SCHEMA_VERSION = 1
 CORPUS_PATH = Path(__file__).resolve().parent / "skills" / "toy_curve_corpus.json"
-ORIGINS = ("upstream_vendored", "author_supplied", "randomized_postcondition")
+ORIGINS = ("upstream_vendored", "independent_oracle", "randomized_postcondition", "author_supplied")
 LEDGER_VALUES = ("pass", "intentional_non_goal", "known_gap")
 SCALAR_FIELDS = ("p", "a", "b", "n", "x")
 POINT_FIELDS = ("P", "Q")

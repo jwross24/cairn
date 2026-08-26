@@ -49,10 +49,10 @@ path and no such path in argv; and a source read of the subject module showing i
 `selftest_summary.cross_check` block holds exactly `axis` and `independent_range`, so the
 ledger cannot record a cross-check as having passed.
 
-**Vocabulary width.** S2-04 accepts the four origins PLAN L62 names. `cairn.selftest.ORIGINS`
-admits three of them; a §2-legal corpus declaring `independent_oracle` is refused by
-`check_corpus`. The conformance clause holds the plan's vocabulary; the narrower validator is
-tracked as its own bead.
+**Vocabulary width.** S2-04 accepts the four origins PLAN L62 names, and
+`cairn.selftest.ORIGINS` holds the same four, so a §2-legal corpus and a corpus
+`check_corpus` accepts are the same set. `justify` caps a revision at CONJECTURE only when
+every origin is `author_supplied`, so the three other values each lift the cap.
 
 ## What the harness produces
 
