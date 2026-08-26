@@ -46,6 +46,48 @@
 threshold: 700
 remediation_policy: completion-debt
 
+# THE SWITCH THAT DECIDES WHETHER THIS GATE MEANS ANYTHING, and it is off.
+#
+# A dimension goes `n/a` when the deterministic extractor found no items of its
+# kind, and `WAIVED` when its phase ran in stub mode. Both award full credit, so a
+# bead the extractor cannot read scores full marks on every dimension it was never
+# measured against. Measured 2026-08-26, with a fixture bead closed with the word
+# "Done." and a body naming two files that do not exist:
+#
+#   cairn-us2   975 / 1000  🟢 Verified   false_closed=false
+#
+#   Implementation 250/250  n/a - no code artifacts in spec
+#   Required tests 300/300  WAIVED - no tests enumerated in spec
+#   Test depth     200/200  WAIVED - Phase 6 stub mode
+#   Docs           25/25    n/a - no non-code artifacts in spec
+#   Anti-theater   185/200  MAJOR=1
+#   Cross-bead     15/25    1 synthesis finding
+#
+# 775 of 1000 awarded for having nothing to check. The gate cannot fail a false
+# close, whatever the threshold is set to.
+#
+# `unmeasured_dimensions: excluded` drops an unmeasured dimension from the
+# numerator and the denominator both, and `minimum_measured_weight` refuses to
+# score at all below a coverage floor -- a good score over a tiny measured base is
+# not evidence, and rescaling alone rewards the bead with the least to measure.
+# Measured 2026-08-26 at excluded / 500, the same four beads:
+#
+#   cairn-us2         0  🚨 Theater                 false_closed=TRUE
+#   cairn-qn9         0  🚨 Theater                 false_closed=TRUE
+#   cairn-m0-e0s.12 750  🟡 Partial                 false_closed=false
+#   cairn-m0-e0s.16 750  🟡 Partial                 false_closed=false
+#
+# That is the ordering this file has wanted since it was written, and the fixture
+# fails. 500 is the highest floor the hook path can meet, because Phase 4 and
+# Phase 6 are stubbed there and their 500 of weight is never measurable.
+#
+# It is off because turning it on blocks the next commit that closes a bead whose
+# body the extractor cannot read, and cairn-qn9 shows that includes honest work
+# whose only fault is prose. That is a workflow decision, not an agent's. The
+# remedy for a qn9-shaped bead is the LLM spec extractor, not a softer gate.
+unmeasured_dimensions: full_credit
+minimum_measured_weight: 0
+
 # What a Cairn bead is: a harness slice whose product is code plus the tests that
 # prove it, closed with re-executed evidence. It ships no runbook, so the default
 # 100 for docs measures something this project does not produce; and Mode A
