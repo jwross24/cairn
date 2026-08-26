@@ -392,9 +392,15 @@ def d_substrate(ctx):
             )
         ]
     findings = []
+    conn = None
     try:
         conn = sqlite3.connect(f"file:{ctx.db}?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
+        # the connect is lazy, so a file that is not a database first says so here
+        mode = conn.execute("PRAGMA journal_mode").fetchone()[0]
     except sqlite3.Error as exc:
+        if conn is not None:
+            conn.close()
         return [
             Finding(
                 "D-substrate/unopenable",
@@ -407,8 +413,6 @@ def d_substrate(ctx):
             )
         ]
     try:
-        conn.row_factory = sqlite3.Row
-        mode = conn.execute("PRAGMA journal_mode").fetchone()[0]
         if mode != "wal":
             findings.append(
                 Finding(
@@ -495,8 +499,21 @@ def d_certificate(ctx):
         identity = toy_curve.skill_identity_hash()
     except pari.GpMissing:
         return []
-    with substrate.Substrate.open(ctx.db, role="reader") as sub:
-        certificate = sub.get_certificate(identity)
+    try:
+        with substrate.Substrate.open(ctx.db, role="reader") as sub:
+            certificate = sub.get_certificate(identity)
+    except sqlite3.Error as exc:
+        return [
+            Finding(
+                "D-certificate/unreadable",
+                "gates",
+                ERROR,
+                "the certificate lookup could not open the substrate; D-substrate names the shape it is in",
+                f"{ctx.db}: {type(exc).__name__}: {exc}",
+                False,
+                selftest_command(ctx),
+            )
+        ]
     if certificate is not None:
         return []
     return [

@@ -46,10 +46,14 @@ class Shape:
         return head + list(rest)
 
 
-def _clear_flags(root):
+def _unlock(root):
     for path in Path(root).rglob("*"):
-        if os.path.lexists(path) and not path.is_symlink() and os.stat(path).st_flags:
+        if not os.path.lexists(path) or path.is_symlink():
+            continue
+        if os.stat(path).st_flags:
             os.chflags(path, 0)
+        if path.is_dir() and not os.access(path, os.W_OK):
+            os.chmod(path, 0o700)
 
 
 def _build_shape(root):
@@ -75,7 +79,7 @@ def master_shape(tmp_path_factory):
     root = tmp_path_factory.mktemp("doctor-master") / "checkout"
     _build_shape(root)
     yield root
-    _clear_flags(root)
+    _unlock(root)
 
 
 @pytest.fixture
@@ -90,7 +94,7 @@ def shape(master_shape, tmp_path):
         root / "deploy" / "attestations.log",
     )
     yield made
-    _clear_flags(root)
+    _unlock(root)
 
 
 def run(argv, capsys):
@@ -370,6 +374,43 @@ def test_only_scopes_the_run_to_one_subsystem(shape, capsys):
     assert run(shape.argv("--json", only="deploy"), capsys)[0] == exits.DOCTOR_FINDINGS
 
 
+def test_capabilities_without_json_prints_every_detector_and_fixer_and_the_exit_dictionary(shape, capsys):
+    code, out, err = run(shape.argv("capabilities"), capsys)
+    assert code == exits.DOCTOR_HEALTHY
+    for detector in detectors.DETECTORS:
+        assert detector.id in out
+    for name, _ in fixers.FIXERS:
+        assert name in out
+    assert "exit codes (doctor): 0=healthy" in out
+    assert "cairn doctor capabilities --json" in out
+
+
+def test_ls_without_json_says_so_when_the_index_is_empty_and_lists_the_runs_once_it_is_not(shape, capsys):
+    code, out, err = run(shape.argv("ls"), capsys)
+    assert code == exits.DOCTOR_HEALTHY
+    assert out.count("\n") == 1 and "no runs recorded" in out
+    run(shape.argv(), capsys)
+    code, out, err = run(shape.argv("ls"), capsys)
+    assert code == exits.DOCTOR_HEALTHY
+    assert out.count("\n") == 1 and "detect" in out and "exit=0" in out
+
+
+def test_health_json_carries_the_finding_ids_and_the_code(shape, capsys):
+    doctor_fixtures.load("pin_flag").corrupt(shape)
+    code, out, err = run(shape.argv("health", "--json"), capsys)
+    assert code == exits.DOCTOR_FINDINGS
+    document = json.loads(out)
+    assert document["mode"] == "health"
+    assert document["findings"] == ["D-pin-mode/flag"]
+    assert document["exit_code"] == exits.DOCTOR_FINDINGS
+
+
+def test_the_gitignore_fixer_keeps_an_unterminated_last_line_on_its_own_line(shape, capsys):
+    doctor_fixtures.load("gitignore_unterminated").corrupt(shape)
+    assert run(shape.argv("--fix"), capsys)[0] == exits.DOCTOR_HEALTHY
+    assert (shape.root / ".gitignore").read_text() == "__pycache__/\n.doctor/\nvar/\n"
+
+
 def test_ls_lists_the_runs_the_index_recorded(shape, capsys):
     run(shape.argv(), capsys)
     run(shape.argv(), capsys)
@@ -455,6 +496,53 @@ def test_a_missing_gp_binary_names_the_brew_line(shape, capsys, monkeypatch, tmp
     finding = json.loads(out)["findings"][0]
     assert finding["id"] == "D-gp-binary/absent"
     assert finding["recommended_command"] == detectors.BREW_LINE == "brew install pari"
+
+
+def _fake_gp(tmp_path, body):
+    script = tmp_path / "fake-gp"
+    script.write_text("#!/bin/sh\n" + body)
+    os.chmod(script, 0o700)
+    return str(script)
+
+
+def test_a_gp_that_will_not_print_a_version_is_named_with_the_brew_line(shape, capsys, monkeypatch, tmp_path):
+    monkeypatch.setattr(pari, "GP_BIN", _fake_gp(tmp_path, "exit 1\n"))
+    code, out, err = run(shape.argv("--json", only="gp"), capsys)
+    assert code == exits.DOCTOR_FINDINGS
+    found = {f["id"]: f for f in json.loads(out)["findings"]}
+    assert "D-gp-binary/version-refused" in found
+    assert found["D-gp-binary/version-refused"]["recommended_command"] == detectors.BREW_LINE
+
+
+def test_a_gp_of_the_wrong_minor_version_is_named_with_the_version_the_corpus_was_probed_against(
+    shape, capsys, monkeypatch, tmp_path
+):
+    monkeypatch.setattr(pari, "GP_BIN", _fake_gp(tmp_path, "echo 2.15.3\n"))
+    code, out, err = run(shape.argv("--json", only="gp"), capsys)
+    assert code == exits.DOCTOR_FINDINGS
+    found = {f["id"]: f for f in json.loads(out)["findings"]}
+    assert "D-gp-binary/version-drift" in found
+    assert detectors.GP_MAJOR_MINOR in found["D-gp-binary/version-drift"]["message"]
+    assert "2.15.3" in found["D-gp-binary/version-drift"]["evidence"]
+
+
+def test_a_gp_that_reports_its_version_but_mishandles_a_stdin_script_is_named(shape, capsys, monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        pari,
+        "GP_BIN",
+        _fake_gp(tmp_path, 'case "$*" in *--version-short*) echo 2.17.4 ;; *) echo NOPE ;; esac\n'),
+    )
+    code, out, err = run(shape.argv("--json", only="gp"), capsys)
+    assert code == exits.DOCTOR_FINDINGS
+    found = {f["id"] for f in json.loads(out)["findings"]}
+    assert found == {"D-gp-facts/stdin-script"}
+
+
+def test_the_certificate_detector_is_silent_when_gp_is_absent(shape, capsys, monkeypatch, tmp_path):
+    monkeypatch.setattr(pari, "GP_BIN", str(tmp_path / "no-such-gp"))
+    code, out, err = run(shape.argv("--json", only="gates"), capsys)
+    assert code == exits.DOCTOR_HEALTHY, out + err
+    assert json.loads(out)["findings"] == []
 
 
 def test_a_bundle_that_no_longer_matches_its_pin_names_the_repin_sequence(shape, capsys):
