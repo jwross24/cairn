@@ -115,6 +115,17 @@ CREATE TABLE IF NOT EXISTS grade_history (
     at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS gc_runs (
+    run_id TEXT PRIMARY KEY,
+    dry_run INTEGER NOT NULL,
+    roots INTEGER NOT NULL,
+    reachable INTEGER NOT NULL,
+    candidates INTEGER NOT NULL,
+    count INTEGER NOT NULL,
+    bytes INTEGER NOT NULL,
+    at TEXT NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS attempts_by_recipe ON attempts (recipe_key, status);
 CREATE INDEX IF NOT EXISTS lineage_by_parent ON lineage (parent_hash, edge_kind);
 CREATE INDEX IF NOT EXISTS grade_history_by_node ON grade_history (node_hash, seq);
@@ -137,6 +148,8 @@ CREATE TRIGGER IF NOT EXISTS salts_no_update BEFORE UPDATE ON salts BEGIN SELECT
 CREATE TRIGGER IF NOT EXISTS salts_no_delete BEFORE DELETE ON salts BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER IF NOT EXISTS grade_history_no_update BEFORE UPDATE ON grade_history BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER IF NOT EXISTS grade_history_no_delete BEFORE DELETE ON grade_history BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS gc_runs_no_update BEFORE UPDATE ON gc_runs BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS gc_runs_no_delete BEFORE DELETE ON gc_runs BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 
 CREATE TRIGGER IF NOT EXISTS attempts_no_delete BEFORE DELETE ON attempts BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 

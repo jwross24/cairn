@@ -12,6 +12,7 @@ DEPLOY_ARGV = (
     "attest",
     "selftest",
     "startup-scan",
+    "gc",
     "gate",
     "m0-run",
     "justify",
@@ -84,7 +85,7 @@ def test_registration_is_the_capabilities_row(name):
 
 
 def _deploy_argv(name, tmp_path, pinned_bundle, clear_flags, capsys):
-    if name == "startup-scan":
+    if name in ("startup-scan", "gc"):
         from cairn import substrate
 
         db = tmp_path / "substrate.sqlite"

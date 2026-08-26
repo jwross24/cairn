@@ -14,6 +14,8 @@ positional arguments:
                         gp path)
     gate                run the gate bundle's declarative plan of planted-
                         failure self-tests before any gate is trusted
+    gc                  collect blobs unreachable from any root over lineage;
+                        --yes to delete, otherwise list only
     justify             derive a claim statement's calibration tag from every
                         evidence node targeting it, and append the transition
                         to its tag history
