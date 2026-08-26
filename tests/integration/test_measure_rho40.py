@@ -52,3 +52,15 @@ def test_measure_rho60_rejects_a_nonpositive_cap(capsys):
     out, err = capsys.readouterr()
     assert code == exits.USER_INPUT and out == ""
     assert "--cap-ops must be >= 1" in err
+
+
+def test_measure_rho60_text_output_is_a_markdown_table_with_both_rungs(capsys):
+    code = cli.main(["measure", "rho60", "--cap-ops", str(measure.RHO_MIN_RATE_OPS)])
+    out, err = capsys.readouterr()
+    assert code == exits.OK, err
+    lines = out.splitlines()
+    assert lines[0] == measure.RHO_TABLE_HEADER and lines[1] == measure.RHO_TABLE_RULE
+    assert lines[2].startswith(f"| {measure.RHO40_BITS} | ") and lines[2].endswith(" | solved | STRONG-EMPIRICAL |")
+    assert lines[3].startswith(f"| {measure.RHO60_BITS} | {measure.RHO_MIN_RATE_OPS} | ")
+    assert lines[3].endswith(f" | {measure.STOP_CAP_OPS} | {measure.EXTRAPOLATION_TAG} |")
+    assert lines[4].startswith("verified_x=") and "accepted=True" in lines[4]
