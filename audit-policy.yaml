@@ -43,8 +43,8 @@
 # `unmeasured_dimensions: full_credit`, cairn-qn9 -- a cleanup with no tests of its
 # own -- scores 970 while cairn-m0-e0s.12, with 108 tests, six metamorphic relations
 # and six killed mutants, scores 875. Under `excluded` the same two score 842 and
-# 650, and the 650 is three measured deductions rather than free credit. The cause
-# was extraction, not weighting, and it is stated below.
+# 750, and cairn-qn9 no longer outranks the bead with a hundred more tests. The
+# cause was extraction, not weighting, and it is stated below.
 threshold: 700
 remediation_policy: completion-debt
 
@@ -87,13 +87,19 @@ remediation_policy: completion-debt
 # bead whose body it cannot does not.
 #
 # THE COST OF THE SWITCH, MEASURED OVER EVERY CLOSED BEAD. Re-audited 2026-08-26 at
-# excluded / 450, one single-bead pass each: sixteen of the eighteen closed M0 beads
-# land at 750 to 780, cairn-qn9 at 842. cairn-m0-e0s.12 and cairn-m0-e0s.16 land at
-# 650 and read FALSE-CLOSED. Neither is an extraction failure -- both extract richly
-# -- and neither is free credit withdrawn. Both lose the same three: one BLOCKING
-# theater finding for an ignore-list line in the closing commit, docs 0/25 on
-# '0/1 non-code items found', and cross-bead 0/25 for referencing open downstream
-# beads. cairn-fur owns the docs and theater halves; the debt beads carry the detail.
+# excluded / 450, one single-bead pass each: seventeen of the eighteen closed M0
+# beads pass at 750 to 780, and cairn-qn9 at 842. cairn-m0-e0s.16 reads 650 and
+# FALSE-CLOSED on a BLOCKING anomaly finding that belongs to another bead:
+# anomaly-scan.sh pattern 23 picks the newest commit whose message mentions the id,
+# which for .16 is dcbe208, cairn-cue's commit, and counts `+.beads_hook.log` in
+# .gitignore as a suppression. cairn-m0-e0s.12 read 650 on the same artifact at
+# 21:50Z and 750 forty minutes later, unchanged, because two commits naming it had
+# landed. cairn-fi7 owns that defect and carries the reproduction; the score it
+# produces is not reproducible and no threshold here can compensate for that.
+#
+# What the switch itself costs, separated from that artifact: nothing measured so
+# far. Every closed bead whose body the extractor can read clears 450 of measured
+# weight and 700 of rescaled score.
 #
 # What this still does not measure: 500 of the 1000 is Phase 4 and Phase 6, both
 # stubbed on the hook path and both excluded from the denominator. A passing score
