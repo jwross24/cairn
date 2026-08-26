@@ -1,0 +1,44 @@
+usage: cairn doctor [-h] [--db PATH] [--bundle PATH] [--pin PATH]
+                    [--attest PATH] [--log LEVEL] [--json] [--fix]
+                    [--root PATH] [--dry-run] [--quick] [--only SUBSYSTEM,...]
+                    [--online] [--explain FINDING-ID] [--robot-triage]
+                    SUBCOMMAND ...
+
+diagnose the M0 deploy shape read-only, and repair the two failure modes it
+owns with --fix
+
+positional arguments:
+  SUBCOMMAND
+    undo                restore every file a run changed, in reverse order,
+                        from its verbatim backups
+    capabilities        print the doctor contract: detectors, fixers, exit
+                        codes, artifact layout
+    health              one line and an exit code; the cheap detectors only
+    robot-docs          print the doctor's agent handbook
+    ls                  list the runs recorded in
+                        .doctor/scorecard_history.jsonl
+
+options:
+  -h, --help            show this help message and exit
+  --db PATH             substrate SQLite file
+  --bundle PATH         gate bundle SQLite file
+  --pin PATH            gate-bundle pin file
+  --attest PATH         attestation file
+  --log LEVEL           log level for the JSON records on stderr
+  --json, --robot       emit exactly one JSON document on stdout
+  --fix                 required for the irreversible part of this command
+  --root PATH           checkout root: locates .doctor/, .gitignore,
+                        pyproject.toml and .git/HEAD
+  --dry-run             with --fix, print the plan and write only the run
+                        artifact
+  --quick               cheap detectors only: no gp spawn, no KAT
+  --only SUBSYSTEM,...  scope to a subset of subsystems: deploy, dirs, gates,
+                        gp, pari, project, substrate
+  --online              enable network probes; refused at M0, nothing needs
+                        one
+  --explain FINDING-ID  expand one finding with its evidence
+  --robot-triage        one JSON document: summary, findings, actions_planned,
+                        recommended_command
+
+Structured output: add --json to any read-side command. Contract: cairn
+capabilities --json. Agent handbook: cairn robot-docs.

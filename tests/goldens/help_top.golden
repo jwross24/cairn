@@ -10,6 +10,8 @@ positional arguments:
                         bundle
     capabilities        describe the CLI contract: commands, exit codes, env
                         vars, paths
+    doctor              diagnose the M0 deploy shape read-only, and repair the
+                        two failure modes it owns with --fix
     env                 report the toolchain (python, cypari2/libpari, blake3,
                         gp path)
     gate                run the gate bundle's declarative plan of planted-

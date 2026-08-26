@@ -12,7 +12,7 @@ class CliError(Exception):
     def record(self):
         return {
             "code": self.code,
-            "meaning": exits.CLI.get(self.code, "?"),
+            "meaning": exits.CLI.get(self.code) or exits.DOCTOR.get(self.code, "?"),
             "what": self.what,
             "where": self.where,
             "next_command": self.next_command,

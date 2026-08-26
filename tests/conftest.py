@@ -15,7 +15,7 @@ from hypothesis import settings
 pytest_plugins = ["pytester"]
 
 ROOT = Path(os.environ.get("CAIRN_REPO_ROOT") or Path(__file__).resolve().parent.parent)
-GUARDED_DIRS = ("deploy", "var")
+GUARDED_DIRS = (".doctor", "deploy", "var")
 VECTORS = ROOT / "tests" / "vectors"
 GOLDENS = ROOT / "tests" / "goldens"
 

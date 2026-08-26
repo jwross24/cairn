@@ -8,6 +8,7 @@ from cairn.errors import CliError
 DISCOVERY = ("--json", "capabilities", "robot-docs")
 BOUNDED_ARGV = {"measure": ("toy-curve-tries", "--sizes", "30", "--seeds", "2")}
 DEPLOY_ARGV = (
+    "doctor",
     "bundle",
     "attest",
     "selftest",
@@ -85,6 +86,8 @@ def test_registration_is_the_capabilities_row(name):
 
 
 def _deploy_argv(name, tmp_path, pinned_bundle, clear_flags, capsys):
+    if name == "doctor":
+        return ("--root", str(tmp_path), "--only", "gp")
     if name in ("startup-scan", "gc"):
         from cairn import substrate
 
