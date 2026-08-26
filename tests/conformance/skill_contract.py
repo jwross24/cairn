@@ -32,7 +32,12 @@ IDENTITY_FIELDS = (
 INTERFACE_VERSION_RE = re.compile(r"^[a-z][a-z0-9_]*/[0-9]+$")
 SUBSTRATE_ENV_RE = re.compile(r"CAIRN_DB")
 SUBSTRATE_PATH_MARK = ".sqlite"
-CEILING_MULTIPLIER = 8
+# The harness measures conformance, never speed, so the ceiling only has to be
+# generous enough that a loaded machine does not kill a subject mid-run. toy_curve
+# declares 0.13s at 40 bits; under the full suite, which keeps several PARI
+# processes busy, 8x that is not enough and the child is SIGTERMed with an empty
+# stdout.
+CEILING_MULTIPLIER = 60
 
 
 @dataclass(frozen=True)
@@ -126,8 +131,27 @@ def _launch(subject, ctx, *, module=None, inputs=None, salt="", env_extra=None, 
     )
 
 
+class LaunchFailed(RuntimeError):
+    pass
+
+
 def _stdout_bytes(ctx, attempt):
     return (Path(ctx.scratch_root) / attempt.attempt_id / "stdout").read_bytes()
+
+
+def _document(ctx, attempt):
+    """The subject's output document, or a refusal that names what the launch did.
+
+    An empty stdout parses as a JSONDecodeError, which reads as a defect in the
+    subject and is the wrong verdict entirely: the launch was killed, so the clause
+    was never measured.
+    """
+    raw = _stdout_bytes(ctx, attempt)
+    if not raw.strip():
+        killed = attempt.launch is not None and attempt.launch.timed_out
+        detail = "was killed at its ceiling" if killed else "wrote nothing to stdout"
+        raise LaunchFailed(f"the launch {detail} with status {attempt.status}, so the clause was not measured")
+    return json.loads(raw)
 
 
 def _stderr_bytes(ctx, attempt):
@@ -208,7 +232,9 @@ def check_captured_seed(subject, ctx):
     document = dict(subject.inputs)
     if "seed" not in document:
         return Verdict("S2-03", MUST, FAIL, "seed is not an input field")
-    first = _stdout_bytes(ctx, _launch(subject, ctx, salt="s2-03-a"))
+    first_attempt = _launch(subject, ctx, salt="s2-03-a")
+    _document(ctx, first_attempt)
+    first = _stdout_bytes(ctx, first_attempt)
     again = _stdout_bytes(ctx, _launch(subject, ctx, salt="s2-03-b"))
     if first != again:
         return Verdict("S2-03", MUST, FAIL, "two runs under one seed are not byte-equal")
@@ -325,7 +351,7 @@ def check_disagree_semantics(subject, ctx):
         salt="s2-10",
         env_extra={"CAIRN_HARNESS_SUBJECT": subject.module, "CAIRN_HARNESS_MODE": "seam"},
     )
-    document = json.loads(_stdout_bytes(ctx, attempt))
+    document = _document(ctx, attempt)
     if document.get("status") != runner.STATUS_DISAGREE:
         return Verdict("S2-10", MUST, FAIL, f"a planted disagreement at {seam} still returned {document.get('status')}")
     transcripts = document.get("transcripts")
@@ -380,7 +406,7 @@ def check_axis_declaration(subject, ctx):
             return Verdict("S2-12", MUST, FAIL, f"independent_range names {name!r}, which is not an input field")
         if not (isinstance(interval, (list, tuple)) and len(interval) == 2 and interval[0] <= interval[1]):
             return Verdict("S2-12", MUST, FAIL, f"independent_range[{name!r}] = {interval!r} is not an interval")
-    outside = json.loads(_stdout_bytes(ctx, _launch(subject, ctx, inputs=subject.out_of_range_inputs, salt="s2-12")))
+    outside = _document(ctx, _launch(subject, ctx, inputs=subject.out_of_range_inputs, salt="s2-12"))
     if outside["cross_check"]["result"] != "untested":
         return Verdict(
             "S2-12", MUST, FAIL, f"outside {declared} the cross-check reports {outside['cross_check']['result']!r}"
@@ -394,7 +420,7 @@ def check_axis_declaration(subject, ctx):
 def check_numeric_profile(subject, ctx):
     module = imported(subject)
     numeric = module.identity_bundle()["numeric_profile"]
-    document = json.loads(_stdout_bytes(ctx, _launch(subject, ctx, salt="s2-13")))
+    document = _document(ctx, _launch(subject, ctx, salt="s2-13"))
     if not _emits_float(document):
         if numeric is None:
             return Verdict("S2-13", SHOULD, NA, "the subject emits no floats, so no numeric profile is owed")
