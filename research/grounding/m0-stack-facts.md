@@ -175,8 +175,19 @@ Source the rows rest on (read 2026-08-21, that file): `communicate()` calls `sel
 - Linux `chattr +a`: not probed; the M1 container bead owns it.
 - Non-APFS filesystems: not probed.
 - Timing rows (§2) are this machine's numbers; a loaded CI box will move them inside the asserted windows.
-- Rho at 60 bits: reserved for `cairn-m0-e0s.15` (§9 below).
+- Rho at 60 bits: the 60-bit walk in §9 stops on its op cap, so its wall time is an extrapolation from a rate, not a completed run. One seed, one machine, one core.
 
-## 9. Rho at 60 bits (reserved for `cairn-m0-e0s.15`)
+## 9. Rho at 60 bits
 
-Section written by that bead at its close. Not claimed here.
+Command: `uv run cairn measure rho60 --cap-ops 100000000 --cap-minutes 30 --json` (`src/cairn/measure.py`; run 2026-08-26). The target runs two Pollard rho walks over `cairn.pari`'s single-threaded cypari2 `elladd`, counting one group operation per `elladd`: a 40-bit walk on `toy_curve(40, 1)` carried to a solved discrete log, whose recovered `x` is submitted to the Tier-0 verifier (`src/cairn/verifier.py`, a `gp` subprocess reading `src/cairn/gp/verify.gp`), and a 60-bit walk on `toy_curve(60, 1)` (= `tests/vectors/curve60_seed1.json`, order `n = 866004985024698433`) stopped by whichever cap lands first. Both walks are r-adding with r = 20 and distinguished points at theta = 2^-10; the secret `x`, the r step multipliers and the walk's starting offset are drawn from a `random.Random` seeded by bit size and instance seed, and `Q = xP` comes from `ellmul`. Machine: Apple M4, arm64 macOS 26.6 (Darwin 25.6.0), one core; cypari2 2.2.4 / libpari 2.17.2, CPython 3.14.0. Expected ops is the birthday bound sqrt(pi·n/2) for the instance's order.
+
+| bits | ops | elapsed s | ops/s | expected ops | 60-bit wall s | stop | tag |
+|---|---|---|---|---|---|---|---|
+| 40 | 474179 | 0.687 | 690511.8 | 1218031 | — | solved | STRONG-EMPIRICAL |
+| 60 | 100000000 | 145.223 | 688598.1 | 1166326476 | 1693.8 | cap-ops | STRONG-EMPIRICAL on ops/s, CONJECTURE on the wall |
+
+The 60-bit walk stopped on `--cap-ops` at 10^8 group ops, above the 10^7 the bead asks for; the 30-minute cap was never reached, since 10^8 ops took 145.2 s. `extrapolated_wall_s` = 1166326476 / 688598.1 = 1693.8 s ≈ 28.2 minutes, and carries the CONJECTURE tag: it assumes a rate measured over the first 10^8 ops of one walk on one seed holds for the remaining ~1.07×10^9, and that the walk's expected length equals its birthday bound. Nothing here is a claim about any method's asymptotics, about other hardware, or about a compiled implementation's rate.
+
+The 40-bit walk solved at 474179 ops against an expected 1218031, well inside the geometric spread of a single rho. Its `x = 788702851439` on instance `49f48a74e2a82f681caf65ff2b64c9c8b22284723a76f821cabf294fa6f5cd9d` was accepted by the Tier-0 verifier in 0.061 s; the planted off-by-one `(x + 1) mod n` on the same instance is refused with reason `xP-ne-Q`. Both are asserted in `tests/integration/test_measure_rho40.py`, which runs the walk and the real `gp` verifier with no fault injection other than that off-by-one. `tests/unit/test_measure_rho_rate.py` pins the pure `rate_report(ops, elapsed_s)`: it raises `RefusedTooFewOps` naming `--cap-ops` below 10^6 ops, and above it reports ops/s with the extrapolated 60-bit wall tagged CONJECTURE. `scripts/mutation-check.sh` kills a wrongly solved discrete log (3 tests), a removed 10^6-op floor (4 tests) and a planted `x + 0` negative (1 test).
+
+Open: the distinguished-point table is keyed on the full point rather than the x-coordinate alone, which is what separates a real collision from a P/−P coincidence; keying on x alone still solves this 40-bit seed, so that branch is unexercised by the suite. A second seed or a targeted instance would settle it. Also open: the interpreted rate is the only one measured — the gmpy2 comparison and a compiled rho/BSGS baseline are M1 (decisions 1 and 2), and this section is an input to that call, not the call.
