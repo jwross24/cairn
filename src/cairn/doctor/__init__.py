@@ -62,7 +62,6 @@ def configure(parser):
         sub = subs.add_parser(
             name, parents=[cli.json_parent()], help=summary, description=summary, epilog=cli.DISCOVERY_HINT
         )
-        sub.__class__ = _DoctorParser
         if name == "undo":
             sub.add_argument("run_id", metavar="RUN-ID", help="a run id under .doctor/runs/, or the word latest")
 
@@ -77,7 +76,7 @@ def capabilities_document():
                 "id": d.id,
                 "subsystem": d.subsystem,
                 "summary": d.summary,
-                "runs_under_quick": d.id not in detectors.QUICK_SKIPPED,
+                "under_quick": detectors.under_quick(d.id),
             }
             for d in detectors.DETECTORS
         ],
@@ -118,7 +117,9 @@ def robot_docs_text():
         "",
         "## Detectors",
     ]
-    lines += [f"- {d['id']} ({d['subsystem']}): {d['summary']}" for d in doc["detectors"]]
+    lines += [
+        f"- {d['id']} ({d['subsystem']}, under --quick: {d['under_quick']}): {d['summary']}" for d in doc["detectors"]
+    ]
     lines += ["", "## Fixers (the only automated repairs; every other finding names an operator command)"]
     lines += [f"- {f['id']}: {f['summary']}" for f in doc["fixers"]]
     lines += ["", "## Exit codes (doctor)"]
@@ -130,6 +131,11 @@ def robot_docs_text():
         f"- {doc['run_artifacts']['index']} is the index `cairn doctor ls` prints",
         f"- {doc['run_artifacts']['latest']} points at the newest run",
         f"- {doc['run_artifacts']['lock']} is the flock a --fix holds; the kernel releases it when the holder dies",
+        "- a backup carries the source file's flags, so a run that backed up a uappnd file leaves an",
+        "  append-only tree: chflags -R nouappnd .doctor/runs/<run-id> before clearing that directory",
+        "",
+        "## Under --quick",
+        "- full: the detector runs entire; skipped: it does not run; partial: it runs its cheap half only",
         "",
         "## Never",
         "- never read exit 0 from a detect run as proof a gate passes: the doctor checks shape, not verdicts",
@@ -231,9 +237,10 @@ def _run_health(ns, root):
     ctx = detectors.Context(
         root=root, db=Path(ns.db), bundle=Path(ns.bundle), pin=Path(ns.pin), attest=Path(ns.attest), quick=True
     )
-    findings = detectors.detect(ctx)
+    findings = detectors.detect(ctx, only=_only(ns))
     code = exits.DOCTOR_FINDINGS if findings else exits.DOCTOR_HEALTHY
-    line = f"cairn doctor: {_summary(findings)}; run: {_recommended(findings, 'detect')}"
+    named = "".join(f" {f.id}" for f in findings)
+    line = f"cairn doctor: {_summary(findings)}{named}; run: {_recommended(findings, 'detect')}"
     if ns.json:
         cli.emit_json(
             "doctor",

@@ -469,9 +469,7 @@ def d_substrate(ctx):
     return findings
 
 
-def d_kat(ctx):
-    if ctx.quick:
-        return []
+def d_kat(_ctx):
     failures = kat.run()
     if not failures:
         return []
@@ -623,6 +621,20 @@ DETECTORS = (
 )
 SUBSYSTEMS = tuple(sorted({d.subsystem for d in DETECTORS}))
 QUICK_SKIPPED = ("D-gp-facts", "D-kat")
+# D-gp-binary keeps its isfile half under --quick and drops only the version probe,
+# so neither "runs" nor "skipped" describes it.
+QUICK_PARTIAL = ("D-gp-binary",)
+UNDER_QUICK_FULL = "full"
+UNDER_QUICK_PARTIAL = "partial"
+UNDER_QUICK_SKIPPED = "skipped"
+
+
+def under_quick(detector_id):
+    if detector_id in QUICK_SKIPPED:
+        return UNDER_QUICK_SKIPPED
+    if detector_id in QUICK_PARTIAL:
+        return UNDER_QUICK_PARTIAL
+    return UNDER_QUICK_FULL
 
 
 def detect(ctx, *, only=None):

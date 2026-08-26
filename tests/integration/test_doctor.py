@@ -99,16 +99,21 @@ def run(argv, capsys):
     return code, out, err
 
 
-SQLITE_SIDECARS = ("-wal", "-shm")
+SQLITE_SIDECAR_SUFFIXES = ("-wal", "-shm")
 
 
-def tree_hashes(root, *, skip=(".doctor",), sidecars=False):
+def sidecar_names(db):
+    return tuple(f"{Path(db).name}{suffix}" for suffix in SQLITE_SIDECAR_SUFFIXES)
+
+
+def tree_hashes(shape, *, skip=(".doctor",), sidecars=False):
+    root, exempt = shape.root, sidecar_names(shape.db)
     seen = {}
     for path in sorted(Path(root).rglob("*")):
         rel = path.relative_to(root)
         if rel.parts and rel.parts[0] in skip:
             continue
-        if not sidecars and path.name.endswith(SQLITE_SIDECARS):
+        if not sidecars and path.name in exempt:
             continue
         if path.is_symlink():
             continue
@@ -146,24 +151,26 @@ def test_the_built_deploy_shape_is_healthy_and_prints_one_json_document(shape, c
 
 
 def test_a_detect_run_writes_nothing_outside_the_doctor_directory(shape, capsys):
-    before = tree_hashes(shape.root, skip=(), sidecars=True)
+    before = tree_hashes(shape, skip=(), sidecars=True)
     run(shape.argv(), capsys)
-    after = tree_hashes(shape.root, skip=(), sidecars=True)
+    after = tree_hashes(shape, skip=(), sidecars=True)
     changed = {k for k in set(before) | set(after) if before.get(k) != after.get(k)}
-    stray = {k for k in changed if k.split("/")[0] != ".doctor" and not k.endswith(SQLITE_SIDECARS)}
+    exempt = sidecar_names(shape.db)
+    stray = {k for k in changed if k.split("/")[0] != ".doctor" and k.split("/")[-1] not in exempt}
     assert changed and stray == set(), stray
 
 
 def test_every_detector_leaves_the_examined_tree_byte_identical(shape):
     ctx = detectors.Context(shape.root, shape.db, shape.bundle, shape.pin, shape.attest)
-    before = tree_hashes(shape.root, sidecars=True)
+    before = tree_hashes(shape, sidecars=True)
     detectors.detect(ctx)
-    after = tree_hashes(shape.root, sidecars=True)
-    stray = {k for k in set(before) | set(after) if before.get(k) != after.get(k) and not k.endswith(SQLITE_SIDECARS)}
+    after = tree_hashes(shape, sidecars=True)
+    exempt = sidecar_names(shape.db)
+    stray = {k for k in set(before) | set(after) if before.get(k) != after.get(k) and k.split("/")[-1] not in exempt}
     assert stray == set(), stray
 
 
-def test_a_planted_mutating_detector_is_caught_by_the_purity_check(shape, monkeypatch):
+def test_a_planted_mutating_detector_is_visible_to_the_tree_hash_comparison(shape, monkeypatch):
     def dirty(ctx):
         (ctx.root / "planted-by-a-detector").write_text("x")
         return []
@@ -174,10 +181,10 @@ def test_a_planted_mutating_detector_is_caught_by_the_purity_check(shape, monkey
         (*detectors.DETECTORS, detectors.Detector("D-planted", "dirs", dirty, "writes")),
     )
     ctx = detectors.Context(shape.root, shape.db, shape.bundle, shape.pin, shape.attest)
-    before = tree_hashes(shape.root)
+    before = tree_hashes(shape)
     detectors.detect(ctx)
     assert (shape.root / "planted-by-a-detector").is_file()
-    assert tree_hashes(shape.root) != before
+    assert tree_hashes(shape) != before
 
 
 # ---------------------------------------------------------------- surface
@@ -219,14 +226,55 @@ def test_every_emitted_finding_names_a_declared_detector_and_a_declared_fixer(na
 def test_robot_docs_prints_the_handbook(shape, capsys):
     code, out, err = run(shape.argv("robot-docs"), capsys)
     assert code == exits.DOCTOR_HEALTHY
-    for needle in ("cairn doctor --robot-triage", "## Detectors", "## Exit codes (doctor)", "D-pin-mode", "F-modes"):
+    for needle in (
+        "cairn doctor --robot-triage",
+        "## Detectors",
+        "## Exit codes (doctor)",
+        "D-pin-mode",
+        "F-modes",
+        "chflags -R nouappnd .doctor/runs/<run-id>",
+        "under --quick: partial",
+    ):
         assert needle in out
+
+
+def test_capabilities_says_how_each_detector_behaves_under_quick(shape, capsys):
+    doc = json.loads(run(shape.argv("capabilities", "--json"), capsys)[1])
+    by_id = {d["id"]: d["under_quick"] for d in doc["detectors"]}
+    assert set(by_id.values()) <= {"full", "partial", "skipped"}
+    assert {i for i, v in by_id.items() if v == "skipped"} == set(detectors.QUICK_SKIPPED)
+    assert by_id["D-gp-binary"] == "partial"
+    assert by_id["D-dirs"] == "full"
+
+
+def test_a_partial_detector_keeps_its_cheap_half_under_quick(shape, capsys, monkeypatch, tmp_path, popen_spy):
+    monkeypatch.setattr(pari, "GP_BIN", str(tmp_path / "no-such-gp"))
+    code, out, err = run(shape.argv("--quick", "--json", only="gp"), capsys)
+    assert code == exits.DOCTOR_FINDINGS
+    assert [f["id"] for f in json.loads(out)["findings"]] == ["D-gp-binary/absent"]
+    assert popen_spy == []
 
 
 def test_health_is_one_line_and_an_exit_code(shape, capsys):
     code, out, err = run(shape.argv("health"), capsys)
     assert code == exits.DOCTOR_HEALTHY
     assert out.count("\n") == 1 and out.startswith("cairn doctor:")
+
+
+def test_health_names_the_finding_and_the_flag_that_repairs_it(shape, capsys):
+    doctor_fixtures.load("pin_flag").corrupt(shape)
+    code, out, err = run(shape.argv("health"), capsys)
+    assert code == exits.DOCTOR_FINDINGS
+    assert out.count("\n") == 1
+    assert "D-pin-mode/flag" in out and out.rstrip().endswith("run: cairn doctor --fix")
+
+
+def test_health_honors_only(shape, capsys):
+    doctor_fixtures.load("pin_flag").corrupt(shape)
+    assert run(shape.argv("health", only="gp"), capsys)[0] == exits.DOCTOR_HEALTHY
+    code, out, err = run(shape.argv("health", only="deploy"), capsys)
+    assert code == exits.DOCTOR_FINDINGS and "D-pin-mode/flag" in out
+    assert run(shape.argv("health", only="nosuch"), capsys)[0] == exits.DOCTOR_USAGE
 
 
 def test_robot_triage_carries_the_exact_next_command(shape, capsys):
@@ -258,16 +306,26 @@ def test_an_unknown_subsystem_is_a_doctor_usage_error_not_a_cli_one(shape, capsy
     assert code == exits.DOCTOR_USAGE and code != exits.USER_INPUT and out == ""
 
 
-def test_a_missing_undo_argument_is_a_doctor_usage_error(shape, capsys):
-    code, out, err = run(shape.argv("undo"), capsys)
-    assert code == exits.DOCTOR_USAGE and out == ""
+@pytest.mark.parametrize(
+    ("rest", "needle"),
+    [
+        (("undo",), "RUN-ID"),
+        (("--explain",), "--explain"),
+        (("nosuchsub",), "nosuchsub"),
+    ],
+    ids=["undo-without-a-run-id", "explain-without-a-finding-id", "unknown-subcommand"],
+)
+def test_a_doctor_parser_error_is_a_doctor_usage_error_not_a_cli_one(rest, needle, shape, capsys):
+    code, out, err = run(shape.argv(*rest), capsys)
+    assert code == exits.DOCTOR_USAGE and code != exits.USER_INPUT, err
+    assert out == "" and needle in err
 
 
 def test_online_is_refused_at_m0(shape, capsys):
-    before = tree_hashes(shape.root, skip=())
+    before = tree_hashes(shape, skip=())
     code, out, err = run(shape.argv("--online"), capsys)
     assert code == exits.DOCTOR_REFUSED and out == "" and "--online" in err
-    assert tree_hashes(shape.root, skip=()) == before
+    assert tree_hashes(shape, skip=()) == before
     assert not (shape.root / ".doctor").exists()
 
 
@@ -288,9 +346,22 @@ def test_a_root_the_doctor_cannot_write_refuses_and_names_the_root_flag(tmp_path
 
 
 def test_quick_spawns_no_subprocess_and_skips_the_kat(shape, capsys, popen_spy):
-    code, out, err = run(shape.argv("--quick", "--json"), capsys)
+    code, out, err = run(shape.argv("--quick", "--json", "--log", "DEBUG"), capsys)
     assert code == exits.DOCTOR_HEALTHY
     assert popen_spy == []
+    records = [json.loads(line) for line in err.splitlines() if line.strip()]
+    skipped = {r["detector"] for r in records if r["step"] == "doctor.detect" and r["event"] == "skip"}
+    assert skipped == set(detectors.QUICK_SKIPPED)
+    assert [r for r in records if r["step"] == "kat.canon"] == []
+    assert "D-kat" not in {r.get("detector") for r in records if r["event"] == "detector"}
+
+
+def test_without_quick_the_kat_detector_runs_and_says_so(shape, capsys):
+    code, out, err = run(shape.argv("--json", "--log", "DEBUG"), capsys)
+    assert code == exits.DOCTOR_HEALTHY
+    records = [json.loads(line) for line in err.splitlines() if line.strip()]
+    assert [r for r in records if r["step"] == "kat.canon" and r["event"] == "result"]
+    assert "D-kat" in {r.get("detector") for r in records if r["event"] == "detector"}
 
 
 def test_only_scopes_the_run_to_one_subsystem(shape, capsys):
@@ -326,7 +397,7 @@ def test_a_fixable_failure_mode_round_trips_through_fix_and_undo(name, shape, ca
     fixture = doctor_fixtures.load(name)
     fixture.corrupt(shape)
     only = fixture.ONLY
-    corrupted = tree_hashes(shape.root)
+    corrupted = tree_hashes(shape)
 
     code, out, err = run(shape.argv("--json", only=only), capsys)
     assert code == exits.DOCTOR_FINDINGS
@@ -339,19 +410,19 @@ def test_a_fixable_failure_mode_round_trips_through_fix_and_undo(name, shape, ca
     assert code == exits.DOCTOR_FINDINGS
     plan = json.loads(out)
     assert plan["actions"] == [] and plan["actions_planned"]
-    assert tree_hashes(shape.root) == corrupted
+    assert tree_hashes(shape) == corrupted
 
     code, out, err = run(shape.argv("--fix", "--json", only=only), capsys)
     assert code == exits.DOCTOR_HEALTHY, out + err
     fixed = json.loads(out)
     assert fixed["actions"] and all(a["backup"] is not None or a["before_hash"] is None for a in fixed["actions"])
-    assert tree_hashes(shape.root) != corrupted
+    assert tree_hashes(shape) != corrupted
 
     assert run(shape.argv(only=only), capsys)[0] == exits.DOCTOR_HEALTHY
 
     code, out, err = run(shape.argv("undo", "latest"), capsys)
     assert code == exits.DOCTOR_HEALTHY, err
-    restored = tree_hashes(shape.root)
+    restored = tree_hashes(shape)
     quarantined = {k for k in restored if mutate.QUARANTINE_SUFFIX in k}
     assert bool(quarantined) == getattr(fixture, "QUARANTINES_ON_UNDO", False)
     assert {k: v for k, v in restored.items() if k not in quarantined} == corrupted
@@ -361,7 +432,7 @@ def test_a_fixable_failure_mode_round_trips_through_fix_and_undo(name, shape, ca
 def test_an_unfixable_failure_mode_is_named_with_its_next_command_and_never_mutated(name, shape, capsys):
     fixture = doctor_fixtures.load(name)
     fixture.corrupt(shape)
-    corrupted = tree_hashes(shape.root)
+    corrupted = tree_hashes(shape)
 
     code, out, err = run(shape.argv("--json"), capsys)
     assert code == exits.DOCTOR_FINDINGS
@@ -374,7 +445,7 @@ def test_an_unfixable_failure_mode_is_named_with_its_next_command_and_never_muta
     code, out, err = run(shape.argv("--fix", "--json"), capsys)
     assert code == exits.DOCTOR_PARTIAL
     assert set(fixture.FINDINGS) <= {f["id"] for f in json.loads(out)["findings"]}
-    assert tree_hashes(shape.root) == corrupted
+    assert tree_hashes(shape) == corrupted
 
 
 def test_a_missing_gp_binary_names_the_brew_line(shape, capsys, monkeypatch, tmp_path):
@@ -432,10 +503,33 @@ def test_undo_fails_closed_when_a_backup_is_gone_and_changes_nothing(shape, caps
     backup = next((run_dir / "backups").rglob("*.pin"))
     os.chflags(backup, 0)
     os.rename(backup, backup.with_suffix(".moved"))
-    fixed = tree_hashes(shape.root)
+    fixed = tree_hashes(shape)
     code, out, err = run(shape.argv("undo", "latest"), capsys)
     assert code == exits.DOCTOR_ROLLED_BACK and "missing" in err
-    assert tree_hashes(shape.root) == fixed
+    assert tree_hashes(shape) == fixed
+
+
+def test_undo_fails_closed_when_a_backup_no_longer_holds_the_bytes_it_recorded(shape, capsys):
+    doctor_fixtures.load("gitignore_missing").corrupt(shape)
+    assert run(shape.argv("--fix"), capsys)[0] == exits.DOCTOR_HEALTHY
+    run_dir = latest_run_dir(shape.root)
+    backup = run_dir / "backups" / ".gitignore"
+    recorded = json.loads((run_dir / "actions.jsonl").read_text().splitlines()[0])["before_hash"]
+    os.chflags(backup, 0)
+    backup.write_text("not the bytes the run backed up\n")
+    code, out, err = run(shape.argv("undo", "latest"), capsys)
+    assert code == exits.DOCTOR_ROLLED_BACK, err
+    assert ".gitignore restored to " in err and f"expected {recorded}" in err
+
+
+def test_undo_refuses_to_remove_a_directory_something_else_has_filled(shape, capsys):
+    doctor_fixtures.load("var_missing").corrupt(shape)
+    assert run(shape.argv("--fix"), capsys)[0] == exits.DOCTOR_HEALTHY
+    (shape.root / "var" / "left-by-another-writer").write_text("x")
+    code, out, err = run(shape.argv("undo", "latest"), capsys)
+    assert code == exits.DOCTOR_ROLLED_BACK, err
+    assert "var is not empty" in err
+    assert (shape.root / "var" / "left-by-another-writer").is_file()
 
 
 def test_undo_of_an_unknown_run_is_a_usage_error(shape, capsys):
@@ -449,6 +543,9 @@ def test_a_second_fix_while_the_lock_is_held_refuses_with_concurrency_lost(shape
         code, out, err = run(shape.argv("--fix"), capsys)
     assert code == exits.DOCTOR_CONCURRENCY and str(os.getpid()) in err
     assert run(shape.argv("--fix"), capsys)[0] == exits.DOCTOR_HEALTHY
+
+
+CHILD_TIMEOUT = 60
 
 
 def _child(shape, *args, env=None):
@@ -472,8 +569,8 @@ def _child(shape, *args, env=None):
 def test_two_concurrent_fixes_leave_one_winner_and_one_concurrency_loss(shape, capsys):
     doctor_fixtures.load("pin_mode").corrupt(shape)
     first, second = _child(shape, "--fix"), _child(shape, "--fix")
-    first.communicate()
-    second.communicate()
+    first.communicate(timeout=CHILD_TIMEOUT)
+    second.communicate(timeout=CHILD_TIMEOUT)
     codes = sorted([first.returncode, second.returncode])
     assert exits.DOCTOR_CONCURRENCY in codes, codes
     assert {c for c in codes if c != exits.DOCTOR_CONCURRENCY} <= {exits.DOCTOR_HEALTHY, exits.DOCTOR_PARTIAL}, codes
@@ -481,11 +578,11 @@ def test_two_concurrent_fixes_leave_one_winner_and_one_concurrency_loss(shape, c
 
 def test_a_sigkill_between_backup_and_apply_leaves_no_tmp_file_and_no_stale_lock(shape, capsys):
     doctor_fixtures.load("pin_mode").corrupt(shape)
-    corrupted = tree_hashes(shape.root)
+    corrupted = tree_hashes(shape)
     child = _child(shape, "--fix", env={mutate.CRASH_ENV: "1"})
-    child.communicate()
+    child.communicate(timeout=CHILD_TIMEOUT)
     assert child.returncode == -9, child.returncode
-    assert tree_hashes(shape.root) == corrupted
+    assert tree_hashes(shape) == corrupted
     assert [p.name for p in shape.root.rglob(".tmp.*")] == []
     crashed = max(artifacts.runs_dir(shape.root).iterdir())
     assert list((crashed / "staging").rglob("*")) == []

@@ -1,7 +1,7 @@
 import os
 
 FIXABLE = True
-ONLY = "dirs"
+ONLY = None
 FINDINGS = ("D-dirs/deploy-absent",)
 
 
