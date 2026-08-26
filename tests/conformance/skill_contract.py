@@ -8,7 +8,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from cairn import env, keys, log, profile, runner, selftest, substrate
+from cairn import keys, log, profile, runner, selftest, substrate
 
 LOG_STEP = "conformance"
 MUST = "MUST"
@@ -30,7 +30,7 @@ IDENTITY_FIELDS = (
     "numeric_profile",
 )
 INTERFACE_VERSION_RE = re.compile(r"^[a-z][a-z0-9_]*/[0-9]+$")
-SUBSTRATE_ENV_RE = re.compile(r"""["']CAIRN_DB[A-Z_]*["']""")
+SUBSTRATE_ENV_RE = re.compile(r"CAIRN_DB")
 SUBSTRATE_PATH_MARK = ".sqlite"
 CEILING_MULTIPLIER = 8
 
@@ -183,13 +183,25 @@ def check_content_addressed_io(subject, ctx):
         return Verdict("S2-02", MUST, FAIL, "stdout is not canonical JSON: it does not round-trip byte-identically")
     if attempt.output_manifest_hash is None:
         return Verdict("S2-02", MUST, FAIL, "no output manifest was recorded")
-    node = ctx.sub.get_node(attempt.output_manifest_hash)
-    recomputed = substrate.node_hash_for(node["kind"], node["canonical"])
+    recomputed = _manifest_from_child_bytes(ctx, attempt, raw)
     if recomputed != attempt.output_manifest_hash:
-        return Verdict("S2-02", MUST, FAIL, f"manifest hash {attempt.output_manifest_hash} does not recompute")
+        return Verdict(
+            "S2-02", MUST, FAIL, f"the declared manifest {attempt.output_manifest_hash[:12]} is not {recomputed[:12]}"
+        )
     if ctx.sub.get_blob(substrate.blob_hash(raw)) != raw:
         return Verdict("S2-02", MUST, FAIL, "the stdout bytes are not stored under their own content hash")
-    return Verdict("S2-02", MUST, PASS, f"canonical JSON in and out; manifest {recomputed[:12]} recomputes")
+    return Verdict("S2-02", MUST, PASS, f"canonical JSON in and out; manifest {recomputed[:12]} rebuilds from stdout")
+
+
+def _manifest_from_child_bytes(ctx, attempt, raw):
+    artifacts = {"output.json": (substrate.blob_hash(raw), len(raw))}
+    scratch = Path(ctx.scratch_root) / attempt.attempt_id / "scratch"
+    for path in sorted(scratch.rglob("*")):
+        if path.is_symlink() or not path.is_file():
+            continue
+        data = path.read_bytes()
+        artifacts[str(path.relative_to(scratch))] = (substrate.blob_hash(data), len(data))
+    return substrate.output_manifest_hash(artifacts)
 
 
 def check_captured_seed(subject, ctx):
@@ -202,9 +214,15 @@ def check_captured_seed(subject, ctx):
         return Verdict("S2-03", MUST, FAIL, "two runs under one seed are not byte-equal")
     other = dict(document, seed=document["seed"] + 1)
     differing = _stdout_bytes(ctx, _launch(subject, ctx, inputs=other, salt="s2-03-c", seed=other["seed"]))
-    if differing == first:
-        return Verdict("S2-03", MUST, FAIL, "two seeds produce the same bytes, so the seed is not captured")
-    return Verdict("S2-03", MUST, PASS, f"seed {document['seed']} replays byte-equal; seed {other['seed']} differs")
+    if _without_seed(differing) == _without_seed(first):
+        return Verdict("S2-03", MUST, FAIL, "a second seed changes only the echoed seed, so nothing is drawn from it")
+    return Verdict("S2-03", MUST, PASS, f"seed {document['seed']} replays byte-equal; seed {other['seed']} draws apart")
+
+
+def _without_seed(raw):
+    document = json.loads(raw)
+    document.pop("seed", None)
+    return json.dumps(document, sort_keys=True, separators=(",", ":"))
 
 
 def check_corpus_origins(subject, ctx):
@@ -227,8 +245,8 @@ def check_ledger_and_floor(subject, ctx):
         if case.get("ledger") not in LEDGER_VOCABULARY:
             return Verdict("S2-05", MUST, FAIL, f"case {case['id']} declares ledger {case.get('ledger')!r}")
     floor = doc.get("pass_floor")
-    if not isinstance(floor, int) or isinstance(floor, bool) or floor < 0 or floor > len(cases):
-        return Verdict("S2-05", MUST, FAIL, f"pass_floor {floor!r} is not an integer in [0, {len(cases)}]")
+    if not isinstance(floor, int) or isinstance(floor, bool) or floor < 1 or floor > len(cases):
+        return Verdict("S2-05", MUST, FAIL, f"pass_floor {floor!r} is not an integer in [1, {len(cases)}]")
     return Verdict("S2-05", MUST, PASS, f"{len(cases)} ledgered cases with a committed pass_floor of {floor}")
 
 
@@ -313,9 +331,17 @@ def check_disagree_semantics(subject, ctx):
     transcripts = document.get("transcripts")
     if not isinstance(transcripts, list) or len(transcripts) < 2:
         return Verdict("S2-10", MUST, FAIL, f"DISAGREE carries {transcripts!r} rather than both transcripts")
+    digests = [t.get("digest") for t in transcripts]
+    if len(set(digests)) != len(digests):
+        return Verdict("S2-10", MUST, FAIL, "the two transcripts share a digest, so neither records a disagreement")
+    stored = ctx.sub.get_blob(substrate.blob_hash(_stdout_bytes(ctx, attempt)))
+    if stored is None or not all(d and d.encode() in stored for d in digests):
+        return Verdict("S2-10", MUST, FAIL, "the transcript digests do not reach a substrate node")
     if ctx.sub.serve(attempt.recipe_key) is not None:
         return Verdict("S2-10", MUST, FAIL, "a DISAGREE attempt is served from cache")
-    return Verdict("S2-10", MUST, PASS, f"{seam} planted: DISAGREE, {len(transcripts)} transcripts, never served")
+    return Verdict(
+        "S2-10", MUST, PASS, f"{seam} planted: DISAGREE, digests {digests[0][:8]}/{digests[1][:8]}, never served"
+    )
 
 
 def check_no_substrate_handle(subject, ctx):
@@ -542,50 +568,12 @@ def matrix(results):
     return "\n".join(lines)
 
 
-def _corpus_records(subject):
-    doc = _corpus(subject)
-    records = []
-    passes = 0
-    for case in doc["cases"]:
-        observed, held_all, _ = selftest.run_case(case)
-        if case["ledger"] == "pass" and held_all:
-            passes += 1
-        records.append(("case", case["id"], {"ledger": case["ledger"], "observed": observed}))
-    return doc, records, passes
+def module_transcript(subject, ctx):
+    return imported(subject).transcript()
 
 
-def simple_transcript(subject, ctx):
-    return selftest.transcript_bytes(_corpus_records(subject)[1])
-
-
-def simple_certify(subject, ctx):
-    module = imported(subject)
-    doc, records, passes = _corpus_records(subject)
-    transcript_hash = selftest.transcript_digest(selftest.transcript_bytes(records))
-    identity = module.identity_bundle()
-    identity_hash = keys.identity_bundle_hash(identity)
-    env_hash = keys.env_manifest_digest(env.manifest())
-    summary = {
-        "corpus_origins": {
-            case["id"]: {name: entry.get("origin") for name, entry in case["fields"].items()} for case in doc["cases"]
-        },
-        "randomized_arm": False,
-        "cross_check": {"axis": module.CROSS_CHECK_AXIS, "independent_range": module.INDEPENDENT_RANGE},
-        "pass": passes,
-        "floor": doc["pass_floor"],
-    }
-    if ctx.sub.get_node(identity_hash) is None:
-        ctx.sub.put_identity_bundle(identity)
-    if ctx.sub.get_certificate(identity_hash) is None:
-        ctx.sub.put_certificate(identity_hash, transcript_hash, env_hash, summary)
-    return {
-        "identity_bundle_hash": identity_hash,
-        "transcript_hash": transcript_hash,
-        "summary": summary,
-        "passes": passes,
-        "floor": doc["pass_floor"],
-        "double_run": "byte-equal",
-    }
+def module_certify(subject, ctx):
+    return imported(subject).certify(ctx.sub)
 
 
 def toy_curve_certify(subject, ctx):
@@ -636,11 +624,30 @@ NONCONFORMING = SkillSubject(
     inputs={"bits": 20, "seed": 1},
     out_of_range_inputs={"bits": 60, "seed": 1},
     conforming=False,
-    certify=simple_certify,
-    transcript=simple_transcript,
+    certify=module_certify,
+    transcript=module_transcript,
     postcondition=None,
     expected_must_failures=frozenset({"S2-01", "S2-04", "S2-10", "S2-11"}),
 )
 
-SUBJECTS = (TOY_CURVE, NONCONFORMING)
+WITNESS = SkillSubject(
+    name="witness",
+    module="skills.witness",
+    corpus_path=Path(__file__).resolve().parents[1] / "fixtures" / "skills" / "witness_corpus.json",
+    floor_golden="witness_floor",
+    inputs={"bits": 20, "seed": 1},
+    out_of_range_inputs={"bits": 60, "seed": 1},
+    conforming=False,
+    certify=module_certify,
+    transcript=module_transcript,
+    postcondition=None,
+    expected_must_failures=frozenset({"S2-02", "S2-03", "S2-05", "S2-06", "S2-07", "S2-08", "S2-09", "S2-10", "S2-12"}),
+)
+
+SUBJECTS = (TOY_CURVE, NONCONFORMING, WITNESS)
 SUBJECTS_BY_NAME = {subject.name: subject for subject in SUBJECTS}
+EXPECTED_SHOULD = {
+    "toy_curve": {"S2-13": NA, "S2-14": PASS},
+    "nonconforming": {"S2-13": NA, "S2-14": FAIL},
+    "witness": {"S2-13": FAIL, "S2-14": FAIL},
+}

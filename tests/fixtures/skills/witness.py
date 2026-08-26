@@ -6,36 +6,41 @@ from pathlib import Path
 import blake3
 
 from cairn import canon, env, keys, log, pari
-from cairn.profile import CostProfile, Production, SizeCost, Verification
+from cairn.profile import CostProfile, Evaluation, Production, ProfileUndeclared, SizeCost, Verification
 
 from . import _selftest_shim
 
-INTERFACE_VERSION = "bad"
+INTERFACE_VERSION = "witness/1"
 SEAM = "cairn.pari.ellsea"
-CROSS_CHECK_AXIS = "algorithm"
+CROSS_CHECK_AXIS = "vibes"
 INDEPENDENT_RANGE = {"bits": [0, 50]}
 REPO_ROOT = Path(__file__).resolve().parents[3]
-IDENTITY_SOURCES = (
-    "tests/fixtures/skills/nonconforming.py",
-    "tests/fixtures/skills/nonconforming_corpus.json",
-)
-CORPUS_PATH = Path(__file__).resolve().parent / "nonconforming_corpus.json"
-SUBSTRATE_ENV = "CAIRN_DB"
+IDENTITY_SOURCES = ("tests/fixtures/skills/witness.py", "tests/fixtures/skills/witness_corpus.json")
+CORPUS_PATH = Path(__file__).resolve().parent / "witness_corpus.json"
 STATUS_OK = "OK"
-LOG_STEP = "skill.nonconforming"
+LOG_STEP = "skill.witness"
 P = 1048583
 A = 2
 B = 3
 BITS = 20
 
-COST_PROFILE = CostProfile(
+
+class LaxProfile(CostProfile):
+    def evaluate(self, bits):
+        try:
+            return super().evaluate(bits)
+        except ProfileUndeclared:
+            return Evaluation(expected_wall_s=0.05, expected_core_s=0.05, expected_verification_core_s=0.05)
+
+
+COST_PROFILE = LaxProfile(
     tier=0,
     production=Production(
         model="constant",
         per_size={BITS: SizeCost(1.0, 0.0, 1.0e-3, 0.05), 60: SizeCost(1.0, 0.0, 1.0e-3, 0.05)},
     ),
     verification=Verification(grade="Replayable", cost_model="same_as_production"),
-    source="fixture: a fixed curve, no measurement behind the numbers",
+    source="fixture: the negative witness for the clauses the nonconforming fixture cannot reach",
 )
 
 
@@ -53,36 +58,21 @@ def parse_inputs(text):
     return int(doc.get("bits", BITS)), int(doc.get("seed", 1))
 
 
-def _draw_point(E):
-    while True:
-        point = pari.pari.random(E)
-        if len(point) == 2:
-            return int(point[0].lift()), int(point[1].lift())
-
-
 def run(bits, seed):
     lg = log.get(LOG_STEP)
     E = pari.pari.ellinit([A, B], P)
     card = int(pari.ellcard(E))
-    sea = int(pari.ellsea(E))
-    pari.pari.setrand(seed)
-    point = _draw_point(E)
-    lg.info("run", bits=bits, seed=seed, card=card, sea=sea)
+    lg.info("run", bits=bits, seed=seed, card=card)
     return {
         "bits": bits,
         "seed": seed,
-        "P": [str(c) for c in point],
-        "p": str(P),
-        "a": str(A),
-        "b": str(B),
         "n": str(card),
-        "sea": str(sea),
+        "mean_wall_s": 0.05,
         "cross_check": {
             "axis": CROSS_CHECK_AXIS,
             "independent_range": {k: list(v) for k, v in INDEPENDENT_RANGE.items()},
-            "result": "agree" if bits <= INDEPENDENT_RANGE["bits"][1] else "untested",
+            "result": "agree",
         },
-        "substrate": os.environ.get(SUBSTRATE_ENV) or "",
         "status": STATUS_OK,
     }
 
@@ -116,11 +106,11 @@ def skill_identity_hash(root=REPO_ROOT):
 
 
 def certify(sub):
-    return _selftest_shim.certify(sys.modules[__name__], sub)
+    return _selftest_shim.certify(sys.modules[__name__], sub, record=False)
 
 
 def transcript():
-    return _selftest_shim.transcript(sys.modules[__name__])
+    return _selftest_shim.transcript(sys.modules[__name__]) + os.urandom(8)
 
 
 def main(stdin=None, stdout=None, stderr=None):
@@ -133,8 +123,7 @@ def main(stdin=None, stdout=None, stderr=None):
     except InputError as exc:
         stderr.write(f"error: {exc}\n")
         return 1
-    document = run(bits, seed)
-    stdout.write(json.dumps(document, sort_keys=True, separators=(",", ":")) + "\n")
+    stdout.write(json.dumps(run(bits, seed), indent=2) + "\n")
     return 0
 
 

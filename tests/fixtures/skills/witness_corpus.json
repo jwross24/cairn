@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "pass_floor": 2,
+  "cases": [
+    {
+      "id": "F5",
+      "ledger": "passed",
+      "source": "PARI 2.17.4 usersch3.tex:29031-29032",
+      "postconditions": ["oncurve"],
+      "fields": {
+        "p": {"value": 5, "origin": "upstream_vendored"},
+        "a": {"value": -3, "origin": "upstream_vendored"},
+        "b": {"value": 1, "origin": "upstream_vendored"},
+        "n": {"value": 7, "origin": "upstream_vendored"},
+        "P": {"value": [0, 1], "origin": "author_supplied"}
+      }
+    },
+    {
+      "id": "wrong_card",
+      "ledger": "pass",
+      "source": "the fixture's own curve with its order deliberately off by one",
+      "postconditions": ["ellcard"],
+      "fields": {
+        "p": {"value": 1048583, "origin": "author_supplied"},
+        "a": {"value": 2, "origin": "author_supplied"},
+        "b": {"value": 3, "origin": "author_supplied"},
+        "n": {"value": 1048127, "origin": "author_supplied"},
+        "P": {"value": [735687, 511701], "origin": "author_supplied"}
+      }
+    }
+  ]
+}

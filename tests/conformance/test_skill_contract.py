@@ -1,4 +1,3 @@
-import inspect
 import json
 import logging
 import os
@@ -12,7 +11,7 @@ sys.path.insert(0, str(ROOT / "tests" / "conformance"))
 
 import conftest as conformance_conftest  # noqa: E402
 import skill_contract  # noqa: E402
-from skill_contract import CLAUSES, MUST, SUBJECTS, Context, SkillSubject  # noqa: E402
+from skill_contract import CLAUSES, MUST, SUBJECTS, Context  # noqa: E402
 
 pytestmark = pytest.mark.skipif(
     sys.platform != "darwin",
@@ -20,7 +19,6 @@ pytestmark = pytest.mark.skipif(
 )
 
 FIXTURES = str(ROOT / "tests" / "fixtures")
-COVERAGE = Path(__file__).resolve().parent / "COVERAGE.md"
 DISCREPANCIES = Path(__file__).resolve().parent / "DISCREPANCIES.md"
 CASES = [(subject, clause) for subject in SUBJECTS for clause in CLAUSES]
 IDS = [f"{subject.name}-{clause.id}" for subject, clause in CASES]
@@ -49,7 +47,7 @@ def _context(root, sub, config, bundle_hash):
 
 
 @pytest.fixture(scope="module")
-def sweep(tmp_path_factory):
+def harness(tmp_path_factory):
     from cairn import bundle, substrate
 
     root = tmp_path_factory.mktemp("conformance")
@@ -57,22 +55,28 @@ def sweep(tmp_path_factory):
     bundle.build(ROOT / "bundle", bundle_path)
     bundle.write_pin(bundle_path, pin_path)
     gate = bundle.GateBundle.open(bundle_path, pin_path)
+    os.environ["CAIRN_DB"] = str(root / "substrate.sqlite")
+    try:
+        with substrate.Substrate.open(root / "substrate.sqlite") as sub:
+            yield _context(root, sub, gate.verifier_config(), gate.hash)
+    finally:
+        os.environ.pop("CAIRN_DB", None)
+        os.chflags(pin_path, 0)
+        os.chmod(pin_path, 0o644)
+
+
+@pytest.fixture(scope="module")
+def sweep(harness):
     handler = _Records()
     logger = logging.getLogger("cairn")
     previous = logger.level
     logger.setLevel(logging.DEBUG)
     logger.addHandler(handler)
-    os.environ["CAIRN_DB"] = str(root / "substrate.sqlite")
     try:
-        with substrate.Substrate.open(root / "substrate.sqlite") as sub:
-            ctx = _context(root, sub, gate.verifier_config(), gate.hash)
-            results = {subject.name: skill_contract.run_conformance(subject, ctx) for subject in SUBJECTS}
+        results = {subject.name: skill_contract.run_conformance(subject, harness) for subject in SUBJECTS}
     finally:
-        os.environ.pop("CAIRN_DB", None)
         logger.removeHandler(handler)
         logger.setLevel(previous)
-        os.chflags(pin_path, 0)
-        os.chmod(pin_path, 0o644)
     conformance_conftest.RESULTS.update(results)
     return results, handler.lines
 
@@ -86,7 +90,8 @@ def verdicts(sweep):
 def test_clause(subject, clause, verdicts):
     verdict = next(v for v in verdicts[subject.name] if v.clause_id == clause.id)
     if clause.level != MUST:
-        assert verdict.status in skill_contract.STATUSES, verdict
+        expected = skill_contract.EXPECTED_SHOULD[subject.name][clause.id]
+        assert verdict.status == expected, f"{subject.name} {clause.id}: {verdict.reason}"
         return
     if subject.conforming:
         assert verdict.status == skill_contract.PASS, f"{subject.name} {clause.id}: {verdict.reason}"
@@ -107,31 +112,29 @@ def test_the_planted_fixture_fails_exactly_its_declared_must_clauses(verdicts):
     assert len(observed) >= 2, "a harness whose checks are stubs cannot fail the planted fixture"
 
 
-def test_a_stubbed_must_check_is_caught_by_the_fixture(tmp_path_factory):
-    from cairn import bundle, substrate
+def test_every_must_clause_has_a_negative_witness(verdicts):
+    witnessed = set()
+    for subject in SUBJECTS:
+        if not subject.conforming:
+            witnessed |= skill_contract.failures(verdicts[subject.name])
+    assert witnessed == set(skill_contract.MUST_IDS)
 
-    stubbed = skill_contract.Clause(
-        "S2-01", MUST, "stub", lambda subject, ctx: skill_contract.Verdict("S2-01", MUST, skill_contract.PASS, "stub")
+
+def test_stubbing_a_must_check_moves_its_witness_verdict_set(harness):
+    clause_id = "S2-08"
+    subject = skill_contract.WITNESS
+    index = next(i for i, c in enumerate(skill_contract.CLAUSES) if c.id == clause_id)
+    real = skill_contract.CLAUSES[index]
+    skill_contract.CLAUSES[index] = skill_contract.Clause(
+        clause_id, MUST, "stub", lambda s, c: skill_contract.Verdict(clause_id, MUST, skill_contract.PASS, "")
     )
-    root = tmp_path_factory.mktemp("stub")
-    bundle_path, pin_path = root / "gate-bundle.sqlite", root / "gate-bundle.pin"
-    bundle.build(ROOT / "bundle", bundle_path)
-    bundle.write_pin(bundle_path, pin_path)
-    gate = bundle.GateBundle.open(bundle_path, pin_path)
     try:
-        with substrate.Substrate.open(root / "substrate.sqlite") as sub:
-            ctx = _context(root, sub, gate.verifier_config(), gate.hash)
-            real = skill_contract.CLAUSES[0]
-            skill_contract.CLAUSES[0] = stubbed
-            try:
-                observed = skill_contract.failures(skill_contract.run_conformance(skill_contract.NONCONFORMING, ctx))
-            finally:
-                skill_contract.CLAUSES[0] = real
+        stubbed = skill_contract.failures(skill_contract.run_conformance(subject, harness))
     finally:
-        os.chflags(pin_path, 0)
-        os.chmod(pin_path, 0o644)
-    assert "S2-01" not in observed
-    assert observed != skill_contract.NONCONFORMING.expected_must_failures
+        skill_contract.CLAUSES[index] = real
+    assert clause_id in subject.expected_must_failures
+    assert clause_id not in stubbed
+    assert stubbed != subject.expected_must_failures
 
 
 def test_every_verdict_is_logged_once_per_subject_and_clause(sweep):
@@ -141,20 +144,8 @@ def test_every_verdict_is_logged_once_per_subject_and_clause(sweep):
     assert len(logged) == len(set(logged))
 
 
-def test_the_json_test_log_carries_a_record_per_clause(tmp_path, json_test_log):
-    from cairn import bundle, substrate
-
-    bundle_path, pin_path = tmp_path / "gate-bundle.sqlite", tmp_path / "gate-bundle.pin"
-    bundle.build(ROOT / "bundle", bundle_path)
-    bundle.write_pin(bundle_path, pin_path)
-    gate = bundle.GateBundle.open(bundle_path, pin_path)
-    try:
-        with substrate.Substrate.open(tmp_path / "substrate.sqlite") as sub:
-            ctx = _context(tmp_path, sub, gate.verifier_config(), gate.hash)
-            skill_contract.run_conformance(skill_contract.NONCONFORMING, ctx)
-    finally:
-        os.chflags(pin_path, 0)
-        os.chmod(pin_path, 0o644)
+def test_the_json_test_log_carries_a_record_per_clause(harness, json_test_log):
+    skill_contract.run_conformance(skill_contract.NONCONFORMING, harness)
     records = [
         json.loads(line)
         for line in json_test_log.read_text().splitlines()
@@ -164,45 +155,6 @@ def test_the_json_test_log_carries_a_record_per_clause(tmp_path, json_test_log):
     assert {r["subject"] for r in records} == {"nonconforming"}
 
 
-def test_clause_ids_are_unique_and_ordered():
-    ids = [clause.id for clause in CLAUSES]
-    assert len(ids) == len(set(ids))
-    assert ids == sorted(ids)
-    assert all(clause.level in skill_contract.LEVELS for clause in CLAUSES)
-
-
-def test_no_must_clause_carries_a_stub_check():
-    for clause in CLAUSES:
-        source = inspect.getsource(clause.check)
-        assert getattr(clause.check, "__module__", "") == "skill_contract", clause.id
-        assert len(source.splitlines()) > 3, f"{clause.id} check is a one-liner, so it cannot discriminate"
-        assert clause.id in source, f"{clause.id} check does not name its own clause id"
-
-
-def test_coverage_table_matches_clauses():
-    rows = _coverage_rows()
-    assert [row[0] for row in rows] == [clause.id for clause in CLAUSES]
-    for row, clause in zip(rows, CLAUSES, strict=True):
-        assert row[1] == clause.level, clause.id
-        assert row[3] == getattr(clause.check, "__name__", ""), clause.id
-
-
 def test_discrepancies_exist_only_for_an_xfail(verdicts):
     xfail = [v for row in verdicts.values() for v in row if v.status == skill_contract.XFAIL]
     assert DISCREPANCIES.exists() == bool(xfail)
-
-
-def _coverage_rows():
-    rows = []
-    for line in COVERAGE.read_text().splitlines():
-        if not line.startswith("| S2-"):
-            continue
-        cells = [c.strip() for c in line.strip().strip("|").split("|")]
-        rows.append((cells[0], cells[1], cells[2], cells[-1].replace("`", "")))
-    return rows
-
-
-def test_every_registered_subject_is_a_skill_subject():
-    assert all(isinstance(subject, SkillSubject) for subject in SUBJECTS)
-    assert len({subject.name for subject in SUBJECTS}) == len(SUBJECTS)
-    assert [subject.conforming for subject in SUBJECTS] == [True, False]

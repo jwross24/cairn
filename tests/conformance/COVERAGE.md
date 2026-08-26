@@ -11,6 +11,19 @@ A subject registered with `conforming=False` carries the exact set of MUST claus
 built to fail; the harness asserts that set exactly, which is what catches a check that
 returns PASS without looking.
 
+Two non-conforming subjects are registered, because one cannot witness every clause: a
+subject can only fail the clauses it violates, and a subject that violates all of them
+cannot be reached by the checks that need it to launch. `nonconforming` witnesses S2-01,
+S2-04, S2-10 and S2-11; `witness` witnesses S2-02, S2-03, S2-05 through S2-10 and S2-12.
+`test_every_must_clause_has_a_negative_witness` asserts the union is the whole MUST set, so
+stubbing any one MUST check to return PASS moves some registered subject's verdict set and
+fails the suite.
+
+Each subject supplies the evidence its own self-test clauses are judged on: S2-06, S2-07 and
+S2-08 read `module.certify(sub)` and `module.transcript()` from the subject module, never
+from harness code. `witness.certify` deliberately skips the certificate row, which is how
+S2-07 gets a subject that ships no certificate.
+
 | id | level | PLAN §2 sentence | check |
 |---|---|---|---|
 | S2-01 | MUST | a skill has a typed interface and a fixed version, so it's testable, cacheable, and reproducible (L44) | `check_typed_interface` |
@@ -45,6 +58,19 @@ planted in the parent environment, showing no `CAIRN_DB*` key, no value holding 
 path and no such path in argv; and a source read of the subject module showing it names no
 `CAIRN_DB*` variable of its own. Either arm alone can fail the clause.
 
+**S2-03's seed arm.** A subject that merely echoes its seed satisfies "two seeds differ" for
+free, so the differing arm compares the two documents with the `seed` key removed. The
+replay arm still compares raw bytes.
+
+**S2-05's floor bound.** PLAN §2 says "a committed pass floor" without a lower bound. The
+check requires `1 <= pass_floor <= len(cases)`, because a floor of zero commits nothing and
+leaves S2-06's "cannot drift apart" with nothing to hold.
+
+**S2-10's transcript arm.** Beyond `status = DISAGREE` and both transcripts present, the
+check requires the two transcript digests to differ — two identical transcripts record no
+disagreement — and requires both digests to appear in the substrate blob the runner stored
+for the attempt.
+
 **S2-12's ledger arm.** "Reported as untested, not as passing" is checked as: the certificate's
 `selftest_summary.cross_check` block holds exactly `axis` and `independent_range`, so the
 ledger cannot record a cross-check as having passed.
@@ -54,6 +80,32 @@ ledger cannot record a cross-check as having passed.
 `check_corpus` accepts are the same set. `justify` caps a revision at CONJECTURE only when
 every origin is `author_supplied`, so the three other values each lift the cap.
 
+## What these checks do not decide
+
+**S2-11's source arm is a text read, not behavior.** The runner's allowlist means no subject
+can ever receive a `CAIRN_DB*` variable, so there is no behavioral way to catch a subject
+that would read one if given it. The arm greps the subject's source for the token, and a
+subject that assembles the name at runtime dodges it. The dynamic arm and the source arm
+together are the whole of the clause's per-subject evidence.
+
+**S2-10's cache arm and S2-11's environment arm are runner and substrate invariants.**
+`serve()` cannot return a non-OK attempt for any subject, and the environment scrub is
+`runner.child_env`'s behavior rather than the subject's. They are kept as end-to-end
+confirmation and are not per-subject evidence.
+
+**S2-12 does not catch a hardcoded in-range result.** The clause as extracted checks the
+axis, the interval record, the out-of-range result and the ledger block. A subject that
+reports `agree` in range without performing any comparison satisfies all four; S2-10 is the
+clause that catches it, by planting a disagreement at the declared seam and requiring the
+status to move. The two clauses interlock and neither alone is sufficient.
+
+**S2-06's corpus-to-row comparison is same-process.** The measured pass count and the
+certificate row both originate in one `certify()` call. The committed floor golden is the
+only value in that check that outlives the process.
+
+**The XFAIL status has no producer.** `test_discrepancies_exist_only_for_an_xfail` is a
+forward guard for the day a clause records one.
+
 ## What the harness produces
 
 The compliance matrix is a `pytest_terminal_summary` section, printed by
@@ -62,4 +114,9 @@ generated. Every verdict is logged through `cairn.log` as one `verdict` event ca
 `(subject, clause_id, level, status, reason)`.
 
 `DISCREPANCIES.md` exists only when some subject records an XFAIL verdict, asserted by
-`test_discrepancies_exist_only_for_an_xfail`. No subject records one.
+`test_discrepancies_exist_only_for_an_xfail`. No clause records one.
+
+The clause-table checks — ids unique and ordered, no MUST check is a stub, this file matches
+`CLAUSES`, the registry is well formed — are unit tier and live in
+`tests/conformance/test_clause_table.py`, which carries no platform gate: they touch no bundle,
+no substrate and no subprocess, so they run wherever pytest runs.
