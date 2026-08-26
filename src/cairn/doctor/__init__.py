@@ -391,6 +391,13 @@ def _run(ns):
         sys.stderr.write(f"error: {exc}; nothing was changed; run: cairn doctor ls\n")
         lg.info("refused", reason="undo_failed", detail=str(exc))
         return exits.DOCTOR_ROLLED_BACK
+    except OSError as exc:
+        sys.stderr.write(
+            f"error: {exc}; the doctor could not read or write under --root; "
+            f"nothing was changed; run: cairn doctor --root <a writable checkout>\n"
+        )
+        lg.info("refused", reason="io", detail=str(exc))
+        return exits.DOCTOR_REFUSED
 
 
 cli.register(

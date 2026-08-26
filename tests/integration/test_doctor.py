@@ -201,6 +201,21 @@ def test_every_declared_detector_id_resolves_to_a_callable_in_code(shape, capsys
         assert declared["subsystem"] == by_id[declared["id"]].subsystem
 
 
+@pytest.mark.parametrize("name", doctor_fixtures.names())
+def test_every_emitted_finding_names_a_declared_detector_and_a_declared_fixer(name, shape, capsys):
+    doctor_fixtures.load(name).corrupt(shape)
+    doc = json.loads(run(shape.argv("capabilities", "--json"), capsys)[1])
+    declared_detectors = {d["id"] for d in doc["detectors"]}
+    declared_fixers = {f["id"] for f in doc["fixers"]}
+    findings = json.loads(run(shape.argv("--json"), capsys)[1])["findings"]
+    assert findings, name
+    for finding in findings:
+        assert finding["id"].count("/") == 1, finding["id"]
+        assert finding["id"].split("/")[0] in declared_detectors, finding["id"]
+        assert finding["fixer"] is None or finding["fixer"] in declared_fixers, finding
+    assert any(f["fixer"] for f in findings) or not any(f["fixable"] for f in findings)
+
+
 def test_robot_docs_prints_the_handbook(shape, capsys):
     code, out, err = run(shape.argv("robot-docs"), capsys)
     assert code == exits.DOCTOR_HEALTHY
@@ -254,6 +269,22 @@ def test_online_is_refused_at_m0(shape, capsys):
     assert code == exits.DOCTOR_REFUSED and out == "" and "--online" in err
     assert tree_hashes(shape.root, skip=()) == before
     assert not (shape.root / ".doctor").exists()
+
+
+def test_a_root_the_doctor_cannot_write_refuses_and_names_the_root_flag(tmp_path, capsys):
+    root = tmp_path / "read-only-checkout"
+    root.mkdir()
+    os.chmod(root, 0o500)
+    try:
+        code, out, err = run(["doctor", "--root", str(root), "--only", "gp"], capsys)
+    finally:
+        os.chmod(root, 0o700)
+    assert code == exits.DOCTOR_REFUSED, err
+    assert out == ""
+    assert "Permission denied" in err and "--root" in err
+    assert exits.CLI[exits.BACKEND] not in err
+    assert "; run: cairn doctor\n" not in err
+    assert not (root / ".doctor").exists()
 
 
 def test_quick_spawns_no_subprocess_and_skips_the_kat(shape, capsys, popen_spy):
