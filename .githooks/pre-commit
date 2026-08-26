@@ -95,6 +95,29 @@ if [ -n "$FORK_MISSING" ]; then
 fi
 printf '%s FORK-PRESENT compliance skill carries the rubric sync\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .beads_hook.log
 
+# The skill's hook defaults to 700 and passes it as an explicit --threshold, which
+# single-bead-audit.sh takes over the policy file's value. audit-policy.yaml is the
+# single source for this project, so its threshold is handed to the hook the one
+# way the hook accepts. A policy that cannot be read leaves the skill's default in
+# place and says so, rather than silently gating at a number nobody chose.
+POLICY_THRESHOLD="$(uv run --quiet --with pyyaml python -c '
+import pathlib, sys, yaml
+for name in ("audit-policy.yaml", ".beads/audit-policy.yaml"):
+    path = pathlib.Path(name)
+    if path.is_file():
+        value = (yaml.safe_load(path.read_text()) or {}).get("threshold")
+        if isinstance(value, int) and not isinstance(value, bool):
+            print(value)
+        sys.exit(0)
+' 2>/dev/null || true)"
+if [ -n "$POLICY_THRESHOLD" ]; then
+  export BEADS_HOOK_THRESHOLD="$POLICY_THRESHOLD"
+  printf '%s THRESHOLD %s from audit-policy.yaml\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$POLICY_THRESHOLD" >> .beads_hook.log
+else
+  printf '%s THRESHOLD-UNREAD audit-policy.yaml gave no threshold; the skill default stands\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .beads_hook.log
+  echo "[pre-commit] audit-policy.yaml gave no threshold; the compliance gate runs at the skill's default." >&2
+fi
+
 # Invoked through bash: the skill ships this asset without the executable bit,
 # and a hook that dies on EACCES is a gate that silently stopped running.
 exec bash "$SKILL/assets/pre-commit-hook.sh"
