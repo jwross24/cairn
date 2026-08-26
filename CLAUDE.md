@@ -72,9 +72,19 @@ Each line below was established by hitting it. Verify rather than trust if a too
 - **Editing anything in `toy_curve.IDENTITY_SOURCES` bumps the skill revision.** `src/cairn/pari.py`,
   `src/cairn/skills/toy_curve.py` and the corpus are hashed into `implementation_revision`, so even a
   formatting pass reseeds the randomized arm and moves the transcript and certificate goldens.
-- **The compliance audit's `audit-policy.yaml` binds nothing without PyYAML.** `_load-policy.sh` and
-  `score-bead.py` both swallow the ImportError, so the file resolves and is ignored in silence; the
-  `python3` on PATH here is Homebrew's and has no yaml. See `cairn-cue`.
+- **The compliance audit runs on a forked copy of a vendored skill, and an upstream update reverts
+  it.** `~/.claude/skills/beads-compliance-and-completion-verification` carries five local changes,
+  each a small substitution with its reason in a comment above it: `_load-policy.sh`,
+  `run-pass.sh` and `single-bead-audit.sh` reach PyYAML through `uv run --with pyyaml`, because the
+  `python3` on PATH is Homebrew's and has none; `bootstrap-audit.sh` calls
+  `sync-rubric-from-policy.py` before pinning `rubric_sha256`, because `score-bead.py` reads
+  `weights_by_type` only from the rubric frontmatter and the hook path has no orchestrator to fold
+  it in; and `score-bead.py` refuses a bead directory that holds no `spec.json`. Re-apply after any
+  skill update. See `cairn-cue`.
+- **`score-bead.py` takes a bead *directory*, never a bead id**, and only the pass that targeted a
+  bead holds its `spec.json` — the other passes leave `show.json` and `git_xref.txt` alone. An
+  unforked `score-bead.py` handed a path with no `spec.json` reports `1000/1000 Verified` and
+  creates the directory to hold the scorecard it wrote.
 - **`br list --json` omits closed beads** (23 of 31 here). Pass `--all` or `--status closed`.
 - **`.beads/` is excluded by `~/.gitignore_global`.** This repo's `.gitignore` carries
   `!.beads/` to re-include it. `br sync --flush-only` before every `git add .beads/`.

@@ -72,6 +72,29 @@ if [ -z "$SKILL" ]; then
   exit 0
 fi
 
+# The audit runs on a forked copy of the skill (CLAUDE.md lists the call sites).
+# An upstream update restores the originals, and the visible symptom is nothing at
+# all: audit-policy.yaml still resolves, the audit still exits 0, and the weights
+# silently stop reaching the scorer. These two markers are the load-bearing halves
+# of that fork, so their absence denies rather than scoring on defaults.
+FORK_MISSING=""
+[ -f "$SKILL/scripts/sync-rubric-from-policy.py" ] || FORK_MISSING="scripts/sync-rubric-from-policy.py"
+if [ -z "$FORK_MISSING" ] && ! grep -q "sync-rubric-from-policy.py" "$SKILL/scripts/bootstrap-audit.sh"; then
+  FORK_MISSING="the sync call in scripts/bootstrap-audit.sh"
+fi
+if [ -n "$FORK_MISSING" ]; then
+  printf '%s FORK-REVERTED %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$FORK_MISSING" >> .beads_hook.log
+  echo "[pre-commit] the compliance skill no longer carries $FORK_MISSING." >&2
+  echo "             weights_by_type would bind nothing and the audit would not say so." >&2
+  echo "             Re-apply the fork (CLAUDE.md lists all five sites), or bypass:" >&2
+  echo "             CAIRN_AUDIT_FORK_OK='<reason>' git commit ..." >&2
+  if [ -z "${CAIRN_AUDIT_FORK_OK:-}" ]; then
+    exit 1
+  fi
+  printf '%s BYPASS fork check: %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$CAIRN_AUDIT_FORK_OK" >> .beads_hook.log
+fi
+printf '%s FORK-PRESENT compliance skill carries the rubric sync\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .beads_hook.log
+
 # Invoked through bash: the skill ships this asset without the executable bit,
 # and a hook that dies on EACCES is a gate that silently stopped running.
 exec bash "$SKILL/assets/pre-commit-hook.sh"

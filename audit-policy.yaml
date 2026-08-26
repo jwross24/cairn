@@ -4,26 +4,45 @@
 # hardcoded < this file < CLI flags, and bootstrap-audit.sh copies it into a new
 # audit directory. Nothing here edits the skill.
 #
-# MEASURED 2026-08-25, and read this before trusting anything below: on a machine
-# whose `python3` lacks PyYAML, every field here is silently ignored.
-# scripts/_load-policy.sh parses with `python3 ... 2>/dev/null || true`, so the
-# ImportError is swallowed and the caller keeps its hardcoded default;
-# scripts/score-bead.py sets `yaml = None` on the same ImportError. On this
-# machine `python3` is Homebrew's python@3.14 and `import yaml` fails, so the
-# threshold and the weights below bind nowhere. The threshold still binds because
-# .githooks/pre-commit passes it as a CLI flag, and CLI beats YAML.
+# WHAT BINDS, and how each one gets there:
 #
-# To make the rest live, the operator installs PyYAML for the interpreter the
-# skill invokes, which is `python3` on PATH. That is a machine-global change to an
-# externally-managed Homebrew Python, so it is the operator's call, not the
-# agent's. cairn-cue carries it.
+#   threshold, remediation_policy   read by _load-policy.sh, which reaches PyYAML
+#                                   through `uv run --with pyyaml` because the
+#                                   python3 on PATH is Homebrew's and has none.
+#                                   A CLI --threshold still beats this file.
+#   weights_by_type                 folded into beads_compliance_audit/rubric.md
+#                                   frontmatter by sync-rubric-from-policy.py,
+#                                   which bootstrap-audit.sh runs before pinning
+#                                   rubric_sha256. score-bead.py reads the weights
+#                                   from that frontmatter and nowhere else, so the
+#                                   rubric is derived from this file rather than
+#                                   maintained beside it.
+#   subagents                       read only on the parallel path; the pre-commit
+#                                   hook runs no subagents.
+#
+# WHAT BINDS NOTHING: project_theater_patterns. theater-scan.sh runs a fixed list
+# of scan_pattern calls and reads no policy file. Measured 2026-08-26: the pattern
+# below also does not match this repo's spelling, which puts the skipif arguments
+# on the following line, so wiring it without fixing the signature would produce
+# the appearance of a gate and no findings. cairn-fur owns both halves. The
+# section stays because the pattern is the design work, not the plumbing.
+#
+# The five forked call sites in the skill are listed in CLAUDE.md. An upstream
+# update reverts them, and this file goes back to binding only what a CLI flag
+# carries.
 
 # 700 stays until the waived phases actually run. On the pre-commit path,
-# single-bead-audit.sh runs Phase 4 and Phase 6 in stub mode and awards their 250
-# and 150 unearned, so 400 of 1000 points say nothing about the bead. Raising a
-# number over a stubbed measurement buys confidence, not assurance. Measured
-# 2026-08-25: cairn-qn9, a cleanup with no tests of its own, scored 970 while
-# cairn-m0-e0s.12, with 108 tests and six killed mutants, scored 760.
+# single-bead-audit.sh runs Phase 4 and Phase 6 in stub mode and awards the tests
+# and test_depth weights below in full, so half of the 1000 says nothing about the
+# bead. Raising a number over a stubbed measurement buys confidence, not
+# assurance. The scorecard banner names both waived dimensions and calls the total
+# an upper bound.
+#
+# The ordering the weights were meant to correct is still inverted, and weights
+# cannot correct it. Measured 2026-08-26 with these weights binding: cairn-qn9, a
+# cleanup with no tests of its own, scores 970; cairn-m0-e0s.12, with 108 tests,
+# six metamorphic relations and six killed mutants, scores 875. The cause is
+# extraction, not weighting, and it is stated below.
 threshold: 700
 remediation_policy: completion-debt
 
