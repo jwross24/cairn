@@ -168,6 +168,22 @@ reachable from the bead graph: name the downstream bead that owns it, and create
 
 Then close with evidence: every acceptance bullet re-executed, raw output pasted, bound to the
 commit SHA, file:line for each touched file, and a No-Claim line.
+
+Put the same material in the bead body as an ARTIFACTS block, which is the machine-readable
+form of what the close comment already says:
+
+    ARTIFACTS-BEGIN
+    source: `src/cairn/thing.py` lines 1-120
+    test: `tests/unit/test_thing.py` lines 1-88
+    commit: <sha>
+    command: uv run pytest -q tests/unit/test_thing.py
+    ARTIFACTS-END
+
+`br update <bead-id> --notes="$(cat block.txt)"` writes it. The compliance audit's
+deterministic extractor reads a bead body with regular expressions, so a body written as
+prose extracts nothing and scores identically to a bead with nothing behind it; the block is
+what makes an honest close distinguishable from a false one. `scripts/bead-artifact-block.sh
+<bead-id>` checks it, and the pre-commit hook runs it for every bead a commit closes.
 ```
 
 **Checklist before you say the bead is done**
@@ -182,14 +198,15 @@ commit SHA, file:line for each touched file, and a No-Claim line.
 - [ ] Honesty inventory filled out in writing before the close comment, and its disposition carried
       into the report (`/just-say-no-to-process-porn-and-ceremony` names closing an item as a trigger)
 - [ ] Close comment: commands + raw output + file:line + No-Claim + what was *not* independently verified
+- [ ] ARTIFACTS block in the bead body, `scripts/bead-artifact-block.sh <bead-id>` green
 - [ ] Survey and test audit ran as subagents; anything they cited re-executed in the main context
 - [ ] Every declined finding and every No-Claim gap named in a downstream bead, created where none owned it
 - [ ] Every `/testing-*` skill the bead's TEST PLAN names was loaded before those tests were written
 - [ ] `br sync --flush-only`, `.beads/` committed
 
 The commit is the gate for the rest. `.githooks/pre-commit` runs `scripts/check.sh --fast`
-(format, lint, spelling, types), then `scripts/bead-test-plan.sh` for every bead the commit
-closes, then the compliance audit. CI runs the same script with the suite. A line that a
+(format, lint, spelling, types), then `scripts/bead-test-plan.sh` and
+`scripts/bead-artifact-block.sh` for every bead the commit closes, then the compliance audit. CI runs the same script with the suite. A line that a
 script already enforces does not belong on a checklist a tired reader skims.
 
 ---

@@ -85,6 +85,14 @@ Each line below was established by hitting it. Verify rather than trust if a too
   bead holds its `spec.json` — the other passes leave `show.json` and `git_xref.txt` alone. An
   unforked `score-bead.py` handed a path with no `spec.json` reports `1000/1000 Verified` and
   creates the directory to hold the scorecard it wrote.
+- **A closing bead's body carries an ARTIFACTS block**, and `.githooks/pre-commit` refuses the
+  close without one. `scripts/bead-artifact-block.sh <bead-id>` is the gate; every decision it
+  makes lives in `scripts/bead_artifact_block.py`, because `tests/conftest.py` refuses a `bash`
+  subprocess and logic in the shell file would be logic no test can reach. The block's paths are
+  backticked so the compliance skill's `PATH_HINT_RE` extracts them; a path with no extension
+  (`.githooks/pre-commit`) is invisible to that regex, and the gate names it while accepting the
+  block as long as one visible path is present. Bypass, logged to `.check.log`:
+  `CAIRN_ARTIFACT_BLOCK_SKIP='<reason>'`.
 - **`br list --json` omits closed beads** (23 of 31 here). Pass `--all` or `--status closed`.
 - **`.beads/` is excluded by `~/.gitignore_global`.** This repo's `.gitignore` carries
   `!.beads/` to re-include it. `br sync --flush-only` before every `git add .beads/`.

@@ -56,6 +56,16 @@ if [ -n "$NEWLY_CLOSED" ]; then
     echo "[pre-commit] BLOCKED: a bead being closed names a test file that is absent or empty." >&2
     exit 1
   fi
+  # The compliance audit below reads the bead body with regular expressions, and a
+  # body written as prose yields nothing for it to check — a prose bead and an empty
+  # one score identically. The ARTIFACTS block is the extractable form of what a
+  # close already writes, and audit-policy.yaml's unmeasured_dimensions switch is
+  # only meaningful while every closing bead carries one.
+  # shellcheck disable=SC2086
+  if ! scripts/bead-artifact-block.sh $NEWLY_CLOSED; then
+    echo "[pre-commit] BLOCKED: a bead being closed carries no valid ARTIFACTS block." >&2
+    exit 1
+  fi
 fi
 
 SKILL=""
