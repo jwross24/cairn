@@ -1,13 +1,16 @@
 usage: cairn measure [-h] [--db PATH] [--bundle PATH] [--pin PATH]
                      [--attest PATH] [--log LEVEL] [--json]
-                     [--sizes BITS,BITS,...] [--seeds N]
-                     [{toy-curve-tries}]
+                     [--sizes BITS,BITS,...] [--seeds N] [--cap-ops N]
+                     [--cap-minutes M]
+                     [{toy-curve-tries,rho60}]
 
 measure a skill's cost constant (toy-curve-tries: tries and subprocess wall
-over seeds 1..N per size)
+over seeds 1..N per size; rho60: interpreted Pollard rho rate at 60 bits with
+a completed 40-bit rho)
 
 positional arguments:
-  {toy-curve-tries}     what to measure
+  {toy-curve-tries,rho60}
+                        what to measure
 
 options:
   -h, --help            show this help message and exit
@@ -20,6 +23,8 @@ options:
   --sizes BITS,BITS,...
                         bit sizes to measure
   --seeds N             seeds 1..N per size
+  --cap-ops N           rho60: stop the 60-bit walk after N group ops
+  --cap-minutes M       rho60: stop the 60-bit walk after M minutes
 
 Structured output: add --json to any read-side command. Contract: cairn
 capabilities --json. Agent handbook: cairn robot-docs.
