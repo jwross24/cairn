@@ -1,7 +1,7 @@
 from pathlib import Path
 
 MOCK_PATTERNS = ("unittest.mock", "MagicMock", "mocker.patch")
-SCANNED_DIRS = ("tests/integration", "tests/e2e")
+SCANNED_DIRS = ("tests/integration", "tests/e2e", "tests/conformance")
 
 
 def scan_for_mocks(root):
