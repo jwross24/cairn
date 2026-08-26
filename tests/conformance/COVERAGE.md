@@ -99,6 +99,11 @@ reports `agree` in range without performing any comparison satisfies all four; S
 clause that catches it, by planting a disagreement at the declared seam and requiring the
 status to move. The two clauses interlock and neither alone is sufficient.
 
+**S2-13 reads parsed JSON, so a stringified float is not a float.** `_emits_float` walks the
+subject's output document; a subject that renders `0.05` as `"0.05"` — as both fixture
+subjects render their big integers — declares no numeric profile and is owed none. The clause
+is SHOULD and does not gate.
+
 **S2-06's corpus-to-row comparison is same-process.** The measured pass count and the
 certificate row both originate in one `certify()` call. The committed floor golden is the
 only value in that check that outlives the process.
