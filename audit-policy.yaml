@@ -38,58 +38,68 @@
 # assurance. The scorecard banner names both waived dimensions and calls the total
 # an upper bound.
 #
-# The ordering the weights were meant to correct is still inverted, and weights
-# cannot correct it. Measured 2026-08-26 with these weights binding: cairn-qn9, a
-# cleanup with no tests of its own, scores 970; cairn-m0-e0s.12, with 108 tests,
-# six metamorphic relations and six killed mutants, scores 875. The cause is
-# extraction, not weighting, and it is stated below.
+# The ordering weights alone could not correct is corrected by the switch below.
+# Measured 2026-08-26 through the real single-bead audit: under
+# `unmeasured_dimensions: full_credit`, cairn-qn9 -- a cleanup with no tests of its
+# own -- scores 970 while cairn-m0-e0s.12, with 108 tests, six metamorphic relations
+# and six killed mutants, scores 875. Under `excluded` the same two score 842 and
+# 650, and the 650 is three measured deductions rather than free credit. The cause
+# was extraction, not weighting, and it is stated below.
 threshold: 700
 remediation_policy: completion-debt
 
-# THE SWITCH THAT COULD FAIL A FALSE CLOSE, AND WHY IT IS OFF.
+# THE SWITCH THAT FAILS A FALSE CLOSE, AND THE EXTRACTION IT RESTS ON.
 #
 # A dimension goes `n/a` when the deterministic extractor found no items of its
-# kind, and `WAIVED` when its phase ran in stub mode. Both award full credit, so a
-# bead the extractor cannot read scores full marks on every dimension it was never
-# measured against. A fixture bead closed with the word "Done." and a body naming
-# two files that do not exist scored 975 of 1000 and read Verified: 775 of it for
-# having nothing to check. No threshold reaches that, because the score does not
-# depend on the work, and no weighting does either -- any weighting of full credit
-# for nothing is still full credit.
+# kind, and `WAIVED` when its phase ran in stub mode. Under `full_credit` both
+# award full marks, so a bead the extractor cannot read scores full marks on every
+# dimension it was never measured against: a fixture closed with the word "Done."
+# and a body naming two files that do not exist reaches 975 of 1000 and reads
+# Verified, 775 of it for having nothing to check. No threshold reaches that,
+# because the score does not depend on the work, and no weighting does either --
+# any weighting of full credit for nothing is still full credit.
 #
-# `unmeasured_dimensions: excluded` drops an unmeasured dimension from the
-# numerator and the denominator both; `minimum_measured_weight` refuses to score
-# below a coverage floor, because a good score over a tiny measured base is not
-# evidence and rescaling alone rewards the bead with the least to measure. Measured
-# 2026-08-26 at excluded / 450 / 600, through the real single-bead audit, over all
-# sixteen closed beads and a fresh false-closed fixture: the fixture reports
-# UNVERIFIABLE and the pre-commit hook blocks the commit, while every M0
-# implementation bead passes at 650 to 750. The gate works.
+# `excluded` drops an unmeasured dimension from the numerator and the denominator
+# both; `minimum_measured_weight` refuses to score below a coverage floor, because
+# a good score over a tiny measured base is not evidence and rescaling alone
+# rewards the bead with the least to measure.
 #
-# THE MEASUREMENT THAT KEEPS IT OFF: cairn-cue, this file's own bead, scores 0 and
-# reads UNVERIFIABLE under exactly that setting. Its dimensions are identical to
-# the fixture's:
+# What makes that safe for honest work is `scripts/bead-artifact-block.sh`, which
+# the pre-commit hook runs for every bead a commit closes. A closing bead's body
+# carries an ARTIFACTS block naming its source and test files in backticks, its
+# commit SHAs and the commands re-executed at close; the skill's unmodified
+# PATH_HINT_RE extracts those paths, so the implementation dimension is measured
+# rather than n/a. A harness bead whose product is configuration and whose body is
+# prose is no longer indistinguishable from a bead with nothing behind it.
 #
-#                        cairn-cue          the "Done." fixture
-#   Implementation       n/a 250/250        n/a 250/250
-#   Required tests       WAIVED 300/300     WAIVED 300/300
-#   Test depth           WAIVED 200/200     WAIVED 200/200
-#   Docs                 n/a 25/25          n/a 25/25
-#   measured weight      225                225
+# Measured 2026-08-26 at excluded / 450, through the real single-bead audit:
 #
-# A harness bead whose product is configuration and whose body is prose presents to
-# the deterministic extractor exactly as a bead with nothing behind it, because the
-# extractor cannot read prose. Any floor that fails the fixture fails honest work of
-# that shape, and cairn-qn9 is the same case. The discriminator is not a threshold,
-# a floor or a weighting; it is extraction, which is what
-# subagents/bead-spec-extractor.md exists for and what the hook path deliberately
-# does not run.
+#                        cairn-cue      cairn-qn9      the "Done." fixture
+#   Implementation       175/250        175/250        n/a, excluded
+#   Anti-theater         200/200        200/200        185/200
+#   Cross-bead           0/25           25/25          15/25
+#   measured weight      475            475            225
+#   score                789            842            0, UNVERIFIABLE
 #
-# So the switch stays off and stays tested. It becomes correct the moment the
-# extractor runs on this path, and not before. cairn-exi owns that choice and
-# blocks on cairn-cue.
-unmeasured_dimensions: full_credit
-minimum_measured_weight: 0
+# The floor of 450 sits below the 475 a configuration bead measures and the 500 a
+# bead with docs measures, and above the 225 that is left when the implementation
+# dimension is unmeasured. A bead whose body the extractor can read clears it; a
+# bead whose body it cannot does not.
+#
+# THE COST OF THE SWITCH, MEASURED OVER EVERY CLOSED BEAD. Re-audited 2026-08-26 at
+# excluded / 450, one single-bead pass each: sixteen of the eighteen closed M0 beads
+# land at 750 to 780, cairn-qn9 at 842. cairn-m0-e0s.12 and cairn-m0-e0s.16 land at
+# 650 and read FALSE-CLOSED. Neither is an extraction failure -- both extract richly
+# -- and neither is free credit withdrawn. Both lose the same three: one BLOCKING
+# theater finding for an ignore-list line in the closing commit, docs 0/25 on
+# '0/1 non-code items found', and cross-bead 0/25 for referencing open downstream
+# beads. cairn-fur owns the docs and theater halves; the debt beads carry the detail.
+#
+# What this still does not measure: 500 of the 1000 is Phase 4 and Phase 6, both
+# stubbed on the hook path and both excluded from the denominator. A passing score
+# is a score over the half that was measured, and the scorecard banner says so.
+unmeasured_dimensions: excluded
+minimum_measured_weight: 450
 
 # What a Cairn bead is: a harness slice whose product is code plus the tests that
 # prove it, closed with re-executed evidence. It ships no runbook, so the default
