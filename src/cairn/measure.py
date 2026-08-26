@@ -27,6 +27,7 @@ RHO_INSTANCE_SEED = 1
 RHO_R = 20
 RHO_THETA_BITS = 10
 RHO_LOG_EVERY = 10**6
+RHO_CLOCK_EVERY = 1000
 RHO_MIN_RATE_OPS = 10**6
 RHO40_CAP_OPS = 10**9
 DEFAULT_CAP_OPS = 100_000_000
@@ -117,7 +118,25 @@ def _solve(alpha_a, beta_a, alpha_b, beta_b, n):
     return ((alpha_a - alpha_b) * pow(delta, -1, n)) % n
 
 
-def rho(bits, *, seed=RHO_INSTANCE_SEED, cap_ops=RHO40_CAP_OPS, cap_minutes=DEFAULT_CAP_MINUTES):
+def _log_progress(lg, bits, ops, elapsed, distinguished):
+    lg.info(
+        "progress",
+        bits=bits,
+        ops=ops,
+        elapsed_s=round(elapsed, 3),
+        ops_per_s=round(ops / elapsed, 1) if elapsed > 0 else None,
+        distinguished=distinguished,
+    )
+
+
+def rho(
+    bits,
+    *,
+    seed=RHO_INSTANCE_SEED,
+    cap_ops=RHO40_CAP_OPS,
+    cap_minutes=DEFAULT_CAP_MINUTES,
+    theta_bits=RHO_THETA_BITS,
+):
     lg = log.get("measure.rho")
     curve = toy_curve.run(bits, seed)
     p, a, b, n, P = curve.p, curve.a, curve.b, curve.n, tuple(curve.P)
@@ -133,13 +152,13 @@ def rho(bits, *, seed=RHO_INSTANCE_SEED, cap_ops=RHO40_CAP_OPS, cap_minutes=DEFA
     steps = [elladd(E, ellmul(E, Pt, u), ellmul(E, Qt, v)) for u, v in coeffs]
     alpha, beta = rng.randrange(1, n), rng.randrange(1, n)
     cur = elladd(E, ellmul(E, Pt, alpha), ellmul(E, Qt, beta))
-    mask = (1 << RHO_THETA_BITS) - 1
+    mask = (1 << theta_bits) - 1
     seen = {}
     ops = 0
     x = None
     stop = STOP_CAP_OPS
     lg.info(
-        "start", bits=bits, seed=seed, n=n, cap_ops=cap_ops, cap_minutes=cap_minutes, r=RHO_R, theta_bits=RHO_THETA_BITS
+        "start", bits=bits, seed=seed, n=n, cap_ops=cap_ops, cap_minutes=cap_minutes, r=RHO_R, theta_bits=theta_bits
     )
     start = time.monotonic()
     cap_seconds = cap_minutes * 60.0
@@ -164,20 +183,15 @@ def rho(bits, *, seed=RHO_INSTANCE_SEED, cap_ops=RHO40_CAP_OPS, cap_minutes=DEFA
         if ops >= cap_ops:
             stop = STOP_CAP_OPS
             break
-        if ops % RHO_LOG_EVERY == 0:
+        if ops % RHO_CLOCK_EVERY == 0:
             elapsed = time.monotonic() - start
-            lg.info(
-                "progress",
-                bits=bits,
-                ops=ops,
-                elapsed_s=round(elapsed, 3),
-                ops_per_s=round(ops / elapsed, 1),
-                distinguished=len(seen),
-            )
+            if ops % RHO_LOG_EVERY == 0:
+                _log_progress(lg, bits, ops, elapsed, len(seen))
             if elapsed >= cap_seconds:
                 stop = STOP_CAP_MINUTES
                 break
     elapsed = time.monotonic() - start
+    _log_progress(lg, bits, ops, elapsed, len(seen))
     run = RhoRun(bits, p, a, b, n, P, Q, secret, x, ops, elapsed, stop)
     lg.info("stop", **run.as_dict())
     return run

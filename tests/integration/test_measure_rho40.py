@@ -21,6 +21,20 @@ def test_rho40_walk_completes_and_recovers_the_drawn_x(rho40):
     assert rho40.elapsed_s > 0
 
 
+def test_rho40_walk_pins_the_published_r_theta_and_op_count(rho40):
+    assert (measure.RHO_R, measure.RHO_THETA_BITS) == (20, 10)
+    assert rho40.ops == 474179
+    assert rho40.n == 945003441719
+    assert rho40.x == 788702851439
+
+
+def test_a_key_without_y_mistakes_a_negation_for_a_repeat_and_the_full_key_does_not():
+    run = measure.rho(24, seed=6, theta_bits=0)
+    assert run.stop == "solved"
+    assert run.x == run.secret
+    assert run.ops == 1295
+
+
 def test_rho40_x_passes_the_tier0_verifier(rho40):
     result = verifier.Verifier().run(rho40.instance(), rho40.x)
     assert result.accepted, (result.reason, result.reasons)
@@ -64,3 +78,44 @@ def test_measure_rho60_text_output_is_a_markdown_table_with_both_rungs(capsys):
     assert lines[3].startswith(f"| {measure.RHO60_BITS} | {measure.RHO_MIN_RATE_OPS} | ")
     assert lines[3].endswith(f" | {measure.STOP_CAP_OPS} | {measure.EXTRAPOLATION_TAG} |")
     assert lines[4].startswith("verified_x=") and "accepted=True" in lines[4]
+
+
+def test_measure_rho60_rejects_a_nonpositive_cap_minutes(capsys):
+    code = cli.main(["measure", "rho60", "--cap-minutes", "0", "--json"])
+    out, err = capsys.readouterr()
+    assert code == exits.USER_INPUT and out == ""
+    assert "--cap-minutes must be > 0" in err
+
+
+def test_measure_rho60_reports_backend_when_cap_minutes_stops_the_40_bit_walk(capsys):
+    code = cli.main(["measure", "rho60", "--cap-minutes", "0.0001", "--json"])
+    out, err = capsys.readouterr()
+    assert code == exits.BACKEND and out == ""
+    assert f"the {measure.RHO40_BITS}-bit rho stopped on {measure.STOP_CAP_MINUTES}" in err
+
+
+def test_measure_rho60_json_payload_carries_the_rate_and_the_conjectural_wall(capsys):
+    code = cli.main(["measure", "rho60", "--cap-ops", "1000000", "--json"])
+    out, err = capsys.readouterr()
+    assert code == exits.OK, err
+    payload = json.loads(out)
+    assert payload["schema_version"] == 1
+    assert payload["target"] == measure.TARGET_RHO60
+    assert payload["bits"] == measure.RHO60_BITS == 60
+    assert payload["instance_hash"] == "41916ca2c0650a1e66e0a538ef0782d092963315f91a9428eb7a55101237613a"
+    assert payload["ops"] == 1000000
+    assert payload["stop"] == measure.STOP_CAP_OPS == "cap-ops"
+    assert payload["tag"] == "CONJECTURE"
+    assert payload["expected_ops"] == 1166326476
+    assert payload["elapsed_s"] > 0
+    assert payload["ops_per_s"] == pytest.approx(payload["ops"] / payload["elapsed_s"], rel=2e-3)
+    assert payload["extrapolated_wall_s"] == pytest.approx(1166326476 / payload["ops_per_s"], rel=1e-3)
+    assert payload["verified_x"] == 788702851439
+    assert payload["versions"]["cypari2"] and payload["versions"]["libpari"]
+    rho40 = payload["rho40"]
+    assert rho40["accepted"] is True
+    assert rho40["bits"] == measure.RHO40_BITS == 40
+    assert rho40["ops"] == 474179
+    assert rho40["stop"] == measure.STOP_SOLVED
+    assert rho40["x"] == 788702851439
+    assert rho40["verifier_wall_s"] > 0
