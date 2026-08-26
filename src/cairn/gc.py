@@ -68,11 +68,11 @@ def _delete_blobs(sub, hashes):
 
 
 def collect(sub, *, dry_run=True, at=None):
-    p = plan(sub)
-    hashes = [c["hash"] for c in p["candidates"]]
     run_id = uuid.uuid4().hex
     deleted = 0
     with sub._tx():
+        p = plan(sub)
+        hashes = [c["hash"] for c in p["candidates"]]
         if not dry_run:
             deleted = _delete_blobs(sub, hashes)
         sub.conn.execute(
@@ -98,11 +98,18 @@ def _configure(parser):
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="list collectable blobs and change nothing; this is the default without --yes, spelled explicitly",
+        help="list collectable blobs and change nothing; this is the default, spelled explicitly, and it is refused alongside --yes",
     )
 
 
 def _run(ns):
+    yes = getattr(ns, "yes", False)
+    if yes and ns.dry_run:
+        raise CliError(
+            exits.USER_INPUT,
+            "--dry-run and --yes contradict each other: --dry-run changes nothing and --yes deletes; nothing was changed",
+            next_command=f"cairn gc --db {ns.db}   # list, or: cairn gc --db {ns.db} --yes   # delete",
+        )
     if not os.path.exists(ns.db):
         raise CliError(
             exits.ENVIRONMENT,
@@ -110,16 +117,8 @@ def _run(ns):
             where=str(ns.db),
             next_command=f"cairn selftest toy-curve --db {ns.db}",
         )
-    yes = getattr(ns, "yes", False)
     try:
         with substrate.Substrate.open(ns.db) as sub:
-            if yes:
-                preview = plan(sub)
-                cli.require_yes(
-                    yes,
-                    plan=f"delete {len(preview['candidates'])} blob(s), {preview['bytes']} byte(s)",
-                    command="cairn gc",
-                )
             result = collect(sub, dry_run=not yes)
     except substrate.WriterAlreadyOpen as exc:
         raise CliError(

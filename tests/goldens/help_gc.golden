@@ -14,7 +14,8 @@ options:
   --json, --robot  emit exactly one JSON document on stdout
   --yes            required for the irreversible part of this command
   --dry-run        list collectable blobs and change nothing; this is the
-                   default without --yes, spelled explicitly
+                   default, spelled explicitly, and it is refused alongside
+                   --yes
 
 Structured output: add --json to any read-side command. Contract: cairn
 capabilities --json. Agent handbook: cairn robot-docs.

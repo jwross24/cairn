@@ -44,7 +44,7 @@ def test_collect_removes_orphan_blob_and_keeps_the_rooted_one(writer, db_snapsho
     assert writer.has_blob(b2) is False
 
 
-def test_missing_blob_makes_serve_return_none_and_gc_never_ran_it(writer, db_snapshot):
+def test_serve_returns_none_while_a_manifest_blob_is_lost_and_again_once_it_is_restored(writer, db_snapshot):
     key = writer.put_recipe(recipe(1))
     attempt, manifest = launch(writer, key, "OK", {"a": b"payload"})
     assert writer.serve(key) == substrate.Served(attempt, manifest)
@@ -113,19 +113,48 @@ def test_cli_without_yes_lists_exactly_the_orphan_and_deletes_nothing(tmp_path, 
         assert sub.has_blob(orphan) is True
 
 
-def test_cli_explicit_dry_run_flag_behaves_the_same_as_the_default(tmp_path, capsys):
+def test_cli_explicit_dry_run_flag_behaves_the_same_as_the_default(tmp_path, capsys, db_snapshot):
     db = tmp_path / "substrate.sqlite"
     with substrate.Substrate.open(db) as sub:
         key = sub.put_recipe(recipe(1))
         launch(sub, key, "OK", {"a": b"payload"})
         orphan = sub.put_blob(b"orphan")
+        db_snapshot(sub.conn, "before")
     code, out, err = _run(["gc", "--db", str(db), "--dry-run", "--json"], capsys)
     assert code == exits.OK, err
     doc = json.loads(out)
     assert doc["dry_run"] is True
     assert [c["hash"] for c in doc["candidates"]] == [orphan]
     with substrate.Substrate.open(db) as sub:
+        db_snapshot(sub.conn, "after-listing")
         assert sub.has_blob(orphan) is True
+
+
+def test_cli_refuses_dry_run_together_with_yes_and_changes_nothing(tmp_path, capsys, db_snapshot):
+    db = tmp_path / "substrate.sqlite"
+    with substrate.Substrate.open(db) as sub:
+        key = sub.put_recipe(recipe(1))
+        launch(sub, key, "OK", {"a": b"payload"})
+        orphan = sub.put_blob(b"orphan")
+        db_snapshot(sub.conn, "before")
+    code, out, err = _run(["gc", "--db", str(db), "--dry-run", "--yes", "--json"], capsys)
+    assert code == exits.USER_INPUT
+    assert out == ""
+    assert "--dry-run" in err and "--yes" in err
+    assert f"cairn gc --db {db}   # list" in err and f"cairn gc --db {db} --yes   # delete" in err
+    with substrate.Substrate.open(db) as sub:
+        db_snapshot(sub.conn, "after-refusal")
+        assert sub.has_blob(orphan) is True
+        assert sub.conn.execute("SELECT count(*) FROM gc_runs").fetchone()[0] == 0
+
+
+def test_cli_exits_environment_when_the_substrate_file_is_absent(tmp_path, capsys):
+    db = tmp_path / "absent.sqlite"
+    code, out, err = _run(["gc", "--db", str(db), "--yes"], capsys)
+    assert code == exits.ENVIRONMENT
+    assert out == ""
+    assert "does not exist" in err and str(db) in err
+    assert not db.exists()
 
 
 def test_cli_yes_removes_the_orphan_and_the_gc_runs_record_names_count_and_bytes(tmp_path, capsys, db_snapshot):
@@ -150,12 +179,13 @@ def test_cli_yes_removes_the_orphan_and_the_gc_runs_record_names_count_and_bytes
         assert row["dry_run"] == 0
 
 
-def test_cli_yes_exits_conflict_when_a_second_connection_holds_a_write_transaction(tmp_path, capsys):
+def test_cli_yes_exits_conflict_when_a_second_connection_holds_a_write_transaction(tmp_path, capsys, db_snapshot):
     db = tmp_path / "substrate.sqlite"
     with substrate.Substrate.open(db) as sub:
         key = sub.put_recipe(recipe(1))
         launch(sub, key, "OK", {"a": b"payload"})
         sub.put_blob(b"orphan")
+        db_snapshot(sub.conn, "before")
     blocker = sqlite3.connect(str(db))
     blocker.execute("BEGIN IMMEDIATE")
     try:
@@ -164,7 +194,22 @@ def test_cli_yes_exits_conflict_when_a_second_connection_holds_a_write_transacti
         blocker.execute("ROLLBACK")
         blocker.close()
     assert code == exits.CONFLICT
-    assert "locked" in err.lower() or "cairn doctor" in err
+    assert "locked" in err.lower(), err
+
+
+def test_cli_yes_exits_conflict_when_a_writer_is_already_open_in_process(tmp_path, capsys, db_snapshot):
+    db = tmp_path / "substrate.sqlite"
+    with substrate.Substrate.open(db) as sub:
+        key = sub.put_recipe(recipe(1))
+        launch(sub, key, "OK", {"a": b"payload"})
+        orphan = sub.put_blob(b"orphan")
+        db_snapshot(sub.conn, "before")
+        code, out, err = _run(["gc", "--db", str(db), "--yes"], capsys)
+        assert code == exits.CONFLICT
+        assert out == ""
+        assert "another writer already holds" in err, err
+        db_snapshot(sub.conn, "after-refusal")
+        assert sub.has_blob(orphan) is True
 
 
 def test_collect_is_idempotent_across_a_page_boundary_and_kills_the_one_page_mutant(writer, db_snapshot):
@@ -180,8 +225,74 @@ def test_collect_is_idempotent_across_a_page_boundary_and_kills_the_one_page_mut
 
     for i in range(150):
         writer.put_blob(f"page-orphan-{i}".encode())
+    db_snapshot(writer.conn, "before-mutant")
     with gc_mutants.collect_one_page_only():
         broken_first = gc.collect(writer, dry_run=False)
+        db_snapshot(writer.conn, "after-mutant-first")
         broken_second = gc.collect(writer, dry_run=False)
+    db_snapshot(writer.conn, "after-mutant-second")
     assert broken_first["deleted"] == gc.PAGE_SIZE
-    assert broken_second["deleted"] > 0
+    assert broken_second["deleted"] == 50
+
+
+def test_a_blob_rooted_by_a_second_connection_before_the_write_lock_is_not_collected(writer, db_snapshot):
+    key = writer.put_recipe(recipe(1))
+    launch(writer, key, "OK", {"a": b"payload"})
+    orphan = writer.put_blob(b"orphan")
+    racer = sqlite3.connect(str(writer.path))
+    fired = []
+
+    def root_the_orphan(statement):
+        if statement.strip().upper().startswith("BEGIN IMMEDIATE") and not fired:
+            fired.append(statement)
+            racer.execute(
+                "INSERT INTO lineage (child_hash, parent_hash, edge_kind) VALUES (?, ?, ?)",
+                (orphan, key, "input"),
+            )
+            racer.commit()
+
+    db_snapshot(writer.conn, "before")
+    writer.conn.set_trace_callback(root_the_orphan)
+    try:
+        result = gc.collect(writer, dry_run=False)
+    finally:
+        writer.conn.set_trace_callback(None)
+        racer.close()
+    db_snapshot(writer.conn, "after")
+    assert len(fired) == 1
+    assert writer.conn.execute("SELECT 1 FROM lineage WHERE child_hash = ?", (orphan,)).fetchone() is not None
+    assert result["candidates"] == []
+    assert result["deleted"] == 0
+    assert writer.has_blob(orphan) is True
+
+
+def test_candidates_are_listed_in_hash_order(writer, db_snapshot):
+    orphans = [writer.put_blob(f"orphan-{i}".encode()) for i in range(8)]
+    assert orphans != sorted(orphans)
+    db_snapshot(writer.conn, "before")
+    result = gc.collect(writer, dry_run=True)
+    db_snapshot(writer.conn, "after")
+    assert [c["hash"] for c in result["candidates"]] == sorted(orphans)
+
+
+def test_the_collect_log_carries_the_run_summary_and_the_candidate_hashes(writer, db_snapshot, json_test_log):
+    key = writer.put_recipe(recipe(1))
+    launch(writer, key, "OK", {"a": b"payload"})
+    orphan = writer.put_blob(b"orphan")
+    db_snapshot(writer.conn, "before")
+    result = gc.collect(writer, dry_run=False)
+    db_snapshot(writer.conn, "after")
+    records = [json.loads(line) for line in json_test_log.read_text().splitlines()]
+    summaries = [r for r in records if r["step"] == "gc" and r["event"] == "collect"]
+    assert len(summaries) == 1
+    summary = summaries[0]
+    assert summary["level"] == "INFO"
+    assert summary["roots"] == result["roots"] == 1
+    assert summary["reachable"] == result["reachable"] == 3
+    assert summary["candidates"] == 1
+    assert summary["bytes"] == len(b"orphan")
+    assert summary["dry_run"] is False
+    listings = [r for r in records if r["step"] == "gc" and r["event"] == "candidates"]
+    assert len(listings) == 1
+    assert listings[0]["level"] == "DEBUG"
+    assert listings[0]["hashes"] == [orphan]
