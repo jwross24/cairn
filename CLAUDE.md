@@ -103,12 +103,6 @@ Each line below was established by hitting it. Verify rather than trust if a too
   (`.githooks/pre-commit`) is invisible to that regex, and the gate names it while accepting the
   block as long as one visible path is present. Bypass, logged to `.check.log`:
   `CAIRN_ARTIFACT_BLOCK_SKIP='<reason>'`.
-- **`scripts/theater_patterns.py` matches the fixture text a test writes about it.** The gate
-  reads `audit-policy.yaml`'s `project_theater_patterns` over the whole tree, so a test file
-  carrying a literal platform skip as a fixture string is a finding like any other. Assemble
-  such fixture text at runtime (`"skip" + "if"`); exempting the gate's own tests would widen
-  the one list whose narrowness the tests exist to hold. `exempt_paths` is per-file, requires
-  an `exempt_until_bead`, and the gate denies once that bead closes.
 - **`br list --json` omits closed beads** (23 of 31 here). Pass `--all` or `--status closed`.
 - **`.beads/` is excluded by `~/.gitignore_global`.** This repo's `.gitignore` carries
   `!.beads/` to re-include it. `br sync --flush-only` before every `git add .beads/`.
