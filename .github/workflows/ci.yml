@@ -8,7 +8,9 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Every commit that lands on main is verified. A superseded run on a branch is
+  # not worth a runner.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -19,15 +21,24 @@ jobs:
     # with os.chflags and stat.UF_APPEND, which exist on macOS and BSD and not on
     # Linux; cairn-hcl owns the Linux arm. An ubuntu run fails before it starts.
     runs-on: macos-latest
-    timeout-minutes: 45
+    # The suite carries a 180 s per-test deadline (pyproject.toml), so a wedged
+    # test dies naming itself. This ceiling catches a wedge outside pytest, and a
+    # green run takes about five minutes.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Install PARI/GP
-        run: brew install pari
+        run: |
+          # The runner image ships aws/tap untrusted, so Homebrew warns on every
+          # invocation. pari comes from homebrew/core; nothing here wants that tap.
+          brew untap aws/tap || true
+          brew install pari
 
       - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d  # v10.0.1
         with:
+          # uv.lock pins the dependencies; this pins the resolver that reads it.
+          version: "0.10.9"
           enable-cache: true
           cache-dependency-glob: uv.lock
 
@@ -40,3 +51,15 @@ jobs:
       - name: The trace every gate left
         if: always()
         run: cat .check.log
+
+      - name: The artifacts a red run leaves behind
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: cairn-failure-diagnostics
+          path: |
+            .check.log
+            .doctor/runs/**
+            beads_compliance_audit/passes/**
+          if-no-files-found: ignore
+          retention-days: 7

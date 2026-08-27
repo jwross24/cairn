@@ -54,7 +54,7 @@ def check_mr_e(roots, edges, e):
 
 def check_mr_e_only_edge_drops_node(roots, edges, e, v):
     before = gc.reachable(roots, edges)
-    assume(v in before)
+    assert v in before
     edges_minus = [x for x in edges if x != e]
     after = gc.reachable(roots, edges_minus)
     assert v not in after
