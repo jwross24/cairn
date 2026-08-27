@@ -20,12 +20,16 @@
 #   subagents                       read only on the parallel path; the pre-commit
 #                                   hook runs no subagents.
 #
-# WHAT BINDS NOTHING: project_theater_patterns. theater-scan.sh runs a fixed list
-# of scan_pattern calls and reads no policy file. Measured 2026-08-26: the pattern
-# below also does not match this repo's spelling, which puts the skipif arguments
-# on the following line, so wiring it without fixing the signature would produce
-# the appearance of a gate and no findings. cairn-fur owns both halves. The
-# section stays because the pattern is the design work, not the plumbing.
+#   project_theater_patterns        read by scripts/theater_patterns.py, a
+#                                   cairn-owned gate that scripts/check.sh runs
+#                                   on the whole tree. The vendored skill reads
+#                                   the section only from
+#                                   subagents/theater-detector.md, and neither the
+#                                   pre-commit path nor CI runs a subagent;
+#                                   theater-scan.sh carries a fixed catalog and
+#                                   opens no policy file. Findings gate the commit
+#                                   and score nothing on the anti_theater
+#                                   dimension.
 #
 # The five forked call sites in the skill are listed in CLAUDE.md. An upstream
 # update reverts them, and this file goes back to binding only what a CLI flag
@@ -157,16 +161,43 @@ weights_by_type:
     integration: 25
 
 # A skipped platform is a platform nobody is testing. cairn-hcl exists because the
-# M0 write boundary is macOS-only and both write-boundary test files carry
+# M0 write boundary is macOS-only and the write-boundary test files carry
 # skipif(sys.platform != "darwin"), so the degraded behavior is asserted nowhere.
 # A new platform skip in evidence is a claim that a gate ran when it did not.
+#
+# WHAT READS THIS: scripts/theater_patterns.py, through scripts/check.sh, which
+# the pre-commit hook and CI both call. The vendored skill does not: it reads the
+# section only from subagents/theater-detector.md, and neither the hook path nor
+# CI runs a subagent. Findings here refuse the commit; they reach no dimension of
+# the audit's score.
+#
+# THE SIGNATURE SPANS LINES. Every platform skip in this repository puts the
+# skipif arguments on the line after the call, and ripgrep is line-oriented, so
+# `skipif\(sys\.platform` matched none of the four. The scanner reads whole files
+# and `\s*` crosses the newline.
+#
+# THE EXEMPTION IS PROSPECTIVE AND SELF-REMOVING. The gap the four modules carry
+# is diagnosed and owned by cairn-hcl, which is open and deferred to M1 because it
+# cannot be verified on a macOS-only machine at all. Firing on them would reopen
+# settled work over a gap that already has an owner, so the pattern catches the
+# next unpaired skip instead: a platform skip in any other file, or a fifth module
+# added to these four, is a MAJOR finding. The scanner refuses an exemption that
+# names no removing bead, an exemption whose removing bead is closed, an exempt
+# path no file_glob reaches, and an exempt path that no longer carries the
+# signature, so the list cannot widen or outlive cairn-hcl in silence.
 project_theater_patterns:
   - id: P-platform-skip-hides-a-gate
-    signature: 'skipif\(sys\.platform'
+    signature: 'skipif\(\s*sys\.platform'
     file_glob: ['tests/**/*.py']
     in_test_files: true
     severity: MAJOR
     rationale: 'cairn-hcl: the write boundary degrades silently off macOS and the suite says so nowhere; a platform skip must be paired with an assertion naming the degraded behavior'
+    exempt_until_bead: cairn-hcl
+    exempt_paths:
+      - tests/conformance/test_skill_contract.py
+      - tests/integration/test_gate_bundle.py
+      - tests/integration/test_grounding_fs.py
+      - tests/integration/test_toy_curve_selftest.py
 
 # Only meaningful on the parallel path; the pre-commit hook runs no subagents.
 # spec-quality-reviewer is on because the measured failure is extraction, not

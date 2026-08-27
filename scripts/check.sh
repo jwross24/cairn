@@ -57,6 +57,7 @@ gate format   uv run ruff format --check src tests scripts
 gate lint     uv run ruff check src tests
 gate spelling uv run codespell
 gate types    uv run ty check src tests
+gate theater  ./scripts/theater-patterns.sh
 if [ "$FAST" = "1" ]; then
   say "SKIP tests (--fast)"
   printf '[check] skip tests (--fast; CI runs them)\n'
