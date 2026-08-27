@@ -41,6 +41,7 @@ POLICY_NAMES = ("audit-policy.yaml", ".beads/audit-policy.yaml")
 SEVERITIES = ("BLOCKING", "MAJOR", "MINOR", "NOTE")
 TEST_MARKERS = ("test", "tests")
 CLOSED = "closed"
+EXPIRY_BEAD = "cairn-pwj"
 
 
 class PolicyError(Exception):
@@ -83,6 +84,7 @@ class Outcome:
     scanned: list[str] = field(default_factory=list)
     findings: list[Finding] = field(default_factory=list)
     problems: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
 
 def _text(entry: dict, key: str, where: str, *, required: bool = True) -> str:
@@ -249,6 +251,7 @@ def evaluate(root: Path, document: object, *, bead_status=None) -> Outcome:
         return Outcome("OFF")
 
     problems: list[str] = []
+    warnings: list[str] = []
     findings: list[Finding] = []
     scanned: set[str] = set()
 
@@ -257,11 +260,14 @@ def evaluate(root: Path, document: object, *, bead_status=None) -> Outcome:
         scanned.update(reachable)
         problems.extend(exemption_problems(root, pattern, reachable))
 
+        # An unreadable expiry costs one auxiliary cross-check; the scan, the counts and
+        # every finding are unaffected, so it warns. A resolver that IS available and
+        # cannot find the bead is a misconfiguration, and that still refuses.
         if pattern.exempt_paths and pattern.exempt_until_bead:
             if bead_status is None:
-                problems.append(
-                    f"{pattern.id}: exempt_until_bead {pattern.exempt_until_bead} cannot be resolved; "
-                    "an exemption whose expiry nobody can read never expires"
+                warnings.append(
+                    f"{pattern.id}: exempt_until_bead {pattern.exempt_until_bead} was not checked; "
+                    "br is not on PATH, so whether the exemption has expired is unknown here"
                 )
             else:
                 try:
@@ -300,10 +306,10 @@ def evaluate(root: Path, document: object, *, bead_status=None) -> Outcome:
                 )
 
     if problems:
-        return Outcome("DENY", patterns=len(patterns), scanned=sorted(scanned), problems=problems)
+        return Outcome("DENY", patterns=len(patterns), scanned=sorted(scanned), problems=problems, warnings=warnings)
     if findings:
-        return Outcome("FAIL", patterns=len(patterns), scanned=sorted(scanned), findings=findings)
-    return Outcome("PASS", patterns=len(patterns), scanned=sorted(scanned))
+        return Outcome("FAIL", patterns=len(patterns), scanned=sorted(scanned), findings=findings, warnings=warnings)
+    return Outcome("PASS", patterns=len(patterns), scanned=sorted(scanned), warnings=warnings)
 
 
 def bead_status_resolver():
@@ -400,6 +406,14 @@ def main(argv: list[str] | None = None) -> int:
         return EXIT_ENVIRONMENT
 
     outcome = evaluate(root, document, bead_status=bead_status_resolver() if shutil.which("br") else None)
+
+    for warning in outcome.warnings:
+        say(log, f"EXPIRY-UNKNOWN theater-patterns: {warning}")
+        print(f"[theater-patterns] {warning}.", file=sys.stderr)
+        print(
+            f"                 CI has no br: {EXPIRY_BEAD}. The tree was scanned and the counts enforced.",
+            file=sys.stderr,
+        )
 
     if outcome.kind == "OFF":
         say(log, f"OFF theater-patterns: {policy.name} declares no {SECTION}")

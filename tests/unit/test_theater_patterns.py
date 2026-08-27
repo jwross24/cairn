@@ -1,4 +1,5 @@
 import copy
+import shutil
 import subprocess
 import sys
 from collections.abc import Mapping
@@ -10,6 +11,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 
 from theater_patterns import (
+    EXPIRY_BEAD,
     SECTION,
     PolicyError,
     evaluate,
@@ -292,15 +294,37 @@ def test_an_open_removing_bead_passes(tmp_path):
     assert evaluate(tmp_path, doc, bead_status=open_bead).kind == "PASS"
 
 
-def test_an_unresolvable_removing_bead_denies(tmp_path):
+def test_no_resolver_warns_rather_than_denying(tmp_path):
     tree(tmp_path, {"tests/unit/test_a.py": SKIP_BLOCK.format(mark=MARK, reason="r")})
     doc = document(exempt_paths=exempt("tests/unit/test_a.py"), exempt_until_bead="cairn-hcl")
     outcome = evaluate(tmp_path, doc, bead_status=None)
-    assert outcome.kind == "DENY"
-    assert "never expires" in " ".join(outcome.problems)
+    assert outcome.kind == "PASS"
+    assert outcome.problems == []
+    assert "was not checked" in " ".join(outcome.warnings)
 
 
-def test_a_removing_bead_the_resolver_cannot_find_denies(tmp_path):
+def test_no_resolver_still_scans_and_still_fires(tmp_path):
+    """A warn that quietly stopped scanning would be the fail-open this gate exists against."""
+    files = {"tests/unit/test_a.py": SKIP_BLOCK.format(mark=MARK, reason="known")}
+    files["tests/unit/test_new.py"] = SKIP_BLOCK.format(mark=MARK, reason="new")
+    tree(tmp_path, files)
+    doc = document(exempt_paths=exempt("tests/unit/test_a.py"), exempt_until_bead="cairn-hcl")
+    outcome = evaluate(tmp_path, doc, bead_status=None)
+    assert outcome.kind == "FAIL"
+    assert [f.path for f in outcome.findings] == ["tests/unit/test_new.py"]
+    assert outcome.warnings != []
+
+
+def test_no_resolver_still_enforces_the_per_file_count(tmp_path):
+    body = SKIP_BLOCK.format(mark=MARK, reason="known") + SECOND_SKIP.format(mark=MARK)
+    tree(tmp_path, {"tests/unit/test_a.py": body})
+    doc = document(exempt_paths=exempt("tests/unit/test_a.py"), exempt_until_bead="cairn-hcl")
+    outcome = evaluate(tmp_path, doc, bead_status=None)
+    assert outcome.kind == "FAIL"
+    assert "carries 2" in outcome.findings[0].note
+
+
+def test_a_resolver_that_is_present_and_cannot_find_the_bead_still_denies(tmp_path):
     def missing(bead_id):
         raise LookupError("br show exited 1")
 
@@ -404,6 +428,38 @@ def test_cli_passes_the_real_tree_under_the_real_policy(tmp_path):
     proc = run_cli("--root", str(ROOT), "--policy", str(POLICY), "--log", str(log))
     assert proc.returncode == 0, proc.stderr
     assert "PASS theater-patterns" in log.read_text()
+
+
+def without_br(tmp_path: Path) -> dict[str, str]:
+    """The CI runner's PATH: uv and git, no br."""
+    stub = tmp_path / "bin"
+    stub.mkdir(exist_ok=True)
+    for tool in ("uv", "git", "python3"):
+        found = shutil.which(tool)
+        if found:
+            (stub / tool).symlink_to(found)
+    return {"PATH": f"{stub}:/usr/bin:/bin"}
+
+
+def test_cli_passes_the_real_tree_with_br_off_path(tmp_path):
+    log = tmp_path / "gate.log"
+    proc = run_cli("--root", str(ROOT), "--policy", str(POLICY), "--log", str(log), env=without_br(tmp_path))
+    assert proc.returncode == 0, proc.stderr
+    text = log.read_text()
+    assert "EXPIRY-UNKNOWN theater-patterns" in text
+    assert "PASS theater-patterns" in text
+    assert EXPIRY_BEAD in proc.stderr
+
+
+def test_cli_with_br_off_path_still_refuses_a_planted_skip(tmp_path):
+    tree(tmp_path, {"tests/unit/test_a.py": SKIP_BLOCK.format(mark=MARK, reason="r")})
+    log = tmp_path / "gate.log"
+    policy = policy_file(tmp_path, document(exempt_paths=exempt("tests/unit/test_b.py"), exempt_until_bead="cairn-hcl"))
+    tree(tmp_path, {"tests/unit/test_b.py": SKIP_BLOCK.format(mark=MARK, reason="known")})
+    proc = run_cli("--root", str(tmp_path), "--policy", str(policy), "--log", str(log), env=without_br(tmp_path))
+    assert proc.returncode == 2
+    assert "tests/unit/test_a.py:5" in proc.stderr
+    assert "EXPIRY-UNKNOWN theater-patterns" in log.read_text()
 
 
 def test_cli_logs_off_when_the_section_is_deleted(tmp_path):
