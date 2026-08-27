@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 from scorecard_coherence import check_scorecard, main
 
 SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "scorecard_coherence.py"
+CHILD_TIMEOUT_S = 60
 
 HEADER = "| Dimension | Score | Max | Why |\n|-----------|------:|----:|-----|"
 
@@ -187,6 +188,8 @@ def test_cli_exits_nonzero_on_an_incoherent_card(tmp_path):
 
 def test_script_runs_as_a_subprocess(tmp_path):
     (tmp_path / "scorecard.md").write_text(coherent_rescaled())
-    done = subprocess.run([sys.executable, str(SCRIPT), str(tmp_path)], capture_output=True, text=True)
+    done = subprocess.run(
+        [sys.executable, str(SCRIPT), str(tmp_path)], capture_output=True, text=True, timeout=CHILD_TIMEOUT_S
+    )
     assert done.returncode == 0
     assert "COHERENT" in done.stdout

@@ -20,6 +20,7 @@ dev = [
     "codespell==2.4.3",
     "hypothesis>=6.165.10",
     "pytest>=9.1.1",
+    "pytest-timeout==2.4.0",
     "ruff==0.16.4",
     "ty==0.0.74",
 ]
@@ -32,6 +33,8 @@ default = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-p no:cacheprovider"
+timeout = 180
+timeout_method = "thread"
 
 [tool.ruff]
 line-length = 120

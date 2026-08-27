@@ -9,12 +9,13 @@ import pytest
 from cairn import log
 
 CHILD = [sys.executable, "-c", "import sys; sys.exit(3)"]
+CHILD_TIMEOUT_S = 60
 
 
 def test_communicate_reaps_so_wait4_raises_and_returncode_is_3():
     lg = log.get("grounding.subprocess")
     proc = subprocess.Popen(CHILD, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = proc.communicate()
+    out, err = proc.communicate(timeout=CHILD_TIMEOUT_S)
     with pytest.raises(ChildProcessError, match="No child processes") as excinfo:
         os.wait4(proc.pid, 0)
     lg.info(
@@ -39,7 +40,7 @@ def test_wait4_before_any_wait_returns_status_and_rusage_then_proc_wait_reports_
     returncode_before = proc.returncode
     pid, status, rusage = os.wait4(proc.pid, 0)
     exit_code = os.waitstatus_to_exitcode(status)
-    later = proc.wait()
+    later = proc.wait(timeout=CHILD_TIMEOUT_S)
     lg.info(
         "wait4_then_proc_wait",
         command=f"Popen({CHILD!r}, stdout=file, stderr=file); os.wait4(pid, 0); proc.wait()",

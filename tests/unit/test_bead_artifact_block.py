@@ -8,6 +8,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR = ROOT / "scripts" / "bead_artifact_block.py"
 SHIM = ROOT / "scripts" / "bead-artifact-block.sh"
+CHILD_TIMEOUT_S = 60
 
 VALID = """ARTIFACTS-BEGIN
 source: `pyproject.toml` lines 1-10
@@ -23,6 +24,7 @@ def run_validator(body_file, *args, cwd=ROOT):
         [sys.executable, str(VALIDATOR), "--body-file", str(body_file), *args],
         capture_output=True,
         text=True,
+        timeout=CHILD_TIMEOUT_S,
         cwd=cwd,
     )
 
@@ -94,7 +96,12 @@ def _stand_in_skill(tmp_path, pattern):
 
 
 def _our_pattern():
-    proc = subprocess.run([sys.executable, str(VALIDATOR), "--print-path-hint-re"], capture_output=True, text=True)
+    proc = subprocess.run(
+        [sys.executable, str(VALIDATOR), "--print-path-hint-re"],
+        capture_output=True,
+        text=True,
+        timeout=CHILD_TIMEOUT_S,
+    )
     return proc.stdout.strip()
 
 
@@ -106,6 +113,7 @@ def test_a_drifted_extractor_regex_denies(tmp_path):
         [sys.executable, str(VALIDATOR), "cairn-exi"],
         capture_output=True,
         text=True,
+        timeout=CHILD_TIMEOUT_S,
         cwd=ROOT,
         env={**_env(), "CAIRN_COMPLIANCE_SKILL": str(skill)},
     )
@@ -120,6 +128,7 @@ def test_a_matching_extractor_regex_does_not_deny(tmp_path):
         [sys.executable, str(VALIDATOR), "cairn-exi"],
         capture_output=True,
         text=True,
+        timeout=CHILD_TIMEOUT_S,
         cwd=ROOT,
         env={**_env(), "CAIRN_COMPLIANCE_SKILL": str(skill)},
     )
@@ -134,7 +143,9 @@ def _appended(log, offset):
 
 
 def test_usage_without_arguments_is_refused():
-    proc = subprocess.run([sys.executable, str(VALIDATOR)], capture_output=True, text=True, cwd=ROOT)
+    proc = subprocess.run(
+        [sys.executable, str(VALIDATOR)], capture_output=True, text=True, cwd=ROOT, timeout=CHILD_TIMEOUT_S
+    )
     assert proc.returncode == 64
     assert "usage:" in proc.stderr
 
@@ -144,6 +155,7 @@ def test_bead_ids_and_body_file_are_alternatives(tmp_path):
         [sys.executable, str(VALIDATOR), "cairn-exi", "--body-file", str(write_body(tmp_path, VALID))],
         capture_output=True,
         text=True,
+        timeout=CHILD_TIMEOUT_S,
         cwd=ROOT,
     )
     assert proc.returncode == 64
@@ -157,6 +169,7 @@ def test_the_gate_logs_a_bypass_and_exits_zero(tmp_path):
         [sys.executable, str(VALIDATOR), "cairn-exi"],
         capture_output=True,
         text=True,
+        timeout=CHILD_TIMEOUT_S,
         cwd=ROOT,
         env={**_env(), "CAIRN_ARTIFACT_BLOCK_SKIP": "proving the bypass is logged"},
     )
@@ -177,6 +190,7 @@ def test_the_gate_denies_when_br_is_absent(tmp_path):
         [sys.executable, str(VALIDATOR), "cairn-exi"],
         capture_output=True,
         text=True,
+        timeout=CHILD_TIMEOUT_S,
         cwd=ROOT,
         env={**_env(), "PATH": "/usr/bin:/bin"},
     )

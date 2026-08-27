@@ -11,6 +11,7 @@ ELLCARD60 = "print(ellcard(ellinit([{a},{b}],{p})))"
 STARTUP_FAIL_STDOUT = "### Errors on startup, exiting...\n\n\n"
 STARTUP_FAIL_STDERR = "the PARI stack overflows !"
 GP_VERSION_PREFIX = "2.17"
+GP_TIMEOUT_S = 60
 
 GP_ROWS = [
     ("64M", "1/0", 0, "", "_/_: impossible inverse in gdiv: 0"),
@@ -72,7 +73,7 @@ def _fill(template, curve60):
 def test_gp_version_short_is_2_17():
     lg = log.get("grounding.gp")
     argv = [pari.GP_BIN, "--version-short"]
-    proc = subprocess.run(argv, capture_output=True, text=True)
+    proc = subprocess.run(argv, capture_output=True, text=True, timeout=GP_TIMEOUT_S)
     lg.info(
         "gp_version",
         command=" ".join(argv),

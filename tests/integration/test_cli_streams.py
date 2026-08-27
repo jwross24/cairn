@@ -4,9 +4,13 @@ import sys
 
 from cairn import exits
 
+CHILD_TIMEOUT_S = 60
+
 
 def _cairn(*args):
-    return subprocess.run([sys.executable, "-m", "cairn", *args], capture_output=True, text=True)
+    return subprocess.run(
+        [sys.executable, "-m", "cairn", *args], capture_output=True, text=True, timeout=CHILD_TIMEOUT_S
+    )
 
 
 def test_env_json_stdout_is_one_document_and_stderr_is_log_records():
