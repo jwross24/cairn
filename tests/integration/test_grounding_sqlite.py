@@ -10,6 +10,7 @@ from cairn import log
 
 BEGIN_KINDS = ("DEFERRED", "IMMEDIATE", "EXCLUSIVE")
 READER_TIMEOUT_S = 0.5
+JOIN_SLACK_S = 25.0
 
 READER_ROWS = [
     ("WAL", "DEFERRED", "reads"),
@@ -105,12 +106,16 @@ def test_second_writer_busy_timeout_under_wal(
     with closing(a):
         a.execute("BEGIN IMMEDIATE")
         a.execute("insert into t values (1)")
-        worker = threading.Thread(target=second_writer)
+        worker = threading.Thread(target=second_writer, daemon=True)
         worker.start()
         if commit_after_ms is not None:
             time.sleep(commit_after_ms / 1000)
             a.execute("COMMIT")
-        worker.join()
+        worker.join(timeout=max_wait_ms / 1000 + JOIN_SLACK_S)
+        assert not worker.is_alive(), (
+            f"the second writer with busy_timeout={busy_timeout_ms} ms never returned within "
+            f"{max_wait_ms / 1000 + JOIN_SLACK_S} s"
+        )
         if commit_after_ms is None:
             a.execute("ROLLBACK")
         count = a.execute("select count(*) from t").fetchone()[0]
