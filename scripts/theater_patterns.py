@@ -312,9 +312,19 @@ def evaluate(root: Path, document: object, *, bead_status=None) -> Outcome:
     return Outcome("PASS", patterns=len(patterns), scanned=sorted(scanned), warnings=warnings)
 
 
+BR_TIMEOUT_SECONDS = 60
+
+
 def bead_status_resolver():
     def resolve(bead_id: str) -> str:
-        proc = subprocess.run(["br", "show", bead_id, "--json"], capture_output=True, text=True)
+        try:
+            proc = subprocess.run(
+                ["br", "show", bead_id, "--json"], capture_output=True, text=True, timeout=BR_TIMEOUT_SECONDS
+            )
+        except subprocess.TimeoutExpired as expired:
+            raise LookupError(
+                f"br show {bead_id} did not answer within {BR_TIMEOUT_SECONDS}s; retry after: br sync --flush-only"
+            ) from expired
         if proc.returncode != 0:
             raise LookupError(f"br show exited {proc.returncode}: {proc.stderr.strip()}")
         try:

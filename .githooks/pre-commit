@@ -18,6 +18,24 @@ set -uo pipefail
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT" || exit 1
 
+# `git diff --cached` is blind to a close an amend already wrote into HEAD, so the gates
+# below sit out an amended close while post-commit still pushes it. Every successful
+# path through this hook records the ids it gated; post-commit refuses to push a closed
+# bead that record does not name.
+record_gate() {
+  # shellcheck disable=SC2086
+  if uv run python scripts/gate_marker.py record \
+      --git-dir "$(git rev-parse --git-dir)" \
+      --parent "$(git rev-parse --verify -q HEAD || true)" \
+      ${1:-} >/dev/null 2>&1; then
+    printf '%s GATE-RECORD %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${1:-none}" >> .beads_hook.log
+  else
+    printf '%s GATE-RECORD-FAILED %s; post-commit will refuse to push a close\n' \
+      "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${1:-none}" >> .beads_hook.log
+    echo "[pre-commit] the gate record could not be written; a close will not push." >&2
+  fi
+}
+
 if [ -x scripts/check.sh ]; then
   if ! scripts/check.sh --fast; then
     echo "[pre-commit] BLOCKED by scripts/check.sh; see the output above and .check.log" >&2
@@ -32,23 +50,19 @@ fi
 # Beads this commit closes. Their declared test plan is checked deterministically
 # before the scored audit runs: the audit judges whether the tests are good, this
 # only answers whether the files the bead named are there at all.
-NEWLY_CLOSED="$(git diff --cached --unified=0 -- '.beads/*.jsonl' 2>/dev/null \
-  | uv run python -c '
-import re, sys
-ID_RE = re.compile(r"\"id\"\s*:\s*\"([a-z][a-z0-9_.-]*)\"")
-ST_RE = re.compile(r"\"status\"\s*:\s*\"([a-z_]+)\"")
-old, new = {}, {}
-for line in sys.stdin:
-    if line.startswith(("+++", "---")) or not line.startswith(("+", "-")):
-        continue
-    m_id, m_st = ID_RE.search(line), ST_RE.search(line)
-    if not (m_id and m_st):
-        continue
-    (new if line.startswith("+") else old)[m_id.group(1)] = m_st.group(1)
-for bid, st in new.items():
-    if st == "closed" and old.get(bid) != "closed":
-        print(bid)
-' | sort -u || true)"
+#
+# An empty list here is indistinguishable from a git that could not answer, and it
+# switches off the test-plan gate, the artifact-block gate and the corrector at once,
+# so the resolver's own git-failure code denies instead.
+NEWLY_CLOSED="$(uv run python scripts/closing_commit.py --staged 2>/tmp/cairn-closing-commit.err)"
+CLOSING_RC=$?
+if [ "$CLOSING_RC" -ne 0 ]; then
+  printf '%s DENY closing-commit resolver rc=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$CLOSING_RC" >> .beads_hook.log
+  echo "[pre-commit] BLOCKED: scripts/closing_commit.py --staged exited $CLOSING_RC." >&2
+  cat /tmp/cairn-closing-commit.err >&2
+  echo "             Which beads this commit closes is unknown, so no gate keyed to a close ran." >&2
+  exit 1
+fi
 
 if [ -n "$NEWLY_CLOSED" ]; then
   # shellcheck disable=SC2086
@@ -79,6 +93,7 @@ done
 if [ -z "$SKILL" ]; then
   printf '%s NO-SKILL beads compliance gate did not run\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .beads_hook.log
   echo "[pre-commit] the beads compliance skill is not installed; its gate did not run (logged)." >&2
+  record_gate "$NEWLY_CLOSED"
   exit 0
 fi
 
@@ -130,8 +145,41 @@ fi
 
 # Invoked through bash: the skill ships this asset without the executable bit,
 # and a hook that dies on EACCES is a gate that silently stopped running.
+PASS_BEFORE="$(ls -1d beads_compliance_audit/passes/*/ 2>/dev/null | sed 's|.*/passes/||; s|/$||' | sort | tail -1)"
 bash "$SKILL/assets/pre-commit-hook.sh"
 AUDIT_RC=$?
+
+# The skill's anomaly scan picks a bead's "closing commit" by grepping commit
+# messages for the bead id, and this project asks every session to cite its beads
+# there, so the pick belongs to whichever bead committed last. A verdict that moves
+# with other beads' commit messages measures the message stream. The corrector
+# resolves each audited bead's closing commit from the bead store's own status flip
+# and re-scores, so the verdict this hook acts on is the corrected one.
+if [ -n "$NEWLY_CLOSED" ]; then
+  ATTR_ARGS=( --audit-dir beads_compliance_audit --skill "$SKILL" )
+  [ -n "$PASS_BEFORE" ] && ATTR_ARGS+=( --after "$PASS_BEFORE" )
+  [ -n "${POLICY_THRESHOLD:-}" ] && ATTR_ARGS+=( --threshold "$POLICY_THRESHOLD" )
+  uv run python scripts/audit_attribution.py "${ATTR_ARGS[@]}" > /tmp/cairn-audit-attribution.out 2>&1
+  ATTR_RC=$?
+  cat /tmp/cairn-audit-attribution.out >&2
+  case "$ATTR_RC" in
+    0|1)
+      printf '%s ATTRIBUTION rc=%s (skill audit rc=%s)\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ATTR_RC" "$AUDIT_RC" >> .beads_hook.log
+      AUDIT_RC=$ATTR_RC
+      ;;
+    3)
+      printf '%s ATTRIBUTION-DENY git could not answer; rc=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ATTR_RC" >> .beads_hook.log
+      echo "[pre-commit] BLOCKED: the attribution corrector could not read git, so every" >&2
+      echo "             bead's closing commit is unknown and no score here is evidence." >&2
+      AUDIT_RC=1
+      ;;
+    *)
+      printf '%s ATTRIBUTION-NOTHING rc=%s; the skill audit verdict stands uncorrected\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ATTR_RC" >> .beads_hook.log
+      echo "[pre-commit] the attribution corrector found no scored bead; the closing-commit" >&2
+      echo "             anomalies keep the skill's own attribution for this commit." >&2
+      ;;
+  esac
+fi
 
 # A scorecard whose dimension table, banner and denominator disagree misreports
 # the arithmetic behind the verdict: under unmeasured_dimensions=excluded a
@@ -154,6 +202,10 @@ if [ -n "$NEWEST_PASS" ] && [ -d "${NEWEST_PASS}beads" ]; then
   fi
 else
   printf '%s SCORECARD-NO-PASS no audit pass directory to check\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .beads_hook.log
+fi
+
+if [ "$AUDIT_RC" -eq 0 ]; then
+  record_gate "$NEWLY_CLOSED"
 fi
 
 exit "$AUDIT_RC"

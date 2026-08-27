@@ -217,3 +217,50 @@ def test_the_pre_commit_hook_runs_the_gate_for_every_closing_bead():
 
 def test_the_shell_entry_point_delegates_to_the_validator():
     assert f'exec uv run python "$(dirname "$0")/{VALIDATOR.name}" "$@"' in SHIM.read_text()
+
+
+sys.path.insert(0, str(ROOT / "scripts"))
+
+import bead_artifact_block  # noqa: E402
+
+
+def _expire(command, seconds):
+    def run(argv, **kwargs):
+        assert kwargs.get("timeout") == seconds, argv
+        raise subprocess.TimeoutExpired(argv, seconds)
+
+    return run
+
+
+def test_a_git_that_never_answers_denies_rather_than_calling_the_commit_absent(monkeypatch):
+    monkeypatch.setattr(bead_artifact_block.subprocess, "run", _expire("git", bead_artifact_block.GIT_TIMEOUT_SECONDS))
+    resolve = bead_artifact_block.git_commit_resolver(ROOT)
+    with pytest.raises(LookupError) as raised:
+        resolve("879f4f6")
+    assert "did not answer within" in str(raised.value)
+    assert "index.lock" in str(raised.value)
+
+
+def test_a_br_that_never_answers_denies_rather_than_reading_an_empty_body(monkeypatch):
+    monkeypatch.setattr(bead_artifact_block.subprocess, "run", _expire("br", bead_artifact_block.BR_TIMEOUT_SECONDS))
+    with pytest.raises(LookupError) as raised:
+        bead_artifact_block.bead_body("cairn-fi7")
+    assert "did not answer within" in str(raised.value)
+    assert "cairn-fi7" in str(raised.value)
+
+
+def test_a_commit_resolver_that_times_out_reaches_the_environment_exit(tmp_path, monkeypatch, capsys):
+    body = tmp_path / "body.md"
+    body.write_text(
+        "ARTIFACTS-BEGIN\n"
+        "source: `scripts/bead_artifact_block.py` lines 1-10\n"
+        "test: `tests/unit/test_bead_artifact_block.py` lines 1-10\n"
+        "commit: 879f4f6\n"
+        "command: uv run pytest -q tests/unit/test_bead_artifact_block.py\n"
+        "ARTIFACTS-END\n"
+    )
+    monkeypatch.setattr(bead_artifact_block.subprocess, "run", _expire("git", bead_artifact_block.GIT_TIMEOUT_SECONDS))
+    rc = bead_artifact_block.main(["--body-file", str(body), "--root", str(ROOT), "--log", str(tmp_path / "check.log")])
+    assert rc == bead_artifact_block.EXIT_ENVIRONMENT
+    assert "cannot verify" in capsys.readouterr().err
+    assert "DENY artifact-block infra" in (tmp_path / "check.log").read_text()

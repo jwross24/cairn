@@ -6,7 +6,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 
-from mutation_verdict import main, red_count, summary_line, verdict
+from mutation_verdict import INCONCLUSIVE, KILLED, SURVIVED, main, red_count, summary_line, verdict
 
 COLLECTION_ERROR = """ERROR tests/unit/test_thing.py - StopIteration
 !!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!
@@ -21,36 +21,61 @@ FAILING = """F............
 1 failed, 12 passed in 4.44s
 """
 
+NO_TESTS_COLLECTED = """no tests ran in 0.01s
+"""
+
+USAGE_ERROR = """ERROR: file or directory not found: tests/unit/test_a.py tests/unit/test_b.py
+"""
+
 
 @pytest.mark.parametrize(
-    ("output", "returncode", "killed"),
+    ("output", "returncode", "expected"),
     [
-        (FAILING, 1, True),
-        (COLLECTION_ERROR, 2, True),
-        ("2 errors in 0.10s\n", 2, True),
-        ("INTERNALERROR> RuntimeError\n", 3, True),
-        ("", 4, True),
-        (PASSING, 0, False),
-        ("", 0, False),
+        (FAILING, 1, KILLED),
+        ("", 1, KILLED),
+        (COLLECTION_ERROR, 2, KILLED),
+        ("2 errors in 0.10s\n", 2, KILLED),
+        ("INTERNALERROR> RuntimeError\n", 3, INCONCLUSIVE),
+        (USAGE_ERROR, 4, INCONCLUSIVE),
+        ("", 4, INCONCLUSIVE),
+        (NO_TESTS_COLLECTED, 5, INCONCLUSIVE),
+        (PASSING, 0, SURVIVED),
+        ("", 0, SURVIVED),
     ],
 )
-def test_a_red_run_is_killed_and_only_an_all_green_one_survives(output, returncode, killed):
+def test_a_red_count_kills_a_run_that_never_happened_is_inconclusive_and_green_survives(output, returncode, expected):
     got, message = verdict(output, returncode)
-    assert got is killed, message
-    assert message.startswith("KILLED" if killed else "SURVIVED"), message
+    assert got == expected, message
+    assert message.startswith(expected), message
+
+
+def test_the_three_verdicts_are_three_different_process_exit_codes(monkeypatch):
+    codes = {}
+    for output, returncode in ((FAILING, 1), (USAGE_ERROR, 4), (PASSING, 0)):
+        monkeypatch.setattr(sys, "stdin", io.StringIO(output))
+        codes[verdict(output, returncode)[0]] = main([str(returncode)])
+    assert len(set(codes.values())) == 3
+    assert codes[KILLED] == 0
+
+
+def test_a_run_that_collected_no_tests_is_never_reported_as_a_detection():
+    outcome, message = verdict(NO_TESTS_COLLECTED, 5)
+    assert outcome == INCONCLUSIVE
+    assert "KILLED" not in message
+    assert "without testing the mutation" in message
 
 
 def test_a_collection_error_names_its_count_rather_than_reading_as_undetected():
-    killed, message = verdict(COLLECTION_ERROR, 2)
-    assert killed
+    outcome, message = verdict(COLLECTION_ERROR, 2)
+    assert outcome == KILLED
     assert "by 1 test(s)" in message
     assert "1 error in 0.04s" in message
 
 
 def test_a_nonzero_exit_with_no_summary_says_which_code_it_saw():
-    killed, message = verdict("", 3)
-    assert killed
-    assert "pytest exited 3" in message
+    outcome, message = verdict("", 1)
+    assert outcome == KILLED
+    assert "pytest exited 1" in message
     assert "no recognized pytest summary line" in message
 
 

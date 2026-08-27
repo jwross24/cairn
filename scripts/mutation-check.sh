@@ -11,10 +11,12 @@ Replaces one exact occurrence of <old-text> with <new-text> in <source-file>,
 runs the pytest target(s), then restores the file and verifies the restore by
 SHA-256. Reports how many tests the mutation killed.
 
-exit 0  the mutation was killed (the run went red: a failure, a collection error, or a
-        nonzero pytest exit with no recognized summary) and the restore is byte-identical
+exit 0  the mutation was killed (the run went red: a failure, a collection error, or
+        pytest exit 1) and the restore is byte-identical
 exit 1  the mutation SURVIVED - the target does not detect this defect
 exit 2  usage error, anchor not unique, or restore mismatch
+exit 3  INCONCLUSIVE - pytest exited 2, 3, 4 or 5, so the target never ran and the
+        mutation was never tested. Name each pytest target as its own argument.
 
 The verdict itself lives in scripts/mutation_verdict.py, which the suite exercises
 directly: tests/conftest.py refuses a bash subprocess, so logic placed in this file
@@ -59,4 +61,7 @@ set +e
 printf '%s\n' "$OUT" | uv run python "$(dirname "$0")/mutation_verdict.py" "$RC"
 VERDICT=$?
 set -e
+if [ "$VERDICT" = "3" ]; then
+  echo "mutation-check: the mutation was NOT tested; this is not a kill." >&2
+fi
 exit "$VERDICT"

@@ -62,6 +62,11 @@ Each line below was established by hitting it. Verify rather than trust if a too
 - **A pipeline hides the exit code and the command proxy eats the output.** `scripts/mutation-check.sh ... | tail -1`
   prints nothing at all, so a verdict that must be read goes to a file and the file is read back:
   `cmd > /tmp/out 2>&1; tail -1 /tmp/out`.
+- **The same proxy makes `diff` report a false verdict.** `diff a b` on two files of 151 and 82
+  bytes with different content printed `Files are identical` and exited 0. Any claim that two
+  artifacts are or are not byte-equal has to be settled in Python, printing the lengths and a
+  digest: `hashlib.sha256(path.read_bytes()).hexdigest()`. A subagent citing a shell `diff` has
+  cited nothing, and the reading it gives is the one that hides a real difference.
 - **The destructive-command guard refuses the `git checkout` forms that discard a path.** Both the
   bare-path and the `<ref> -- <path>` form are denied, and they are the usual way to drop a scratch
   edit. Copy the file aside with `cp` before the edit and copy it back, or use `git reset --hard`
@@ -95,6 +100,19 @@ Each line below was established by hitting it. Verify rather than trust if a too
   bead holds its `spec.json` — the other passes leave `show.json` and `git_xref.txt` alone. An
   unforked `score-bead.py` handed a path with no `spec.json` reports `1000/1000 Verified` and
   creates the directory to hold the scorecard it wrote.
+- **Which commit closed a bead is cairn's answer, not the skill's.** The vendored
+  `anomaly-scan.sh` picks a "closing commit" with `git log --all -F --grep="$ID" | head -1`,
+  the newest commit whose *message* names the id, and `research/SESSION-PROMPTS.md` asks every
+  session to name its beads there — so that pick usually belongs to another bead and it moves
+  whenever an unrelated session commits. `scripts/closing_commit.py` holds the rule that cannot
+  do that: the status flip to `closed` in `.beads/*.jsonl`, which only the closing commit
+  carries. Both git hooks read their newly-closed list through it, and
+  `scripts/audit_attribution.py` runs after the vendored audit in `.githooks/pre-commit`,
+  re-derives `anomaly_empty_diff` and `anomaly_ignore_list_growth` against the resolved commit,
+  re-scores, and supplies the exit code the hook gates on. A bead the pending commit closes
+  resolves to `STAGED` and is judged against the staged diff. `gather-evidence.sh`'s
+  `TOUCHED_FILES` keeps the message grep; it is a path-hint resolver with a project-wide
+  `rg` fallback behind it, and reaching it means a sixth fork.
 - **A closing bead's body carries an ARTIFACTS block**, and `.githooks/pre-commit` refuses the
   close without one. `scripts/bead-artifact-block.sh <bead-id>` is the gate; every decision it
   makes lives in `scripts/bead_artifact_block.py`, because `tests/conftest.py` refuses a `bash`

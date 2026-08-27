@@ -34,6 +34,8 @@ from pathlib import Path
 
 BEGIN = "ARTIFACTS-BEGIN"
 END = "ARTIFACTS-END"
+GIT_TIMEOUT_SECONDS = 30
+BR_TIMEOUT_SECONDS = 60
 
 # Mirrors PATH_HINT_RE in the compliance skill's scripts/extract-spec.py. A path
 # the extractor cannot see contributes nothing to the implementation dimension,
@@ -162,20 +164,32 @@ def invisible_paths(block: Block) -> list[str]:
 
 def git_commit_resolver(root: Path):
     def resolve(sha: str) -> bool:
-        return (
-            subprocess.run(
+        try:
+            proc = subprocess.run(
                 ["git", "-C", str(root), "cat-file", "-e", f"{sha}^{{commit}}"],
                 capture_output=True,
-            ).returncode
-            == 0
-        )
+                timeout=GIT_TIMEOUT_SECONDS,
+            )
+        except subprocess.TimeoutExpired as expired:
+            raise LookupError(
+                f"git cat-file did not answer within {GIT_TIMEOUT_SECONDS}s for {sha}; "
+                f"clear any stale index.lock and retry: git -C {root} status"
+            ) from expired
+        return proc.returncode == 0
 
     return resolve
 
 
 def bead_body(bead_id: str) -> tuple[str, str]:
     """The concatenated fields the compliance extractor reads, plus the status."""
-    proc = subprocess.run(["br", "show", bead_id, "--json"], capture_output=True, text=True)
+    try:
+        proc = subprocess.run(
+            ["br", "show", bead_id, "--json"], capture_output=True, text=True, timeout=BR_TIMEOUT_SECONDS
+        )
+    except subprocess.TimeoutExpired as expired:
+        raise LookupError(
+            f"br show {bead_id} did not answer within {BR_TIMEOUT_SECONDS}s; retry after: br sync --flush-only"
+        ) from expired
     if proc.returncode != 0:
         raise LookupError(f"br show {bead_id} exited {proc.returncode}: {proc.stderr.strip()}")
     rows = json.loads(proc.stdout)
@@ -302,7 +316,12 @@ def main(argv: list[str] | None = None) -> int:
     resolve_commit = git_commit_resolver(root) if (root / ".git").exists() else None
 
     if ns.body_file:
-        ok, errors = report(ns.body_file, Path(ns.body_file).read_text(), root, resolve_commit=resolve_commit)
+        try:
+            ok, errors = report(ns.body_file, Path(ns.body_file).read_text(), root, resolve_commit=resolve_commit)
+        except LookupError as exc:
+            gate.say(f"DENY artifact-block infra: {ns.body_file} unverifiable: {exc}")
+            print(f"[artifact-block] cannot verify {ns.body_file}: {exc}", file=sys.stderr)
+            return EXIT_ENVIRONMENT
         if ok:
             gate.say(f"PASS artifact-block {ns.body_file}")
             return EXIT_OK
@@ -329,7 +348,12 @@ def main(argv: list[str] | None = None) -> int:
             print(f"[artifact-block] cannot read {bead_id}: {exc}", file=sys.stderr)
             print("                 check the id: br list --all", file=sys.stderr)
             return EXIT_ENVIRONMENT
-        ok, errors = report(f"{bead_id} ({bead_status})", body, root, resolve_commit=resolve_commit)
+        try:
+            ok, errors = report(f"{bead_id} ({bead_status})", body, root, resolve_commit=resolve_commit)
+        except LookupError as exc:
+            gate.say(f"DENY artifact-block infra: {bead_id} unverifiable: {exc}")
+            print(f"[artifact-block] cannot verify {bead_id}: {exc}", file=sys.stderr)
+            return EXIT_ENVIRONMENT
         if not ok:
             emit(bead_id, errors)
             findings += len(errors)

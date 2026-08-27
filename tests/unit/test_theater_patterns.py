@@ -499,3 +499,17 @@ def test_cli_bypass_is_named_and_logged(tmp_path, monkeypatch):
 
 def test_check_sh_runs_the_gate():
     assert "theater-patterns.sh" in (ROOT / "scripts" / "check.sh").read_text()
+
+
+def test_a_br_that_never_answers_denies_the_scan_rather_than_skipping_the_expiry(monkeypatch):
+    import theater_patterns
+
+    def expire(argv, **kwargs):
+        assert kwargs.get("timeout") == theater_patterns.BR_TIMEOUT_SECONDS, argv
+        raise subprocess.TimeoutExpired(argv, theater_patterns.BR_TIMEOUT_SECONDS)
+
+    monkeypatch.setattr(theater_patterns.subprocess, "run", expire)
+    with pytest.raises(LookupError) as raised:
+        theater_patterns.bead_status_resolver()("cairn-fur")
+    assert "did not answer within" in str(raised.value)
+    assert "cairn-fur" in str(raised.value)
