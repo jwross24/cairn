@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -245,13 +246,28 @@ def test_f_the_running_session_is_armed_through_the_repository_conftest():
         assert deadline.seconds > 0
 
 
-def test_the_default_deadline_sits_between_the_local_suite_and_the_job_ceiling():
+def _ci_deadlines():
     ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text()
-    assert "timeout-minutes: 30" in ci, ci
-    assert DEFAULT_SECONDS < 30 * 60
+    ceiling = re.search(r"^\s*timeout-minutes:\s*(\d+)\s*$", ci, re.MULTILINE)
+    session = re.search(r'^\s*CAIRN_SESSION_DEADLINE:\s*"(\d+)"\s*$', ci, re.MULTILINE)
+    assert ceiling is not None, ci
+    assert session is not None, ci
+    return int(session.group(1)), int(ceiling.group(1)) * 60
+
+
+def test_the_ci_session_deadline_fires_before_the_job_ceiling_cancels_the_run():
+    session_s, ceiling_s = _ci_deadlines()
+    # A job canceled by the ceiling uploads no transcript, so both watchdogs have to
+    # land inside it for a wedge to leave a profile at all.
+    assert session_s + BACKSTOP_GRACE < ceiling_s, (session_s, BACKSTOP_GRACE, ceiling_s)
+
+
+def test_the_ci_session_deadline_clears_the_slowest_run_the_suite_has_taken():
+    session_s, _ = _ci_deadlines()
+    slowest_observed_s = 8.7 * 60
+    assert session_s > slowest_observed_s, session_s
+
+
+def test_the_local_default_clears_the_local_suite_and_needs_no_job_ceiling():
     assert DEFAULT_SECONDS > 4 * 230
-
-
-def test_the_backstop_grace_sits_between_the_watchdogs_own_latency_and_the_job_ceiling():
     assert BACKSTOP_GRACE > JOIN_TIMEOUT_S
-    assert DEFAULT_SECONDS + BACKSTOP_GRACE < 30 * 60

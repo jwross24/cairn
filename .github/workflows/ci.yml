@@ -8,9 +8,10 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  # Every commit that lands on main is verified. A superseded run on a branch is
-  # not worth a runner.
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  # A macOS runner bills at ten times wall clock against a 2000-minute monthly
+  # tier, so a run is a rationed resource. Superseding collapses a burst of
+  # bead-closing pushes onto the tip, which contains every commit under it.
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -21,12 +22,17 @@ jobs:
     # with os.chflags and stat.UF_APPEND, which exist on macOS and BSD and not on
     # Linux; cairn-hcl owns the Linux arm. An ubuntu run fails before it starts.
     runs-on: macos-latest
-    # The suite carries a 180 s per-test deadline (pyproject.toml), so a wedged
-    # test dies naming itself. This ceiling catches a wedge outside pytest. A green
-    # run takes about five minutes and a slow runner has been measured at fifteen,
-    # so the ceiling sits far enough above that to distinguish slow from stuck.
-    timeout-minutes: 30
+    # Three deadlines, innermost first: 180 s per test (pyproject.toml), then
+    # CAIRN_SESSION_DEADLINE for the whole pytest session, then this ceiling for a
+    # wedge outside pytest. Every successful run measured 4.4 to 8.7 minutes, and
+    # two wedges that ran to 33 and 45 cost 577 billable minutes between them, so
+    # the ceiling sits above the slowest success and far below a wedge.
+    timeout-minutes: 12
     env:
+      # Under the job ceiling by enough that pytest dies first and leaves a thread
+      # profile, rather than the job being canceled with a blank transcript. The
+      # local default is higher; nothing meters a local run.
+      CAIRN_SESSION_DEADLINE: "600"
       # The artifact-block gate parses `br show <id> --json`, so the runner and the
       # machines that write the beads have to agree on that shape. A bump here misses
       # the cache key below, which is what fetches the binary again.
