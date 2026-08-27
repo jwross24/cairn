@@ -26,8 +26,17 @@ jobs:
     # run takes about five minutes and a slow runner has been measured at fifteen,
     # so the ceiling sits far enough above that to distinguish slow from stuck.
     timeout-minutes: 30
+    env:
+      # The artifact-block gate parses `br show <id> --json`, so the runner and the
+      # machines that write the beads have to agree on that shape. A bump here misses
+      # the cache key below, which is what fetches the binary again.
+      BR_VERSION: "0.5.3"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          # The artifact-block gate resolves every commit an ARTIFACTS block names.
+          # A depth-1 clone holds one commit, so every one of them reads as absent.
+          fetch-depth: 0
 
       - name: Install PARI/GP
         run: |
@@ -35,6 +44,37 @@ jobs:
           # invocation. pari comes from homebrew/core; nothing here wants that tap.
           brew untap aws/tap || true
           brew install pari
+
+      - name: Restore br
+        id: br-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ~/.cargo/bin/br
+          key: br-${{ env.BR_VERSION }}-${{ runner.os }}-${{ runner.arch }}
+
+      - name: Install br
+        if: steps.br-cache.outputs.cache-hit != 'true'
+        # The published binary, checked against the sha256 published beside it.
+        # `cargo install beads_rust` is the other route and it does not hold: the 0.2
+        # line pulls a dependency gated behind a nightly-only feature, and the 0.5 line
+        # declares a rustc floor above what a toolchain in this image is guaranteed to
+        # carry. Either failure would be a red run about Rust, not about cairn.
+        run: |
+          set -euo pipefail
+          asset="br-$BR_VERSION-darwin_$(uname -m).tar.gz"
+          base="https://github.com/Dicklesworthstone/beads_rust/releases/download/v$BR_VERSION"
+          work="$(mktemp -d)"
+          curl -fsSL -o "$work/$asset" "$base/$asset"
+          curl -fsSL -o "$work/$asset.sha256" "$base/$asset.sha256"
+          (cd "$work" && shasum -a 256 -c "$asset.sha256")
+          tar xzf "$work/$asset" -C "$work"
+          mkdir -p "$HOME/.cargo/bin"
+          install -m 755 "$work/br" "$HOME/.cargo/bin/br"
+
+      - name: The br the gates read
+        run: |
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          "$HOME/.cargo/bin/br" --version
 
       - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d  # v10.0.1
         with:

@@ -134,8 +134,13 @@ def test_a_matching_extractor_regex_does_not_deny(tmp_path):
         cwd=ROOT,
         env={**_env(), "CAIRN_COMPLIANCE_SKILL": str(skill)},
     )
-    assert "no longer matches" not in proc.stderr, proc.stdout + proc.stderr
-    assert "DENY artifact-block parity" not in _appended(log, before)
+    # The gate is driven by bead id rather than a body file, so a green here needs a
+    # real `br show` and a real bead body: with br absent the run exits 3 instead.
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "pass cairn-exi (closed):" in proc.stdout
+    appended = _appended(log, before)
+    assert "DENY artifact-block parity" not in appended
+    assert "PASS artifact-block cairn-exi" in appended
 
 
 def _appended(log, offset):

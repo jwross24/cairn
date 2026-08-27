@@ -121,6 +121,13 @@ Each line below was established by hitting it. Verify rather than trust if a too
   (`.githooks/pre-commit`) is invisible to that regex, and the gate names it while accepting the
   block as long as one visible path is present. Bypass, logged to `.check.log`:
   `CAIRN_ARTIFACT_BLOCK_SKIP='<reason>'`.
+- **CI takes `br` from the project's GitHub release, not from crates.io.** `cargo install
+  beads_rust --version 0.2.10 --locked` fails on a stable toolchain, because `fsqlite-types
+  0.1.3` opens with `#![feature(portable_simd)]`; the 0.5 line declares a rustc floor of
+  1.96, above the 1.94 this machine carries. `.github/workflows/ci.yml` pins `BR_VERSION`
+  and fetches `br-$BR_VERSION-darwin_$(uname -m).tar.gz`, checked against the sha256
+  published beside it. `br show <id> --json` is byte-identical between 0.2.10 and 0.5.3
+  against this repo's beads.
 - **`br list --json` omits closed beads** (23 of 31 here). Pass `--all` or `--status closed`.
 - **`.beads/` is excluded by `~/.gitignore_global`.** This repo's `.gitignore` carries
   `!.beads/` to re-include it. `br sync --flush-only` before every `git add .beads/`.
