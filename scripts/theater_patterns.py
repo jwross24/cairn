@@ -48,6 +48,12 @@ class PolicyError(Exception):
 
 
 @dataclass(frozen=True)
+class Exemption:
+    path: str
+    matches: int
+
+
+@dataclass(frozen=True)
 class Pattern:
     id: str
     signature: re.Pattern[str]
@@ -55,7 +61,7 @@ class Pattern:
     in_test_files: bool
     severity: str
     rationale: str
-    exempt_paths: tuple[str, ...]
+    exempt_paths: tuple[Exemption, ...]
     exempt_until_bead: str | None
 
 
@@ -67,6 +73,7 @@ class Finding:
     line: int
     snippet: str
     rationale: str
+    note: str = ""
 
 
 @dataclass
@@ -116,9 +123,7 @@ def _pattern(entry: object, index: int) -> Pattern:
 
     rationale = _text(entry, "rationale", where)
 
-    exempt = entry.get("exempt_paths", [])
-    if not isinstance(exempt, list) or not all(isinstance(p, str) and p.strip() for p in exempt):
-        raise PolicyError(f"{where}: exempt_paths must be a list of paths")
+    exempt = _exemptions(entry.get("exempt_paths", []), where)
 
     remover = entry.get("exempt_until_bead")
     if remover is not None and (not isinstance(remover, str) or not remover.strip()):
@@ -136,9 +141,41 @@ def _pattern(entry: object, index: int) -> Pattern:
         in_test_files=in_test_files,
         severity=severity,
         rationale=rationale,
-        exempt_paths=tuple(exempt),
+        exempt_paths=exempt,
         exempt_until_bead=remover,
     )
+
+
+def _exemptions(raw: object, where: str) -> tuple[Exemption, ...]:
+    """An exempt path carries the count it is exempt for, so growth is a finding."""
+    if not isinstance(raw, list):
+        raise PolicyError(f"{where}: exempt_paths must be a list")
+    out = []
+    for item in raw:
+        if isinstance(item, str):
+            raise PolicyError(
+                f"{where}: exempt_paths entry {item!r} is a bare path; "
+                "each entry needs the count it is exempt for: `- path: <file>` / `  matches: <n>`"
+            )
+        if not isinstance(item, dict):
+            raise PolicyError(f"{where}: exempt_paths entry is not a mapping: {item!r}")
+        path = item.get("path")
+        if not isinstance(path, str) or not path.strip():
+            raise PolicyError(f"{where}: an exempt_paths entry has no path")
+        count = item.get("matches")
+        if isinstance(count, bool) or not isinstance(count, int):
+            raise PolicyError(f"{where}: {path}: matches must be an integer")
+        if count < 1:
+            raise PolicyError(f"{where}: {path}: matches is {count}; drop the entry rather than exempting no match")
+        unknown = set(item) - {"path", "matches"}
+        if unknown:
+            raise PolicyError(f"{where}: {path}: unknown exempt_paths key(s): {', '.join(sorted(unknown))}")
+        out.append(Exemption(path=path, matches=count))
+    seen = [e.path for e in out]
+    duplicated = sorted({q for q in seen if seen.count(q) > 1})
+    if duplicated:
+        raise PolicyError(f"{where}: exempt_paths names {', '.join(duplicated)} more than once")
+    return tuple(out)
 
 
 def load_patterns(document: object) -> list[Pattern]:
@@ -178,15 +215,28 @@ def matches(text: str, pattern: Pattern) -> list[tuple[int, str]]:
 
 
 def exemption_problems(root: Path, pattern: Pattern, reachable: list[str]) -> list[str]:
+    """Every reason an exemption no longer describes the tree it was written against.
+
+    A count that has dropped is the stale half: the policy claims cover for matches
+    that are not there, so the allowance would silently absorb a future one.
+    """
     problems = []
-    for rel in pattern.exempt_paths:
+    for exemption in pattern.exempt_paths:
+        rel = exemption.path
         path = root / rel
         if not path.is_file():
             problems.append(f"{pattern.id}: exempt path is absent from the tree: {rel}")
-        elif rel not in reachable:
+            continue
+        if rel not in reachable:
             problems.append(f"{pattern.id}: {rel} is exempt but no file_glob of this pattern reaches it")
-        elif not pattern.signature.search(path.read_text(errors="replace")):
-            problems.append(f"{pattern.id}: {rel} is exempt but no longer matches the signature")
+            continue
+        found = len(matches(path.read_text(errors="replace"), pattern))
+        if found < exemption.matches:
+            carries = f"carries {found}" if found else "no longer matches the signature and carries 0"
+            problems.append(
+                f"{pattern.id}: {rel} is exempt for {exemption.matches} match(es) but {carries}; "
+                "lower matches to the real count so the allowance cannot absorb a new skip"
+            )
     return problems
 
 
@@ -225,12 +275,29 @@ def evaluate(root: Path, document: object, *, bead_status=None) -> Outcome:
                         f"drop the {len(pattern.exempt_paths)} exempt_paths entries, or name the bead that owns the gap now"
                     )
 
-        exempt = set(pattern.exempt_paths)
+        allowance = {e.path: e.matches for e in pattern.exempt_paths}
         for rel in reachable:
-            if rel in exempt:
-                continue
-            for line, snippet in matches((root / rel).read_text(errors="replace"), pattern):
-                findings.append(Finding(pattern.id, pattern.severity, rel, line, snippet, pattern.rationale))
+            found = matches((root / rel).read_text(errors="replace"), pattern)
+            covered = allowance.get(rel)
+            if covered is None:
+                for line, snippet in found:
+                    findings.append(Finding(pattern.id, pattern.severity, rel, line, snippet, pattern.rationale))
+            elif len(found) > covered:
+                line, snippet = found[covered]
+                findings.append(
+                    Finding(
+                        pattern.id,
+                        pattern.severity,
+                        rel,
+                        line,
+                        snippet,
+                        pattern.rationale,
+                        note=(
+                            f"the exemption covers {covered} match(es) in this file; it carries {len(found)}. "
+                            f"A skip added to an already-exempt file is invisible unless the count moves."
+                        ),
+                    )
+                )
 
     if problems:
         return Outcome("DENY", patterns=len(patterns), scanned=sorted(scanned), problems=problems)
@@ -280,10 +347,13 @@ def emit_findings(outcome: Outcome) -> None:
     for finding in outcome.findings:
         print(f"            {finding.severity} {finding.pattern_id}  {finding.path}:{finding.line}", file=sys.stderr)
         print(f"              {finding.snippet}", file=sys.stderr)
+        if finding.note:
+            print(f"              {finding.note}", file=sys.stderr)
         print(f"              {finding.rationale}", file=sys.stderr)
     print(
         "            pair the skip with an assertion naming the degraded behavior, or add the file to\n"
-        f"            {SECTION}[].exempt_paths in audit-policy.yaml beside the bead that removes it.",
+        f"            {SECTION}[].exempt_paths in audit-policy.yaml with the count it is exempt for,\n"
+        "            beside the bead that removes it.",
         file=sys.stderr,
     )
 

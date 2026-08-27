@@ -43,6 +43,16 @@ def test_x():
     assert True
 """
 
+SECOND_SKIP = """
+
+@pytest.mark.{mark}(
+    sys.platform != "linux",
+    reason="a second, different skip in the same file",
+)
+def test_y():
+    assert True
+"""
+
 ONE_LINE_SKIP = 'pytestmark = pytest.mark.{mark}(sys.platform != "darwin", reason="r")\n'
 
 
@@ -88,7 +98,15 @@ def real_pattern() -> dict:
 
 
 def exempt_paths() -> list[str]:
-    return [str(p) for p in real_pattern()["exempt_paths"]]
+    return [str(e["path"]) for e in real_pattern()["exempt_paths"]]
+
+
+def exempt_counts() -> dict[str, int]:
+    return {str(e["path"]): int(e["matches"]) for e in real_pattern()["exempt_paths"]}
+
+
+def exempt(*paths: str, matches: int = 1) -> list[dict]:
+    return [{"path": path, "matches": matches} for path in paths]
 
 
 # --- the section is the switch -------------------------------------------------
@@ -181,17 +199,88 @@ def test_the_exemption_is_by_name_not_by_directory(tmp_path):
     assert [f.path for f in outcome.findings] == ["tests/integration/test_sibling.py"]
 
 
+# --- an exemption covers a count, not a file -----------------------------------
+
+
+def test_the_real_policy_records_the_count_each_exempt_module_actually_carries():
+    pattern = load_patterns({SECTION: [real_pattern()]})[0]
+    measured = {e.path: len(matches((ROOT / e.path).read_text(), pattern)) for e in pattern.exempt_paths}
+    assert measured == exempt_counts()
+
+
+def test_a_second_skip_in_an_already_exempt_file_fires_major(tmp_path):
+    files = {rel: SKIP_BLOCK.format(mark=MARK, reason="known") for rel in exempt_paths()}
+    grown = "tests/integration/test_grounding_fs.py"
+    files[grown] += SECOND_SKIP.format(mark=MARK)
+    tree(tmp_path, files)
+    outcome = evaluate(tmp_path, {SECTION: [real_pattern()]}, bead_status=open_bead)
+    assert outcome.kind == "FAIL"
+    assert [(f.severity, f.path) for f in outcome.findings] == [("MAJOR", grown)]
+    assert "covers 1 match(es) in this file; it carries 2" in outcome.findings[0].note
+
+
+def test_the_finding_points_at_the_first_match_beyond_the_allowance(tmp_path):
+    body = SKIP_BLOCK.format(mark=MARK, reason="known") + SECOND_SKIP.format(mark=MARK)
+    tree(tmp_path, {"tests/unit/test_a.py": body})
+    doc = document(exempt_paths=exempt("tests/unit/test_a.py"), exempt_until_bead="cairn-hcl")
+    outcome = evaluate(tmp_path, doc, bead_status=open_bead)
+    pattern = load_patterns(doc)[0]
+    assert outcome.findings[0].line == matches(body, pattern)[1][0]
+
+
+def test_a_count_at_its_allowance_stays_silent(tmp_path):
+    body = SKIP_BLOCK.format(mark=MARK, reason="known") + SECOND_SKIP.format(mark=MARK)
+    tree(tmp_path, {"tests/unit/test_a.py": body})
+    doc = document(exempt_paths=exempt("tests/unit/test_a.py", matches=2), exempt_until_bead="cairn-hcl")
+    assert evaluate(tmp_path, doc, bead_status=open_bead).kind == "PASS"
+
+
+def test_a_count_that_drops_denies_rather_than_widening_the_allowance(tmp_path):
+    tree(tmp_path, {"tests/unit/test_a.py": SKIP_BLOCK.format(mark=MARK, reason="known")})
+    doc = document(exempt_paths=exempt("tests/unit/test_a.py", matches=2), exempt_until_bead="cairn-hcl")
+    outcome = evaluate(tmp_path, doc, bead_status=open_bead)
+    assert outcome.kind == "DENY"
+    assert "exempt for 2 match(es) but carries 1" in " ".join(outcome.problems)
+
+
+def test_a_bare_path_carrying_no_count_is_refused():
+    with pytest.raises(PolicyError, match="is a bare path"):
+        load_patterns(document(exempt_paths=["tests/unit/test_a.py"], exempt_until_bead="cairn-hcl"))
+
+
+def test_a_path_named_twice_is_refused():
+    entries = exempt("tests/unit/test_a.py") + exempt("tests/unit/test_a.py", matches=2)
+    with pytest.raises(PolicyError, match="more than once"):
+        load_patterns(document(exempt_paths=entries, exempt_until_bead="cairn-hcl"))
+
+
+@pytest.mark.parametrize(
+    ("entry", "message"),
+    [
+        ({"path": "tests/unit/test_a.py"}, "matches must be an integer"),
+        ({"path": "tests/unit/test_a.py", "matches": "1"}, "matches must be an integer"),
+        ({"path": "tests/unit/test_a.py", "matches": True}, "matches must be an integer"),
+        ({"path": "tests/unit/test_a.py", "matches": 0}, "drop the entry rather than exempting no match"),
+        ({"matches": 1}, "has no path"),
+        ({"path": "tests/unit/test_a.py", "matches": 1, "until": "x"}, "unknown exempt_paths key"),
+    ],
+)
+def test_a_malformed_exemption_entry_is_refused(entry, message):
+    with pytest.raises(PolicyError, match=message):
+        load_patterns(document(exempt_paths=[entry], exempt_until_bead="cairn-hcl"))
+
+
 # --- the exemption cannot widen or outlive its bead ----------------------------
 
 
 def test_an_exemption_naming_no_removing_bead_is_refused():
     with pytest.raises(PolicyError, match="never expires"):
-        load_patterns(document(exempt_paths=["tests/unit/test_a.py"]))
+        load_patterns(document(exempt_paths=exempt("tests/unit/test_a.py")))
 
 
 def test_a_closed_removing_bead_denies(tmp_path):
     tree(tmp_path, {"tests/unit/test_a.py": SKIP_BLOCK.format(mark=MARK, reason="r")})
-    doc = document(exempt_paths=["tests/unit/test_a.py"], exempt_until_bead="cairn-hcl")
+    doc = document(exempt_paths=exempt("tests/unit/test_a.py"), exempt_until_bead="cairn-hcl")
     outcome = evaluate(tmp_path, doc, bead_status=closed_bead)
     assert outcome.kind == "DENY"
     assert "is closed" in " ".join(outcome.problems)
@@ -199,13 +288,13 @@ def test_a_closed_removing_bead_denies(tmp_path):
 
 def test_an_open_removing_bead_passes(tmp_path):
     tree(tmp_path, {"tests/unit/test_a.py": SKIP_BLOCK.format(mark=MARK, reason="r")})
-    doc = document(exempt_paths=["tests/unit/test_a.py"], exempt_until_bead="cairn-hcl")
+    doc = document(exempt_paths=exempt("tests/unit/test_a.py"), exempt_until_bead="cairn-hcl")
     assert evaluate(tmp_path, doc, bead_status=open_bead).kind == "PASS"
 
 
 def test_an_unresolvable_removing_bead_denies(tmp_path):
     tree(tmp_path, {"tests/unit/test_a.py": SKIP_BLOCK.format(mark=MARK, reason="r")})
-    doc = document(exempt_paths=["tests/unit/test_a.py"], exempt_until_bead="cairn-hcl")
+    doc = document(exempt_paths=exempt("tests/unit/test_a.py"), exempt_until_bead="cairn-hcl")
     outcome = evaluate(tmp_path, doc, bead_status=None)
     assert outcome.kind == "DENY"
     assert "never expires" in " ".join(outcome.problems)
@@ -216,7 +305,7 @@ def test_a_removing_bead_the_resolver_cannot_find_denies(tmp_path):
         raise LookupError("br show exited 1")
 
     tree(tmp_path, {"tests/unit/test_a.py": SKIP_BLOCK.format(mark=MARK, reason="r")})
-    doc = document(exempt_paths=["tests/unit/test_a.py"], exempt_until_bead="cairn-nope")
+    doc = document(exempt_paths=exempt("tests/unit/test_a.py"), exempt_until_bead="cairn-nope")
     outcome = evaluate(tmp_path, doc, bead_status=missing)
     assert outcome.kind == "DENY"
     assert "br show exited 1" in " ".join(outcome.problems)
@@ -224,7 +313,7 @@ def test_a_removing_bead_the_resolver_cannot_find_denies(tmp_path):
 
 def test_an_exempt_path_absent_from_the_tree_denies(tmp_path):
     tree(tmp_path, {"tests/unit/test_a.py": SKIP_BLOCK.format(mark=MARK, reason="r")})
-    doc = document(exempt_paths=["tests/unit/test_gone.py"], exempt_until_bead="cairn-hcl")
+    doc = document(exempt_paths=exempt("tests/unit/test_gone.py"), exempt_until_bead="cairn-hcl")
     outcome = evaluate(tmp_path, doc, bead_status=open_bead)
     assert outcome.kind == "DENY"
     assert "absent from the tree" in " ".join(outcome.problems)
@@ -232,7 +321,7 @@ def test_an_exempt_path_absent_from_the_tree_denies(tmp_path):
 
 def test_an_exempt_path_that_no_longer_matches_denies(tmp_path):
     tree(tmp_path, {"tests/unit/test_a.py": "def test_x():\n    assert True\n"})
-    doc = document(exempt_paths=["tests/unit/test_a.py"], exempt_until_bead="cairn-hcl")
+    doc = document(exempt_paths=exempt("tests/unit/test_a.py"), exempt_until_bead="cairn-hcl")
     outcome = evaluate(tmp_path, doc, bead_status=open_bead)
     assert outcome.kind == "DENY"
     assert "no longer matches the signature" in " ".join(outcome.problems)
@@ -246,7 +335,7 @@ def test_an_exempt_path_no_glob_reaches_denies(tmp_path):
             "src/x.py": SKIP_BLOCK.format(mark=MARK, reason="r"),
         },
     )
-    doc = document(exempt_paths=["src/x.py"], exempt_until_bead="cairn-hcl")
+    doc = document(exempt_paths=exempt("src/x.py"), exempt_until_bead="cairn-hcl")
     outcome = evaluate(tmp_path, doc, bead_status=open_bead)
     assert outcome.kind == "DENY"
     assert "no file_glob of this pattern reaches it" in " ".join(outcome.problems)

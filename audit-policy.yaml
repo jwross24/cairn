@@ -181,10 +181,20 @@ weights_by_type:
 # cannot be verified on a macOS-only machine at all. Firing on them would reopen
 # settled work over a gap that already has an owner, so the pattern catches the
 # next unpaired skip instead: a platform skip in any other file, or a fifth module
-# added to these four, is a MAJOR finding. The scanner refuses an exemption that
-# names no removing bead, an exemption whose removing bead is closed, an exempt
-# path no file_glob reaches, and an exempt path that no longer carries the
-# signature, so the list cannot widen or outlive cairn-hcl in silence.
+# added to these four, is a MAJOR finding.
+#
+# AN EXEMPTION COVERS A COUNT, NOT A FILE. `matches` is the number of matches the
+# file carried when it was exempted, measured rather than assumed. A file whose
+# count EXCEEDS its allowance is a MAJOR finding naming both numbers, so these four
+# -- the likeliest place anyone would add a platform skip, being the platform-
+# specific modules -- are not a blind spot. A count that has DROPPED refuses the
+# run, because an allowance wider than the tree silently absorbs the next skip.
+# The two together pin the count from both sides.
+#
+# The scanner also refuses an exemption that names no removing bead, an exemption
+# whose removing bead is closed, an exempt path no file_glob reaches, a bare path
+# carrying no count, and a path named twice. The list cannot widen or outlive
+# cairn-hcl in silence.
 project_theater_patterns:
   - id: P-platform-skip-hides-a-gate
     signature: 'skipif\(\s*sys\.platform'
@@ -194,10 +204,14 @@ project_theater_patterns:
     rationale: 'cairn-hcl: the write boundary degrades silently off macOS and the suite says so nowhere; a platform skip must be paired with an assertion naming the degraded behavior'
     exempt_until_bead: cairn-hcl
     exempt_paths:
-      - tests/conformance/test_skill_contract.py
-      - tests/integration/test_gate_bundle.py
-      - tests/integration/test_grounding_fs.py
-      - tests/integration/test_toy_curve_selftest.py
+      - path: tests/conformance/test_skill_contract.py
+        matches: 1
+      - path: tests/integration/test_gate_bundle.py
+        matches: 1
+      - path: tests/integration/test_grounding_fs.py
+        matches: 1
+      - path: tests/integration/test_toy_curve_selftest.py
+        matches: 1
 
 # Only meaningful on the parallel path; the pre-commit hook runs no subagents.
 # spec-quality-reviewer is on because the measured failure is extraction, not
