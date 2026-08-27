@@ -339,18 +339,28 @@ def check_declared_cost_profile(subject, ctx):
     return Verdict("S2-09", MUST, FAIL, f"evaluate({undeclared}) did not raise ProfileUndeclared")
 
 
-def check_disagree_semantics(subject, ctx):
-    module = imported(subject)
+def _declared_seam(module):
     seam = getattr(module, "SEAM", None)
-    if not isinstance(seam, str) or "." not in seam:
-        return Verdict("S2-10", MUST, FAIL, f"the subject declares no seam for its cross-check: {seam!r}")
-    attempt = _launch(
+    return seam if isinstance(seam, str) and "." in seam else None
+
+
+def _launch_with_planted_seam(subject, ctx, salt):
+    return _launch(
         subject,
         ctx,
         module="skills.harness_child",
-        salt="s2-10",
+        salt=salt,
         env_extra={"CAIRN_HARNESS_SUBJECT": subject.module, "CAIRN_HARNESS_MODE": "seam"},
     )
+
+
+def check_disagree_semantics(subject, ctx):
+    module = imported(subject)
+    seam = _declared_seam(module)
+    if seam is None:
+        declared = getattr(module, "SEAM", None)
+        return Verdict("S2-10", MUST, FAIL, f"the subject declares no seam for its cross-check: {declared!r}")
+    attempt = _launch_with_planted_seam(subject, ctx, "s2-10")
     document = _document(ctx, attempt)
     if document.get("status") != runner.STATUS_DISAGREE:
         return Verdict("S2-10", MUST, FAIL, f"a planted disagreement at {seam} still returned {document.get('status')}")
@@ -414,7 +424,29 @@ def check_axis_declaration(subject, ctx):
     summary = certified(subject, ctx)["summary"]["cross_check"]
     if set(summary) != {"axis", "independent_range"}:
         return Verdict("S2-12", MUST, FAIL, f"the ledger's cross_check block claims more than an axis: {summary}")
-    return Verdict("S2-12", MUST, PASS, f"axis {axis}, range {dict(declared)}, untested outside it and in the ledger")
+    seam = _declared_seam(module)
+    if seam is None:
+        return Verdict(
+            "S2-12", MUST, FAIL, "the subject declares no seam, so its in-range result answers to no second opinion"
+        )
+    inside = _document(ctx, _launch(subject, ctx, salt="s2-12-inside"))["cross_check"]["result"]
+    planted = _document(ctx, _launch_with_planted_seam(subject, ctx, "s2-12-seam"))["cross_check"]["result"]
+    if planted == inside:
+        return Verdict(
+            "S2-12",
+            MUST,
+            FAIL,
+            f"in range the cross-check reports {inside!r} whether or not {seam} is planted, "
+            "so it compares nothing and S2-12 carries no evidence that a cross-check exists",
+        )
+    return Verdict(
+        "S2-12",
+        MUST,
+        PASS,
+        f"axis {axis}, range {dict(declared)}, untested outside it and in the ledger; "
+        f"in range {inside!r} moves to {planted!r} when {seam} is planted, so S2-12 itself "
+        "carries the evidence that a comparison runs",
+    )
 
 
 def check_numeric_profile(subject, ctx):
@@ -653,7 +685,7 @@ NONCONFORMING = SkillSubject(
     certify=module_certify,
     transcript=module_transcript,
     postcondition=None,
-    expected_must_failures=frozenset({"S2-01", "S2-04", "S2-10", "S2-11"}),
+    expected_must_failures=frozenset({"S2-01", "S2-04", "S2-10", "S2-11", "S2-12"}),
 )
 
 WITNESS = SkillSubject(

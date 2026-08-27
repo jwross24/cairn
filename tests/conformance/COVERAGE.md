@@ -14,7 +14,8 @@ returns PASS without looking.
 Two non-conforming subjects are registered, because one cannot witness every clause: a
 subject can only fail the clauses it violates, and a subject that violates all of them
 cannot be reached by the checks that need it to launch. `nonconforming` witnesses S2-01,
-S2-04, S2-10 and S2-11; `witness` witnesses S2-02, S2-03, S2-05 through S2-10 and S2-12.
+S2-04, S2-10, S2-11 and S2-12; `witness` witnesses S2-02, S2-03, S2-05 through S2-10 and
+S2-12.
 `test_every_must_clause_has_a_negative_witness` asserts the union is the whole MUST set, so
 stubbing any one MUST check to return PASS moves some registered subject's verdict set and
 fails the suite.
@@ -75,6 +76,14 @@ for the attempt.
 `selftest_summary.cross_check` block holds exactly `axis` and `independent_range`, so the
 ledger cannot record a cross-check as having passed.
 
+**S2-12's in-range arm.** A declared axis, a declared interval and `untested` outside it are
+satisfied by a subject that hardcodes its in-range answer, so the clause also requires that
+answer to be earned. The subject runs twice on in-range inputs — once as itself, once through
+`skills.harness_child` in `seam` mode, which is the same planting mechanism S2-10 uses — and
+`cross_check.result` must differ between the two. A constant fails. A subject declaring no
+`SEAM` fails here too, since nothing can be planted against its in-range result. The verdict
+reason names the observed pair, so the S2-12 column alone says whether a comparison runs.
+
 **Vocabulary width.** S2-04 accepts the four origins PLAN L62 names, and
 `cairn.selftest.ORIGINS` holds the same four, so a §2-legal corpus and a corpus
 `check_corpus` accepts are the same set. `justify` caps a revision at CONJECTURE only when
@@ -92,12 +101,6 @@ together are the whole of the clause's per-subject evidence.
 `serve()` cannot return a non-OK attempt for any subject, and the environment scrub is
 `runner.child_env`'s behavior rather than the subject's. They are kept as end-to-end
 confirmation and are not per-subject evidence.
-
-**S2-12 does not catch a hardcoded in-range result.** The clause as extracted checks the
-axis, the interval record, the out-of-range result and the ledger block. A subject that
-reports `agree` in range without performing any comparison satisfies all four; S2-10 is the
-clause that catches it, by planting a disagreement at the declared seam and requiring the
-status to move. The two clauses interlock and neither alone is sufficient.
 
 **S2-13 reads parsed JSON, so a stringified float is not a float.** `_emits_float` walks the
 subject's output document; a subject that renders `0.05` as `"0.05"` — as both fixture
