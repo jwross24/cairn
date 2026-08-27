@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 import pytest
+from _session_deadline import pytest_configure, pytest_unconfigure  # noqa: F401
 from hypothesis import settings
 
 pytest_plugins = ["pytester"]

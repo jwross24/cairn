@@ -11,9 +11,14 @@ Replaces one exact occurrence of <old-text> with <new-text> in <source-file>,
 runs the pytest target(s), then restores the file and verifies the restore by
 SHA-256. Reports how many tests the mutation killed.
 
-exit 0  the mutation was killed (>=1 test failed) and the restore is byte-identical
+exit 0  the mutation was killed (the run went red: a failure, a collection error, or a
+        nonzero pytest exit with no recognized summary) and the restore is byte-identical
 exit 1  the mutation SURVIVED - the target does not detect this defect
 exit 2  usage error, anchor not unique, or restore mismatch
+
+The verdict itself lives in scripts/mutation_verdict.py, which the suite exercises
+directly: tests/conftest.py refuses a bash subprocess, so logic placed in this file
+would be logic no test can reach.
 USAGE
 }
 
@@ -44,16 +49,14 @@ PY
 
 set +e
 OUT="$(uv run pytest "$@" -q --no-header 2>&1)"
+RC=$?
 set -e
-LINE="$(printf '%s\n' "$OUT" | grep -E '[0-9]+ (passed|failed)' | tail -1)"
-KILLED="$(printf '%s\n' "$LINE" | grep -oE '[0-9]+ failed' | grep -oE '[0-9]+' || true)"
 
 restore; trap - EXIT
 shasum -a 256 -c "$SHA" >/dev/null || { echo "mutation-check: RESTORE MISMATCH on $SRC" >&2; exit 2; }
 
-if [ -n "$KILLED" ] && [ "$KILLED" -gt 0 ]; then
-  echo "KILLED  by $KILLED test(s): $LINE"
-  exit 0
-fi
-echo "SURVIVED  the target does not detect this defect: $LINE"
-exit 1
+set +e
+printf '%s\n' "$OUT" | uv run python "$(dirname "$0")/mutation_verdict.py" "$RC"
+VERDICT=$?
+set -e
+exit "$VERDICT"
