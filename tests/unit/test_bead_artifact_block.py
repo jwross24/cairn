@@ -123,6 +123,8 @@ def test_a_drifted_extractor_regex_denies(tmp_path):
 
 
 def test_a_matching_extractor_regex_does_not_deny(tmp_path):
+    log = ROOT / ".check.log"
+    before = log.stat().st_size if log.exists() else 0
     skill = _stand_in_skill(tmp_path, _our_pattern())
     proc = subprocess.run(
         [sys.executable, str(VALIDATOR), "cairn-exi"],
@@ -132,8 +134,8 @@ def test_a_matching_extractor_regex_does_not_deny(tmp_path):
         cwd=ROOT,
         env={**_env(), "CAIRN_COMPLIANCE_SKILL": str(skill)},
     )
-    assert proc.returncode != 3, proc.stdout + proc.stderr
-    assert "no longer matches" not in proc.stderr
+    assert "no longer matches" not in proc.stderr, proc.stdout + proc.stderr
+    assert "DENY artifact-block parity" not in _appended(log, before)
 
 
 def _appended(log, offset):
