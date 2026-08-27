@@ -22,9 +22,10 @@ jobs:
     # Linux; cairn-hcl owns the Linux arm. An ubuntu run fails before it starts.
     runs-on: macos-latest
     # The suite carries a 180 s per-test deadline (pyproject.toml), so a wedged
-    # test dies naming itself. This ceiling catches a wedge outside pytest, and a
-    # green run takes about five minutes.
-    timeout-minutes: 15
+    # test dies naming itself. This ceiling catches a wedge outside pytest. A green
+    # run takes about five minutes and a slow runner has been measured at fifteen,
+    # so the ceiling sits far enough above that to distinguish slow from stuck.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
@@ -53,7 +54,9 @@ jobs:
         run: cat .check.log
 
       - name: The artifacts a red run leaves behind
-        if: failure()
+        # A run killed by the job ceiling is cancelled, not failed, and it is the
+        # run whose artifacts are hardest to get any other way.
+        if: failure() || cancelled()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: cairn-failure-diagnostics
