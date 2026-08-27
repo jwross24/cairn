@@ -107,6 +107,27 @@ remediation_policy: completion-debt
 unmeasured_dimensions: excluded
 minimum_measured_weight: 450
 
+# THE CROSS-BEAD DIMENSION, AND THE ONE FINDING SHAPE THIS PROJECT MANDATES.
+#
+# synthesize.py emits a "Bead-graph truthfulness flags" row for every reference
+# from one bead body to a bead that is not closed. Mode A requires the opposite:
+# research/SESSION-PROMPTS.md makes a close name an open downstream bead for every
+# declined finding and every No-Claim gap, so the flag fires on compliance with the
+# project's own discipline rather than on a defect.
+#
+# Measured 2026-08-27 on pass 2026-08-26T23-58-44Z: cairn-cue drew seven such rows
+# and scored 0/25, while the "Done." fixture cairn-6cp drew two and scored 15/25 --
+# an honest bead below a false close on the same dimension. Six of cairn-cue's seven
+# rows named it as the bead somebody *else* referenced, which is not its act at all;
+# score-bead.py now owns a row by its subject, the first id in the row. The seventh,
+# `cairn-cue` -> `cairn-m1-cqt`, is the mandated shape and is named below.
+#
+# A pattern here matches the finding's raw synthesis row. It suppresses the penalty
+# and nothing else: the row stays in synthesis.md, and the scorecard note says how
+# many rows the policy ignored.
+cross_bead_ignored_finding_patterns:
+  - 'references non-closed bead'
+
 # What a Cairn bead is: a harness slice whose product is code plus the tests that
 # prove it, closed with re-executed evidence. It ships no runbook, so the default
 # 100 for docs measures something this project does not produce; and Mode A

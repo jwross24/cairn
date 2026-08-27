@@ -79,7 +79,17 @@ Each line below was established by hitting it. Verify rather than trust if a too
   `python3` on PATH is Homebrew's and has none; `bootstrap-audit.sh` calls
   `sync-rubric-from-policy.py` before pinning `rubric_sha256`, because `score-bead.py` reads
   `weights_by_type` only from the rubric frontmatter and the hook path has no orchestrator to fold
-  it in; and `score-bead.py` refuses a bead directory that holds no `spec.json`. Re-apply after any
+  it in; and `score-bead.py` refuses a bead directory that holds no `spec.json`. Three further
+  changes live in files already on that list. `score-bead.py` renders a dimension the policy
+  excluded as `—` rather than at full weight, and states the exclusion in the stub-mode banner and
+  the TOTAL row, so the table, banner and denominator agree with the arithmetic; it owns a synthesis
+  finding by the row's subject bead rather than by every id the row names, because being cited by
+  somebody else's row is not a defect in this bead; and it reads
+  `cross_bead_ignored_finding_patterns` from the rubric frontmatter, which
+  `sync-rubric-from-policy.py` folds in from `audit-policy.yaml`. `scripts/scorecard_coherence.py`
+  is the cairn-owned half: `.githooks/pre-commit` reads the newest pass's scorecards back and
+  denies a table that disagrees with its own denominator, so a reverted presentation fork is
+  visible rather than silent. Re-apply after any
   skill update. See `cairn-cue`.
 - **`score-bead.py` takes a bead *directory*, never a bead id**, and only the pass that targeted a
   bead holds its `spec.json` — the other passes leave `show.json` and `git_xref.txt` alone. An
