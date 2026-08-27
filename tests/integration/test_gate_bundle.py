@@ -4,6 +4,7 @@ import shutil
 import sqlite3
 import stat
 import sys
+from pathlib import Path
 
 import blake3
 import pytest
@@ -31,7 +32,7 @@ def _paths(bundle_path, pin_path):
 
 def _writable_copy(bundle_path, destination):
     shutil.copy(bundle_path, destination)
-    os.chmod(destination, 0o644)
+    destination.chmod(0o644)
     return destination
 
 
@@ -49,9 +50,9 @@ def test_build_is_deterministic_and_pin_opens(pinned_bundle):
     assert first == second
     gate = bundle.GateBundle.open(bundle_path, pin_path)
     assert gate.hash == gate.pin_hash == first
-    assert stat.S_IMODE(os.stat(bundle_path).st_mode) == 0o444
-    assert stat.S_IMODE(os.stat(pin_path).st_mode) == 0o444
-    assert os.stat(pin_path).st_flags & stat.UF_APPEND
+    assert stat.S_IMODE(bundle_path.stat().st_mode) == 0o444
+    assert stat.S_IMODE(pin_path.stat().st_mode) == 0o444
+    assert pin_path.stat().st_flags & stat.UF_APPEND
 
 
 def test_bundle_hash_golden(tmp_path, assert_golden, clear_flags):
@@ -135,7 +136,7 @@ def test_pin_with_force_meets_the_os_refusal_and_names_the_repin_sequence(pinned
     assert code == exits.ENVIRONMENT
     assert f"chflags nouappnd {pin_path}" in err
     assert pin_path.read_bytes() == before
-    assert os.stat(pin_path).st_flags & stat.UF_APPEND
+    assert pin_path.stat().st_flags & stat.UF_APPEND
 
 
 def test_build_with_force_rewrites_the_read_only_bundle(pinned_bundle, capsys):
@@ -144,7 +145,7 @@ def test_build_with_force_rewrites_the_read_only_bundle(pinned_bundle, capsys):
     code, out, err = _run(["bundle", "build", "--src", str(SRC), *_paths(bundle_path, pin_path), "--force"], capsys)
     assert code == exits.OK
     assert out.strip() == before
-    assert stat.S_IMODE(os.stat(bundle_path).st_mode) == 0o444
+    assert stat.S_IMODE(bundle_path.stat().st_mode) == 0o444
 
 
 def test_attest_init_writes_the_fixture_waiver_at_record_zero(pinned_bundle, tmp_path, clear_flags, capsys):
@@ -160,8 +161,8 @@ def test_attest_init_writes_the_fixture_waiver_at_record_zero(pinned_bundle, tmp
     assert document["offset"] == 0
     assert document["target"] == gate.waiver_target()
     assert attest.attestation_record_matches(log_path, 0, document["record_digest"])
-    assert stat.S_IMODE(os.stat(log_path).st_mode) == 0o644
-    assert os.stat(log_path).st_flags & stat.UF_APPEND
+    assert stat.S_IMODE(log_path.stat().st_mode) == 0o644
+    assert log_path.stat().st_flags & stat.UF_APPEND
     offsets = [offset for offset, _ in attest.records(log_path)]
     assert offsets == [0]
 
@@ -197,18 +198,18 @@ ATTEST_OPS = ("open_w", "truncate", "unlink", "rename")
 
 def _apply(op, path):
     if op == "open_w":
-        open(path, "w").close()
+        Path(path).open("w").close()
     elif op == "open_a":
-        with open(path, "a") as fh:
+        with Path(path).open("a") as fh:
             fh.write("x")
     elif op == "truncate":
         os.truncate(path, 0)
     elif op == "chmod":
-        os.chmod(path, 0o644)
+        Path(path).chmod(0o644)
     elif op == "unlink":
-        os.unlink(path)
+        Path(path).unlink()
     elif op == "rename":
-        os.rename(path, str(path) + ".moved")
+        Path(path).rename(str(path) + ".moved")
     else:
         raise AssertionError(f"unknown op {op}")
 
@@ -356,9 +357,9 @@ def test_pin_through_the_cli_writes_the_hash_and_the_operator_owned_modes(tmp_pa
     assert code == exits.OK
     assert out.strip() == digest
     assert pin_path.read_text().strip() == digest
-    assert stat.S_IMODE(os.stat(pin_path).st_mode) == 0o444
-    assert stat.S_IMODE(os.stat(bundle_path).st_mode) == 0o444
-    assert os.stat(pin_path).st_flags & stat.UF_APPEND
+    assert stat.S_IMODE(pin_path.stat().st_mode) == 0o444
+    assert stat.S_IMODE(bundle_path.stat().st_mode) == 0o444
+    assert pin_path.stat().st_flags & stat.UF_APPEND
     assert bundle.GateBundle.open(bundle_path, pin_path).hash == digest
 
 

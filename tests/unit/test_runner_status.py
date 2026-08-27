@@ -198,7 +198,7 @@ def test_allocated_bytes_counts_blocks_not_apparent_size(tmp_path):
     assert dense >= 1024 * 1024
 
     sparse = root / "sparse.bin"
-    with open(sparse, "wb") as handle:
+    with sparse.open("wb") as handle:
         handle.seek(100 * 1024 * 1024)
         handle.write(b"x")
     assert sparse.stat().st_size > 100 * 1024 * 1024

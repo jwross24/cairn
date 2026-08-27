@@ -74,15 +74,15 @@ def repin_command(ctx):
 
 
 def _mode_of(path):
-    return stat.S_IMODE(os.stat(path).st_mode)
+    return stat.S_IMODE(Path(path).stat().st_mode)
 
 
 def _flags_of(path):
-    return os.stat(path).st_flags
+    return Path(path).stat().st_flags
 
 
 def d_gp_binary(ctx):
-    if not os.path.isfile(pari.GP_BIN):
+    if not Path(pari.GP_BIN).is_file():
         return [
             Finding(
                 "D-gp-binary/absent",
@@ -126,7 +126,7 @@ def d_gp_binary(ctx):
 
 
 def d_gp_facts(ctx):
-    if ctx.quick or not os.path.isfile(pari.GP_BIN):
+    if ctx.quick or not Path(pari.GP_BIN).is_file():
         return []
     rc, out, err = pari.run_gp([], 'print("OK")')
     if (rc, out.strip(), err) == (0, "OK", ""):
@@ -198,7 +198,7 @@ def d_pari_inprocess(ctx):
 
 def d_bundle(ctx):
     for path, what in ((ctx.bundle, "gate bundle"), (ctx.pin, "gate-bundle pin")):
-        if not os.path.isfile(path):
+        if not Path(path).is_file():
             return [
                 Finding(
                     "D-bundle/absent",
@@ -280,7 +280,7 @@ def _mode_findings(path, prefix, subsystem, want_mode, want_flags, recommended):
 
 
 def d_pin_mode(ctx):
-    if not os.path.isfile(ctx.pin):
+    if not Path(ctx.pin).is_file():
         return []
     return _mode_findings(ctx.pin, "D-pin-mode", "deploy", PIN_MODE, APPEND_FLAG, "cairn doctor --fix")
 
@@ -317,7 +317,7 @@ def _waiver_finding(ctx, body):
 
 
 def d_attest_mode(ctx):
-    if not os.path.isfile(ctx.attest):
+    if not Path(ctx.attest).is_file():
         return [
             Finding(
                 "D-attest-mode/absent",
@@ -330,7 +330,7 @@ def d_attest_mode(ctx):
             )
         ]
     findings = _mode_findings(ctx.attest, "D-attest-mode", "deploy", ATTEST_MODE, APPEND_FLAG, "cairn doctor --fix")
-    size = os.path.getsize(ctx.attest)
+    size = Path(ctx.attest).stat().st_size
     parsed = list(attest.records(ctx.attest))
     consumed = sum(attest.LENGTH_BYTES + len(body) for _, body in parsed)
     if consumed != size:
@@ -367,7 +367,7 @@ def _expected_triggers():
 
 
 def d_substrate(ctx):
-    if not os.path.exists(ctx.db):
+    if not Path(ctx.db).exists():
         return [
             Finding(
                 "D-substrate/absent",
@@ -386,7 +386,7 @@ def d_substrate(ctx):
                 "substrate",
                 ERROR,
                 "this process cannot open the substrate read-only",
-                f"{ctx.db}: mode={_mode_of(ctx.db):04o} uid={os.stat(ctx.db).st_uid}",
+                f"{ctx.db}: mode={_mode_of(ctx.db):04o} uid={Path(ctx.db).stat().st_uid}",
                 False,
                 f"chmod u+r {ctx.db}",
             )
@@ -491,7 +491,7 @@ def d_kat(_ctx):
 
 
 def d_certificate(ctx):
-    if not os.path.isfile(ctx.db) or not os.access(ctx.db, os.R_OK):
+    if not Path(ctx.db).is_file() or not os.access(ctx.db, os.R_OK):
         return []
     from cairn.skills import toy_curve
 

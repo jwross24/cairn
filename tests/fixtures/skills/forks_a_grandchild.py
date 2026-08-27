@@ -2,12 +2,13 @@ import os
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 
 def main():
     sys.stdin.read()
     scratch = sys.argv[1]
-    marker = os.path.join(scratch, "grandchild")
+    marker = str(Path(scratch) / "grandchild")
     child = subprocess.Popen(
         [
             sys.executable,
@@ -15,7 +16,7 @@ def main():
             f"import time; open({marker!r}, 'w').write('x'); time.sleep(30)",
         ]
     )
-    with open(os.path.join(scratch, "grandchild_pid"), "w") as handle:
+    with (Path(scratch) / "grandchild_pid").open("w") as handle:
         handle.write(str(child.pid))
     if os.environ.get("FIXTURE_REAP") == "1":
         child.wait()

@@ -84,7 +84,7 @@ class _JsonLineHandler(logging.Handler):
             "event": record.getMessage(),
         }
         data.update(getattr(record, "fields", {}) or {})
-        with open(self.path, "a") as fh:
+        with self.path.open("a") as fh:
             fh.write(json.dumps(data, sort_keys=True, default=str) + "\n")
 
 
@@ -237,7 +237,7 @@ def clear_flags():
     for path in flagged:
         if os.path.lexists(path):
             os.chflags(path, 0)
-            os.chmod(path, 0o644)
+            Path(path).chmod(0o644)
 
 
 @pytest.fixture

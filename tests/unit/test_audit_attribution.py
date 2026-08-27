@@ -186,7 +186,7 @@ def test_the_commit_being_made_is_read_from_the_staged_diff_and_not_from_history
         return "+one\n" if "--cached" in args and "--" in args else ".gitignore\nsrc/a.py\n"
 
     monkeypatch.setattr(audit_attribution, "_git", fake_git)
-    diff = audit_attribution.git_closing_diff_reader(Path("."))(STAGED)
+    diff = audit_attribution.git_closing_diff_reader(Path())(STAGED)
     assert seen == ["diff", "diff"]
     assert diff == ClosingDiff(label="(staged)", files_changed=2, ignore_adds=1)
 
@@ -201,7 +201,7 @@ def test_a_commit_already_in_history_is_read_with_show(monkeypatch):
         return "" if "--" in args else "src/a.py\n"
 
     monkeypatch.setattr(audit_attribution, "_git", fake_git)
-    diff = audit_attribution.git_closing_diff_reader(Path("."))(CLOSING_SHA)
+    diff = audit_attribution.git_closing_diff_reader(Path())(CLOSING_SHA)
     assert seen == ["show", "show"]
     assert diff == ClosingDiff(label=CLOSING_SHA, files_changed=1, ignore_adds=0)
 
@@ -210,7 +210,7 @@ def test_a_bead_no_commit_closed_asks_git_nothing(monkeypatch):
     import audit_attribution
 
     monkeypatch.setattr(audit_attribution, "_git", lambda *a: pytest.fail("git was consulted"))
-    assert audit_attribution.git_closing_diff_reader(Path("."))(UNKNOWN) is None
+    assert audit_attribution.git_closing_diff_reader(Path())(UNKNOWN) is None
 
 
 def write_pass(tmp_path, findings):

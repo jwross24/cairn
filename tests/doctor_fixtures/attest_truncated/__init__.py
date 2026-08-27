@@ -4,5 +4,5 @@ FINDINGS = ("D-attest-mode/framing",)
 
 
 def corrupt(shape):
-    with open(shape.attest, "ab") as fh:
+    with shape.attest.open("ab") as fh:
         fh.write(b"\x99\x99")

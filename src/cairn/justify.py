@@ -1,7 +1,7 @@
 import json
-import os
 import sqlite3
 from dataclasses import dataclass
+from pathlib import Path
 
 from cairn import claims, cli, exits, log, substrate
 from cairn.errors import CliError
@@ -449,7 +449,7 @@ def _payload(derivation):
 
 
 def _run(ns):
-    if not os.path.exists(ns.attest):
+    if not Path(ns.attest).exists():
         raise CliError(
             exits.ENVIRONMENT,
             f"the attestation file {ns.attest} does not exist; a review verdict is visible only through its record",

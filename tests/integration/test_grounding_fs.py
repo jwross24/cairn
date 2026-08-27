@@ -17,7 +17,7 @@ SEED = "seed\n"
 
 
 def _append(path):
-    with open(path, "a") as fh:
+    with path.open("a") as fh:
         fh.write("x\n")
 
 
@@ -30,12 +30,12 @@ def _os_open_append(path):
 
 
 def _open_w(path):
-    with open(path, "w") as fh:
+    with path.open("w") as fh:
         fh.write("z")
 
 
 def _open_rplus(path):
-    with open(path, "r+") as fh:
+    with path.open("r+") as fh:
         fh.write("z")
 
 
@@ -44,15 +44,15 @@ def _truncate(path):
 
 
 def _chmod(path):
-    os.chmod(path, 0o600)
+    path.chmod(0o600)
 
 
 def _unlink(path):
-    os.unlink(path)
+    path.unlink()
 
 
 def _rename(path):
-    os.rename(path, str(path) + ".moved")
+    path.rename(str(path) + ".moved")
 
 
 OPS = {
@@ -67,12 +67,12 @@ OPS = {
 }
 
 EFFECTS = {
-    "append": lambda p: open(p).read() == SEED + "x\n",
-    "os_open_append": lambda p: open(p).read() == SEED + "y\n",
-    "open_w": lambda p: open(p).read() == "z",
-    "open_rplus": lambda p: open(p).read() == "zeed\n",
-    "truncate": lambda p: os.path.getsize(p) == 0,
-    "chmod": lambda p: stat.S_IMODE(os.stat(p).st_mode) == 0o600,
+    "append": lambda p: p.read_text() == SEED + "x\n",
+    "os_open_append": lambda p: p.read_text() == SEED + "y\n",
+    "open_w": lambda p: p.read_text() == "z",
+    "open_rplus": lambda p: p.read_text() == "zeed\n",
+    "truncate": lambda p: p.stat().st_size == 0,
+    "chmod": lambda p: stat.S_IMODE(p.stat().st_mode) == 0o600,
     "unlink": lambda p: not os.path.lexists(p),
     "rename": lambda p: not os.path.lexists(p) and os.path.lexists(str(p) + ".moved"),
 }
@@ -132,7 +132,7 @@ def flagged_files(tmp_path):
     def make(name, mode, flagged):
         path = tmp_path / name
         path.write_text(SEED)
-        os.chmod(path, mode)
+        path.chmod(mode)
         if flagged:
             os.chflags(path, stat.UF_APPEND)
         created.append(path)
@@ -143,7 +143,7 @@ def flagged_files(tmp_path):
         for candidate in (path, path.with_name(path.name + ".moved")):
             if os.path.lexists(candidate):
                 os.chflags(candidate, 0)
-                os.chmod(candidate, 0o644)
+                candidate.chmod(0o644)
 
 
 def _env():
@@ -161,7 +161,7 @@ def _env():
 def test_mode_x_uappnd_x_op_by_owner(flagged_files, mode, flagged, op, expected_errno):
     lg = log.get("grounding.fs")
     path = flagged_files(f"{ROLES[(mode, flagged)]}.txt", mode, flagged)
-    assert bool(os.stat(path).st_flags & stat.UF_APPEND) is flagged
+    assert bool(path.stat().st_flags & stat.UF_APPEND) is flagged
     try:
         OPS[op](path)
         observed_errno, observed = None, "OK"
@@ -186,7 +186,7 @@ def test_mode_x_uappnd_x_op_by_owner(flagged_files, mode, flagged, op, expected_
         if op in ("append", "os_open_append", "open_w", "open_rplus", "truncate"):
             assert path.read_text() == SEED
         if op == "chmod":
-            assert stat.S_IMODE(os.stat(path).st_mode) == mode
+            assert stat.S_IMODE(path.stat().st_mode) == mode
         if op == "rename":
             assert not os.path.lexists(str(path) + ".moved")
 
@@ -201,21 +201,21 @@ def test_owner_clears_uappnd_then_chmod_truncate_rename_unlink_succeed(
 ):
     lg = log.get("grounding.fs")
     path = flagged_files(f"{role}.txt", mode, True)
-    flags_before = os.stat(path).st_flags
+    flags_before = path.stat().st_flags
     os.chflags(path, 0)
-    flags_after = os.stat(path).st_flags
+    flags_after = path.stat().st_flags
     try:
         os.truncate(path, 0)
         truncate_errno, truncate_observed = None, "OK"
     except PermissionError as exc:
         code = errno.errorcode[exc.errno] if exc.errno is not None else "?"
         truncate_errno, truncate_observed = exc.errno, f"{code} {exc.strerror}"
-    size_after_truncate = os.path.getsize(path)
-    os.chmod(path, 0o644)
+    size_after_truncate = path.stat().st_size
+    path.chmod(0o644)
     os.truncate(path, 0)
     moved = path.with_name(path.name + ".moved")
-    os.rename(path, moved)
-    os.unlink(moved)
+    path.rename(moved)
+    moved.unlink()
     lg.info(
         "owner_clears_flag",
         command=f"chmod {mode:04o}; chflags uappnd; chflags nouappnd; truncate; chmod 0644; truncate; rename; unlink (same uid)",

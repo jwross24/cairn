@@ -54,7 +54,7 @@ def _modes_actions(findings):
 
 
 def _gitignore_bytes(path):
-    if not os.path.isfile(path):
+    if not Path(path).is_file():
         return b"".join(f"{entry}\n".encode() for entry in detectors.GITIGNORE_ENTRIES)
     text = Path(path).read_text()
     lines = {line.strip() for line in text.splitlines()}

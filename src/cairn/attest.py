@@ -54,7 +54,7 @@ def frame(canonical):
 
 def append_record(path, canonical):
     framed = frame(canonical)
-    with open(path, "ab") as fh:
+    with Path(path).open("ab") as fh:
         offset = fh.tell()
         fh.write(framed)
     lg.info("append", path=str(path), offset=offset, bytes=len(framed), digest=blob_hash(canonical))
@@ -118,7 +118,7 @@ def init(path, target):
     file.parent.mkdir(parents=True, exist_ok=True)
     fd = os.open(file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
     os.close(fd)
-    os.chmod(file, 0o644)
+    file.chmod(0o644)
     waiver = fixture_waiver(target)
     offset = append_record(file, waiver_canonical(waiver))
     _set_append_only(file)
@@ -159,7 +159,7 @@ def _run(ns):
 
 
 def _run_init(ns):
-    if os.path.exists(ns.attest):
+    if Path(ns.attest).exists():
         raise CliError(
             exits.GATE_REFUSED,
             f"the attestation file {ns.attest} exists; the harness never re-creates it and moving it aside is the operator's act",
@@ -220,7 +220,7 @@ def _verdict_from(fields, gate_bundle_hash, file_offset):
 def _run_append(ns):
     from cairn import claims, substrate
 
-    if not os.path.exists(ns.attest):
+    if not Path(ns.attest).exists():
         raise CliError(
             exits.ENVIRONMENT,
             f"the attestation file {ns.attest} does not exist",

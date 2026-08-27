@@ -465,8 +465,9 @@ def _run(ns):
 
     gate = bundle.open_or_refuse(ns, command="cairn selftest toy-curve")
     debug = f"cairn selftest {ns.which} --db {ns.db} --bundle {ns.bundle} --pin {ns.pin} --log DEBUG"
-    parent = os.path.dirname(os.path.abspath(ns.db))
-    os.makedirs(parent, exist_ok=True)
+    # Path.resolve() would follow the /var symlink and create the directory off the db's own path
+    parent = Path(os.path.abspath(ns.db)).parent  # noqa: PTH100
+    parent.mkdir(parents=True, exist_ok=True)
     try:
         with substrate.Substrate.open(ns.db) as sub:
             result = certify(sub, gate.verifier_config())

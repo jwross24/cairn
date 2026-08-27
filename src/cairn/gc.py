@@ -1,6 +1,6 @@
-import os
 import uuid
 from datetime import UTC, datetime
+from pathlib import Path
 
 from cairn import cli, exits, log, substrate
 from cairn.errors import CliError
@@ -110,7 +110,7 @@ def _run(ns):
             "--dry-run and --yes contradict each other: --dry-run changes nothing and --yes deletes; nothing was changed",
             next_command=f"cairn gc --db {ns.db}   # list, or: cairn gc --db {ns.db} --yes   # delete",
         )
-    if not os.path.exists(ns.db):
+    if not Path(ns.db).exists():
         raise CliError(
             exits.ENVIRONMENT,
             f"the substrate {ns.db} does not exist; a substrate is created by the first command that writes to it",

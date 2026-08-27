@@ -1,7 +1,7 @@
 import importlib.metadata
-import os
 import subprocess
 import time
+from pathlib import Path
 
 import blake3
 import cypari2
@@ -57,7 +57,7 @@ def _digest(text):
 
 
 def run_gp(args, stdin, *, timeout_s=DEFAULT_TIMEOUT_S, stack=DEFAULT_STACK):
-    if not os.path.isfile(GP_BIN):
+    if not Path(GP_BIN).is_file():
         raise GpMissing(GP_BIN)
     argv = gp_argv(stack) + list(args)
     lg = log.get("gp")

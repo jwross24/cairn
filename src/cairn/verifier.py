@@ -134,14 +134,14 @@ def default_config(**overrides):
 def materialize_script(config):
     key = (config.bundle_hash, config.script_hash)
     path = _MATERIALIZED.get(key)
-    if path is not None and os.path.isfile(path):
+    if path is not None and Path(path).is_file():
         return path
     directory = tempfile.mkdtemp(prefix=f"cairn-bundle-{config.bundle_hash}-")
-    path = os.path.join(directory, "verify.gp")
+    path = str(Path(directory) / "verify.gp")
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o444)
     with os.fdopen(fd, "wb") as fh:
         fh.write(config.script)
-    os.chmod(path, 0o444)
+    Path(path).chmod(0o444)
     _MATERIALIZED[key] = path
     return path
 
@@ -149,7 +149,7 @@ def materialize_script(config):
 @atexit.register
 def _remove_materialized():
     for path in list(_MATERIALIZED.values()):
-        shutil.rmtree(os.path.dirname(path), ignore_errors=True)
+        shutil.rmtree(Path(path).parent, ignore_errors=True)
     _MATERIALIZED.clear()
 
 

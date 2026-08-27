@@ -165,7 +165,7 @@ def test_a3_a_gil_holding_call_that_starves_the_watchdog_is_killed_by_the_backst
     returncode, out, err = run_child(tmp_path, HOLDS_THE_GIL, CAIRN_SESSION_DEADLINE="4")
     assert returncode == BACKSTOP_EXIT_CODE, (returncode, out, err)
     assert "Timeout (" in err, err
-    assert os.path.join("re", "__init__.py") in err, err
+    assert str(Path("re") / "__init__.py") in err, err
     assert "in match" in err, err
 
 

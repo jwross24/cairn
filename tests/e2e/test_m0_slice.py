@@ -278,7 +278,7 @@ def test_the_green_run_logs_one_record_per_step_in_order(deploy, capsys, caplog)
 def _corrupt_pin(deploy):
     pin = deploy["paths"]["pin"]
     os.chflags(pin, 0)
-    os.chmod(pin, 0o644)
+    pin.chmod(0o644)
     pin.write_text("0" * 64 + "\n")
 
 
@@ -409,3 +409,46 @@ def test_the_step_transcript_matches_its_golden_after_scrubbing(deploy, capsys, 
     assert transcript.count("[HASH]") >= 10 and transcript.count("[MS]") == 7
     assert not any(token in transcript for token in (document["nodes"][2]["hash"], document["bundle_hash"]))
     assert_golden("m0_run_transcript", transcript)
+
+
+def _aliased(directory):
+    real = directory / "real"
+    real.mkdir()
+    alias = directory / "alias"
+    alias.symlink_to(real)
+    return alias, real
+
+
+def test_the_scratch_root_sits_beside_the_db_path_as_written(deploy, capsys, monkeypatch):
+    alias, real = _aliased(deploy["paths"]["db"].parent)
+    deploy["paths"]["db"] = alias / "substrate.sqlite"
+    deploy["ready"]()
+    seen = []
+    launch = m0.run_slice
+
+    def record(*args, scratch_root, **kwargs):
+        seen.append(scratch_root)
+        return launch(*args, scratch_root=scratch_root, **kwargs)
+
+    monkeypatch.setattr(m0, "run_slice", record)
+    code, _out, err = deploy["m0_run"]("--bits", "40", "--seed", "1", "--json")
+    assert code == exits.OK, err
+    assert seen == [alias / "m0-runs"]
+    assert seen != [real / "m0-runs"]
+
+
+def test_the_selftest_parent_is_the_db_path_as_written(deploy, capsys, monkeypatch):
+    alias, real = _aliased(deploy["paths"]["db"].parent)
+    deploy["paths"]["db"] = alias / "nested" / "substrate.sqlite"
+    deploy["build_and_pin"]()
+    made = []
+    mkdir = Path.mkdir
+
+    def record(self, *args, **kwargs):
+        made.append(self)
+        return mkdir(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "mkdir", record)
+    deploy["certify"]()
+    assert alias / "nested" in made
+    assert real / "nested" not in made

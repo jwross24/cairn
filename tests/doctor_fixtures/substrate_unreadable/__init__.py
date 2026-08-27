@@ -1,9 +1,7 @@
-import os
-
 FIXABLE = False
 ONLY = None
 FINDINGS = ("D-substrate/unreadable",)
 
 
 def corrupt(shape):
-    os.chmod(shape.db, 0o000)
+    shape.db.chmod(0o000)

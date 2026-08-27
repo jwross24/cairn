@@ -95,7 +95,7 @@ def file_hash(path):
 def _state(path):
     if not os.path.lexists(path):
         return None, None, None
-    st = os.stat(path)
+    st = Path(path).stat()
     if stat.S_ISDIR(st.st_mode):
         return None, stat.S_IMODE(st.st_mode), st.st_flags
     return file_hash(path), stat.S_IMODE(st.st_mode), st.st_flags
@@ -109,32 +109,32 @@ def _backup(run, rel, path):
     target = Path(run.backups_dir) / rel
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(path, target)
-    os.chflags(target, os.stat(path).st_flags)
+    os.chflags(target, Path(path).stat().st_flags)
     return target
 
 
 def _clear_flags(path):
-    if os.stat(path).st_flags:
+    if Path(path).stat().st_flags:
         os.chflags(path, 0)
 
 
 def _apply(run, rel, path, op, before_mode):
     if op.kind == MODES:
         _clear_flags(path)
-        os.chmod(path, op.mode)
+        Path(path).chmod(op.mode)
         os.chflags(path, op.flags)
         return
     if op.kind == WRITE:
         staging = Path(run.staging_dir) / rel
         staging.parent.mkdir(parents=True, exist_ok=True)
         staging.write_bytes(op.data)
-        os.chmod(staging, op.mode if op.mode is not None else (before_mode if before_mode is not None else 0o644))
+        staging.chmod(op.mode if op.mode is not None else (before_mode if before_mode is not None else 0o644))
         if os.path.lexists(path):
             _clear_flags(path)
-        os.replace(staging, path)
+        staging.replace(path)
         return
     if op.kind == MKDIR:
-        os.mkdir(path, op.mode if op.mode is not None else 0o755)
+        Path(path).mkdir(mode=op.mode if op.mode is not None else 0o755)
         return
     raise Refused(f"unknown mutate op {op.kind!r}")
 
@@ -170,7 +170,7 @@ def mutate(run, path, op):
         "backup": backup,
         "ts": cli.now_iso(),
     }
-    with open(run.actions_path, "a") as fh:
+    with Path(run.actions_path).open("a") as fh:
         fh.write(json.dumps(action, sort_keys=True) + "\n")
     lg.info("mutate", **action)
     return action
@@ -190,10 +190,10 @@ def _restore_file(root, run_dir, action):
     staging.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(backup, staging)
     os.chflags(staging, 0)
-    os.chmod(staging, action["before_mode"])
+    staging.chmod(action["before_mode"])
     if os.path.lexists(target):
         _clear_flags(target)
-    os.replace(staging, target)
+    staging.replace(target)
     os.chflags(target, action["before_flags"] or 0)
 
 
@@ -203,19 +203,19 @@ def _undo_one(root, run_dir, action):
         if not os.path.lexists(target):
             raise UndoFailed(f"{action['path']} is gone; cannot restore its mode")
         _clear_flags(target)
-        os.chmod(target, action["before_mode"])
+        target.chmod(action["before_mode"])
         os.chflags(target, action["before_flags"] or 0)
     elif action["op"] == WRITE:
         if action["backup"] is None:
             quarantine = target.with_name(target.name + QUARANTINE_SUFFIX)
             _clear_flags(target)
-            os.replace(target, quarantine)
+            target.replace(quarantine)
             return
         _restore_file(root, run_dir, action)
     elif action["op"] == MKDIR:
         if any(Path(target).iterdir()):
             raise UndoFailed(f"{action['path']} is not empty; refusing to remove it")
-        os.rmdir(target)
+        target.rmdir()
     else:
         raise UndoFailed(f"unknown op {action['op']!r}")
     after_hash, after_mode, after_flags = _state(target)

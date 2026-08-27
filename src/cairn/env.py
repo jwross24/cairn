@@ -2,14 +2,15 @@ import hashlib
 import importlib.metadata
 import os
 import platform
+from pathlib import Path
 
 from cairn import pari
 
 
 def gp_binary_sha256():
-    if not os.path.isfile(pari.GP_BIN):
+    if not Path(pari.GP_BIN).is_file():
         raise pari.GpMissing(pari.GP_BIN)
-    with open(pari.GP_BIN, "rb") as fh:
+    with Path(pari.GP_BIN).open("rb") as fh:
         return hashlib.sha256(fh.read()).hexdigest()
 
 

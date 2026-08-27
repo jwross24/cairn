@@ -28,7 +28,7 @@ import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 EXIT_OK = 0
@@ -353,7 +353,7 @@ def find_policy(root: Path, named: str | None) -> Path | None:
 
 
 def say(log: Path, text: str) -> None:
-    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    stamp = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     with log.open("a") as handle:
         handle.write(f"{stamp} {text}\n")
 

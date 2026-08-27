@@ -1,6 +1,5 @@
 import copy
 import json
-import os
 import shutil
 import sqlite3
 import sys
@@ -50,7 +49,7 @@ def _config(bundle_path, pin_path):
 
 def _writable_copy(source, destination):
     shutil.copy(source, destination)
-    os.chmod(destination, 0o644)
+    Path(destination).chmod(0o644)
     return destination
 
 
@@ -62,7 +61,7 @@ def _edit_one_row(path, kind="tiers"):
 
 
 def _certificate_rows(db_path):
-    if not os.path.exists(db_path):
+    if not Path(db_path).exists():
         return []
     conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     try:

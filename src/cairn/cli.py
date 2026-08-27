@@ -9,6 +9,7 @@ import sys
 import time
 import traceback
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from cairn import exits, log
 from cairn.errors import CliError
@@ -206,7 +207,7 @@ def now_iso():
 
 
 def refuse_overwrite(path, *, flag, command, force):
-    if os.path.exists(path) and not force:
+    if Path(path).exists() and not force:
         raise CliError(
             exits.GATE_REFUSED,
             f"{path} exists and would be overwritten; nothing was changed",

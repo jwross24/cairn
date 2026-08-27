@@ -99,7 +99,7 @@ def build(src_dir, out_path):
     out = Path(out_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     if out.exists():
-        os.chmod(out, 0o644)
+        out.chmod(0o644)
         out.unlink()
     conn = sqlite3.connect(str(out))
     try:
@@ -110,7 +110,7 @@ def build(src_dir, out_path):
         conn.commit()
     finally:
         conn.close()
-    os.chmod(out, 0o444)
+    out.chmod(0o444)
     digest = bundle_hash(rows)
     lg.info("build", path=str(out), objects=len(rows), bundle_hash=digest)
     return digest
@@ -134,10 +134,10 @@ def write_pin(bundle_path, pin_path):
     pin = Path(pin_path)
     pin.parent.mkdir(parents=True, exist_ok=True)
     if pin.exists():
-        os.chmod(pin, 0o644)
+        pin.chmod(0o644)
     pin.write_text(digest + "\n")
-    os.chmod(pin, 0o444)
-    os.chmod(bundle_path, 0o444)
+    pin.chmod(0o444)
+    Path(bundle_path).chmod(0o444)
     _set_append_only(pin)
     lg.info("pin", bundle=str(bundle_path), pin=str(pin), bundle_hash=digest)
     return digest
@@ -306,7 +306,7 @@ def repin_sequence(bundle_path, pin_path, src=DEFAULT_SRC):
 
 def open_or_refuse(ns, *, command):
     for path, what in ((ns.bundle, "gate bundle"), (ns.pin, "gate-bundle pin")):
-        if not os.path.exists(path):
+        if not Path(path).exists():
             raise CliError(
                 exits.ENVIRONMENT,
                 f"the {what} {path} does not exist",
@@ -377,7 +377,7 @@ def _run_build(ns):
 
 def _run_pin(ns):
     force = getattr(ns, "force", False)
-    if not os.path.exists(ns.bundle):
+    if not Path(ns.bundle).exists():
         raise CliError(
             exits.ENVIRONMENT,
             f"the gate bundle {ns.bundle} does not exist",
@@ -402,7 +402,7 @@ def _run_pin(ns):
 
 
 def _run_show(ns):
-    missing = [p for p in (ns.bundle, ns.pin) if not os.path.exists(p)]
+    missing = [p for p in (ns.bundle, ns.pin) if not Path(p).exists()]
     if missing:
         raise CliError(
             exits.ENVIRONMENT,

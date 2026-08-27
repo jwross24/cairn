@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Resolve which commit closed a bead, from the bead store's own history.
 
 A commit message that names a bead id is not evidence that the commit closed it.

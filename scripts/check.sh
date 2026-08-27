@@ -54,7 +54,7 @@ gate() {
 }
 
 gate format   uv run ruff format --check src tests scripts
-gate lint     uv run ruff check src tests
+gate lint     uv run ruff check src tests scripts
 gate spelling uv run codespell
 gate types    uv run ty check src tests
 gate theater  ./scripts/theater-patterns.sh
@@ -74,7 +74,7 @@ if [ ${#FAILED[@]} -ne 0 ]; then
   say "RESULT fail: ${FAILED[*]}"
   printf '\n[check] FAILED: %s\n' "${FAILED[*]}" >&2
   printf '        fix formatting: uv run ruff format src tests scripts\n' >&2
-  printf '        fix lint:       uv run ruff check --fix src tests\n' >&2
+  printf '        fix lint:       uv run ruff check --fix src tests scripts\n' >&2
   printf '        bypass (logged): CAIRN_CHECK_SKIP=%s scripts/check.sh\n' "'<reason>'" >&2
   exit 1
 fi

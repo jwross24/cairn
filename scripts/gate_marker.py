@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Record which beads the pre-commit gates ran for, so post-commit can refuse the rest.
 
 `.githooks/pre-commit` learns which beads a commit closes from the staged diff, and

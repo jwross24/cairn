@@ -29,7 +29,7 @@ import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 BEGIN = "ARTIFACTS-BEGIN"
@@ -222,7 +222,7 @@ def report(label: str, body: str, root: Path, *, resolve_commit=None) -> tuple[b
 
 
 SKILL_LEAF = "beads-compliance-and-completion-verification"
-SKILL_RE = re.compile(r'^PATH_HINT_RE = re\.compile\(r"(.*)"\)$', re.M)
+SKILL_RE = re.compile(r'^PATH_HINT_RE = re\.compile\(r"(.*)"\)$', re.MULTILINE)
 
 
 def skill_candidates() -> list[Path]:
@@ -249,7 +249,7 @@ class Gate:
         self.log = log
 
     def say(self, text: str) -> None:
-        stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        stamp = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         with self.log.open("a") as handle:
             handle.write(f"{stamp} {text}\n")
 

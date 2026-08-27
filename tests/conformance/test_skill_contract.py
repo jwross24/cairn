@@ -62,7 +62,7 @@ def harness(tmp_path_factory):
     finally:
         os.environ.pop("CAIRN_DB", None)
         os.chflags(pin_path, 0)
-        os.chmod(pin_path, 0o644)
+        pin_path.chmod(0o644)
 
 
 @pytest.fixture(scope="module")

@@ -35,7 +35,7 @@ def test_communicate_reaps_so_wait4_raises_and_returncode_is_3():
 
 def test_wait4_before_any_wait_returns_status_and_rusage_then_proc_wait_reports_0(tmp_path):
     lg = log.get("grounding.subprocess")
-    with open(tmp_path / "out", "wb") as out, open(tmp_path / "err", "wb") as err:
+    with (tmp_path / "out").open("wb") as out, (tmp_path / "err").open("wb") as err:
         proc = subprocess.Popen(CHILD, stdout=out, stderr=err)
     returncode_before = proc.returncode
     pid, status, rusage = os.wait4(proc.pid, 0)

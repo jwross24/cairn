@@ -2,6 +2,7 @@ import os
 import signal
 import sys
 import time
+from pathlib import Path
 
 SEEN = "sigterm_seen"
 
@@ -11,7 +12,7 @@ def main():
     scratch = sys.argv[1]
 
     def note(_signum, _frame):
-        with open(os.path.join(scratch, SEEN), "w") as handle:
+        with (Path(scratch) / SEEN).open("w") as handle:
             handle.write("term")
         sys.stdout.write('{"status":"OK"}\n')
         sys.stdout.flush()

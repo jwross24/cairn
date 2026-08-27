@@ -1,6 +1,7 @@
 import json
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 import blake3
 
@@ -482,7 +483,7 @@ def _configure(parser):
 
 
 def _run(ns):
-    if not os.path.exists(ns.attest):
+    if not Path(ns.attest).exists():
         raise CliError(
             exits.ENVIRONMENT,
             f"the attestation file {ns.attest} does not exist; the gate plan's waiver step reads its record 0",
@@ -490,7 +491,8 @@ def _run(ns):
             next_command=f"cairn attest init --attest {ns.attest} --bundle {ns.bundle} --pin {ns.pin}",
         )
     gate_bundle = bundle.open_or_refuse(ns, command="cairn m0-run")
-    scratch_root = os.path.join(os.path.dirname(os.path.abspath(ns.db)) or ".", "m0-runs")
+    # Path.resolve() would follow the /var symlink and move the scratch tree off the db's own directory
+    scratch_root = Path(os.path.abspath(ns.db)).parent / "m0-runs"  # noqa: PTH100
     try:
         with substrate.Substrate.open(ns.db) as sub:
             result = run_slice(

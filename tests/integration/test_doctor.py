@@ -50,10 +50,10 @@ def _unlock(root):
     for path in Path(root).rglob("*"):
         if not os.path.lexists(path) or path.is_symlink():
             continue
-        if os.stat(path).st_flags:
+        if path.stat().st_flags:
             os.chflags(path, 0)
         if path.is_dir() and not os.access(path, os.W_OK):
-            os.chmod(path, 0o700)
+            path.chmod(0o700)
 
 
 def _build_shape(root):
@@ -121,7 +121,7 @@ def tree_hashes(shape, *, skip=(".doctor",), sidecars=False):
             continue
         if path.is_symlink():
             continue
-        st = os.stat(path)
+        st = path.stat()
         digest = None
         if path.is_file():
             try:
@@ -133,7 +133,7 @@ def tree_hashes(shape, *, skip=(".doctor",), sidecars=False):
 
 
 def stat_line(path):
-    st = os.stat(path)
+    st = Path(path).stat()
     return f"{stat.S_IMODE(st.st_mode):04o} flags={st.st_flags:#x}"
 
 
@@ -336,11 +336,11 @@ def test_online_is_refused_at_m0(shape, capsys):
 def test_a_root_the_doctor_cannot_write_refuses_and_names_the_root_flag(tmp_path, capsys):
     root = tmp_path / "read-only-checkout"
     root.mkdir()
-    os.chmod(root, 0o500)
+    root.chmod(0o500)
     try:
         code, out, err = run(["doctor", "--root", str(root), "--only", "gp"], capsys)
     finally:
-        os.chmod(root, 0o700)
+        root.chmod(0o700)
     assert code == exits.DOCTOR_REFUSED, err
     assert out == ""
     assert "Permission denied" in err and "--root" in err
@@ -501,7 +501,7 @@ def test_a_missing_gp_binary_names_the_brew_line(shape, capsys, monkeypatch, tmp
 def _fake_gp(tmp_path, body):
     script = tmp_path / "fake-gp"
     script.write_text("#!/bin/sh\n" + body)
-    os.chmod(script, 0o700)
+    script.chmod(0o700)
     return str(script)
 
 
@@ -590,7 +590,7 @@ def test_undo_fails_closed_when_a_backup_is_gone_and_changes_nothing(shape, caps
     run_dir = latest_run_dir(shape.root)
     backup = next((run_dir / "backups").rglob("*.pin"))
     os.chflags(backup, 0)
-    os.rename(backup, backup.with_suffix(".moved"))
+    backup.rename(backup.with_suffix(".moved"))
     fixed = tree_hashes(shape)
     code, out, err = run(shape.argv("undo", "latest"), capsys)
     assert code == exits.DOCTOR_ROLLED_BACK and "missing" in err

@@ -133,7 +133,7 @@ def allocated_bytes(root):
     for dirpath, _, filenames in os.walk(root, followlinks=False):
         total += os.lstat(dirpath).st_blocks * 512
         for name in filenames:
-            total += os.lstat(os.path.join(dirpath, name)).st_blocks * 512
+            total += os.lstat(Path(dirpath) / name).st_blocks * 512
     return total
 
 
@@ -173,9 +173,9 @@ def spawn_and_wait(
     lg.debug("spawn", argv=list(argv), stdin_digest=blob_hash(stdin_bytes))
     stdin_path = Path(out_path).with_name("stdin")
     Path(stdin_path).write_bytes(stdin_bytes)
-    handle_out = open(out_path, "wb", buffering=0)
-    handle_err = open(err_path, "wb", buffering=0)
-    handle_in = open(stdin_path, "rb")
+    handle_out = Path(out_path).open("wb", buffering=0)
+    handle_err = Path(err_path).open("wb", buffering=0)
+    handle_in = stdin_path.open("rb")
     try:
         start = time.monotonic()
         proc = subprocess.Popen(
@@ -464,7 +464,7 @@ def _configure(parser):
 def _run(ns):
     from cairn import substrate
 
-    if not os.path.exists(ns.db):
+    if not Path(ns.db).exists():
         raise CliError(
             exits.ENVIRONMENT,
             f"the substrate {ns.db} does not exist; a substrate is created by the first command that writes to it",

@@ -57,7 +57,7 @@ def resolve_run_dir(root, run_id):
         link = Path(root) / DOCTOR_DIRNAME / LATEST_NAME
         if not os.path.lexists(link):
             return None
-        return (Path(root) / DOCTOR_DIRNAME / os.readlink(link)).resolve()
+        return (Path(root) / DOCTOR_DIRNAME / link.readlink()).resolve()
     candidate = runs_dir(root) / run_id
     return candidate if candidate.is_dir() else None
 
@@ -158,8 +158,8 @@ def _update_latest(root, run_id):
     staging = doctor / f".{LATEST_NAME}.{os.getpid()}"
     if os.path.lexists(staging):
         os.chflags(staging, 0)
-    os.symlink(target, staging)
-    os.replace(staging, doctor / LATEST_NAME)
+    staging.symlink_to(target)
+    staging.replace(doctor / LATEST_NAME)
 
 
 def finish(run, report):
@@ -167,7 +167,7 @@ def finish(run, report):
     (run.run_dir / "report.md").write_text(_report_markdown(report))
     (run.run_dir / "undo.sh").write_text(f"#!/bin/sh\ncairn doctor undo {run.run_id}\n")
     _update_latest(run.root, run.run_id)
-    with open(history_path(run.root), "a") as fh:
+    with history_path(run.root).open("a") as fh:
         fh.write(
             json.dumps(
                 {

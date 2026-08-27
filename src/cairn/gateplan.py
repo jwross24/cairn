@@ -1,7 +1,7 @@
 import dataclasses
-import os
 import time
 from dataclasses import dataclass
+from pathlib import Path
 
 from cairn import attest, bundle, claims, cli, exits, kat, keys, log, tiergate, verifier
 from cairn.errors import CliError
@@ -449,7 +449,7 @@ def _run(ns):
 def _run_selftest(ns):
     from cairn import substrate
 
-    if not os.path.exists(ns.attest):
+    if not Path(ns.attest).exists():
         raise CliError(
             exits.ENVIRONMENT,
             f"the attestation file {ns.attest} does not exist; the waiver step reads its record 0",

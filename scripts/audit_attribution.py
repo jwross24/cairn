@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Re-evaluate the audit's closing-commit anomalies against the commit that closed the bead.
 
 Two patterns in the vendored compliance skill's `anomaly-scan.sh` judge a bead by
@@ -101,18 +100,18 @@ def correct(theater: dict, bead_id: str, resolution: str, diff: ClosingDiff | No
     kept = [f for f in theater.get("findings", []) if f.get("category") not in ATTRIBUTED_CATEGORIES]
     dropped = len(theater.get("findings", [])) - len(kept)
     raised = rederive(diff)
-    for finding in raised:
-        kept.append(
-            {
-                "id": "anomaly.0",
-                "severity": finding["severity"],
-                "category": finding["category"],
-                "path": f"(bead {bead_id})",
-                "line": 0,
-                "snippet": "(see show.json)",
-                "description": finding["description"],
-            }
-        )
+    kept.extend(
+        {
+            "id": "anomaly.0",
+            "severity": finding["severity"],
+            "category": finding["category"],
+            "path": f"(bead {bead_id})",
+            "line": 0,
+            "snippet": "(see show.json)",
+            "description": finding["description"],
+        }
+        for finding in raised
+    )
     findings = renumber(kept)
     corrected = dict(theater)
     corrected["findings"] = findings
@@ -269,7 +268,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         selected = [audit_dir / "passes" / name for name in passes_after(names, args.after)]
     else:
-        audit_dir = Path(args.pass_dirs[0]).parent.parent if args.pass_dirs else Path(".")
+        audit_dir = Path(args.pass_dirs[0]).parent.parent if args.pass_dirs else Path()
         names = (
             [d.name for d in (audit_dir / "passes").iterdir() if d.is_dir()] if (audit_dir / "passes").is_dir() else []
         )

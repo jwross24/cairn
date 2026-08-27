@@ -330,14 +330,14 @@ def test_script_is_materialized_once_per_process_as_0444_outside_the_repo():
     path = verifier.materialize_script(cfg)
     again = verifier.materialize_script(cfg)
     assert path == again
-    assert os.path.basename(path) == "verify.gp"
-    assert os.path.basename(os.path.dirname(path)).startswith(f"cairn-bundle-{cfg.bundle_hash}-")
+    assert Path(path).name == "verify.gp"
+    assert Path(path).parent.name.startswith(f"cairn-bundle-{cfg.bundle_hash}-")
     assert Path(path).read_bytes() == cfg.script
-    assert stat.S_IMODE(os.stat(path).st_mode) == 0o444
+    assert stat.S_IMODE(Path(path).stat().st_mode) == 0o444
     assert os.path.realpath(path).startswith(os.path.realpath(tempfile.gettempdir()))
     assert not os.path.realpath(path).startswith(str(ROOT))
     other = verifier.materialize_script(default_config(bundle_hash="11" * 32))
-    assert other != path and os.path.basename(os.path.dirname(other)).startswith("cairn-bundle-" + "11" * 32)
+    assert other != path and Path(other).parent.name.startswith("cairn-bundle-" + "11" * 32)
 
 
 def test_run_with_an_object_that_is_not_an_instance_is_refused(popen_spy, run_gp_spy):
@@ -355,10 +355,10 @@ def test_crash_selftest_refuses_a_bad_instance_pre_spawn(popen_spy, run_gp_spy):
 def test_a_stale_materialized_path_is_rematerialized():
     cfg = default_config(bundle_hash="22" * 32)
     path = verifier.materialize_script(cfg)
-    os.remove(path)
+    Path(path).unlink()
     fresh = verifier.materialize_script(cfg)
     assert Path(fresh).read_bytes() == cfg.script
-    assert stat.S_IMODE(os.stat(fresh).st_mode) == 0o444
+    assert stat.S_IMODE(Path(fresh).stat().st_mode) == 0o444
 
 
 def test_verifier_registers_no_cli_subcommand():

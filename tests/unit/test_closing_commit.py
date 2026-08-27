@@ -88,9 +88,9 @@ def test_a_git_that_fails_raises_rather_than_reporting_no_bead_closed(monkeypatc
         lambda argv, **kw: subprocess.CompletedProcess(argv, 128, "", "fatal: bad object HEAD"),
     )
     readers = {
-        "log": closing_commit.git_history_reader(Path(".")),
-        "diff": closing_commit.git_staged_reader(Path(".")),
-        "show": closing_commit.git_commit_reader(Path("."), "does-not-exist-ref"),
+        "log": closing_commit.git_history_reader(Path()),
+        "diff": closing_commit.git_staged_reader(Path()),
+        "show": closing_commit.git_commit_reader(Path(), "does-not-exist-ref"),
     }
     with pytest.raises(GitError, match="128"):
         readers[failing]()
@@ -103,7 +103,7 @@ def test_the_history_reader_looks_at_every_branch_not_only_the_current_one(monke
         "run",
         lambda argv, **kw: seen.append(argv) or subprocess.CompletedProcess(argv, 0, "", ""),
     )
-    closing_commit.git_history_reader(Path("."))()
+    closing_commit.git_history_reader(Path())()
     assert "--all" in seen[0]
 
 
@@ -168,7 +168,7 @@ def test_an_unrelated_later_commit_naming_the_bead_moves_the_grep_rule_and_not_t
 
 def test_resolve_reads_history_and_the_staged_diff_through_its_two_seams():
     resolved = resolve(
-        Path("."),
+        Path(),
         history=lambda: log(chunk(CLOSING_SHA, closed_here(BEAD))),
         staged=lambda: "\n".join(closed_here("cairn-pending")),
     )
