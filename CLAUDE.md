@@ -128,6 +128,11 @@ Each line below was established by hitting it. Verify rather than trust if a too
   and fetches `br-$BR_VERSION-darwin_$(uname -m).tar.gz`, checked against the sha256
   published beside it. `br show <id> --json` is byte-identical between 0.2.10 and 0.5.3
   against this repo's beads.
+- **`br doctor` is the first move on any `br` failure**; it names the missing `.beads/.gitignore`
+  patterns verbatim and reports a database whose schema the binary refuses. The one thing it will
+  not do is recover that case: `--repair` fails closed at exit 4, and its remediation text loops back
+  to itself. `beads.db` is untracked derived state, so move the family aside and `br sync --import-only`
+  rebuilds it from `issues.jsonl`, which then round-trips byte-identically through a flush.
 - **`br list --json` omits closed beads** (23 of 31 here). Pass `--all` or `--status closed`.
 - **`.beads/` is excluded by `~/.gitignore_global`.** This repo's `.gitignore` carries
   `!.beads/` to re-include it. `br sync --flush-only` before every `git add .beads/`.

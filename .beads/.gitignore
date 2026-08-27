@@ -1,8 +1,13 @@
 # Database
+# `br doctor` names these; the check is gitignore.beads_inner_present.
 *.db
 *.db-journal
 *.db-shm
-*.db-wal
+*.db-wal*
+*-fsqlite-ns-gate
+*-fsqlite-ns-use
+*.vacuum-wal-cert*
+*.fsqlite-migration-state
 
 # Lock files
 *.lock
