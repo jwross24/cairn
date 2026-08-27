@@ -113,7 +113,10 @@ Each line below was established by hitting it. Verify rather than trust if a too
   per clone arms them, and `.git/hooks/` is then ignored entirely. `.githooks/pre-commit` runs
   `scripts/check.sh --fast`, then `scripts/bead-test-plan.sh` for each bead the commit closes, then
   the compliance audit, which it invokes through `bash` because the vendored asset ships without the
-  executable bit.
+  executable bit. `.githooks/post-commit` pushes a commit that closes a bead, and only such a
+  commit: a close is the ship CI has to verify, while a slice on a private macOS runner bills at
+  ten times wall clock. It writes `PUSHED`, `SKIP` or `DENY` to `.check.log` on every fire, and a
+  failed push is loud and leaves the commit local. Bypass, logged: `CAIRN_PUSH_SKIP='<reason>'`.
 - **`pyproject.toml` pins PyPI** (`[[tool.uv.index]] url = "https://pypi.org/simple"`,
   `default = true`) because `~/.config/uv/uv.toml` points at a corporate Artifactory that
   times out off-network. `cypari2` exposes no `__version__`; read it via `importlib.metadata`.

@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Push a commit that closes a bead, so CI verifies every close on a machine that
+# is not this one. Install once per clone:
+#
+#   git config core.hooksPath .githooks
+#
+# A slice commit is not pushed: a bead close is the ship, and CI on a private
+# macOS runner bills at ten times wall clock, so a run per slice buys little and
+# costs a lot.
+#
+# Three outcomes, three lines in .check.log: PUSHED, SKIP, DENY. A push that
+# fails is loud and leaves the commit local; nothing here rewrites history or
+# forces.
+#
+# Bypass, named and logged:
+#   CAIRN_PUSH_SKIP='<reason>' git commit …
+set -uo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT" || exit 0
+
+LOG="$ROOT/.check.log"
+say() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$1" >>"$LOG"; }
+
+if [ -n "${CAIRN_PUSH_SKIP:-}" ]; then
+  say "BYPASS post-commit push: ${CAIRN_PUSH_SKIP}"
+  echo "[post-commit] push skipped: ${CAIRN_PUSH_SKIP}" >&2
+  exit 0
+fi
+
+CLOSED="$(git show HEAD --unified=0 --format= -- '.beads/*.jsonl' 2>/dev/null \
+  | uv run python -c '
+import re, sys
+ID_RE = re.compile(r"\"id\"\s*:\s*\"([a-z][a-z0-9_.-]*)\"")
+ST_RE = re.compile(r"\"status\"\s*:\s*\"([a-z_]+)\"")
+old, new = {}, {}
+for line in sys.stdin:
+    if line.startswith(("+++", "---")) or not line.startswith(("+", "-")):
+        continue
+    m_id, m_st = ID_RE.search(line), ST_RE.search(line)
+    if not (m_id and m_st):
+        continue
+    (new if line.startswith("+") else old)[m_id.group(1)] = m_st.group(1)
+for bid, st in new.items():
+    if st == "closed" and old.get(bid) != "closed":
+        print(bid)
+' 2>/dev/null)"
+
+if [ -z "$CLOSED" ]; then
+  say "SKIP post-commit push: $(git rev-parse --short HEAD) closes no bead"
+  exit 0
+fi
+
+IDS="$(echo "$CLOSED" | tr '\n' ' ' | sed 's/ $//')"
+BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+
+if ! git remote get-url origin >/dev/null 2>&1; then
+  say "DENY post-commit push: no origin remote; $IDS closed and unpushed"
+  echo "[post-commit] $IDS closed, and there is no origin remote to push to." >&2
+  echo "              The close is local only; CI has not seen it." >&2
+  exit 0
+fi
+
+echo "[post-commit] $IDS closed; pushing $BRANCH so CI verifies the close." >&2
+if git push origin "$BRANCH"; then
+  say "PUSHED post-commit $(git rev-parse --short HEAD) ($IDS) -> origin/$BRANCH"
+else
+  say "DENY post-commit push: git push failed; $IDS closed and unpushed"
+  echo "[post-commit] PUSH FAILED. $IDS is closed locally and CI has not seen it." >&2
+  echo "              Resolve and run: git push origin $BRANCH" >&2
+fi
+exit 0
