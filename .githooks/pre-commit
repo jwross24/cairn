@@ -130,4 +130,30 @@ fi
 
 # Invoked through bash: the skill ships this asset without the executable bit,
 # and a hook that dies on EACCES is a gate that silently stopped running.
-exec bash "$SKILL/assets/pre-commit-hook.sh"
+bash "$SKILL/assets/pre-commit-hook.sh"
+AUDIT_RC=$?
+
+# A scorecard whose dimension table, banner and denominator disagree misreports
+# the arithmetic behind the verdict: under unmeasured_dimensions=excluded a
+# dimension whose phase was stubbed carries no credit, and a table that prints it
+# at full weight tells the reader 500 free points were granted. The presentation
+# lives in the forked score-bead.py, so an upstream update restores the
+# disagreement; this reads the scorecard back and refuses it.
+NEWEST_PASS="$(ls -1d beads_compliance_audit/passes/*/ 2>/dev/null | sort | tail -1)"
+if [ -n "$NEWEST_PASS" ] && [ -d "${NEWEST_PASS}beads" ]; then
+  if uv run python scripts/scorecard_coherence.py "${NEWEST_PASS}beads" > /tmp/cairn-scorecard-coherence.out 2>&1; then
+    printf '%s SCORECARD-COHERENT %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$NEWEST_PASS" >> .beads_hook.log
+  else
+    printf '%s SCORECARD-INCOHERENT %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$NEWEST_PASS" >> .beads_hook.log
+    echo "[pre-commit] BLOCKED: a scorecard disagrees with its own arithmetic." >&2
+    cat /tmp/cairn-scorecard-coherence.out >&2
+    echo "             Re-apply the score-bead.py presentation fork (CLAUDE.md lists the sites), or bypass:" >&2
+    echo "             CAIRN_AUDIT_FORK_OK='<reason>' git commit ..." >&2
+    [ -n "${CAIRN_AUDIT_FORK_OK:-}" ] || exit 1
+    printf '%s BYPASS scorecard coherence: %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$CAIRN_AUDIT_FORK_OK" >> .beads_hook.log
+  fi
+else
+  printf '%s SCORECARD-NO-PASS no audit pass directory to check\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .beads_hook.log
+fi
+
+exit "$AUDIT_RC"
