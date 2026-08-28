@@ -36,7 +36,14 @@ jobs:
       # The artifact-block gate parses `br show <id> --json`, so the runner and the
       # machines that write the beads have to agree on that shape. A bump here misses
       # the cache key below, which is what fetches the binary again.
-      BR_VERSION: "0.5.3"
+      #
+      # Held at 0.2.22 while beads_rust#457 stands: 0.5.3 malforms a migrated database
+      # under concurrent writes, and the stress harness on that issue measures 0.2.22
+      # clean over 408 operations where 0.5.3 malformed at 87. A runner builds its
+      # database fresh from issues.jsonl and only reads, which is the case the issue
+      # reports as not reproducing, so this pin is for agreement with the machines that
+      # write rather than for the runner's own safety.
+      BR_VERSION: "0.2.22"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:

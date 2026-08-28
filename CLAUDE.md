@@ -128,6 +128,15 @@ Each line below was established by hitting it. Verify rather than trust if a too
   and fetches `br-$BR_VERSION-darwin_$(uname -m).tar.gz`, checked against the sha256
   published beside it. `br show <id> --json` is byte-identical between 0.2.10 and 0.5.3
   against this repo's beads.
+- **`br` is held at 0.2.22 by beads_rust#457, and `br doctor` will not tell you.** 0.5.3 malforms a
+  migrated database under concurrent writes with `page N is referenced multiple times`; the
+  tell is `Mutation succeeded, but automatic JSONL export failed ... unable to open database
+  file` on a write that otherwise lands. `issues.jsonl` survives every time, so the recovery is
+  the rebuild below. `br doctor health` reports healthy on a database `integrity_check` calls
+  malformed, so health is not the check — `br doctor | grep integrity_check` is. A 0.2.x binary
+  refuses a 0.5.3-written database permanently, so downgrading means `br init` in a scratch
+  directory, copying that empty `beads.db` in beside `issues.jsonl`, and letting the import
+  restore it.
 - **`br doctor` is the first move on any `br` failure**; it names the missing `.beads/.gitignore`
   patterns verbatim and reports a database whose schema the binary refuses. The one thing it will
   not do is recover that case: `--repair` fails closed at exit 4, and its remediation text loops back
