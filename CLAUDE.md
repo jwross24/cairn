@@ -100,19 +100,10 @@ Each line below was established by hitting it. Verify rather than trust if a too
   bead holds its `spec.json` — the other passes leave `show.json` and `git_xref.txt` alone. An
   unforked `score-bead.py` handed a path with no `spec.json` reports `1000/1000 Verified` and
   creates the directory to hold the scorecard it wrote.
-- **Which commit closed a bead is cairn's answer, not the skill's.** The vendored
-  `anomaly-scan.sh` picks a "closing commit" with `git log --all -F --grep="$ID" | head -1`,
-  the newest commit whose *message* names the id, and `research/SESSION-PROMPTS.md` asks every
-  session to name its beads there — so that pick usually belongs to another bead and it moves
-  whenever an unrelated session commits. `scripts/closing_commit.py` holds the rule that cannot
-  do that: the status flip to `closed` in `.beads/*.jsonl`, which only the closing commit
-  carries. Both git hooks read their newly-closed list through it, and
-  `scripts/audit_attribution.py` runs after the vendored audit in `.githooks/pre-commit`,
-  re-derives `anomaly_empty_diff` and `anomaly_ignore_list_growth` against the resolved commit,
-  re-scores, and supplies the exit code the hook gates on. A bead the pending commit closes
-  resolves to `STAGED` and is judged against the staged diff. `gather-evidence.sh`'s
-  `TOUCHED_FILES` keeps the message grep; it is a path-hint resolver with a project-wide
-  `rg` fallback behind it, and reaching it means a sixth fork.
+- **Which commit closed a bead is `scripts/closing_commit.py`'s answer, not the skill's.**
+  The vendored `anomaly-scan.sh` picks it by `git log --grep`, which names another bead's
+  commit and moves whenever anyone commits. `scripts/audit_attribution.py` re-derives the
+  attributed anomalies against the real closing commit and supplies the hook's exit code.
 - **A closing bead's body carries an ARTIFACTS block**, and `.githooks/pre-commit` refuses the
   close without one. `scripts/bead-artifact-block.sh <bead-id>` is the gate; every decision it
   makes lives in `scripts/bead_artifact_block.py`, because `tests/conftest.py` refuses a `bash`
@@ -121,22 +112,8 @@ Each line below was established by hitting it. Verify rather than trust if a too
   (`.githooks/pre-commit`) is invisible to that regex, and the gate names it while accepting the
   block as long as one visible path is present. Bypass, logged to `.check.log`:
   `CAIRN_ARTIFACT_BLOCK_SKIP='<reason>'`.
-- **CI takes `br` from the project's GitHub release, not from crates.io.** `cargo install
-  beads_rust --version 0.2.10 --locked` fails on a stable toolchain, because `fsqlite-types
-  0.1.3` opens with `#![feature(portable_simd)]`; the 0.5 line declares a rustc floor of
-  1.96, above the 1.94 this machine carries. `.github/workflows/ci.yml` pins `BR_VERSION`
-  and fetches `br-$BR_VERSION-darwin_$(uname -m).tar.gz`, checked against the sha256
-  published beside it. `br show <id> --json` is byte-identical between 0.2.10 and 0.5.3
-  against this repo's beads.
-- **`br` is held at 0.2.22 by beads_rust#457, and `br doctor` will not tell you.** 0.5.3 malforms a
-  migrated database under concurrent writes with `page N is referenced multiple times`; the
-  tell is `Mutation succeeded, but automatic JSONL export failed ... unable to open database
-  file` on a write that otherwise lands. `issues.jsonl` survives every time, so the recovery is
-  the rebuild below. `br doctor health` reports healthy on a database `integrity_check` calls
-  malformed, so health is not the check — `br doctor | grep integrity_check` is. A 0.2.x binary
-  refuses a 0.5.3-written database permanently, so downgrading means `br init` in a scratch
-  directory, copying that empty `beads.db` in beside `issues.jsonl`, and letting the import
-  restore it.
+- **`br doctor health` reports healthy on a database `integrity_check` calls malformed**, so
+  health is not the check. The version pin and why it is held live in `ci.yml` and `cairn-a30`.
 - **`br doctor` is the first move on any `br` failure**; it names the missing `.beads/.gitignore`
   patterns verbatim and reports a database whose schema the binary refuses. The one thing it will
   not do is recover that case: `--repair` fails closed at exit 4, and its remediation text loops back
