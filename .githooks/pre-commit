@@ -107,11 +107,24 @@ FORK_MISSING=""
 if [ -z "$FORK_MISSING" ] && ! grep -q "sync-rubric-from-policy.py" "$SKILL/scripts/bootstrap-audit.sh"; then
   FORK_MISSING="the sync call in scripts/bootstrap-audit.sh"
 fi
+# br 0.2.22 exits 1 for any check that is not "ok", and reports a malformed page
+# as status "error" with an anomaly of severity "recoverable". The upstream health
+# gate keys on "fail" and "error", so it reads a corrupt store as clean; the fork
+# keys on the benign values instead. Reverting it restores a gate that refuses
+# every workspace carrying an advisory WARN and passes one whose pages are gone,
+# and neither symptom names itself.
+if [ -z "$FORK_MISSING" ] && ! grep -q "def corrupting:" "$SKILL/scripts/bootstrap-audit.sh"; then
+  FORK_MISSING="the corruption predicate in scripts/bootstrap-audit.sh"
+fi
+if [ -z "$FORK_MISSING" ] && ! grep -q "no readable check list" "$SKILL/scripts/inventory-beads.sh"; then
+  FORK_MISSING="the guarded doctor capture in scripts/inventory-beads.sh"
+fi
 if [ -n "$FORK_MISSING" ]; then
   printf '%s FORK-REVERTED %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$FORK_MISSING" >> .beads_hook.log
   echo "[pre-commit] the compliance skill no longer carries $FORK_MISSING." >&2
-  echo "             weights_by_type would bind nothing and the audit would not say so." >&2
-  echo "             Re-apply the fork (CLAUDE.md lists all five sites), or bypass:" >&2
+  echo "             Without it the audit still exits 0 and still prints a score, while either" >&2
+  echo "             binding no weights or reading a corrupt store as clean. It would not say so." >&2
+  echo "             Re-apply the fork (CLAUDE.md lists the sites), or bypass:" >&2
   echo "             CAIRN_AUDIT_FORK_OK='<reason>' git commit ..." >&2
   if [ -z "${CAIRN_AUDIT_FORK_OK:-}" ]; then
     exit 1
@@ -119,6 +132,20 @@ if [ -n "$FORK_MISSING" ]; then
   printf '%s BYPASS fork check: %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$CAIRN_AUDIT_FORK_OK" >> .beads_hook.log
 fi
 printf '%s FORK-PRESENT compliance skill carries the rubric sync\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .beads_hook.log
+
+# The audit's precondition is a readable bead store, and the skill's hook reports
+# every nonzero result from single-bead-audit.sh as "score < threshold" — a
+# precondition that failed is indistinguishable there from a bead that was
+# measured and found wanting. This classifies the store first, so a refusal names
+# what happened. Its three outcomes reach .check.log.
+uv run python scripts/beads_doctor_gate.py > /tmp/cairn-doctor-gate.out 2>&1
+DOCTOR_GATE_RC=$?
+cat /tmp/cairn-doctor-gate.out >&2
+if [ "$DOCTOR_GATE_RC" -ne 0 ]; then
+  echo "[pre-commit] BLOCKED: the bead store's soundness is unestablished, so the compliance" >&2
+  echo "             audit did not run and no bead was scored. This is not a low score." >&2
+  exit 1
+fi
 
 # The skill's hook defaults to 700 and passes it as an explicit --threshold, which
 # single-bead-audit.sh takes over the policy file's value. audit-policy.yaml is the

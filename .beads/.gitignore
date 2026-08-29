@@ -11,6 +11,7 @@
 
 # Lock files
 *.lock
+.write.lock
 
 # Temporary
 last-touched
