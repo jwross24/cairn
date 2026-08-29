@@ -52,6 +52,34 @@
 threshold: 700
 remediation_policy: completion-debt
 
+# WHERE remediation_policy BINDS, AND WHY THE PRE-COMMIT PATH MINTS NOTHING.
+#
+# `completion-debt` above reaches the orchestrated path. The pre-commit path does
+# not read it: assets/pre-commit-hook.sh line 87 passes `--policy report-only` on
+# the command line, and single-bead-audit.sh applies this file at line 81 and
+# parses CLI flags at line 86, so the flag wins. Phase 9 of that script (line 229)
+# calls remediate.sh only for a policy other than `report-only`. A commit
+# therefore mints no completion-debt bead.
+#
+# That settles the question of whether the pre-commit path should run a real
+# Phase 4, or decline to mint: it declines, and a real Phase 4 is out of its
+# reach. single-bead-audit.sh line 152 writes the stub compliance.json and names
+# its replacement -- the compliance-verifier subagent -- as the orchestrator's
+# work. A git hook spawns no subagent, so the deterministic pass holds no
+# measurement of the tests dimension and no standing to mint debt from its own
+# silence.
+#
+# The minting that does happen runs under the orchestrator, and what it reads is
+# guarded by scripts/audit_missing_items.py, which .githooks/pre-commit runs over
+# the newest pass. gather-evidence.sh performs no search for a test item whose id
+# ends in `primary` (line 148), for an item in migrations, feature_flags or
+# telemetry (line 168), or for a code artifact carrying no expected_path_hints
+# (line 105, the sole reader of that field in the whole gatherer), and
+# score-bead.py lists all three under `Missing items (verbatim)` beside the items
+# a search did reach. The corrector splits that section into measured gaps and
+# unmeasured items, names the reason no search ran for each unmeasured one, and
+# refuses a false-closed verdict whose every item is unmeasured.
+
 # THE SWITCH THAT FAILS A FALSE CLOSE, AND THE EXTRACTION IT RESTS ON.
 #
 # A dimension goes `n/a` when the deterministic extractor found no items of its

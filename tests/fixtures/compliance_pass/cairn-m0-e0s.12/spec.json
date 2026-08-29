@@ -1,0 +1,122 @@
+{
+  "bead_id": "cairn-m0-e0s.12",
+  "extracted_at": "2026-08-27T18:10:03Z",
+  "extractor": "scripts/extract-spec.py",
+  "bead_status_at_extraction": "closed",
+  "bead_close_reason": "justify derives the \u00a77 calibration tag: kind ceilings, producer standing, structural coverage, lattice violations, and an append-only attributed tag history, reachable as cairn justify --statement. Evidence in the close comment at 8836bb1.",
+  "bead_closed_at": "2026-08-25T14:37:27.108882Z",
+  "bead_type": "task",
+  "bead_priority": 1,
+  "checklist": {
+    "code_artifacts": [
+      {
+        "id": "code.primary",
+        "description": "Primary code artifact(s) named in bead body",
+        "source_quote": "extracted from backtick-quoted paths in description/design",
+        "expected_path_hints": [
+          "cairn.log",
+          "e.population.assumptions",
+          "evidence.repro_record_hash",
+          "evidence_nodes.kind",
+          "skill_certificates.selftest_summary",
+          "src/cairn/attest.py",
+          "src/cairn/cli.py",
+          "src/cairn/justify.py",
+          "test.log.jsonl",
+          "tests/factories.py",
+          "tests/integration/test_justify.py",
+          "tests/mutants/justify_mutants.py",
+          "tests/unit/test_cli_contract.py",
+          "tests/unit/test_justify_properties.py",
+          "tests/unit/test_justify_rules.py",
+          "tests/unit/test_pari_module.py"
+        ],
+        "weight": 2
+      }
+    ],
+    "tests": {
+      "unit": [],
+      "integration": [
+        {
+          "id": "tests.integration.primary",
+          "description": "integration test required by bead body",
+          "weight": 1
+        }
+      ],
+      "e2e": [
+        {
+          "id": "tests.e2e.primary",
+          "description": "e2e test required by bead body",
+          "weight": 2
+        }
+      ],
+      "fuzz": [
+        {
+          "id": "tests.fuzz.primary",
+          "description": "fuzz test required by bead body",
+          "weight": 1,
+          "duration_seconds": 0,
+          "ci_wired": false,
+          "no_crashes": true
+        }
+      ],
+      "property": [],
+      "metamorphic": [
+        {
+          "id": "tests.metamorphic.primary",
+          "description": "metamorphic test required by bead body",
+          "weight": 1
+        }
+      ],
+      "golden": [],
+      "conformance": []
+    },
+    "documentation": [],
+    "migrations": [],
+    "feature_flags": [],
+    "telemetry": [
+      {
+        "id": "telemetry.primary",
+        "description": "Telemetry referenced in bead"
+      }
+    ],
+    "ci_workflows": [],
+    "acceptance_criteria": [
+      {
+        "id": "ac.1",
+        "verbatim": "Positive: `uv run pytest tests/integration/test_justify.py tests/unit/test_justify_rules.py -q` green with every done-when case named in the test ids; `uv run cairn justify --statement <hash>` prints the derived tag and justifying evidence hash, `--json` one document with `schema_version`, and an unknown hash exits 1."
+      },
+      {
+        "id": "ac.2",
+        "verbatim": "Planted negative: statistical\u2192PROVEN must be a LatticeViolation; missing or failed repro must cap at CONJECTURE; forged verdict digest must not yield PROVEN; a coverage gap must be a CoverageViolation; an all-`author_supplied` producer must be capped; a waiver record must move no tag. Any of these returning a positive class fails the bead."
+      },
+      {
+        "id": "ac.3",
+        "verbatim": "No-Claim: all evidence is synthetic; no ladder, Lean artifact or real verdict exists at M0; the Tier-2/3 branches (KEEP_IN_SAMPLE scope, hunt records) are exercised by construction only."
+      },
+      {
+        "id": "ac.4",
+        "verbatim": "MR-W, MR-A, MR-M, MR-C and MR-W\u2218MR-A in `tests/unit/test_justify_properties.py` green at \u2265 500 examples; every mutant in `tests/mutants/justify_mutants.py` (`comparator_strict_containment`, `comparator_checks_lo_only`, `comparator_assumptions_superset`, `derive_takes_last_node`, `kind_table_off_by_one`, `producer_rule_ignores_range`) killed \u2014 a survivor fails the bead; the comparator never raises unhandled on 500 arbitrary interval records."
+      },
+      {
+        "id": "ac.5",
+        "verbatim": "The kind \u2192 max-class table and the \u00a713 done-when cases are each one parametrized test (the done-when case ids are the `ids=`), all built from `tests/factories.py`; `tag_history` counts land in `test.log.jsonl` via `db_snapshot`."
+      },
+      {
+        "id": "ac.6",
+        "verbatim": "Done when: every bullet above has been re-executed at close, with the exact command and its raw output pasted in the close comment and bound to the commit SHA that produced it; a bullet without pasted output is not done."
+      },
+      {
+        "id": "ac.7",
+        "verbatim": "Evidence cites file:line for each touched source and test file in the close comment, so the compliance audit can re-run it without reading the session."
+      }
+    ],
+    "implicit_requirements": []
+  },
+  "constraints": {
+    "no_mocks": false,
+    "allowed_mocks": []
+  },
+  "coverage_gaps": [],
+  "extraction_notes": "Heuristic extraction from bead body. An LLM-driven extractor (subagents/bead-spec-extractor.md) should be preferred for richer spec capture; this script is the deterministic fallback."
+}
