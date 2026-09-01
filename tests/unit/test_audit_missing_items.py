@@ -371,3 +371,52 @@ def test_a_spec_that_does_not_parse_denies(tmp_path, capsys):
 
     assert "UNREADABLE-SPEC cairn-x" in capsys.readouterr().out
     assert "DENY missing-items unreadable-spec" in (tmp_path / "log").read_text()
+
+
+def test_a_scorecard_that_cannot_be_read_denies_under_its_own_name(tmp_path, capsys):
+    directory = bead(tmp_path, [TESTS_LINE])
+    scorecard_path = directory / "scorecard.md"
+    frozen = scorecard_path.read_text()
+    scorecard_path.chmod(0o000)
+    try:
+        code = main([str(directory), "--log", str(tmp_path / "log")])
+    finally:
+        scorecard_path.chmod(0o644)
+
+    assert code == 5
+    assert "UNREADABLE-SCORECARD cairn-x" in capsys.readouterr().out
+    assert "DENY missing-items unreadable-scorecard" in (tmp_path / "log").read_text()
+    assert scorecard_path.read_text() == frozen
+
+
+def test_a_spec_that_cannot_be_read_denies_apart_from_one_that_does_not_parse(tmp_path, capsys):
+    directory = bead(tmp_path, [TESTS_LINE])
+    scorecard_path = directory / "scorecard.md"
+    frozen = scorecard_path.read_text()
+    spec_path = directory / "spec.json"
+    spec_path.chmod(0o000)
+    try:
+        code = main([str(directory), "--log", str(tmp_path / "log")])
+    finally:
+        spec_path.chmod(0o644)
+
+    assert code == 6
+    out = capsys.readouterr().out
+    assert "UNREADABLE-SPEC-FILE cairn-x" in out
+    log = (tmp_path / "log").read_text()
+    assert "DENY missing-items unreadable-spec-file" in log
+    assert "DENY missing-items unreadable-spec:" not in log
+    assert scorecard_path.read_text() == frozen
+
+
+def test_a_spec_that_parses_to_something_other_than_an_object_denies(tmp_path, capsys):
+    directory = bead(tmp_path, [TESTS_LINE])
+    scorecard_path = directory / "scorecard.md"
+    frozen = scorecard_path.read_text()
+    (directory / "spec.json").write_text("[]")
+
+    assert main([str(directory), "--log", str(tmp_path / "log")]) == 7
+
+    assert "SPEC-NOT-AN-OBJECT cairn-x" in capsys.readouterr().out
+    assert "DENY missing-items spec-not-an-object" in (tmp_path / "log").read_text()
+    assert scorecard_path.read_text() == frozen

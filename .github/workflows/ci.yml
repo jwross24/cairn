@@ -37,13 +37,12 @@ jobs:
       # machines that write the beads have to agree on that shape. A bump here misses
       # the cache key below, which is what fetches the binary again.
       #
-      # Held at 0.2.22 while beads_rust#457 stands: 0.5.3 malforms a migrated database
-      # under concurrent writes, and the stress harness on that issue measures 0.2.22
-      # clean over 408 operations where 0.5.3 malformed at 87. A runner builds its
-      # database fresh from issues.jsonl and only reads, which is the case the issue
-      # reports as not reproducing, so this pin is for agreement with the machines that
-      # write rather than for the runner's own safety.
-      BR_VERSION: "0.2.22"
+      # Matches the binary the machines that write this repo carry, so a gate reads the
+      # same br in both places. beads_rust#457, where 0.5.3 malformed a migrated database
+      # on a single serial write, is fixed in 0.5.6 and confirmed by two independent A/B
+      # runs on 0.5.7. The release asset for the 0.5 line is named `beads_rust-`; the 0.2
+      # line published `br-`.
+      BR_VERSION: "0.5.7"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
@@ -74,7 +73,7 @@ jobs:
         # carry. Either failure would be a red run about Rust, not about cairn.
         run: |
           set -euo pipefail
-          asset="br-$BR_VERSION-darwin_$(uname -m).tar.gz"
+          asset="beads_rust-$BR_VERSION-darwin_$(uname -m).tar.gz"
           base="https://github.com/Dicklesworthstone/beads_rust/releases/download/v$BR_VERSION"
           work="$(mktemp -d)"
           curl -fsSL -o "$work/$asset" "$base/$asset"

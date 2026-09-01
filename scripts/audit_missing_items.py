@@ -34,11 +34,17 @@ measured and which were not. The vendored skill is left alone; a patch there is
 a sixth forked call site that an upstream update reverts silently.
 
 One line per bead reaches stdout: REWRITTEN, UNCHANGED, DEBT-FROM-NOTHING,
-NO-SECTION or UNREADABLE-SPEC. Exit 0 when no bead's false-closed verdict rests
-entirely on unmeasured items, 1 when one does, 2 when a path names nothing to
-check, 3 when a scorecard carries no `## Missing items (verbatim)` heading, and 4
-when a spec.json does not parse. The last two are structural: the section was
-never read, so the silence they produce is not a pass.
+NO-SECTION, UNREADABLE-SPEC, UNREADABLE-SCORECARD, UNREADABLE-SPEC-FILE or
+SPEC-NOT-AN-OBJECT. Exit 0 when no bead's false-closed verdict rests entirely on
+unmeasured items, 1 when one does, 2 when a path names nothing to check, 3 when a
+scorecard carries no `## Missing items (verbatim)` heading, 4 when a spec.json
+does not parse, 5 when a scorecard.md cannot be read, 6 when a spec.json cannot
+be read, and 7 when a spec.json parses to something other than an object.
+
+Every code above 2 is structural: the section was never read, so the silence it
+produces is not a pass. Each names its own verdict, exit code and .check.log
+line, because an input this tool cannot read is a distinct fact from one it read
+and disagreed with, and an agent confirming which path fired reads the log.
 """
 
 from __future__ import annotations
@@ -108,6 +114,9 @@ EXIT_DEBT_FROM_NOTHING = 1
 EXIT_NOTHING_TO_CHECK = 2
 EXIT_NO_SECTION = 3
 EXIT_UNREADABLE_SPEC = 4
+EXIT_UNREADABLE_SCORECARD = 5
+EXIT_UNREADABLE_SPEC_FILE = 6
+EXIT_SPEC_NOT_AN_OBJECT = 7
 
 
 class Gate:
@@ -283,11 +292,24 @@ def bead_dirs(paths: list[str]) -> list[Path]:
 
 
 def process(bead: Path) -> Outcome:
-    scorecard = (bead / "scorecard.md").read_text()
     try:
-        spec = json.loads((bead / "spec.json").read_text())
+        scorecard = (bead / "scorecard.md").read_text()
+    except OSError as shut:
+        return Outcome("UNREADABLE-SCORECARD", f"scorecard.md cannot be read: {shut}", "unreadable-scorecard")
+    try:
+        raw_spec = (bead / "spec.json").read_text()
+    except OSError as shut:
+        return Outcome("UNREADABLE-SPEC-FILE", f"spec.json cannot be read: {shut}", "unreadable-spec-file")
+    try:
+        spec = json.loads(raw_spec)
     except json.JSONDecodeError as broken:
         return Outcome("UNREADABLE-SPEC", f"spec.json does not parse: {broken}", "unreadable-spec")
+    if not isinstance(spec, dict):
+        return Outcome(
+            "SPEC-NOT-AN-OBJECT",
+            f"spec.json holds a {type(spec).__name__}, so it names no checklist to read",
+            "spec-not-an-object",
+        )
     if section_bounds(scorecard) is None:
         return Outcome(
             "NO-SECTION",
@@ -349,7 +371,10 @@ def main(argv: list[str] | None = None) -> int:
     # A structural failure outranks the verdict: it means the section was never read,
     # so `debt-from-nothing` could not have been decided for that bead either way.
     for problem, code, note in (
+        ("unreadable-scorecard", EXIT_UNREADABLE_SCORECARD, "scorecard.md cannot be read"),
+        ("unreadable-spec-file", EXIT_UNREADABLE_SPEC_FILE, "spec.json cannot be read"),
         ("unreadable-spec", EXIT_UNREADABLE_SPEC, "spec.json does not parse"),
+        ("spec-not-an-object", EXIT_SPEC_NOT_AN_OBJECT, "spec.json parses to something other than an object"),
         ("no-section", EXIT_NO_SECTION, f"no {HEADING!r} heading; the upstream renderer has drifted"),
         ("debt-from-nothing", EXIT_DEBT_FROM_NOTHING, "every item behind the FALSE-CLOSED verdict is unmeasured"),
     ):

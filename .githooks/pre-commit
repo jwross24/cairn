@@ -247,7 +247,8 @@ fi
 # `## Missing items (verbatim)`, and remediate.sh reads that section verbatim into a
 # minted completion-debt bead's acceptance criteria. A silence travels as a finding.
 # The corrector separates the two and refuses a false-closed verdict every one of
-# whose items is unmeasured. Its own three outcomes reach .check.log.
+# whose items is unmeasured. Each of its outcomes reaches .check.log under its own name,
+# including the ones where an input could not be read at all.
 if [ -n "$NEWEST_PASS" ] && [ -d "${NEWEST_PASS}beads" ]; then
   uv run python scripts/audit_missing_items.py "${NEWEST_PASS}beads" > /tmp/cairn-missing-items.out 2>&1
   MISSING_RC=$?
@@ -275,6 +276,25 @@ if [ -n "$NEWEST_PASS" ] && [ -d "${NEWEST_PASS}beads" ]; then
     4)
       printf '%s MISSING-ITEMS-UNREADABLE-SPEC %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$NEWEST_PASS" >> .beads_hook.log
       echo "[pre-commit] BLOCKED: a bead's spec.json does not parse, so its checklist is unknown." >&2
+      echo "             CAIRN_MISSING_ITEMS_SKIP='<reason>' git commit ..." >&2
+      AUDIT_RC=1
+      ;;
+    5)
+      printf '%s MISSING-ITEMS-UNREADABLE-SCORECARD %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$NEWEST_PASS" >> .beads_hook.log
+      echo "[pre-commit] BLOCKED: a bead's scorecard.md cannot be read, so no item was separated." >&2
+      echo "             CAIRN_MISSING_ITEMS_SKIP='<reason>' git commit ..." >&2
+      AUDIT_RC=1
+      ;;
+    6)
+      printf '%s MISSING-ITEMS-UNREADABLE-SPEC-FILE %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$NEWEST_PASS" >> .beads_hook.log
+      echo "[pre-commit] BLOCKED: a bead's spec.json cannot be read, so its checklist is unknown." >&2
+      echo "             CAIRN_MISSING_ITEMS_SKIP='<reason>' git commit ..." >&2
+      AUDIT_RC=1
+      ;;
+    7)
+      printf '%s MISSING-ITEMS-SPEC-NOT-AN-OBJECT %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$NEWEST_PASS" >> .beads_hook.log
+      echo "[pre-commit] BLOCKED: a bead's spec.json parses to something other than an object," >&2
+      echo "             so it names no checklist and its silence is not a pass." >&2
       echo "             CAIRN_MISSING_ITEMS_SKIP='<reason>' git commit ..." >&2
       AUDIT_RC=1
       ;;

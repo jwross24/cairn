@@ -45,10 +45,12 @@ Each line below was established by hitting it. Verify rather than trust if a too
   set the field afterwards with `br update <id> --acceptance-criteria=...`. `br create`
   also has no positional-only form for long titles starting with `-`; the `=` rule above
   applies to every text flag on both commands.
-- **`br show`/`br list --json` return a JSON array, not an object.** `jq '.title'` fails with
-  "Cannot index array with string"; index `.[0]` first. `br list --all --json` has been seen
-  wrapped one level deeper still, so a defensive `if (.[0]|type)=="array" then .[0] else . end`
-  survives both shapes.
+- **`br show --json` returns a JSON array; `br list --json` returns an object.** `jq '.title'`
+  on a `show` fails with "Cannot index array with string"; index `.[0]` first. `list` wraps its
+  rows: `{"issues": [...], "total", "limit", "offset", "has_more"}`, so `.issues` is the array
+  and `has_more` decides whether the page is the whole answer. A caller that indexes `list`
+  like an array gets a dict key and no error. Under br 0.2.22 both returned bare arrays, and a
+  defensive `if (.[0]|type)=="array" then .[0] else . end` was needed for `show`.
 - **zsh does not word-split an unquoted variable.** `P="--db X --pin Y"; cmd $P` passes one
   argument, and the command fails in a way that reads as a defect in the code. Build argument
   lists as arrays, or write the flags out. A pipeline also masks the exit code: `cmd | tail -1`
@@ -120,13 +122,24 @@ Each line below was established by hitting it. Verify rather than trust if a too
   block as long as one visible path is present. Bypass, logged to `.check.log`:
   `CAIRN_ARTIFACT_BLOCK_SKIP='<reason>'`.
 - **`br doctor health` reports healthy on a database `integrity_check` calls malformed**, so
-  health is not the check. The version pin and why it is held live in `ci.yml` and `cairn-a30`.
+  health is not the check. `sqlite3 .beads/beads.db "PRAGMA integrity_check"` is.
+- **`br` is 0.5.7, and `ci.yml` carries the matching `BR_VERSION`.** The 0.5 line publishes its
+  release asset as `beads_rust-<version>-darwin_<arch>.tar.gz`; the 0.2 line published `br-`, so
+  a version bump that leaves the asset name alone 404s. beads_rust#457 is fixed as of 0.5.6.
+  `scripts/beads_doctor_gate.py`'s benign-value allowlist was established on 0.2.22 and accepts
+  0.5.7's output unchanged: 55 `ok`, 1 `warn`, `workspace_health: healthy`, verdict advisory.
 - **`br doctor` is the first move on any `br` failure**; it names the missing `.beads/.gitignore`
   patterns verbatim and reports a database whose schema the binary refuses. The one thing it will
   not do is recover that case: `--repair` fails closed at exit 4, and its remediation text loops back
   to itself. `beads.db` is untracked derived state, so move the family aside and `br sync --import-only`
   rebuilds it from `issues.jsonl`, which then round-trips byte-identically through a flush.
-- **`br list --json` omits closed beads** (23 of 31 here). Pass `--all` or `--status closed`.
+- **`br list --json` omits closed beads.** Pass `--all` or `--status closed`. `--all` also
+  omits tombstones: 58 rows against 66 in `issues.jsonl`, the gap being 8 deleted beads, so the
+  JSONL is the only place a tombstone is visible.
+- **A second bead store sits at `~/.beads`, at schema 10.** br walks upward for a workspace, so
+  any command run while the repo's `.beads` is absent binds to that one instead and reports a
+  schema mismatch naming a database nobody meant to touch. Restore `.beads` before reading a
+  `br` error that mentions schema 17 against 10.
 - **`.beads/` is excluded by `~/.gitignore_global`.** This repo's `.gitignore` carries
   `!.beads/` to re-include it. `br sync --flush-only` before every `git add .beads/`.
 - **Never run bare `bv`** — it opens a TUI and blocks. `bv --robot-plan` ranks work by what a
