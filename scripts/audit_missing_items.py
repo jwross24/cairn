@@ -63,6 +63,10 @@ UNMEASURED_NOTE = (
 NONE_LINE = "(none)"
 ITEM_LINE_MARKERS = ("- spec item `", "- check `")
 FALSE_CLOSED_MARKER = "**🚨 FALSE-CLOSED**"
+# A scorecard whose denominator opens with this withheld no score, and its total is a
+# placeholder zero. A verdict resting on that total rests on nothing the audit measured,
+# so the debt check declines to speak for such a bead at all.
+UNVERIFIABLE_MARKER = "**Denominator:** UNVERIFIABLE"
 EXCLUDED_PHRASE = "EXCLUDED from numerator and denominator"
 
 # gather-evidence.sh iterates these five categories and carries a `case` arm for
@@ -291,7 +295,7 @@ def process(bead: Path) -> Outcome:
             "no-section",
         )
     items = classify(scorecard, spec)
-    false_closed = FALSE_CLOSED_MARKER in scorecard
+    false_closed = FALSE_CLOSED_MARKER in scorecard and UNVERIFIABLE_MARKER not in scorecard
     debt_from_nothing = false_closed and bool(items) and all(item.unresolvable for item in items)
     rebuilt = rewrite(scorecard, items)
     changed = rebuilt != scorecard

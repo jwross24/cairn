@@ -26,6 +26,7 @@ ROW_RE = re.compile(r"^\|(?!\s*\*\*TOTAL)\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|
 TOTAL_RE = re.compile(r"^\|\s*\*\*TOTAL\*\*\s*\|\s*\*\*(\d+)\*\*\s*\|\s*\*\*1000\*\*\s*\|", re.MULTILINE)
 RESCALED_RE = re.compile(r"scored over the (\d+) of 1000 weight measured \((\d+)/(\d+)\)")
 UNVERIFIABLE_RE = re.compile(r"UNVERIFIABLE — only (\d+) of 1000 weight was measured")
+FALSE_CLOSED_RE = re.compile(r"^\*\*🚨 FALSE-CLOSED\*\*", re.MULTILINE)
 EXCLUDED_CELL = "—"
 FULL_CREDIT_PHRASE = "WAIVED with full credit"
 
@@ -115,6 +116,11 @@ def check_scorecard(text: str) -> list[str]:
                 )
             if total_match and total_match.group(1) != "0":
                 problems.append(f"denominator says UNVERIFIABLE but the TOTAL row reports {total_match.group(1)}")
+            if FALSE_CLOSED_RE.search(text):
+                problems.append(
+                    "denominator says UNVERIFIABLE, so the total is a withheld placeholder; "
+                    "a FALSE-CLOSED line convicts on it as though it were a score"
+                )
         else:
             problems.append(f"unrecognized **Denominator:** note: {note!r}")
 

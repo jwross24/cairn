@@ -60,8 +60,17 @@ PLAIN_TABLE = """## Dimension scores
 """
 
 
-def scorecard(items, *, false_closed=False, table=TABLE):
+UNVERIFIABLE_DENOMINATOR = (
+    "**Denominator:** UNVERIFIABLE — only 425 of 1000 weight was measured, below the 450 this "
+    "project requires. Unmeasured: docs_etc, test_depth, tests. "
+    "A score over this base says nothing about the work.\n"
+)
+
+
+def scorecard(items, *, false_closed=False, table=TABLE, unverifiable=False):
     head = "# Scorecard — cairn-x\n\n**Score: 450 / 1000**\n"
+    if unverifiable:
+        head += UNVERIFIABLE_DENOMINATOR
     if false_closed:
         head += "**🚨 FALSE-CLOSED** (status=closed, score=450 < threshold 700)\n"
     return f"{head}\n{table}\n{HEADING}\n\n" + "\n".join(items) + "\n"
@@ -79,10 +88,12 @@ def spec(*, code_hints=("src/cairn/nowhere.py",)):
     }
 
 
-def bead(tmp_path, items, *, false_closed=False, spec_doc=None, table=TABLE):
+def bead(tmp_path, items, *, false_closed=False, spec_doc=None, table=TABLE, unverifiable=False):
     directory = tmp_path / "pass" / "beads" / "cairn-x"
     directory.mkdir(parents=True)
-    (directory / "scorecard.md").write_text(scorecard(items, false_closed=false_closed, table=table))
+    (directory / "scorecard.md").write_text(
+        scorecard(items, false_closed=false_closed, table=table, unverifiable=unverifiable)
+    )
     (directory / "spec.json").write_text(json.dumps(spec_doc or spec()))
     return directory
 
@@ -153,6 +164,17 @@ def test_a_false_closed_bead_whose_every_item_is_unresolvable_is_refused(tmp_pat
     assert "DEBT-FROM-NOTHING cairn-x" in out
     log = (tmp_path / "log").read_text()
     assert "DENY missing-items debt-from-nothing: cairn-x" in log
+
+
+def test_an_unverifiable_bead_does_not_reach_the_debt_verdict(tmp_path, capsys):
+    """The placeholder zero behind an UNVERIFIABLE denominator is a withheld score,
+    so a verdict resting on it rests on nothing the audit measured."""
+    directory = bead(tmp_path, [TESTS_LINE, TELEMETRY_LINE], false_closed=True, unverifiable=True)
+
+    assert main([str(directory), "--log", str(tmp_path / "log")]) == 0
+
+    assert "DEBT-FROM-NOTHING" not in capsys.readouterr().out
+    assert "debt-from-nothing" not in (tmp_path / "log").read_text()
 
 
 def test_a_false_closed_bead_with_one_real_gap_is_allowed(tmp_path):

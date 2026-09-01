@@ -91,7 +91,14 @@ Each line below was established by hitting it. Verify rather than trust if a too
   finding by the row's subject bead rather than by every id the row names, because being cited by
   somebody else's row is not a defect in this bead; and it reads
   `cross_bead_ignored_finding_patterns` from the rubric frontmatter, which
-  `sync-rubric-from-policy.py` folds in from `audit-policy.yaml`. `scripts/scorecard_coherence.py`
+  `sync-rubric-from-policy.py` folds in from `audit-policy.yaml`. It also separates an `n/a` note,
+  which means the extractor looked and found nothing, from a `WAIVED` note, which means the phase
+  never ran: `NA_MEASURED_DIMENSIONS` counts the first as measured for `docs_etc` alone, because
+  the same note on `implementation` awards 250 points to a body the extractor could not read. An
+  unverifiable pass is its own verdict rather than a false close, and the `unverifiable` flag it
+  emits is what `scripts/audit_attribution.py` blocks on, so a revert leaves that gate keyed on a
+  field nobody sets. `.githooks/pre-commit` greps for `NA_MEASURED_DIMENSIONS` and denies without
+  it. `scripts/scorecard_coherence.py`
   is the cairn-owned half: `.githooks/pre-commit` reads the newest pass's scorecards back and
   denies a table that disagrees with its own denominator, so a reverted presentation fork is
   visible rather than silent. Re-apply after any

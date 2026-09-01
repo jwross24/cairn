@@ -119,6 +119,16 @@ fi
 if [ -z "$FORK_MISSING" ] && ! grep -q "no readable check list" "$SKILL/scripts/inventory-beads.sh"; then
   FORK_MISSING="the guarded doctor capture in scripts/inventory-beads.sh"
 fi
+# An "n/a" note means the extractor looked and found nothing, and a "WAIVED" note means
+# the phase never ran. Upstream matches both with one regex, so a bead carrying no
+# documentation deliverable falls under the coverage floor and is convicted of theater
+# on a score the scorer declined to issue. The fork counts n/a as a measurement for
+# docs_etc alone; widening it to implementation awards 250 points to a body the
+# extractor could not read. scripts/audit_attribution.py blocks on the `unverifiable`
+# flag this fork emits, so a revert leaves that gate keyed on a field nobody sets.
+if [ -z "$FORK_MISSING" ] && ! grep -q "NA_MEASURED_DIMENSIONS" "$SKILL/scripts/score-bead.py"; then
+  FORK_MISSING="the n/a-is-a-measurement split in scripts/score-bead.py"
+fi
 if [ -n "$FORK_MISSING" ]; then
   printf '%s FORK-REVERTED %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$FORK_MISSING" >> .beads_hook.log
   echo "[pre-commit] the compliance skill no longer carries $FORK_MISSING." >&2

@@ -44,6 +44,8 @@ IGNORE_LIST_PATHS = (".ubsignore", ".eslintignore", ".gitignore", ".flake8", "py
 ATTRIBUTED_CATEGORIES = ("anomaly_empty_diff", "anomaly_ignore_list_growth")
 SEVERITIES = ("BLOCKING", "MAJOR", "MINOR", "NOTE")
 STAGED_LABEL = "(staged)"
+FALSE_CLOSED = "false-closed"
+UNVERIFIABLE = "unverifiable"
 GIT_TIMEOUT_SECONDS = 120
 SCORE_TIMEOUT_SECONDS = 600
 SKILL_CANDIDATES = (
@@ -228,7 +230,9 @@ def scored_bead_dirs(pass_dir: Path) -> list[Path]:
     return [d for d in sorted(beads.iterdir()) if all((d / name).is_file() for name in required)]
 
 
-def correct_pass(pass_dir: Path, *, resolutions, diff_for, score, prior: Path | None) -> list[tuple[str, str, bool]]:
+def correct_pass(
+    pass_dir: Path, *, resolutions, diff_for, score, prior: Path | None
+) -> list[tuple[str, str, str | None]]:
     results = []
     for bead_dir in scored_bead_dirs(pass_dir):
         bead_id = bead_dir.name
@@ -238,14 +242,28 @@ def correct_pass(pass_dir: Path, *, resolutions, diff_for, score, prior: Path | 
         (bead_dir / "theater.json").write_text(json.dumps(corrected, indent=2) + "\n")
         summary = score(bead_dir, pass_dir / "synthesis.md", prior)
         status = json.loads((bead_dir / "show.json").read_text()).get("status", "unknown")
-        failed = status == "closed" and bool(summary.get("false_closed"))
+        unverifiable = bool(summary.get("unverifiable"))
+        failure = None
+        if status == "closed":
+            if unverifiable:
+                failure = UNVERIFIABLE
+            elif summary.get("false_closed"):
+                failure = FALSE_CLOSED
         if resolution == UNKNOWN:
             verdict = "UNRESOLVED no commit closed this bead"
         elif notes:
             verdict = f"CORRECTED {resolution}: {'; '.join(notes)}"
         else:
             verdict = f"UNCHANGED {resolution}"
-        results.append((bead_id, f"{verdict} → score {summary.get('score')}", failed))
+        if unverifiable:
+            unmeasured = ", ".join(summary.get("unmeasured") or []) or "unnamed dimensions"
+            verdict += (
+                f" → the pass could not be verified; unmeasured: {unmeasured}"
+                " (no score was computed and no threshold was compared)"
+            )
+        else:
+            verdict += f" → score {summary.get('score')}"
+        results.append((bead_id, verdict, failure))
     return results
 
 
@@ -291,7 +309,7 @@ def main(argv: list[str] | None = None) -> int:
         resolutions = resolve(root)
         diff_for = git_closing_diff_reader(root)
         for pass_dir in selected:
-            for bead_id, verdict, bead_failed in correct_pass(
+            for bead_id, verdict, bead_failure in correct_pass(
                 pass_dir,
                 resolutions=resolutions,
                 diff_for=diff_for,
@@ -301,8 +319,8 @@ def main(argv: list[str] | None = None) -> int:
                 else None,
             ):
                 checked += 1
-                failed += bool(bead_failed)
-                print(f"{'FALSE-CLOSED' if bead_failed else 'OK'} {bead_id} {verdict}")
+                failed += bool(bead_failure)
+                print(f"{bead_failure.upper() if bead_failure else 'OK'} {bead_id} {verdict}")
     except GitError as failure:
         print(f"attribution: GIT-FAILED {failure}", file=sys.stderr)
         return GIT_FAILED_EXIT

@@ -15,12 +15,14 @@ CHILD_TIMEOUT_S = 60
 HEADER = "| Dimension | Score | Max | Why |\n|-----------|------:|----:|-----|"
 
 
-def card(score, rows, denominator=None, banner=None, total_why=""):
+def card(score, rows, denominator=None, banner=None, total_why="", false_closed=False):
     out = ["# Scorecard — x\n", f"**Score: {score} / 1000**", "**Verdict: x**"]
     if denominator:
         out.append(f"**Denominator:** {denominator}")
     if banner:
         out.append(f"**⚠ DETERMINISTIC-ONLY PASS:** {banner}")
+    if false_closed:
+        out.append(f"**🚨 FALSE-CLOSED** (status=closed, score={score} < threshold 700)")
     out += ["\n## Dimension scores\n", HEADER]
     out += [f"| {name} | {s} | {m} | why |" for name, s, m in rows]
     out.append(f"| **TOTAL** | **{score}** | **1000** | {total_why} |")
@@ -51,27 +53,40 @@ def test_rescaled_scorecard_is_coherent():
     assert check_scorecard(coherent_rescaled()) == []
 
 
-def test_unverifiable_scorecard_is_coherent():
-    rows = [
-        ("Implementation completeness vs. spec", "—", "—"),
-        ("Required tests present and meaningfully passing", "—", "—"),
-        ("Anti-theater", 200, 200),
-        ("Test depth", "—", "—"),
-        ("Docs / migrations / telemetry / flags", "—", "—"),
-        ("Cross-bead integration", 25, 25),
-    ]
-    note = (
-        "UNVERIFIABLE — only 225 of 1000 weight was measured, below the 450 this "
-        "project requires. Unmeasured: docs_etc, implementation, test_depth, tests."
-    )
-    text = card(
+UNVERIFIABLE_ROWS: list[tuple[str, Any, Any]] = [
+    ("Implementation completeness vs. spec", "—", "—"),
+    ("Required tests present and meaningfully passing", "—", "—"),
+    ("Anti-theater", 200, 200),
+    ("Test depth", "—", "—"),
+    ("Docs / migrations / telemetry / flags", "—", "—"),
+    ("Cross-bead integration", 25, 25),
+]
+UNVERIFIABLE_NOTE = (
+    "UNVERIFIABLE — only 225 of 1000 weight was measured, below the 450 this "
+    "project requires. Unmeasured: docs_etc, implementation, test_depth, tests."
+)
+UNVERIFIABLE_TOTAL_WHY = "UNVERIFIABLE — 225 of 1000 weight measured, below the 450 floor; no score is issued"
+
+
+def unverifiable_card(*, false_closed=False):
+    return card(
         0,
-        rows,
-        note,
+        UNVERIFIABLE_ROWS,
+        UNVERIFIABLE_NOTE,
         EXCLUDED_BANNER,
-        "UNVERIFIABLE — 225 of 1000 weight measured, below the 450 floor; no score is issued",
+        UNVERIFIABLE_TOTAL_WHY,
+        false_closed=false_closed,
     )
-    assert check_scorecard(text) == []
+
+
+def test_unverifiable_scorecard_is_coherent():
+    assert check_scorecard(unverifiable_card()) == []
+
+
+def test_unverifiable_denominator_beside_a_false_closed_line_is_refused():
+    """A withheld score is not a score, so a threshold comparison over it has no subject."""
+    problems = check_scorecard(unverifiable_card(false_closed=True))
+    assert any("FALSE-CLOSED" in p for p in problems)
 
 
 def test_fully_measured_scorecard_needs_no_denominator():

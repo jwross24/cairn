@@ -1,4 +1,5 @@
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -290,7 +291,34 @@ def test_the_scorers_false_closed_flag_is_what_the_verdict_reports(tmp_path):
         score=anti_theater_score,
         prior=None,
     )
-    assert [failed for _, _, failed in results] == [True]
+    assert [failure for _, _, failure in results] == ["false-closed"]
+
+
+def unverifiable_score(bead_dir, _synthesis, _prior):
+    """Stands in for score-bead.py on a pass whose measured weight fell under the floor."""
+    return {
+        "bead_id": bead_dir.name,
+        "score": 0,
+        "false_closed": False,
+        "unverifiable": True,
+        "unmeasured": ["docs_etc", "test_depth", "tests"],
+    }
+
+
+def test_a_closed_bead_the_pass_could_not_verify_still_fails_the_gate(tmp_path):
+    pass_dir, _ = write_pass(tmp_path, [MISATTRIBUTED])
+    ((_, verdict, failure),) = correct_pass(
+        pass_dir,
+        resolutions={BEAD: CLOSING_SHA},
+        diff_for=lambda _r: ClosingDiff(CLOSING_SHA, files_changed=7, ignore_adds=0),
+        score=unverifiable_score,
+        prior=None,
+    )
+    assert failure == "unverifiable"
+    assert "the pass could not be verified" in verdict
+    assert "docs_etc, test_depth, tests" in verdict
+    assert re.search(r"score\s+\d", verdict) is None
+    assert re.search(r"threshold\s+\d", verdict) is None
 
 
 @pytest.mark.parametrize("absent", ["spec.json", "show.json", "theater.json"])
