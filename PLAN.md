@@ -1660,12 +1660,12 @@ shows it binds.
   a compiled rho/BSGS baseline is funded at M1 only if the interpreted rung cannot finish
   inside the Tier-1 budget. (3) Tier-2 spend requires an open operator session until M3.
   (4) The Reframer drafts claim-statement nodes; a human ratifies through the human path of
-  §4. (5) Discretionary yanks, yank-reach narrowing and `salt` issuance are human-only, like
-  waivers; a gate verdict — a §2 self-test failure, a §6 `xP ≠ Q` or count-divergence
-  REJECT — yanks the faulting revision mechanically with the default whole-revision
-  reach, since a revision still minting OK results after its own self-test fails is a
-  gate failing open (§2), and the §4 human path carries the reach ruling, never the
-  gate's own yank. (6) A Linux
+  §4. (5) Discretionary yanks, yank-reach narrowing and a `salt` issued after no recorded
+  yank are human-only, like waivers; a gate verdict — a §2 self-test failure, a §6
+  `xP ≠ Q` or count-divergence REJECT — yanks the faulting revision mechanically with the
+  default whole-revision reach and bumps that class's salt with it (§3), since a revision
+  still minting OK results after its own self-test fails is a gate failing open (§2), and
+  the §4 human path carries the reach ruling, never the gate's own yank. (6) A Linux
   container enters at M1 with the formalization gate for the PROVEN gold tier; macOS
   `fake-landrun` is dev-only before that. (7) §15 P5–P7 stay until their decide-by
   milestones. (8) No separate OS user for the orchestrator before M3; at M0 the gate-bundle
