@@ -204,7 +204,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--report-file", default=None)
     parser.add_argument("--root", default=None)
     parser.add_argument("--log", default=None)
-    ns = parser.parse_args(argv)
+    # argparse exits 2 on a usage error, which is EXIT_REFUSED — a mistyped flag
+    # and a store whose soundness is unestablished would be one exit code.
+    try:
+        ns = parser.parse_args(argv)
+    except SystemExit as exc:
+        return EXIT_OK if exc.code in (0, None) else EXIT_USAGE
 
     root = Path(ns.root).resolve() if ns.root else Path(__file__).resolve().parents[1]
     gate = Gate(Path(ns.log) if ns.log else root / ".check.log")
