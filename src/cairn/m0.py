@@ -281,6 +281,8 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
         bundle_hash=gate_bundle.hash,
         evaluation=evaluation,
         ceiling_multiplier=gate_bundle.tiers["ceiling_multiplier"],
+        wall_cap_multiplier=gate_bundle.tiers["wall_cap_multiplier"],
+        wall_cap_floor_s=gate_bundle.tiers["wall_cap_floor_s"],
         tool_digests=bundle_identity["tool_digests"],
         scratch_root=scratch_root,
         budget_remaining=BUDGET_CORE_S,

@@ -3,7 +3,7 @@ from _substrate_helpers import launch, open_writer, recipe
 
 from cairn import substrate
 
-M1_STATUSES = ("SKILL_YANKED", "BUDGET_EXCEEDED", "INTERRUPTED")
+M1_STATUSES = ("SKILL_YANKED", "BUDGET_EXCEEDED", "BLOCKED", "INTERRUPTED")
 
 
 @pytest.fixture

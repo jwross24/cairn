@@ -10,6 +10,11 @@ from cairn.skills import toy_curve
 from cairn.substrate import blob_hash
 
 FIXTURES = str(Path(__file__).resolve().parent.parent / "fixtures")
+TIGHT_WALL_CAP = {"wall_cap_multiplier": 1.0, "wall_cap_floor_s": 0.0}
+HANDLER_INSTALLS_WITHIN_S = 3.0
+HANDLER_INSTALLS_WITHIN = Evaluation(
+    HANDLER_INSTALLS_WITHIN_S / 4, HANDLER_INSTALLS_WITHIN_S / 4, HANDLER_INSTALLS_WITHIN_S / 4
+)
 BUNDLE_HASH = "ab" * 32
 IDENTITY = toy_curve.identity_bundle()
 TOOL_DIGESTS = IDENTITY["tool_digests"]
@@ -177,14 +182,15 @@ def test_a_fixture_exiting_three_fails_and_its_receipt_carries_the_real_exit(wri
     assert writer.serve(attempt.recipe_key) is None
 
 
-def test_a_fixture_past_its_ceiling_is_killed_and_never_served(writer, tmp_path):
+def test_a_fixture_past_its_wall_cap_is_killed_and_never_served(writer, tmp_path):
     attempt = _fixture_launch(
         writer,
         tmp_path,
         "skills.sleep2",
         evaluation=Evaluation(0.2, 0.2, 0.2),
+        **TIGHT_WALL_CAP,
     )
-    assert attempt.status == "BUDGET_EXCEEDED"
+    assert attempt.status == "BLOCKED"
     assert attempt.launch.timed_out
     assert 0.8 <= attempt.launch.wall_s < 2.0
     assert writer.get_receipt(attempt.receipt_hash)["exit_status"] < 0
@@ -364,11 +370,12 @@ def test_a_sigterm_immune_child_is_escalated_to_sigkill(writer, tmp_path):
         writer,
         tmp_path,
         "skills.sigterm_immune",
-        evaluation=Evaluation(0.125, 0.125, 0.125),
+        evaluation=HANDLER_INSTALLS_WITHIN,
+        **TIGHT_WALL_CAP,
     )
-    assert attempt.status == "BUDGET_EXCEEDED"
+    assert attempt.status == "BLOCKED"
     assert attempt.launch.exit_status == -9
-    assert attempt.launch.wall_s < 5.0
+    assert attempt.launch.wall_s < 8.0
     assert writer.get_receipt(attempt.receipt_hash)["exit_status"] == -9
 
 
@@ -379,9 +386,10 @@ def test_the_group_sweep_leaves_no_stray_grandchild(writer, tmp_path):
         writer,
         tmp_path,
         "skills.forks_a_grandchild",
-        evaluation=Evaluation(0.125, 0.125, 0.125),
+        evaluation=HANDLER_INSTALLS_WITHIN,
+        **TIGHT_WALL_CAP,
     )
-    assert attempt.status == "BUDGET_EXCEEDED"
+    assert attempt.status == "BLOCKED"
     scratch = tmp_path / "runs" / attempt.attempt_id / "scratch"
     assert (scratch / "grandchild").exists()
     grandchild_pid = int((scratch / "grandchild_pid").read_text())
@@ -451,12 +459,13 @@ def test_the_child_is_asked_to_terminate_before_it_is_killed(writer, tmp_path):
         writer,
         tmp_path,
         "skills.traps_sigterm",
-        evaluation=Evaluation(0.125, 0.125, 0.125),
+        evaluation=HANDLER_INSTALLS_WITHIN,
+        **TIGHT_WALL_CAP,
     )
     scratch = tmp_path / "runs" / attempt.attempt_id / "scratch"
     assert (scratch / "sigterm_seen").read_text() == "term"
     assert attempt.launch.exit_status == 0
-    assert attempt.status == "BUDGET_EXCEEDED"
+    assert attempt.status == "BLOCKED"
 
 
 def test_a_grandchild_of_a_normally_exiting_child_is_still_swept(writer, tmp_path):
@@ -503,7 +512,7 @@ def test_an_exception_in_the_wait_loop_still_reaps_the_child(tmp_path, monkeypat
             runner.skill_argv("skills.sleep2", scratch),
             tmp_path / "stdout",
             tmp_path / "stderr",
-            ceiling_s=None,
+            wall_cap_s=None,
             env=runner.child_env({"PYTHONPATH": FIXTURES}),
             stdin_bytes=b"{}",
         )
@@ -604,12 +613,13 @@ def test_a_locked_substrate_exits_conflict(tmp_path, capsys):
     assert out == ""
 
 
-def test_a_kill_logs_the_ceiling_and_the_elapsed_wall(writer, tmp_path, json_test_log):
+def test_a_kill_logs_the_wall_cap_and_the_elapsed_wall(writer, tmp_path, json_test_log):
     _fixture_launch(
         writer,
         tmp_path,
         "skills.sleep2",
         evaluation=Evaluation(0.125, 0.125, 0.125),
+        **TIGHT_WALL_CAP,
     )
     records = [
         json.loads(line)
@@ -617,7 +627,7 @@ def test_a_kill_logs_the_ceiling_and_the_elapsed_wall(writer, tmp_path, json_tes
         if line.strip() and json.loads(line).get("event") == "kill"
     ]
     assert len(records) == 1
-    assert records[0]["ceiling_s"] == pytest.approx(0.5)
+    assert records[0]["wall_cap_s"] == pytest.approx(0.5)
     assert records[0]["terminated_at_s"] >= 0.5
     assert records[0]["wall_s"] >= records[0]["terminated_at_s"]
 
@@ -659,7 +669,7 @@ def test_the_grace_window_is_what_lets_a_slow_handler_finish(tmp_path, grace, ex
         runner.skill_argv("skills.slow_sigterm", scratch),
         tmp_path / "stdout",
         tmp_path / "stderr",
-        ceiling_s=0.2,
+        wall_cap_s=HANDLER_INSTALLS_WITHIN_S,
         env=runner.child_env({"PYTHONPATH": FIXTURES}),
         stdin_bytes=b"{}",
         grace=grace,
@@ -675,7 +685,7 @@ def test_a_slower_tick_still_stops_the_child(tmp_path):
         runner.skill_argv("skills.sleep2", scratch),
         tmp_path / "stdout",
         tmp_path / "stderr",
-        ceiling_s=0.2,
+        wall_cap_s=0.2,
         env=runner.child_env({"PYTHONPATH": FIXTURES}),
         stdin_bytes=b"{}",
         tick=0.05,
@@ -691,7 +701,7 @@ def test_the_default_grace_window_lets_a_prompt_handler_finish(tmp_path):
         runner.skill_argv("skills.slow_sigterm", scratch),
         tmp_path / "stdout",
         tmp_path / "stderr",
-        ceiling_s=0.2,
+        wall_cap_s=HANDLER_INSTALLS_WITHIN_S,
         env=runner.child_env({"PYTHONPATH": FIXTURES, "FIXTURE_SIGTERM_DELAY": "0.05"}),
         stdin_bytes=b"{}",
     )

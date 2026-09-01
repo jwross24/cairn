@@ -21,6 +21,7 @@ STATUS_OK = "OK"
 STATUS_FAIL = "FAIL"
 STATUS_DISAGREE = "DISAGREE"
 STATUS_BUDGET_EXCEEDED = "BUDGET_EXCEEDED"
+STATUS_BLOCKED = "BLOCKED"
 STATUS_SKILL_YANKED = "SKILL_YANKED"
 STATUS_INTERRUPTED = "INTERRUPTED"
 ENV_ALLOWLIST = ("PATH", "HOME", "LANG", "LC_ALL", "LC_CTYPE", "TMPDIR", "TZ")
@@ -28,6 +29,8 @@ MAXRSS_UNIT_BYTES = ("darwin",)
 MAXRSS_UNIT_KB = ("linux", "freebsd", "openbsd", "netbsd", "sunos")
 TICK_S = 0.005
 GRACE_S = 0.25
+WALL_CAP_MULTIPLIER = 4.0
+WALL_CAP_FLOOR_S = 120.0
 UTF8_BOM = b"\xef\xbb\xbf"
 
 
@@ -80,9 +83,11 @@ def parse_skill_output(stdout_bytes):
     return ParsedOutput.of({k: v for k, v in document.items() if k not in HARNESS_ONLY_KEYS}, status)
 
 
-def status_for(parsed, exit_status, wall_s, ceiling_s):
-    if ceiling_s is not None and wall_s > ceiling_s:
+def status_for(parsed, exit_status, cpu_s, ceiling_s, *, wall_capped=False):
+    if ceiling_s is not None and cpu_s > ceiling_s:
         return STATUS_BUDGET_EXCEEDED
+    if wall_capped:
+        return STATUS_BLOCKED
     if exit_status != 0:
         return STATUS_FAIL
     if not parsed.well_formed:
@@ -96,6 +101,13 @@ def status_for(parsed, exit_status, wall_s, ceiling_s):
 
 def ceiling_for(declared_expectation_s, ceiling_multiplier):
     return float(ceiling_multiplier) * float(declared_expectation_s)
+
+
+def wall_cap_for(ceiling_s, wall_cap_multiplier=WALL_CAP_MULTIPLIER, wall_cap_floor_s=WALL_CAP_FLOOR_S):
+    if ceiling_s is None:
+        return None
+    ceiling_s = float(ceiling_s)
+    return max(float(wall_cap_multiplier) * ceiling_s, ceiling_s + float(wall_cap_floor_s))
 
 
 def child_env(extra=None, base=None):
@@ -163,7 +175,7 @@ def spawn_and_wait(
     out_path,
     err_path,
     *,
-    ceiling_s,
+    wall_cap_s,
     env,
     stdin_bytes=b"",
     tick=TICK_S,
@@ -199,12 +211,12 @@ def spawn_and_wait(
                     reaped = True
                     break
                 elapsed = time.monotonic() - start
-                if ceiling_s is not None and terminated_at is None and elapsed >= ceiling_s:
+                if wall_cap_s is not None and terminated_at is None and elapsed >= wall_cap_s:
                     terminated_at = elapsed
                     _signal_group(pgid, proc.pid, signal.SIGTERM)
                 elif terminated_at is not None and elapsed >= terminated_at + grace:
                     _signal_group(pgid, proc.pid, signal.SIGKILL)
-                remaining = tick if ceiling_s is None else min(tick, max(0.0, ceiling_s - elapsed))
+                remaining = tick if wall_cap_s is None else min(tick, max(0.0, wall_cap_s - elapsed))
                 time.sleep(remaining or tick)
         finally:
             if not reaped:
@@ -239,7 +251,7 @@ def spawn_and_wait(
     if terminated_at is not None:
         lg.warning(
             "kill",
-            ceiling_s=ceiling_s,
+            wall_cap_s=wall_cap_s,
             terminated_at_s=round(terminated_at, 6),
             wall_s=round(launch.wall_s, 6),
             rc=launch.exit_status,
@@ -332,6 +344,8 @@ def launch(
     ceiling_multiplier,
     tool_digests,
     scratch_root,
+    wall_cap_multiplier=WALL_CAP_MULTIPLIER,
+    wall_cap_floor_s=WALL_CAP_FLOOR_S,
     replay="Replayable",
     skip_cache_lookup=False,
     do_not_cache=False,
@@ -342,6 +356,7 @@ def launch(
     lg = log.get(LOG_STEP)
     startup_scan(sub)
     ceiling_s = ceiling_for(evaluation.expected_wall_s, ceiling_multiplier)
+    wall_cap_s = wall_cap_for(ceiling_s, wall_cap_multiplier, wall_cap_floor_s)
     if budget_remaining is not None and budget_remaining < ceiling_s:
         raise BudgetRefused(budget_remaining, ceiling_s)
     recipe_key = sub.put_recipe(recipe, do_not_cache=do_not_cache)
@@ -381,14 +396,20 @@ def launch(
             skill_argv(skill_module, scratch_dir),
             out_path,
             err_path,
-            ceiling_s=ceiling_s,
+            wall_cap_s=wall_cap_s,
             env=child_env(env_extra),
             stdin_bytes=stdin_bytes,
         )
         scratch_written = max(0, allocated_bytes(scratch_dir) - before)
         stdout_bytes, stderr_bytes = out_path.read_bytes(), err_path.read_bytes()
         parsed = parse_skill_output(stdout_bytes)
-        status = status_for(parsed, run.exit_status, run.wall_s, ceiling_s)
+        status = status_for(
+            parsed,
+            run.exit_status,
+            run.cpu_user_s + run.cpu_sys_s,
+            ceiling_s,
+            wall_capped=run.timed_out,
+        )
         manifest = None
         if parsed.well_formed:
             manifest = sub.put_output_manifest(

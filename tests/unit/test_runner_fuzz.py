@@ -83,10 +83,15 @@ def test_a_malformed_document_always_maps_to_fail(raw):
 
 
 @fixture_ok
-@given(raw=mangled, exit_status=st.integers(-64, 64), wall=st.floats(0.0, 100.0))
-def test_the_status_is_always_one_of_the_four(raw, exit_status, wall):
-    status = runner.status_for(runner.parse_skill_output(raw), exit_status, wall, CEILING)
-    assert status in ("OK", "FAIL", "DISAGREE", "BUDGET_EXCEEDED")
+@given(
+    raw=mangled,
+    exit_status=st.integers(-64, 64),
+    wall=st.floats(0.0, 100.0),
+    wall_capped=st.booleans(),
+)
+def test_the_status_is_always_one_of_the_five(raw, exit_status, wall, wall_capped):
+    status = runner.status_for(runner.parse_skill_output(raw), exit_status, wall, CEILING, wall_capped=wall_capped)
+    assert status in ("OK", "FAIL", "DISAGREE", "BUDGET_EXCEEDED", "BLOCKED")
 
 
 @pytest.mark.parametrize("raw", _seed_corpus(), ids=lambda r: str(len(r)))

@@ -24,7 +24,7 @@ from cairn.substrate import (
     WriterAlreadyOpen,
 )
 
-NON_OK_STATUSES = ("RUNNING", "FAIL", "DISAGREE", "BUDGET_EXCEEDED", "SKILL_YANKED", "INTERRUPTED")
+NON_OK_STATUSES = ("RUNNING", "FAIL", "DISAGREE", "BUDGET_EXCEEDED", "BLOCKED", "SKILL_YANKED", "INTERRUPTED")
 
 
 @pytest.fixture

@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS attempts (
     recipe_key TEXT NOT NULL,
     output_manifest_hash TEXT,
     receipt_hash TEXT,
-    status TEXT NOT NULL CHECK (status IN ('RUNNING', 'OK', 'FAIL', 'DISAGREE', 'BUDGET_EXCEEDED', 'SKILL_YANKED', 'INTERRUPTED')),
+    status TEXT NOT NULL CHECK (status IN ('RUNNING', 'OK', 'FAIL', 'DISAGREE', 'BUDGET_EXCEEDED', 'BLOCKED', 'SKILL_YANKED', 'INTERRUPTED')),
     replay_grade TEXT NOT NULL CHECK (replay_grade IN ('Replayable', 'Verifiable', 'AuditOnly')),
     verifier_result_hash TEXT,
     certificate_hash TEXT,
@@ -157,7 +157,7 @@ CREATE TRIGGER IF NOT EXISTS attempts_append_only BEFORE UPDATE ON attempts
 WHEN NOT (
     (
         OLD.status = 'RUNNING' AND OLD.ended_at IS NULL
-        AND NEW.status IN ('OK', 'FAIL', 'DISAGREE', 'BUDGET_EXCEEDED', 'SKILL_YANKED', 'INTERRUPTED')
+        AND NEW.status IN ('OK', 'FAIL', 'DISAGREE', 'BUDGET_EXCEEDED', 'BLOCKED', 'SKILL_YANKED', 'INTERRUPTED')
         AND NEW.ended_at IS NOT NULL
         AND NEW.attempt_id IS OLD.attempt_id
         AND NEW.recipe_key IS OLD.recipe_key

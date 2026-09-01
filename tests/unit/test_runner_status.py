@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -61,8 +62,8 @@ CASES = [
 
 @pytest.mark.parametrize(("exit_status", "well_formed", "skill_status", "where", "expected"), CASES)
 def test_the_status_table(exit_status, well_formed, skill_status, where, expected):
-    wall = UNDER if where == "under" else OVER
-    assert runner.status_for(_parsed(well_formed, skill_status), exit_status, wall, CEILING) == expected
+    cpu = UNDER if where == "under" else OVER
+    assert runner.status_for(_parsed(well_formed, skill_status), exit_status, cpu, CEILING) == expected
 
 
 def test_the_table_covers_every_cell_exactly_once():
@@ -76,13 +77,13 @@ def test_the_table_covers_every_cell_exactly_once():
 def test_every_terminal_status_the_runner_can_emit_is_reachable():
     from cairn import substrate
 
-    emitted = set(UNDER_CEILING.values()) | {"BUDGET_EXCEEDED"}
-    assert emitted == {"OK", "FAIL", "DISAGREE", "BUDGET_EXCEEDED"}
+    emitted = set(UNDER_CEILING.values()) | {"BUDGET_EXCEEDED", "BLOCKED"}
+    assert emitted == {"OK", "FAIL", "DISAGREE", "BUDGET_EXCEEDED", "BLOCKED"}
     assert emitted <= set(substrate.TERMINAL_STATUSES)
     assert runner.STATUS_INTERRUPTED in substrate.TERMINAL_STATUSES
 
 
-def test_a_wall_exactly_at_the_ceiling_is_not_over_budget():
+def test_a_cpu_reading_exactly_at_the_ceiling_is_not_over_budget():
     parsed = _parsed(True, "OK")
     assert runner.status_for(parsed, 0, CEILING, CEILING) == "OK"
     assert runner.status_for(parsed, 0, CEILING + 1e-9, CEILING) == "BUDGET_EXCEEDED"
@@ -91,6 +92,62 @@ def test_a_wall_exactly_at_the_ceiling_is_not_over_budget():
 def test_an_absent_ceiling_never_produces_budget_exceeded():
     parsed = _parsed(True, "OK")
     assert runner.status_for(parsed, 0, 1e9, None) == "OK"
+
+
+def test_a_wall_capped_kill_that_stayed_inside_the_cpu_ceiling_reads_as_blocked():
+    parsed = _parsed(True, "OK")
+    assert runner.status_for(parsed, -15, UNDER, CEILING, wall_capped=True) == "BLOCKED"
+    assert runner.status_for(parsed, -9, 0.0, CEILING, wall_capped=True) == "BLOCKED"
+    assert runner.status_for(parsed, 0, UNDER, CEILING, wall_capped=False) == "OK"
+
+
+def test_cpu_past_the_ceiling_outranks_the_wall_cap():
+    parsed = _parsed(True, "OK")
+    assert runner.status_for(parsed, -9, OVER, CEILING, wall_capped=True) == "BUDGET_EXCEEDED"
+
+
+def test_a_wall_cap_with_no_ceiling_still_reads_as_blocked():
+    parsed = _parsed(True, "OK")
+    assert runner.status_for(parsed, -9, 1e9, None, wall_capped=True) == "BLOCKED"
+
+
+@pytest.mark.parametrize(
+    ("ceiling", "multiplier", "floor", "expected"),
+    [
+        (0.5352, 4, 120, 120.5352),
+        (0.8, 4, 0.0, 3.2),
+        (0.8, 1.0, 0.0, 0.8),
+        (60.0, 4, 120, 240.0),
+        (0.0, 4, 120, 120.0),
+    ],
+    ids=[
+        "toy-curve-40-bit-under-the-shipped-tiers",
+        "multiplier-wins-when-the-floor-is-zero",
+        "a-unit-multiplier-and-no-floor-is-the-ceiling-itself",
+        "multiplier-wins-once-the-ceiling-is-large",
+        "a-zero-ceiling-still-gets-the-floor",
+    ],
+)
+def test_wall_cap_arithmetic(ceiling, multiplier, floor, expected):
+    assert runner.wall_cap_for(ceiling, multiplier, floor) == pytest.approx(expected)
+
+
+def test_an_absent_ceiling_has_no_wall_cap():
+    assert runner.wall_cap_for(None) is None
+
+
+def test_the_wall_cap_is_never_below_the_cpu_ceiling():
+    for ceiling in (0.0, 0.001, 0.5352, 1.0, 3600.0):
+        assert runner.wall_cap_for(ceiling) >= ceiling
+
+
+def test_the_shipped_tiers_carry_both_clocks():
+    import json
+
+    tiers = json.loads((Path(__file__).resolve().parents[2] / "bundle" / "tiers.json").read_text())
+    assert tiers["ceiling_multiplier"] == 4
+    assert tiers["wall_cap_multiplier"] == 4
+    assert tiers["wall_cap_floor_s"] == 120
 
 
 @pytest.mark.parametrize(
