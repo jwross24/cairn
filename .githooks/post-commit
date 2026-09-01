@@ -42,13 +42,15 @@ if [ "$CLOSING_RC" -ne 0 ]; then
   exit 0
 fi
 
-# pre-commit records the ids its gates ran for. The record is read once and deleted,
-# so an amended close -- invisible to `git diff --cached` and therefore ungated -- finds
-# nothing vouching for it here.
+# pre-commit records the ids its gates ran for, the parent they sat on and the tree they
+# ran over. The record is read once and deleted, so an amended close -- invisible to
+# `git diff --cached` and therefore ungated -- finds nothing vouching for it here, and a
+# record left behind by an abandoned run names content this commit does not carry.
 # shellcheck disable=SC2086
 GATE_OUT="$(uv run python scripts/gate_marker.py check \
   --git-dir "$(git rev-parse --git-dir)" \
   --parent "$(git rev-parse --verify -q HEAD^ || true)" \
+  --tree "$(git rev-parse --verify -q 'HEAD^{tree}' || true)" \
   $CLOSED 2>&1)"
 GATE_RC=$?
 if [ "$GATE_RC" -ne 0 ]; then

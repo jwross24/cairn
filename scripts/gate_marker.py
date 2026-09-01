@@ -16,8 +16,14 @@ one behind cannot vouch for the next commit. It also carries the sha the gated c
 was to sit on, and post-commit compares that against the new commit's first parent --
 an amend replaces a commit rather than sitting on it, so the two disagree there.
 
-  usage: gate_marker.py record --git-dir <dir> --parent <sha> [<bead-id> ...]
-         gate_marker.py check  --git-dir <dir> --parent <sha> [<bead-id> ...]
+A parent and a bead list do not identify the content that was gated. A pre-commit run
+whose commit is then abandoned leaves the record in place, and a later `--no-verify`
+commit on the same parent closing the same beads matches it whatever its files hold.
+The record therefore carries the tree the gates ran over -- `git write-tree` in
+pre-commit, the commit's own tree in post-commit -- so it attests to content.
+
+  usage: gate_marker.py record --git-dir <dir> --parent <sha> --tree <sha> [<bead-id> ...]
+         gate_marker.py check  --git-dir <dir> --parent <sha> --tree <sha> [<bead-id> ...]
 
 `check` prints one line and exits 0 to allow the push, 1 to deny it. The record lives
 inside the git directory, which is never part of the worktree and needs no ignore rule.
@@ -40,13 +46,14 @@ def marker_path(git_dir: str | Path) -> Path:
     return Path(git_dir) / MARKER_NAME
 
 
-def record_text(parent: str, bead_ids) -> str:
-    return json.dumps({"parent": parent, "gated": sorted(set(bead_ids))}, indent=2, sort_keys=True) + "\n"
+def record_text(parent: str, bead_ids, tree: str = "") -> str:
+    payload = {"parent": parent, "tree": tree, "gated": sorted(set(bead_ids))}
+    return json.dumps(payload, indent=2, sort_keys=True) + "\n"
 
 
-def write_record(path: Path, parent: str, bead_ids) -> None:
+def write_record(path: Path, parent: str, bead_ids, tree: str = "") -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(record_text(parent, bead_ids))
+    path.write_text(record_text(parent, bead_ids, tree))
 
 
 def read_record(path: Path) -> dict | None:
@@ -58,10 +65,10 @@ def read_record(path: Path) -> dict | None:
 
 
 def describe(sha: str) -> str:
-    return sha or "(no parent)"
+    return sha or "(none)"
 
 
-def verdict(record: dict | None, closed_ids, parent: str) -> tuple[str, str]:
+def verdict(record: dict | None, closed_ids, parent: str, tree: str = "") -> tuple[str, str]:
     closed = sorted(set(closed_ids))
     if not closed:
         return OK, "this commit closes no bead, so no gate was owed"
@@ -73,6 +80,12 @@ def verdict(record: dict | None, closed_ids, parent: str) -> tuple[str, str]:
         return DENY, (
             f"the gate record was written for a commit sitting on {describe(recorded_parent)} "
             f"and this one sits on {describe(parent)}, so it says nothing about {named}"
+        )
+    recorded_tree = str(record.get("tree", ""))
+    if recorded_tree != tree:
+        return DENY, (
+            f"the gate record was written over the tree {describe(recorded_tree)} "
+            f"and this commit carries {describe(tree)}, so it says nothing about {named}"
         )
     gated = {str(bead) for bead in record.get("gated") or []}
     missing = [bead for bead in closed if bead not in gated]
@@ -87,12 +100,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("bead_ids", nargs="*")
     parser.add_argument("--git-dir", required=True)
     parser.add_argument("--parent", default="")
+    parser.add_argument("--tree", default="")
     args = parser.parse_args(argv)
 
     path = marker_path(args.git_dir)
     if args.action == "record":
         try:
-            write_record(path, args.parent, args.bead_ids)
+            write_record(path, args.parent, args.bead_ids, args.tree)
         except OSError as failure:
             print(f"gate-marker: cannot write {path}: {failure}", file=sys.stderr)
             return 2
@@ -101,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
 
     record = read_record(path)
     path.unlink(missing_ok=True)
-    outcome, reason = verdict(record, args.bead_ids, args.parent)
+    outcome, reason = verdict(record, args.bead_ids, args.parent, args.tree)
     print(f"{outcome} {reason}")
     return EXIT_BY_VERDICT[outcome]
 

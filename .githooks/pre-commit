@@ -22,11 +22,18 @@ cd "$ROOT" || exit 1
 # below sit out an amended close while post-commit still pushes it. Every successful
 # path through this hook records the ids it gated; post-commit refuses to push a closed
 # bead that record does not name.
+#
+# The record names the staged tree as well, because a parent and a bead list do not
+# identify content: an abandoned run leaves its record behind, and a later
+# `--no-verify` commit on the same parent closing the same beads would otherwise be
+# vouched for whatever its files hold. `git write-tree` writes objects and moves no
+# ref, and the index it hashes is the one the commit is built from.
 record_gate() {
   # shellcheck disable=SC2086
   if uv run python scripts/gate_marker.py record \
       --git-dir "$(git rev-parse --git-dir)" \
       --parent "$(git rev-parse --verify -q HEAD || true)" \
+      --tree "$(git write-tree 2>/dev/null || true)" \
       ${1:-} >/dev/null 2>&1; then
     printf '%s GATE-RECORD %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${1:-none}" >> .beads_hook.log
   else
