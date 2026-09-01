@@ -8,9 +8,12 @@ from pathlib import Path
 import pytest
 import yaml
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+ROOT_DIR = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT_DIR / "scripts"))
+sys.path.insert(0, str(ROOT_DIR / "tests"))
 
-from theater_patterns import (
+from _bead_store import bead_store, no_database  # noqa: E402
+from theater_patterns import (  # noqa: E402
     EXPIRY_BEAD,
     SECTION,
     PolicyError,
@@ -425,7 +428,7 @@ def test_cli_refuses_a_finding_and_logs_fail(tmp_path):
 
 def test_cli_passes_the_real_tree_under_the_real_policy(tmp_path):
     log = tmp_path / "gate.log"
-    proc = run_cli("--root", str(ROOT), "--policy", str(POLICY), "--log", str(log))
+    proc = run_cli("--root", str(ROOT), "--policy", str(POLICY), "--log", str(log), cwd=bead_store())
     assert proc.returncode == 0, proc.stderr
     assert "PASS theater-patterns" in log.read_text()
 
@@ -502,14 +505,51 @@ def test_check_sh_runs_the_gate():
 
 
 def test_a_br_that_never_answers_denies_the_scan_rather_than_skipping_the_expiry(monkeypatch):
+    import br_lookup
     import theater_patterns
 
     def expire(argv, **kwargs):
         assert kwargs.get("timeout") == theater_patterns.BR_TIMEOUT_SECONDS, argv
         raise subprocess.TimeoutExpired(argv, theater_patterns.BR_TIMEOUT_SECONDS)
 
-    monkeypatch.setattr(theater_patterns.subprocess, "run", expire)
+    monkeypatch.chdir(bead_store())
+    monkeypatch.setattr(br_lookup.subprocess, "run", expire)
     with pytest.raises(LookupError) as raised:
         theater_patterns.bead_status_resolver()("cairn-fur")
     assert "did not answer within" in str(raised.value)
     assert "cairn-fur" in str(raised.value)
+
+
+def test_cli_with_no_database_names_the_missing_store_rather_than_a_sync_conflict(tmp_path):
+    log = tmp_path / "gate.log"
+    proc = run_cli("--root", str(ROOT), "--policy", str(POLICY), "--log", str(log), cwd=no_database())
+    assert proc.returncode == 0, proc.stderr
+    text = log.read_text()
+    assert "EXPIRY-UNKNOWN theater-patterns [no-database]" in text
+    assert "PASS theater-patterns" in text
+    assert "br sync --import-only" in proc.stderr
+    assert "SYNC_CONFLICT" not in proc.stderr
+
+
+def test_cli_with_br_off_path_is_not_reported_as_a_missing_database(tmp_path):
+    log = tmp_path / "gate.log"
+    proc = run_cli(
+        "--root", str(ROOT), "--policy", str(POLICY), "--log", str(log), env=without_br(tmp_path), cwd=bead_store()
+    )
+    assert proc.returncode == 0, proc.stderr
+    text = log.read_text()
+    assert "EXPIRY-UNKNOWN theater-patterns [br-absent]" in text
+    assert "no bead database" not in text
+
+
+def test_cli_refuses_an_exemption_whose_bead_is_not_in_the_store(tmp_path):
+    tree(tmp_path, {"tests/unit/test_a.py": SKIP_BLOCK.format(mark=MARK, reason="r")})
+    log = tmp_path / "gate.log"
+    policy = policy_file(
+        tmp_path, document(exempt_paths=exempt("tests/unit/test_a.py"), exempt_until_bead="cairn-zzz9")
+    )
+    proc = run_cli("--root", str(tmp_path), "--policy", str(policy), "--log", str(log), cwd=bead_store())
+    assert proc.returncode == 3, proc.stdout + proc.stderr
+    assert "cairn-zzz9 is not in the bead store" in proc.stderr
+    assert "br list --all" in proc.stderr
+    assert "DENY theater-patterns policy" in log.read_text()

@@ -22,20 +22,22 @@ Exit codes follow src/cairn/exits.py: 0 valid, 2 refused, 3 environment,
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import br_lookup
+
 BEGIN = "ARTIFACTS-BEGIN"
 END = "ARTIFACTS-END"
 GIT_TIMEOUT_SECONDS = 30
-BR_TIMEOUT_SECONDS = 60
+BR_TIMEOUT_SECONDS = br_lookup.BR_TIMEOUT_SECONDS
 
 # Mirrors PATH_HINT_RE in the compliance skill's scripts/extract-spec.py. A path
 # the extractor cannot see contributes nothing to the implementation dimension,
@@ -182,22 +184,22 @@ def git_commit_resolver(root: Path):
 
 def bead_body(bead_id: str) -> tuple[str, str]:
     """The concatenated fields the compliance extractor reads, plus the status."""
-    try:
-        proc = subprocess.run(
-            ["br", "show", bead_id, "--json"], capture_output=True, text=True, timeout=BR_TIMEOUT_SECONDS
-        )
-    except subprocess.TimeoutExpired as expired:
-        raise LookupError(
-            f"br show {bead_id} did not answer within {BR_TIMEOUT_SECONDS}s; retry after: br sync --flush-only"
-        ) from expired
-    if proc.returncode != 0:
-        raise LookupError(f"br show {bead_id} exited {proc.returncode}: {proc.stderr.strip()}")
-    rows = json.loads(proc.stdout)
-    while isinstance(rows, list) and rows and isinstance(rows[0], list):
-        rows = rows[0]
-    row = rows[0] if isinstance(rows, list) else rows
+    row = br_lookup.bead_row(bead_id)
     body = "\n".join(str(row.get(f) or "") for f in BODY_FIELDS)
     return body, str(row.get("status") or "unknown")
+
+
+def deny_lookup(gate: Gate, error: br_lookup.BeadLookupError, subject: str) -> int:
+    """One exit code, but the condition, its evidence and its fix are separate lines."""
+    gate.say(f"DENY artifact-block infra [{error.condition}]: {subject}: {error.detail}")
+    print(
+        f"[artifact-block] {error.headline(subject)}; refusing to report a block as valid without reading it.",
+        file=sys.stderr,
+    )
+    print(f"                 {error.detail}", file=sys.stderr)
+    print(f"                 {error.remediation}", file=sys.stderr)
+    print("                 bypass (logged): CAIRN_ARTIFACT_BLOCK_SKIP='<reason>'", file=sys.stderr)
+    return EXIT_ENVIRONMENT
 
 
 def report(label: str, body: str, root: Path, *, resolve_commit=None) -> tuple[bool, list[str]]:
@@ -329,25 +331,17 @@ def main(argv: list[str] | None = None) -> int:
         gate.say(f"FAIL artifact-block {ns.body_file}: {len(errors)} finding(s)")
         return EXIT_REFUSED
 
-    if shutil.which("br") is None:
-        gate.say("DENY artifact-block infra: br not on PATH")
-        print(
-            "[artifact-block] br is not installed; refusing to report a block as valid without reading it.",
-            file=sys.stderr,
-        )
-        print("                 bypass (logged): CAIRN_ARTIFACT_BLOCK_SKIP='<reason>'", file=sys.stderr)
-        return EXIT_ENVIRONMENT
+    blocked = br_lookup.unavailable()
+    if blocked is not None:
+        return deny_lookup(gate, blocked, subjects)
 
     status = EXIT_OK
     findings = 0
     for bead_id in ns.bead_ids:
         try:
             body, bead_status = bead_body(bead_id)
-        except (LookupError, json.JSONDecodeError, OSError) as exc:
-            gate.say(f"DENY artifact-block infra: {bead_id} unreadable: {exc}")
-            print(f"[artifact-block] cannot read {bead_id}: {exc}", file=sys.stderr)
-            print("                 check the id: br list --all", file=sys.stderr)
-            return EXIT_ENVIRONMENT
+        except LookupError as exc:
+            return deny_lookup(gate, br_lookup.as_lookup_error(exc), bead_id)
         try:
             ok, errors = report(f"{bead_id} ({bead_status})", body, root, resolve_commit=resolve_commit)
         except LookupError as exc:

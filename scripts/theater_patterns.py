@@ -21,15 +21,16 @@ Exit codes follow src/cairn/exits.py: 0 clean or off, 2 findings, 3 environment,
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import re
-import shutil
-import subprocess
 import sys
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import br_lookup
 
 EXIT_OK = 0
 EXIT_REFUSED = 2
@@ -242,7 +243,7 @@ def exemption_problems(root: Path, pattern: Pattern, reachable: list[str]) -> li
     return problems
 
 
-def evaluate(root: Path, document: object, *, bead_status=None) -> Outcome:
+def evaluate(root: Path, document: object, *, bead_status=None, resolver_absence=None) -> Outcome:
     try:
         patterns = load_patterns(document)
     except PolicyError as exc:
@@ -265,15 +266,23 @@ def evaluate(root: Path, document: object, *, bead_status=None) -> Outcome:
         # cannot find the bead is a misconfiguration, and that still refuses.
         if pattern.exempt_paths and pattern.exempt_until_bead:
             if bead_status is None:
+                reason = (
+                    resolver_absence.headline(pattern.exempt_until_bead)
+                    if resolver_absence is not None
+                    else "br is not on PATH"
+                )
                 warnings.append(
                     f"{pattern.id}: exempt_until_bead {pattern.exempt_until_bead} was not checked; "
-                    "br is not on PATH, so whether the exemption has expired is unknown here"
+                    f"{reason}, so whether the exemption has expired is unknown here"
                 )
             else:
                 try:
                     status = bead_status(pattern.exempt_until_bead)
                 except LookupError as exc:
-                    problems.append(f"{pattern.id}: exempt_until_bead {pattern.exempt_until_bead}: {exc}")
+                    problems.append(
+                        f"{pattern.id}: exempt_until_bead {pattern.exempt_until_bead}: "
+                        f"{br_lookup.describe(exc, pattern.exempt_until_bead)}"
+                    )
                     status = None
                 if status == CLOSED:
                     problems.append(
@@ -312,31 +321,12 @@ def evaluate(root: Path, document: object, *, bead_status=None) -> Outcome:
     return Outcome("PASS", patterns=len(patterns), scanned=sorted(scanned), warnings=warnings)
 
 
-BR_TIMEOUT_SECONDS = 60
+BR_TIMEOUT_SECONDS = br_lookup.BR_TIMEOUT_SECONDS
 
 
 def bead_status_resolver():
     def resolve(bead_id: str) -> str:
-        try:
-            proc = subprocess.run(
-                ["br", "show", bead_id, "--json"], capture_output=True, text=True, timeout=BR_TIMEOUT_SECONDS
-            )
-        except subprocess.TimeoutExpired as expired:
-            raise LookupError(
-                f"br show {bead_id} did not answer within {BR_TIMEOUT_SECONDS}s; retry after: br sync --flush-only"
-            ) from expired
-        if proc.returncode != 0:
-            raise LookupError(f"br show exited {proc.returncode}: {proc.stderr.strip()}")
-        try:
-            rows = json.loads(proc.stdout)
-        except json.JSONDecodeError as exc:
-            raise LookupError(f"br show returned unreadable JSON: {exc}") from exc
-        while isinstance(rows, list) and rows and isinstance(rows[0], list):
-            rows = rows[0]
-        row = rows[0] if isinstance(rows, list) and rows else rows
-        if not isinstance(row, dict):
-            raise LookupError("br show returned no bead")
-        return str(row.get("status") or "unknown")
+        return str(br_lookup.bead_row(bead_id).get("status") or "unknown")
 
     return resolve
 
@@ -415,13 +405,22 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[theater-patterns] {policy} does not parse as YAML: {exc}", file=sys.stderr)
         return EXIT_ENVIRONMENT
 
-    outcome = evaluate(root, document, bead_status=bead_status_resolver() if shutil.which("br") else None)
+    blocked = br_lookup.unavailable()
+    outcome = evaluate(
+        root,
+        document,
+        bead_status=None if blocked is not None else bead_status_resolver(),
+        resolver_absence=blocked,
+    )
 
+    tag = f"[{blocked.condition}]" if blocked is not None else "[unavailable]"
     for warning in outcome.warnings:
-        say(log, f"EXPIRY-UNKNOWN theater-patterns: {warning}")
+        say(log, f"EXPIRY-UNKNOWN theater-patterns {tag}: {warning}")
         print(f"[theater-patterns] {warning}.", file=sys.stderr)
+        if blocked is not None:
+            print(f"                 {blocked.remediation}", file=sys.stderr)
         print(
-            f"                 CI has no br: {EXPIRY_BEAD}. The tree was scanned and the counts enforced.",
+            f"                 The expiry cross-check is {EXPIRY_BEAD}. The tree was scanned and the counts enforced.",
             file=sys.stderr,
         )
 

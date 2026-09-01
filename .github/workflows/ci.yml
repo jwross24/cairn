@@ -89,6 +89,24 @@ jobs:
           echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
           "$HOME/.cargo/bin/br" --version
 
+      - name: The bead store the gates resolve ids against
+        # `.beads/beads.db` is derived from the tracked `.beads/issues.jsonl` and is not
+        # committed, so a checkout carries no store. br 0.2.22 refuses `show`, `sync` and
+        # `init` alike while a `.beads` directory holding no database is in place, each
+        # with the same SYNC_CONFLICT, so the tracked files are laid back down after the
+        # store exists rather than before. The `br show` at the end is what makes a
+        # rebuild that half-worked fail here rather than in a later step.
+        run: |
+          set -euo pipefail
+          mv .beads "$RUNNER_TEMP/beads-tracked"
+          br init
+          cp "$RUNNER_TEMP/beads-tracked/.gitignore" .beads/.gitignore
+          cp "$RUNNER_TEMP/beads-tracked/config.yaml" .beads/config.yaml
+          cp "$RUNNER_TEMP/beads-tracked/metadata.json" .beads/metadata.json
+          cp "$RUNNER_TEMP/beads-tracked/issues.jsonl" .beads/issues.jsonl
+          br sync --import-only
+          br show cairn-exi --json > /dev/null
+
       - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d  # v10.0.1
         with:
           # uv.lock pins the dependencies; this pins the resolver that reads it.

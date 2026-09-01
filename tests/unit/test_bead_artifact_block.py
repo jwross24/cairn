@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -6,6 +7,10 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "tests"))
+
+from _bead_store import bead_store, no_database  # noqa: E402
+
 VALIDATOR = ROOT / "scripts" / "bead_artifact_block.py"
 SHIM = ROOT / "scripts" / "bead-artifact-block.sh"
 CHILD_TIMEOUT_S = 60
@@ -131,11 +136,12 @@ def test_a_matching_extractor_regex_does_not_deny(tmp_path):
         capture_output=True,
         text=True,
         timeout=CHILD_TIMEOUT_S,
-        cwd=ROOT,
+        cwd=bead_store(),
         env={**_env(), "CAIRN_COMPLIANCE_SKILL": str(skill)},
     )
     # The gate is driven by bead id rather than a body file, so a green here needs a
-    # real `br show` and a real bead body: with br absent the run exits 3 instead.
+    # real `br show` and a real bead body. The store is built from the tracked JSONL
+    # rather than discovered, so the run does not turn on the machine having one.
     assert proc.returncode == 0, proc.stdout + proc.stderr
     assert "pass cairn-exi (closed):" in proc.stdout
     appended = _appended(log, before)
@@ -247,7 +253,10 @@ def test_a_git_that_never_answers_denies_rather_than_calling_the_commit_absent(m
 
 
 def test_a_br_that_never_answers_denies_rather_than_reading_an_empty_body(monkeypatch):
-    monkeypatch.setattr(bead_artifact_block.subprocess, "run", _expire("br", bead_artifact_block.BR_TIMEOUT_SECONDS))
+    import br_lookup
+
+    monkeypatch.chdir(bead_store())
+    monkeypatch.setattr(br_lookup.subprocess, "run", _expire("br", bead_artifact_block.BR_TIMEOUT_SECONDS))
     with pytest.raises(LookupError) as raised:
         bead_artifact_block.bead_body("cairn-fi7")
     assert "did not answer within" in str(raised.value)
@@ -269,3 +278,59 @@ def test_a_commit_resolver_that_times_out_reaches_the_environment_exit(tmp_path,
     assert rc == bead_artifact_block.EXIT_ENVIRONMENT
     assert "cannot verify" in capsys.readouterr().err
     assert "DENY artifact-block infra" in (tmp_path / "check.log").read_text()
+
+
+def _gate(workspace, *args, log=None):
+    argv = [sys.executable, str(VALIDATOR), *args, "--root", str(ROOT)]
+    if log is not None:
+        argv += ["--log", str(log)]
+    return subprocess.run(
+        argv,
+        capture_output=True,
+        text=True,
+        timeout=CHILD_TIMEOUT_S,
+        cwd=workspace,
+        env=_env(),
+    )
+
+
+def test_a_workspace_with_no_database_is_named_as_the_condition_it_is(tmp_path):
+    log = tmp_path / "check.log"
+    proc = _gate(no_database(), "cairn-exi", log=log)
+    assert proc.returncode == 3, proc.stdout + proc.stderr
+    assert "no bead database" in proc.stderr
+    assert "br sync --import-only" in proc.stderr
+    assert "check the id" not in proc.stderr
+    assert "DENY artifact-block infra [no-database]" in log.read_text()
+
+
+def test_a_bead_id_that_names_nothing_is_not_reported_as_a_broken_store(tmp_path):
+    log = tmp_path / "check.log"
+    proc = _gate(bead_store(), "cairn-zzz9", log=log)
+    assert proc.returncode == 3, proc.stdout + proc.stderr
+    assert "cairn-zzz9 is not in the bead store" in proc.stderr
+    assert "br list --all" in proc.stderr
+    assert "no bead database" not in proc.stderr
+    assert "DENY artifact-block infra [unknown-bead]" in log.read_text()
+
+
+def test_br_off_path_is_not_reported_as_a_missing_database(tmp_path):
+    log = tmp_path / "check.log"
+    stub = tmp_path / "bin"
+    stub.mkdir()
+    for tool in ("git", "uv"):
+        found = shutil.which(tool)
+        if found:
+            (stub / tool).symlink_to(found)
+    proc = subprocess.run(
+        [sys.executable, str(VALIDATOR), "cairn-exi", "--root", str(ROOT), "--log", str(log)],
+        capture_output=True,
+        text=True,
+        timeout=CHILD_TIMEOUT_S,
+        cwd=bead_store(),
+        env={"PATH": f"{stub}:/usr/bin:/bin"},
+    )
+    assert proc.returncode == 3, proc.stdout + proc.stderr
+    assert "br is not installed" in proc.stderr
+    assert "no bead database" not in proc.stderr
+    assert "DENY artifact-block infra [br-absent]" in log.read_text()
