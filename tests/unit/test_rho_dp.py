@@ -291,3 +291,17 @@ def test_the_negation_map_walk_records_its_look_ahead_retries_and_the_plain_walk
     plain = rho_dp.run(*_args(inst))
     assert variant.walk["lookahead_retries"] > 0 and variant.walk["fruitless_escapes"] > 0
     assert plain.walk["lookahead_retries"] == 0 and plain.walk["fruitless_escapes"] == 0
+
+
+LADDER_PLAN = json.loads(Path(rho_dp.REPO_ROOT, "bundle/ladder_plan.json").read_text())
+
+
+def test_the_ladder_plan_baseline_is_the_shipped_plain_walk_revision_not_a_seed():
+    baseline = LADDER_PLAN["baseline"]
+    assert baseline["skill"] == "rho_dp"
+    assert baseline["method_identity"] == {
+        "interface_version": rho_dp.INTERFACE_VERSION,
+        "params": rho_dp.method_params(False),
+    }
+    assert baseline["implementation_revision"] == rho_dp.implementation_revision()
+    assert LADDER_PLAN["provenance"]["baseline"].startswith("written:cairn-m1-cqt.2.1")

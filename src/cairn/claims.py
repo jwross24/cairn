@@ -21,7 +21,7 @@ EVIDENCE_KINDS = (
 EVIDENCE_VERDICTS = ("KEEP", "KEEP_IN_SAMPLE", "REJECT", "INCONCLUSIVE", "SURVIVED", "KILLED", "INCOMPLETE")
 REPRO_KINDS = ("second_attempt_agree", "witness_check")
 REVIEW_VERDICTS = ("approve", "reject", "needs_revision")
-GATES = ("canon_kat", "verifier", "tier_gate", "self_test", "gate_plan", "bundle_open")
+GATES = ("canon_kat", "verifier", "tier_gate", "self_test", "gate_plan", "bundle_open", "ladder_plan")
 GATE_RESULTS = ("pass", "fail", "refused", "blocked", "admitted")
 
 SCOPE = Struct(

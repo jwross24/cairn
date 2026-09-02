@@ -15,6 +15,7 @@ DEPLOY_ARGV = (
     "startup-scan",
     "gc",
     "gate",
+    "ladder",
     "m0-run",
     "justify",
 )
@@ -130,6 +131,8 @@ def _deploy_argv(name, tmp_path, pinned_bundle, clear_flags, capsys):
         return ("show", *paths)
     if name == "selftest":
         return ("toy-curve", *paths, "--db", str(tmp_path / "substrate.sqlite"))
+    if name == "ladder":
+        return ("plan", *paths, "--db", str(tmp_path / "substrate.sqlite"))
     attest_path = tmp_path / "attestations.log"
     clear_flags(attest_path)
     if name in ("gate", "m0-run"):

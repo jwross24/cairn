@@ -1,0 +1,23 @@
+usage: cairn ladder [-h] [--db PATH] [--bundle PATH] [--pin PATH]
+                    [--attest PATH] [--log LEVEL] [--json]
+                    SUBCOMMAND ...
+
+load and validate the ladder plan from the gate bundle, recording the load as
+a gate run
+
+positional arguments:
+  SUBCOMMAND
+    plan           load and validate the ladder plan from the gate bundle,
+                   writing the load as a gate run
+
+options:
+  -h, --help       show this help message and exit
+  --db PATH        substrate SQLite file
+  --bundle PATH    gate bundle SQLite file
+  --pin PATH       gate-bundle pin file
+  --attest PATH    attestation file
+  --log LEVEL      log level for the JSON records on stderr
+  --json, --robot  emit exactly one JSON document on stdout
+
+Structured output: add --json to any read-side command. Contract: cairn
+capabilities --json. Agent handbook: cairn robot-docs.

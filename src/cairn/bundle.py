@@ -214,6 +214,10 @@ class GateBundle:
     def waivable_checks(self):
         return self.object("waivable_checks")
 
+    @property
+    def ladder_plan(self):
+        return self.object("ladder_plan")
+
     def verifier_config(self):
         return verifier.VerifierConfig.from_bundle(self.object("verifier"), self.verifier_script, self.hash)
 

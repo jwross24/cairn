@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "rungs": [
+    {
+      "bits": 30,
+      "role": "fit",
+      "trials": 130,
+      "floor_binds": false,
+      "memory_cap_bytes": null,
+      "refutation_floor": {"group_ops": 41226, "table_entries": 29396, "memory_bytes": 497314}
+    },
+    {
+      "bits": 40,
+      "role": "fit",
+      "trials": 130,
+      "floor_binds": false,
+      "memory_cap_bytes": null,
+      "refutation_floor": {"group_ops": 1171749, "table_entries": 881490, "memory_bytes": 15440525}
+    },
+    {
+      "bits": 50,
+      "role": "fit",
+      "trials": 130,
+      "floor_binds": true,
+      "memory_cap_bytes": 477370808,
+      "refutation_floor": {"group_ops": 44769554, "table_entries": 26116919, "memory_bytes": 477370808}
+    },
+    {
+      "bits": 60,
+      "role": "hold_out",
+      "trials": 10,
+      "floor_binds": true,
+      "memory_cap_bytes": 19625853059,
+      "refutation_floor": {"group_ops": 1840605416, "table_entries": 1073741824, "memory_bytes": 19625853059}
+    }
+  ],
+  "hold_out_m": 10,
+  "design_radius": "0.1216",
+  "comparison": {
+    "version": 1,
+    "estimator": {
+      "statistic": "speedup_factor",
+      "numerator": "baseline_group_ops",
+      "denominator": "claim_group_ops",
+      "form": "mean_ci"
+    },
+    "pairing": {
+      "instance_stream": "shared",
+      "method_seeds": "gate_drawn_per_arm",
+      "arms": ["claimant", "baseline", "baseline_aa"]
+    },
+    "ci": {"method": "normal", "coverage": "0.95"},
+    "every_rung_must_pass": true
+  },
+  "keep_band_floor": "1.01",
+  "tolerances": {"count_divergence": "0.01", "clock": "0.10", "wall": "0.25"},
+  "clock": {"rate_ratio": "1.0"},
+  "baseline": {
+    "skill": "rho_dp",
+    "method_identity": {"interface_version": "rho_dp/1", "params": {"variant": "plain", "r": "32"}},
+    "identity_bundle_hash": "c75ff97f442eaa39cc3183742d22b010d90879eb7d7b518b6e1c111c1c472347",
+    "implementation_revision": "b86f96145df8d6d2db7f50f2b06fa7e1df8e9a18cf075e2cce7dd9b993f941b2"
+  },
+  "patience_ceiling": {"multiplier": 4, "basis": "declared_profile_mean_per_trial"},
+  "shape_departure_tolerance": "0.25",
+  "provenance": {
+    "rungs.bits": "policy:PLAN §6(1)",
+    "rungs.trials": "seeded:cairn-m1-cqt.1.7",
+    "design_radius": "seeded:cairn-m1-cqt.1.7",
+    "rungs.refutation_floor": "measured:research/grounding/m1-dlp-skill-costs.md §3, cairn-m1-cqt.2.2 (30-50 bits measured on the build machine; the 60-bit row is one extrapolation from a 2^30-entry table at the 50-bit rung's measured 1.7142 ops/entry and 18.278 bytes/entry, CONJECTURE per PLAN §6(4))",
+    "rungs.memory_cap_bytes": "measured:research/grounding/m1-dlp-skill-costs.md §3, cairn-m1-cqt.2.2 (the 50-bit table as measured; the 60-bit cap is the same 2^30-entry table at 18.278 measured bytes/entry, an extrapolation)",
+    "baseline": "written:cairn-m1-cqt.2.1 (the shipped plain-walk rho_dp identity; implementation_revision is pinned by tests/unit/test_rho_dp.py, identity_bundle_hash is build-machine-local because it folds in the gp binary digest and the env manifest, and is asserted only in that bead's close evidence)",
+    "clock.rate_ratio": "seeded:cairn-m1-cqt.1.4",
+    "tolerances": "policy:PLAN §6(3)",
+    "comparison": "policy:PLAN §6(2)",
+    "keep_band_floor": "policy:PLAN §6(2)",
+    "hold_out_m": "policy:PLAN §6(2b)",
+    "patience_ceiling": "policy:PLAN §5",
+    "shape_departure_tolerance": "policy:PLAN §6(2)"
+  }
+}

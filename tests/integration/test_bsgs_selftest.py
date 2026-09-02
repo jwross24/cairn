@@ -177,3 +177,23 @@ def test_the_verifier_arm_refuses_a_driver_that_misbehaves(tmp_path, pinned_bund
     monkeypatch.setattr(verifier.Verifier, "run", lambda self, instance, x: next(replies))
     with pytest.raises(selftest.SelftestFailed, match=match):
         selftest_skills.run_once(WHICH, _config(bundle_path, pin_path))
+
+
+LADDER_PLAN = json.loads((Path(__file__).resolve().parents[2] / "bundle" / "ladder_plan.json").read_text())
+MEASURED_TABLE = {30: (29396, 497314), 40: (881490, 15440525), 50: (26116919, 477370808)}
+
+
+def test_the_ladder_plan_floor_and_cap_carry_this_skills_measured_figures_not_the_seed():
+    rungs = {rung["bits"]: rung for rung in LADDER_PLAN["rungs"]}
+    per_size = bsgs.COST_PROFILE.production.per_size
+    for bits, (entries, table_bytes) in MEASURED_TABLE.items():
+        floor = rungs[bits]["refutation_floor"]
+        assert floor["group_ops"] == round(per_size[bits].mean_tries)
+        assert (floor["table_entries"], floor["memory_bytes"]) == (entries, table_bytes)
+    assert rungs[50]["memory_cap_bytes"] == rungs[50]["refutation_floor"]["memory_bytes"] == 477370808
+    memory = bsgs.COST_PROFILE.memory
+    assert memory is not None
+    bytes_per_entry = memory.measured_bytes_per_entry[50]
+    assert rungs[60]["memory_cap_bytes"] == int(2**30 * bytes_per_entry) == 19625853059
+    for key in ("rungs.refutation_floor", "rungs.memory_cap_bytes"):
+        assert LADDER_PLAN["provenance"][key].startswith("measured:research/grounding/m1-dlp-skill-costs.md")

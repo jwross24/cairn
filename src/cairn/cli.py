@@ -39,6 +39,7 @@ COMMAND_MODULES = [
     "cairn.selftest",
     "cairn.runner",
     "cairn.gateplan",
+    "cairn.ladderplan",
     "cairn.gc",
     "cairn.justify",
     "cairn.m0",

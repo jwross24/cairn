@@ -77,6 +77,8 @@ extrapolation from the measured per-entry figure, not a run at 60 bits. Bead L1 
 the ladder plan's floor and cap fields with the §6(4) arithmetic; the values in this
 section replace those seeds when the plan exists to write into.
 
+The ladder plan (`bundle/ladder_plan.json`, cairn-m1-cqt.1.1) carries the 30/40/50-bit rows above as its refutation floor, rounded to integers, and one extrapolated 60-bit row: a 2^30-entry table (PLAN §6(4)) at the 50-bit rung's measured 1.7142 ops per entry (44769554 / 26116919) and 18.278 bytes per entry, giving 1840605416 group operations and 19625853059 bytes. Both 60-bit figures derive from that one table size; neither is a run at 60 bits, and PLAN §6(4) tags them CONJECTURE.
+
 ## 4. instance-maker
 
 `cairn measure dlp --skill instance-maker --sizes 28,30,40,50,60 --seeds 10`. "ops" is

@@ -23,6 +23,8 @@ positional arguments:
                         to its tag history
     kat                 run the canonicalizer known-answer vectors (a gate
                         self-test); exit 2 on any mismatch
+    ladder              load and validate the ladder plan from the gate
+                        bundle, recording the load as a gate run
     m0-run (run)        run the M0 slice end to end: gate self-tests, a
                         certified 40-bit generator, a derived instance, and a
                         gate-read verification with its negatives
