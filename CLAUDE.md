@@ -136,10 +136,11 @@ Each line below was established by hitting it. Verify rather than trust if a too
 - **`br list --json` omits closed beads.** Pass `--all` or `--status closed`. `--all` also
   omits tombstones: 58 rows against 66 in `issues.jsonl`, the gap being 8 deleted beads, so the
   JSONL is the only place a tombstone is visible.
-- **A second bead store sits at `~/.beads`, at schema 10.** br walks upward for a workspace, so
-  any command run while the repo's `.beads` is absent binds to that one instead and reports a
-  schema mismatch naming a database nobody meant to touch. Restore `.beads` before reading a
-  `br` error that mentions schema 17 against 10.
+- **A `br` run outside a repo fails `NOT_INITIALIZED` and creates nothing.** br walks upward for
+  a workspace, so a command run while the repo's `.beads` is absent, or from another directory
+  such as the vault, binds to whatever store sits on that path. The empty schema-10 store that
+  used to sit at `~/.beads` is parked at `~/.beads.stale-2026-09-02`; a `br` error naming
+  schema 17 against 10 means such a store is on the walk-up path again.
 - **`.beads/` is excluded by `~/.gitignore_global`.** This repo's `.gitignore` carries
   `!.beads/` to re-include it. `br sync --flush-only` before every `git add .beads/`.
 - **Never run bare `bv`** — it opens a TUI and blocks. `bv --robot-plan` ranks work by what a
