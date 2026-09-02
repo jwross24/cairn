@@ -24,15 +24,16 @@ jobs:
     runs-on: macos-latest
     # Three deadlines, innermost first: 180 s per test (pyproject.toml), then
     # CAIRN_SESSION_DEADLINE for the whole pytest session, then this ceiling for a
-    # wedge outside pytest. Every successful run measured 4.4 to 8.7 minutes, and
-    # two wedges that ran to 33 and 45 cost 577 billable minutes between them, so
-    # the ceiling sits above the slowest success and far below a wedge.
-    timeout-minutes: 12
+    # wedge outside pytest. Every successful run measured 4.4 to 8.7 minutes at 2298
+    # tests, 2534 tests need past ten minutes on a slow runner, and two wedges that ran
+    # to 33 and 45 cost 577 billable minutes between them, so the ceiling sits above
+    # the slowest full run and far below a wedge.
+    timeout-minutes: 17
     env:
       # Under the job ceiling by enough that pytest dies first and leaves a thread
       # profile, rather than the job being canceled with a blank transcript. The
       # local default is higher; nothing meters a local run.
-      CAIRN_SESSION_DEADLINE: "600"
+      CAIRN_SESSION_DEADLINE: "900"
       # The artifact-block gate parses `br show <id> --json`, so the runner and the
       # machines that write the beads have to agree on that shape. A bump here misses
       # the cache key below, which is what fetches the binary again.
