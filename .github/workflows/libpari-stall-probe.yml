@@ -1,0 +1,73 @@
+name: libpari-stall-probe
+# Runner-side diagnostic for the in-process libpari stall that kills the suite at the
+# session deadline. Runs the toy-curve self-test's corpus evaluation in a child process,
+# and if the child is still alive after PROBE_WAIT seconds, samples its native stacks
+# with macOS `sample` so the frames inside libpari are visible. Costs about five runner
+# minutes. Dispatch by hand; never on push.
+on:
+  workflow_dispatch:
+    inputs:
+      repeats:
+        description: "how many times to run the probe in one job, per thread setting"
+        default: "6"
+
+jobs:
+  probe:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    env:
+      PROBE_WAIT: "60"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: astral-sh/setup-uv@e92bafb6253dcd438e0484186d7669ea7a8ca1cc  # v6.4.3
+      - run: |
+          brew untap aws/tap || true
+          brew install pari
+      - run: uv sync --frozen
+      - name: Probe
+        run: |
+          set -u
+          cat > probe.py <<'PY'
+          import json, sys, time
+          from pathlib import Path
+          from cairn import pari
+          p = pari.pari
+          if sys.argv[1] != "0":
+              p(f"default(nbthreads,{sys.argv[1]})")
+          print("nbthreads", p("default(nbthreads)"), flush=True)
+          corpus = json.loads(Path("src/cairn/skills/toy_curve_corpus.json").read_text())
+          for case in corpus["cases"]:
+              f = {k: v["value"] for k, v in case["fields"].items()}
+              if not all(k in f for k in ("p", "a", "b")):
+                  continue
+              t = time.monotonic()
+              E = p.ellinit([int(f["a"]), int(f["b"])], int(f["p"]))
+              n = p.ellcard(E)
+              print(f"{case['id']} bits={int(f['p']).bit_length()} ellcard={n} {time.monotonic() - t:.3f}s", flush=True)
+          print("probe done", flush=True)
+          PY
+          for threads in 0 1; do
+          for i in $(seq 1 "${{ github.event.inputs.repeats }}"); do
+            echo "=== nbthreads=$threads repeat $i"
+            uv run python -u probe.py "$threads" &
+            pid=$!
+            waited=0
+            while kill -0 "$pid" 2>/dev/null && [ "$waited" -lt "$PROBE_WAIT" ]; do sleep 1; waited=$((waited+1)); done
+            if kill -0 "$pid" 2>/dev/null; then
+              echo "=== child $pid still running after ${PROBE_WAIT}s; native sample follows"
+              sample "$pid" 10 -file sample-t$threads-$i.txt || true
+              head -120 sample-t$threads-$i.txt
+              vm_stat | head -8
+              kill -9 "$pid" || true
+              wait "$pid" || true
+            else
+              wait "$pid"; echo "=== child exited $?"
+            fi
+          done
+          done
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        if: always()
+        with:
+          name: libpari-stall-samples
+          path: sample-*.txt
+          if-no-files-found: ignore
