@@ -21,7 +21,16 @@ EVIDENCE_KINDS = (
 EVIDENCE_VERDICTS = ("KEEP", "KEEP_IN_SAMPLE", "REJECT", "INCONCLUSIVE", "SURVIVED", "KILLED", "INCOMPLETE")
 REPRO_KINDS = ("second_attempt_agree", "witness_check")
 REVIEW_VERDICTS = ("approve", "reject", "needs_revision")
-GATES = ("canon_kat", "verifier", "tier_gate", "self_test", "gate_plan", "bundle_open", "ladder_plan")
+GATES = (
+    "canon_kat",
+    "verifier",
+    "tier_gate",
+    "self_test",
+    "gate_plan",
+    "bundle_open",
+    "ladder_plan",
+    "challenge_render",
+)
 GATE_RESULTS = ("pass", "fail", "refused", "blocked", "admitted")
 
 SCOPE = Struct(
@@ -95,6 +104,9 @@ GATE_RUN = Struct(
         Field("plan_step", Optional(STR)),
         Field("instance_hash", Optional(STR)),
         Field("statement_hash", Optional(STR)),
+        Field("formal_statement_hash", Optional(STR)),
+        Field("renderer_hash", Optional(STR)),
+        Field("prelude_hash", Optional(STR)),
         Field("result", NON_EMPTY_STR),
         Field("reasons", List(STR)),
         Field("at", NON_EMPTY_STR),
@@ -214,6 +226,9 @@ def gate_run_canonical(run):
             "plan_step": run.plan_step,
             "instance_hash": run.instance_hash,
             "statement_hash": run.statement_hash,
+            "formal_statement_hash": run.formal_statement_hash,
+            "renderer_hash": run.renderer_hash,
+            "prelude_hash": run.prelude_hash,
             "result": run.result,
             "reasons": list(run.reasons),
             "at": run.at,
@@ -338,6 +353,9 @@ class GateRun:
     plan_step: str | None = None
     instance_hash: str | None = None
     statement_hash: str | None = None
+    formal_statement_hash: str | None = None
+    renderer_hash: str | None = None
+    prelude_hash: str | None = None
     hash: str = field(init=False, compare=False)
 
     def __post_init__(self):
@@ -502,6 +520,9 @@ def write_gate_run(sub, run):
                 "plan_step": run.plan_step,
                 "instance_hash": run.instance_hash,
                 "statement_hash": run.statement_hash,
+                "formal_statement_hash": run.formal_statement_hash,
+                "renderer_hash": run.renderer_hash,
+                "prelude_hash": run.prelude_hash,
                 "result": run.result,
                 "reasons": to_json(list(run.reasons)),
                 "at": run.at,

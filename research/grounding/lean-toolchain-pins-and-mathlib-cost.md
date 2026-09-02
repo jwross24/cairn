@@ -67,6 +67,8 @@ the three agree.
 | `lake env leanchecker -v Grounding.Curve` (not fresh) | `replaying Grounding.Curve`, rc 0, 18.5 s | STRONG-EMPIRICAL |
 | `#print axioms hello_curve` | `'hello_curve' depends on axioms: [propext]` | context (not asserted); inside the permitted set |
 | `leanchecker --fresh` on a mathlib-importing module | not run | OPEN — bead F4 measures the gate's cost on a mathlib-importing Challenge before the corpus is sized (PLAN §13) |
+| `lake build Challenge.C_<hash>` of a rendered Challenge (bead F3): mathlib-free test prelude in a tmp lake project | rc 0, 2.8 s wall; `warning: … declaration uses \`sorry\`` on stdout with rc 0 | PROVEN-by-probe (`tests/integration/test_challenge_compile.py::test_a_rendered_challenge_compiles_under_the_pinned_toolchain` asserts rc 0 and the warning) |
+| the same with the bundle prelude (`import Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point`) and a Weierstrass statement, in `lean/` | rc 0, 22.0 s wall, 1994 jobs from the cache | STRONG-EMPIRICAL (`test_the_real_prelude_compiles_in_the_gate_project_when_mathlib_is_present` runs it where the checkout exists and skips with a printed reason elsewhere) |
 
 ## 4. CI
 

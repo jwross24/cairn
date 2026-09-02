@@ -8,3 +8,7 @@ rev = "1f29011071772620f612bf5a06433775f06067b8"
 [[lean_lib]]
 name = "Grounding"
 globs = ["Grounding.+"]
+
+[[lean_lib]]
+name = "Challenge"
+globs = ["Challenge.+"]

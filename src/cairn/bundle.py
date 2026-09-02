@@ -5,7 +5,7 @@ import sqlite3
 import stat
 from pathlib import Path
 
-from cairn import canon, claims, cli, exits, keys, lean, log, verifier
+from cairn import canon, challenge, claims, cli, exits, keys, lean, log, verifier
 from cairn.canon import STR, List
 from cairn.errors import CliError
 from cairn.substrate import blob_hash
@@ -15,6 +15,7 @@ lg = log.get("bundle")
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SRC = "bundle/"
 SCRIPT_KIND = "verifier_script"
+RAW_KINDS = (SCRIPT_KIND, challenge.PRELUDE_KIND, challenge.RENDERER_KIND)
 PIN_MISMATCH_REASON = "bundle-hash-ne-pin"
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS objects (
@@ -63,7 +64,7 @@ PAIRS = List(List(STR))
 
 
 def canonical_bytes(kind, value):
-    if kind == SCRIPT_KIND:
+    if kind in RAW_KINDS:
         return bytes(value)
     return canon.encode(JSON, value)
 
@@ -83,6 +84,8 @@ def source_objects(src_dir):
             f"lake manifest {lean.MANIFEST_PATH} does not exist; `lake update` in {lean.PROJECT_DIR} writes it"
         )
     objects[lean.MANIFEST_KIND] = lean.manifest_object()
+    objects[challenge.PRELUDE_KIND] = challenge.prelude_bytes()
+    objects[challenge.RENDERER_KIND] = challenge.renderer_bytes()
     return objects
 
 
@@ -230,6 +233,14 @@ class GateBundle:
     @property
     def lake_manifest(self):
         return self.object(lean.MANIFEST_KIND)
+
+    @property
+    def challenge_prelude(self):
+        return self.raw(challenge.PRELUDE_KIND)
+
+    @property
+    def challenge_renderer(self):
+        return self.raw(challenge.RENDERER_KIND)
 
     def verifier_config(self):
         return verifier.VerifierConfig.from_bundle(self.object("verifier"), self.verifier_script, self.hash)
