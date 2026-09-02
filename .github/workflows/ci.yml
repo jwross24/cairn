@@ -27,8 +27,13 @@ jobs:
     # wedge outside pytest. Every successful run measured 4.4 to 8.7 minutes at 2298
     # tests, 2534 tests need past ten minutes on a slow runner, and two wedges that ran
     # to 33 and 45 cost 577 billable minutes between them, so the ceiling sits above
-    # the slowest full run and far below a wedge.
-    timeout-minutes: 17
+    # the slowest full run and far below a wedge. The Lean step below adds setup time
+    # outside pytest: a ~/.elan cache restore on a hit, and on a miss a 561 MB toolchain
+    # download plus a 2.7 GB unpack, measured on the build machine at 0.6 s for the
+    # version probe and unmeasured on a runner until the first miss; inside pytest the
+    # Lean integration test costs a lake build (8.5 s) plus a leanchecker --fresh replay
+    # (50.6 s at load average 7 on the build machine).
+    timeout-minutes: 20
     env:
       # Under the job ceiling by enough that pytest dies first and leaves a thread
       # profile, rather than the job being canceled with a blank transcript. The
@@ -44,6 +49,9 @@ jobs:
       # runs on 0.5.7. The release asset for the 0.5 line is named `beads_rust-`; the 0.2
       # line published `br-`.
       BR_VERSION: "0.5.7"
+      # The elan release that resolves the Lean toolchain `lean/lean-toolchain` names; the
+      # release publishes no checksum beside its archive, so the pin is the tag alone.
+      ELAN_VERSION: "4.2.3"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
@@ -57,6 +65,41 @@ jobs:
           # invocation. pari comes from homebrew/core; nothing here wants that tap.
           brew untap aws/tap || true
           brew install pari
+
+      - name: Restore the Lean toolchain
+        id: elan-cache
+        # The pinned toolchain unpacks to 2.7 GB from a 561 MB release archive, so a miss
+        # is a download plus an unpack. The key names everything the Lean tests resolve:
+        # the elan release and the toolchain file the gate's lake project declares.
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ~/.elan
+          key: elan-${{ env.ELAN_VERSION }}-${{ hashFiles('lean/lean-toolchain') }}-${{ runner.os }}-${{ runner.arch }}
+
+      - name: Install the Lean toolchain
+        if: steps.elan-cache.outputs.cache-hit != 'true'
+        # No default toolchain and no PATH edit: every invocation names the toolchain with
+        # `+<name>` and reaches the proxies through `$ELAN_HOME/bin`, which is the arm
+        # `src/cairn/lean.py` takes, so the runner and the machines that write this repo
+        # resolve the same way.
+        run: |
+          set -euo pipefail
+          case "$(uname -m)" in
+            arm64|aarch64) arch=aarch64 ;;
+            *) arch="$(uname -m)" ;;
+          esac
+          asset="elan-$arch-apple-darwin.tar.gz"
+          work="$(mktemp -d)"
+          curl -fsSL -o "$work/$asset" "https://github.com/leanprover/elan/releases/download/v$ELAN_VERSION/$asset"
+          tar xzf "$work/$asset" -C "$work"
+          "$work/elan-init" -y --no-modify-path --default-toolchain none
+          "$HOME/.elan/bin/elan" toolchain install "$(cat lean/lean-toolchain)"
+
+      - name: The Lean toolchain the gate resolves
+        run: |
+          set -euo pipefail
+          "$HOME/.elan/bin/elan" --version | tee /dev/stderr | grep -F "elan $ELAN_VERSION " > /dev/null
+          "$HOME/.elan/bin/lean" "+$(cat lean/lean-toolchain)" --version
 
       - name: Restore br
         id: br-cache

@@ -69,7 +69,7 @@ ignore = [
 builtin = "clear,rare,en-GB_to_en-US"
 ignore-words-list = "aci,fro"
 ignore-regex = "`[^`]*`"
-skip = "./.git,./.venv,./.beads,./uv.lock,./tests/goldens,./tests/vectors,./beads_compliance_audit,./bundle,./research/convergence,./deploy,./var"
+skip = "./.git,./.venv,./.beads,./uv.lock,./tests/goldens,./tests/vectors,./beads_compliance_audit,./bundle,./research/convergence,./deploy,./var,./lean/.lake"
 
 [tool.ty.environment]
 python-version = "3.14"

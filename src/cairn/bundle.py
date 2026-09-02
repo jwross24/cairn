@@ -5,7 +5,7 @@ import sqlite3
 import stat
 from pathlib import Path
 
-from cairn import canon, claims, cli, exits, keys, log, verifier
+from cairn import canon, claims, cli, exits, keys, lean, log, verifier
 from cairn.canon import STR, List
 from cairn.errors import CliError
 from cairn.substrate import blob_hash
@@ -78,6 +78,11 @@ def source_objects(src_dir):
     if not objects:
         raise BundleError(f"bundle source directory {src} holds no *.json object")
     objects[SCRIPT_KIND] = verifier.script_bytes()
+    if not lean.MANIFEST_PATH.is_file():
+        raise BundleError(
+            f"lake manifest {lean.MANIFEST_PATH} does not exist; `lake update` in {lean.PROJECT_DIR} writes it"
+        )
+    objects[lean.MANIFEST_KIND] = lean.manifest_object()
     return objects
 
 
@@ -217,6 +222,14 @@ class GateBundle:
     @property
     def ladder_plan(self):
         return self.object("ladder_plan")
+
+    @property
+    def lean(self):
+        return self.object("lean")
+
+    @property
+    def lake_manifest(self):
+        return self.object(lean.MANIFEST_KIND)
 
     def verifier_config(self):
         return verifier.VerifierConfig.from_bundle(self.object("verifier"), self.verifier_script, self.hash)

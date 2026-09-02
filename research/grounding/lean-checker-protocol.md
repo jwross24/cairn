@@ -4,6 +4,8 @@ Probe date 2026-08-21, macOS 26.6 / Darwin 25.6.0 arm64. Sources: `leanprover/co
 
 ## 1. Toolchain on this machine
 
+Section 1 records the probe of 2026-08-21, when `~/.elan` was absent; the installed toolchain, its pins, and the mathlib build cost are probed in `lean-toolchain-pins-and-mathlib-cost.md` (2026-09-02), which is the record `src/cairn/lean.py` and `bundle/lean.json` bind to.
+
 - STRONG-EMPIRICAL: `command -v elan lean lake leanchecker landrun` → all NOT FOUND; no `~/.elan`. Homebrew bottle `elan-init 4.2.3` exists.
 - Install (ran into an isolated `ELAN_HOME`, exit 0, gives elan 4.2.3 b6cec7e10):
   ```

@@ -43,9 +43,10 @@ def _snapshot(root):
 
 
 def _allowed_argv0():
+    import cairn.lean
     import cairn.pari
 
-    return {sys.executable, os.path.realpath(sys.executable), cairn.pari.GP_BIN}
+    return {sys.executable, os.path.realpath(sys.executable), cairn.pari.GP_BIN, *cairn.lean.tool_paths()}
 
 
 @pytest.fixture(autouse=True)
