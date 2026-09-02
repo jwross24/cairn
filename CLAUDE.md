@@ -79,6 +79,11 @@ Each line below was established by hitting it. Verify rather than trust if a too
 - **Editing anything in `toy_curve.IDENTITY_SOURCES` bumps the skill revision.** `src/cairn/pari.py`,
   `src/cairn/skills/toy_curve.py` and the corpus are hashed into `implementation_revision`, so even a
   formatting pass reseeds the randomized arm and moves the transcript and certificate goldens.
+- **`src/cairn/challenge.py` and `bundle/challenge_prelude.lean` are hashed into the gate bundle** as
+  the raw objects `challenge_renderer` and `challenge_prelude`, beside `src/cairn/gp/verify.gp` and
+  `lean/lake-manifest.json`, so any edit to them, a formatting pass included, moves
+  `tests/goldens/gate_bundle_hash.golden` and every deployed pin. Regenerate the golden in the same
+  attributed commit.
 - **The compliance audit runs on a forked copy of a vendored skill, and an upstream update reverts
   it.** `~/.claude/skills/beads-compliance-and-completion-verification` carries five local changes,
   each a small substitution with its reason in a comment above it: `_load-policy.sh`,
