@@ -12,7 +12,7 @@ lg = log.get("attest")
 
 LENGTH_BYTES = 8
 FIXTURE_WAIVER_EXPIRES = "9999-12-31T23:59:59Z"
-KINDS = ("review_verdict", "waiver")
+KINDS = ("review_verdict", "waiver", "acknowledgment")
 
 WAIVER = Struct(
     "waiver",
@@ -217,6 +217,40 @@ def _verdict_from(fields, gate_bundle_hash, file_offset):
     )
 
 
+def _acknowledgment_from(fields):
+    from cairn import human_queue
+
+    try:
+        return human_queue.acknowledgment_from(fields)
+    except human_queue.QueueError as exc:
+        raise CliError(
+            exits.USER_INPUT,
+            str(exc),
+            where=", ".join(sorted(fields)),
+            next_command=f"an acknowledgment record carries {', '.join(human_queue.ACK_RECORD_FIELDS)}",
+        ) from None
+
+
+def _append_acknowledgment(ns, fields):
+    from cairn import human_queue, substrate
+
+    ack = _acknowledgment_from(fields)
+    canonical = human_queue.acknowledgment_canonical(ack)
+    with substrate.Substrate.open(ns.db) as sub:
+        try:
+            human_queue.acknowledgable(sub, ack["item_id"], ns.attest)
+        except human_queue.QueueError as exc:
+            raise CliError(
+                exits.GATE_REFUSED,
+                str(exc),
+                where=ack["item_id"],
+                next_command="an acknowledgment names an open human-queue item that holds no blocker",
+            ) from None
+        offset = append_record(ns.attest, canonical)
+        row = human_queue.write_acknowledgment(sub, ack, attest_path=ns.attest, file_offset=offset)
+    return canonical, offset, row
+
+
 def _run_append(ns):
     from cairn import claims, substrate
 
@@ -233,6 +267,8 @@ def _run_append(ns):
         canonical = waiver_canonical({"kind": "waiver", **fields})
         offset = append_record(ns.attest, canonical)
         row = None
+    elif ns.kind == "acknowledgment":
+        canonical, offset, row = _append_acknowledgment(ns, fields)
     else:
         canonical = claims.review_verdict_canonical(_verdict_from(fields, gate.hash, 0))
         offset = append_record(ns.attest, canonical)

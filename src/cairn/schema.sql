@@ -385,3 +385,73 @@ BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER IF NOT EXISTS claim_statements_born_open BEFORE INSERT ON claim_statements
 WHEN NEW.status <> 'open'
 BEGIN SELECT RAISE(ABORT, 'claim statement is born open'); END;
+
+CREATE TABLE IF NOT EXISTS ledger_entries (
+    hash TEXT PRIMARY KEY,
+    hypothesis_key TEXT NOT NULL,
+    decision TEXT NOT NULL CHECK (decision IN ('REFUTED', 'PARKED')),
+    refutation_kind TEXT CHECK (refutation_kind IS NULL OR refutation_kind IN ('formal', 'measured', 'implementation')),
+    evidence_node TEXT NOT NULL,
+    method TEXT NOT NULL,
+    measured_points TEXT NOT NULL,
+    result TEXT,
+    retry_predicate TEXT,
+    caught_by TEXT NOT NULL,
+    blocker TEXT,
+    faulting_revision TEXT,
+    created_at TEXT NOT NULL,
+    CHECK ((decision = 'REFUTED') = (refutation_kind IS NOT NULL)),
+    CHECK ((decision = 'PARKED') = (blocker IS NOT NULL))
+);
+
+CREATE TABLE IF NOT EXISTS human_queue_items (
+    item_id TEXT PRIMARY KEY,
+    class TEXT NOT NULL CHECK (class IN ('statement_review', 'nogo_review', 'waiver_request', 'yank_ruling', 'revision_admission', 'expert_signoff', 'disagreement', 'near_dup_review', 'supersedes_refuted_review', 'null_control_pending', 'clock_inconclusive', 'shape_departure', 'leaked', 'cost_drift', 'audit_shortfall')),
+    target_kind TEXT NOT NULL CHECK (target_kind IN ('statement', 'branch', 'rung', 'audit_cycle')),
+    target TEXT NOT NULL,
+    blocker TEXT,
+    enqueued_at TEXT NOT NULL,
+    CHECK ((class IN ('leaked', 'clock_inconclusive', 'shape_departure', 'cost_drift', 'audit_shortfall')) = (blocker IS NULL))
+);
+
+CREATE TABLE IF NOT EXISTS human_queue_closures (
+    seq INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id TEXT NOT NULL REFERENCES human_queue_items (item_id),
+    path TEXT NOT NULL CHECK (path IN ('attestation', 'blocker_cleared', 'terminal_status', 'acknowledgment')),
+    ref TEXT NOT NULL,
+    record_digest TEXT,
+    file_offset INTEGER,
+    closed_at TEXT NOT NULL,
+    CHECK ((path IN ('attestation', 'acknowledgment')) = (record_digest IS NOT NULL AND file_offset IS NOT NULL))
+);
+
+CREATE TABLE IF NOT EXISTS acknowledgments (
+    row_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id TEXT NOT NULL,
+    issued_by TEXT NOT NULL,
+    at TEXT NOT NULL,
+    note TEXT NOT NULL,
+    record_digest TEXT NOT NULL,
+    file_offset INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS ledger_entries_by_key ON ledger_entries (hypothesis_key);
+CREATE INDEX IF NOT EXISTS human_queue_closures_by_item ON human_queue_closures (item_id, seq);
+CREATE INDEX IF NOT EXISTS acknowledgments_by_item ON acknowledgments (item_id);
+
+CREATE TRIGGER IF NOT EXISTS ledger_entries_no_update BEFORE UPDATE ON ledger_entries BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_entries_no_delete BEFORE DELETE ON ledger_entries BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS human_queue_items_no_update BEFORE UPDATE ON human_queue_items BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS human_queue_items_no_delete BEFORE DELETE ON human_queue_items BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS human_queue_closures_no_update BEFORE UPDATE ON human_queue_closures BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS human_queue_closures_no_delete BEFORE DELETE ON human_queue_closures BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS acknowledgments_no_update BEFORE UPDATE ON acknowledgments BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS acknowledgments_no_delete BEFORE DELETE ON acknowledgments BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+
+CREATE TRIGGER IF NOT EXISTS human_queue_closing_rule BEFORE INSERT ON human_queue_closures
+WHEN (NEW.path = 'blocker_cleared' AND (SELECT blocker FROM human_queue_items WHERE item_id = NEW.item_id) IS NULL)
+  OR (NEW.path IN ('terminal_status', 'acknowledgment') AND (SELECT blocker FROM human_queue_items WHERE item_id = NEW.item_id) IS NOT NULL)
+  OR (NEW.path = 'terminal_status'
+      AND (SELECT target_kind FROM human_queue_items WHERE item_id = NEW.item_id) = 'statement'
+      AND COALESCE((SELECT status FROM claim_statements WHERE hash = (SELECT target FROM human_queue_items WHERE item_id = NEW.item_id)), 'open') = 'open')
+BEGIN SELECT RAISE(ABORT, 'closing rule'); END;

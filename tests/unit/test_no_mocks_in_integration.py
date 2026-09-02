@@ -1,6 +1,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "tests"))
 
@@ -11,11 +13,12 @@ def test_integration_and_e2e_tests_use_no_mocks():
     assert scan_for_mocks(ROOT) == []
 
 
-def test_planted_mock_import_is_flagged(pytester):
+@pytest.mark.parametrize("scanned", ["integration", "planted"])
+def test_planted_mock_import_is_flagged(pytester, scanned):
     pytester.syspathinsert(str(ROOT / "tests"))
     pytester.mkpydir("tests")
-    (pytester.path / "tests" / "integration").mkdir()
-    (pytester.path / "tests" / "integration" / "test_planted.py").write_text("from unittest.mock import MagicMock\n")
+    (pytester.path / "tests" / scanned).mkdir()
+    (pytester.path / "tests" / scanned / "test_planted.py").write_text("from unittest.mock import MagicMock\n")
     pytester.makepyfile(
         """
         import pathlib
