@@ -104,6 +104,18 @@ a rival to the harness. Every honesty property must be an enforced check, becaus
 - **Granularity rule:** grain a skill at *"a capability with a stable interface, a
   self-test, and a declared cost profile" (§5)* — no finer. Too fine and the orchestrator
   burns its budget gluing skills; too coarse and they stop being reusable.
+- **A skill's language is a property of its contract, not of the harness.** The contract is
+  a process boundary — canonical JSON on stdin and stdout — so the identity bundle above
+  names the executable whatever wrote it. Python is the reference implementation language
+  (§16 operator defaults). A compiled skill (Rust, C, a PARI-native program) is admitted
+  under exactly the same self-test, certificate, double-run and yank discipline when a cost
+  grade demands it (§16 decision 2): its implementation revision is the hash of its sources
+  plus its lockfile, its tool digest is the digest of the static binary that runs, and its
+  container digest is the input-addressed environment identity of §16 decision 14. A skill
+  whose language differs from its neighbors changes nothing a gate reads. *Why:* a gate that
+  binds to a language rather than to an identity hash cannot admit the faster implementation
+  the ladder's cost model may require, and a harness that reads language as a proxy for
+  trust has a gate that is a label (evidence: `research/briefs/language-and-agent-ergonomics.md` §1).
 
 ---
 
@@ -1307,6 +1319,21 @@ the primary paper or spec each brief cites and never to vendor code from, or dep
 those repositories. Every borrowed mechanism is small (tens to a few hundred lines) and
 textbook, so this costs little.
 
+Recorded results of the 2026-09 language and agent-ergonomics review
+(`research/briefs/language-and-agent-ergonomics.md`, so they are not re-walked): no surveyed
+source measures a correctness or cost benefit from a harness written in Rust, Lean 4 or
+Elixir/OTP that outweighs the Python-native test discipline of §13 — the coordination language
+is an operator default in §16 and the authority-language rule (§16 decision 13) says where
+Python is not the implementation; the comparator's transitive-closure statement check is the
+state of the art for statement identity (no tool hashes a statement modulo proof), so the F4
+hasher hashes what the comparator compares; DBOS on SQLite is the one embeddable
+durable-execution runtime and is the comparator spike for P3's tick table at M3 (§15), while
+Restate's introspection surface is the bar `cairn status --json` meets without adding a
+binary; MCP is not a control surface for driving `cairn` (schema cost is paid on every
+prompt; the CLI with `--json` is); a Docker image digest is not a content-addressed
+environment identity (§16 decision 14); Bazel and Buck2 do not model floating-point or
+CPU-feature drift, which is what the §2 numeric profile records.
+
 ---
 
 ## 13. Build order (each milestone gated by a demonstrable property)
@@ -1606,7 +1633,10 @@ shows it binds.
   nearest prior for info-per-dollar; (iii) one tick = one short idempotent step sequence
   with its RNG draws stored and the source hash of each step in the tick record, so a
   crash resumes from the last step and a recorded output is never replayed for a step
-  whose body has changed (a tick table in SQLite; not a workflow server). *Decides:* M3's
+  whose body has changed (a tick table in SQLite; not a workflow server; DBOS on SQLite is
+  the one embeddable alternative and is the comparator spike M3 runs against the tick table,
+  on the bar that every tick is inspectable through `cairn status --json` and replayable from
+  the substrate). *Decides:* M3's
   bar; branch-level bandits are unvalidated in the literature, so the bar, not the prior
   art, decides — including whether a priority queue plus forced park and human taste beats
   a bandit, in which case the bandit is dropped.
@@ -1652,7 +1682,15 @@ shows it binds.
 - **Operator defaults (challengeable with evidence, otherwise standing):** the name
   *Cairn*; Sage/PARI as the Tier-0/1 arithmetic backend; the M0 exemplar skill is the
   toy-curve generator; SQLite + BLAKE3 as the M0 store; Lean 4 + mathlib as the
-  formalization stack.
+  formalization stack; Python 3.14 via uv as the coordination language — the substrate,
+  gates, CLI, workers' dispatch and the builder's test discipline — because the authors are
+  LLM agents whose defect rate is lowest in Python in the surveyed evidence, because
+  determinism is a property of content-addressing and canonical encoding rather than of the
+  language, and because the suite that keeps the builder honest is Python-native. Revisit
+  triggers, each a ledger entry and never an assumption: a cost grade the interpreted rung
+  cannot meet (answer: a compiled skill under §2, not a harness rewrite); an orchestrator
+  concurrency need P6 names; a defect class in Python-authored gate code that a typed
+  language would have refused, recorded with the incident.
 - **Operator decisions (confirmed; the ledger questions behind each are listed in
   `research/KICKOFF-beads-and-M0.md`):** (1) PARI-only arithmetic at M0 with the
   BSGS-vs-SEA algorithm-axis cross-check through 50 bits; a gmpy2 Hasse-interval BSGS
@@ -1674,7 +1712,21 @@ shows it binds.
   measured ladder per-run cost, starting at 4× (CONJECTURE). (11) Human review throughput
   is a number the operator states before M4; none is assumed. (12) The fastest arithmetic
   implementation for the clock-tolerance check is measured at M1 (gmpy2, cypari2, a C
-  reference) and recorded in the gate bundle.
+  reference) and recorded in the gate bundle. (13) **The authority-language rule:** a layer is
+  implemented in the language of the thing that has authority over its correctness. Checks
+  the Lean kernel has authority over — statement identity, the axiom set, kernel replay — are
+  Lean programs pinned in the gate bundle (the comparator, `leanchecker`, the F4 hasher as a
+  `lake exe`), and Python invokes and records them, never re-derives them from printed text;
+  arithmetic is PARI/GP or a compiled skill under §2; everything with no other authority is
+  Python. `MAP.md` names the authority of every layer, and a component that parses another
+  authority's output to reconstruct its verdict is a gate that is a label. (14) **The
+  container digest is input-addressed.** The environment identity a skill or gate records is
+  the hash of the environment's specification plus every pinned input (a Nix closure hash is
+  the model; a Dockerfile qualifies only with pinned base digests, no network at build time
+  and a recorded input hash), never the digest of one build, so a rebuild from unchanged
+  inputs is the same identity and a changed input is a different one; the image digest of the
+  build that ran is recorded beside it as an artifact, not as the identity. Decision 6's
+  container carries this identity.
 - **Invariants (not revisable by review):** §0, the gate layer's existence and immutability,
   the calibration taxonomy, the no-go checklist, the ladder, the verifier, and the honest
   baseline of §14 and `HANDOFF.md`. A proposed change that weakens any of them is flagged

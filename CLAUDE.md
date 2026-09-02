@@ -167,10 +167,13 @@ Each line below was established by hitting it. Verify rather than trust if a too
 
 ### PLAN.md section map
 
-§0 principle 15 · §1 prompt⊂harness 30 · §2 skills 40 · §3 substrate 110 · §4 components 276 ·
-§5 tiers 514 · §6 ladder 690 · §7 epistemics 902 · §8 no-go 1134 · §9 never-give-up 1160 ·
-§10 problem selection 1173 · §11 compounding 1260 · §12 research-software 1285 ·
-§13 build order 1312 · §14 outcomes 1567 · §15 deferred 1578 · §16 evidence/defaults 1635
+§0 principle 15 · §1 prompt⊂harness 30 · §2 skills 40 · §3 substrate 122 · §4 components 288 ·
+§5 tiers 526 · §6 ladder 702 · §7 epistemics 914 · §8 no-go 1146 · §9 never-give-up 1172 ·
+§10 problem selection 1185 · §11 compounding 1272 · §12 research-software 1297 ·
+§13 build order 1339 · §14 outcomes 1594 · §15 deferred 1605 · §16 evidence/defaults 1665
+
+`MAP.md` is the system as one tower (layer, authority language, identity primitive, record
+kinds, verbs, refusals); read it between this file and PLAN.md.
 
 ### Session modes
 
