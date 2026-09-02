@@ -52,7 +52,13 @@ def test_missing_gp_binary_raises_before_any_spawn(monkeypatch):
     assert spawned == []
 
 
-REQUIRED_HEAD = {"bundle": ("show",), "attest": ("init",), "gate": ("selftest",), "justify": ("--statement", "0" * 64)}
+REQUIRED_HEAD = {
+    "bundle": ("show",),
+    "attest": ("init",),
+    "gate": ("selftest",),
+    "ladder": ("plan",),
+    "justify": ("--statement", "0" * 64),
+}
 
 
 def _picked(ns):
