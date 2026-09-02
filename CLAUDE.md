@@ -64,6 +64,13 @@ Each line below was established by hitting it. Verify rather than trust if a too
 - **A pipeline hides the exit code and the command proxy eats the output.** `scripts/mutation-check.sh ... | tail -1`
   prints nothing at all, so a verdict that must be read goes to a file and the file is read back:
   `cmd > /tmp/out 2>&1; tail -1 /tmp/out`.
+- **The same proxy mangles a patch written through it.** `git diff -- <files> > file.patch` produces a
+  file `git apply --check` refuses (`No valid patches in input`). Park work in progress as whole
+  files copied aside, or re-apply edits from their text; never as a patch captured through the shell.
+- **The substrate holds one writer per process.** `Substrate.open(path, role="writer")` raises
+  `WriterAlreadyOpen` while any earlier writer in the same process is unclosed, naming that earlier
+  path, so a test that opens a writer and never closes it fails every later writer-opening test in
+  the run with a message about its own directory. Close in `finally` or use the `writer` fixture.
 - **The same proxy makes `diff` report a false verdict.** `diff a b` on two files of 151 and 82
   bytes with different content printed `Files are identical` and exited 0. Any claim that two
   artifacts are or are not byte-equal has to be settled in Python, printing the lengths and a
