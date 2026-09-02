@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "pass_floor": 5,
+  "cases": [
+    {
+      "id": "F5",
+      "ledger": "pass",
+      "source": "PARI 2.17.4 usersch3.tex:29031-29032 for the curve and n; P, Q, x as in src/cairn/skills/toy_curve_corpus.json",
+      "postconditions": ["oncurve", "ellorder", "ellmul"],
+      "fields": {
+        "p": {"value": 5, "origin": "upstream_vendored"},
+        "a": {"value": 2, "origin": "upstream_vendored"},
+        "b": {"value": 1, "origin": "upstream_vendored"},
+        "n": {"value": 7, "origin": "upstream_vendored"},
+        "P": {"value": [0, 1], "origin": "author_supplied"},
+        "Q": {"value": [3, 3], "origin": "author_supplied"},
+        "x": {"value": 3, "origin": "author_supplied"}
+      }
+    },
+    {
+      "id": "GF101",
+      "ledger": "pass",
+      "source": "Sage 10.6 ell_point.py:4529-4537 + constructor.py:790-791",
+      "postconditions": ["oncurve", "ellorder", "ellmul"],
+      "fields": {
+        "p": {"value": 101, "origin": "upstream_vendored"},
+        "a": {"value": 90, "origin": "upstream_vendored"},
+        "b": {"value": 44, "origin": "upstream_vendored"},
+        "n": {"value": 89, "origin": "upstream_vendored"},
+        "P": {"value": [2, 38], "origin": "author_supplied"},
+        "Q": {"value": [12, 23], "origin": "author_supplied"},
+        "x": {"value": 2, "origin": "upstream_vendored"}
+      }
+    },
+    {
+      "id": "bits20_seed1",
+      "ledger": "pass",
+      "source": "cairn.skills.toy_curve.run(20, 1) under the pinned call sequence for p, a, b, n, P; x = BLAKE3('x/20/1/1') mod (n - 1) + 1; Q = [x]P through cairn.ec; tests/unit/test_dlp_corpus.py re-derives every row",
+      "postconditions": ["oncurve", "ellmul", "order_kills"],
+      "fields": {
+        "p": {"value": 578839, "origin": "author_supplied"},
+        "a": {"value": 300036, "origin": "author_supplied"},
+        "b": {"value": 230182, "origin": "author_supplied"},
+        "n": {"value": 579641, "origin": "author_supplied"},
+        "P": {"value": [290308, 143336], "origin": "author_supplied"},
+        "Q": {"value": [119259, 442767], "origin": "author_supplied"},
+        "x": {"value": 397527, "origin": "author_supplied"}
+      }
+    },
+    {
+      "id": "bits24_seed1",
+      "ledger": "pass",
+      "source": "cairn.skills.toy_curve.run(24, 1) under the pinned call sequence for p, a, b, n, P; x = BLAKE3('x/24/1/1') mod (n - 1) + 1; Q = [x]P through cairn.ec; tests/unit/test_dlp_corpus.py re-derives every row",
+      "postconditions": ["oncurve", "ellmul", "order_kills"],
+      "fields": {
+        "p": {"value": 9210713, "origin": "author_supplied"},
+        "a": {"value": 8948337, "origin": "author_supplied"},
+        "b": {"value": 5749838, "origin": "author_supplied"},
+        "n": {"value": 9215137, "origin": "author_supplied"},
+        "P": {"value": [228083, 4496220], "origin": "author_supplied"},
+        "Q": {"value": [5100693, 66664], "origin": "author_supplied"},
+        "x": {"value": 166004, "origin": "author_supplied"}
+      }
+    },
+    {
+      "id": "bits28_seed1",
+      "ledger": "pass",
+      "source": "cairn.skills.toy_curve.run(28, 1) under the pinned call sequence for p, a, b, n, P; x = BLAKE3('x/28/1/1') mod (n - 1) + 1; Q = [x]P through cairn.ec; tests/unit/test_dlp_corpus.py re-derives every row",
+      "postconditions": ["oncurve", "ellmul", "order_kills"],
+      "fields": {
+        "p": {"value": 175757327, "origin": "author_supplied"},
+        "a": {"value": 138745590, "origin": "author_supplied"},
+        "b": {"value": 137099405, "origin": "author_supplied"},
+        "n": {"value": 175748953, "origin": "author_supplied"},
+        "P": {"value": [68583306, 75216858], "origin": "author_supplied"},
+        "Q": {"value": [89637181, 21356483], "origin": "author_supplied"},
+        "x": {"value": 39291413, "origin": "author_supplied"}
+      }
+    },
+    {
+      "id": "composite_order",
+      "ledger": "intentional_non_goal",
+      "source": "Sage 10.6 ell_point.py:822-827 (the toy_curve negative_control curve, P of composite order 21); a prime-order-only skill refuses it at the input",
+      "postconditions": ["oncurve", "ellorder", "order_does_not_kill"],
+      "fields": {
+        "p": {"value": 419, "origin": "upstream_vendored"},
+        "a": {"value": 1, "origin": "upstream_vendored"},
+        "b": {"value": 0, "origin": "upstream_vendored"},
+        "n": {"value": 21, "origin": "upstream_vendored"},
+        "P": {"value": [386, 8], "origin": "author_supplied"},
+        "Q": {"value": [10, 163], "origin": "author_supplied"}
+      }
+    }
+  ]
+}

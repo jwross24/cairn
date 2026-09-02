@@ -100,10 +100,15 @@ def test_clause(subject, clause, verdicts):
     assert verdict.status == expected, f"{subject.name} {clause.id}: {verdict.reason}"
 
 
-def test_the_conforming_subject_scores_every_must_clause(verdicts):
-    passed, total = skill_contract.must_score(verdicts["toy_curve"])
+@pytest.mark.parametrize("name", [subject.name for subject in skill_contract.CONFORMING])
+def test_every_conforming_subject_scores_every_must_clause(name, verdicts):
+    passed, total = skill_contract.must_score(verdicts[name])
     assert (passed, total) == (total, len(skill_contract.MUST_IDS))
-    assert skill_contract.failures(verdicts["toy_curve"]) == frozenset()
+    assert skill_contract.failures(verdicts[name]) == frozenset()
+
+
+def test_the_m1_baseline_skills_are_registered_as_conforming_subjects():
+    assert {s.name for s in skill_contract.CONFORMING} >= {"toy_curve", "rho_dp", "bsgs", "instance_maker"}
 
 
 def test_the_planted_fixture_fails_exactly_its_declared_must_clauses(verdicts):

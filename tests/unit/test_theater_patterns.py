@@ -139,15 +139,22 @@ def test_the_gate_off_scans_nothing_even_with_a_matching_file(tmp_path):
 # --- the signature spans lines -------------------------------------------------
 
 
+PLATFORM_SKIP_MODULES = [
+    "tests/conformance/test_skill_contract.py",
+    "tests/integration/test_bsgs_selftest.py",
+    "tests/integration/test_gate_bundle.py",
+    "tests/integration/test_grounding_fs.py",
+    "tests/integration/test_instance_maker_selftest.py",
+    "tests/integration/test_instance_maker_substrate.py",
+    "tests/integration/test_rho_dp_selftest.py",
+    "tests/integration/test_toy_curve_selftest.py",
+]
+
+
 def test_the_declared_signature_matches_every_real_platform_skip():
     pattern = load_patterns(document(**{k: v for k, v in real_pattern().items() if k != "exempt_paths"}))[0]
     found = sorted(rel for rel in targets(ROOT, pattern) if matches((ROOT / rel).read_text(), pattern))
-    assert found == [
-        "tests/conformance/test_skill_contract.py",
-        "tests/integration/test_gate_bundle.py",
-        "tests/integration/test_grounding_fs.py",
-        "tests/integration/test_toy_curve_selftest.py",
-    ]
+    assert found == PLATFORM_SKIP_MODULES
 
 
 def test_the_line_oriented_signature_matches_none_of_them():
@@ -169,13 +176,8 @@ def test_a_single_line_skipif_still_matches(tmp_path):
 # --- the exemption, both directions --------------------------------------------
 
 
-def test_the_real_policy_exempts_exactly_the_four_known_modules():
-    assert exempt_paths() == [
-        "tests/conformance/test_skill_contract.py",
-        "tests/integration/test_gate_bundle.py",
-        "tests/integration/test_grounding_fs.py",
-        "tests/integration/test_toy_curve_selftest.py",
-    ]
+def test_the_real_policy_exempts_exactly_the_eight_known_modules():
+    assert exempt_paths() == PLATFORM_SKIP_MODULES
 
 
 def test_the_real_policy_names_the_bead_that_removes_the_exemption():

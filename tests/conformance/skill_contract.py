@@ -8,7 +8,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from cairn import keys, log, profile, runner, selftest, substrate
+from cairn import keys, log, profile, runner, selftest, selftest_skills, substrate
 
 LOG_STEP = "conformance"
 MUST = "MUST"
@@ -674,6 +674,90 @@ TOY_CURVE = SkillSubject(
     expected_must_failures=frozenset(),
 )
 
+DLP_INSTANCES = json.loads((Path(__file__).resolve().parents[1] / "vectors" / "dlp_instances.json").read_text())[
+    "instances"
+]
+
+
+def _dlp_inputs(name, seed=1):
+    row = DLP_INSTANCES[name]
+    return {"bits": row["bits"], "seed": seed, **{k: row[k] for k in ("p", "a", "b", "n", "P", "Q")}}
+
+
+def _skill_certify(which):
+    def certify(subject, ctx):
+        return selftest_skills.certify(ctx.sub, ctx.config, which)
+
+    return certify
+
+
+def _skill_transcript(which):
+    def transcript(subject, ctx):
+        return selftest_skills.run_once(which, ctx.config)["transcript"]
+
+    return transcript
+
+
+def instance_maker_postcondition(subject, ctx):
+    from cairn.skills import instance_maker
+
+    out = instance_maker.run(subject.inputs["bits"], subject.inputs["seed"])
+    try:
+        instance_maker.check_postcondition(out)
+        held = True
+    except instance_maker.PostconditionFailed:
+        held = False
+    planted = dataclasses.replace(out, x=out.x % (out.n - 1) + 1)
+    try:
+        instance_maker.check_postcondition(planted)
+        refused = False
+    except instance_maker.PostconditionFailed:
+        refused = True
+    return held, refused
+
+
+RHO_DP = SkillSubject(
+    name="rho_dp",
+    module="cairn.skills.rho_dp",
+    corpus_path=selftest_skills.CORPUS_PATHS[selftest_skills.RHO_DP],
+    floor_golden="rho_dp_floor",
+    inputs=_dlp_inputs("bits28_seed1"),
+    out_of_range_inputs=_dlp_inputs("bits30_seed1"),
+    conforming=True,
+    certify=_skill_certify(selftest_skills.RHO_DP),
+    transcript=_skill_transcript(selftest_skills.RHO_DP),
+    postcondition=None,
+    expected_must_failures=frozenset(),
+)
+
+BSGS = SkillSubject(
+    name="bsgs",
+    module="cairn.skills.bsgs",
+    corpus_path=selftest_skills.CORPUS_PATHS[selftest_skills.BSGS],
+    floor_golden="bsgs_floor",
+    inputs=_dlp_inputs("bits28_seed1"),
+    out_of_range_inputs=_dlp_inputs("bits30_seed1"),
+    conforming=True,
+    certify=_skill_certify(selftest_skills.BSGS),
+    transcript=_skill_transcript(selftest_skills.BSGS),
+    postcondition=None,
+    expected_must_failures=frozenset(),
+)
+
+INSTANCE_MAKER = SkillSubject(
+    name="instance_maker",
+    module="cairn.skills.instance_maker",
+    corpus_path=selftest_skills.CORPUS_PATHS[selftest_skills.INSTANCE_MAKER],
+    floor_golden="instance_maker_floor",
+    inputs={"bits": 28, "seed": 1},
+    out_of_range_inputs={"bits": 30, "seed": 1},
+    conforming=True,
+    certify=_skill_certify(selftest_skills.INSTANCE_MAKER),
+    transcript=_skill_transcript(selftest_skills.INSTANCE_MAKER),
+    postcondition=instance_maker_postcondition,
+    expected_must_failures=frozenset(),
+)
+
 NONCONFORMING = SkillSubject(
     name="nonconforming",
     module="skills.nonconforming",
@@ -702,10 +786,14 @@ WITNESS = SkillSubject(
     expected_must_failures=frozenset({"S2-02", "S2-03", "S2-05", "S2-06", "S2-07", "S2-08", "S2-09", "S2-10", "S2-12"}),
 )
 
-SUBJECTS = (TOY_CURVE, NONCONFORMING, WITNESS)
+SUBJECTS = (TOY_CURVE, RHO_DP, BSGS, INSTANCE_MAKER, NONCONFORMING, WITNESS)
 SUBJECTS_BY_NAME = {subject.name: subject for subject in SUBJECTS}
+CONFORMING = tuple(subject for subject in SUBJECTS if subject.conforming)
 EXPECTED_SHOULD = {
     "toy_curve": {"S2-13": NA, "S2-14": PASS},
+    "rho_dp": {"S2-13": NA, "S2-14": NA},
+    "bsgs": {"S2-13": NA, "S2-14": NA},
+    "instance_maker": {"S2-13": NA, "S2-14": PASS},
     "nonconforming": {"S2-13": NA, "S2-14": FAIL},
     "witness": {"S2-13": FAIL, "S2-14": FAIL},
 }

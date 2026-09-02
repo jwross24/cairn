@@ -455,34 +455,52 @@ def certify(sub, config, *, doc=None, root=None):
     }
 
 
+TOY_CURVE = "toy-curve"
+
+
+def _which_choices():
+    from cairn import selftest_skills
+
+    return [TOY_CURVE, *selftest_skills.NAMES]
+
+
 def _configure(parser):
-    parser.add_argument("which", nargs="?", default="toy-curve", choices=["toy-curve"])
+    parser.add_argument("which", nargs="?", default=TOY_CURVE, choices=_which_choices())
+
+
+def _corpus_path(which):
+    from cairn import selftest_skills
+
+    return CORPUS_PATH if which == TOY_CURVE else selftest_skills.CORPUS_PATHS[which]
 
 
 def _run(ns):
-    from cairn import bundle, substrate
-    from cairn.skills import toy_curve
+    from cairn import bundle, selftest_skills, substrate
 
-    gate = bundle.open_or_refuse(ns, command="cairn selftest toy-curve")
+    gate = bundle.open_or_refuse(ns, command=f"cairn selftest {ns.which}")
     debug = f"cairn selftest {ns.which} --db {ns.db} --bundle {ns.bundle} --pin {ns.pin} --log DEBUG"
+    corpus_path = _corpus_path(ns.which)
     # Path.resolve() would follow the /var symlink and create the directory off the db's own path
     parent = Path(os.path.abspath(ns.db)).parent  # noqa: PTH100
     parent.mkdir(parents=True, exist_ok=True)
     try:
         with substrate.Substrate.open(ns.db) as sub:
-            result = certify(sub, gate.verifier_config())
+            if ns.which == TOY_CURVE:
+                result = certify(sub, gate.verifier_config())
+            else:
+                result = selftest_skills.certify(sub, gate.verifier_config(), ns.which)
     except CorpusSchemaError as exc:
         raise CliError(
             exits.USER_INPUT,
-            f"the toy_curve corpus is malformed at {exc.path}: {exc.what}",
-            where=str(CORPUS_PATH),
+            f"the {ns.which} corpus is malformed at {exc.path}: {exc.what}",
+            where=str(corpus_path),
             next_command=debug,
         ) from None
-    except (SelftestFailed, toy_curve.PostconditionFailed) as exc:
+    except (SelftestFailed, *selftest_skills.postcondition_errors()) as exc:
         raise CliError(
             exits.GATE_REFUSED,
-            f"the toy_curve self-test failed ({exc})",
-            where=str(CORPUS_PATH),
+            f"the {ns.which} self-test failed ({exc})",
+            where=str(corpus_path),
             next_command=debug,
         ) from None
     payload = {

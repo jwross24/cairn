@@ -1,0 +1,26 @@
+{
+ "generator": "cairn.skills.toy_curve.run(bits, 1) for p, a, b, n, P; x = BLAKE3('x/{bits}/1/1') mod (n - 1) + 1; Q = [x]P through cairn.ec; tests/unit/test_dlp_corpus.py re-derives every row",
+ "origin": "author_supplied",
+ "instances": {
+  "bits28_seed1": {
+   "bits": 28,
+   "p": 175757327,
+   "a": 138745590,
+   "b": 137099405,
+   "n": 175748953,
+   "P": [68583306, 75216858],
+   "Q": [89637181, 21356483],
+   "x": 39291413
+  },
+  "bits30_seed1": {
+   "bits": 30,
+   "p": 922854029,
+   "a": 736418726,
+   "b": 866050641,
+   "n": 922807351,
+   "P": [432221713, 837442395],
+   "Q": [81293754, 318887185],
+   "x": 847933256
+  }
+ }
+}

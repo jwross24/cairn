@@ -1,21 +1,21 @@
 usage: cairn selftest [-h] [--db PATH] [--bundle PATH] [--pin PATH]
                       [--attest PATH] [--log LEVEL] [--json]
-                      [{toy-curve}]
+                      [{toy-curve,rho-dp,bsgs,instance-maker}]
 
 run a skill's vendored known-answer corpus and record its certificate; exit 2
 on any failure
 
 positional arguments:
-  {toy-curve}
+  {toy-curve,rho-dp,bsgs,instance-maker}
 
 options:
-  -h, --help       show this help message and exit
-  --db PATH        substrate SQLite file
-  --bundle PATH    gate bundle SQLite file
-  --pin PATH       gate-bundle pin file
-  --attest PATH    attestation file
-  --log LEVEL      log level for the JSON records on stderr
-  --json, --robot  emit exactly one JSON document on stdout
+  -h, --help            show this help message and exit
+  --db PATH             substrate SQLite file
+  --bundle PATH         gate bundle SQLite file
+  --pin PATH            gate-bundle pin file
+  --attest PATH         attestation file
+  --log LEVEL           log level for the JSON records on stderr
+  --json, --robot       emit exactly one JSON document on stdout
 
 Structured output: add --json to any read-side command. Contract: cairn
 capabilities --json. Agent handbook: cairn robot-docs.

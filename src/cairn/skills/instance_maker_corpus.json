@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "pass_floor": 4,
+  "cases": [
+    {
+      "id": "vector_bits40_trial7",
+      "ledger": "pass",
+      "source": "cairn.instances.trial_seed over the pinned inputs; the KAT vector trial_seed in tests/vectors/canon_kat.json pins the same encoding at bits 40, trial 7",
+      "fields": {
+        "nonce": {
+          "value": "abababababababababababababababababababababababababababababababab",
+          "origin": "author_supplied"
+        },
+        "hypothesis_key": {
+          "value": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+          "origin": "author_supplied"
+        },
+        "bits": {
+          "value": 40,
+          "origin": "author_supplied"
+        },
+        "trial": {
+          "value": 7,
+          "origin": "author_supplied"
+        },
+        "seed": {
+          "value": 4055628927172388520,
+          "origin": "author_supplied"
+        }
+      }
+    },
+    {
+      "id": "vector_bits50_trial0",
+      "ledger": "pass",
+      "source": "cairn.instances.trial_seed over the pinned inputs; the KAT vector trial_seed in tests/vectors/canon_kat.json pins the same encoding at bits 40, trial 7",
+      "fields": {
+        "nonce": {
+          "value": "abababababababababababababababababababababababababababababababab",
+          "origin": "author_supplied"
+        },
+        "hypothesis_key": {
+          "value": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+          "origin": "author_supplied"
+        },
+        "bits": {
+          "value": 50,
+          "origin": "author_supplied"
+        },
+        "trial": {
+          "value": 0,
+          "origin": "author_supplied"
+        },
+        "seed": {
+          "value": 7705308412067674501,
+          "origin": "author_supplied"
+        }
+      }
+    },
+    {
+      "id": "instance_bits20_trial0",
+      "ledger": "pass",
+      "source": "cairn.instances.trial_seed over the pinned inputs, then cairn.skills.instance_maker.run(20, seed) under the pinned toy_curve call sequence",
+      "fields": {
+        "nonce": {
+          "value": "abababababababababababababababababababababababababababababababab",
+          "origin": "author_supplied"
+        },
+        "hypothesis_key": {
+          "value": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+          "origin": "author_supplied"
+        },
+        "bits": {
+          "value": 20,
+          "origin": "author_supplied"
+        },
+        "trial": {
+          "value": 0,
+          "origin": "author_supplied"
+        },
+        "seed": {
+          "value": 823495933638179094,
+          "origin": "author_supplied"
+        },
+        "p": {
+          "value": 796091,
+          "origin": "author_supplied"
+        },
+        "a": {
+          "value": 717783,
+          "origin": "author_supplied"
+        },
+        "b": {
+          "value": 247201,
+          "origin": "author_supplied"
+        },
+        "n": {
+          "value": 795647,
+          "origin": "author_supplied"
+        },
+        "P": {
+          "value": [
+            355276,
+            744547
+          ],
+          "origin": "author_supplied"
+        },
+        "Q": {
+          "value": [
+            104015,
+            273652
+          ],
+          "origin": "author_supplied"
+        },
+        "x": {
+          "value": 282071,
+          "origin": "author_supplied"
+        }
+      }
+    },
+    {
+      "id": "instance_bits28_trial3",
+      "ledger": "pass",
+      "source": "cairn.instances.trial_seed over the pinned inputs, then cairn.skills.instance_maker.run(28, seed) under the pinned toy_curve call sequence",
+      "fields": {
+        "nonce": {
+          "value": "abababababababababababababababababababababababababababababababab",
+          "origin": "author_supplied"
+        },
+        "hypothesis_key": {
+          "value": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+          "origin": "author_supplied"
+        },
+        "bits": {
+          "value": 28,
+          "origin": "author_supplied"
+        },
+        "trial": {
+          "value": 3,
+          "origin": "author_supplied"
+        },
+        "seed": {
+          "value": 4223012824413432955,
+          "origin": "author_supplied"
+        },
+        "p": {
+          "value": 174014201,
+          "origin": "author_supplied"
+        },
+        "a": {
+          "value": 126209041,
+          "origin": "author_supplied"
+        },
+        "b": {
+          "value": 39076390,
+          "origin": "author_supplied"
+        },
+        "n": {
+          "value": 174017843,
+          "origin": "author_supplied"
+        },
+        "P": {
+          "value": [
+            143909078,
+            133846140
+          ],
+          "origin": "author_supplied"
+        },
+        "Q": {
+          "value": [
+            67820236,
+            137670122
+          ],
+          "origin": "author_supplied"
+        },
+        "x": {
+          "value": 113681592,
+          "origin": "author_supplied"
+        }
+      }
+    }
+  ]
+}

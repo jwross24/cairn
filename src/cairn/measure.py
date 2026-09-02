@@ -1,19 +1,28 @@
 import json
 import math
 import random
+import resource
 import statistics
 import subprocess
 import sys
 import time
 from dataclasses import dataclass
 
-from cairn import cli, exits, log, pari, verifier
+from cairn import cli, exits, log, pari, runner, verifier
 from cairn.errors import CliError
 from cairn.skills import toy_curve
 
 TARGET_TOY_CURVE_TRIES = "toy-curve-tries"
 TARGET_RHO60 = "rho60"
-TARGETS = (TARGET_TOY_CURVE_TRIES, TARGET_RHO60)
+TARGET_DLP = "dlp"
+TARGETS = (TARGET_TOY_CURVE_TRIES, TARGET_RHO60, TARGET_DLP)
+DLP_RHO_DP = "rho-dp"
+DLP_BSGS = "bsgs"
+DLP_INSTANCE_MAKER = "instance-maker"
+DLP_SKILLS = (DLP_RHO_DP, DLP_BSGS, DLP_INSTANCE_MAKER)
+DLP_DEFAULT_SIZES = "28,30,40,50"
+DLP_TABLE_HEADER = "| skill | bits | seeds | mean ops | sd ops | min ops | max ops | per-op us | mean wall s | sd wall s | table entries | table bytes | bytes/entry | maxrss MB | verify s |"
+DLP_TABLE_RULE = "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"
 DEFAULT_SIZES = "30,40,50,60"
 DEFAULT_SEEDS = 50
 LAUNCH_ARGV = (sys.executable, "-m", "cairn.skills.toy_curve")
@@ -326,9 +335,132 @@ def parse_sizes(text):
         ) from None
 
 
+def _dlp_instance(bits, seed):
+    from cairn.skills import instance_maker
+
+    return instance_maker.run(bits, seed)
+
+
+def _dlp_one(skill, bits, seed, negation_map):
+    from cairn import witness
+    from cairn.skills import bsgs, instance_maker, rho_dp
+
+    if skill == DLP_INSTANCE_MAKER:
+        start = time.monotonic()
+        out = instance_maker.run(bits, seed)
+        wall = time.monotonic() - start
+        return out.tries, wall, None, None, wall
+    inst = _dlp_instance(bits, seed)
+    args = (bits, seed, inst.p, inst.a, inst.b, inst.n, inst.P, inst.Q)
+    if skill == DLP_BSGS:
+        start = time.monotonic()
+        out = bsgs.run(*args)
+        wall = time.monotonic() - start
+        return out.ops, wall, out.memory["entries"], out.memory["table_bytes"], wall
+    start = time.monotonic()
+    out = rho_dp.run(*args, negation_map)
+    wall = time.monotonic() - start
+    start = time.monotonic()
+    verdict = witness.verify(witness.witness_from_output(out.to_dict()))
+    verify_wall = time.monotonic() - start
+    if not verdict.accepted or verdict.x != out.x:
+        raise CliError(exits.BACKEND, f"the witness verifier refused rho_dp's own witness: {verdict.reason}")
+    return out.ops, wall, None, None, verify_wall
+
+
+def _dlp_row(skill, bits, ops, walls, entries, table_bytes, verify_walls):
+    mean = statistics.fmean
+    sd = statistics.stdev if len(ops) > 1 else (lambda _: 0.0)
+    return {
+        "skill": skill,
+        "bits": bits,
+        "seeds": len(ops),
+        "mean_ops": round(mean(ops), 2),
+        "sd_ops": round(sd(ops), 2),
+        "min_ops": min(ops),
+        "max_ops": max(ops),
+        "per_op_us": round(sum(walls) / sum(ops) * 1e6, 4),
+        "mean_wall_s": round(mean(walls), 4),
+        "sd_wall_s": round(sd(walls), 4),
+        "table_entries": None if entries[0] is None else round(mean(entries), 1),
+        "table_bytes": None if table_bytes[0] is None else round(mean(table_bytes), 1),
+        "bytes_per_entry": None if entries[0] is None else round(sum(table_bytes) / sum(entries), 3),
+        "maxrss_bytes": runner.maxrss_bytes(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss, sys.platform),
+        "mean_verify_s": round(mean(verify_walls), 6),
+    }
+
+
+def dlp_rows(skill, sizes, seeds, *, negation_map=False):
+    lg = log.get("measure.dlp")
+    rows = []
+    for bits in sizes:
+        ops, walls, entries, table_bytes, verify_walls = [], [], [], [], []
+        for seed in range(1, seeds + 1):
+            count, wall, entry_count, byte_count, verify_wall = _dlp_one(skill, bits, seed, negation_map)
+            ops.append(count)
+            walls.append(wall)
+            entries.append(entry_count)
+            table_bytes.append(byte_count)
+            verify_walls.append(verify_wall)
+            lg.info("seed", skill=skill, bits=bits, seed=seed, ops=count, wall_s=round(wall, 4))
+        if ops:
+            row = _dlp_row(skill, bits, ops, walls, entries, table_bytes, verify_walls)
+            lg.info("size", **row)
+            rows.append(row)
+    return rows
+
+
+def _cell(value, digits=None):
+    if value is None:
+        return "-"
+    return f"{value:.{digits}f}" if digits is not None else str(value)
+
+
+def dlp_table_lines(rows):
+    return [
+        DLP_TABLE_HEADER,
+        DLP_TABLE_RULE,
+        *(
+            f"| {r['skill']} | {r['bits']} | {r['seeds']} | {r['mean_ops']:.2f} | {r['sd_ops']:.2f} | {r['min_ops']} | "
+            f"{r['max_ops']} | {r['per_op_us']:.4f} | {r['mean_wall_s']:.4f} | {r['sd_wall_s']:.4f} | "
+            f"{_cell(r['table_entries'], 1)} | {_cell(r['table_bytes'], 1)} | {_cell(r['bytes_per_entry'], 3)} | "
+            f"{r['maxrss_bytes'] / 2**20:.1f} | {r['mean_verify_s']:.6f} |"
+            for r in rows
+        ),
+    ]
+
+
+def _dlp(ns):
+    sizes = parse_sizes(DLP_DEFAULT_SIZES if ns.sizes is None else ns.sizes)
+    if ns.seeds < 1:
+        raise CliError(exits.USER_INPUT, f"--seeds must be >= 1, got {ns.seeds}", next_command="cairn measure --help")
+    rows = dlp_rows(ns.skill, sizes, ns.seeds, negation_map=ns.negation_map)
+    if ns.json:
+        cli.emit_json(
+            "measure",
+            {
+                "target": ns.target,
+                "skill": ns.skill,
+                "negation_map": ns.negation_map if ns.skill == DLP_RHO_DP else None,
+                "seeds": ns.seeds,
+                "sizes": sizes,
+                "versions": pari.pari_versions(),
+                "rows": rows,
+            },
+        )
+    else:
+        for line in dlp_table_lines(rows):
+            print(line)
+    return exits.OK
+
+
 def _configure(parser):
     parser.add_argument("target", nargs="?", default=TARGET_TOY_CURVE_TRIES, choices=TARGETS, help="what to measure")
-    parser.add_argument("--sizes", default=DEFAULT_SIZES, metavar="BITS,BITS,...", help="bit sizes to measure")
+    parser.add_argument("--sizes", default=None, metavar="BITS,BITS,...", help="bit sizes to measure")
+    parser.add_argument("--skill", default=DLP_RHO_DP, choices=DLP_SKILLS, help="dlp: which baseline skill to time")
+    parser.add_argument(
+        "--negation-map", action="store_true", help="dlp: time rho-dp's negation-map variant rather than plain rho"
+    )
     parser.add_argument("--seeds", type=int, default=DEFAULT_SEEDS, metavar="N", help="seeds 1..N per size")
     parser.add_argument(
         "--cap-ops",
@@ -398,7 +530,9 @@ def rho_table_lines(run40, verdict, run60, row):
 def _run(ns):
     if ns.target == TARGET_RHO60:
         return _rho60(ns)
-    sizes = parse_sizes(ns.sizes)
+    if ns.target == TARGET_DLP:
+        return _dlp(ns)
+    sizes = parse_sizes(DEFAULT_SIZES if ns.sizes is None else ns.sizes)
     if ns.seeds < 0:
         raise CliError(exits.USER_INPUT, f"--seeds must be >= 0, got {ns.seeds}", next_command="cairn measure --help")
     rows = toy_curve_tries(sizes, ns.seeds)
@@ -424,7 +558,7 @@ cli.register(
     "measure",
     _configure,
     _run,
-    summary="measure a skill's cost constant (toy-curve-tries: tries and subprocess wall over seeds 1..N per size; rho60: interpreted Pollard rho rate at 60 bits with a completed 40-bit rho)",
+    summary="measure a skill's cost constant (toy-curve-tries: tries and subprocess wall over seeds 1..N per size; rho60: interpreted Pollard rho rate at 60 bits with a completed 40-bit rho; dlp: group ops, wall, table bytes and verification wall of rho-dp, bsgs or instance-maker over seeds 1..N per size)",
     read_only=True,
     json=True,
 )

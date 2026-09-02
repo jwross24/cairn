@@ -57,6 +57,8 @@ ENV = {
 INSTANCE = {"p": 5, "a": 2, "b": 1, "n": 7, "P": [0, 1], "Q": [3, 3]}
 SELFTEST_CERT = {"identity_bundle_hash": "dd" * 32, "transcript_hash": "ee" * 32, "env_manifest_hash": "ff" * 32}
 SELFTEST_CERT_TRANSPLANTED = {**SELFTEST_CERT, "identity_bundle_hash": "aa" * 32}
+TRIAL_SEED = {"nonce": "ab" * 32, "hypothesis_key": "cd" * 32, "bits": 40, "trial": 7}
+TRIAL_SEED_NEXT = {**TRIAL_SEED, "trial": 8}
 
 VECTOR_SPECS = [
     ("recipe_a", "recipe", RECIPE_A, None),
@@ -69,6 +71,8 @@ VECTOR_SPECS = [
     ("selftest_cert", "selftest_cert", SELFTEST_CERT, None),
     ("selftest_cert_transplanted", "selftest_cert", SELFTEST_CERT_TRANSPLANTED, {"differs": "selftest_cert"}),
     ("node", "node", {"node_kind": "test", "payload": "payload"}, None),
+    ("trial_seed", "trial_seed", TRIAL_SEED, None),
+    ("trial_seed_next_trial", "trial_seed", TRIAL_SEED_NEXT, {"differs": "trial_seed"}),
 ]
 
 
@@ -108,7 +112,7 @@ def test_kat_runner_passes_on_committed_vectors(caplog):
     assert kat.run() == []
     names = [r.fields["name"] for r in caplog.records if r.getMessage() == "vector"]
     assert names == [spec[0] for spec in VECTOR_SPECS]
-    assert len(names) == 10
+    assert len(names) == 12
 
 
 def _drifted_copy(tmp_path, mutate):

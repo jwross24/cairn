@@ -1,0 +1,15 @@
+{
+ "arms": {
+  "postcondition": "pass",
+  "verifier": {
+   "fail": 1,
+   "ok": 1
+  },
+  "witness": {
+   "accepted": 1,
+   "refused": 3
+  }
+ },
+ "floor": 5,
+ "pass": 5
+}

@@ -29,7 +29,9 @@ positional arguments:
     measure             measure a skill's cost constant (toy-curve-tries:
                         tries and subprocess wall over seeds 1..N per size;
                         rho60: interpreted Pollard rho rate at 60 bits with a
-                        completed 40-bit rho)
+                        completed 40-bit rho; dlp: group ops, wall, table
+                        bytes and verification wall of rho-dp, bsgs or
+                        instance-maker over seeds 1..N per size)
     robot-docs          print the paste-ready agent handbook
     selftest (self-test)
                         run a skill's vendored known-answer corpus and record

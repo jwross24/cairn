@@ -10,6 +10,7 @@ TAG_SELFTEST_CERT = "cairn/selftest-cert/v1"
 TAG_GATE_BUNDLE = "cairn/gate-bundle/v1"
 TAG_INSTANCE = "cairn/instance/v1"
 TAG_CHAIN = "cairn/chain/v1"
+TAG_TRIAL_SEED = "cairn/trial-seed/v1"
 DOMAIN_TAGS = (
     TAG_RECIPE_KEY,
     TAG_HYPOTHESIS_KEY,
@@ -20,6 +21,7 @@ DOMAIN_TAGS = (
     TAG_GATE_BUNDLE,
     TAG_INSTANCE,
     TAG_CHAIN,
+    TAG_TRIAL_SEED,
 )
 
 ENV_MANIFEST = Struct(
@@ -98,6 +100,21 @@ INSTANCE = Struct(
 )
 
 
+TRIAL_SEED = Struct(
+    "trial_seed",
+    [
+        Field("nonce", NON_EMPTY_STR),
+        Field("hypothesis_key", NON_EMPTY_STR),
+        Field("bits", INT),
+        Field("trial", INT),
+    ],
+)
+
+
+def trial_seed_hash(trial):
+    return canon.hash_object(TAG_TRIAL_SEED, TRIAL_SEED, trial)
+
+
 def env_manifest_digest(manifest):
     return canon.hash_object(TAG_ENV_MANIFEST, ENV_MANIFEST, manifest)
 
@@ -133,6 +150,7 @@ SCHEMAS = {
     "hypothesis_object": HYPOTHESIS_OBJECT,
     "instance": INSTANCE,
     "selftest_cert": SELFTEST_CERT,
+    "trial_seed": TRIAL_SEED,
 }
 
 HASHERS = {
@@ -142,6 +160,7 @@ HASHERS = {
     "hypothesis_object": hypothesis_key,
     "instance": instance_hash,
     "selftest_cert": selftest_cert_hash,
+    "trial_seed": trial_seed_hash,
 }
 TAGS_BY_KIND = {
     "env_manifest": TAG_ENV_MANIFEST,
@@ -150,4 +169,5 @@ TAGS_BY_KIND = {
     "hypothesis_object": TAG_HYPOTHESIS_KEY,
     "instance": TAG_INSTANCE,
     "selftest_cert": TAG_SELFTEST_CERT,
+    "trial_seed": TAG_TRIAL_SEED,
 }

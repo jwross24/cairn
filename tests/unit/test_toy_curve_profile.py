@@ -93,6 +93,28 @@ def test_synthetic_profile_evaluates_its_own_table():
     assert info.value.declared == (8,)
 
 
+def test_a_constant_verification_cost_model_charges_its_own_core_seconds():
+    profile = CostProfile(
+        1,
+        Production("c_sqrt_n_ops", {40: SizeCost(1.0, 0.5, 4e-6, 5.0)}),
+        Verification("Verifiable", "constant", core_s=0.002),
+        "synthetic",
+    )
+    assert profile.evaluate(40) == Evaluation(5.0, 5.0, 0.002)
+
+
+@pytest.mark.parametrize("core_s", [None, 0, -1.0, True], ids=["none", "zero", "negative", "bool"])
+def test_a_constant_verification_cost_model_needs_a_positive_core_s(core_s):
+    profile = CostProfile(
+        1,
+        Production("c_sqrt_n_ops", {40: SizeCost(1.0, 0.5, 4e-6, 5.0)}),
+        Verification("Verifiable", "constant", core_s=core_s),
+        "synthetic",
+    )
+    with pytest.raises(ValueError, match="positive core_s"):
+        profile.evaluate(40)
+
+
 def test_unknown_verification_cost_model_is_refused():
     profile = CostProfile(
         0,

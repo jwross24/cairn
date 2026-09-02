@@ -302,11 +302,31 @@ CREATE TABLE IF NOT EXISTS tier_refusals (
     at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS instance_nonces (
+    nonce TEXT PRIMARY KEY,
+    hypothesis_key TEXT NOT NULL,
+    run_id TEXT NOT NULL UNIQUE,
+    drawn_at TEXT NOT NULL,
+    published_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS instance_trials (
+    nonce TEXT NOT NULL REFERENCES instance_nonces (nonce),
+    bits INTEGER NOT NULL,
+    trial INTEGER NOT NULL,
+    seed INTEGER NOT NULL,
+    instance_hash TEXT NOT NULL,
+    x TEXT NOT NULL,
+    attempt_id TEXT,
+    PRIMARY KEY (nonce, bits, trial)
+);
+
 CREATE INDEX IF NOT EXISTS evidence_by_statement ON evidence_nodes (target_statement_hash);
 CREATE INDEX IF NOT EXISTS tag_history_by_statement ON tag_history (statement_hash, seq);
 CREATE INDEX IF NOT EXISTS review_verdicts_by_statement ON review_verdicts (statement_hash);
 CREATE INDEX IF NOT EXISTS tickets_by_key ON tickets (hypothesis_key, method_identity);
 CREATE INDEX IF NOT EXISTS tier_refusals_by_key ON tier_refusals (hypothesis_key);
+CREATE INDEX IF NOT EXISTS instance_nonces_by_key ON instance_nonces (hypothesis_key);
 
 CREATE TRIGGER IF NOT EXISTS hypothesis_objects_no_update BEFORE UPDATE ON hypothesis_objects BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER IF NOT EXISTS hypothesis_objects_no_delete BEFORE DELETE ON hypothesis_objects BEGIN SELECT RAISE(ABORT, 'append-only'); END;
@@ -348,6 +368,19 @@ WHEN NEW.from_tag IS NOT NULL AND NEW.evidence_hash IS NULL
 AND (CASE NEW.to_tag WHEN 'SPECULATION' THEN 0 WHEN 'CONJECTURE' THEN 1 WHEN 'STRONG-EMPIRICAL' THEN 2 WHEN 'PROVEN' THEN 3 END)
   < (CASE NEW.from_tag WHEN 'SPECULATION' THEN 0 WHEN 'CONJECTURE' THEN 1 WHEN 'STRONG-EMPIRICAL' THEN 2 WHEN 'PROVEN' THEN 3 END)
 BEGIN SELECT RAISE(ABORT, 'downgrade requires evidence'); END;
+
+CREATE TRIGGER IF NOT EXISTS instance_nonces_no_delete BEFORE DELETE ON instance_nonces BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS instance_trials_no_delete BEFORE DELETE ON instance_trials BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS instance_trials_no_update BEFORE UPDATE ON instance_trials BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS instance_nonces_one_publication BEFORE UPDATE ON instance_nonces
+WHEN NOT (
+    OLD.published_at IS NULL AND NEW.published_at IS NOT NULL
+    AND NEW.nonce IS OLD.nonce
+    AND NEW.hypothesis_key IS OLD.hypothesis_key
+    AND NEW.run_id IS OLD.run_id
+    AND NEW.drawn_at IS OLD.drawn_at
+)
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 
 CREATE TRIGGER IF NOT EXISTS claim_statements_born_open BEFORE INSERT ON claim_statements
 WHEN NEW.status <> 'open'

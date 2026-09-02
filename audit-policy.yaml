@@ -234,9 +234,17 @@ project_theater_patterns:
     exempt_paths:
       - path: tests/conformance/test_skill_contract.py
         matches: 1
+      - path: tests/integration/test_bsgs_selftest.py
+        matches: 1
       - path: tests/integration/test_gate_bundle.py
         matches: 1
       - path: tests/integration/test_grounding_fs.py
+        matches: 1
+      - path: tests/integration/test_instance_maker_selftest.py
+        matches: 1
+      - path: tests/integration/test_instance_maker_substrate.py
+        matches: 1
+      - path: tests/integration/test_rho_dp_selftest.py
         matches: 1
       - path: tests/integration/test_toy_curve_selftest.py
         matches: 1

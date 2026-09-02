@@ -1,15 +1,17 @@
 usage: cairn measure [-h] [--db PATH] [--bundle PATH] [--pin PATH]
                      [--attest PATH] [--log LEVEL] [--json]
-                     [--sizes BITS,BITS,...] [--seeds N] [--cap-ops N]
-                     [--cap-minutes M]
-                     [{toy-curve-tries,rho60}]
+                     [--sizes BITS,BITS,...]
+                     [--skill {rho-dp,bsgs,instance-maker}] [--negation-map]
+                     [--seeds N] [--cap-ops N] [--cap-minutes M]
+                     [{toy-curve-tries,rho60,dlp}]
 
 measure a skill's cost constant (toy-curve-tries: tries and subprocess wall
 over seeds 1..N per size; rho60: interpreted Pollard rho rate at 60 bits with
-a completed 40-bit rho)
+a completed 40-bit rho; dlp: group ops, wall, table bytes and verification
+wall of rho-dp, bsgs or instance-maker over seeds 1..N per size)
 
 positional arguments:
-  {toy-curve-tries,rho60}
+  {toy-curve-tries,rho60,dlp}
                         what to measure
 
 options:
@@ -22,6 +24,10 @@ options:
   --json, --robot       emit exactly one JSON document on stdout
   --sizes BITS,BITS,...
                         bit sizes to measure
+  --skill {rho-dp,bsgs,instance-maker}
+                        dlp: which baseline skill to time
+  --negation-map        dlp: time rho-dp's negation-map variant rather than
+                        plain rho
   --seeds N             seeds 1..N per size
   --cap-ops N           rho60: stop the 60-bit walk after N group ops
   --cap-minutes M       rho60: stop the 60-bit walk after M minutes
