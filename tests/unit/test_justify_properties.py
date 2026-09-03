@@ -1,3 +1,4 @@
+import dataclasses
 import sys
 from pathlib import Path
 
@@ -37,7 +38,7 @@ def covering_case(draw):
     kind, verdict = draw(st.sampled_from(factories.JUSTIFYING))
     in_sample = population["size_interval"] if verdict == "KEEP_IN_SAMPLE" else None
     ctx = justify.Context(
-        grade=draw(st.sampled_from(("Replayable", "Verifiable", "AuditOnly"))),
+        grade=draw(st.sampled_from(("Replayable", "Verifiable"))),
         repro_passed=draw(st.sampled_from((None, True, False))),
         has_cost_model=draw(st.booleans()),
         approved=True,
@@ -54,6 +55,14 @@ def covering_case(draw):
 def test_mr_w_a_covering_population_always_justifies(case):
     scope, _, evidence, ctx = case
     assert isinstance(justify.justify(evidence, _statement(scope), ctx), justify.Justification)
+
+
+@given(covering_case())
+def test_mr_an_audit_only_grade_justifies_nothing_whatever_the_evidence(case):
+    scope, _, evidence, ctx = case
+    audit_only = dataclasses.replace(ctx, grade=justify.AUDIT_ONLY)
+    result = justify.justify(evidence, _statement(scope), audit_only)
+    assert isinstance(result, justify.Absent) and result.reason == justify.REASON_AUDIT_ONLY
 
 
 @given(covering_case(), st.data())

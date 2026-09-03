@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from cairn import claims, cli, log
+from cairn import claims, cli, log, nogo
 from cairn.profile import ProfileUndeclared
 
 lg = log.get("tiergate")
@@ -8,6 +8,8 @@ lg = log.get("tiergate")
 PROFILE_UNDECLARED = "profile-undeclared"
 TICKET_ABSENT = "ticket-absent"
 TIER_TWO_ABOVE = "tier-two-above"
+NOGO_UNDECLARED = "nogo-undeclared"
+NOGO_UNREVIEWED = "nogo-unreviewed"
 BOUNDARY_TABLE = "boundary-table"
 UNCERTIFIED = "uncertified"
 YANKED = "yanked"
@@ -18,6 +20,8 @@ REASON_ORDER = (
     PROFILE_UNDECLARED,
     TICKET_ABSENT,
     TIER_TWO_ABOVE,
+    NOGO_UNDECLARED,
+    NOGO_UNREVIEWED,
     BOUNDARY_TABLE,
     UNCERTIFIED,
     YANKED,
@@ -39,6 +43,7 @@ class Launch:
     skill_identity_hash: str | None
     declared_tier: int
     statement_hash: str | None = None
+    target_attack: bool = False
 
 
 @dataclass(frozen=True)
@@ -73,7 +78,18 @@ def ordered_reasons(reasons):
 
 
 def predicate_reasons(
-    *, declared_tier, ticket_tier, cost_tier, certified, yanked, budget_ok, ticket_bundle_matches, profile_declared
+    *,
+    declared_tier,
+    ticket_tier,
+    cost_tier,
+    certified,
+    yanked,
+    budget_ok,
+    ticket_bundle_matches,
+    profile_declared,
+    target_attack=False,
+    nogo_declared=False,
+    nogo_accepted=False,
 ):
     """The tier gate's whole truth table, over resolved facts. No substrate, no bundle, no I/O."""
     reasons = set()
@@ -83,6 +99,11 @@ def predicate_reasons(
         reasons.add(TICKET_ABSENT)
     if ticket_tier is not None and declared_tier > ticket_tier + 1:
         reasons.add(TIER_TWO_ABOVE)
+    if target_attack and declared_tier >= 1:
+        if not nogo_declared:
+            reasons.add(NOGO_UNDECLARED)
+        elif declared_tier >= 2 and not nogo_accepted:
+            reasons.add(NOGO_UNREVIEWED)
     if profile_declared:
         if declared_tier < cost_tier:
             reasons.add(BOUNDARY_TABLE)
@@ -98,9 +119,10 @@ def predicate_reasons(
 
 
 class TierGate:
-    def __init__(self, sub, gate_bundle):
+    def __init__(self, sub, gate_bundle, *, attest_path=None):
         self.sub = sub
         self.bundle = gate_bundle
+        self.attest_path = attest_path
 
     @property
     def boundary_table(self):
@@ -131,6 +153,7 @@ class TierGate:
         ticket_tier = None if selected is None else selected[0]
         recorded = self._recorded_ticket(launch) if selected is not None else None
         stale = recorded is not None and recorded["bundle_hash"] != self.bundle.hash
+        nogo_flag = nogo.flag(self.sub, launch.hypothesis_key, self.attest_path) if launch.target_attack else None
 
         reasons = predicate_reasons(
             declared_tier=launch.declared_tier,
@@ -142,6 +165,9 @@ class TierGate:
             or evaluation.expected_core_s + evaluation.expected_verification_core_s <= launch.budget_remaining,
             ticket_bundle_matches=not stale,
             profile_declared=evaluation is not None,
+            target_attack=launch.target_attack,
+            nogo_declared=nogo_flag is not None and nogo_flag.declared,
+            nogo_accepted=nogo_flag is not None and nogo_flag.accepted,
         )
 
         run = claims.GateRun(
@@ -159,6 +185,8 @@ class TierGate:
             hypothesis_key=launch.hypothesis_key,
             declared_tier=launch.declared_tier,
             ticket_tier=ticket_tier,
+            target_attack=launch.target_attack,
+            nogo_declaration=None if nogo_flag is None else nogo_flag.declaration_hash,
             reasons=list(reasons),
             result=run.result,
             bundle_hash=self.bundle.hash,

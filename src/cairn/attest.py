@@ -12,7 +12,7 @@ lg = log.get("attest")
 
 LENGTH_BYTES = 8
 FIXTURE_WAIVER_EXPIRES = "9999-12-31T23:59:59Z"
-KINDS = ("review_verdict", "waiver", "acknowledgment")
+KINDS = ("review_verdict", "waiver", "acknowledgment", "nogo_review")
 
 WAIVER = Struct(
     "waiver",
@@ -231,6 +231,36 @@ def _acknowledgment_from(fields):
         ) from None
 
 
+def _nogo_review_from(fields, gate_bundle_hash, file_offset):
+    from cairn import nogo
+
+    try:
+        return nogo.review_from_fields(fields, gate_bundle_hash, file_offset)
+    except nogo.NogoError as exc:
+        raise CliError(
+            exits.USER_INPUT,
+            str(exc),
+            where=", ".join(sorted(fields)),
+            next_command=f"a nogo_review record carries {', '.join(nogo.REVIEW_RECORD_FIELDS)}",
+        ) from None
+
+
+def _append_nogo_review(ns, fields, gate):
+    from cairn import human_queue, nogo, substrate
+
+    canonical = nogo.review_canonical(_nogo_review_from(fields, gate.hash, 0))
+    offset = append_record(ns.attest, canonical)
+    placed = _nogo_review_from(fields, gate.hash, offset)
+    with substrate.Substrate.open(ns.db) as sub:
+        row = nogo.write_review(sub, placed)
+        item_id = nogo.open_review_item(sub, placed.hypothesis_key, ns.attest)
+        if item_id is not None and nogo.mirrored(sub, placed.hypothesis_key, placed.record_digest, offset):
+            human_queue.close_by_attestation(
+                sub, item_id, attest_path=ns.attest, file_offset=offset, record_digest=placed.record_digest
+            )
+    return canonical, offset, row
+
+
 def _append_acknowledgment(ns, fields):
     from cairn import human_queue, substrate
 
@@ -269,6 +299,8 @@ def _run_append(ns):
         row = None
     elif ns.kind == "acknowledgment":
         canonical, offset, row = _append_acknowledgment(ns, fields)
+    elif ns.kind == "nogo_review":
+        canonical, offset, row = _append_nogo_review(ns, fields, gate)
     else:
         canonical = claims.review_verdict_canonical(_verdict_from(fields, gate.hash, 0))
         offset = append_record(ns.attest, canonical)

@@ -424,6 +424,7 @@ def certify(sub, config, *, doc=None, root=None):
         },
         "pass": first["passes"],
         "floor": first["floor"],
+        "must_fail_witnesses": first["arms"]["verifier"]["fail"],
     }
     existing = sub.get_certificate(identity_hash)
     if existing is not None:

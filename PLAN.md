@@ -1360,7 +1360,8 @@ CPU-feature drift, which is what the §2 numeric profile records.
   `justify` returns STRONG-EMPIRICAL from a synthetic `ladder_table` evidence node with
   verdict KEEP whose attempt carries a passed reproducibility record, returns the CONJECTURE
   ceiling for the
-  same table with that record absent or its grade `AuditOnly`, returns a coverage violation
+  same table with that record absent, returns no justification at all for that table graded
+  `AuditOnly` (§3: inadmissible as evidence), returns a coverage violation
   when the table's population does not cover the statement's scope, and returns a lattice
   violation when a synthetic `statistical` node is offered for PROVEN, against a synthetic
   statement hash; and a blob unreachable from the roots table is collectable
@@ -1449,7 +1450,7 @@ CPU-feature drift, which is what the §2 numeric profile records.
   (§7), the same computed fact from a revision whose every corpus origin is `author_supplied`
   with no postcondition arm and no covering cross-check returns that ceiling (§7), and a
   `Verifiable` node whose only verifier ships in its producer's revision is
-  graded `AuditOnly` and returns that ceiling (§3); the tier-gate fixtures: a
+  graded `AuditOnly` and justifies nothing (§3); the tier-gate fixtures: a
   (synthetic) `KEEP_IN_SAMPLE` table admits the 60-bit rung of its own hypothesis key and
   is refused for every other Tier-2 launch, a KEEP table is refused for a launch whose
   hypothesis key, method identity or implementation revision differs from the table's, a

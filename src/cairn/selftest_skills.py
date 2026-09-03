@@ -496,6 +496,7 @@ def certify(sub, config, which, *, doc=None, root=None):
         "cross_check": {"axis": module.CROSS_CHECK_AXIS, "independent_range": module.INDEPENDENT_RANGE},
         "pass": first["passes"],
         "floor": first["floor"],
+        "must_fail_witnesses": first["arms"]["verifier"]["fail"],
     }
     existing = sub.get_certificate(identity_hash)
     if existing is not None:

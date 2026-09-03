@@ -139,7 +139,7 @@ def test_coverage_comparator(population, expected):
         ("ladder_table", "KEEP", True, "Replayable", False, STRONG_EMPIRICAL),
         ("ladder_table", "KEEP", None, "Replayable", False, CONJECTURE),
         ("ladder_table", "KEEP", False, "Replayable", False, CONJECTURE),
-        ("ladder_table", "KEEP", True, "AuditOnly", False, CONJECTURE),
+        ("ladder_table", "KEEP", True, "AuditOnly", False, "Absent"),
         ("ladder_table", "KEEP_IN_SAMPLE", True, "Replayable", False, STRONG_EMPIRICAL),
         ("ladder_table", "REJECT", True, "Replayable", False, "Absent"),
         ("ladder_table", "INCONCLUSIVE", True, "Replayable", False, "Absent"),
@@ -353,7 +353,7 @@ def test_a_disowned_attempt_is_absent_while_an_audit_only_grade_is_not():
         justify.Context(repro_passed=True, grade=justify.AUDIT_ONLY),
     )
     assert isinstance(disowned, justify.Absent) and disowned.reason == "disowned"
-    assert isinstance(audit_only, justify.Justification) and audit_only.cls == CONJECTURE
+    assert isinstance(audit_only, justify.Absent) and audit_only.reason == justify.REASON_AUDIT_ONLY
 
 
 def test_the_node_s_own_assumptions_join_the_population_s_for_coverage():

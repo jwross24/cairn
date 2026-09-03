@@ -32,6 +32,7 @@ GATES = (
     "challenge_render",
 )
 GATE_RESULTS = ("pass", "fail", "refused", "blocked", "admitted")
+TIERS = (0, 1, 2, 3)
 
 SCOPE = Struct(
     "scope",
@@ -374,6 +375,8 @@ class Ticket:
     hash: str = field(init=False, compare=False)
 
     def __post_init__(self):
+        if isinstance(self.tier, bool) or self.tier not in TIERS:
+            raise ValueError(f"tier must be one of {TIERS}, got {self.tier!r}")
         object.__setattr__(self, "hash", keys.node_hash("ticket", ticket_canonical(self)))
 
 
@@ -637,6 +640,17 @@ def tag_history_for(sub, statement_hash):
         "SELECT * FROM tag_history WHERE statement_hash = ? ORDER BY seq", (statement_hash,)
     ).fetchall()
     return [dict(r) for r in rows]
+
+
+def repro_records_for_attempt(sub, attempt_id):
+    rows = sub.conn.execute("SELECT * FROM repro_records WHERE attempt_id = ? ORDER BY rowid", (attempt_id,)).fetchall()
+    return [dict(r) for r in rows]
+
+
+def ticket_tier_for(sub, statement_hash):
+    """The highest tier any recorded ticket grants the statement's branch; 0 with no ticket."""
+    row = sub.conn.execute("SELECT MAX(tier) FROM tickets WHERE statement_hash = ?", (statement_hash,)).fetchone()
+    return 0 if row is None or row[0] is None else int(row[0])
 
 
 def tier_refusals_for(sub, hypothesis_key):

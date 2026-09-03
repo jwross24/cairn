@@ -6,6 +6,8 @@ from cairn import tiergate
 from cairn.tiergate import (
     BOUNDARY_TABLE,
     BUDGET,
+    NOGO_UNDECLARED,
+    NOGO_UNREVIEWED,
     PROFILE_UNDECLARED,
     REASON_ORDER,
     TICKET_ABSENT,
@@ -47,6 +49,11 @@ def test_a_clean_launch_names_no_reason():
         ({"profile_declared": False}, (PROFILE_UNDECLARED,)),
         ({"declared_tier": 1}, (TICKET_ABSENT,)),
         ({"declared_tier": 2, "ticket_tier": 0}, (TIER_TWO_ABOVE,)),
+        ({"declared_tier": 1, "ticket_tier": 0, "cost_tier": 1, "target_attack": True}, (NOGO_UNDECLARED,)),
+        (
+            {"declared_tier": 2, "ticket_tier": 1, "cost_tier": 2, "target_attack": True, "nogo_declared": True},
+            (NOGO_UNREVIEWED,),
+        ),
         ({"declared_tier": 0, "cost_tier": 1}, (BOUNDARY_TABLE,)),
         ({"certified": False}, (UNCERTIFIED,)),
         ({"yanked": True}, (YANKED,)),
@@ -74,18 +81,36 @@ def test_an_absent_ticket_is_not_also_two_above():
 
 def test_reasons_accumulate_without_short_circuiting():
     assert reasons(declared_tier=2, ticket_tier=0, certified=False) == (TIER_TWO_ABOVE, UNCERTIFIED)
-    everything_else = tuple(r for r in REASON_ORDER if r not in (PROFILE_UNDECLARED, TICKET_ABSENT))
+    everything = {
+        "declared_tier": 2,
+        "ticket_tier": 0,
+        "certified": False,
+        "yanked": True,
+        "budget_ok": False,
+        "ticket_bundle_matches": False,
+        "cost_tier": 3,
+        "target_attack": True,
+    }
+    undeclared = tuple(r for r in REASON_ORDER if r not in (PROFILE_UNDECLARED, TICKET_ABSENT, NOGO_UNREVIEWED))
+    unreviewed = tuple(r for r in REASON_ORDER if r not in (PROFILE_UNDECLARED, TICKET_ABSENT, NOGO_UNDECLARED))
+    assert reasons(**everything) == undeclared
+    assert reasons(**everything, nogo_declared=True) == unreviewed
+
+
+def test_the_two_nogo_reasons_are_exclusive_and_read_only_a_target_attack_above_tier_zero():
+    assert reasons(declared_tier=0, target_attack=True) == ()
+    assert reasons(declared_tier=1, ticket_tier=0, cost_tier=1) == ()
+    assert reasons(declared_tier=1, ticket_tier=0, cost_tier=1, target_attack=True) == (NOGO_UNDECLARED,)
+    assert reasons(declared_tier=1, ticket_tier=0, cost_tier=1, target_attack=True, nogo_declared=True) == ()
+    assert reasons(declared_tier=2, ticket_tier=1, cost_tier=2, target_attack=True, nogo_declared=True) == (
+        NOGO_UNREVIEWED,
+    )
     assert (
-        reasons(
-            declared_tier=2,
-            ticket_tier=0,
-            certified=False,
-            yanked=True,
-            budget_ok=False,
-            ticket_bundle_matches=False,
-            cost_tier=3,
-        )
-        == everything_else
+        reasons(declared_tier=2, ticket_tier=1, cost_tier=2, target_attack=True, nogo_declared=True, nogo_accepted=True)
+        == ()
+    )
+    assert reasons(declared_tier=2, ticket_tier=1, cost_tier=2, target_attack=True, nogo_accepted=True) == (
+        NOGO_UNDECLARED,
     )
 
 
@@ -98,11 +123,14 @@ TRUTH_TABLE_AXES = {
     "budget_ok": (True, False),
     "ticket_bundle_matches": (True, False),
     "profile_declared": (True, False),
+    "target_attack": (False, True),
+    "nogo_declared": (False, True),
+    "nogo_accepted": (False, True),
 }
 
 
 COUPLING = {
-    "declared_tier": {TICKET_ABSENT, TIER_TWO_ABOVE, BOUNDARY_TABLE},
+    "declared_tier": {TICKET_ABSENT, TIER_TWO_ABOVE, BOUNDARY_TABLE, NOGO_UNDECLARED, NOGO_UNREVIEWED},
     "ticket_tier": {TICKET_ABSENT, TIER_TWO_ABOVE},
     "cost_tier": {BOUNDARY_TABLE},
     "certified": {UNCERTIFIED},
@@ -110,6 +138,9 @@ COUPLING = {
     "budget_ok": {BUDGET},
     "ticket_bundle_matches": {TICKET_BUNDLE_MISMATCH},
     "profile_declared": {PROFILE_UNDECLARED, BOUNDARY_TABLE, BUDGET},
+    "target_attack": {NOGO_UNDECLARED, NOGO_UNREVIEWED},
+    "nogo_declared": {NOGO_UNDECLARED, NOGO_UNREVIEWED},
+    "nogo_accepted": {NOGO_UNREVIEWED},
 }
 
 

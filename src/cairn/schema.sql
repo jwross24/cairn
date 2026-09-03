@@ -458,3 +458,32 @@ WHEN (NEW.path = 'blocker_cleared' AND (SELECT blocker FROM human_queue_items WH
       AND (SELECT target_kind FROM human_queue_items WHERE item_id = NEW.item_id) = 'statement'
       AND COALESCE((SELECT status FROM claim_statements WHERE hash = (SELECT target FROM human_queue_items WHERE item_id = NEW.item_id)), 'open') = 'open')
 BEGIN SELECT RAISE(ABORT, 'closing rule'); END;
+
+CREATE TABLE IF NOT EXISTS nogo_declarations (
+    hypothesis_key TEXT NOT NULL,
+    declaration_hash TEXT NOT NULL,
+    declared_by TEXT NOT NULL,
+    at TEXT NOT NULL,
+    PRIMARY KEY (hypothesis_key, declaration_hash)
+);
+
+CREATE TABLE IF NOT EXISTS nogo_reviews (
+    row_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    hypothesis_key TEXT NOT NULL,
+    declaration_hash TEXT NOT NULL,
+    reviewer TEXT NOT NULL,
+    verdict TEXT NOT NULL CHECK (verdict IN ('accept_for_tiering', 'reject', 'needs_revision')),
+    gate_bundle_hash TEXT NOT NULL,
+    at TEXT NOT NULL,
+    supersedes TEXT,
+    record_digest TEXT NOT NULL,
+    file_offset INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS nogo_declarations_by_key ON nogo_declarations (hypothesis_key);
+CREATE INDEX IF NOT EXISTS nogo_reviews_by_key ON nogo_reviews (hypothesis_key);
+
+CREATE TRIGGER IF NOT EXISTS nogo_declarations_no_update BEFORE UPDATE ON nogo_declarations BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS nogo_declarations_no_delete BEFORE DELETE ON nogo_declarations BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS nogo_reviews_no_update BEFORE UPDATE ON nogo_reviews BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS nogo_reviews_no_delete BEFORE DELETE ON nogo_reviews BEGIN SELECT RAISE(ABORT, 'append-only'); END;

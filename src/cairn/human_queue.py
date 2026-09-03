@@ -212,6 +212,11 @@ def _attestation_binding(sub, item, record_digest, file_offset):
         for v in claims.review_verdicts_for(sub, item["target"])
     ):
         return f"no review verdict on statement {item['target']} is mirrored at offset {file_offset} with digest {record_digest}"
+    if item["class"] == NOGO_REVIEW:
+        from cairn import nogo
+
+        if not nogo.mirrored(sub, item["target"], record_digest, file_offset):
+            return f"no nogo_review on branch {item['target']} is mirrored at offset {file_offset} with digest {record_digest}"
     return None
 
 

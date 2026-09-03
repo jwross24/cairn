@@ -328,7 +328,7 @@ DONE_WHEN = [
     ),
     (case_repro_absent, "Justification", CONJECTURE, CONJECTURE),
     (case_repro_failed, "Justification", CONJECTURE, CONJECTURE),
-    (case_grade_audit_only, "Justification", CONJECTURE, CONJECTURE),
+    (case_grade_audit_only, "Absent", justify.REASON_AUDIT_ONLY, SPECULATION),
     (
         case_population_narrower_than_scope,
         "CoverageViolation",

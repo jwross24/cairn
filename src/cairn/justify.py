@@ -3,7 +3,7 @@ import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 
-from cairn import claims, cli, exits, log, substrate
+from cairn import claims, cli, exits, foundations, log, repro, substrate
 from cairn.errors import CliError
 
 lg = log.get("justify")
@@ -25,6 +25,10 @@ AUTHOR_SUPPLIED = "author_supplied"
 ACTOR = "gate:justify"
 REASON_HUMAN_REVIEW = "human_review"
 REASON_HUNT_KILLED = "hunt-killed"
+REASON_REPRO_DEFERRED = "repro-deferred"
+REASON_INADMISSIBLE = "attempt-inadmissible"
+REASON_AUDIT_ONLY = "audit-only-inadmissible"
+REASON_PREMISE_CEILING = "premise-ceiling"
 
 
 @dataclass(frozen=True)
@@ -75,6 +79,8 @@ class Context:
     producer_summary: dict | None = None
     attempt_inputs: dict | None = None
     offered_class: str | None = None
+    tier: int = 0
+    inadmissible: bool = False
 
 
 @dataclass(frozen=True)
@@ -85,6 +91,8 @@ class Derivation:
     results: tuple
     appended: bool
     refuted_by: str | None
+    deferred: tuple = ()
+    premise_cap: tuple | None = None
 
 
 def rank(cls):
@@ -279,12 +287,15 @@ def _judge(evidence, statement, ctx, kind, ceiling, evidence_hash):
     field = coverage_violation(population, scope)
     if field is not None:
         return CoverageViolation(field, evidence_hash)
+    if ctx.inadmissible:
+        return Absent(REASON_INADMISSIBLE, evidence_hash)
     in_sample = _load(evidence.get("in_sample_sizes"))
+    in_sample_ok = contains(in_sample, scope.get("size_interval"))
     cls, reason = kind_class(
         kind,
         evidence.get("verdict"),
         repro_passed=ctx.repro_passed,
-        in_sample_ok=contains(in_sample, scope.get("size_interval")),
+        in_sample_ok=in_sample_ok,
         has_cost_model=ctx.has_cost_model,
         approved=ctx.approved,
     )
@@ -297,7 +308,18 @@ def _judge(evidence, statement, ctx, kind, ceiling, evidence_hash):
     if ctx.statement_status == "refuted":
         return LatticeViolation("refuted-statement", evidence_hash)
     if ctx.grade == AUDIT_ONLY:
-        ceiling = weakest(ceiling, CONJECTURE)
+        return Absent(REASON_AUDIT_ONLY, evidence_hash)
+    if ctx.repro_passed is None and repro.policy(ctx.grade, ctx.tier) == repro.RERUN_ON_DERIVE:
+        reproduced, _ = kind_class(
+            kind,
+            evidence.get("verdict"),
+            repro_passed=True,
+            in_sample_ok=in_sample_ok,
+            has_cost_model=ctx.has_cost_model,
+            approved=ctx.approved,
+        )
+        if reproduced is not None and rank(weakest(reproduced, ceiling)) > rank(CONJECTURE):
+            return Justification(CONJECTURE, kind, evidence_hash, REASON_REPRO_DEFERRED)
     if producer_capped(ctx.producer_summary, ctx.attempt_inputs):
         ceiling = weakest(ceiling, CONJECTURE)
     return Justification(weakest(cls, ceiling), kind, evidence_hash, reason)
@@ -314,10 +336,12 @@ def _certificate_summary(sub, evidence):
 
 def _repro_passed(sub, evidence):
     digest = evidence.get("repro_record_hash")
-    if not digest:
-        return None
-    row = claims.get_repro_record(sub, digest)
-    return None if row is None else bool(row["passed"])
+    if digest:
+        row = claims.get_repro_record(sub, digest)
+        return None if row is None else bool(row["passed"])
+    attempt_id = evidence.get("attempt_id")
+    rows = claims.repro_records_for_attempt(sub, attempt_id) if attempt_id else []
+    return bool(rows[-1]["passed"]) if rows else None
 
 
 def _disowned(sub, evidence):
@@ -326,6 +350,14 @@ def _disowned(sub, evidence):
         return False
     row = sub.get_attempt(attempt_id)
     return row is not None and row["disowned_at"] is not None
+
+
+def _inadmissible(sub, evidence):
+    attempt_id = evidence.get("attempt_id")
+    if not attempt_id:
+        return False
+    row = sub.get_attempt(attempt_id)
+    return row is not None and bool(row["inadmissible"])
 
 
 def _grade(sub, evidence_hash):
@@ -350,6 +382,8 @@ def context_for(sub, evidence, statement, attest_path, *, offered_class=None):
         producer_summary=_certificate_summary(sub, evidence),
         attempt_inputs=population.get("param_ranges"),
         offered_class=offered_class,
+        tier=claims.ticket_tier_for(sub, statement["hash"]),
+        inadmissible=_inadmissible(sub, evidence),
     )
 
 
@@ -381,22 +415,29 @@ def derive_tag(sub, statement_hash, attest_path, *, actor=ACTOR):
     tag = best[1].cls if best is not None else SPECULATION
     if refuted_by is not None:
         tag = SPECULATION
+    deferred = tuple(
+        row["hash"]
+        for row, result in results
+        if isinstance(result, Justification) and result.reason == REASON_REPRO_DEFERRED
+    )
 
     from_tag = _current_tag(sub, statement_hash)
-    justified_by = refuted_by if refuted_by is not None else (best[0]["hash"] if best is not None else None)
+    # The tag_history trigger refuses a downgrade with no evidence pointer, so a derivation
+    # with every node absent names the first lost node as the pointer behind the move.
+    lost = next((row["hash"] for row, result in results if isinstance(result, Absent)), None)
+    justified_by = refuted_by if refuted_by is not None else (best[0]["hash"] if best is not None else lost)
+    record = (
+        _justification_record(best[1])
+        if best is not None
+        else claims.to_json({"result": "Refutation" if refuted_by else "Absent"})
+    )
+    premise_cap = foundations.ceiling_for(sub, statement_hash)
+    if premise_cap is not None and rank(tag) > rank(premise_cap[0]):
+        tag, justified_by = premise_cap[0], premise_cap[1]
+        record = claims.to_json({"result": "PremiseCeiling", "cls": tag, "premise": premise_cap[2]})
     appended = tag != from_tag
     if appended:
-        claims.append_tag_history(
-            sub,
-            statement_hash,
-            from_tag,
-            tag,
-            justified_by,
-            _justification_record(best[1])
-            if best is not None
-            else claims.to_json({"result": "Refutation" if refuted_by else "Absent"}),
-            actor,
-        )
+        claims.append_tag_history(sub, statement_hash, from_tag, tag, justified_by, record, actor)
     if refuted_by is not None and statement["status"] == "open":
         claims.transition_status(sub, statement_hash, "refuted")
     lg.info(
@@ -407,6 +448,8 @@ def derive_tag(sub, statement_hash, attest_path, *, actor=ACTOR):
         justified_by=justified_by,
         appended=appended,
         refuted_by=refuted_by,
+        deferred=list(deferred),
+        premise_cap=None if premise_cap is None else premise_cap[0],
     )
     return Derivation(
         statement_hash,
@@ -415,6 +458,8 @@ def derive_tag(sub, statement_hash, attest_path, *, actor=ACTOR):
         tuple(results),
         appended,
         refuted_by,
+        deferred,
+        premise_cap,
     )
 
 
@@ -433,6 +478,14 @@ def _payload(derivation):
         "justified_by": derivation.justified_by,
         "refuted_by": derivation.refuted_by,
         "appended": derivation.appended,
+        "deferred": list(derivation.deferred),
+        "premise_cap": None
+        if derivation.premise_cap is None
+        else {
+            "tag": derivation.premise_cap[0],
+            "evidence_hash": derivation.premise_cap[1],
+            "premise": derivation.premise_cap[2],
+        },
         "evidence": [
             {
                 "hash": row["hash"],
@@ -460,6 +513,13 @@ def _run(ns):
         with substrate.Substrate.open(ns.db) as sub:
             derivation = derive_tag(sub, ns.statement, ns.attest)
             payload = _payload(derivation)
+    except (sqlite3.IntegrityError, repro.ReproError) as exc:
+        raise CliError(
+            exits.GATE_REFUSED,
+            f"the derivation of {ns.statement} was refused: {exc}",
+            where=ns.statement,
+            next_command="a downgrade needs an evidence pointer and a ticket tier stays within claims.TIERS",
+        ) from None
     except substrate.WriterAlreadyOpen as exc:
         raise CliError(
             exits.CONFLICT,
