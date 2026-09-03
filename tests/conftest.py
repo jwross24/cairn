@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 import pytest
+from _libpari_stall import pytest_runtest_protocol  # noqa: F401
 from _session_deadline import pytest_configure, pytest_unconfigure  # noqa: F401
 from hypothesis import settings
 

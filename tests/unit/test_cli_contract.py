@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from cysignals.alarm import AlarmInterrupt
 
 from cairn import cli, exits, kat, pari
 from cairn.errors import CliError
@@ -365,3 +366,17 @@ def test_unexpected_exception_is_never_silent(fixture_command, capsys):
     code, out, err = _run(["boom"], capsys)
     assert code == exits.BACKEND
     assert "kaboom" in err and out == ""
+
+
+def test_a_libpari_stall_exits_backend_and_a_plain_interrupt_propagates(fixture_command, capsys):
+    fixture_command("stall", lambda ns: (_ for _ in ()).throw(pari.PariStall("ellcard", 60.0, 60.4)))
+    code, out, err = _run(["stall"], capsys)
+    assert code == exits.BACKEND
+    assert "PariStall: libpari stall: ellcard passed the 60 s in-process bound" in err and "cairn doctor" in err
+    assert out == ""
+    fixture_command("late-alarm", lambda ns: (_ for _ in ()).throw(AlarmInterrupt()))
+    code, out, err = _run(["late-alarm"], capsys)
+    assert code == exits.BACKEND and "AlarmInterrupt" in err
+    fixture_command("interrupt", lambda ns: (_ for _ in ()).throw(KeyboardInterrupt()))
+    with pytest.raises(KeyboardInterrupt):
+        _run(["interrupt"], capsys)

@@ -11,6 +11,8 @@ import traceback
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from cysignals.alarm import AlarmInterrupt
+
 from cairn import exits, log
 from cairn.errors import CliError
 
@@ -427,6 +429,10 @@ def main(argv=None):
         return _render_error(err, lg)
     except AssertionError:
         raise
+    except AlarmInterrupt as exc:
+        err = CliError(exits.BACKEND, f"{type(exc).__name__}: {exc}", next_command="cairn doctor")
+        lg.debug("traceback", text=traceback.format_exc())
+        return _render_error(err, lg)
     except Exception as exc:
         import sqlite3
 

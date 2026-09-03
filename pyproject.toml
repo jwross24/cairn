@@ -73,4 +73,4 @@ skip = "./.git,./.venv,./.beads,./uv.lock,./tests/goldens,./tests/vectors,./bead
 
 [tool.ty.environment]
 python-version = "3.14"
-extra-paths = ["scripts"]
+extra-paths = ["scripts", "typings"]

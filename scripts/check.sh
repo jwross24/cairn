@@ -65,7 +65,7 @@ else
   if [ -n "${CAIRN_SESSION_DEADLINE_SKIP:-}" ]; then
     say "DEADLINE bypassed: $CAIRN_SESSION_DEADLINE_SKIP"
   else
-    say "DEADLINE ${CAIRN_SESSION_DEADLINE:-1500}s session (dumps every thread; a kill prints 'Timeout (' on stderr, and the watchdog exits 124, its faulthandler backstop 15s later exits 1)"
+    say "DEADLINE ${CAIRN_SESSION_DEADLINE:-1500}s session (dumps every thread; a kill prints 'Timeout (' on stderr, and the watchdog exits 124, its faulthandler backstop 15s later exits 1; an in-process libpari call past cairn.pari.CALL_BOUND_S prints 'libpari stall in <test>' and also exits 124)"
   fi
   gate tests uv run pytest -q --durations=25
 fi

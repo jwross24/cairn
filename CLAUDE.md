@@ -86,6 +86,23 @@ Each line below was established by hitting it. Verify rather than trust if a too
 - **Editing anything in `toy_curve.IDENTITY_SOURCES` bumps the skill revision.** `src/cairn/pari.py`,
   `src/cairn/skills/toy_curve.py` and the corpus are hashed into `implementation_revision`, so even a
   formatting pass reseeds the randomized arm and moves the transcript and certificate goldens.
+- **`cairn.pari.ellcard`, `ellsea` and `ellorder` are bounded by `cairn.pari.CALL_BOUND_S` (60 s)
+  through cysignals' alarm**, because neither pytest-timeout method interrupts a C call and the
+  thread-pool stall (bead `cairn-ict`) otherwise sits frozen until the session deadline. The three
+  wrappers raise `PariStall`, a `KeyboardInterrupt` subclass, so an `except Exception` cannot
+  swallow it; a pytest run ends with `libpari stall in <nodeid>: ...` at exit 124, the deadline's
+  code, and the CLI exits BACKEND. After the bound fires libpari is unusable in that process (a
+  pool escape segfaulted two of three probe children), so the wrappers refuse every later call and
+  the suite stops; direct `pari.pari.*` calls are not guarded. Limits: a timer that lands in the
+  bytecodes after the call returned escapes as a bare `AlarmInterrupt`, which the hook and the CLI
+  treat the same way; a `bounded` call inside another is refused (`PariBoundUnavailable`), since
+  the inner cancel would clear the outer timer; under `--pdb` pytest keeps the interrupt as a
+  failed test and the run continues into poisoned libpari. A Python SIGALRM handler installed with
+  `signal.signal` displaces cysignals' handler and the alarm then never interrupts a C call, so the
+  wrappers refuse under one; `signal.getsignal` reads `SIG_DFL` both while cysignals owns the
+  signal and after `signal.signal(SIGALRM, SIG_DFL)`, and in the second state the timer terminates
+  the process, so that reset is always followed by `cysignals.signals.init_cysignals()`. The
+  planted loop in `tests/unit/test_pari_module.py` is the in-suite proof the chain is intact.
 - **`src/cairn/challenge.py` and `bundle/challenge_prelude.lean` are hashed into the gate bundle** as
   the raw objects `challenge_renderer` and `challenge_prelude`, beside `src/cairn/gp/verify.gp` and
   `lean/lake-manifest.json`, so any edit to them, a formatting pass included, moves
