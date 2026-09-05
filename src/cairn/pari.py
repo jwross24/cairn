@@ -17,6 +17,11 @@ STACK_BYTES = 64_000_000
 DEFAULT_STACK = "64M"
 DEFAULT_TIMEOUT_S = 30.0
 CALL_BOUND_S = 60.0
+# libpari's SEA path consumes the RNG differently on its thread pool than sequentially, so a
+# 60-bit toy_curve draw depends on the host's core count unless the count is pinned; one
+# thread is the host-independent path, and every skill's identity bundle names it.
+NBTHREADS_PIN = 1
+NUMERIC_PROFILE = f"libpari nbthreads={NBTHREADS_PIN}"
 
 
 class GpMissing(RuntimeError):
@@ -56,6 +61,7 @@ class PariStall(AlarmInterrupt):
 
 pari = cypari2.Pari()
 pari.allocatemem(STACK_BYTES, silent=True)
+pari(f"default(nbthreads,{NBTHREADS_PIN})")
 NBTHREADS = int(pari("default(nbthreads)"))
 
 _stall = None
@@ -117,7 +123,7 @@ def ellorder(E, P, *, bound_s=None):
 
 
 def gp_argv(stack=DEFAULT_STACK):
-    return [GP_BIN, "-q", "-f", "-s", stack]
+    return [GP_BIN, "-q", "-f", "-s", stack, "-D", f"nbthreads={NBTHREADS_PIN}"]
 
 
 def _digest(text):

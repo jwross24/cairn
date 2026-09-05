@@ -102,14 +102,14 @@ def test_measure_rho60_json_payload_carries_the_rate_and_the_conjectural_wall(ca
     assert payload["schema_version"] == 1
     assert payload["target"] == measure.TARGET_RHO60
     assert payload["bits"] == measure.RHO60_BITS == 60
-    assert payload["instance_hash"] == "41916ca2c0650a1e66e0a538ef0782d092963315f91a9428eb7a55101237613a"
+    assert payload["instance_hash"] == "2ab1cdfeed546e0148f808eeb990973a0f369f023054e37e3bc21133100291f6"
     assert payload["ops"] == 1000000
     assert payload["stop"] == measure.STOP_CAP_OPS == "cap-ops"
     assert payload["tag"] == "CONJECTURE"
-    assert payload["expected_ops"] == 1166326476
+    assert payload["expected_ops"] == 1166326474
     assert payload["elapsed_s"] > 0
     assert payload["ops_per_s"] == pytest.approx(payload["ops"] / payload["elapsed_s"], rel=2e-3)
-    assert payload["extrapolated_wall_s"] == pytest.approx(1166326476 / payload["ops_per_s"], rel=1e-3)
+    assert payload["extrapolated_wall_s"] == pytest.approx(1166326474 / payload["ops_per_s"], rel=1e-3)
     assert payload["verified_x"] == 788702851439
     assert payload["versions"]["cypari2"] and payload["versions"]["libpari"]
     rho40 = payload["rho40"]

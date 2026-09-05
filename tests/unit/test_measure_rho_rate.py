@@ -27,9 +27,9 @@ def test_rate_report_names_cap_ops_in_its_refusal():
 
 
 def test_expected_rho_ops_is_the_birthday_bound_of_the_order():
-    assert measure.RHO60_ORDER == 866004985024698433
-    assert measure.expected_rho_ops(measure.RHO60_ORDER) == 1166326476
-    assert measure.RHO60_EXPECTED_OPS == 1166326476
+    assert measure.RHO60_ORDER == 866004982950395713
+    assert measure.expected_rho_ops(measure.RHO60_ORDER) == 1166326474
+    assert measure.RHO60_EXPECTED_OPS == 1166326474
     assert measure.expected_rho_ops(RHO40_ORDER) == 1218362
     assert measure.expected_rho_ops(4 * measure.RHO60_ORDER) == pytest.approx(2 * measure.RHO60_EXPECTED_OPS, rel=1e-6)
 

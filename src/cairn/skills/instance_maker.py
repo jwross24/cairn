@@ -367,7 +367,7 @@ def identity_bundle(root=REPO_ROOT):
             "libpari": versions["libpari"],
         },
         "container_digest": keys.env_manifest_digest(env.manifest()),
-        "numeric_profile": None,
+        "numeric_profile": pari.NUMERIC_PROFILE,
     }
 
 

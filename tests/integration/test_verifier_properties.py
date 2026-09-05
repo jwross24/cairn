@@ -14,9 +14,10 @@ import _ec
 from mutants import verifier_mutants
 
 CURVE60 = _ec.curve60()
+CURVE60_NP = _ec.curve60_neg_trace()
 CURVES: dict[str, dict[str, Any]] = {"curve60": CURVE60, "GF101": _ec.CORPUS_2}
 GP_EXAMPLES = 40
-P_PLUS_1 = CURVE60["p"] + 1
+P_PLUS_1 = CURVE60_NP["p"] + 1
 gp_settings = settings(max_examples=GP_EXAMPLES, deadline=None)
 perm_settings = settings(deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
 
@@ -79,14 +80,14 @@ def test_mr_s_scalar_multiplication(name, data):
 
 
 def test_mr_s_cell_p_plus_1_on_curve60():
-    assert CURVE60["p"] < P_PLUS_1 < CURVE60["n"]
-    check_mr_s(CURVE60, 1, P_PLUS_1)
+    assert CURVE60_NP["p"] < P_PLUS_1 < CURVE60_NP["n"]
+    check_mr_s(CURVE60_NP, 1, P_PLUS_1)
 
 
 def test_mutant_driver_reduces_x_mod_p_is_killed_by_mr_s():
-    check_mr_s(CURVE60, 1, P_PLUS_1)
+    check_mr_s(CURVE60_NP, 1, P_PLUS_1)
     with verifier_mutants.driver_reduces_x_mod_p(), pytest.raises(AssertionError, match="xP-ne-Q"):
-        check_mr_s(CURVE60, 1, P_PLUS_1)
+        check_mr_s(CURVE60_NP, 1, P_PLUS_1)
 
 
 @pytest.mark.parametrize("name", sorted(CURVES))
@@ -161,7 +162,7 @@ def distinguishable_permutations(draw):
 
 
 def _n_x_swap_example():
-    inst, _ = _ec.pair(CURVE60, P_PLUS_1)
+    inst, _ = _ec.pair(CURVE60_NP, P_PLUS_1)
     base = inst.fields(P_PLUS_1)
     swapped = (*base[:3], base[8], *base[4:8], base[3])
     return base, swapped
@@ -178,7 +179,7 @@ def test_mr_perm_field_permutation_is_refused_pre_spawn(run_gp_spy, case):
 def test_n_x_swap_example_is_refused_only_by_x_lt_n():
     base, swapped = _n_x_swap_example()
     p, a, b, n, Px, Py, Qx, Qy, x = swapped
-    assert (n, x) == (P_PLUS_1, CURVE60["n"])
+    assert (n, x) == (P_PLUS_1, CURVE60_NP["n"])
     assert p > 3 and all(0 <= v < p for v in (a, b, Px, Py, Qx, Qy)) and (n - p - 1) ** 2 <= 4 * p
     assert not x < n
 
@@ -190,6 +191,16 @@ def test_mutant_validator_skips_x_lt_n_is_killed_by_mr_perm(run_gp_spy):
         check_mr_perm(base, swapped, run_gp_spy)
     assert run_gp_spy and run_gp_spy[-1]["args"][0].endswith("/verify.gp")
     assert run_gp_spy[-1]["stdin"] == verifier.render_line(swapped)
+
+
+def test_curve60_neg_trace_invariants_hold():
+    c = CURVE60_NP
+    E = pari.pari.ellinit([c["a"], c["b"]], c["p"])
+    assert pari.pari.isprime(c["p"]) and pari.pari.isprime(c["n"])
+    assert c["n"] > c["p"] + 1
+    assert (4 * c["a"] ** 3 + 27 * c["b"] ** 2) % c["p"] != 0
+    assert int(pari.pari.ellcard(E)) == c["n"]
+    assert int(pari.pari.ellorder(E, list(c["P"]))) == c["n"]
 
 
 def test_every_named_mutant_is_listed():

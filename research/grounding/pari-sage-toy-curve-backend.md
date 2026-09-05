@@ -11,14 +11,16 @@ Scratch (all scripts runnable): `/private/tmp/claude-502/-Users-jr843u-Documents
 ## 2. Measured: prime-order toy curve search (b = 30/40/50/60)
 
 Algorithm (`bench.gp`): `setrand(seed); p = randomprime([2^(b-1),2^b])` (proven prime below 2^64, usersch3.tex:10248-10254), loop `a,b = random(p)`, skip singular, `N = ellcard(ellinit([a,b],p))` (mode 0) or `ellsea(E,1)` (mode 1, early abort), accept `isprime(N)`.
-Command: `/opt/homebrew/bin/gp -q -f -D parisizemax=256M bench.gp` (gp 2.17.4); `.venv/bin/python bench_cypari2.py` (cypari2, libpari 2.17.2) gave **bit-identical p,a,b,N and tries** for every row — same PRNG/algorithms across the two builds. STRONG-EMPIRICAL.
+Command: `/opt/homebrew/bin/gp -q -f -D parisizemax=256M -D nbthreads=1 bench.gp` (gp 2.17.4); `.venv/bin/python bench_cypari2.py` (cypari2, libpari 2.17.2) gave **bit-identical p,a,b,N and tries** for every row — same PRNG/algorithms across the two builds. STRONG-EMPIRICAL.
 
 | b | seed | ellcard tries / ms | ellsea(E,1) tries / ms |
 |---|---|---|---|
 | 30 | 1,2,3 | 48/2, 148/4, 20/1 | 19/76, 18/102, 11/32 |
 | 40 | 1,2,3 | 40/9, 52/10, 57/10 | 13/165, 3/77, 92/468 |
 | 50 | 1,2,3 | 36/52, 11/13, 220/288 | 46/379, 20/80, 7/71 |
-| 60 | 1,2,3 | 7/543, 31/2359, **344/25429** | 45/274, 72/869, 140/696 |
+| 60 | 1,2,3 | 75/5947, 39/2399, 14/903 | 46/384, 112/1307, 33/204 |
+
+The 60-bit row is measured at `nbthreads=1` (gp `-D nbthreads=1`, cypari2 `default(nbthreads,1)`), the count `cairn.pari` pins in both processes. libpari's SEA path consumes the RNG differently on its thread pool than sequentially, so at 60 bits the candidate-curve sequence after the first `ellsea` early abort depends on the thread count; the same seeds on a 10-thread pool gave 7/543, 31/2359, 344/25429 (ellcard) and 45/274, 72/869, 140/696 (ellsea), and a 3-thread pool reproduces the 10-thread rows. Rows at or below 50 bits are identical at every thread count. The wall times are single-thread gp on the build machine under a sibling session's load.
 
 Per-curve cost (`gp -s 64M`, loops): ellcard ≈ 1.3 ms @50b (generic) vs ellsea(,0) 61 ms; @60b ellcard 75 ms ≈ ellsea(,0) 74 ms (ellcard is SEA there — consistent with usersch3.tex:31118-31119 "below about 2^50 the generic algorithm will be faster"), ellsea(,1) 0.3 ms per rejected curve. STRONG-EMPIRICAL. Consequence for PLAN.md:437 ("milliseconds below 60 bits"): true through 50 bits; at 60 bits use `ellsea(E,1)` for the search (PARI's own `cryptocurve` recipe, usersch3.tex:31089-31099) then confirm with `ellcard` — at 60 bits that confirm is SEA again, so the two-algorithm agreement (BSGS vs SEA) is only independent for b ≤ 50. Tries at 30/40/50 from 3 seeds each (20–220) are too few to pin the PLAN.md:439 "10/25/130" means — sample variance is large. STRONG-EMPIRICAL on samples, CONJECTURE on means.
 **Stack:** default `parisize=8000000`, `parisizemax=0`; 60-bit `ellcard` overflows the default stack in gp *and* in cypari2 (`PariError: the PARI stack overflows (current size: 8011776…)`). Pass `-s 64M` or `--default parisizemax=256M` to gp (`gp --help` lists `-s stacksize`, `--default key=val`, `-f` fast start, `-q` quiet) and `pari.allocatemem(64_000_000)` in cypari2. PROVEN (probe).

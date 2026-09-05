@@ -91,9 +91,13 @@ def test_a_bounded_call_inside_a_bounded_call_is_refused_and_the_outer_bound_sti
     assert int(pari.ellcard(E, bound_s=0.2)) == n
 
 
-def test_nbthreads_is_read_once_at_import_from_libpari():
-    assert pari.NBTHREADS >= 1
-    assert int(pari.pari("default(nbthreads)")) == pari.NBTHREADS
+def test_nbthreads_is_pinned_to_one_in_process_and_in_every_gp_child():
+    assert pari.NBTHREADS_PIN == 1
+    assert pari.NBTHREADS == pari.NBTHREADS_PIN
+    assert int(pari.pari("default(nbthreads)")) == pari.NBTHREADS_PIN
+    assert pari.NUMERIC_PROFILE == "libpari nbthreads=1"
+    rc, out, err = pari.run_gp([], "print(default(nbthreads))")
+    assert (rc, out.strip(), err) == (0, str(pari.NBTHREADS_PIN), "")
 
 
 def test_a_planted_busy_loop_raises_pari_stall_at_the_bound_and_poisons_the_wrappers(monkeypatch, unpoisoned):
@@ -173,7 +177,7 @@ def test_a_planted_thread_pool_wait_is_escaped_in_a_child_that_then_dies_loud():
 
 
 def test_gp_argv_is_the_pinned_shape():
-    assert pari.gp_argv("64M") == [pari.GP_BIN, "-q", "-f", "-s", "64M"]
+    assert pari.gp_argv("64M") == [pari.GP_BIN, "-q", "-f", "-s", "64M", "-D", "nbthreads=1"]
 
 
 def test_run_gp_spawns_the_pinned_argv_without_a_shell(monkeypatch):
@@ -189,7 +193,7 @@ def test_run_gp_spawns_the_pinned_argv_without_a_shell(monkeypatch):
     monkeypatch.setattr(subprocess, "Popen", Spy)
     rc, out, err = pari.run_gp([], "print(1)")
     assert (rc, out.strip(), err) == (0, "1", "")
-    assert seen["args"][:5] == [pari.GP_BIN, "-q", "-f", "-s", "64M"]
+    assert seen["args"][:7] == [pari.GP_BIN, "-q", "-f", "-s", "64M", "-D", "nbthreads=1"]
     assert seen["shell"] is False
 
 

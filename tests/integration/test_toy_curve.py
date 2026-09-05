@@ -306,7 +306,7 @@ def test_identity_bundle_is_stable_and_carries_the_live_toolchain():
     assert bundle["tool_digests"]["gp_binary_sha256"] == env.gp_binary_sha256()
     assert bundle["container_digest"] == keys.env_manifest_digest(env.manifest())
     assert bundle["implementation_revision"] == toy_curve.implementation_revision()
-    assert bundle["numeric_profile"] is None
+    assert bundle["numeric_profile"] == pari.NUMERIC_PROFILE == "libpari nbthreads=1"
     canon.encode(keys.IDENTITY_BUNDLE, bundle)
 
 

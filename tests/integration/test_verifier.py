@@ -243,4 +243,4 @@ def test_every_run_logs_one_info_verdict_and_every_spawn_one_debug_gp_record(cap
         r.levelno == logging.DEBUG and {"argv", "stdin_digest", "stdout_digest", "stderr_digest"} <= set(r.fields)
         for r in spawns
     )
-    assert all(r.fields["argv"][:5] == pari.gp_argv("64M") for r in spawns)
+    assert all(r.fields["argv"][:7] == pari.gp_argv("64M") for r in spawns)

@@ -790,10 +790,10 @@ SUBJECTS = (TOY_CURVE, RHO_DP, BSGS, INSTANCE_MAKER, NONCONFORMING, WITNESS)
 SUBJECTS_BY_NAME = {subject.name: subject for subject in SUBJECTS}
 CONFORMING = tuple(subject for subject in SUBJECTS if subject.conforming)
 EXPECTED_SHOULD = {
-    "toy_curve": {"S2-13": NA, "S2-14": PASS},
+    "toy_curve": {"S2-13": PASS, "S2-14": PASS},
     "rho_dp": {"S2-13": NA, "S2-14": NA},
     "bsgs": {"S2-13": NA, "S2-14": NA},
-    "instance_maker": {"S2-13": NA, "S2-14": PASS},
+    "instance_maker": {"S2-13": PASS, "S2-14": PASS},
     "nonconforming": {"S2-13": NA, "S2-14": FAIL},
     "witness": {"S2-13": FAIL, "S2-14": FAIL},
 }

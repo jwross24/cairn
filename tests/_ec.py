@@ -21,6 +21,18 @@ def curve60():
     }
 
 
+# first (a, b) in row-major order over 1..399 with prime order and negative trace on nextprime(10**18)
+def curve60_neg_trace():
+    return {
+        "name": "curve60_neg_trace",
+        "p": 1000000000000000003,
+        "a": 1,
+        "b": 79,
+        "n": 1000000001592367331,
+        "P": (942394188664611951, 885954806630732808),
+    }
+
+
 def _curve(c):
     return pari.pari.ellinit([c["a"], c["b"]], c["p"])
 
