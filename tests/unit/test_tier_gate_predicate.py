@@ -2,7 +2,7 @@ import itertools
 
 import pytest
 
-from cairn import tiergate
+from cairn import scrutiny, tiergate
 from cairn.tiergate import (
     BOUNDARY_TABLE,
     BUDGET,
@@ -59,6 +59,7 @@ def test_a_clean_launch_names_no_reason():
         ({"yanked": True}, (YANKED,)),
         ({"budget_ok": False}, (BUDGET,)),
         ({"ticket_bundle_matches": False}, (TICKET_BUNDLE_MISMATCH,)),
+        *(({"scrutiny_unmet": (reason,)}, (reason,)) for reason in scrutiny.REASONS),
     ],
     ids=list(REASON_ORDER),
 )
@@ -90,6 +91,7 @@ def test_reasons_accumulate_without_short_circuiting():
         "ticket_bundle_matches": False,
         "cost_tier": 3,
         "target_attack": True,
+        "scrutiny_unmet": scrutiny.REASONS,
     }
     undeclared = tuple(r for r in REASON_ORDER if r not in (PROFILE_UNDECLARED, TICKET_ABSENT, NOGO_UNREVIEWED))
     unreviewed = tuple(r for r in REASON_ORDER if r not in (PROFILE_UNDECLARED, TICKET_ABSENT, NOGO_UNDECLARED))
@@ -126,6 +128,7 @@ TRUTH_TABLE_AXES = {
     "target_attack": (False, True),
     "nogo_declared": (False, True),
     "nogo_accepted": (False, True),
+    "scrutiny_unmet": ((), scrutiny.REASONS),
 }
 
 
@@ -141,6 +144,7 @@ COUPLING = {
     "target_attack": {NOGO_UNDECLARED, NOGO_UNREVIEWED},
     "nogo_declared": {NOGO_UNDECLARED, NOGO_UNREVIEWED},
     "nogo_accepted": {NOGO_UNREVIEWED},
+    "scrutiny_unmet": set(scrutiny.REASONS),
 }
 
 

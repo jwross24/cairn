@@ -12,7 +12,7 @@ lg = log.get("attest")
 
 LENGTH_BYTES = 8
 FIXTURE_WAIVER_EXPIRES = "9999-12-31T23:59:59Z"
-KINDS = ("review_verdict", "waiver", "acknowledgment", "nogo_review")
+KINDS = ("review_verdict", "waiver", "acknowledgment", "nogo_review", "expert_signoff")
 
 WAIVER = Struct(
     "waiver",
@@ -257,6 +257,31 @@ def _append_nogo_review(ns, fields, gate):
     return canonical, offset, row
 
 
+def _signoff_from(fields, gate_bundle_hash, file_offset):
+    from cairn import scrutiny
+
+    try:
+        return scrutiny.signoff_from_fields(fields, gate_bundle_hash, file_offset)
+    except scrutiny.ScrutinyError as exc:
+        raise CliError(
+            exits.USER_INPUT,
+            str(exc),
+            where=", ".join(sorted(fields)),
+            next_command=f"an expert_signoff record carries {', '.join(scrutiny.SIGNOFF_RECORD_FIELDS)}",
+        ) from None
+
+
+def _append_signoff(ns, fields, gate):
+    from cairn import scrutiny, substrate
+
+    canonical = scrutiny.signoff_canonical(_signoff_from(fields, gate.hash, 0))
+    offset = append_record(ns.attest, canonical)
+    placed = _signoff_from(fields, gate.hash, offset)
+    with substrate.Substrate.open(ns.db) as sub:
+        row = scrutiny.write_signoff(sub, placed)
+    return canonical, offset, row
+
+
 def _append_acknowledgment(ns, fields):
     from cairn import human_queue, substrate
 
@@ -297,6 +322,8 @@ def _run_append(ns):
         canonical, offset, row = _append_acknowledgment(ns, fields)
     elif ns.kind == "nogo_review":
         canonical, offset, row = _append_nogo_review(ns, fields, gate)
+    elif ns.kind == "expert_signoff":
+        canonical, offset, row = _append_signoff(ns, fields, gate)
     else:
         canonical = claims.review_verdict_canonical(_verdict_from(fields, gate.hash, 0))
         offset = append_record(ns.attest, canonical)

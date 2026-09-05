@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from cairn import claims, cli, log, nogo
+from cairn import claims, cli, log, nogo, scrutiny
 from cairn.profile import ProfileUndeclared
 
 lg = log.get("tiergate")
@@ -27,6 +27,7 @@ REASON_ORDER = (
     YANKED,
     BUDGET,
     TICKET_BUNDLE_MISMATCH,
+    *scrutiny.REASONS,
 )
 COST_DEPENDENT = (BOUNDARY_TABLE, BUDGET)
 HYPOTHESIS_TICKET_KIND = "hypothesis_object"
@@ -90,9 +91,10 @@ def predicate_reasons(
     target_attack=False,
     nogo_declared=False,
     nogo_accepted=False,
+    scrutiny_unmet=(),
 ):
     """The tier gate's whole truth table, over resolved facts. No substrate, no bundle, no I/O."""
-    reasons = set()
+    reasons: set[str] = set(scrutiny_unmet)
     if not profile_declared:
         reasons.add(PROFILE_UNDECLARED)
     if declared_tier > 0 and ticket_tier is None:
@@ -154,6 +156,15 @@ class TierGate:
         recorded = self._recorded_ticket(launch) if selected is not None else None
         stale = recorded is not None and recorded["bundle_hash"] != self.bundle.hash
         nogo_flag = nogo.flag(self.sub, launch.hypothesis_key, self.attest_path) if launch.target_attack else None
+        read = scrutiny.gate_read(
+            self.sub,
+            self.bundle,
+            hypothesis_key=launch.hypothesis_key,
+            statement_hash=launch.statement_hash,
+            declared_tier=launch.declared_tier,
+            nogo_flagged=launch.target_attack,
+            attest_path=self.attest_path,
+        )
 
         reasons = predicate_reasons(
             declared_tier=launch.declared_tier,
@@ -168,6 +179,7 @@ class TierGate:
             target_attack=launch.target_attack,
             nogo_declared=nogo_flag is not None and nogo_flag.declared,
             nogo_accepted=nogo_flag is not None and nogo_flag.accepted,
+            scrutiny_unmet=read.unmet,
         )
 
         run = claims.GateRun(
@@ -187,6 +199,7 @@ class TierGate:
             ticket_tier=ticket_tier,
             target_attack=launch.target_attack,
             nogo_declaration=None if nogo_flag is None else nogo_flag.declaration_hash,
+            scrutiny_class=read.scrutiny_class,
             reasons=list(reasons),
             result=run.result,
             bundle_hash=self.bundle.hash,

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "target_family": "toy_curve",
+  "generic_bound_exponent": "1/2",
+  "classes": ["routine", "elevated", "top"],
+  "top_obligations": ["ladder_keep", "formalization_gate", "statement_review", "reproducibility", "expert_signoff"],
+  "provenance": {
+    "target_family": "policy:the family every M1 hypothesis names (src/cairn/m0.py TARGET_FAMILY); the production curve family replaces it when a hypothesis names one",
+    "generic_bound_exponent": "policy:PLAN §7 (the generic sqrt(n) bound; a claimed exponent below it is a solve below the generic bound)",
+    "classes": "policy:PLAN §7 (routine, elevated, top; the router's assignment is a floor)",
+    "top_obligations": "policy:PLAN §7 (ladder KEEP where the claim is algorithmic, the formalization gate and statement review where it is a theorem, reproducibility, the §10 expert sign-off)"
+  }
+}

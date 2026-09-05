@@ -9,7 +9,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from cairn import canon, cli, exits, keys, log
+from cairn import canon, cli, escrow, exits, keys, log
 from cairn.errors import CliError
 from cairn.substrate import blob_hash
 
@@ -295,6 +295,7 @@ def startup_scan(sub, *, at=None, dry_run=False):
     if not dry_run:
         for attempt_id in interrupted:
             sub.close_attempt(attempt_id, STATUS_INTERRUPTED, ended_at=at)
+            escrow.settle_on_close(sub, attempt_id, STATUS_INTERRUPTED, at=at)
     log.get(LOG_STEP).info(
         "startup_scan",
         interrupted=interrupted,
@@ -436,6 +437,7 @@ def launch(
             }
         )
         sub.close_attempt(attempt_id, status, output_manifest_hash=manifest, receipt_hash=receipt)
+        escrow.settle_on_close(sub, attempt_id, status)
         diverged = _diverged(sub, recipe_key) if status == STATUS_OK else ()
         lg.info(
             "launch",
@@ -463,6 +465,7 @@ def launch(
     except Exception:
         if sub.get_attempt(attempt_id)["ended_at"] is None:
             sub.close_attempt(attempt_id, STATUS_FAIL)
+            escrow.settle_on_close(sub, attempt_id, STATUS_FAIL)
             lg.warning("launch_aborted", attempt_id=attempt_id, recipe_key=recipe_key)
         raise
 

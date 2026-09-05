@@ -253,7 +253,7 @@ def test_a_malformed_document_fails_and_writes_no_manifest(writer, tmp_path):
     assert writer.get_attempt(attempt.attempt_id)["output_manifest_hash"] is None
 
 
-def test_escrow_is_reserved_at_launch_and_left_unsettled(writer, tmp_path):
+def test_escrow_is_reserved_at_launch_and_released_by_a_disagree_close(writer, tmp_path):
     evaluation = toy_curve.COST_PROFILE.evaluate(40)
     attempt = _fixture_launch(writer, tmp_path, "skills.disagree", evaluation=evaluation)
     row = writer.conn.execute("SELECT * FROM escrow WHERE attempt_id = ?", (attempt.attempt_id,)).fetchone()
@@ -261,7 +261,9 @@ def test_escrow_is_reserved_at_launch_and_left_unsettled(writer, tmp_path):
     assert row["declared_verification_cost"] == evaluation.expected_verification_core_s
     assert row["reserved"] == evaluation.expected_verification_core_s
     assert row["ceiling_multiplier"] == 4.0
-    assert row["spent_at"] is None and row["released_at"] is None
+    assert attempt.status == "DISAGREE"
+    assert row["spent_at"] is None and row["spent_by"] is None
+    assert row["released_at"] is not None and row["released_by"] == "status:DISAGREE"
 
 
 def test_a_grant_that_cannot_cover_the_ceiling_refuses_before_spawning(writer, tmp_path, popen_spy):

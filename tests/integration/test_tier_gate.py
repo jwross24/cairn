@@ -173,7 +173,9 @@ def test_an_uncertified_skill_is_refused(gate):
 def test_a_yanked_skill_is_refused(gate):
     tier_gate, sub, _ = gate
     identity = certify(sub)
-    sub.add_yank_record("yank-1", identity, "all", record_digest="a" * 64, file_offset=0)
+    sub.add_yank_record(
+        "yank-1", identity, "all", kind="human_path", ruling_ref="ruling-1", record_digest="a" * 64, file_offset=0
+    )
     decision = tier_gate.admit(launch(sub, declared_tier=0, core_s=0.1, skill_identity_hash=identity))
     assert isinstance(decision, TierRefused)
     assert decision.reasons == (YANKED,)

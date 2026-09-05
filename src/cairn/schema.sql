@@ -83,17 +83,27 @@ CREATE TABLE IF NOT EXISTS yank_records (
     yank_id TEXT PRIMARY KEY,
     skill_identity_hash TEXT NOT NULL,
     reach_predicate TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('gate_verdict', 'human_path')),
+    verdict_ref TEXT,
     ruling_ref TEXT,
-    record_digest TEXT NOT NULL,
-    file_offset INTEGER NOT NULL,
-    created_at TEXT NOT NULL
+    record_digest TEXT,
+    file_offset INTEGER,
+    created_at TEXT NOT NULL,
+    CHECK ((kind = 'gate_verdict') = (verdict_ref IS NOT NULL AND ruling_ref IS NULL AND record_digest IS NULL AND file_offset IS NULL)),
+    CHECK ((kind = 'human_path') = (verdict_ref IS NULL AND ruling_ref IS NOT NULL AND record_digest IS NOT NULL AND file_offset IS NOT NULL))
 );
 
 CREATE TABLE IF NOT EXISTS salts (
-    class_key TEXT PRIMARY KEY,
+    seq INTEGER PRIMARY KEY AUTOINCREMENT,
+    class_key TEXT NOT NULL,
     salt TEXT NOT NULL,
-    record_digest TEXT NOT NULL,
-    file_offset INTEGER NOT NULL
+    kind TEXT NOT NULL CHECK (kind IN ('gate_verdict', 'human_path')),
+    verdict_ref TEXT,
+    record_digest TEXT,
+    file_offset INTEGER,
+    UNIQUE (class_key, salt),
+    CHECK ((kind = 'gate_verdict') = (verdict_ref IS NOT NULL AND record_digest IS NULL AND file_offset IS NULL)),
+    CHECK ((kind = 'human_path') = (verdict_ref IS NULL AND record_digest IS NOT NULL AND file_offset IS NOT NULL))
 );
 
 CREATE TABLE IF NOT EXISTS escrow (
@@ -102,8 +112,13 @@ CREATE TABLE IF NOT EXISTS escrow (
     declared_verification_cost REAL NOT NULL,
     reserved REAL NOT NULL,
     spent_at TEXT,
+    spent_by TEXT,
     released_at TEXT,
-    ceiling_multiplier REAL NOT NULL
+    released_by TEXT,
+    ceiling_multiplier REAL NOT NULL,
+    CHECK ((spent_at IS NULL) = (spent_by IS NULL)),
+    CHECK ((released_at IS NULL) = (released_by IS NULL)),
+    CHECK (spent_at IS NULL OR released_at IS NULL)
 );
 
 CREATE TABLE IF NOT EXISTS grade_history (
@@ -488,3 +503,46 @@ CREATE TRIGGER IF NOT EXISTS nogo_declarations_no_update BEFORE UPDATE ON nogo_d
 CREATE TRIGGER IF NOT EXISTS nogo_declarations_no_delete BEFORE DELETE ON nogo_declarations BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER IF NOT EXISTS nogo_reviews_no_update BEFORE UPDATE ON nogo_reviews BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER IF NOT EXISTS nogo_reviews_no_delete BEFORE DELETE ON nogo_reviews BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+
+CREATE TRIGGER IF NOT EXISTS escrow_settle_once BEFORE UPDATE ON escrow
+WHEN NOT (
+    OLD.spent_at IS NULL AND OLD.released_at IS NULL
+    AND NEW.attempt_id IS OLD.attempt_id
+    AND NEW.declared_production_cost IS OLD.declared_production_cost
+    AND NEW.declared_verification_cost IS OLD.declared_verification_cost
+    AND NEW.reserved IS OLD.reserved
+    AND NEW.ceiling_multiplier IS OLD.ceiling_multiplier
+    AND (
+        (NEW.spent_at IS NOT NULL AND NEW.spent_by IS NOT NULL AND NEW.released_at IS NULL AND NEW.released_by IS NULL)
+        OR (NEW.released_at IS NOT NULL AND NEW.released_by IS NOT NULL AND NEW.spent_at IS NULL AND NEW.spent_by IS NULL)
+    )
+)
+BEGIN SELECT RAISE(ABORT, 'escrow settles once: spent or released, never both, never twice'); END;
+CREATE TRIGGER IF NOT EXISTS escrow_no_delete BEFORE DELETE ON escrow BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+
+CREATE TABLE IF NOT EXISTS expert_signoffs (
+    row_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    statement_hash TEXT NOT NULL,
+    expert TEXT NOT NULL,
+    gate_bundle_hash TEXT NOT NULL,
+    at TEXT NOT NULL,
+    record_digest TEXT NOT NULL,
+    file_offset INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS scrutiny_requests (
+    seq INTEGER PRIMARY KEY AUTOINCREMENT,
+    hypothesis_key TEXT NOT NULL,
+    requested_class TEXT NOT NULL CHECK (requested_class IN ('routine', 'elevated', 'top')),
+    assigned_class TEXT NOT NULL CHECK (assigned_class IN ('routine', 'elevated', 'top')),
+    requested_by TEXT NOT NULL,
+    at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS expert_signoffs_by_statement ON expert_signoffs (statement_hash);
+CREATE INDEX IF NOT EXISTS scrutiny_requests_by_key ON scrutiny_requests (hypothesis_key);
+
+CREATE TRIGGER IF NOT EXISTS expert_signoffs_no_update BEFORE UPDATE ON expert_signoffs BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS expert_signoffs_no_delete BEFORE DELETE ON expert_signoffs BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS scrutiny_requests_no_update BEFORE UPDATE ON scrutiny_requests BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS scrutiny_requests_no_delete BEFORE DELETE ON scrutiny_requests BEGIN SELECT RAISE(ABORT, 'append-only'); END;

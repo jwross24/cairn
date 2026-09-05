@@ -658,33 +658,44 @@ class Substrate:
         skill_identity_hash,
         reach_predicate,
         *,
-        record_digest,
-        file_offset,
+        kind,
+        verdict_ref=None,
+        record_digest=None,
+        file_offset=None,
         ruling_ref=None,
         created_at=None,
     ):
         with self._tx():
             self.conn.execute(
-                "INSERT INTO yank_records (yank_id, skill_identity_hash, reach_predicate, ruling_ref, record_digest, file_offset, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO yank_records (yank_id, skill_identity_hash, reach_predicate, kind, verdict_ref, ruling_ref, record_digest, file_offset, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     yank_id,
                     skill_identity_hash,
                     reach_predicate,
+                    kind,
+                    verdict_ref,
                     ruling_ref,
                     record_digest,
                     file_offset,
                     created_at or _now(),
                 ),
             )
-        lg.info("write", table="yank_records", hash=yank_id, skill_identity_hash=skill_identity_hash, status="inserted")
+        lg.info(
+            "write",
+            table="yank_records",
+            hash=yank_id,
+            skill_identity_hash=skill_identity_hash,
+            kind=kind,
+            status="inserted",
+        )
 
-    def add_salt(self, class_key, salt, *, record_digest, file_offset):
+    def add_salt(self, class_key, salt, *, kind, verdict_ref=None, record_digest=None, file_offset=None):
         with self._tx():
             self.conn.execute(
-                "INSERT INTO salts (class_key, salt, record_digest, file_offset) VALUES (?, ?, ?, ?)",
-                (class_key, salt, record_digest, file_offset),
+                "INSERT INTO salts (class_key, salt, kind, verdict_ref, record_digest, file_offset) VALUES (?, ?, ?, ?, ?, ?)",
+                (class_key, salt, kind, verdict_ref, record_digest, file_offset),
             )
-        lg.info("write", table="salts", hash=class_key, status="inserted")
+        lg.info("write", table="salts", hash=class_key, salt=salt, kind=kind, status="inserted")
 
     def add_escrow(
         self,
@@ -695,18 +706,22 @@ class Substrate:
         reserved,
         ceiling_multiplier,
         spent_at=None,
+        spent_by=None,
         released_at=None,
+        released_by=None,
     ):
         with self._tx():
             self.conn.execute(
-                "INSERT INTO escrow (attempt_id, declared_production_cost, declared_verification_cost, reserved, spent_at, released_at, ceiling_multiplier) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO escrow (attempt_id, declared_production_cost, declared_verification_cost, reserved, spent_at, spent_by, released_at, released_by, ceiling_multiplier) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     attempt_id,
                     declared_production_cost,
                     declared_verification_cost,
                     reserved,
                     spent_at,
+                    spent_by,
                     released_at,
+                    released_by,
                     ceiling_multiplier,
                 ),
             )

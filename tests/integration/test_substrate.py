@@ -190,7 +190,15 @@ def test_certificate_for_identity_without_node_is_refused(writer, db_snapshot):
 def test_yanked_true_after_yank_record(writer, db_snapshot):
     identity = writer.put_identity_bundle(IDENTITY_A)
     assert writer.yanked(identity) is False
-    writer.add_yank_record("yank-1", identity, '{"bits":[0,50]}', record_digest="dd" * 32, file_offset=0)
+    writer.add_yank_record(
+        "yank-1",
+        identity,
+        '{"bits":[0,50]}',
+        kind="human_path",
+        ruling_ref="r-1",
+        record_digest="dd" * 32,
+        file_offset=0,
+    )
     db_snapshot(writer.conn, "yanked")
     assert writer.yanked(identity) is True
 
@@ -433,8 +441,10 @@ def populated(writer):
     running = writer.start_attempt(key)
     identity, cert = certify(writer, IDENTITY_A)
     writer.weaken_grade(manifest, "Verifiable")
-    writer.add_yank_record("yank-1", identity, "{}", record_digest="dd" * 32, file_offset=0)
-    writer.add_salt("class-1", "salt-1", record_digest="dd" * 32, file_offset=1)
+    writer.add_yank_record(
+        "yank-1", identity, "{}", kind="human_path", ruling_ref="r-1", record_digest="dd" * 32, file_offset=0
+    )
+    writer.add_salt("class-1", "salt-1", kind="human_path", record_digest="dd" * 32, file_offset=1)
     return writer, {
         "key": key,
         "attempt": attempt,

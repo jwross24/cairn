@@ -19,8 +19,8 @@ rather than read as carrying none, because a wrong AuditOnly cannot be undone.
 import json
 from dataclasses import dataclass
 
-from cairn import claims, log
-from cairn.substrate import GRADES, SubstrateError, _now
+from cairn import claims, escrow, log
+from cairn.substrate import GRADES, SubstrateError, UnknownAttempt, _now
 
 lg = log.get("repro")
 
@@ -141,6 +141,7 @@ def record_rerun(sub, attempt_id, rerun_attempt_id, *, attest_path, at=None):
     marked = () if agree else tuple(sub.mark_non_reproducible(first["recipe_key"]))
     record = claims.ReproRecord(attempt_id=attempt_id, kind=SECOND_ATTEMPT_AGREE, passed=agree, at=at or _now())
     claims.write_repro_record(sub, record)
+    escrow.first_check(sub, attempt_id, check_event=f"{SECOND_ATTEMPT_AGREE}:{record.hash}", at=record.at)
     rederived = () if agree else rederive_recipe(sub, first["recipe_key"], attest_path)
     lg.info(
         "rerun",
@@ -152,6 +153,17 @@ def record_rerun(sub, attempt_id, rerun_attempt_id, *, attest_path, at=None):
         rederived=list(rederived),
     )
     return record, marked
+
+
+def record_witness_check(sub, attempt_id, passed, *, at=None):
+    """The Verifiable policy's check: the witness verified or refuted, and the reservation spent on the first."""
+    if sub.get_attempt(attempt_id) is None:
+        raise UnknownAttempt(f"no attempt {attempt_id}")
+    record = claims.ReproRecord(attempt_id=attempt_id, kind=WITNESS_CHECK, passed=bool(passed), at=at or _now())
+    claims.write_repro_record(sub, record)
+    escrow.first_check(sub, attempt_id, check_event=f"{WITNESS_CHECK}:{record.hash}", at=record.at)
+    lg.info("witness_check", attempt=attempt_id, passed=record.passed, record=record.hash)
+    return record
 
 
 def rederive_recipe(sub, recipe_key, attest_path):
