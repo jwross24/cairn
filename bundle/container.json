@@ -17,10 +17,15 @@
     "asset": "lean-4.34.0-rc1-linux_aarch64.tar.zst",
     "sha256": "e5b8ca631c1a5dce9e8477664f01543cf192737d63b3fbef43f3fae176efdabe"
   },
+  "go": {
+    "version": "1.24.13",
+    "asset": "go1.24.13.linux-arm64.tar.gz",
+    "sha256": "74d97be1cc3a474129590c67ebf748a96e72d9f3a2b6fef3ed3275de591d49b3"
+  },
   "landrun": {
+    "repo": "https://github.com/Zouuup/landrun",
     "version": "0.1.17",
-    "asset": "landrun-linux-arm64",
-    "sha256": "365d8c8656c732b14d70e621d972cb733e490621fb5b9c0876376bcf457dbb5d"
+    "commit": "62823c05e58ec22c1f91b4c8468318c1f97f2d32"
   },
   "comparator": {
     "repo": "https://github.com/leanprover/comparator",

@@ -8,20 +8,34 @@ ARG LEAN_TOOLCHAIN=leanprover/lean4:v4.34.0-rc1
 ARG LEAN_COMMIT=3447a668783dbce1a8fdb97101dd067687b2b418
 ARG LEAN_ASSET=lean-4.34.0-rc1-linux_aarch64.tar.zst
 ARG LEAN_SHA256=e5b8ca631c1a5dce9e8477664f01543cf192737d63b3fbef43f3fae176efdabe
+ARG GO_VERSION=1.24.13
+ARG GO_ASSET=go1.24.13.linux-arm64.tar.gz
+ARG GO_SHA256=74d97be1cc3a474129590c67ebf748a96e72d9f3a2b6fef3ed3275de591d49b3
 ARG LANDRUN_VERSION=0.1.17
-ARG LANDRUN_ASSET=landrun-linux-arm64
-ARG LANDRUN_SHA256=365d8c8656c732b14d70e621d972cb733e490621fb5b9c0876376bcf457dbb5d
+ARG LANDRUN_COMMIT=62823c05e58ec22c1f91b4c8468318c1f97f2d32
 ARG COMPARATOR_REV=575674928e239f5bc452aab72d1dd7b0f1326494
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN printf 'Types: deb\nURIs: https://snapshot.debian.org/archive/debian/%s\nSuites: bookworm bookworm-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n\nTypes: deb\nURIs: https://snapshot.debian.org/archive/debian-security/%s\nSuites: bookworm-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' "$APT_SNAPSHOT" "$APT_SNAPSHOT" > /etc/apt/sources.list.d/debian.sources \
+RUN printf 'Types: deb\nURIs: http://snapshot.debian.org/archive/debian/%s\nSuites: bookworm bookworm-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n\nTypes: deb\nURIs: http://snapshot.debian.org/archive/debian-security/%s\nSuites: bookworm-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' "$APT_SNAPSHOT" "$APT_SNAPSHOT" > /etc/apt/sources.list.d/debian.sources \
  && apt-get -o Acquire::Check-Valid-Until=false update \
- && apt-get install -y --no-install-recommends ca-certificates curl git zstd e2fsprogs \
+ && apt-get install -y --no-install-recommends ca-certificates \
+ && printf 'Types: deb\nURIs: https://snapshot.debian.org/archive/debian/%s\nSuites: bookworm bookworm-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n\nTypes: deb\nURIs: https://snapshot.debian.org/archive/debian-security/%s\nSuites: bookworm-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' "$APT_SNAPSHOT" "$APT_SNAPSHOT" > /etc/apt/sources.list.d/debian.sources \
+ && apt-get -o Acquire::Check-Valid-Until=false update \
+ && apt-get install -y --no-install-recommends curl git zstd e2fsprogs \
  && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL -o /usr/local/bin/landrun "https://github.com/Zouuup/landrun/releases/download/v${LANDRUN_VERSION}/${LANDRUN_ASSET}" \
- && echo "${LANDRUN_SHA256}  /usr/local/bin/landrun" | sha256sum -c - \
- && chmod 755 /usr/local/bin/landrun
+RUN curl -fsSL -o "/tmp/${GO_ASSET}" "https://go.dev/dl/${GO_ASSET}" \
+ && echo "${GO_SHA256}  /tmp/${GO_ASSET}" | sha256sum -c - \
+ && tar -C /usr/local -xzf "/tmp/${GO_ASSET}" \
+ && git clone --quiet https://github.com/Zouuup/landrun /usr/local/src/landrun \
+ && git -C /usr/local/src/landrun checkout --quiet "${LANDRUN_COMMIT}" \
+ && test "$(git -C /usr/local/src/landrun rev-parse HEAD)" = "${LANDRUN_COMMIT}" \
+ && grep -q "^module github.com/zouuup/landrun$" /usr/local/src/landrun/go.mod \
+ && cd /usr/local/src/landrun \
+ && CGO_ENABLED=0 GOTOOLCHAIN=local GOFLAGS=-trimpath GOCACHE=/tmp/gocache GOMODCACHE=/tmp/gomod /usr/local/go/bin/go build -ldflags="-s -w -X main.version=${LANDRUN_VERSION}" -o /usr/local/bin/landrun ./cmd/landrun \
+ && chmod 755 /usr/local/bin/landrun \
+ && rm -r /usr/local/go /usr/local/src/landrun /tmp/gocache /tmp/gomod "/tmp/${GO_ASSET}" \
+ && /usr/local/bin/landrun --help > /dev/null
 
 RUN useradd --create-home --uid 1000 --shell /bin/bash cairn && mkdir -p /work && chown cairn:cairn /work
 USER cairn

@@ -1,11 +1,20 @@
+import re
+
 import pytest
 
 from cairn import bundle, container, lean, log
 
 lg = log.get("test")
 COMPARATOR_PROJECTS = "/home/cairn/comparator/tests/projects"
-COMPARATOR_CMD = "cd {projects}/{project} && lake env $COMPARATOR_BIN config.json"
+COMPARATOR_CMD = (
+    "cp -r {projects}/{project} /work/{project} && cd /work/{project}"
+    " && cp /home/cairn/comparator/lean-toolchain ."
+    ' && printf \'name = "comparatortest"\\nversion = "0.1.0"\\n\\n[[lean_lib]]\\nname = "Solution"\\n\\n[[lean_lib]]\\nname = "Challenge"\\n\' > lakefile.toml'
+    " && lake env $COMPARATOR_BIN config.json"
+)
 OKAY = "Your solution is okay!"
+LANDRUN_RO = ("--ro", "/", "--rox", "/usr,/bin,/lib")
+ABI_RE = re.compile(r"Got Landlock ABI v(\d+)")
 CHATTR_SCRIPT = (
     "set -x; f=/work/append_only.log; echo first > $f; chattr +a $f; lsattr $f; "
     "echo second >> $f; echo trunc > $f; rm -f $f; cat $f; exit 0"
@@ -47,9 +56,10 @@ def test_the_container_pins_agree_with_the_lean_pins():
     assert spec["toolchain"]["name"] == pins["toolchain"]
     assert spec["toolchain"]["lean_commit"] == pins["lean_commit"]
     assert spec["mathlib"]["rev"] == pins["mathlib_rev"]
-    for name in ("elan", "toolchain", "landrun"):
+    for name in ("elan", "toolchain", "go"):
         assert len(bytes.fromhex(spec[name]["sha256"])) == 32, name
-    assert len(bytes.fromhex(spec["comparator"]["rev"])) == 20
+    for name in ("landrun", "comparator"):
+        assert len(bytes.fromhex(spec[name]["commit" if name == "landrun" else "rev"])) == 20, name
 
 
 def test_the_identity_is_a_function_of_the_spec_and_the_containerfile_only(pinned_bundle):
@@ -89,13 +99,22 @@ def test_the_gold_image_builds_and_the_checker_runs_under_landrun_inside_it(pinn
     assert landrun.rc == 0
     assert container.spec()["landrun"]["version"] in landrun.stdout + landrun.stderr
 
+    strict = _log(
+        "landrun_strict_abi_probe",
+        container.run(ctx, image, ["landrun", "--log-level", "debug", *LANDRUN_RO, "--", "/bin/true"]),
+    )
+    abi = ABI_RE.search(strict.stdout + strict.stderr)
+    assert strict.rc == 0 or abi is not None, strict.stderr[-400:]
+    lg.info("landlock_abi", kernel_abi=abi.group(1) if abi else ">=9", strict_rc=strict.rc)
+
     denied = _log(
         "landrun_ro_root_denies_a_write",
         container.run(
-            ctx, image, ["landrun", "--best-effort", "--ro", "/", "--", "/bin/sh", "-c", "echo probe > /work/probe"]
+            ctx, image, ["landrun", "--best-effort", *LANDRUN_RO, "--", "/bin/sh", "-c", "echo probe > /work/probe"]
         ),
     )
     assert denied.rc != 0
+    assert "Permission denied" in denied.stderr
     allowed = _log(
         "landrun_rw_work_allows_the_write",
         container.run(
@@ -104,8 +123,7 @@ def test_the_gold_image_builds_and_the_checker_runs_under_landrun_inside_it(pinn
             [
                 "landrun",
                 "--best-effort",
-                "--ro",
-                "/",
+                *LANDRUN_RO,
                 "--rw",
                 "/work",
                 "--",

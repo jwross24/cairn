@@ -95,9 +95,10 @@ def containerfile_base(text):
 
 
 def pinned_args(spec_obj):
-    toolchain, elan, landrun, comparator = (
+    toolchain, elan, go, landrun, comparator = (
         spec_obj["toolchain"],
         spec_obj["elan"],
+        spec_obj["go"],
         spec_obj["landrun"],
         spec_obj["comparator"],
     )
@@ -110,9 +111,11 @@ def pinned_args(spec_obj):
         "LEAN_COMMIT": toolchain["lean_commit"],
         "LEAN_ASSET": toolchain["asset"],
         "LEAN_SHA256": toolchain["sha256"],
+        "GO_VERSION": go["version"],
+        "GO_ASSET": go["asset"],
+        "GO_SHA256": go["sha256"],
         "LANDRUN_VERSION": landrun["version"],
-        "LANDRUN_ASSET": landrun["asset"],
-        "LANDRUN_SHA256": landrun["sha256"],
+        "LANDRUN_COMMIT": landrun["commit"],
         "COMPARATOR_REV": comparator["rev"],
     }
 
