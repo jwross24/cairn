@@ -389,6 +389,13 @@ tag mean something.
     success re-funded unchanged buys no knowledge and is the cheapest loop a gate-outcome
     reward can find, and a sub-region of a measured success re-laddered mints a KEEP its
     existing table already justifies — the range-jitter loop on the success side.
+  - *Prior-art note before Tier 2 (pre-M4):* a hypothesis object that names a claim statement
+    carries an attributed `prior_art` note (a human-path record with citations, or "none
+    found") before Tier-2 funding; absent, the tier gate refuses Tier 2 as it refuses an
+    absent no-go declaration (§8). The human writes the note before M4, matching decision 4
+    of §16; from M4 the Librarian writes it. *Why:* an increment is only an increment if the
+    combination is unpublished, and §14 promises publishable increments from M1 onward while
+    the Librarian arrives at M4.
   - *Terminal-status invariant:* every opened branch and every opened claim is a linear
     obligation that must be resolved — a terminal status (refuted / promoted / withdrawn)
     — or handed off to a park under a typed blocker, which holds the obligation until its
@@ -1279,7 +1286,9 @@ So this is the highest-leverage layer, and it's explicitly human-anchored.
     items, absent upstream: `Finite W.Point` over a finite field, the Hasse bound, a DLP
     definition (`∃ k, k • P = Q`), Gröbner bases as library objects, summation
     polynomials. Intake runs the §7 statement pre-filters and a symbolic-equivalence
-    dedup (a positive signal only).
+    dedup (a positive signal only). The first library items are authored as M1 Challenge
+    fixtures under the §7 protocol; the library mechanism at M4 imports them rather than
+    starting empty.
 - **Negative-results map (first-class, citable):** "approach X provably fails on prime-field
   curves, here's why" is a durable artifact, not a ledger footnote. A well-mapped landscape
   of what-doesn't-work-and-why saves the next researcher years. Every entry carries the
@@ -1515,7 +1524,12 @@ CPU-feature drift, which is what the §2 numeric profile records.
   cumulative edge of §5, the §7 disagreement protocol, the
   proportional-scrutiny router and the no-go checklist's presence check (§8) with the
   router as its consumer and the `nogo_review` node the tier gate reads, and the M1
-  decision on the small-numbers floor (§15 P1).
+  decision on the small-numbers floor (§15 P1). *M1 research exit:* one operator-opened
+  hypothesis on a named open subproblem carried to a terminal status by the M1 machinery,
+  with its ladder table or hunt record, its Skeptic record and a rendered report; the
+  campaign's mathematical verdict is not a completion criterion, its completion and
+  legibility are. The first library items of §11 are authored as M1 Challenge fixtures under
+  the §7 protocol, so the M4 library imports them rather than starting empty.
 - **M2 — memory.** Dead-end ledger (refuted-by-hypothesis-key vs parked) + the Formalizer
   worker + the statement-review workflow (the formalization gate and the pre-filters it
   submits to are M1's). *Done when:* a parked branch auto-revives on blocker-clear; a
@@ -1539,7 +1553,12 @@ CPU-feature drift, which is what the §2 numeric profile records.
   promotion; a worker that returns with a claim it opened still open yields a `Leaked`
   record while a harness-terminated attempt yields none; and a green Lean artifact with no
   `review_verdict` stays below PROVEN while the statement-review workflow routes it to the
-  human queue. Adds the ledger preflight with its measured-point reach,
+  human queue; and a Skeptic dispatched against a claim whose `lean_artifact` was produced
+  by a real formalization-gate run sees the formal statement hash and verdict and never the
+  Solution blob, asserted on the dispatch record's handed-node hashes. Adds the Reframer and
+  Experimentalist role templates in the gate bundle with their allow-lists and dispatch
+  records under the M1 dispatch canary, the `prior_art` note at hypothesis open (§4), the
+  ledger preflight with its measured-point reach,
   `supersedes_refuted_review`, `null_control_pending` and `already_settled` parks with the
   null-control resolution rule, the hash-chained log and its
   head checkpoint (§3, §4), the terminal-status invariant, the statement-review workflow

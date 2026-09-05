@@ -19,7 +19,7 @@ inside the checkout is ever a delete candidate.
 
 This section is a project invariant, not a subject of review. Do not edit it, and do not
 integrate any proposed plan change that violates it. Canonical detail lives in PLAN.md §0
-and the "Invariants (not revisable by review)" list in PLAN.md §16 (line 1673); if this
+and the "Invariants (not revisable by review)" list in PLAN.md §16 (line 1750); if this
 shortlist and PLAN.md ever disagree, PLAN.md wins and this file is the bug to fix.
 
 - Mutable strategy, immutable epistemics. The orchestrator may rewrite the branch tree,
@@ -163,9 +163,9 @@ honesty lives at the claim level. Status and milestones: `README.md`. Honest ECD
 `MAP.md` is the system as one tower (layer, authority language, identity primitive, record kinds,
 verbs, refusals); read it between this file and `PLAN.md`. PLAN.md section map:
 §0 principle 15 · §1 prompt⊂harness 30 · §2 skills 40 · §3 substrate 122 · §4 components 288 ·
-§5 tiers 526 · §6 ladder 702 · §7 epistemics 914 · §8 no-go 1146 · §9 never-give-up 1172 ·
-§10 problem selection 1185 · §11 compounding 1272 · §12 research-software 1297 ·
-§13 build order 1339 · §14 outcomes 1594 · §15 deferred 1605 · §16 evidence/defaults 1665.
+§5 tiers 533 · §6 ladder 709 · §7 epistemics 921 · §8 no-go 1153 · §9 never-give-up 1179 ·
+§10 problem selection 1192 · §11 compounding 1279 · §12 research-software 1306 ·
+§13 build order 1348 · §14 outcomes 1614 · §15 deferred 1625 · §16 evidence/defaults 1685.
 `research/SESSION-PROMPTS.md` holds openers for the five session types; research modes require M1.
 
 ### Planning versus research decomposition
