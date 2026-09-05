@@ -3,59 +3,40 @@
 A harness for running AI agents on open mathematics problems, built so that fabricating a
 result is mechanically harder than reporting an honest negative.
 
-**Status: M0 in progress, 8 of 18 beads closed, 741 tests green.** Nothing here has produced
-a research result yet, and by design it cannot until M1 (see [Milestones](#milestones)).
-
----
+**Status: M0 in progress. Nothing here has produced a research result yet, and by design it
+cannot until M1.** This is a private, personal research project, not a released tool.
 
 ## The problem
 
-An agent told to keep working on a hard problem, and also never to fabricate, is under
-structural pressure the moment it runs out of honest moves. "Never give up" plus "never
-fabricate" collide, and the cheapest resolution available to the agent is to manufacture the
-appearance of progress. This is not a prompting failure. Asking more nicely does not change
-the incentive.
+Tell an agent to never give up and never fabricate, and the two instructions collide the
+moment it runs out of honest moves. The cheapest way to resolve that pressure is to
+manufacture the appearance of progress: a hallucinated ablation table, an agent editing its
+own time limit, an agent deleting the instrumentation that caught it. These are documented
+failure modes, not hypothetical ones, and no amount of asking more nicely changes the
+incentive.
 
-The documented failure modes in this plan's evidence base are concrete: a hallucinated
-ablation table in a written paper, an agent editing its own time limit, an agent removing the
-instrumentation that caught it.
+## The solution
 
-## The approach
+Cairn puts persistence at the **program** level and honesty at the **claim** level. Progress
+is redefined as knowledge gained: a proven lemma, a tighter bound, a refuted approach, a
+mapped dead end, never distance to the goal. Defined that way, an agent always has an honest
+move available, and "this approach is dead" is a result rather than a failure. The one
+forbidden terminal state is manufacturing the appearance of progress, and that state is closed
+off by mechanism, not by prompt:
 
-Persistence lives at the **program** level; honesty lives at the **claim** level.
+| Property | How it holds |
+|---|---|
+| A claim can't outrun its evidence | Every claim carries a calibration tag (`PROVEN` / `STRONG-EMPIRICAL` / `CONJECTURE` / `SPECULATION`) computed by a gate from typed evidence nodes; no worker or orchestrator sets its own tag. |
+| A numeric result can't be faked | The Tier-0 verifier runs `xP == Q` in a subprocess and accepts only on exit 0, stdout `OK`, and empty stderr. The verifier itself exits 0 on fatal errors, so acceptance is checked affirmatively. |
+| Provenance can't be an afterthought | Every result is stored under a BLAKE3 key over `(skill identity, inputs, seed, tool versions, container digest, salt)`. Provenance is a storage property, not an audit run later. |
+| The orchestrator can rewrite strategy, never truth | It may rewrite the branch tree, the funding, and the prompts. It may never touch the gates, the calibration taxonomy, the ladder, the verifier, or what counts as proven. |
+| Compute is spent cheap-before-expensive | Compute is tiered; each tier's admission ticket is a result from the tier below. |
 
-Progress is defined as *knowledge gained* — a proven lemma, a tighter bound, a refuted
-approach, a reproducible regularity, a mapped dead end — never distance to the summit.
-Defined that way, an agent can always make an honest move, and "this approach is dead" is a
-result rather than a failure. The single forbidden terminal state is manufacturing the
-appearance of progress.
-
-Everything else is enforcement. The organizing principle:
-
-> **Mutable strategy, immutable epistemics.** The orchestrator may rewrite the branch tree,
-> the funding and the prompts. It may never touch the gates, the calibration taxonomy, the
-> ladder, the verifier, or what counts as proven.
-
-## The gates
-
-Each of these is a mechanism, not a guideline. Where one exists today, the bead that built it
-is named.
-
-| Gate | What it does | Built |
-|---|---|---|
-| **Derived calibration tag** | Every claim carries `PROVEN` / `STRONG-EMPIRICAL` / `CONJECTURE` / `SPECULATION`, computed by a gate from typed evidence nodes. No worker or orchestrator can set its own tag. | schema `.5` |
-| **Tier-0 verifier** | `xP == Q` in a subprocess, with the instance read from the claim statement node and only the scalar supplied by the submitter. Acceptance is affirmative: exit 0 **and** stdout `OK` **and** empty stderr, because the backend exits 0 on fatal errors. | `.8` |
-| **Content-addressed substrate** | Every result is stored under a BLAKE3 recipe key over `(skill identity, inputs, seed, tool versions, container digest, salt)`. Provenance is a storage property, not an audit you run later. | `.3` `.4` |
-| **Dead-end ledger** | Refuted hypotheses are keyed by a canonical hash, so two approaches that are secretly the same collide without any agent having to remember. | M2 |
-| **Small-scale ladder** | A claim runs against planted-false corpora at small sizes before it may spend a compute tier. | M1 |
-| **Formalization gate** | The gate compiles the theorem statement itself and computes the axiom set itself, requiring it to be a subset of `propext`, `Classical.choice`, `Quot.sound`. Nothing reaches `PROVEN` without that *and* a human confirming the statement says what was meant. | M1 |
-| **Tier gate** | Compute is tiered; each tier's admission ticket is a result from the tier below. Cheap refutations happen before expensive ones. | `.10` |
-
-## What runs today
+## Quick example
 
 ```bash
 uv sync
-uv run pytest -q                       # 741 tests: 318 unit, 423 integration
+uv run pytest -q                       # unit + integration, integration-first, zero mocks
 
 uv run cairn capabilities --json       # the CLI contract: commands, exit codes, env vars
 uv run cairn robot-docs                # agent handbook, printed in-tool
@@ -64,48 +45,22 @@ uv run cairn kat canon                 # canonicalizer known-answer vectors (a g
 uv run cairn measure toy-curve-tries --sizes 30,40,50 --seeds 50 --json
 ```
 
-The CLI's caller is assumed to be an agent: stdout is data, stderr is JSON log records, every
-read-side command takes `--json`, exit codes are a documented dictionary, and every refusal
-names the exact command that resolves it.
+`cairn kat canon` recomputes twelve canonical-encoding vectors and reports `"match": true`
+against the pinned digests, or fails the whole vector set on any drift. `cairn env --json`
+reports the exact toolchain versions the substrate was built against
+(`{"python": "3.14.0", "cypari2": "2.2.4", "libpari": "2.17.2", ...}`), so a stack mismatch is
+a diff, not a guess.
 
-## Repo map
+## Design philosophy
 
-```
-PLAN.md                     the design, 1,676 lines, converged over 7 review rounds
-CLAUDE.md                   project invariants; law for every session, not revisable by review
-HANDOFF.md                  the honest baseline and the central tension the design resolves
-
-src/cairn/                  M0 implementation
-  canon.py  keys.py         typed canonical encoding + BLAKE3 content addressing
-  substrate.py  schema.sql  append-only store: nodes, blobs, lineage, attempts, receipts
-  claims.py                 claim statements, evidence nodes, tag history, review verdicts
-  verifier.py  gp/          Tier-0 verifier and its PARI script
-  skills/toy_curve.py       the exemplar skill: deterministic, self-testing, cost-tagged
-  cli.py  exits.py          the agent-facing CLI contract
-
-tests/                      741 tests; integration-first, zero mocks
-  vectors/  goldens/        known-answer corpora and golden artifacts, with provenance
-
-research/
-  grounding/                stack facts established by executing them on the build machine
-  briefs/                   per-source deep dives behind each borrowed mechanism
-  PROPOSALS.md              rationale and evidence tag for every mechanism in the plan
-  convergence/              audit trail of the 7 review rounds that produced PLAN.md
-  SESSION-PROMPTS.md        kickoff prompts for each kind of work session
-
-.beads/                     the task graph (br), with dependency edges
-```
-
-`research/convergence/` is large and is not part of the product. It is the record of how the
-plan was reviewed, kept so that "seven rounds reviewed this" is a checkable claim rather than
-an assertion.
-
-## Design principles
+**Mutable strategy, immutable epistemics.** The dividing line above is the whole design in
+one sentence, and it is written into `AGENTS.md` as a project invariant that no review round
+may soften.
 
 **Thin agents, fat skills.** Agents carry judgment (which subproblem, which approach). Skills
-carry capability, with a typed interface and a fixed version, so they are testable, cacheable
-and reproducible in a way an agent never is. A "skill" here is a deterministic Python module,
-not a prompt.
+carry capability, with a typed interface and a fixed version, so they are testable, cacheable,
+and reproducible in a way an agent never is. A "skill" here is a deterministic Python module
+under `src/cairn/skills/`, not a prompt.
 
 **Every skill ships a known-answer self-test.** Decomposition multiplies the places a subtle
 error can hide, so each unit validates itself on cases where the answer is known. A corpus
@@ -113,63 +68,225 @@ supplied only by the worker that wrote the skill is not a self-test, and caps th
 results at `CONJECTURE`.
 
 **A cross-check declares its axis.** Two builds of one library are one implementation, not
-two. `gp` and `cypari2` both wrap libpari, so agreement between them tests the plumbing and
-says nothing about the arithmetic. A cross-check that has never disagreed is reported as
-untested, not as passing.
+two: `gp` and `cypari2` both wrap libpari, so agreement between them tests the plumbing, not
+the arithmetic. A cross-check that has never disagreed is reported as untested, not as
+passing.
 
 **Scrutiny scales with claim size.** A run announcing it broke the target has produced
-evidence that it erred, not evidence that it succeeded. The bigger the claim, the more the
-burden inverts against it.
+evidence that it erred, not evidence that it succeeded.
 
 **No claim without a reproducibility node.** A result that is not in the substrate does not
 exist to the claims layer.
 
-## Milestones
+## Why this exists
 
-| | | Status |
-|---|---|---|
-| **M0** | Substrate, exemplar skill, Tier-0 verifier, tier gate. *Done when* one skill runs on a 40-bit toy curve end to end and yields a hashed, self-tested, cost-tagged node, and the verifier refuses a planted `xP ≠ Q` fixture. | 8/18 beads |
-| **M1** | Prover, independent skeptic, ladder, formalization gate. *Done when* every fixture in a planted corpus of 30+ is caught under a cold cache, with 4+ positive controls that must pass. | not started |
-| **M2** | Dead-end ledger preflight, hash-chained log, statement review. | not started |
-| **M3** | Orchestrator: branch tree, allocation, self-redesign of data only. | not started |
-| **M4** | Parallel tracks, problem queue with a measured selector, foundations auditor. | not started |
+There is no adjacent open project that combines an agent orchestration loop with an immutable
+epistemics layer for a single hard math instance. The closer comparisons are formal-proof
+assistants (Lean/mathlib, which the formalization gate calls out to rather than reimplements)
+and generic agent harnesses (which have no calibration taxonomy or verifier gate at all).
+Neither is a substitute; Cairn is the layer that would sit on top of either.
 
-No research can run before M1. Without the ladder nothing can earn `STRONG-EMPIRICAL`, and
-without the formalization gate nothing can be `PROVEN`, so claims produced now would be
-claims no gate can grade.
+## Installation
 
-## Honest limitations
+Cairn is not published anywhere; it is run from a clone.
 
-The motivating instance is a 254-bit prime-order ECDLP. **That curve almost certainly stays
-standing**, and this is written into the project as an invariant that no review round may
-soften. The achievable target is publishable increments on open subproblems: an LFD bound for
-ECDLP polynomial systems, a low-storage low-Hamming-weight DLP result, a sharp negative
-result, a rigorous partial analysis.
+### From source (the only supported path)
 
-A system that cannot say "this stands" is one that will eventually tell its operator what it
-wants to hear.
+```bash
+git clone git@github.com:jwross24/cairn.git
+cd cairn
+uv sync
+git config core.hooksPath .githooks   # arms the commit-time gates; an unarmed clone commits with none
+```
 
-Also true, and worth stating plainly:
+`uv sync` reads `pyproject.toml` and `uv.lock` and installs both the runtime dependencies
+(`blake3`, `cypari2`) and the dev group (`pytest`, `pytest-timeout`, `hypothesis`, `ruff`,
+`ty`, `codespell`). There is no `pip`, `poetry`, or `conda` path; `uv` is the only supported
+installer, and the project's own rules forbid the others.
 
-- Every stack fact in `research/grounding/` was measured on one machine (arm64 macOS, APFS,
-  PARI 2.17.4, libpari 2.17.2). Nothing is claimed for Linux, a second OS user, or another
-  filesystem; those rows are marked OPEN with the milestone that will ground them.
-- At M0 the pin and attestation file are protected by file mode and flags under a single OS
-  user, which refuses overwrite, truncation and rename but does not bind against a process
-  that clears the flag first. The second OS user arrives at M3.
-- Problem selection is the weakest layer and is deliberately human-anchored. Model panels
-  propose and rank with legible reasons; they never return verdicts, because ensembling cuts
-  variance rather than shared bias.
+### Requirements
 
-## Development
+- Python 3.14 (`requires-python = ">=3.14"` in `pyproject.toml`; `uv sync` provisions it).
+- PARI/GP: `gp` on `PATH` for the Tier-0 verifier subprocess, plus `cypari2` (installed by
+  `uv sync`) for in-process arithmetic. `cairn env --json` reports whether both are found and
+  which versions.
 
-Python 3.14 via `uv`. PARI/GP for arithmetic (`cypari2` in process, `gp` as the verifier
-subprocess). Tests are integration-first against real PARI, real `gp` and real SQLite, with
-zero mocks; the one permitted fault injection is a seam that a bead declares.
+## Quick start
 
-Work is tracked as beads (`br`). `research/SESSION-PROMPTS.md` has a kickoff prompt for each
-kind of session, and `CLAUDE.md` carries the invariants plus the working notes that cost a
-retry to learn.
+```bash
+uv sync
+uv run cairn capabilities --json       # read this first: every command, exit code, env var
+uv run cairn robot-docs                # the same contract as a handbook, meant to be pasted into an agent's context
+uv run pytest -q                       # confirm the checkout is green before touching anything
+```
+
+`cairn capabilities --json` and `cairn robot-docs` are the canonical entry points for an
+agent driving this CLI; both are generated from the same command registry, so they cannot
+drift from what the parser actually accepts.
+
+## Command reference
+
+Global flags, valid before or after the subcommand:
+
+```
+--db PATH        substrate SQLite file       (default: var/substrate.sqlite)
+--bundle PATH    gate bundle SQLite file      (default: deploy/gate-bundle.sqlite)
+--pin PATH       gate-bundle pin file         (default: deploy/gate-bundle.pin)
+--attest PATH    attestation file             (default: deploy/attestations.log)
+--log LEVEL      log level for JSON records on stderr (default: INFO)
+--version        print the version and exit
+--robot-help     print the agent handbook (same as: cairn robot-docs)
+```
+
+| Command | What it does |
+|---|---|
+| `capabilities` | Describes the CLI contract: commands, exit codes, env vars, paths. Read-only. |
+| `robot-docs` | Prints the paste-ready agent handbook. |
+| `env` | Reports the toolchain: Python, cypari2/libpari, blake3, `gp` path. Read-only. |
+| `kat` | Runs the canonicalizer known-answer vectors (a gate self-test); exit 2 on any mismatch. |
+| `selftest` (alias `self-test`) | Runs a skill's vendored known-answer corpus and records its certificate; exit 2 on any failure. |
+| `measure` | Measures a skill's cost constant: `toy-curve-tries`, `rho60`, or `dlp`. Read-only. |
+| `gate` | Runs the gate bundle's declarative plan of planted-failure self-tests before any gate is trusted. |
+| `ladder` | Loads and validates the ladder plan from the gate bundle, recording the load as a gate run. |
+| `bundle` | Compiles, pins, and inspects the content-addressed gate bundle. **Dangerous**, gated by `--force`. |
+| `attest` | Creates and appends to the operator-owned, append-only attestation file. |
+| `justify` | Derives a claim statement's calibration tag from every evidence node targeting it. |
+| `m0-run` (alias `run`) | Runs the M0 slice end to end: gate self-tests, a certified 40-bit generator, a derived instance, a gate-read verification with its negatives. |
+| `gc` | Collects blobs unreachable from any root over lineage. **Dangerous**, gated by `--yes` (list-only otherwise). |
+| `doctor` | Diagnoses the M0 deploy shape read-only, and repairs the two failure modes it owns with `--fix`. **Dangerous**, gated by `--fix`. Has its own subcommands: `undo`, `capabilities`, `health`, `robot-docs`, `ls`. |
+| `startup-scan` | Moves every attempt left `RUNNING` by a dead harness to `INTERRUPTED` before any new launch. |
+
+Every read-side command takes `--json` (`--robot` is an alias). Run `cairn <command> --help`
+for a command's own flags; the parser is the source of truth, not this table.
+
+## Configuration
+
+There is no config file. State is read from the default paths above, all overridable per
+invocation via the global flags, plus these environment variables (from `cairn
+capabilities --json`):
+
+```bash
+CAIRN_LOG=DEBUG           # log level when --log is absent (default INFO); JSON lines on stderr
+NO_COLOR=1                # honored trivially: cairn never emits ANSI sequences
+SOURCE_DATE_EPOCH=...     # any emitted timestamp uses this epoch instead of the wall clock
+UPDATE_GOLDENS=1          # test-only: rewrites golden files instead of diffing them
+HYPOTHESIS_PROFILE=ci     # test-only: ci (500 examples) or dev (50)
+```
+
+`CAIRN_CHECK_SKIP='<reason>'` bypasses `scripts/check.sh` (logged to `.check.log`); it is a
+named, logged escape hatch for the commit-time gate, not a runtime setting.
+
+## Architecture
+
+```
+                cairn CLI (cli.py, exits.py) -- stdout=data, stderr=JSON logs
+                                    |
+        +---------------------------+---------------------------+
+        |                           |                           |
+   Skills layer               Substrate layer               Gates layer
+   (skills/toy_curve.py,      (substrate.py, schema.sql:     (bundle.py, gateplan.py,
+   pari.py, ec.py) --         nodes, blobs, lineage,         verifier.py, tiergate.py) --
+   deterministic, self-       attempts, receipts) --         planted-failure self-tests;
+   tested, cost-tagged        one writer per process         pinned bundle hash fails
+        |                     content-addressed by            closed on drift
+        |                     BLAKE3 recipe key                       |
+        +---------------------------+---------------------------+
+                                    |
+                    Epistemics (justify.py, claims.py)
+        calibration tag: SPECULATION -> CONJECTURE -> STRONG-EMPIRICAL -> PROVEN
+                (no worker or orchestrator sets its own tag)
+                                    |
+        Formalization gate (M1, not built) -- Lean kernel replay
+        axioms subset of {propext, Classical.choice, Quot.sound}
+                                    |
+        Orchestrator (M3, not built) -- branch tree, allocation,
+                        self-redesign of data only
+```
+
+Full layer-by-layer detail, including the authority language and identity primitive for each
+layer, lives in `MAP.md`; the design rationale and the seven review rounds behind it live in
+`PLAN.md` and `research/convergence/`.
+
+## Troubleshooting
+
+### `GATE_REFUSED` (exit 2) with "bundle hash differs from the pin"
+
+The gate bundle's SQLite file no longer matches the hash in `deploy/gate-bundle.pin`. This
+fails closed by design. Rebuild and re-pin deliberately (`cairn bundle build`, then `cairn
+bundle pin`), reviewing the diff first. Never hand-edit or `chmod` anything under `deploy/`.
+
+### `ENVIRONMENT` (exit 3): "gp absent" or a PARI stack error
+
+`gp` is not on `PATH`, or a `gp` subprocess hit a stack error. Run `cairn env --json` to see
+what was actually found (`gp_bin`, `libpari` version); `cairn doctor` diagnoses the rest of
+the M0 deploy shape read-only, and `cairn doctor --fix` repairs the two failure modes it owns.
+
+### `WriterAlreadyOpen` on a substrate call
+
+`Substrate.open(path, role="writer")` allows exactly one writer per process. This fires when
+an earlier writer was left unclosed in the same run: close it in a `finally` block, or use
+the `writer` fixture in tests. A leaked writer fails every later writer-opening test in the
+same run, which reads as many failures from one root cause.
+
+### `PariStall` / the suite exits 124
+
+`cairn.pari.ellcard`, `ellsea`, and `ellorder` are bounded by `CALL_BOUND_S` (60 seconds) via
+cysignals' alarm; past that bound they raise `PariStall`, and libpari is unusable in that
+process afterward, so the suite stops rather than continuing on a poisoned interpreter. This
+is deliberate; do not install a Python `SIGALRM` handler, since it displaces cysignals' own.
+
+### `CONFLICT` (exit 5): database is locked
+
+A second writer holds the substrate past the busy timeout. Only one process should hold a
+writer role on a given `--db` file at a time.
+
+## Limitations
+
+- **No research result exists yet, and none can before M1.** Without the small-scale ladder,
+  nothing can earn `STRONG-EMPIRICAL`; without the formalization gate, nothing can be
+  `PROVEN`. A claim produced before M1 would be a claim no gate can grade.
+- **The motivating 254-bit ECDLP instance almost certainly stays standing.** Generic ECDLP at
+  this size costs roughly 2¹²⁷ group operations, beyond all realistic compute; this is written
+  into the project as an invariant, not a target to be argued down later. The achievable goal
+  is publishable increments on open subproblems, not breaking the curve.
+- **Every stack fact in `research/grounding/` was measured on one machine**: arm64 macOS,
+  APFS, PARI 2.17.4, libpari 2.17.2. Nothing is claimed for Linux, another OS user, or another
+  filesystem; those rows are marked `OPEN` with the milestone that will ground them.
+- **The write-boundary protection is single-user and macOS-only.** At M0 the pin and
+  attestation file are protected by file mode and flags (`os.chflags`, `stat.UF_APPEND`) under
+  one OS user on macOS/BSD; this resists overwrite, truncation and rename but not a process
+  that clears the flag first, and an Ubuntu CI runner fails before the suite starts. A second
+  OS user's worth of protection, and any Linux support, arrives at M3 at the earliest.
+- **Problem selection is deliberately human-anchored**, and is called out in the project's own
+  design as its weakest layer. Model panels propose and rank candidates with legible reasons;
+  they never return verdicts, because ensembling cuts variance, not shared bias.
+
+## FAQ
+
+**Is this an agent framework I can point at my own problem?**
+No. It is a harness for one motivating instance (a specific 254-bit ECDLP), with the gates
+and epistemics generalized enough to be reusable, but nothing here is packaged for a
+different problem today.
+
+**Has it found anything yet?**
+No, by design. M0 is substrate and plumbing; the gates that would let a result earn
+`STRONG-EMPIRICAL` or `PROVEN` don't exist until M1.
+
+**Why can't the orchestrator just redefine "proven" if it's stuck?**
+That is the one thing it is built not to be able to do. The gates, the calibration taxonomy,
+the ladder, and the verifier are called out as immutable in `AGENTS.md`, and a proposed plan
+change that weakens them is treated as out of scope, not as an improvement to integrate.
+
+**Why PARI/GP instead of Sage or a custom implementation?**
+`gp` is the Tier-0 verifier's authority language for arithmetic identity; `cypari2` wraps the
+same libpari in-process. Two builds of one library are one implementation for cross-check
+purposes, which is why the design tracks the cross-check axis explicitly rather than treating
+agreement between the two as independent confirmation.
+
+**What happens if a skill's self-test fails?**
+The implementation revision is yanked: the tier gate refuses new launches of it, an in-flight
+attempt completes with status `SKILL_YANKED` (never cached, never a ticket, never evidence),
+and only a new revision with a fresh certificate clears the yank.
 
 ## About Contributions
 
@@ -184,3 +301,7 @@ address them. Bug reports in particular are welcome. Sorry if this offends, but 
 avoid wasted time and hurt feelings. I understand this isn't in sync with the prevailing
 open-source ethos that seeks community contributions, but it's the only way I can move at this
 velocity and keep my sanity.
+
+## License
+
+No `LICENSE` file is present in this repository. Private, all rights reserved.
