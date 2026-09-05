@@ -106,11 +106,7 @@ def records(path):
 def visible_review_verdicts(sub, statement_hash, path):
     from cairn import claims
 
-    return [
-        row
-        for row in claims.review_verdicts_for(sub, statement_hash)
-        if attestation_record_matches(path, row["file_offset"], row["record_digest"])
-    ]
+    return claims.visible_review_verdicts(sub, statement_hash, path)
 
 
 def init(path, target):

@@ -264,10 +264,11 @@ def test_the_ci_session_deadline_fires_before_the_job_ceiling_cancels_the_run():
 
 def test_the_ci_session_deadline_clears_the_slowest_run_the_suite_has_taken():
     session_s, _ = _ci_deadlines()
-    slowest_observed_s = 8.7 * 60
+    slowest_observed_s = 616
     assert session_s > slowest_observed_s, session_s
 
 
 def test_the_local_default_clears_the_local_suite_and_needs_no_job_ceiling():
     assert DEFAULT_SECONDS > 4 * 230
+    assert DEFAULT_SECONDS == 3000
     assert BACKSTOP_GRACE > JOIN_TIMEOUT_S

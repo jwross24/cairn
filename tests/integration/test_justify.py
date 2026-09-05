@@ -246,6 +246,37 @@ def case_lean_artifact_with_forged_digest(writer, attest_path):
     return statement, node, None
 
 
+def case_lean_artifact_with_forged_verdict_fields(writer, attest_path):
+    statement = _statement(writer, seed=19)
+    offset = _append_verdict(writer, attest_path, statement.hash, verdict="reject")
+    honest = factories.review_verdict(statement.hash, verdict="reject", seed=3, file_offset=offset)
+    writer.conn.execute(
+        "INSERT INTO review_verdicts (statement_hash, reviewer, verdict, checklist_template_hash, gate_bundle_hash, at, supersedes, record_digest, file_offset) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            statement.hash,
+            honest.reviewer,
+            "approve",
+            honest.checklist_template_hash,
+            honest.gate_bundle_hash,
+            honest.at,
+            None,
+            honest.record_digest,
+            offset,
+        ),
+    )
+    writer.conn.commit()
+    assert [r["verdict"] for r in claims.review_verdicts_for(writer, statement.hash)] == ["reject", "approve"]
+    node = factories.evidence_node(
+        "lean_artifact",
+        statement.hash,
+        _wide_population(statement),
+        frozenset({"A1"}),
+        seed=19,
+    )
+    claims.write_evidence_node(writer, node)
+    return statement, node, None
+
+
 def case_disowned_ladder_table(writer, attest_path):
     statement = _statement(writer, seed=14)
     attempt_id = writer.start_attempt(keys.recipe_key(recipe(seed=14)))
@@ -359,6 +390,7 @@ DONE_WHEN = [
     (case_lean_artifact_with_matching_verdict, "Justification", PROVEN, PROVEN),
     (case_lean_artifact_with_a_reject_verdict, "Pending", "human_review", SPECULATION),
     (case_lean_artifact_with_forged_digest, "Pending", "human_review", SPECULATION),
+    (case_lean_artifact_with_forged_verdict_fields, "Pending", "human_review", SPECULATION),
     (case_disowned_ladder_table, "Absent", "disowned", SPECULATION),
     (case_author_supplied_producer, "Justification", CONJECTURE, CONJECTURE),
     (

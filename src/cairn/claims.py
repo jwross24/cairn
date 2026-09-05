@@ -675,11 +675,38 @@ def read_record(path, offset):
     return attest.read_record(path, offset)
 
 
+def _verdict_of(row):
+    return ReviewVerdict(
+        statement_hash=row["statement_hash"],
+        reviewer=row["reviewer"],
+        verdict=row["verdict"],
+        checklist_template_hash=row["checklist_template_hash"],
+        gate_bundle_hash=row["gate_bundle_hash"],
+        at=row["at"],
+        supersedes=row["supersedes"],
+        file_offset=row["file_offset"],
+    )
+
+
 def verdict_matches_file(row, path):
+    """A row counts only when the digest re-derived from its fields is the record at its offset."""
     from cairn import attest
 
-    return attest.attestation_record_matches(path, row["file_offset"], row["record_digest"])
+    derived = _verdict_of(row).record_digest
+    if derived != row["record_digest"]:
+        return False
+    return attest.attestation_record_matches(path, row["file_offset"], derived)
 
 
 def visible_review_verdicts(sub, statement_hash, path):
     return [row for row in review_verdicts_for(sub, statement_hash) if verdict_matches_file(row, path)]
+
+
+def verdict_mirrored(sub, statement_hash, record_digest, file_offset):
+    """A verdict row at that digest and offset, honest to its fields."""
+    return any(
+        row["record_digest"] == record_digest
+        and row["file_offset"] == file_offset
+        and _verdict_of(row).record_digest == record_digest
+        for row in review_verdicts_for(sub, statement_hash)
+    )

@@ -8,7 +8,10 @@ import pytest
 
 SECONDS_VAR = "CAIRN_SESSION_DEADLINE"
 SKIP_VAR = "CAIRN_SESSION_DEADLINE_SKIP"
-DEFAULT_SECONDS = 1500
+# Twice the idle full-run wall time on the development Mac (1424-1483 s, 2026-09-02), rounded,
+# so a run under load average 6-9 (2053 s, 2026-09-03) finishes inside it; CI sets 900 through
+# ci.yml. Revisit when an idle run passes half of it.
+DEFAULT_SECONDS = 3000
 # pytest reserves 0-5 and so does src/cairn/exits.py, so neither offers a code that reads as
 # "killed by a time limit"; 124 is timeout(1)'s, which a .check.log reader already knows.
 TIMEOUT_EXIT_CODE = 124
@@ -16,7 +19,7 @@ TIMEOUT_EXIT_CODE = 124
 # stderr, not the code, is what tells a deadline kill from an ordinary failure.
 BACKSTOP_EXIT_CODE = 1
 # Long enough that the watchdog thread always wins when it is merely slow to wake and dump,
-# and far inside the 300 s between the 1500 s default and CI's 30-minute job ceiling.
+# and far inside the gap between CI's 900 s deadline and its 20-minute job ceiling.
 BACKSTOP_GRACE = 15
 JOIN_TIMEOUT_S = 5
 THREAD_NAME = "cairn-session-deadline"

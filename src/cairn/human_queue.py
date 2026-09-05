@@ -207,9 +207,8 @@ def _acknowledgment_row_matches(sub, row):
 def _attestation_binding(sub, item, record_digest, file_offset):
     if file_offset == FIXTURE_WAIVER_OFFSET:
         return f"record {FIXTURE_WAIVER_OFFSET} is the gate plan's fixture waiver, never an operator's act"
-    if item["target_kind"] == STATEMENT and not any(
-        v["record_digest"] == record_digest and v["file_offset"] == file_offset
-        for v in claims.review_verdicts_for(sub, item["target"])
+    if item["target_kind"] == STATEMENT and not claims.verdict_mirrored(
+        sub, item["target"], record_digest, file_offset
     ):
         return f"no review verdict on statement {item['target']} is mirrored at offset {file_offset} with digest {record_digest}"
     if item["class"] == NOGO_REVIEW:
