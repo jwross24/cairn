@@ -1,0 +1,52 @@
+FROM docker.io/library/debian:bookworm-slim@sha256:6bd27d44e6c32a66bbd72d7cb2b76a8ae3497ec2e5274a81abd1b37f6013fa1f
+
+ARG APT_SNAPSHOT=20260901T000000Z
+ARG ELAN_VERSION=4.2.3
+ARG ELAN_ASSET=elan-aarch64-unknown-linux-gnu.tar.gz
+ARG ELAN_SHA256=cb69af0803b04157bc30201c29c12fca882bb3ad8b43476b8d2d3064810bc3ac
+ARG LEAN_TOOLCHAIN=leanprover/lean4:v4.34.0-rc1
+ARG LEAN_COMMIT=3447a668783dbce1a8fdb97101dd067687b2b418
+ARG LEAN_ASSET=lean-4.34.0-rc1-linux_aarch64.tar.zst
+ARG LEAN_SHA256=e5b8ca631c1a5dce9e8477664f01543cf192737d63b3fbef43f3fae176efdabe
+ARG LANDRUN_VERSION=0.1.17
+ARG LANDRUN_ASSET=landrun-linux-arm64
+ARG LANDRUN_SHA256=365d8c8656c732b14d70e621d972cb733e490621fb5b9c0876376bcf457dbb5d
+ARG COMPARATOR_REV=575674928e239f5bc452aab72d1dd7b0f1326494
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN printf 'Types: deb\nURIs: https://snapshot.debian.org/archive/debian/%s\nSuites: bookworm bookworm-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n\nTypes: deb\nURIs: https://snapshot.debian.org/archive/debian-security/%s\nSuites: bookworm-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' "$APT_SNAPSHOT" "$APT_SNAPSHOT" > /etc/apt/sources.list.d/debian.sources \
+ && apt-get -o Acquire::Check-Valid-Until=false update \
+ && apt-get install -y --no-install-recommends ca-certificates curl git zstd e2fsprogs \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL -o /usr/local/bin/landrun "https://github.com/Zouuup/landrun/releases/download/v${LANDRUN_VERSION}/${LANDRUN_ASSET}" \
+ && echo "${LANDRUN_SHA256}  /usr/local/bin/landrun" | sha256sum -c - \
+ && chmod 755 /usr/local/bin/landrun
+
+RUN useradd --create-home --uid 1000 --shell /bin/bash cairn && mkdir -p /work && chown cairn:cairn /work
+USER cairn
+ENV ELAN_HOME=/home/cairn/.elan
+ENV PATH=/home/cairn/.elan/bin:/usr/local/bin:/usr/bin:/bin
+
+RUN curl -fsSL -o /tmp/elan.tgz "https://github.com/leanprover/elan/releases/download/v${ELAN_VERSION}/${ELAN_ASSET}" \
+ && echo "${ELAN_SHA256}  /tmp/elan.tgz" | sha256sum -c - \
+ && mkdir /tmp/elan && tar -xzf /tmp/elan.tgz -C /tmp/elan \
+ && /tmp/elan/elan-init -y --no-modify-path --default-toolchain none \
+ && rm -rf /tmp/elan /tmp/elan.tgz
+
+RUN curl -fsSL -o /tmp/lean.tar.zst "https://releases.lean-lang.org/lean4/${LEAN_TOOLCHAIN#leanprover/lean4:}/${LEAN_ASSET}" \
+ && echo "${LEAN_SHA256}  /tmp/lean.tar.zst" | sha256sum -c - \
+ && mkdir /home/cairn/lean && tar --zstd -xf /tmp/lean.tar.zst -C /home/cairn/lean --strip-components=1 \
+ && rm /tmp/lean.tar.zst \
+ && elan toolchain link "${LEAN_TOOLCHAIN}" /home/cairn/lean \
+ && lean "+${LEAN_TOOLCHAIN}" --version | tee /dev/stderr | grep -F "commit ${LEAN_COMMIT}"
+
+RUN git clone https://github.com/leanprover/comparator /home/cairn/comparator \
+ && git -C /home/cairn/comparator checkout --quiet "${COMPARATOR_REV}" \
+ && cd /home/cairn/comparator \
+ && lake "+${LEAN_TOOLCHAIN}" build lean4export comparator
+
+ENV COMPARATOR_LANDRUN=/usr/local/bin/landrun
+ENV COMPARATOR_LEAN4EXPORT=/home/cairn/comparator/.lake/packages/lean4export/.lake/build/bin/lean4export
+ENV COMPARATOR_BIN=/home/cairn/comparator/.lake/build/bin/comparator
+WORKDIR /work

@@ -1,0 +1,34 @@
+{
+  "platform": "linux/arm64",
+  "user": "cairn",
+  "base_image": {
+    "ref": "docker.io/library/debian:bookworm-slim",
+    "digest": "sha256:6bd27d44e6c32a66bbd72d7cb2b76a8ae3497ec2e5274a81abd1b37f6013fa1f"
+  },
+  "apt_snapshot": "20260901T000000Z",
+  "elan": {
+    "version": "4.2.3",
+    "asset": "elan-aarch64-unknown-linux-gnu.tar.gz",
+    "sha256": "cb69af0803b04157bc30201c29c12fca882bb3ad8b43476b8d2d3064810bc3ac"
+  },
+  "toolchain": {
+    "name": "leanprover/lean4:v4.34.0-rc1",
+    "lean_commit": "3447a668783dbce1a8fdb97101dd067687b2b418",
+    "asset": "lean-4.34.0-rc1-linux_aarch64.tar.zst",
+    "sha256": "e5b8ca631c1a5dce9e8477664f01543cf192737d63b3fbef43f3fae176efdabe"
+  },
+  "landrun": {
+    "version": "0.1.17",
+    "asset": "landrun-linux-arm64",
+    "sha256": "365d8c8656c732b14d70e621d972cb733e490621fb5b9c0876376bcf457dbb5d"
+  },
+  "comparator": {
+    "repo": "https://github.com/leanprover/comparator",
+    "rev": "575674928e239f5bc452aab72d1dd7b0f1326494",
+    "lean4export_rev": "b18d673bd29b476466a51a3be1012df2ed322b10"
+  },
+  "mathlib": {
+    "rev": "1f29011071772620f612bf5a06433775f06067b8",
+    "mount": "lean"
+  }
+}

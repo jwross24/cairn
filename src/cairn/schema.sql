@@ -280,6 +280,7 @@ CREATE TABLE IF NOT EXISTS gate_runs (
     formal_statement_hash TEXT,
     renderer_hash TEXT,
     prelude_hash TEXT,
+    arm TEXT CHECK (arm IS NULL OR arm IN ('dev-macos-fake-landrun', 'gold-linux-container')),
     result TEXT NOT NULL CHECK (result IN ('pass', 'fail', 'refused', 'blocked', 'admitted')),
     reasons TEXT NOT NULL,
     at TEXT NOT NULL

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from cairn import claims, lean, log
+from cairn import claims, container, lean, log
 from cairn.substrate import blob_hash
 
 RENDERER_PATH = Path(__file__)
@@ -118,7 +118,8 @@ def write_challenge(statement, prelude, *, root=None):
     return rendered
 
 
-def gate_run(rendered, gate_bundle, at, *, formal_statement_hash=None):
+def gate_run(rendered, gate_bundle, at, *, arm, formal_statement_hash=None):
+    container.assert_arm(arm)
     for kind, rendered_hash in ((PRELUDE_KIND, rendered.prelude_hash), (RENDERER_KIND, rendered.renderer_hash)):
         pinned = gate_bundle.digest_of(kind)
         if rendered_hash != pinned:
@@ -135,13 +136,14 @@ def gate_run(rendered, gate_bundle, at, *, formal_statement_hash=None):
         formal_statement_hash=formal_statement_hash,
         renderer_hash=rendered.renderer_hash,
         prelude_hash=rendered.prelude_hash,
+        arm=arm,
     )
 
 
 def binding(run):
     if run.gate != GATE:
         raise BindingAbsent(run.hash, f"gate is {run.gate!r}, not {GATE!r}")
-    for name in ("statement_hash", "formal_statement_hash", "renderer_hash", "prelude_hash"):
+    for name in ("statement_hash", "formal_statement_hash", "renderer_hash", "prelude_hash", "arm"):
         if not getattr(run, name):
             raise BindingAbsent(run.hash, f"{name} is empty")
     return {
@@ -150,4 +152,5 @@ def binding(run):
         "bundle_hash": run.bundle_hash,
         "renderer_hash": run.renderer_hash,
         "prelude_hash": run.prelude_hash,
+        "arm": run.arm,
     }

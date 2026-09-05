@@ -126,6 +126,7 @@ def test_write_one_of_each_reads_back_byte_equal(populated, db_snapshot):
         "formal_statement_hash": None,
         "renderer_hash": None,
         "prelude_hash": None,
+        "arm": None,
         "result": "admitted",
         "reasons": "[]",
         "at": CREATED_AT,

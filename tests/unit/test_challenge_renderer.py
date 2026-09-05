@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import bundle, challenge, lean
+from cairn import bundle, challenge, container, lean
 from cairn.substrate import blob_hash
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -108,20 +108,22 @@ def test_a_render_under_another_prelude_or_renderer_is_refused_a_gate_run(pinned
     monkeypatch.setattr(challenge, "CHALLENGE_DIR", tmp_path / "Challenge")
     foreign = challenge.write_challenge(_statement(), PRELUDE)
     with pytest.raises(challenge.RenderNotFromBundle, match="challenge_prelude") as caught:
-        challenge.gate_run(foreign, gate, factories.CREATED_AT)
+        challenge.gate_run(foreign, gate, factories.CREATED_AT, arm=container.DEV_ARM)
     assert (caught.value.rendered_hash, caught.value.bundle_hash) == (blob_hash(PRELUDE), challenge.prelude_hash())
     pinned = challenge.write_challenge(_statement(), gate.challenge_prelude)
     stale_renderer = dataclasses.replace(pinned, renderer_hash="0" * 64)
     with pytest.raises(challenge.RenderNotFromBundle, match="challenge_renderer"):
-        challenge.gate_run(stale_renderer, gate, factories.CREATED_AT)
-    assert challenge.gate_run(pinned, gate, factories.CREATED_AT).prelude_hash == gate.digest_of(challenge.PRELUDE_KIND)
+        challenge.gate_run(stale_renderer, gate, factories.CREATED_AT, arm=container.DEV_ARM)
+    assert challenge.gate_run(pinned, gate, factories.CREATED_AT, arm=container.DEV_ARM).prelude_hash == gate.digest_of(
+        challenge.PRELUDE_KIND
+    )
 
 
 def test_the_gate_run_carries_the_binding_field_and_refuses_it_absent(pinned_bundle, monkeypatch, tmp_path):
     gate = bundle.GateBundle.open(*pinned_bundle())
     monkeypatch.setattr(challenge, "CHALLENGE_DIR", tmp_path / "Challenge")
     rendered = challenge.write_challenge(_statement(), gate.challenge_prelude)
-    unbound = challenge.gate_run(rendered, gate, factories.CREATED_AT)
+    unbound = challenge.gate_run(rendered, gate, factories.CREATED_AT, arm=container.DEV_ARM)
     assert (unbound.gate, unbound.result, unbound.formal_statement_hash) == ("challenge_render", "pass", None)
     assert (unbound.bundle_hash, unbound.pin_hash) == (gate.hash, gate.pin_hash)
     assert (unbound.statement_hash, unbound.renderer_hash, unbound.prelude_hash) == (
@@ -131,7 +133,9 @@ def test_the_gate_run_carries_the_binding_field_and_refuses_it_absent(pinned_bun
     )
     with pytest.raises(challenge.BindingAbsent, match="formal_statement_hash is empty"):
         challenge.binding(unbound)
-    bound = challenge.gate_run(rendered, gate, factories.CREATED_AT, formal_statement_hash=FAKE_FORMAL_HASH)
+    bound = challenge.gate_run(
+        rendered, gate, factories.CREATED_AT, arm=container.GOLD_ARM, formal_statement_hash=FAKE_FORMAL_HASH
+    )
     assert bound.hash != unbound.hash
     assert challenge.binding(bound) == {
         "claim_statement_hash": rendered.statement_hash,
@@ -139,6 +143,7 @@ def test_the_gate_run_carries_the_binding_field_and_refuses_it_absent(pinned_bun
         "bundle_hash": gate.hash,
         "renderer_hash": rendered.renderer_hash,
         "prelude_hash": rendered.prelude_hash,
+        "arm": container.GOLD_ARM,
     }
 
 

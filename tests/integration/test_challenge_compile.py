@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from _substrate_helpers import open_writer
 
-from cairn import bundle, challenge, claims, lean, log
+from cairn import bundle, challenge, claims, container, lean, log
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import factories
@@ -70,8 +70,10 @@ def test_a_challenge_render_gate_run_round_trips_through_the_substrate(pinned_bu
     rendered = challenge.write_challenge(
         factories.claim_statement(seed=5, formal_source=FORMAL), gate.challenge_prelude
     )
-    unbound = challenge.gate_run(rendered, gate, factories.CREATED_AT)
-    bound = challenge.gate_run(rendered, gate, factories.CREATED_AT, formal_statement_hash=FAKE_FORMAL_HASH)
+    unbound = challenge.gate_run(rendered, gate, factories.CREATED_AT, arm=container.DEV_ARM)
+    bound = challenge.gate_run(
+        rendered, gate, factories.CREATED_AT, arm=container.DEV_ARM, formal_statement_hash=FAKE_FORMAL_HASH
+    )
     sub = open_writer(tmp_path)
     try:
         claims.write_gate_run(sub, unbound)

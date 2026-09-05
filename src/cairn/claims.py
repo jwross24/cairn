@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass, field
 
-from cairn import canon, keys, log
+from cairn import canon, container, keys, log
 from cairn.canon import BOOL, INT, NON_EMPTY_STR, STR, Field, List, Map, Optional, Set, Struct
 from cairn.substrate import HashCollision, SubstrateError, _now, blob_hash
 
@@ -96,6 +96,7 @@ REVIEW_VERDICT = Struct(
         Field("supersedes", Optional(STR)),
     ],
 )
+FORMALIZATION_GATES = frozenset({"challenge_render"})
 GATE_RUN = Struct(
     "gate_run",
     [
@@ -108,6 +109,7 @@ GATE_RUN = Struct(
         Field("formal_statement_hash", Optional(STR)),
         Field("renderer_hash", Optional(STR)),
         Field("prelude_hash", Optional(STR)),
+        Field("arm", Optional(STR)),
         Field("result", NON_EMPTY_STR),
         Field("reasons", List(STR)),
         Field("at", NON_EMPTY_STR),
@@ -230,6 +232,7 @@ def gate_run_canonical(run):
             "formal_statement_hash": run.formal_statement_hash,
             "renderer_hash": run.renderer_hash,
             "prelude_hash": run.prelude_hash,
+            "arm": run.arm,
             "result": run.result,
             "reasons": list(run.reasons),
             "at": run.at,
@@ -357,9 +360,12 @@ class GateRun:
     formal_statement_hash: str | None = None
     renderer_hash: str | None = None
     prelude_hash: str | None = None
+    arm: str | None = None
     hash: str = field(init=False, compare=False)
 
     def __post_init__(self):
+        if self.gate in FORMALIZATION_GATES:
+            container.assert_arm(self.arm)
         object.__setattr__(self, "hash", keys.node_hash("gate_run", gate_run_canonical(self)))
 
 
@@ -526,6 +532,7 @@ def write_gate_run(sub, run):
                 "formal_statement_hash": run.formal_statement_hash,
                 "renderer_hash": run.renderer_hash,
                 "prelude_hash": run.prelude_hash,
+                "arm": run.arm,
                 "result": run.result,
                 "reasons": to_json(list(run.reasons)),
                 "at": run.at,

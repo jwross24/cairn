@@ -5,7 +5,7 @@ import sqlite3
 import stat
 from pathlib import Path
 
-from cairn import canon, challenge, claims, cli, exits, keys, lean, log, verifier
+from cairn import canon, challenge, claims, cli, container, exits, keys, lean, log, verifier
 from cairn.canon import STR, List
 from cairn.errors import CliError
 from cairn.substrate import blob_hash
@@ -15,7 +15,7 @@ lg = log.get("bundle")
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SRC = "bundle/"
 SCRIPT_KIND = "verifier_script"
-RAW_KINDS = (SCRIPT_KIND, challenge.PRELUDE_KIND, challenge.RENDERER_KIND)
+RAW_KINDS = (SCRIPT_KIND, challenge.PRELUDE_KIND, challenge.RENDERER_KIND, container.FILE_KIND)
 PIN_MISMATCH_REASON = "bundle-hash-ne-pin"
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS objects (
@@ -86,6 +86,9 @@ def source_objects(src_dir):
     objects[lean.MANIFEST_KIND] = lean.manifest_object()
     objects[challenge.PRELUDE_KIND] = challenge.prelude_bytes()
     objects[challenge.RENDERER_KIND] = challenge.renderer_bytes()
+    if not container.CONTAINERFILE_PATH.is_file():
+        raise BundleError(f"container spec {container.CONTAINERFILE_PATH} does not exist")
+    objects[container.FILE_KIND] = container.containerfile_bytes()
     return objects
 
 
@@ -241,6 +244,10 @@ class GateBundle:
     @property
     def challenge_renderer(self):
         return self.raw(challenge.RENDERER_KIND)
+
+    @property
+    def container_identity(self):
+        return container.identity(self.raw(container.SPEC_KIND), self.raw(container.FILE_KIND))
 
     def verifier_config(self):
         return verifier.VerifierConfig.from_bundle(self.object("verifier"), self.verifier_script, self.hash)
