@@ -123,6 +123,13 @@ tool is missing denies; it never passes quietly. Bypass, logged to `.check.log`:
 A verdict that must be read goes to a file (`cmd > "$out" 2>&1; tail -1 "$out"`), since a pipeline reports
 only its last command's exit code; byte-equality is settled in Python with lengths and a `hashlib.sha256` digest.
 
+- zsh does not word-split an unquoted variable. `P="--db X --pin Y"; cmd $P` passes one argument, and
+  the command fails in a way that reads as a defect in the code. Build argument lists as arrays, or
+  write the flags out. `cmd | tail -1` reports `tail`'s status, so capture `${PIPESTATUS[1]}` or
+  redirect instead of piping when the exit code is the evidence.
+- Nesting `uv run` inside `$(...)` under an outer `uv run` pipeline yields empty output. Capture to a
+  file and parse it in a second command.
+
 ## Testing
 
 - Layout under `tests/`: `unit/`, `integration/`, `e2e/`, `conformance/`, `planted/`, `mutants/`,
@@ -198,6 +205,16 @@ committed (`.gitignore` re-includes it against the global ignore). `br` never ru
   Close on outcomes, not tooling: a bead naming a run closes only with the artifact path and source SHA.
   Never close under a cycle with hedge text; resolve the dependency first.
 - Bead comments and bodies go through a file, never a shell argument: `br comments add <id> "$(cat "$note")"`.
+- A `br` run outside a repo fails `NOT_INITIALIZED` and creates nothing. br walks upward for a
+  workspace, so a command run while the repo's `.beads` is absent, or from another directory such as
+  the vault, binds to whatever store sits on that path. An empty schema-10 store is parked at
+  `~/.beads.stale-2026-09-02`; a `br` error naming schema 17 against 10 means such a store is on the
+  walk-up path again.
+- `br` is 0.5.7, and `ci.yml` carries the matching `BR_VERSION`. The 0.5 line publishes its release
+  asset as `beads_rust-<version>-darwin_<arch>.tar.gz`; the 0.2 line published `br-`, so a version
+  bump that leaves the asset name alone 404s. beads_rust#457 is fixed as of 0.5.6.
+  `scripts/beads_doctor_gate.py`'s benign-value allowlist was established on 0.2.22 and accepts
+  0.5.7's output unchanged: 55 `ok`, 1 `warn`, `workspace_health: healthy`, verdict advisory.
 
 ## Tool Etiquette
 
