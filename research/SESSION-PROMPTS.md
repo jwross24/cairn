@@ -90,14 +90,21 @@ take the highest-`unblocks` **leaf**, or filter epics out of `--robot-next` your
 
 ---
 
-## Mode A — Build the next M0 bead (the current mode)
+## Mode A — Build the next M1 bead (the current mode)
 
 ```
-Load /beads-br, /beads-bv and /just-say-no-to-process-porn-and-ceremony.
+Load /beads-br, /beads-bv and /just-say-no-to-process-porn-and-ceremony. Load
+/lean-proof-mastery-with-epistemic-humility when the bead touches lean/ or writes Lean
+metaprogramming, in the mode the skill table above names for it.
 
-First establish a clean baseline: `git status --short` (expect empty) and `uv run pytest -q`
-(expect all green). Tell me the numbers before you touch anything — if something is already
-red, we deal with that first rather than attributing it to this bead's work later.
+First establish a clean baseline: `git status --short` (expect only files another session
+owns), `scripts/check.sh --fast` (expect all gates pass) and `gh run list --limit 1` (expect
+the run on HEAD green). The full suite is about 25 min idle and 35 under load (1483 s and 2053 s measured): run it once
+before the close, detached to a file (`nohup zsh -c 'CAIRN_SESSION_DEADLINE=3000 uv run
+pytest -q > suite.log 2>&1; echo rc=$? >> suite.log' &`), and read the verdict from the
+file. One full suite on the machine at a time; a peer session may be running one.
+Tell me the numbers before you touch anything — if something is already red, we deal with
+that first rather than attributing it to this bead's work later.
 
 A red baseline is its own bead-sized job, done first and committed separately: reproduce the
 failure with a command that exits 0 while it is present, fix it, invert the reproduction, and
@@ -129,8 +136,10 @@ operator's, never to report progress.
 
 Build in the order the acceptance criteria are written and commit each working slice, whatever
 the spec's length: a slice that passes its own tests is the unit of progress, and the commit is
-where the reasoning for it lives. If the session ends with the bead unfinished, say plainly
-which criteria are met and which are not, and leave it open. Never close it partially.
+where the reasoning for it lives. Closes are batched: one commit closes every bead the slice
+finishes, because the pre-commit hook's compliance audit costs minutes per closing commit.
+If the session ends with the bead unfinished, say plainly which criteria are met and which
+are not, and leave it open. Never close it partially.
 
 Read the bead's TEST PLAN before writing any test, and load the `/testing-*` skill for each
 shape it names: metamorphic relations, fuzz-shaped robustness, golden artifacts, a conformance
@@ -155,9 +164,13 @@ diffs read line by line. That is content addressing working, not a break, but it
 If a probed fact disagrees with the bead text, do NOT force the test green: assert the
 observed truth, and tell me the disagreement.
 
-Before you propose closing: dispatch a FRESH subagent to run /optimal-tests in --audit mode over
-the bead's test files against its acceptance criteria. Fresh eyes on tests you wrote beat your
-own re-reading, and its report is a claim — re-execute what it cites before you believe it.
+Before you propose closing, and after the full suite has run: dispatch a FRESH subagent with
+`model` set explicitly to Opus (a subagent that inherits a cheaper tier shares the
+implementer's blind spot) to run /optimal-tests in --audit mode over the bead's test files
+against its acceptance criteria, read-only. Fresh eyes on tests you wrote beat your own
+re-reading, and its report is a claim — re-execute what it cites before you believe it; a
+fresh-eyes pass on a citation-heavy brief returned nine wrong line numbers and one wrong
+finding beside its real ones.
 Treat any "this protection is untested" finding as a hypothesis until a mutation proves it:
 `scripts/mutation-check.sh <file> <old-text> <new-text> <pytest-targets>` exits 0 only when the
 mutation went red and the file came back byte-identical. CLAUDE.md's working notes carry the
