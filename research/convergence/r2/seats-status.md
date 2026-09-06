@@ -12,6 +12,6 @@ Seat files: `seats/openrouter-openai-gpt-5-6-terra.md`, `seats/openrouter-x-ai-g
 ## Commands run
 
 ```bash
-mkdir -p /Users/jr843u/Documents/cairn/research/convergence/r2/seats
-bun /Users/jr843u/.claude/scripts/multi-model.ts review --doc /Users/jr843u/Documents/cairn/research/convergence/plan-r1.md --prompt-file /Users/jr843u/Documents/cairn/research/convergence/review-prompt.md --out /Users/jr843u/Documents/cairn/research/convergence/r2/seats --max-tokens 10000 --json > /Users/jr843u/Documents/cairn/research/convergence/r2/seats.json 2> /Users/jr843u/Documents/cairn/research/convergence/r2/seats.log
+mkdir -p ~/Documents/cairn/research/convergence/r2/seats
+bun ~/.claude/scripts/multi-model.ts review --doc ~/Documents/cairn/research/convergence/plan-r1.md --prompt-file ~/Documents/cairn/research/convergence/review-prompt.md --out ~/Documents/cairn/research/convergence/r2/seats --max-tokens 10000 --json > ~/Documents/cairn/research/convergence/r2/seats.json 2> ~/Documents/cairn/research/convergence/r2/seats.log
 ```

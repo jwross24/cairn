@@ -14,6 +14,6 @@ chars = byte size of the seat file in `seats/`.
 ## Commands run
 
 ```bash
-mkdir -p /Users/jr843u/Documents/cairn/research/convergence/r5/seats
-bun /Users/jr843u/.claude/scripts/multi-model.ts review --doc /Users/jr843u/Documents/cairn/research/convergence/plan-r4.md --prompt-file /Users/jr843u/Documents/cairn/research/convergence/review-prompt.md --out /Users/jr843u/Documents/cairn/research/convergence/r5/seats --max-tokens 10000 --json > /Users/jr843u/Documents/cairn/research/convergence/r5/seats.json 2> /Users/jr843u/Documents/cairn/research/convergence/r5/seats.log
+mkdir -p ~/Documents/cairn/research/convergence/r5/seats
+bun ~/.claude/scripts/multi-model.ts review --doc ~/Documents/cairn/research/convergence/plan-r4.md --prompt-file ~/Documents/cairn/research/convergence/review-prompt.md --out ~/Documents/cairn/research/convergence/r5/seats --max-tokens 10000 --json > ~/Documents/cairn/research/convergence/r5/seats.json 2> ~/Documents/cairn/research/convergence/r5/seats.log
 ```

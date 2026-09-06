@@ -14,6 +14,6 @@ Retries: none required (all ok, all files > 400 chars, none begin with "ERROR:")
 ## Commands run
 
 ```
-mkdir -p /Users/jr843u/Documents/cairn/research/convergence/r6/seats
-bun /Users/jr843u/.claude/scripts/multi-model.ts review --doc /Users/jr843u/Documents/cairn/research/convergence/plan-r5.md --prompt-file /Users/jr843u/Documents/cairn/research/convergence/guard-review-prompt.md --out /Users/jr843u/Documents/cairn/research/convergence/r6/seats --max-tokens 10000 --models "openrouter:openai/gpt-5.6-sol,openrouter:x-ai/grok-4.5,openrouter:z-ai/glm-5.2,openrouter:deepseek/deepseek-v4-pro" --json > /Users/jr843u/Documents/cairn/research/convergence/r6/seats.json 2> /Users/jr843u/Documents/cairn/research/convergence/r6/seats.log
+mkdir -p ~/Documents/cairn/research/convergence/r6/seats
+bun ~/.claude/scripts/multi-model.ts review --doc ~/Documents/cairn/research/convergence/plan-r5.md --prompt-file ~/Documents/cairn/research/convergence/guard-review-prompt.md --out ~/Documents/cairn/research/convergence/r6/seats --max-tokens 10000 --models "openrouter:openai/gpt-5.6-sol,openrouter:x-ai/grok-4.5,openrouter:z-ai/glm-5.2,openrouter:deepseek/deepseek-v4-pro" --json > ~/Documents/cairn/research/convergence/r6/seats.json 2> ~/Documents/cairn/research/convergence/r6/seats.log
 ```

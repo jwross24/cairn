@@ -304,4 +304,4 @@ velocity and keep my sanity.
 
 ## License
 
-No `LICENSE` file is present in this repository. Private, all rights reserved.
+MIT, see `LICENSE`.

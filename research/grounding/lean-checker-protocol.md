@@ -1,6 +1,6 @@
 # Grounding brief: Lean checker protocol (PROVEN gate tooling on this machine)
 
-Probe date 2026-08-21, macOS 26.6 / Darwin 25.6.0 arm64. Sources: `leanprover/comparator` @5756749 (2026-08-19), `GasStationManager/SafeVerify` @b291b58, `leanprover/lean4checker` @91a7f0e (deprecated), Lean v4.34.0-rc1 (commit 3447a66), `lean4export` @b18d673, mathlib master @1f29011. Scratch (clones, builds, `*.log`): `/private/tmp/claude-502/-Users-jr843u-Documents-cairn/9cf1d827-93dc-467a-8101-c39c1c16857b/scratchpad/grounding/lean-checker-protocol/`.
+Probe date 2026-08-21, macOS 26.6 / Darwin 25.6.0 arm64. Sources: `leanprover/comparator` @5756749 (2026-08-19), `GasStationManager/SafeVerify` @b291b58, `leanprover/lean4checker` @91a7f0e (deprecated), Lean v4.34.0-rc1 (commit 3447a66), `lean4export` @b18d673, mathlib master @1f29011. Scratch (clones, builds, `*.log`): `/private/tmp/claude-502/-Users-jwross-Documents-cairn/9cf1d827-93dc-467a-8101-c39c1c16857b/scratchpad/grounding/lean-checker-protocol/`.
 
 ## 1. Toolchain on this machine
 

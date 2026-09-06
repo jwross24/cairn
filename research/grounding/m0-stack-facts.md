@@ -12,7 +12,7 @@ Tags: **PROVEN-by-probe** = the exact command ran on this machine and the test a
 | `sw_vers` | ProductName: macOS, ProductVersion: 26.6, BuildVersion: 25G72 |
 | `uname -a` | `Darwin ALC00648 25.6.0 Darwin Kernel Version 25.6.0: Sat Jul 11 15:26:29 PDT 2026; root:xnu-12377.161.13~4/RELEASE_ARM64_T8132 arm64` (context, not asserted; the fs tests log `platform.system() mac_ver() release() machine()`) |
 | Filesystem | APFS (`diskutil info /System/Volumes/Data` → `File System Personality: APFS`; pytest's `tmp_path` lives under `/private/var/folders/.../T`, on that volume) (context, not asserted) |
-| OS user | uid 502 (`jr843u`), not root; the only user in play (operator decision 8) |
+| OS user | uid 502 (`jwross`), not root; the only user in play (operator decision 8) |
 | Interpreter | `uv run python -c "import sqlite3,sys; print(sys.version, sqlite3.sqlite_version)"` → `3.14.0 (main, Oct 31 2025, 23:20:55) [Clang 21.1.4 ] 3.50.4` (uv-managed CPython at `~/Library/Application Support/uv/python/cpython-3.14-macos-aarch64-none`) |
 | gp | `/opt/homebrew/bin/gp` — `GP/PARI CALCULATOR Version 2.17.4 (released)`, arm64 darwin, GMP 6.3.0. `tests/integration/test_grounding_gp.py::test_gp_version_short_is_2_17` runs `/opt/homebrew/bin/gp --version-short` (rc 0, stdout `2.17.4\n`, logged) and asserts stdout starts with `2.17`: PROVEN-by-probe for the major.minor; the patch level, arm64 and GMP cells are context (not asserted) |
 | libpari / cypari2 | `cairn.pari.pari_versions()` → `{'libpari': '2.17.2', 'cypari2': '2.2.4'}` (logged by the PRNG and version tests, not asserted) |

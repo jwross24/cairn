@@ -1,6 +1,6 @@
 # Grounding: PARI/Sage backend for the M0 toy-curve skill and Tier-0 verifier
 
-Scratch (all scripts runnable): `/private/tmp/claude-502/-Users-jr843u-Documents-cairn/9cf1d827-93dc-467a-8101-c39c1c16857b/scratchpad/grounding/pari-sage-toy-curve-backend/` (`bench.gp`, `bench_cypari2.py`, `verify.gp`, `verify_driver.py`, `.venv/`). Probes run 2026-08-21 on arm64 macOS.
+Scratch (all scripts runnable): `/private/tmp/claude-502/-Users-jwross-Documents-cairn/9cf1d827-93dc-467a-8101-c39c1c16857b/scratchpad/grounding/pari-sage-toy-curve-backend/` (`bench.gp`, `bench_cypari2.py`, `verify.gp`, `verify_driver.py`, `.venv/`). Probes run 2026-08-21 on arm64 macOS.
 
 ## 1. What is installed
 

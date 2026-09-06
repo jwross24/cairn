@@ -3,4 +3,4 @@
   ✓ openrouter:x-ai/grok-4.5  87959ms  13242c
   ✓ openrouter:z-ai/glm-5.2  67362ms  3253c
   ✓ openrouter:deepseek/deepseek-v4-flash-0731  156523ms  41422c
-[multi-model] wrote 4 files to /Users/jr843u/Documents/cairn/research/convergence/r5/seats
+[multi-model] wrote 4 files to ~/Documents/cairn/research/convergence/r5/seats

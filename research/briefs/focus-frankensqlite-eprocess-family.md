@@ -1,6 +1,6 @@
 # Focus read: frankensqlite e-process / conformal-martingale / statistical-gate family
 
-Repo: `/private/tmp/claude-502/-Users-jr843u-Documents-cairn/9cf1d827-93dc-467a-8101-c39c1c16857b/scratchpad/repos/frankensqlite` (v0.3.7 @ 9b1d3ed7b3cbb03675a8eeeb136099cecdf6ed0a). All paths below are relative to that root unless absolute. Line numbers are from the files as printed during this read.
+Repo: `/private/tmp/claude-502/-Users-jwross-Documents-cairn/9cf1d827-93dc-467a-8101-c39c1c16857b/scratchpad/repos/frankensqlite` (v0.3.7 @ 9b1d3ed7b3cbb03675a8eeeb136099cecdf6ed0a). All paths below are relative to that root unless absolute. Line numbers are from the files as printed during this read.
 
 Method: read every file in the family end to end (except `crates/fsqlite-types/src/eprocess.rs`, already read by the requester; cross-references only), read the external primitive it wraps (`asupersync/src/lab/oracle/eprocess.rs`, sibling clone in `scratchpad/repos/asupersync`), and grepped every symbol for callers outside its own file to separate load-bearing code from library surface that nothing calls.
 
