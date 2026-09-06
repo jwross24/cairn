@@ -1,5 +1,6 @@
 import re
 
+import factories
 import pytest
 
 from cairn import bundle, container, lean, log
@@ -19,7 +20,6 @@ CHATTR_SCRIPT = (
     "set -x; f=/work/append_only.log; echo first > $f; chattr +a $f; lsattr $f; "
     "echo second >> $f; echo trunc > $f; rm -f $f; cat $f; exit 0"
 )
-CHATTR_AS_USER = "set -x; f=/work/shared.log; ls -l $f; lsattr $f; echo appended-by-user >> $f; echo truncated-by-user > $f; rm -f $f; cat $f; exit 0"
 
 
 def _gold_arm_or_skip():
@@ -77,6 +77,20 @@ def test_the_identity_is_a_function_of_the_spec_and_the_containerfile_only(pinne
 def test_an_arm_outside_the_two_is_refused(arm):
     with pytest.raises(container.ArmUnknown):
         container.assert_arm(arm)
+
+
+@pytest.mark.parametrize("arm", [None, "", "linux"])
+def test_a_challenge_render_record_naming_neither_arm_is_refused(arm):
+    with pytest.raises(container.ArmUnknown):
+        factories.gate_run(gate="challenge_render", result="pass", arm=arm)
+
+
+def test_the_dev_and_gold_arm_records_are_distinguishable():
+    dev = factories.gate_run(gate="challenge_render", result="pass", arm=container.DEV_ARM)
+    gold = factories.gate_run(gate="challenge_render", result="pass", arm=container.GOLD_ARM)
+    assert (dev.arm, gold.arm) == (container.DEV_ARM, container.GOLD_ARM)
+    assert dev.hash != gold.hash
+    assert factories.gate_run(gate="tier_gate").arm is None
 
 
 @pytest.mark.timeout(3600)
