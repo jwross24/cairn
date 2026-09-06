@@ -21,6 +21,7 @@ live *inside* `/beads-workflow`, so they are dangling references until it is inv
 | `/optimal-tests` | the pre-close test audit that found a broken gate on every bead | A |
 | `/testing-metamorphic` · `/testing-fuzzing` · `/testing-golden-artifacts` · `/testing-conformance-harnesses` · `/testing-real-service-e2e-no-mocks` | the shape a declared test type actually takes; load the ones the bead's TEST PLAN names | A |
 | `/just-say-no-to-process-porn-and-ceremony` | honesty inventory, credit floor | all |
+| `/lean-proof-mastery-with-epistemic-humility` | Lean proof discipline for a bead that touches `lean/` or writes Lean metaprogramming: `construct` for a Solution (`.5.9`, the Formalizer from M2), `audit-only` when reviewing a fixture family (`.3.3`) or another session's Lean, its code-review prompts for gate code (F4, F5, F6, F8). Proprietary text: restate in Cairn's words and cite by file:line; never paste it into a bead, a template or the tree. Mapping and adopted bullets: `research/briefs/skills-fit-lean-proof-mastery.md` | A |
 
 ## Keeping the main context clear
 
