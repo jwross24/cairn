@@ -7,6 +7,7 @@
     "version": ["lean", "--version"],
     "build": ["lake", "build", "{module}"],
     "replay": ["lake", "env", "leanchecker", "-v", "{module}"],
-    "replay_fresh": ["lake", "env", "leanchecker", "--fresh", "-v", "{module}"]
+    "replay_fresh": ["lake", "env", "leanchecker", "--fresh", "-v", "{module}"],
+    "statement_hash": ["lake", "env", "{executable}", "{module}"]
   }
 }

@@ -12,3 +12,7 @@ globs = ["Grounding.+"]
 [[lean_lib]]
 name = "Challenge"
 globs = ["Challenge.+"]
+
+[[lean_exe]]
+name = "statement_hash"
+root = "Cairn.StatementHash"

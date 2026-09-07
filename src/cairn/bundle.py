@@ -15,7 +15,13 @@ lg = log.get("bundle")
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SRC = "bundle/"
 SCRIPT_KIND = "verifier_script"
-RAW_KINDS = (SCRIPT_KIND, challenge.PRELUDE_KIND, challenge.RENDERER_KIND, container.FILE_KIND)
+RAW_KINDS = (
+    SCRIPT_KIND,
+    challenge.PRELUDE_KIND,
+    challenge.RENDERER_KIND,
+    container.FILE_KIND,
+    lean.STATEMENT_HASHER_KIND,
+)
 PIN_MISMATCH_REASON = "bundle-hash-ne-pin"
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS objects (
@@ -86,6 +92,7 @@ def source_objects(src_dir):
     objects[lean.MANIFEST_KIND] = lean.manifest_object()
     objects[challenge.PRELUDE_KIND] = challenge.prelude_bytes()
     objects[challenge.RENDERER_KIND] = challenge.renderer_bytes()
+    objects[lean.STATEMENT_HASHER_KIND] = lean.STATEMENT_HASHER_PATH.read_bytes()
     if not container.CONTAINERFILE_PATH.is_file():
         raise BundleError(f"container spec {container.CONTAINERFILE_PATH} does not exist")
     objects[container.FILE_KIND] = container.containerfile_bytes()

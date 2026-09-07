@@ -7,7 +7,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from cairn import log
+from cairn import canon, log
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PINS_PATH = REPO_ROOT / "bundle" / "lean.json"
@@ -15,6 +15,9 @@ PROJECT_DIR = REPO_ROOT / "lean"
 TOOLCHAIN_FILE = PROJECT_DIR / "lean-toolchain"
 MANIFEST_PATH = PROJECT_DIR / "lake-manifest.json"
 MANIFEST_KIND = "lake_manifest"
+STATEMENT_HASHER_KIND = "lean_statement_hasher"
+STATEMENT_HASHER_PATH = PROJECT_DIR / "Cairn" / "StatementHash.lean"
+STATEMENT_DOMAIN = "cairn/formal-statement/v1"
 RESOLVER = "elan"
 TOOLS = ("lean", "lake", "leanchecker")
 NO_TOOLCHAINS = "no installed toolchains"
@@ -27,6 +30,10 @@ lg = log.get("lean")
 
 
 class LeanMissing(RuntimeError):
+    pass
+
+
+class LeanRejected(RuntimeError):
     pass
 
 
@@ -174,3 +181,54 @@ def assert_pinned(pins):
         raise LeanPinMismatch(pinned, seen)
     lg.info("pinned", toolchain=pins["toolchain"], commit=observed["commit"], target=observed["target"])
     return observed
+
+
+def require_success(result):
+    if result.rc != 0:
+        raise LeanRejected(f"rc={result.rc}: {result.stdout}{result.stderr}")
+    return result
+
+
+def canonical_result(result):
+    require_success(result)
+    try:
+        value = json.loads(result.stdout)
+    except (ValueError, TypeError) as exc:
+        raise LeanRejected("non-canonical-json") from exc
+    if json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n" != result.stdout:
+        raise LeanRejected("non-canonical-json")
+    return value
+
+
+def statement_digest(result):
+    value = canonical_result(result)
+    if not isinstance(value, dict) or set(value) != {"canonical_hex"}:
+        raise LeanRejected("invalid-statement-hasher-output")
+    encoded = value["canonical_hex"]
+    if not isinstance(encoded, str) or not re.fullmatch(r"(?:[0-9a-f]{2})+", encoded):
+        raise LeanRejected("invalid-statement-canonical-hex")
+    return canon.digest(STATEMENT_DOMAIN, bytes.fromhex(encoded))
+
+
+def formal_statement_hash(gate, module, theorem_names, *, project_dir, work_dir, timeout_s=DEFAULT_TIMEOUT_S):
+    pins = gate.lean
+    assert_pinned(pins)
+    root = Path(work_dir)
+    root.mkdir(parents=True, exist_ok=False)
+    (root / "Cairn").mkdir()
+    (root / "Cairn" / "StatementHash.lean").write_bytes(gate.raw(STATEMENT_HASHER_KIND))
+    (root / "lean-toolchain").write_text(pins["toolchain"] + "\n")
+    (root / "lakefile.toml").write_text(
+        'name = "cairn_statement_tool"\n\n[[lean_exe]]\nname = "statement_hash"\nroot = "Cairn.StatementHash"\n'
+    )
+    require_success(run_argv(command(pins, "build", module="statement_hash"), cwd=root, timeout_s=timeout_s))
+    require_success(run_argv(command(pins, "build", module=module), cwd=project_dir, timeout_s=timeout_s))
+    executable = root.resolve() / ".lake" / "build" / "bin" / "statement_hash"
+    result = run_argv(
+        [*command(pins, "statement_hash", executable=str(executable), module=module), *theorem_names],
+        cwd=project_dir,
+        timeout_s=timeout_s,
+    )
+    digest = statement_digest(result)
+    lg.info("formal_statement_hash", module=module, theorem_names=theorem_names, digest=digest, result=result.__dict__)
+    return digest
