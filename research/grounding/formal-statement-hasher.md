@@ -145,6 +145,7 @@ replay success does not remove `sorryAx` or establish a mathematical result.
 ## Solution compilation precondition for F6 P-6d
 
 The comparator compiles Solution source and permits `import Lean` on this arm.
+Command: `uv run python research/grounding/probe_solution_precondition.py --comparator <scratch-clone>`.
 A fresh scratch project with Challenge `theorem target : True := by sorry` and the
 following Solution, under the production classical permitted set, produced:
 

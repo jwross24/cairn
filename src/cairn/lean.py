@@ -18,6 +18,8 @@ MANIFEST_KIND = "lake_manifest"
 STATEMENT_HASHER_KIND = "lean_statement_hasher"
 STATEMENT_HASHER_PATH = PROJECT_DIR / "Cairn" / "StatementHash.lean"
 STATEMENT_DOMAIN = "cairn/formal-statement/v1"
+AXIOM_KIND = "lean_axiom_checker"
+AXIOM_PATH = PROJECT_DIR / "Cairn" / "Axioms.lean"
 RESOLVER = "elan"
 TOOLS = ("lean", "lake", "leanchecker")
 NO_TOOLCHAINS = "no installed toolchains"
@@ -232,3 +234,52 @@ def formal_statement_hash(gate, module, theorem_names, *, project_dir, work_dir,
     digest = statement_digest(result)
     lg.info("formal_statement_hash", module=module, theorem_names=theorem_names, digest=digest, result=result.__dict__)
     return digest
+
+
+def axiom_result(result, theorem_names, permitted_axioms):
+    value = canonical_result(result)
+    if not theorem_names:
+        raise LeanRejected("empty-theorem-names")
+    if not isinstance(value, dict) or set(value) != {"theorems", "unused_admissions"}:
+        raise LeanRejected("invalid-axiom-output")
+    rows = value["theorems"]
+    if not isinstance(rows, dict) or set(rows) != set(theorem_names):
+        raise LeanRejected("axiom-theorem-names-mismatch")
+    for names in [*rows.values(), value["unused_admissions"]]:
+        if not isinstance(names, list) or any(not isinstance(n, str) or not n for n in names):
+            raise LeanRejected("invalid-axiom-names")
+        if names != sorted(set(names)):
+            raise LeanRejected("non-canonical-axiom-names")
+    offending = sorted(set().union(*map(set, rows.values())) - set(permitted_axioms))
+    return {**value, "offending_axioms": offending, "passed": not offending}
+
+
+def check_axioms(
+    gate, module, theorem_names, *, project_dir, work_dir, checker_config=None, timeout_s=DEFAULT_TIMEOUT_S
+):
+    pins = gate.lean
+    expected = {key: pins[key] for key in ("permitted_axioms", "checker", "external_kernels")}
+    if checker_config is not None and checker_config != expected:
+        raise LeanRejected("checker-config-mismatch")
+    assert_pinned(pins)
+    if not theorem_names:
+        raise LeanRejected("empty-theorem-names")
+    root = Path(work_dir)
+    root.mkdir(parents=True, exist_ok=False)
+    (root / "Cairn").mkdir()
+    (root / "Cairn" / "Axioms.lean").write_bytes(gate.raw(AXIOM_KIND))
+    (root / "lean-toolchain").write_text(pins["toolchain"] + "\n")
+    (root / "lakefile.toml").write_text(
+        'name = "cairn_axiom_tool"\n\n[[lean_exe]]\nname = "axioms"\nroot = "Cairn.Axioms"\n'
+    )
+    require_success(run_argv(command(pins, "build", module="axioms"), cwd=root, timeout_s=timeout_s))
+    require_success(run_argv(command(pins, "build", module=module), cwd=project_dir, timeout_s=timeout_s))
+    executable = root.resolve() / ".lake" / "build" / "bin" / "axioms"
+    result = run_argv(
+        [*command(pins, "axioms", executable=str(executable), module=module), *theorem_names],
+        cwd=project_dir,
+        timeout_s=timeout_s,
+    )
+    record = axiom_result(result, theorem_names, pins["permitted_axioms"])
+    lg.info("axiom_check", module=module, record=record, result=result.__dict__)
+    return record

@@ -16,3 +16,7 @@ globs = ["Challenge.+"]
 [[lean_exe]]
 name = "statement_hash"
 root = "Cairn.StatementHash"
+
+[[lean_exe]]
+name = "axioms"
+root = "Cairn.Axioms"

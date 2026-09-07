@@ -1,0 +1,83 @@
+{
+  "BvDecide": {
+    "offending_axioms": [
+      "target._native.bv_decide.ax_1_5"
+    ],
+    "passed": false,
+    "theorems": {
+      "target": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext",
+        "target._native.bv_decide.ax_1_5"
+      ]
+    },
+    "unused_admissions": []
+  },
+  "BvSimplified": {
+    "offending_axioms": [],
+    "passed": true,
+    "theorems": {
+      "target": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ]
+    },
+    "unused_admissions": []
+  },
+  "Clean": {
+    "offending_axioms": [],
+    "passed": true,
+    "theorems": {
+      "target": []
+    },
+    "unused_admissions": []
+  },
+  "CustomAxiom": {
+    "offending_axioms": [
+      "planted"
+    ],
+    "passed": false,
+    "theorems": {
+      "target": [
+        "planted"
+      ]
+    },
+    "unused_admissions": []
+  },
+  "NativeDecide": {
+    "offending_axioms": [
+      "target._native.decide.ax_1_1"
+    ],
+    "passed": false,
+    "theorems": {
+      "target": [
+        "target._native.decide.ax_1_1"
+      ]
+    },
+    "unused_admissions": []
+  },
+  "Sorry": {
+    "offending_axioms": [
+      "sorryAx"
+    ],
+    "passed": false,
+    "theorems": {
+      "target": [
+        "sorryAx"
+      ]
+    },
+    "unused_admissions": []
+  },
+  "UnusedSorry": {
+    "offending_axioms": [],
+    "passed": true,
+    "theorems": {
+      "target": []
+    },
+    "unused_admissions": [
+      "unusedAdmission"
+    ]
+  }
+}

@@ -2,6 +2,10 @@
 
 | File | Generator | Tool versions | Volatility | Note |
 |---|---|---|---|---|
+| `tests/goldens/axiom_computation.golden` | `UPDATE_GOLDENS=1 uv run pytest tests/integration/test_axiom_computation.py -k real_axiom_matrix` | Lean 4.34.0-rc1, commit `3447a668783dbce1a8fdb97101dd067687b2b418`; mathlib pin `1f29011071772620f612bf5a06433775f06067b8` (not imported by this matrix) | 3 | Gate-owned `Lean.collectAxioms` outputs and subset verdicts. Generated native-axiom suffixes and tactic preprocessing depend on the toolchain. The native fixture reports `target._native.decide.ax_1_1` without `Lean.trustCompiler`; the multiplication bit-vector fixture reports `target._native.bv_decide.ax_1_5`. Raw `lean/Cairn/Axioms.lean` and checker configuration are gate-bundle inputs. |
+
+| File | Generator | Tool versions | Volatility | Note |
+|---|---|---|---|---|
 | `tests/goldens/formal_statement.golden` | `UPDATE_GOLDENS=1 uv run pytest tests/unit/test_formal_statement_hasher.py -k known_answer` | Lean 4.34.0-rc1, commit `3447a668783dbce1a8fdb97101dd067687b2b418`; mathlib pin `1f29011071772620f612bf5a06433775f06067b8` (not imported by this vector) | 2 | Length-framed ConstantVal bytes from `Cairn.StatementHash.constantVal`; structural encoding changes require an attributed regeneration. The raw source `lean/Cairn/StatementHash.lean` is also a gate-bundle object, so its bytes move `gate_bundle_hash.golden`. |
 
 Every golden or vector under `tests/goldens/` and `tests/vectors/` lists its generator, the tool versions it depends on, and a volatility grade (1 = deterministic everywhere; 5 = expected to drift). Regeneration is `UPDATE_GOLDENS=1 uv run pytest <test> -k <name>` followed by a commit whose message names the tool version that moved it.

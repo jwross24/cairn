@@ -21,6 +21,7 @@ RAW_KINDS = (
     challenge.RENDERER_KIND,
     container.FILE_KIND,
     lean.STATEMENT_HASHER_KIND,
+    lean.AXIOM_KIND,
 )
 PIN_MISMATCH_REASON = "bundle-hash-ne-pin"
 SCHEMA = """
@@ -93,6 +94,7 @@ def source_objects(src_dir):
     objects[challenge.PRELUDE_KIND] = challenge.prelude_bytes()
     objects[challenge.RENDERER_KIND] = challenge.renderer_bytes()
     objects[lean.STATEMENT_HASHER_KIND] = lean.STATEMENT_HASHER_PATH.read_bytes()
+    objects[lean.AXIOM_KIND] = lean.AXIOM_PATH.read_bytes()
     if not container.CONTAINERFILE_PATH.is_file():
         raise BundleError(f"container spec {container.CONTAINERFILE_PATH} does not exist")
     objects[container.FILE_KIND] = container.containerfile_bytes()
