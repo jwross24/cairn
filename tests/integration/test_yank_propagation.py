@@ -313,3 +313,72 @@ def test_a_yank_id_is_written_once(writer, revision):
             verdict_ref=verdict,
         )
     assert len(yank.records_for(writer, revision)) == 1
+
+
+class Injected(RuntimeError):
+    pass
+
+
+@pytest.mark.parametrize("failing", ["add_salt", "disown"])
+def test_a_failure_partway_through_the_propagation_leaves_no_row_behind(writer, revision, monkeypatch, failing):
+    attempts = attempts_by_seed(writer, revision)
+    stmt = statement_on(writer, attempts[1])
+    verdict = recorded_verdict(writer)
+
+    def refuse(*args, **kwargs):
+        raise Injected(f"injected at {failing}")
+
+    monkeypatch.setattr(writer, failing, refuse)
+    with pytest.raises(Injected):
+        yank.record(
+            writer,
+            yank_id="yank-1",
+            skill_identity_hash=revision,
+            kind=yank.GATE_VERDICT,
+            attest_path=ATTEST,
+            verdict_ref=verdict,
+            at=AT,
+        )
+    monkeypatch.undo()
+
+    assert yank.records_for(writer, revision) == []
+    assert yank.current_salt(writer, revision) is None
+    assert writer.yanked(revision) is False
+    for attempt_id in attempts.values():
+        assert writer.get_attempt(attempt_id)["disowned_at"] is None
+        assert escrow.reservation(writer, attempt_id)["released_at"] is None
+    assert justify.derive_tag(writer, stmt.hash, ATTEST).tag == justify.CONJECTURE
+
+
+def test_the_whole_propagation_lands_again_after_a_failed_attempt(writer, revision, monkeypatch):
+    attempts = attempts_by_seed(writer, revision)
+    verdict = recorded_verdict(writer)
+
+    def refuse(*args, **kwargs):
+        raise Injected("injected at add_salt")
+
+    monkeypatch.setattr(writer, "add_salt", refuse)
+    with pytest.raises(Injected):
+        yank.record(
+            writer,
+            yank_id="yank-1",
+            skill_identity_hash=revision,
+            kind=yank.GATE_VERDICT,
+            attest_path=ATTEST,
+            verdict_ref=verdict,
+            at=AT,
+        )
+    monkeypatch.undo()
+
+    outcome = yank.record(
+        writer,
+        yank_id="yank-1",
+        skill_identity_hash=revision,
+        kind=yank.GATE_VERDICT,
+        attest_path=ATTEST,
+        verdict_ref=verdict,
+        at=AT,
+    )
+    assert set(outcome.disowned) == set(attempts.values())
+    assert yank.current_salt(writer, revision) == "yank-1"
+    assert len(yank.records_for(writer, revision)) == 1

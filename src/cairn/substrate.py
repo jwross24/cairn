@@ -199,6 +199,8 @@ class Substrate:
         self.path = path
         self.role = role
         self.closed = False
+        self._depth = 0
+        self._failed = False
 
     @classmethod
     def open(cls, path, role="writer"):
@@ -245,14 +247,34 @@ class Substrate:
         self.close()
 
     @contextmanager
-    def _tx(self):
+    def transaction(self):
+        if self._depth:
+            self._depth += 1
+            try:
+                yield
+            except BaseException:
+                self._failed = True
+                raise
+            finally:
+                self._depth -= 1
+            return
         self.conn.execute("BEGIN IMMEDIATE")
+        self._depth, self._failed = 1, False
         try:
             yield
         except BaseException:
+            self._depth, self._failed = 0, False
             self.conn.execute("ROLLBACK")
             raise
+        self._depth = 0
+        if self._failed:
+            self._failed = False
+            self.conn.execute("ROLLBACK")
+            raise SubstrateError("a write in this transaction raised; the block is rolled back")
         self.conn.execute("COMMIT")
+
+    def _tx(self):
+        return self.transaction()
 
     def journal_mode(self):
         return self.conn.execute("PRAGMA journal_mode").fetchone()[0]

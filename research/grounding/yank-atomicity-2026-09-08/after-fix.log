@@ -1,0 +1,7 @@
+# probe_yank_partial_write.py against the working tree (after the fix)
+# uv run python research/grounding/yank-atomicity-2026-09-08/probe_yank_partial_write.py
+
+injected_raised=True
+yank_rows=0 salt=None attempt_disowned=None
+DEFECT partial_write_survives_a_failure=False
+EXIT=1

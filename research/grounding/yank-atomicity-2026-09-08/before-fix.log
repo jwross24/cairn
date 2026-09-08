@@ -1,0 +1,7 @@
+# probe_yank_partial_write.py against src/cairn at 60724f1, byte-identical to the base 313d145 for substrate.py and yank.py (before the fix)
+# PYTHONPATH=/private/tmp/claude-502/-Users-jr843u-Documents-cairn/2d25df27-b3df-423f-b6e1-380b553935bf/scratchpad/before-src-QvFU0l uv run python research/grounding/yank-atomicity-2026-09-08/probe_yank_partial_write.py
+
+injected_raised=True
+yank_rows=1 salt=None attempt_disowned=None
+DEFECT partial_write_survives_a_failure=True
+EXIT=0

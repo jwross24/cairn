@@ -704,3 +704,60 @@ def test_every_refused_serve_logs_why_not(writer, json_test_log, db_snapshot, wh
         json.loads(line) for line in json_test_log.read_text().splitlines() if json.loads(line).get("event") == "serve"
     ]
     assert decisions[-1] == {**decisions[-1], "served": False, "why_not": why_not, "recipe_key": key}
+
+
+def test_a_nested_transaction_joins_the_open_one_and_commits_once(writer):
+    with writer.transaction():
+        writer.put_blob(b"one")
+        with writer.transaction():
+            writer.put_blob(b"two")
+        assert writer.conn.in_transaction is True
+    assert writer.conn.in_transaction is False
+    assert writer.has_blob(substrate.blob_hash(b"one")) is True
+    assert writer.has_blob(substrate.blob_hash(b"two")) is True
+
+
+def test_a_failure_inside_a_nested_transaction_discards_the_whole_block(writer):
+    def block():
+        with writer.transaction():
+            writer.put_blob(b"outer")
+            with writer.transaction():
+                writer.put_blob(b"inner")
+                raise RuntimeError("inner")
+
+    with pytest.raises(RuntimeError, match="inner"):
+        block()
+    assert writer.has_blob(substrate.blob_hash(b"outer")) is False
+    assert writer.has_blob(substrate.blob_hash(b"inner")) is False
+
+
+def test_a_caught_inner_failure_still_refuses_to_commit_the_block(writer):
+    def block():
+        with writer.transaction():
+            writer.put_blob(b"before")
+            try:
+                with writer.transaction():
+                    writer.put_blob(b"during")
+                    raise RuntimeError("swallowed")
+            except RuntimeError:
+                pass
+            writer.put_blob(b"after")
+
+    with pytest.raises(substrate.SubstrateError, match="rolled back"):
+        block()
+    for payload in (b"before", b"during", b"after"):
+        assert writer.has_blob(substrate.blob_hash(payload)) is False
+
+
+def test_a_block_that_failed_does_not_poison_the_next_one(writer):
+    def block():
+        with writer.transaction():
+            writer.put_blob(b"discarded")
+            raise RuntimeError("boom")
+
+    with pytest.raises(RuntimeError):
+        block()
+    with writer.transaction():
+        writer.put_blob(b"kept")
+    assert writer.has_blob(substrate.blob_hash(b"discarded")) is False
+    assert writer.has_blob(substrate.blob_hash(b"kept")) is True

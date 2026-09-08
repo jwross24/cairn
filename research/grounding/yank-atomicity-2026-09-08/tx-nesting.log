@@ -1,0 +1,9 @@
+# probe_tx_nesting.py: whether a second BEGIN inside an open transaction is admitted
+
+## src/cairn at 60724f1, byte-identical to the base 313d145 for substrate.py and yank.py
+NESTED_RAISES: OperationalError cannot start a transaction within a transaction
+EXIT=0
+
+## the working tree
+NESTED_RAISES: no
+EXIT=0

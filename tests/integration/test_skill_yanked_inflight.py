@@ -41,7 +41,7 @@ def _record(sub, *, outside=False):
     )
 
 
-def _yank_after_ready(db_path, runs, outside, closed, pause_settlement):
+def _yank_after_ready(db_path, runs, outside, closed, fail_salt=False):
     deadline = time.monotonic() + 15
     ready = None
     while ready is None:
@@ -52,21 +52,23 @@ def _yank_after_ready(db_path, runs, outside, closed, pause_settlement):
     os.kill(int(ready.read_text()), 0)
     with Substrate.open(db_path) as sub:
         sub.conn.create_function("test_settler", 0, lambda: "yank-controller")
-        pauses = []
-
-        def pause(statement):
-            if not pauses and statement.startswith("SELECT * FROM escrow"):
-                pauses.append((sub.conn.in_transaction, closed.wait(10)))
-
-        if pause_settlement:
-            sub.conn.set_trace_callback(pause)
         rows = sub.conn.execute("SELECT * FROM attempts WHERE status='RUNNING'").fetchall()
         assert len(rows) == 1
-        outcome = _record(sub, outside=outside)
-        assert (rows[0]["attempt_id"] in outcome.disowned) is not outside
-        if pause_settlement:
-            assert pauses == [(False, True)]
-    if outside:
+        if fail_salt:
+            sub.conn.executescript(
+                "CREATE TRIGGER reject_salt BEFORE INSERT ON salts BEGIN SELECT RAISE(ABORT, 'salt rejected'); END;"
+            )
+            try:
+                _record(sub, outside=outside)
+            except sqlite3.IntegrityError as exc:
+                assert "salt rejected" in str(exc)
+            else:
+                raise AssertionError("the salt write was expected to abort")
+            sub.conn.executescript("DROP TRIGGER reject_salt")
+        else:
+            outcome = _record(sub, outside=outside)
+            assert (rows[0]["attempt_id"] in outcome.disowned) is not outside
+    if outside or fail_salt:
         (ready.parent / "finish").write_text("finish")
 
 
@@ -87,11 +89,11 @@ def _launch(sub, tmp_path, **document):
     )
 
 
-def _inflight(sub, tmp_path, *, outside=False, ignore_term=False, pause_settlement=False):
+def _inflight(sub, tmp_path, *, outside=False, ignore_term=False, fail_salt=False):
     context = multiprocessing.get_context("spawn")
     closed = context.Event()
     controller = context.Process(
-        target=_yank_after_ready, args=(str(sub.path), str(tmp_path / "runs"), outside, closed, pause_settlement)
+        target=_yank_after_ready, args=(str(sub.path), str(tmp_path / "runs"), outside, closed, fail_salt)
     )
     controller.start()
     try:
@@ -142,12 +144,27 @@ def test_a_covering_yank_terminates_the_child_and_releases_escrow_once(writer, t
         assert (tmp_path / "runs" / attempt.attempt_id / "scratch" / "sigterm_seen").read_text() == "term"
 
 
-def test_yank_propagation_owns_settlement_even_when_the_runner_closes_first(writer, tmp_path):
-    attempt = _inflight(writer, tmp_path, pause_settlement=True)
+def test_the_runner_close_observes_the_whole_propagation_or_none_of_it(writer, tmp_path):
+    attempt = _inflight(writer, tmp_path)
     assert attempt.status == "SKILL_YANKED"
     updates = writer.conn.execute("SELECT attempt_id, settler FROM settlement_updates").fetchall()
     assert [tuple(row) for row in updates] == [(attempt.attempt_id, "yank-controller")]
     assert escrow.reservation(writer, attempt.attempt_id)["released_by"] == "disowned"
+    assert writer.get_attempt(attempt.attempt_id)["disowned_at"] is not None
+    assert yank.current_salt(writer, REVISION) == "test-yank"
+    assert len(yank.records_for(writer, REVISION)) == 1
+
+
+def test_a_propagation_that_fails_partway_leaves_the_running_attempt_untouched(writer, tmp_path):
+    attempt = _inflight(writer, tmp_path, fail_salt=True)
+    assert attempt.status == "OK"
+    assert not attempt.launch.skill_yanked
+    assert yank.records_for(writer, REVISION) == []
+    assert yank.current_salt(writer, REVISION) is None
+    assert writer.yanked(REVISION) is False
+    assert writer.get_attempt(attempt.attempt_id)["disowned_at"] is None
+    assert writer.conn.execute("SELECT COUNT(*) FROM settlement_updates").fetchone()[0] == 0
+    assert escrow.standing(writer, attempt.attempt_id)
 
 
 def test_a_receipt_write_failure_honors_the_yank_and_its_settlement_owner(writer, tmp_path):
@@ -155,13 +172,15 @@ def test_a_receipt_write_failure_honors_the_yank_and_its_settlement_owner(writer
         "CREATE TRIGGER reject_receipt BEFORE INSERT ON receipts BEGIN SELECT RAISE(ABORT, 'receipt rejected'); END;"
     )
     with pytest.raises(sqlite3.IntegrityError, match="receipt rejected"):
-        _inflight(writer, tmp_path, pause_settlement=True)
+        _inflight(writer, tmp_path)
     row = dict(writer.conn.execute("SELECT * FROM attempts").fetchone())
     assert row["status"] == "SKILL_YANKED" and row["ended_at"] is not None
     assert row["receipt_hash"] is None
     updates = writer.conn.execute("SELECT attempt_id, settler FROM settlement_updates").fetchall()
     assert [tuple(update) for update in updates] == [(row["attempt_id"], "yank-controller")]
     assert escrow.reservation(writer, row["attempt_id"])["released_by"] == "disowned"
+    assert yank.current_salt(writer, REVISION) == "test-yank"
+    assert len(yank.records_for(writer, REVISION)) == 1
 
 
 def test_a_skill_yanked_status_alone_is_neither_cacheable_nor_a_ticket(writer):

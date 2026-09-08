@@ -238,26 +238,27 @@ def record(
         "record_digest": None if ruling is None else ruling.record_digest,
         "file_offset": None if ruling is None else ruling.file_offset,
     }
-    sub.add_yank_record(
-        yank_id,
-        skill_identity_hash,
-        reach_json(reach),
-        ruling_ref=None if ruling is None else ruling.ruling_ref,
-        created_at=at,
-        **settlement,
-    )
-    sub.add_salt(skill_identity_hash, yank_id, **settlement)
-    covered, outside = in_reach(sub, reach)
     disowned, released = [], []
-    for attempt_id in _attempts(sub, covered):
-        if sub.get_attempt(attempt_id)["disowned_at"] is not None:
-            continue
-        sub.disown(attempt_id, at=at)
-        disowned.append(attempt_id)
-        if escrow.settle_on_disown(sub, attempt_id, at=at) is not None:
-            released.append(attempt_id)
-    standing = tuple(a for a in _attempts(sub, outside) if sub.get_attempt(a)["disowned_at"] is None)
-    rederived = foundations.rederive_for_attempts(sub, disowned, attest_path)
+    with sub.transaction():
+        sub.add_yank_record(
+            yank_id,
+            skill_identity_hash,
+            reach_json(reach),
+            ruling_ref=None if ruling is None else ruling.ruling_ref,
+            created_at=at,
+            **settlement,
+        )
+        sub.add_salt(skill_identity_hash, yank_id, **settlement)
+        covered, outside = in_reach(sub, reach)
+        for attempt_id in _attempts(sub, covered):
+            if sub.get_attempt(attempt_id)["disowned_at"] is not None:
+                continue
+            sub.disown(attempt_id, at=at)
+            disowned.append(attempt_id)
+            if escrow.settle_on_disown(sub, attempt_id, at=at) is not None:
+                released.append(attempt_id)
+        standing = tuple(a for a in _attempts(sub, outside) if sub.get_attempt(a)["disowned_at"] is None)
+        rederived = foundations.rederive_for_attempts(sub, disowned, attest_path)
     outcome = Outcome(yank_id, kind, reach, tuple(disowned), standing, tuple(released), tuple(rederived), yank_id)
     lg.info(
         "record",
