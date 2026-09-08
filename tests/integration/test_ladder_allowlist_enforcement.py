@@ -97,17 +97,29 @@ def test_a_write_outside_the_scratch_path_is_confined_and_named(confined, tmp_pa
     outside = tmp_path / "outside.txt"
     rc, out, err = _run(value, profile, scratch, "outside_write", outside)
     assert rc != 0
-    assert out != b"METHOD_COMPLETED"
+    assert out == b""
     assert not outside.exists()
     assert b"Operation not permitted" in err
     assert allowlist.detect_violation(rc, err, value) == "outside_write"
+
+
+def test_the_same_write_inside_a_permitting_writable_root_completes(shipped, tmp_path):
+    inside = tmp_path / "widened"
+    inside.mkdir()
+    value = allowlist.instantiate(shipped, hypothesis=_hypothesis(), counted_object=BACKEND, scratch_dir=inside)
+    profile = allowlist.write_profile(value, tmp_path / "widened.sb")
+    target = inside / "outside.txt"
+    rc, out, err = _run(value, profile, inside, "outside_write", target)
+    assert (rc, out) == (0, b"METHOD_COMPLETED"), err
+    assert target.read_text() == "exfiltrated"
+    assert allowlist.detect_violation(rc, err, value) is None
 
 
 def test_a_network_socket_is_confined_and_named(confined, tmp_path):
     value, scratch, profile = confined()
     rc, out, err = _run(value, profile, scratch, "network", tmp_path / "outside.txt")
     assert rc != 0
-    assert out != b"METHOD_COMPLETED"
+    assert out == b""
     assert allowlist.detect_violation(rc, err, value) == "network_egress"
     with socket.socket() as control:
         control.settimeout(10)
@@ -118,7 +130,7 @@ def test_an_undeclared_subprocess_is_confined_and_named(confined, tmp_path):
     value, scratch, profile = confined()
     rc, out, err = _run(value, profile, scratch, "undeclared_exec", tmp_path / "outside.txt")
     assert rc != 0
-    assert out != b"METHOD_COMPLETED"
+    assert out == b""
     assert b"/bin/echo" in err
     assert allowlist.detect_violation(rc, err, value) == "undeclared_exec"
 
@@ -152,6 +164,7 @@ def test_the_same_method_without_the_declaration_is_confined(confined, tmp_path)
     )
     done = subprocess.run(argv, capture_output=True)
     assert done.returncode != 0
+    assert done.stdout == b""
     assert b"Operation not permitted" in done.stderr
 
 

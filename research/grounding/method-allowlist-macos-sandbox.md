@@ -8,15 +8,21 @@ Bead `cairn-m1-cqt.1.10` (L10). Probe date 2026-09-08, macOS 26.6 / Darwin 25.6.
 
 Reproduce with `uv run python research/grounding/probe_method_allowlist.py` and
 `uv run python research/grounding/probe_method_allowlist.py --unresolved-scratch`. Both exit 0
-when the arm holds; the first asserts every admitted action succeeds, every confined action is
-denied, and the write that was denied left no file, then reaches 1.1.1.1:80 unsandboxed as the
-positive control that the network denial measures the sandbox rather than a dead route.
+when the arm holds; both assert every confined action is denied and that the denied write left no
+file, and the first additionally asserts every admitted action succeeds, checks the arithmetic
+value on stdout, and reaches 1.1.1.1:80 unsandboxed as the positive control that the network
+denial measures the sandbox rather than a dead route.
+
+The script covers the six PROVEN-by-probe rows of §2 and the scratch-resolution row of §3. The
+three STRONG-EMPIRICAL rows — `gp` under the profile, DNS, and the exit-71 symlink case — were
+run by hand at the shell and are not reachable through either command above, because the script's
+child is Python source. Their tag says so; the script is not their evidence.
 
 ## 1. The mechanism
 
 `/usr/bin/sandbox-exec` (100 KB, present in the base system) applies a Seatbelt profile to a
 process before it execs the target, so confinement precedes the first instruction of the method
-under test. The profile the gate renders is deny-default and names four allowances:
+under test. The profile the gate renders is deny-default and names six allow forms:
 
 ```
 (version 1)
@@ -71,6 +77,14 @@ child's stderr, so a method that catches `PermissionError` and exits 0 is confin
 | Confinement (the effect does not occur) | independent of the method | PROVEN-by-probe |
 | Naming from the child's stderr | cooperative; a method that swallows `EPERM` defeats it | STRONG-EMPIRICAL |
 | Naming from the unified log (`log show`, sandbox violation records) | not probed | OPEN: no bead; the stderr channel carries M1 |
+
+The classes `detect_violation` reports are `undeclared_exec`, `outside_write`, `network_egress`
+and `denied_unclassified`. `undeclared_exec` is decided by an exec marker in the trace
+(`_execute_child`, `execvp(`, `Failed to exec`), the last two being the mechanism's own wording at
+exit 71; `outside_write` by a quoted path that resolves outside the writable root; `network_egress`
+by a denial naming no path. A denial whose every quoted path lies inside the writable root is
+`denied_unclassified` rather than silently dropped. No class turns on whether the denied path
+exists on the auditing host, so the same bytes name the same class on any machine.
 
 ## 5. Scope and platform
 

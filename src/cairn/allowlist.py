@@ -9,6 +9,11 @@ a ledger fact.
 Enforcement is pre-execution and independent of the method: research/grounding/
 method-allowlist-macos-sandbox.md measures what the arm confines. Naming a violated clause reads
 the child's stderr and is cooperative, so a method that swallows EPERM is confined and unnamed.
+
+`check_instantiation` is what a reader holding only the record can settle: the record against the
+bundle template. It cannot see which host paths the launch was entitled to, so `check_binding`
+re-derives the allow-list from the gate-owned launch inputs and requires equality; a gate admitting
+a launch calls that one.
 """
 
 import os
@@ -58,7 +63,10 @@ PROFILE = """(version 1)
 (allow file-read* (subpath "/"))
 (allow file-write* (subpath (param "SCRATCH")))
 """
-DENIED = re.compile(rb"Operation not permitted(?:: '([^']*)')?")
+DENIED = re.compile(rb"Operation not permitted")
+QUOTED = re.compile(rb"'([^'\n]*)'")
+EXEC_MARKERS = (b"_execute_child", b"execvp(", b"Failed to exec")
+UNCLASSIFIED = "denied_unclassified"
 
 
 class AllowListError(BundleError):
@@ -151,6 +159,10 @@ def _resolved(label, path):
     if any(ch in text for ch in ('"', "\\", "\n")):
         _refuse(f"{label} path {text!r} cannot be named in a sandbox profile literal")
     return text
+
+
+def within(path, root):
+    return path == root or path.startswith(root + os.sep)
 
 
 def _executable(label, path):
@@ -257,6 +269,29 @@ def check_instantiation(value, gate_bundle, name=LADDER_METHOD):
     for label, path in (("counted object", value.counted_object), ("scratch", value.writable_root)):
         if path != os.path.realpath(path):
             _refuse(f"{label} path {path!r} is unresolved")
+    if value.writable_root == os.sep or Path(value.writable_root).parent == Path(value.writable_root):
+        _refuse(f"allow-list makes the filesystem root {value.writable_root!r} writable")
+    for path in value.exec_paths:
+        if within(path, value.writable_root):
+            _refuse(f"allow-list makes its own executable {path!r} writable")
+    return True
+
+
+def check_binding(
+    value, gate_bundle, *, hypothesis, counted_object, scratch_dir, backend_paths=None, name=LADDER_METHOD
+):
+    check_instantiation(value, gate_bundle, name)
+    expected = instantiate(
+        gate_bundle,
+        hypothesis=hypothesis,
+        counted_object=counted_object,
+        scratch_dir=scratch_dir,
+        backend_paths=backend_paths,
+        name=name,
+    )
+    if value != expected:
+        differing = sorted(k for k, v in expected.as_dict().items() if value.as_dict()[k] != v)
+        _refuse(f"allow-list differs from the one the gate derives for this launch: {differing}")
     return True
 
 
@@ -278,18 +313,15 @@ def argv_for(value, profile_path, argv):
 
 
 def detect_violation(exit_status, stderr_bytes, value):
-    if exit_status == 0:
+    text = bytes(stderr_bytes)
+    if exit_status == 0 or not DENIED.search(text):
         return None
-    found = DENIED.findall(bytes(stderr_bytes))
-    if not found:
-        return None
-    paths = [os.fsdecode(p) for p in found if p]
-    if not paths:
-        return "network_egress"
-    outside = [p for p in paths if p not in value.exec_paths and not p.startswith(value.writable_root + os.sep)]
-    if not outside:
-        return None
-    return "undeclared_exec" if os.access(outside[0], os.X_OK) else "outside_write"
+    if any(marker in text for marker in EXEC_MARKERS):
+        return "undeclared_exec"
+    paths = [os.path.realpath(os.fsdecode(p)) for p in QUOTED.findall(text) if p.startswith(b"/")]
+    if any(not within(p, value.writable_root) for p in paths):
+        return "outside_write"
+    return UNCLASSIFIED if paths else "network_egress"
 
 
 def record(sub, value):

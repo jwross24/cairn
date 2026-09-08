@@ -98,14 +98,16 @@ def main():
     }
     print(json.dumps(report, indent=2, sort_keys=True))
     by_action = {r["action"]: r for r in rows}
-    if args.unresolved_scratch:
-        assert by_action["scratch_write"]["rc"] == 9, "an unresolved scratch path is expected to deny the honest write"
-        return
-    for action in ("arith", "scratch_write", "declared_exec"):
+    admitted = ("arith", "declared_exec") if args.unresolved_scratch else ("arith", "scratch_write", "declared_exec")
+    for action in admitted:
         assert by_action[action]["rc"] == 0, f"{action} must be admitted"
     for action in CONFINED:
         assert by_action[action]["rc"] == 9, f"{action} must be confined"
     assert by_action["outside_write"]["side_effect_present"] is False
+    if args.unresolved_scratch:
+        assert by_action["scratch_write"]["rc"] == 9, "an unresolved scratch path denies the honest write"
+        return
+    assert by_action["arith"]["stdout"].startswith("1885351238965377138")
     with socket.socket() as probe:
         probe.settimeout(5)
         probe.connect(("1.1.1.1", 80))

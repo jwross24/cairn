@@ -68,6 +68,8 @@ def test_module_defined_public_api_is_closed():
         "write_profile",
         "argv_for",
         "detect_violation",
+        "within",
+        "check_binding",
         "record",
         "read",
     }
@@ -362,15 +364,88 @@ def test_editing_the_template_moves_the_bundle_hash(shipped, pinned_bundle, tmp_
     [
         (0, b"Operation not permitted", None),
         (9, b"", None),
+        (9, b"Traceback\nValueError: unrelated\n", None),
         (9, b"CHILD_ERR PermissionError: [Errno 1] Operation not permitted\n", "network_egress"),
-        (9, b"PermissionError: [Errno 1] Operation not permitted: '/bin/echo'\n", "undeclared_exec"),
+        (
+            1,
+            b'  File "subprocess.py", line 1970, in _execute_child\n'
+            b"PermissionError: [Errno 1] Operation not permitted: '/bin/echo'\n",
+            "undeclared_exec",
+        ),
+        (71, b"sandbox-exec: execvp() of '/bin/echo' failed: Operation not permitted\n", "undeclared_exec"),
+        (1, b"Failed to exec /bin/bash as variant for /bin/sh (1: Operation not permitted).\n", "undeclared_exec"),
         (1, b"PermissionError: [Errno 1] Operation not permitted: '/etc/planted.txt'\n", "outside_write"),
+        (1, b"PermissionError: [Errno 1] Operation not permitted: '/etc'\n", "outside_write"),
+        (1, b"PermissionError: [Errno 1] Operation not permitted: '/usr/bin/true'\n", "outside_write"),
     ],
 )
 def test_a_named_violation_is_read_from_the_child_report(instance, exit_status, stderr, expected):
     assert allowlist.detect_violation(exit_status, stderr, instance) == expected
 
 
-def test_a_denial_naming_only_permitted_paths_names_no_violation(instance):
-    stderr = f"Operation not permitted: '{instance.writable_root}/out.json'".encode()
-    assert allowlist.detect_violation(9, stderr, instance) is None
+def test_a_denied_write_to_a_permitted_executable_is_named_rather_than_dropped(instance):
+    stderr = f"PermissionError: [Errno 1] Operation not permitted: '{instance.counted_object}'\n".encode()
+    assert allowlist.detect_violation(1, stderr, instance) == "outside_write"
+
+
+@pytest.mark.parametrize("suffix", ["", "/out.json"])
+def test_a_denial_naming_only_the_writable_root_is_unclassified_and_not_dropped(instance, suffix):
+    stderr = f"Operation not permitted: '{instance.writable_root}{suffix}'".encode()
+    assert allowlist.detect_violation(9, stderr, instance) == allowlist.UNCLASSIFIED
+
+
+def test_the_class_does_not_turn_on_whether_the_denied_path_exists_here(instance, tmp_path):
+    absent = tmp_path / "never-created.txt"
+    present = tmp_path / "created.txt"
+    present.write_text("x")
+    named = [
+        allowlist.detect_violation(1, f"Operation not permitted: '{p}'\n".encode(), instance)
+        for p in (absent, present, Path("/etc"))
+    ]
+    assert named == ["outside_write"] * 3
+
+
+def test_an_allow_list_making_the_filesystem_root_writable_is_refused(shipped, instance):
+    tampered = dataclasses.replace(instance, writable_root="/")
+    with pytest.raises(allowlist.AllowListRefused, match="makes the filesystem root"):
+        allowlist.check_instantiation(tampered, shipped)
+
+
+def test_an_allow_list_making_its_own_executable_writable_is_refused(shipped, instance):
+    tampered = dataclasses.replace(instance, writable_root=str(Path(BACKEND).parent))
+    with pytest.raises(allowlist.AllowListRefused, match="makes its own executable"):
+        allowlist.check_instantiation(tampered, shipped)
+
+
+def test_the_binding_check_refuses_an_allow_list_the_gate_would_not_derive(shipped, scratch, tmp_path):
+    declared = tmp_path / "declared"
+    declared.write_text("#!/bin/sh\nexit 0\n")
+    declared.chmod(0o755)
+    bound = {
+        "hypothesis": _hypothesis(uncounted_backends="gp"),
+        "counted_object": BACKEND,
+        "scratch_dir": scratch,
+        "backend_paths": {"gp": declared},
+    }
+    value = allowlist.instantiate(shipped, **bound)
+    assert allowlist.check_binding(value, shipped, **bound) is True
+    swapped = tuple(sorted({BACKEND, "/bin/sh"}))
+    tampered = dataclasses.replace(value, exec_paths=swapped, profile_hash=blob_hash(allowlist.profile_bytes(swapped)))
+    assert allowlist.check_instantiation(tampered, shipped) is True
+    with pytest.raises(allowlist.AllowListRefused, match="exec_paths"):
+        allowlist.check_binding(tampered, shipped, **bound)
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    with pytest.raises(allowlist.AllowListRefused, match="writable_root"):
+        allowlist.check_binding(value, shipped, **{**bound, "scratch_dir": elsewhere})
+
+
+def test_the_binding_check_refuses_a_launch_whose_declaration_differs(shipped, scratch, instance):
+    with pytest.raises(allowlist.AllowListRefused, match="declared_backends"):
+        allowlist.check_binding(
+            instance,
+            shipped,
+            hypothesis=_hypothesis(uncounted_backends="gmpy2"),
+            counted_object=BACKEND,
+            scratch_dir=scratch,
+        )
