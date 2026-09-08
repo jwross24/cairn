@@ -1,0 +1,5 @@
+verdict KEEP all_rungs_pass None None
+rung 30 fit mean_ops=1000000 success_rate=1 claim_ci_low=1.5 claim_ci_high=1.8
+rung 40 fit mean_ops=1000000 success_rate=1 claim_ci_low=1.5 claim_ci_high=1.8
+rung 50 fit mean_ops=1000000 success_rate=1 claim_ci_low=1.5 claim_ci_high=1.8
+rung 60 hold_out mean_ops=1000000 success_rate=1 claim_ci_low=1.5 claim_ci_high=1.8

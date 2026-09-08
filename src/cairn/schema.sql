@@ -563,3 +563,71 @@ CREATE TRIGGER IF NOT EXISTS worker_dispatches_no_update BEFORE UPDATE ON worker
 CREATE TRIGGER IF NOT EXISTS worker_dispatches_no_delete BEFORE DELETE ON worker_dispatches BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER IF NOT EXISTS worker_results_no_update BEFORE UPDATE ON worker_results BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER IF NOT EXISTS worker_results_no_delete BEFORE DELETE ON worker_results BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+
+CREATE TABLE IF NOT EXISTS ladder_tables (
+    hash TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL UNIQUE,
+    nonce TEXT NOT NULL,
+    hypothesis_hash TEXT NOT NULL,
+    method_identity TEXT NOT NULL,
+    implementation_revision TEXT NOT NULL,
+    gate_bundle_hash TEXT NOT NULL,
+    plan_hash TEXT NOT NULL,
+    uncounted_backend TEXT,
+    verdict TEXT NOT NULL CHECK (verdict IN ('KEEP', 'KEEP_IN_SAMPLE', 'REJECT', 'INCONCLUSIVE')),
+    verdict_predicate TEXT NOT NULL,
+    refutation_kind TEXT CHECK (refutation_kind IS NULL OR refutation_kind IN ('measured', 'implementation')),
+    verdict_rung INTEGER,
+    replay_grade TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ladder_rungs (
+    table_hash TEXT NOT NULL REFERENCES ladder_tables (hash),
+    bits INTEGER NOT NULL,
+    role TEXT NOT NULL,
+    trials INTEGER NOT NULL,
+    mean_ops TEXT NOT NULL,
+    sd_ops TEXT NOT NULL,
+    cpu_seconds TEXT NOT NULL,
+    reference_rate TEXT NOT NULL,
+    memory_bytes INTEGER NOT NULL,
+    success_rate TEXT NOT NULL,
+    radius TEXT NOT NULL,
+    claim_ci_low TEXT,
+    claim_ci_high TEXT,
+    model_prediction TEXT NOT NULL,
+    model_band TEXT NOT NULL,
+    shape_statistic TEXT NOT NULL,
+    declared_shape TEXT NOT NULL,
+    PRIMARY KEY (table_hash, bits)
+);
+
+CREATE TABLE IF NOT EXISTS ladder_trials (
+    table_hash TEXT NOT NULL REFERENCES ladder_tables (hash),
+    bits INTEGER NOT NULL,
+    trial INTEGER NOT NULL,
+    seed INTEGER NOT NULL,
+    instance_hash TEXT NOT NULL,
+    recovered INTEGER NOT NULL,
+    completed INTEGER NOT NULL,
+    gate_ops INTEGER NOT NULL,
+    reported_ops INTEGER NOT NULL,
+    cpu_seconds TEXT NOT NULL,
+    wall_seconds TEXT NOT NULL,
+    peak_rss_bytes INTEGER NOT NULL,
+    scratch_bytes INTEGER NOT NULL,
+    reported_memory_bytes INTEGER NOT NULL,
+    replay_grade TEXT NOT NULL,
+    witness_hash TEXT,
+    PRIMARY KEY (table_hash, bits, trial)
+);
+
+CREATE INDEX IF NOT EXISTS ladder_tables_by_hypothesis ON ladder_tables (hypothesis_hash);
+
+CREATE TRIGGER IF NOT EXISTS ladder_tables_no_update BEFORE UPDATE ON ladder_tables BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS ladder_tables_no_delete BEFORE DELETE ON ladder_tables BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS ladder_rungs_no_update BEFORE UPDATE ON ladder_rungs BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS ladder_rungs_no_delete BEFORE DELETE ON ladder_rungs BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS ladder_trials_no_update BEFORE UPDATE ON ladder_trials BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS ladder_trials_no_delete BEFORE DELETE ON ladder_trials BEGIN SELECT RAISE(ABORT, 'append-only'); END;
