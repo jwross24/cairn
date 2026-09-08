@@ -6,9 +6,10 @@ from cairn import bundle
 from cairn.substrate import Substrate
 
 ECHO_TEXT = "CAIRN_DISPATCH_ECHO_738194"
+TEMPLATE_NAME = "echo_brief"
 TEMPLATE = "Return exactly the content of the first handed node, with no surrounding text."
 ROLE = {
-    "template": TEMPLATE,
+    "template": TEMPLATE_NAME,
     "tools": [],
     "model": "claude-haiku-4-5-20251001",
     "max_turns": 1,
@@ -16,10 +17,13 @@ ROLE = {
 }
 
 
-def make_bundle(directory, role=None):
+def make_bundle(directory, role=None, templates=None):
     source = directory / "source"
     source.mkdir()
     (source / "worker_roles.json").write_text(json.dumps({"echo": ROLE if role is None else role}))
+    (source / "role_templates.json").write_text(
+        json.dumps({TEMPLATE_NAME: TEMPLATE} if templates is None else templates)
+    )
     path, pin = directory / "bundle.sqlite", directory / "bundle.pin"
     bundle.build(source, path)
     pin.write_text(bundle.bundle_hash(bundle.read_rows(path)) + "\n")

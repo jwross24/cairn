@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from uuid import uuid4
 
-from cairn import bundle, cli, log, worker
+from cairn import bundle, cli, log, roles, worker
 from cairn.substrate import HashMismatch, UnknownNode, node_hash_for
 
 lg = log.get("dispatch")
@@ -82,15 +82,19 @@ def _prepare(sub, gate_bundle, *, role, node_ids):
     pinned = bundle.GateBundle.open(gate_bundle.path, gate_bundle.pin_path)
     if pinned.hash != gate_bundle.hash:
         raise DispatchRefused("dispatch bundle differs from the supplied gate bundle")
-    roles = pinned.object(ROLE_CONFIG)
-    if not isinstance(role, str) or not isinstance(roles, dict) or role not in roles:
+    registry = pinned.object(ROLE_CONFIG)
+    if not isinstance(role, str) or not isinstance(registry, dict) or role not in registry:
         raise DispatchRefused("role is absent from the pinned worker_roles object")
-    config = roles[role]
+    config = registry[role]
     fields = {"template", "tools", "model", "max_turns", "timeout_s"}
     if not isinstance(config, dict) or set(config) != fields:
         raise DispatchRefused("worker role fields must be template, tools, model, max_turns, timeout_s")
     if not isinstance(config["template"], str) or not config["template"].strip():
-        raise DispatchRefused("worker role needs a nonempty template")
+        raise DispatchRefused("worker role needs a role-template name")
+    try:
+        template, _ = roles.load(pinned, config["template"])
+    except roles.RoleTemplateError as exc:
+        raise DispatchRefused(str(exc)) from None
     tools = config["tools"]
     if not isinstance(tools, list) or any(not isinstance(t, str) or t not in worker.TOOLS for t in tools):
         raise DispatchRefused("worker tool is outside the dispatch tool registry")
@@ -120,7 +124,7 @@ def _prepare(sub, gate_bundle, *, role, node_ids):
         role=role,
         node_ids=tuple(node_ids),
         prompt=json.dumps(handed, ensure_ascii=True, sort_keys=True, separators=(",", ":")),
-        template=config["template"],
+        template=template,
         tools=tuple(tools),
         model=config["model"],
         max_turns=config["max_turns"],
