@@ -34,6 +34,81 @@ PROVEN-in-docs, verbatim:
 
 **What "by construction" buys** (CONJECTURE for the advice): (1) context isolation holds — only `prompt` + the Agent-tool string (+ CLAUDE.md/skills/memory if enabled) reach the Skeptic. (2) As a *subagent*, the parent LLM composes that string, so statement-only is the parent's discipline; to make it structural, the Python orchestrator should call the Skeptic as its own top-level `query()` with the statement as `prompt`, `setting_sources=[]`, custom `system_prompt`. (3) Context isolation is not filesystem isolation: `Read`/`Bash` can open prover artifacts — whitelist `tools` (e.g., counterexample MCP only) and sandbox the cwd. (4) The scan neutralizes control-tag/turn-marker imitation only; not a content filter.
 
+## C. Top-level dispatch probe, 2026-09-07
+
+**STRONG-EMPIRICAL**, Python 3.14, `claude-agent-sdk==0.2.152`, bundled Claude Code
+`2.1.259`, model `claude-haiku-4-5-20251001`. The project environment initially held
+no agent SDK. The installed distribution supplies the CLI; no system CLI is selected.
+
+The live probe uses `query()` with a fresh temporary working directory, a custom
+`system_prompt`, `tools=[]`, `allowed_tools=[]`, `skills=[]`, `setting_sources=[]`,
+`strict_mcp_config=True`, `mcp_servers={}`, `permission_mode="dontAsk"`, and one turn.
+CLI arguments `--bare --disable-slash-commands --no-session-persistence` suppress
+auto-memory, skill discovery, and persisted conversation state. Resume, continuation,
+forking, plugins, additional directories, and parent-agent dispatch are absent.
+
+The comparison without those three CLI flags reported 16 bundled skills and an
+auto-memory path despite `skills=[]`. With the flags, initialization reports
+`tools=[]`, `skills=[]`, `slash_commands=[]`, `plugins=[]`, `mcp_servers=[]`, and no
+`memory_paths` field. The result is `success`, `num_turns=1`, with the exact echo
+`CAIRN_DISPATCH_ECHO_738194`. Usage is 124 input tokens and 15 output tokens; the SDK
+reports `$0.000199`. The session ID is `f36134b5-8a53-4063-8bd3-bd57efced9d9`.
+
+Raw output, exit 0: `/private/tmp/cairn-session-b.b1cxUK/probe_bare.log`. The probe's template
+is `Return exactly the user message, with no surrounding text.` and its prompt is
+the echo token above. Authentication uses the process's existing API-key source;
+bare mode does not load OAuth or keychain credentials.
+
+**Verified source**, installed `claude_agent_sdk/_internal/transport/subprocess_cli.py`:
+`_build_command()` serializes SDK configuration and `_apply_skills_defaults()`
+preserves an explicit empty `setting_sources` list. `connect()` inherits process
+environment variables except `CLAUDECODE`. The public `query()` stream exposes
+initialization, assistant messages, and results, not provider HTTP request bytes.
+Dispatch therefore records a prompt-bytes digest separately and leaves the provider
+request-bytes digest absent with the reason `sdk-query-does-not-expose-provider-bytes`.
+An SDK input digest is not a provider request digest.
+
+The executable close check is:
+
+```bash
+uv run python tests/integration/test_worker_dispatch.py
+```
+
+**STRONG-EMPIRICAL**, the dispatch implementation creates one fresh `ClaudeSDKClient`
+per invocation, calls its top-level `query()` once, consumes `receive_response()`, and
+closes the client in its async context manager. No client is shared or resumed. Two
+successive dispatches on 2026-09-07 returned the exact handed-node echo with distinct
+session IDs `70cbd9ef-df00-4575-9fd2-7d5a62d51970` and
+`26906e86-9f6b-4b4b-96ef-c0afdf00c628`; each reported `$0.00026`. A third dispatch
+received cancellation and persisted `error`, `CancelledError`, and an unknown cost.
+Raw output is `/private/tmp/cairn-session-b.b1cxUK/live_client.log`; the real substrate
+is `/private/var/folders/8r/mztncc5x11x42rtx33pmqbww0000gp/T/cairn-live-dispatch-fyduap1r/substrate.sqlite`.
+
+The supported tool registry is empty. A live `WebSearch` request in bare mode reported
+an empty tool list, so a nonempty role allow-list is refused. `.6.3` owns the scoped
+tool connection and its live grounding; none is claimed here. Initialization checks
+also reject unexpected skills, plugins, MCP servers, memory paths, working directory,
+or CLI version. These checks validate observed metadata, not an unseen provider request.
+
+**Verified source**, `ClaudeSDKClient.__aenter__`, `connect`, `__aexit__`, and `disconnect`
+own subprocess cleanup, including connection failures. The module-level `query()`
+wrapper yields from an inner generator without forwarding early closure; a live
+initialization refusal on that path produced an asynchronous-generator cleanup error.
+The explicit client lifecycle is the dispatch path. A standalone raw-token client
+probe returned a successful SDK result but did not echo the token; the close check
+requires both SDK success and exact echo and does not treat that probe as a pass.
+
+CI runs offline construction, real-substrate, and validation tests. The authenticated
+live command above is a mandatory manual close gate with raw output and source SHA;
+it is not a credential-dependent pytest skip. This execution split follows the
+operator's delegated CI-key decision on 2026-09-07. `.6.4` owns the repeated leakage
+canary and its execution policy on toolchain changes.
+
+**CONJECTURE**, scope limit: these switches constrain Cairn's construction and the
+reported SDK configuration. They do not establish the absence of every SDK-injected
+instruction. The `.6.4` canary owns ambient-context leakage and re-grounding on an SDK
+or CLI change. No research result or mathematical calibration follows from this probe.
+
 ## OPEN
 - Docs say `function_id` "starts from 0"; probe rows start at 1 for a top-level `start_workflow` — minor, not chased.
 - TypeScript `AgentDefinition` page truncated in fetch; fields taken from the subagents table + Python reference.

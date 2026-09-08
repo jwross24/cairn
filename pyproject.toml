@@ -5,6 +5,7 @@ description = "Cairn: a research harness with immutable epistemics and mutable s
 requires-python = ">=3.14"
 dependencies = [
     "blake3>=1.0.9",
+    "claude-agent-sdk==0.2.152",
     "cypari2>=2.2.4",
 ]
 

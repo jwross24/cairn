@@ -546,3 +546,20 @@ CREATE TRIGGER IF NOT EXISTS expert_signoffs_no_update BEFORE UPDATE ON expert_s
 CREATE TRIGGER IF NOT EXISTS expert_signoffs_no_delete BEFORE DELETE ON expert_signoffs BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER IF NOT EXISTS scrutiny_requests_no_update BEFORE UPDATE ON scrutiny_requests BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER IF NOT EXISTS scrutiny_requests_no_delete BEFORE DELETE ON scrutiny_requests BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+
+CREATE TABLE IF NOT EXISTS worker_dispatches (
+    dispatch_id TEXT PRIMARY KEY,
+    record_hash TEXT NOT NULL UNIQUE REFERENCES nodes(hash),
+    record_json TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS worker_results (
+    dispatch_id TEXT PRIMARY KEY REFERENCES worker_dispatches(dispatch_id),
+    record_hash TEXT NOT NULL UNIQUE REFERENCES nodes(hash),
+    record_json TEXT NOT NULL
+);
+
+CREATE TRIGGER IF NOT EXISTS worker_dispatches_no_update BEFORE UPDATE ON worker_dispatches BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS worker_dispatches_no_delete BEFORE DELETE ON worker_dispatches BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS worker_results_no_update BEFORE UPDATE ON worker_results BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS worker_results_no_delete BEFORE DELETE ON worker_results BEGIN SELECT RAISE(ABORT, 'append-only'); END;
