@@ -1,0 +1,8 @@
+{
+  "source_sha": "cf04d1b85851ddc54f470b35781238f1c6b89dfa",
+  "command": "scripts/check.sh --unit",
+  "PYTEST_ADDOPTS": "--basetemp=/tmp/cairn-runtimemoth.U7GUPL/unit-idle-final",
+  "exit_code": 0,
+  "wall_seconds": 247.243,
+  "started_epoch": 1788888719.866577
+}
