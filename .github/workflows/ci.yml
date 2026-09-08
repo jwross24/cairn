@@ -38,7 +38,7 @@ jobs:
       # Under the job ceiling by enough that pytest dies first and leaves a thread
       # profile, rather than the job being canceled with a blank transcript. The
       # local default is higher; nothing meters a local run.
-      CAIRN_SESSION_DEADLINE: "900"
+      CAIRN_SESSION_DEADLINE: "1080"
       # The artifact-block gate parses `br show <id> --json`, so the runner and the
       # machines that write the beads have to agree on that shape. A bump here misses
       # the cache key below, which is what fetches the binary again.
