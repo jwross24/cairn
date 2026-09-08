@@ -65,3 +65,13 @@ The `gate_bundle_hash.golden` source inventory also includes the raw objects
 `cairn.bundle.source_objects`; the hasher and axiom provenance rows above carry the
 pinned toolchain and their own expected-output vectors. Editing either source moves
 the bundle golden and requires an attributed regeneration.
+
+The inventory further includes the four vendored formal-conjectures linter sources under
+`lean/vendor/formal_conjectures/` as the raw objects `linter_exists_implication`,
+`linter_infotree_util`, `linter_stub` and `linter_term`, together with the JSON object
+`prefilter_linters` carrying the upstream repository, the pinned revision
+`e13dd7284e72012a1616806d09cb6b8025e387af`, the four file paths and the two import edits.
+`cairn.statement_prefilters` writes those bytes into its scratch lake project through
+`GateBundle.raw`, so the revision the bundle carries is the revision the pre-filter battery
+runs, whatever upstream does later. Editing a vendored source, the revision or the edit list
+moves the bundle golden and requires an attributed regeneration.

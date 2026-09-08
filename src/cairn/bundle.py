@@ -5,7 +5,7 @@ import sqlite3
 import stat
 from pathlib import Path
 
-from cairn import canon, challenge, claims, cli, container, exits, keys, lean, log, verifier
+from cairn import canon, challenge, claims, cli, container, exits, keys, lean, log, statement_prefilters, verifier
 from cairn.canon import STR, List
 from cairn.errors import CliError
 from cairn.substrate import blob_hash
@@ -22,6 +22,7 @@ RAW_KINDS = (
     container.FILE_KIND,
     lean.STATEMENT_HASHER_KIND,
     lean.AXIOM_KIND,
+    *statement_prefilters.LINTER_KINDS,
 )
 PIN_MISMATCH_REASON = "bundle-hash-ne-pin"
 SCHEMA = """
@@ -98,6 +99,8 @@ def source_objects(src_dir):
     if not container.CONTAINERFILE_PATH.is_file():
         raise BundleError(f"container spec {container.CONTAINERFILE_PATH} does not exist")
     objects[container.FILE_KIND] = container.containerfile_bytes()
+    objects.update(statement_prefilters.linter_objects())
+    objects[statement_prefilters.PROVENANCE_KIND] = statement_prefilters.provenance()
     return objects
 
 

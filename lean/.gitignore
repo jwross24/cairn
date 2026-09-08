@@ -1,2 +1,5 @@
 .lake/
 Challenge/C_*.lean
+/FormalConjecturesForMathlib/
+/FormalConjecturesUtil/
+/Prefilter/

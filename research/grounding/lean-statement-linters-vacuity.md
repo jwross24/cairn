@@ -47,3 +47,52 @@ Mechanical today at low cost: `ExistsImplicationLinter` + `StubLinter` (four ven
 - OPEN: the atp-checkers port built `AtpLinter` and 6 declarations only; its `#guard_msgs` test libraries and Python runner were not run, so message-format drift is unmeasured.
 - OPEN: `∃ x ∈ S, P x → Q` (Mathlib binder) untested; same elaboration shape as the silent `∃ n > 0` case (CONJECTURE: silent).
 - OPEN: VacuousCheck latency/recall beyond the probe is the authors' claim (`LIMITATIONS.md` §3, "~1-3 s"); not measured here.
+
+## 5. P-8a coverage matrix: statement-level failure classes against the battery and the Skeptic's checklist
+
+The battery is `src/cairn/statement_prefilters.py`; the checklist is the `skeptic_checklist`
+role template pinned in the gate bundle (`bead cairn-m1-cqt.6.2`). "Fires" means the filter
+returns `REJECT` or `FLAG` on a planted statement of the class and stays `QUIET` on a clean one,
+re-executed in `tests/integration/test_prefilters_in_gate.py`.
+
+| Failure class | Carried by | Verdict | Evidence |
+|---|---|---|---|
+| Vacuous hypotheses | `vacuity` filter | `REJECT` | `∀ (n : Nat), (n > 0) → (n < 0) → False` closes under `omega`; `test_hypotheses_that_derive_False_are_rejected` |
+| `∃ x, P x → Q`, plain form | `exists_implication` filter | `FLAG` | `ExistsImplicationLinter` warns; `test_the_plain_existential_implication_trap_is_flagged` |
+| `∃ x, P x → Q`, chained-arrow form | `exists_implication` filter | `FLAG` | `∃ n, n > 0 → n ≠ 1 → False` warns: no binder predicate, so the lambda body stays a `∀` |
+| `∃ x > 0, P x → Q`, binder-predicate form | checklist item "binder predicate" | none | linter silent; `#check` prints `∃ n, n > 0 ∧ (n ≠ 1 → False)`, so the guard elaborates into a conjunction and the pattern stops matching |
+| `∃ x, (P → Q) ∧ R`, conjunction-nested form | checklist item "conjunction-nested" | none | linter silent; pinned by `test_the_binder_predicate_and_conjunction_nested_traps_pass_the_linter` |
+| Stub declaration | `stub_or_axiom` filter | `FLAG` | `StubLinter` reports "Placeholder definitions"; battery detail records `stub` |
+| New axiom | `stub_or_axiom` filter | `FLAG` | `StubLinter` reports "New axioms"; battery detail records `new_axiom` |
+| Trivially provable | `bounded_prover` filter | `FLAG` | the proposition closes under one of `rfl`, `decide`, `omega`, `trivial`, `simp_all`; detail records `provable` |
+| Trivially disprovable | `bounded_prover` filter | `FLAG` | the negated proposition closes under the same bound; detail records `refutable` |
+| Round-trip divergence | `cairn-ii6` | not-run | absent from the verdicts, never `QUIET`, so `PrefilterResult.passed` is False and Tier-1 theorem admission stays shut until that bead lands |
+| Quantifier drift | checklist item "Quantifier order" | none | comparing a formal statement against a source claim's prose is the round-trip filter's job, and it needs an informalizer; no mechanical form exists in this battery |
+| Quantifier-order confusion | checklist item "Quantifier order" | none | same |
+| Domain drift | checklist item "Domain and boundary" | none | same; a domain restriction the source assumes and the formal statement omits is a fidelity defect, not a property of the formal statement alone |
+| Statement weakening | checklist item "Implication direction" | none | same |
+| Hidden placeholder | `stub_or_axiom` filter, partly | `FLAG` where the placeholder is the declaration's own syntax | `StubLinter` sees only that syntax, so a placeholder reached through an imported definition is uncovered and is checklist item "Read every non-standard definition" |
+| Tautology | `bounded_prover` filter, partly | `FLAG` where the bound closes it | a tautology outside the five-tactic bound is uncovered; the bound is a cost choice, and widening it is a separate measurement |
+
+Five classes are uncovered by any filter and carried by the checklist alone: quantifier drift,
+quantifier-order confusion, domain drift, statement weakening, and a placeholder reached through
+an import. Four of the five are claim-to-statement fidelity rather than properties of the formal
+statement, which is why no mechanical filter in this battery reaches them. Linter-green is not
+trap-free, and the checklist says so in those words.
+
+## 6. Resolved OPEN: the linters build against Mathlib
+
+The OPEN in §4 recording that the vendored linters were probed mathlib-free and not built against
+a Mathlib project is settled. Both linters compile inside the first-party `lean/` project on
+`leanprover/lean4:v4.34.0-rc1` with mathlib `1f290110`, and they fire on a statement that imports
+mathlib:
+
+    lake build Prefilter          1999 jobs, exit 0
+    warning: Prefilter/Probe.lean:7:23: Declaration contains the pattern the expression
+             ∃ n, n ≠ 0 → False. Did you mean ∃ n, n ≠ 0 ∧ False?
+
+The swapped import (`Mathlib.Tactic.Linter.Header` → `public meta import Lean.Linter.Basic`) is
+compatible with a Mathlib project rather than only with a mathlib-free one, so the CONJECTURE in
+§4 holds as STRONG-EMPIRICAL. The battery's own scratch project stays mathlib-free because its
+planted statements are core-only, which is what keeps a battery run at seconds rather than the
+20 s a mathlib import elaborates in.

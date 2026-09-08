@@ -1,0 +1,28 @@
+# Re-execution of the ExistsImplicationLinter and StubLinter blind spots
+# formal-conjectures @ e13dd7284e72012a1616806d09cb6b8025e387af, four files vendored
+# into a mathlib-free lake project on leanprover/lean4:v4.34.0-rc1, two import edits:
+#   Term.lean      + public import Lean.Linter.Basic
+#   StubLinter.lean  Mathlib.Tactic.Linter.Header -> public meta import Lean.Linter.Basic
+# lake build FormalConjecturesUtil.Linters.{ExistsImplicationLinter,StubLinter}: 5 jobs, exit 0
+
+## lake env lean trapprobe.lean
+trapprobe.lean:8:16: warning: Declaration contains the pattern the expression ∃ n, n ≠ 0 → False. Did you mean ∃ n, n ≠ 0 ∧ False?
+
+Note: This linter can be disabled with `set_option linter.style.existsImplication false`
+trapprobe.lean:8:17: warning: Declaration contains the pattern the expression ∃ n, n ≠ 0 → False. Did you mean ∃ n, n ≠ 0 ∧ False?
+
+Note: This linter can be disabled with `set_option linter.style.existsImplication false`
+trapprobe.lean:20:0: warning: New axioms (e.g., `axiom foo : ...`) are not allowed.
+
+Note: This linter can be disabled with `set_option linter.style.stubs false`
+trapprobe.lean:23:0: warning: Placeholder definitions (e.g., `opaque foo : Type*`) are not allowed.
+
+Note: This linter can be disabled with `set_option linter.style.stubs false`
+trapprobe.lean:26:4: warning: declaration uses `sorry`
+trapprobe.lean:26:0: warning: Placeholder definitions (e.g., `def foo : Type := sorry`) are not allowed.
+
+Note: This linter can be disabled with `set_option linter.style.stubs false`
+trapprobe.lean:29:8: warning: declaration uses `sorry`
+
+## lake env lean literal_binder.lean
+∃ n, n > 0 ∧ (n ≠ 1 → False) : Prop

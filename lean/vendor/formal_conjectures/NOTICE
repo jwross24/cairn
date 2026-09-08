@@ -1,0 +1,40 @@
+Vendored from google-deepmind/formal-conjectures.
+
+Upstream:  https://github.com/google-deepmind/formal-conjectures
+Revision:  e13dd7284e72012a1616806d09cb6b8025e387af
+License:   Apache License 2.0, full text in LICENSE beside this file.
+           Copyright 2026 The Formal Conjectures Authors. Headers are intact.
+
+Four files carry the two statement-semantic linters this repository's statement
+pre-filter battery runs:
+
+  FormalConjecturesForMathlib/Lean/Elab/InfoTree/Util.lean
+  FormalConjecturesForMathlib/Tactic/Linter/Term.lean
+  FormalConjecturesUtil/Linters/ExistsImplicationLinter.lean
+  FormalConjecturesUtil/Linters/StubLinter.lean
+
+Upstream pins mathlib v4.27.0; this repository pins leanprover/lean4:v4.34.0-rc1, so a
+lake `require` on the upstream package would drag the toolchain backward. The four files
+build against v4.34.0-rc1 with no mathlib and two import edits, reproduced literally here.
+`withSetOptionIn` moved from Lean.Elab.Command to Lean.Linter.Basic between those versions.
+
+--- upstream/FormalConjecturesForMathlib/Tactic/Linter/Term.lean
++++ vendored/FormalConjecturesForMathlib/Tactic/Linter/Term.lean
+@@ -17,4 +17,5 @@
+ module
+ 
++public import Lean.Linter.Basic
+ public import Lean.Meta.Basic
+ public import Lean.Elab.Command
+--- upstream/FormalConjecturesUtil/Linters/StubLinter.lean
++++ vendored/FormalConjecturesUtil/Linters/StubLinter.lean
+@@ -16,5 +16,5 @@
+ module
+ 
+-public import Mathlib.Tactic.Linter.Header
++public meta import Lean.Linter.Basic
+ 
+ /-! # The Stub Linter
+
+Only the statement pre-filter battery imports across into this directory; first-party Lean
+code under lean/Cairn, lean/Challenge and lean/Grounding does not.

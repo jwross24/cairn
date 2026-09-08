@@ -20,3 +20,15 @@ root = "Cairn.StatementHash"
 [[lean_exe]]
 name = "axioms"
 root = "Cairn.Axioms"
+
+[[lean_lib]]
+name = "FormalConjecturesForMathlib"
+globs = ["FormalConjecturesForMathlib.+"]
+
+[[lean_lib]]
+name = "FormalConjecturesUtil"
+globs = ["FormalConjecturesUtil.+"]
+
+[[lean_lib]]
+name = "Prefilter"
+globs = ["Prefilter.+"]
