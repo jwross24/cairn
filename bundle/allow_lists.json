@@ -1,1 +1,27 @@
-{}
+{
+  "version": 1,
+  "templates": {
+    "ladder_method": {
+      "counted_object_slot": "counted_object",
+      "backend_catalog": {
+        "counted_object": {"counted": true, "kind": "process"},
+        "gmpy2": {"counted": false, "kind": "in_process"},
+        "gp": {"counted": false, "kind": "process"}
+      },
+      "network_egress": false,
+      "process_spawn": "declared_backends_only",
+      "writable_roots": ["scratch"],
+      "readable_roots": ["any"],
+      "mechanisms": ["sandbox-exec"]
+    }
+  },
+  "provenance": {
+    "backend_catalog": "policy:PLAN §6(3) — the counted object the gate owns, plus the uncounted backends a hypothesis object may declare; a name outside the catalog is undeclarable",
+    "counted_object_slot": "policy:PLAN §6(3) — the one counted arithmetic backend, bound to the gate-owned object by bead cairn-m1-cqt.1.4",
+    "mechanisms": "probe:research/grounding/method-allowlist-macos-sandbox.md — the enforcement arms measured on this platform; the Linux container arm of bead cairn-m1-cqt.5.2 is the gold boundary",
+    "network_egress": "policy:PLAN §6(3) — no network egress from a ladder-tested method",
+    "process_spawn": "policy:PLAN §6(3) — no process spawn beyond the counted object and the declared backends",
+    "readable_roots": "policy:PLAN §6(3) — the method reads its interpreter, standard library and declared backends; the allow-list bounds writes and egress, not reads",
+    "writable_roots": "policy:PLAN §6(3) — the gate-owned scratch path is the only writable path"
+  }
+}

@@ -59,6 +59,7 @@ def _snapshot(root):
 
 
 def _allowed_argv0():
+    import cairn.allowlist
     import cairn.container
     import cairn.lean
     import cairn.pari
@@ -66,6 +67,7 @@ def _allowed_argv0():
     return {
         sys.executable,
         os.path.realpath(sys.executable),
+        cairn.allowlist.SANDBOX_EXEC,
         cairn.pari.GP_BIN,
         cairn.container.DOCKER,
         *cairn.lean.tool_paths(),
