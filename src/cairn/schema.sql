@@ -670,3 +670,20 @@ CREATE TABLE IF NOT EXISTS disagreements (
 CREATE INDEX IF NOT EXISTS disagreements_by_statement ON disagreements (statement_hash, raised_at);
 CREATE TRIGGER IF NOT EXISTS disagreements_no_update BEFORE UPDATE ON disagreements BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER IF NOT EXISTS disagreements_no_delete BEFORE DELETE ON disagreements BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+
+CREATE TABLE IF NOT EXISTS ladder_dispatches (
+    dispatch_id TEXT PRIMARY KEY,
+    record_hash TEXT NOT NULL UNIQUE REFERENCES nodes(hash),
+    run_id TEXT NOT NULL,
+    arm TEXT NOT NULL,
+    nonce TEXT NOT NULL,
+    hypothesis_hash TEXT NOT NULL,
+    implementation_revision TEXT NOT NULL,
+    allow_list_hash TEXT NOT NULL,
+    gate_bundle_hash TEXT NOT NULL,
+    plan_hash TEXT NOT NULL,
+    record_json TEXT NOT NULL,
+    UNIQUE (run_id, arm)
+);
+CREATE TRIGGER IF NOT EXISTS ladder_dispatches_no_update BEFORE UPDATE ON ladder_dispatches BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS ladder_dispatches_no_delete BEFORE DELETE ON ladder_dispatches BEGIN SELECT RAISE(ABORT, 'append-only'); END;
