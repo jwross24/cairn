@@ -71,7 +71,10 @@ ignore = [
 builtin = "clear,rare,en-GB_to_en-US"
 ignore-words-list = "aci,fro"
 ignore-regex = "`[^`]*`"
-skip = "./.git,./.venv,./.beads,./uv.lock,./tests/goldens,./tests/vectors,./beads_compliance_audit,./bundle,./research/convergence,./deploy,./var,./lean/.lake"
+# lean/vendor holds third-party source under its own license; its spelling is upstream's to fix.
+# The two FormalConjectures trees under lean/ are those same bytes, written back out of the gate
+# bundle by cairn.statement_prefilters when the battery runs against the first-party project.
+skip = "./.git,./.venv,./.beads,./uv.lock,./tests/goldens,./tests/vectors,./beads_compliance_audit,./bundle,./research/convergence,./deploy,./var,./lean/.lake,./lean/vendor,./lean/FormalConjecturesUtil,./lean/FormalConjecturesForMathlib"
 
 [tool.ty.environment]
 python-version = "3.14"
