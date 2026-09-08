@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from uuid import uuid4
 
-from cairn import bundle, cli, log, roles, worker
+from cairn import bundle, cli, log, roles, skeptic, worker
 from cairn.substrate import HashMismatch, UnknownNode, node_hash_for
 
 lg = log.get("dispatch")
@@ -30,6 +30,7 @@ class _Prepared:
     timeout_s: int
     bundle_hash: str
     role_config: bytes
+    skeptic_handle: skeptic.Handle | None = None
 
 
 @dataclass(frozen=True)
@@ -68,9 +69,13 @@ class DispatchResult:
     observed_plugins: tuple[str, ...]
     cost_usd: str | None
     at: str
+    rerun_requests: tuple[dict[str, str], ...] = ()
 
     def as_dict(self):
-        return asdict(self)
+        value = asdict(self)
+        if not self.rerun_requests:
+            value.pop("rerun_requests")
+        return value
 
     @property
     def hash(self):
@@ -120,6 +125,14 @@ def _prepare(sub, gate_bundle, *, role, node_ids):
         except UnicodeDecodeError:
             content, encoding = base64.b64encode(raw).decode("ascii"), "base64"
         handed.append({"hash": digest, "kind": node["kind"], "encoding": encoding, "content": content})
+    handle = None
+    if tools:
+        if len(handed) != 1 or handed[0]["kind"] != "claim_statement":
+            raise DispatchRefused("scoped tools require exactly one handed claim statement")
+        try:
+            handle = skeptic.snapshot(sub, pinned, node_ids[0])
+        except skeptic.ScopedReadRefused as exc:
+            raise DispatchRefused(str(exc)) from None
     return _Prepared(
         role=role,
         node_ids=tuple(node_ids),
@@ -131,6 +144,7 @@ def _prepare(sub, gate_bundle, *, role, node_ids):
         timeout_s=config["timeout_s"],
         bundle_hash=pinned.hash,
         role_config=pinned.raw(ROLE_CONFIG),
+        skeptic_handle=handle,
     )
 
 
@@ -187,7 +201,8 @@ def _read(sub, table, kind, cls, dispatch_id, tuple_fields):
         return None
     data = json.loads(row["record_json"])
     for name in tuple_fields:
-        data[name] = tuple(data[name])
+        if name in data:
+            data[name] = tuple(data[name])
     value = cls(**data)
     node = sub.get_node(row["record_hash"])
     expected = bundle.canonical_bytes(kind, value.as_dict())
@@ -220,7 +235,7 @@ def result(sub, dispatch_id):
         "worker_result",
         DispatchResult,
         dispatch_id,
-        ("observed_tools", "observed_skills", "observed_plugins"),
+        ("observed_tools", "observed_skills", "observed_plugins", "rerun_requests"),
     )
 
 

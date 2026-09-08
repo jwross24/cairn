@@ -135,6 +135,59 @@ connection; the skill receives only its scratch path and test control flags. The
 runner retains its original writer connection. `.4.3` does not make the multi-step
 `yank.record` propagation atomic; crash recovery for that sequence belongs to `cairn-yp7`.
 
+## E. Scoped MCP construction
+
+**VERIFIED-PROBE**, 2026-09-08, `claude-agent-sdk==0.2.152`, bundled CLI
+`2.1.259`: an initialization-only `ClaudeSDKClient` registers one in-process
+SDK bridge named `cairn_probe` with exactly the `echo` tool. The command carries
+`--tools ""`, `--allowedTools mcp__cairn_probe__echo`, strict MCP configuration,
+empty settings sources and the three bare-mode flags from section C.
+The control has no MCP bridge. No provider query was sent.
+
+Root command: `UV_CACHE_DIR=/private/tmp/cairn-dispatch-survey-cache uv run --no-sync python /private/tmp/cairn-session-b.b1cxUK/skeptic-mcp-probe.py`.
+Raw output: `/private/tmp/cairn-session-b.b1cxUK/skeptic-mcp-probe.root.log`.
+The diagnostic's `builtins_absent_observed` field describes the serialized empty
+`--tools` argument, not a model-facing tool-list observation. Both sessions return
+an empty `get_mcp_status()` list and no initialization tool metadata; CLI tool
+availability remains unverified by this initialization-only probe.
+
+**Documented**, Context7 `/anthropics/claude-agent-sdk-python`, README and
+`types.py`, fetched 2026-09-08: `tools=[]` disables built-ins; `allowed_tools`
+grants permission and is not an availability filter. The scoped server must
+register only the configured tools. A pinned scope may narrow the compiled
+evidence-kind maximum, never extend it. The worker handle holds a frozen
+projection without a database connection; rerun requests carry hashes and are
+executed by the writer with `skip_cache_lookup=True`.
+
+The authenticated W3 close command is
+`uv run python tests/integration/test_skeptic_isolation.py`. Its authorized limit
+is two Haiku tool-use calls with `max_budget_usd=0.01` per call where supported,
+using an existing credential. Unknown cost remains null. CI exercises the real
+SQLite and MCP components without a provider credential; the live command owns
+model-facing tool availability evidence.
+
+**STRONG-EMPIRICAL**, 2026-09-08, the named live command observes exactly
+`mcp__cairn_skeptic__list_nodes`, `mcp__cairn_skeptic__read_node`, and
+`mcp__cairn_skeptic__request_rerun`; the sole MCP server reports `connected`.
+The scoped read callback executes for the handed statement hash and the model
+returns its exact informal field, `CAIRN_SCOPED_READ_810`. The successful result
+has session `0dc41084-1d62-474a-a915-c5cb4ffa2532`, three turns, no permission
+denials, no observed skills/plugins, and reported cost `$0.008751` under the
+`$0.01` budget cap. Raw output: `/private/tmp/cairn-session-b.b1cxUK/skeptic-live-2.log`.
+The two-turn probe executes the same scoped read but returns an error status;
+its reported cost is `$0.00636`, and it is not a passing close check. Its raw
+output is `/private/tmp/cairn-session-b.b1cxUK/skeptic-live-1.log`.
+The two authorized invocations are exhausted; their reported total is `$0.015111`.
+
+This live-shaped check builds the production dispatch envelope, records its
+hashes, and uses the production SDK options and scoped MCP server with an
+additional numeric budget cap. It checks model-facing availability and actual
+read execution. Automatic rerun scheduling and ambient-context leakage are not
+measured: the writer executes returned rerun requests, and `.6.4` owns the
+context canary. The successful probe's source copy and component digests are
+`/private/tmp/cairn-session-b.b1cxUK/skeptic-live-passing-source.py` and
+`/private/tmp/cairn-session-b.b1cxUK/skeptic-live-source-hashes.txt`.
+
 ## OPEN
 - Docs say `function_id` "starts from 0"; probe rows start at 1 for a top-level `start_workflow` — minor, not chased.
 - TypeScript `AgentDefinition` page truncated in fetch; fields taken from the subagents table + Python reference.

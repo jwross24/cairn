@@ -5,9 +5,11 @@ from pathlib import Path
 import claude_agent_sdk
 from claude_agent_sdk import ClaudeAgentOptions, ClaudeSDKClient, ResultMessage, SystemMessage
 
+from cairn import skeptic_tools
+
 SDK_VERSION = "0.2.152"
 CLI_VERSION = "2.1.259"
-TOOLS: frozenset[str] = frozenset()
+TOOLS: frozenset[str] = skeptic_tools.TOOLS
 
 
 def _check_version():
@@ -16,15 +18,15 @@ def _check_version():
         raise ValueError(f"SDK {version} requires dispatch re-grounding; expected {SDK_VERSION}")
 
 
-def _options(prepared, cwd):
+def _options(prepared, cwd, mcp_servers=None):
     return ClaudeAgentOptions(
         system_prompt=prepared.template,
-        tools=list(prepared.tools),
+        tools=[],
         allowed_tools=list(prepared.tools),
         skills=[],
         setting_sources=[],
         strict_mcp_config=True,
-        mcp_servers={},
+        mcp_servers={} if mcp_servers is None else mcp_servers,
         cwd=cwd,
         cli_path=str(Path(claude_agent_sdk.__file__).parent / "_bundled" / "claude"),
         model=prepared.model,
@@ -39,8 +41,13 @@ async def _execute(prepared, cwd):
     _check_version()
     initialized = None
     finished = None
+    scoped = None
+    servers = {}
+    if prepared.tools:
+        scoped = skeptic_tools.ScopedTools(prepared.skeptic_handle, prepared.tools)
+        servers = {skeptic_tools.SERVER_NAME: scoped.server}
     async with asyncio.timeout(prepared.timeout_s):
-        async with ClaudeSDKClient(options=_options(prepared, cwd)) as client:
+        async with ClaudeSDKClient(options=_options(prepared, cwd, servers)) as client:
             await client.query(prepared.prompt)
             async for message in client.receive_response():
                 if isinstance(message, SystemMessage) and message.subtype == "init":
@@ -48,17 +55,22 @@ async def _execute(prepared, cwd):
                     _validate_init(prepared, cwd, initialized)
                 elif isinstance(message, ResultMessage):
                     finished = message
-    return _result_payload(initialized, finished)
+    result = _result_payload(initialized, finished)
+    if scoped is not None:
+        result["rerun_requests"] = tuple(scoped.requests)
+    return result
 
 
 def _validate_init(prepared, cwd, initialized):
+    servers = initialized.get("mcp_servers")
+    expected_servers = [{"name": skeptic_tools.SERVER_NAME, "status": "connected"}] if prepared.tools else []
     if (
         initialized.get("claude_code_version") != CLI_VERSION
         or not isinstance(initialized.get("tools"), list)
         or set(initialized["tools"]) != set(prepared.tools)
         or initialized.get("skills") != []
         or initialized.get("plugins") != []
-        or initialized.get("mcp_servers") != []
+        or servers != expected_servers
         or initialized.get("slash_commands") != []
         or initialized.get("memory_paths")
         or initialized.get("cwd") != str(cwd.resolve())
