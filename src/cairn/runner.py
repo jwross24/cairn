@@ -1,4 +1,6 @@
 import contextlib
+import ctypes
+import ctypes.util
 import json
 import os
 import signal
@@ -28,6 +30,12 @@ ENV_ALLOWLIST = ("PATH", "HOME", "LANG", "LC_ALL", "LC_CTYPE", "TMPDIR", "TZ")
 MAXRSS_UNIT_BYTES = ("darwin",)
 MAXRSS_UNIT_KB = ("linux", "freebsd", "openbsd", "netbsd", "sunos")
 TICK_S = 0.005
+SCOPE_TREE = "tree"
+SCOPE_REAPED_DESCENDANTS = "reaped_descendants"
+SCOPE_TRUNCATED = "truncated"
+SCOPE_UNSAMPLED = "unsampled"
+MEASUREMENT_SCOPES = (SCOPE_TREE, SCOPE_REAPED_DESCENDANTS, SCOPE_TRUNCATED, SCOPE_UNSAMPLED)
+PGRP_SAMPLE_CAP = 4096
 GRACE_S = 0.25
 WALL_CAP_MULTIPLIER = 4.0
 WALL_CAP_FLOOR_S = 120.0
@@ -151,6 +159,72 @@ def allocated_bytes(root):
     return total
 
 
+def scope_is_verified_complete(scope):
+    """A scope the harness measured as covering everything the process tree spent.
+
+    SCOPE_REAPED_DESCENDANTS carries whatever the child reaped and the harness cannot
+    establish that it reaped all of them, so it is not verified complete.
+    """
+    return scope == SCOPE_TREE
+
+
+def _load_pgrp_lister():
+    if sys.platform == "darwin":
+        path = ctypes.util.find_library("proc")
+        if path is None:
+            return None
+        lib = ctypes.CDLL(path, use_errno=True)
+        fn = lib.proc_listpgrppids
+        fn.argtypes = [ctypes.c_uint32, ctypes.c_void_p, ctypes.c_int]
+        fn.restype = ctypes.c_int
+
+        def darwin(pgid):
+            buf = (ctypes.c_uint32 * PGRP_SAMPLE_CAP)()
+            written = fn(pgid, ctypes.byref(buf), ctypes.sizeof(buf))
+            if written < 0:
+                raise OSError(ctypes.get_errno(), "proc_listpgrppids")
+            return frozenset(buf[i] for i in range(written))
+
+        return darwin
+    if sys.platform.startswith("linux"):
+
+        def linux(pgid):
+            found = set()
+            for entry in Path("/proc").iterdir():
+                if not entry.name.isdigit():
+                    continue
+                try:
+                    stat_line = (entry / "stat").read_text()
+                except OSError:
+                    continue
+                fields = stat_line[stat_line.rfind(")") + 2 :].split()
+                if len(fields) > 2 and fields[2] == str(pgid):
+                    found.add(int(entry.name))
+            return frozenset(found)
+
+        return linux
+    return None
+
+
+_PGRP_LISTER = _load_pgrp_lister()
+
+
+def measurement_scope(*, sampled_extra, survivors, killed, sampled):
+    """Classify what an os.wait4 figure covers, from observed process-group membership.
+
+    Membership sampling misses a descendant born and reaped inside one tick, so a
+    sampled-extra or survivor observation is sound and SCOPE_TREE is the claim the
+    sampling interval bounds.
+    """
+    if not sampled:
+        return SCOPE_UNSAMPLED
+    if killed or survivors:
+        return SCOPE_TRUNCATED
+    if sampled_extra:
+        return SCOPE_REAPED_DESCENDANTS
+    return SCOPE_TREE
+
+
 def _signal_group(pgid, pid, sig):
     try:
         os.killpg(pgid, sig)
@@ -171,6 +245,7 @@ class Launch:
     timed_out: bool
     skill_yanked: bool
     argv: tuple
+    measurement_scope: str
 
 
 def spawn_and_wait(
@@ -204,6 +279,9 @@ def spawn_and_wait(
             close_fds=True,
         )
         pgid = proc.pid
+        sampled = _PGRP_LISTER is not None
+        sampled_extra = False
+        survivors = frozenset()
         reaped = False
         terminated_at = None
         timed_out = False
@@ -216,6 +294,8 @@ def spawn_and_wait(
                 if pid == proc.pid:
                     reaped = True
                     break
+                if sampled and not sampled_extra:
+                    sampled_extra = bool(_PGRP_LISTER(pgid) - {proc.pid})
                 if is_yanked is not None and is_yanked():
                     skill_yanked = True
                 elapsed = time.monotonic() - start
@@ -231,6 +311,9 @@ def spawn_and_wait(
             if not reaped:
                 _signal_group(pgid, proc.pid, signal.SIGKILL)
                 _, status, usage = os.wait4(proc.pid, 0)
+        if sampled:
+            survivors = _PGRP_LISTER(pgid) - {proc.pid}
+            sampled_extra = sampled_extra or bool(survivors)
         _signal_group(pgid, proc.pid, signal.SIGKILL)
         end = time.monotonic()
         proc.returncode = os.waitstatus_to_exitcode(status)
@@ -249,6 +332,12 @@ def spawn_and_wait(
         timed_out=timed_out,
         skill_yanked=skill_yanked,
         argv=tuple(argv),
+        measurement_scope=measurement_scope(
+            sampled_extra=sampled_extra,
+            survivors=survivors,
+            killed=terminated_at is not None,
+            sampled=sampled,
+        ),
     )
     lg.info(
         "exit",
@@ -447,6 +536,7 @@ def launch(
                 "stdout_digest": blob_hash(stdout_bytes),
                 "stderr_digest": blob_hash(stderr_bytes),
                 "tool_digests_hash": tool_digests_hash(tool_digests),
+                "measurement_scope": run.measurement_scope,
             }
         )
         status = sub.close_attempt(

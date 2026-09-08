@@ -409,6 +409,7 @@ def test_receipt_round_trips_and_is_a_node(writer, db_snapshot):
         "stdout_digest": "11" * 32,
         "stderr_digest": "22" * 32,
         "tool_digests_hash": "33" * 32,
+        "measurement_scope": "tree",
     }
     digest = writer.put_receipt(receipt)
     assert writer.put_receipt(receipt) == digest

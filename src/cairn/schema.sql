@@ -67,7 +67,8 @@ CREATE TABLE IF NOT EXISTS receipts (
     exit_status INTEGER NOT NULL,
     stdout_digest TEXT NOT NULL,
     stderr_digest TEXT NOT NULL,
-    tool_digests_hash TEXT NOT NULL
+    tool_digests_hash TEXT NOT NULL,
+    measurement_scope TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS skill_certificates (

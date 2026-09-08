@@ -41,6 +41,7 @@ RECEIPT_FIELDS = (
     "stdout_digest",
     "stderr_digest",
     "tool_digests_hash",
+    "measurement_scope",
 )
 RECEIPT = Struct("receipt", [Field(name, INT if name in RECEIPT_INT_FIELDS else STR) for name in RECEIPT_FIELDS])
 KIND_TAGS = {**keys.TAGS_BY_KIND, "skill_certificate": keys.TAG_SELFTEST_CERT}
