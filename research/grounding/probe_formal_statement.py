@@ -28,7 +28,9 @@ def main():
     binary = comparator / ".lake" / "build" / "bin" / "comparator"
     source = "def bound : Nat := 3\ntheorem target (n : Nat) (h : n < bound) : n < bound := by sorry\n"
     pairs = {"fresh": source, "comment": "-- one comment\n" + source,
-             "unused": source + "def unused : Nat := 17\n", "definition": source.replace(": Nat := 3", ": Nat := 4")}
+             "unused": source + "def unused : Nat := 17\n",
+             "hypothesis": source.replace("(h : n < bound)", "(h : n ≤ bound)"),
+             "definition": source.replace(": Nat := 3", ": Nat := 4")}
     exports = []
     for label, candidate in pairs.items():
         project = root / label
@@ -45,8 +47,9 @@ def main():
         print(json.dumps({"pair": label, "diff": "".join(difflib.unified_diff(source.splitlines(True), candidate.splitlines(True))),
                           "reference_only_permitted_axioms": config["permitted_axioms"]}), flush=True)
         result = emit(label, lean.run(pins, "lake", ["env", str(binary), "config.json"], cwd=project))
-        assert (result.rc == 0) == (label != "definition"), result
-        expected = "does not match" if label == "definition" else "Your solution is okay!"
+        semantic = label in ("hypothesis", "definition")
+        assert (result.rc == 0) == (not semantic), result
+        expected = "do not match" if label == "hypothesis" else "does not match" if semantic else "Your solution is okay!"
         assert expected in result.stdout + result.stderr
         if label in ("fresh", "comment"):
             (project / "Raw.lean").write_text(candidate)

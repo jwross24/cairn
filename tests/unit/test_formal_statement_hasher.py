@@ -15,6 +15,38 @@ open Lean Cairn.StatementHash
   if expr (.mdata {} t) != expr t then throw (IO.userError "export-metadata-normalization")
   if expr (.letE `x t t t true) != expr (.letE `x t t t false) then
     throw (IO.userError "export-nondep-normalization")
+  let inst := Expr.forallE `instance t (.bvar 0) .instImplicit
+  if !(a == inst) || expr a != expr inst then throw (IO.userError "instance-binder-normalization")
+  let u := Level.param `u
+  let v := Level.param `v
+  let levels : List Level := [.zero, .succ .zero, .succ (.succ .zero),
+    .max u v, .max v u, .imax u v, .imax v u, u, v, .mvar ⟨`u⟩, .mvar ⟨`v⟩]
+  if levels.eraseDups.length != levels.length then throw (IO.userError "duplicate-level-fixture")
+  let encodedLevels := levels.map level
+  if encodedLevels.eraseDups.length != levels.length then throw (IO.userError "level-collision")
+  let expressions : List Expr := [t, .lam `x t (.bvar 0) .default,
+    .lam `x t (.bvar 1) .default, .proj `Prod 0 t, .proj `Prod 1 t, .proj `Other 0 t,
+    .fvar ⟨`x⟩, .fvar ⟨`y⟩, .mvar ⟨`x⟩, .mvar ⟨`y⟩,
+    .lit (.strVal ""), .lit (.strVal "0"), .lit (.natVal 0)]
+  if expressions.eraseDups.length != expressions.length then throw (IO.userError "duplicate-expr-fixture")
+  let encodedExprs := expressions.map expr
+  if encodedExprs.eraseDups.length != expressions.length then throw (IO.userError "expr-collision")
+theorem firstTarget : True := True.intro
+theorem secondTarget : True := True.intro
+run_elab
+  let env ← getEnv
+  let cases : List (Prod (Array Name) String) := [
+    (#[], "empty-theorem-names"),
+    (#[`firstTarget, `firstTarget], "duplicate-theorem-name"),
+    (#[`absentTarget], "missing-theorem:absentTarget"),
+    (#[`True], "target-not-theorem:True")]
+  for (targets, expected) in cases do
+    match canonical env targets with
+    | .error actual => if actual != expected then throwError "wrong refusal: {actual}"
+    | .ok _ => throwError "accepted invalid targets: {expected}"
+  let .ok forward := canonical env #[`firstTarget, `secondTarget] | throwError "valid targets refused"
+  let .ok backward := canonical env #[`secondTarget, `firstTarget] | throwError "reversed targets refused"
+  if forward != backward then throwError "target-order-changes-canonical-bytes"
 """
 
 

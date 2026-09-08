@@ -52,6 +52,8 @@ Deliberate scope and representation choices:
   proof. Referenced nontarget theorem values remain included.
 - Only theorem targets are admitted. Comparator also supports axiom and definition
   targets; Cairn's statement API does not offer those modes.
+- Empty and duplicate target lists refuse. Comparator's comparison loop does not impose
+  those list-level preconditions; Cairn requires a nonempty, unambiguous obligation set.
 - Primitive and permitted-axiom roots added by the comparator driver are absent unless
   reachable from the statement. Those are verifier obligations, not statement identity.
 - Binder names and annotations are omitted to match Expr BEq. Export metadata and let
@@ -60,6 +62,8 @@ Deliberate scope and representation choices:
   definitional reduction, or mathematical-equivalence normalization is attempted.
 - The hasher encodes unsafe ConstantInfo fields if encountered; the reference exporter
   filters unsafe declarations (`Export.lean:238`). Hash production grants no acceptance.
+  Likewise its structural Expr encoder represents free variables and metavariables;
+  it does not claim that an environment containing them is exportable or kernel-valid.
 - Sorted roots and closure records replace traversal order. Each tag and field has a
   decimal UTF-8 byte-length frame; the outer node is `cairn.formal-statement.v1`.
   Python applies `canon.digest` with domain `cairn/formal-statement/v1` to those bytes.
@@ -72,6 +76,10 @@ Lean APIs are grounded in source at commit
 `Util/Path.lean:108` (initSearchPath), `:180` (findSysroot);
 `Expr.lean:805` (alpha-equivalence BEq). The installed source and executable share
 the pinned release; `lean.assert_pinned` checks its reported full commit before builds.
+Universe-level BEq delegates from `Level.lean:255-258` to structural comparison in
+`src/kernel/level.cpp:115-146`; semantic universe equivalence is a separate operation.
+The C++ implementation is available at the
+[pinned Lean source](https://github.com/leanprover/lean4/blob/3447a668783dbce1a8fdb97101dd067687b2b418/src/kernel/level.cpp#L115).
 
 ## Stability and differential probes
 
@@ -103,6 +111,7 @@ classical trio. This reference probe is not evidence of a valid Solution proof.
 fresh: rc=0, Your solution is okay!
 comment: rc=0, Your solution is okay!
 unused: rc=0, Your solution is okay!
+hypothesis: rc=1, Challenge and solution theorem statement do not match: 'target'
 definition: rc=1, Const does not match between challenge and target 'bound'
 ```
 
@@ -168,3 +177,31 @@ rc=0, wall_ms=30908.466
 Thus the protocol admits a source-level elaborator planting, including the environment
 manipulation contemplated by F6 P-6d. This observation does not establish containment
 on Linux or the forged-environment refusal; F6 owns those checks.
+
+## Encoder and refusal test coverage
+
+The executable KAT checks distinct universe constructors and arguments, lambda bodies,
+projection names and indices, free/meta-variable identifiers, and string versus natural
+literals. It first checks that the input fixtures are distinct under Lean's own equality,
+then checks distinct encodings. Instance-implicit binders share the alpha-normalization
+check. These structural fixtures make no claim of kernel validity for free/meta variables.
+
+The same Lean run checks all four target refusals and compares the full canonical strings
+for two valid targets in both orders. The substrate integration test separately checks
+that a gate run without a formal statement hash raises `BindingAbsent`.
+
+Mutation measurements on 2026-09-08, via `scripts/mutation-check.sh`:
+
+| Mutation | Suite with the zero-level KAT and no refusal oracle | Suite with the encoder/refusal fixtures |
+|---|---|---|
+| Successor encoded as zero | SURVIVED: 17 passed in 200.46 s | KILLED: `level-collision` |
+| Empty-target guard disabled | SURVIVED: 17 passed in 234.99 s | KILLED: `accepted invalid targets: empty-theorem-names` |
+| Duplicate-target guard disabled | not measured | KILLED: `accepted invalid targets: duplicate-theorem-name` |
+| Missing target returns bytes | not measured | KILLED: `accepted invalid targets: missing-theorem:absentTarget` |
+| Nontheorem target returns bytes | not measured | KILLED: `accepted invalid targets: target-not-theorem:True` |
+| Lambda encoded as its type | not measured | KILLED: `expr-collision` |
+
+Each kill is one failed test with ten passing tests. JUnit output names the intended Lean
+assertion, rather than an unrelated compilation error. Every mutation restores
+`lean/Cairn/StatementHash.lean` byte-identically; neither its bundle object nor the gate
+golden changes. The full commands and raw outputs accompany the bead's close evidence.
