@@ -289,6 +289,17 @@ def records_for(sub, skill_identity_hash):
     return [dict(r) for r in rows]
 
 
+def covers_recipe(sub, recipe_key):
+    row = sub.conn.execute("SELECT * FROM recipes WHERE recipe_key = ?", (recipe_key,)).fetchone()
+    if row is None:
+        raise YankError(f"no recipe {recipe_key}")
+    records = records_for(sub, row[REVISION])
+    if not records:
+        return False
+    fields = recipe_fields(sub, recipe_key)
+    return any(covers(reach_from_json(record["reach_predicate"]), row, fields) for record in records)
+
+
 def offer_as_ticket(sub, attempt_id):
     """The node an attempt produced is a ticket only while the attempt is OK and owned."""
     row = sub.get_attempt(attempt_id)

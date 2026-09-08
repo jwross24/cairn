@@ -9,7 +9,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from cairn import canon, cli, escrow, exits, keys, log
+from cairn import canon, cli, escrow, exits, keys, log, yank
 from cairn.errors import CliError
 from cairn.substrate import blob_hash
 
@@ -83,7 +83,9 @@ def parse_skill_output(stdout_bytes):
     return ParsedOutput.of({k: v for k, v in document.items() if k not in HARNESS_ONLY_KEYS}, status)
 
 
-def status_for(parsed, exit_status, cpu_s, ceiling_s, *, wall_capped=False):
+def status_for(parsed, exit_status, cpu_s, ceiling_s, *, wall_capped=False, skill_yanked=False):
+    if skill_yanked:
+        return STATUS_SKILL_YANKED
     if ceiling_s is not None and cpu_s > ceiling_s:
         return STATUS_BUDGET_EXCEEDED
     if wall_capped:
@@ -167,6 +169,7 @@ class Launch:
     cpu_sys_s: float
     peak_rss_bytes: int
     timed_out: bool
+    skill_yanked: bool
     argv: tuple
 
 
@@ -180,6 +183,7 @@ def spawn_and_wait(
     stdin_bytes=b"",
     tick=TICK_S,
     grace=GRACE_S,
+    is_yanked=None,
 ):
     lg = log.get(LOG_STEP)
     lg.debug("spawn", argv=list(argv), stdin_digest=blob_hash(stdin_bytes))
@@ -202,6 +206,8 @@ def spawn_and_wait(
         pgid = proc.pid
         reaped = False
         terminated_at = None
+        timed_out = False
+        skill_yanked = False
         status = 0
         usage = None
         try:
@@ -210,9 +216,12 @@ def spawn_and_wait(
                 if pid == proc.pid:
                     reaped = True
                     break
+                if is_yanked is not None and is_yanked():
+                    skill_yanked = True
                 elapsed = time.monotonic() - start
-                if wall_cap_s is not None and terminated_at is None and elapsed >= wall_cap_s:
+                if terminated_at is None and (skill_yanked or (wall_cap_s is not None and elapsed >= wall_cap_s)):
                     terminated_at = elapsed
+                    timed_out = not skill_yanked
                     _signal_group(pgid, proc.pid, signal.SIGTERM)
                 elif terminated_at is not None and elapsed >= terminated_at + grace:
                     _signal_group(pgid, proc.pid, signal.SIGKILL)
@@ -237,7 +246,8 @@ def spawn_and_wait(
         cpu_user_s=usage.ru_utime,
         cpu_sys_s=usage.ru_stime,
         peak_rss_bytes=maxrss_bytes(usage.ru_maxrss),
-        timed_out=terminated_at is not None,
+        timed_out=timed_out,
+        skill_yanked=skill_yanked,
         argv=tuple(argv),
     )
     lg.info(
@@ -246,7 +256,8 @@ def spawn_and_wait(
         wall_ms=round(launch.wall_s * 1000, 3),
         cpu_s=round(launch.cpu_user_s + launch.cpu_sys_s, 6),
         rss=launch.peak_rss_bytes,
-        timed_out=terminated_at is not None,
+        timed_out=timed_out,
+        skill_yanked=skill_yanked,
     )
     if terminated_at is not None:
         lg.warning(
@@ -400,6 +411,7 @@ def launch(
             wall_cap_s=wall_cap_s,
             env=child_env(env_extra),
             stdin_bytes=stdin_bytes,
+            is_yanked=lambda: yank.covers_recipe(sub, recipe_key),
         )
         scratch_written = max(0, allocated_bytes(scratch_dir) - before)
         stdout_bytes, stderr_bytes = out_path.read_bytes(), err_path.read_bytes()
@@ -410,6 +422,7 @@ def launch(
             run.cpu_user_s + run.cpu_sys_s,
             ceiling_s,
             wall_capped=run.timed_out,
+            skill_yanked=run.skill_yanked,
         )
         manifest = None
         if parsed.well_formed:
@@ -436,8 +449,11 @@ def launch(
                 "tool_digests_hash": tool_digests_hash(tool_digests),
             }
         )
-        sub.close_attempt(attempt_id, status, output_manifest_hash=manifest, receipt_hash=receipt)
-        escrow.settle_on_close(sub, attempt_id, status)
+        status = sub.close_attempt(
+            attempt_id, status, output_manifest_hash=manifest, receipt_hash=receipt, honor_yank=True
+        )
+        if status != STATUS_SKILL_YANKED:
+            escrow.settle_on_close(sub, attempt_id, status)
         diverged = _diverged(sub, recipe_key) if status == STATUS_OK else ()
         lg.info(
             "launch",
@@ -464,8 +480,9 @@ def launch(
         )
     except Exception:
         if sub.get_attempt(attempt_id)["ended_at"] is None:
-            sub.close_attempt(attempt_id, STATUS_FAIL)
-            escrow.settle_on_close(sub, attempt_id, STATUS_FAIL)
+            status = sub.close_attempt(attempt_id, STATUS_FAIL, honor_yank=True)
+            if status != STATUS_SKILL_YANKED:
+                escrow.settle_on_close(sub, attempt_id, status)
             lg.warning("launch_aborted", attempt_id=attempt_id, recipe_key=recipe_key)
         raise
 

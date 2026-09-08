@@ -547,10 +547,19 @@ class Substrate:
         verifier_result_hash=None,
         certificate_hash=None,
         ended_at=None,
+        honor_yank=False,
     ):
         if status not in TERMINAL_STATUSES:
             raise ValueError(f"status must be one of {TERMINAL_STATUSES}, got {status!r}")
         with self._tx():
+            if honor_yank:
+                from cairn import yank
+
+                attempt = self.get_attempt(attempt_id)
+                if attempt is None:
+                    raise UnknownAttempt(f"no attempt {attempt_id}")
+                if yank.covers_recipe(self, attempt["recipe_key"]):
+                    status = "SKILL_YANKED"
             cur = self.conn.execute(
                 "UPDATE attempts SET status = ?, ended_at = ?, output_manifest_hash = ?, receipt_hash = ?, verifier_result_hash = ?, certificate_hash = ? WHERE attempt_id = ?",
                 (
@@ -573,6 +582,7 @@ class Substrate:
             output_manifest_hash=output_manifest_hash,
             receipt_hash=receipt_hash,
         )
+        return status
 
     def disown(self, attempt_id, at=None):
         with self._tx():

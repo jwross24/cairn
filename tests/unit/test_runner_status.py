@@ -38,15 +38,20 @@ UNDER_CEILING = {
     (-9, False, "DISAGREE"): "FAIL",
     (-9, False, None): "FAIL",
 }
-TABLE = {
+ORDINARY_TABLE = {
     **{(e, w, s, "under"): expected for (e, w, s), expected in UNDER_CEILING.items()},
     **{(e, w, s, "over"): "BUDGET_EXCEEDED" for e in EXITS for w in (True, False) for s in SKILL_STATUSES},
 }
+TABLE = {
+    (e, w, s, where, yanked): "SKILL_YANKED" if yanked else expected
+    for (e, w, s, where), expected in ORDINARY_TABLE.items()
+    for yanked in (False, True)
+}
 
 
-def _cell(exit_status, well_formed, skill_status, where):
+def _cell(exit_status, well_formed, skill_status, where, yanked):
     shape = "wellformed" if well_formed else "malformed"
-    return f"exit{exit_status}-{shape}-{skill_status}-{where}"
+    return f"exit{exit_status}-{shape}-{skill_status}-{where}-yanked{yanked}"
 
 
 def _parsed(well_formed, skill_status):
@@ -56,29 +61,38 @@ def _parsed(well_formed, skill_status):
 
 
 CASES = [
-    pytest.param(e, w, s, where, expected, id=_cell(e, w, s, where)) for (e, w, s, where), expected in TABLE.items()
+    pytest.param(e, w, s, where, yanked, expected, id=_cell(e, w, s, where, yanked))
+    for (e, w, s, where, yanked), expected in TABLE.items()
 ]
 
 
-@pytest.mark.parametrize(("exit_status", "well_formed", "skill_status", "where", "expected"), CASES)
-def test_the_status_table(exit_status, well_formed, skill_status, where, expected):
+@pytest.mark.parametrize(("exit_status", "well_formed", "skill_status", "where", "yanked", "expected"), CASES)
+def test_the_status_table(exit_status, well_formed, skill_status, where, yanked, expected):
     cpu = UNDER if where == "under" else OVER
-    assert runner.status_for(_parsed(well_formed, skill_status), exit_status, cpu, CEILING) == expected
+    assert (
+        runner.status_for(_parsed(well_formed, skill_status), exit_status, cpu, CEILING, skill_yanked=yanked)
+        == expected
+    )
 
 
 def test_the_table_covers_every_cell_exactly_once():
-    assert len(TABLE) == 48
+    assert len(TABLE) == 96
     assert set(TABLE) == {
-        (e, w, s, where) for e in EXITS for w in (True, False) for s in SKILL_STATUSES for where in ("under", "over")
+        (e, w, s, where, yanked)
+        for e in EXITS
+        for w in (True, False)
+        for s in SKILL_STATUSES
+        for where in ("under", "over")
+        for yanked in (False, True)
     }
-    assert set(TABLE.values()) == {"OK", "FAIL", "DISAGREE", "BUDGET_EXCEEDED"}
+    assert set(TABLE.values()) == {"OK", "FAIL", "DISAGREE", "BUDGET_EXCEEDED", "SKILL_YANKED"}
 
 
 def test_every_terminal_status_the_runner_can_emit_is_reachable():
     from cairn import substrate
 
-    emitted = set(UNDER_CEILING.values()) | {"BUDGET_EXCEEDED", "BLOCKED"}
-    assert emitted == {"OK", "FAIL", "DISAGREE", "BUDGET_EXCEEDED", "BLOCKED"}
+    emitted = set(TABLE.values()) | {"BLOCKED"}
+    assert emitted == {"OK", "FAIL", "DISAGREE", "BUDGET_EXCEEDED", "BLOCKED", "SKILL_YANKED"}
     assert emitted <= set(substrate.TERMINAL_STATUSES)
     assert runner.STATUS_INTERRUPTED in substrate.TERMINAL_STATUSES
 
@@ -208,12 +222,14 @@ def test_the_child_environment_defaults_to_the_live_environment(monkeypatch):
     assert os.environ["CAIRN_DB"] == "/should/not/travel"
 
 
-def test_the_runner_never_emits_skill_yanked_though_the_schema_admits_it():
+def test_a_yank_outranks_both_resource_limits():
     from cairn import substrate
 
     assert runner.STATUS_SKILL_YANKED in substrate.STATUSES
-    assert runner.STATUS_SKILL_YANKED not in set(UNDER_CEILING.values())
-    assert runner.STATUS_SKILL_YANKED != "BUDGET_EXCEEDED"
+    assert (
+        runner.status_for(_parsed(True, "OK"), 0, OVER, CEILING, wall_capped=True, skill_yanked=True) == "SKILL_YANKED"
+    )
+    assert substrate.attempt_eligible("SKILL_YANKED", None, False, False, True) == "status=SKILL_YANKED"
 
 
 @pytest.mark.parametrize(

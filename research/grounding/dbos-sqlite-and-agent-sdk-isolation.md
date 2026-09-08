@@ -109,6 +109,32 @@ reported SDK configuration. They do not establish the absence of every SDK-injec
 instruction. The `.6.4` canary owns ambient-context leakage and re-grounding on an SDK
 or CLI change. No research result or mathematical calibration follows from this probe.
 
+## D. In-flight yank settlement ownership
+
+**VERIFIED-PROBE**, 2026-09-08, Python 3.14 / SQLite 3.50.4: a real reserved
+RUNNING attempt was passed through `yank.record`, closed as `SKILL_YANKED`, and
+passed to `escrow.settle_on_close`. A temporary AFTER UPDATE trigger counted one
+escrow update. The release owner was `disowned`; the close callback returned None
+and preserved the reservation byte-for-byte. A forced second update raised
+`escrow settles once: spent or released, never both, never twice`.
+Artifact: `/private/var/folders/8r/mztncc5x11x42rtx33pmqbww0000gp/T/cairn-yank-grounding-u2147lp2/substrate.sqlite`.
+The existing ordered callbacks do not reproduce a double settlement.
+
+**DECISION**, `.4.3`: yank propagation owns release for a covering yank. A runner
+closing `SKILL_YANKED` does not invoke a competing settlement path. Ordinary closes
+retain `settle_on_close`; direct escrow writes retain the strict settle-once trigger.
+The wait loop observes covering yank records and uses its process-group termination
+path. The final close rechecks coverage inside its SQLite write transaction, so a
+yank committed during receipt construction cannot produce an OK close. A yank
+committed after that transaction disowns history without rewriting terminal status.
+The integration test pins release ownership and exactly one update on the real database.
+
+SQLite connections are thread-affine and the substrate admits one writer per process.
+The in-flight integration uses a separate harness control process with its own
+connection; the skill receives only its scratch path and test control flags. The
+runner retains its original writer connection. `.4.3` does not make the multi-step
+`yank.record` propagation atomic; crash recovery for that sequence belongs to `cairn-yp7`.
+
 ## OPEN
 - Docs say `function_id` "starts from 0"; probe rows start at 1 for a top-level `start_workflow` — minor, not chased.
 - TypeScript `AgentDefinition` page truncated in fetch; fields taken from the subagents table + Python reference.
