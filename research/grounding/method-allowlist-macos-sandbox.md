@@ -50,7 +50,7 @@ Parameters reach the profile as `-D KEY=value` and are read with `(param "KEY")`
 | `gp` (PARI 2.17.4) as the process under the profile, and as a declared backend spawned by the child | rc 0, `2^61-1` printed | STRONG-EMPIRICAL |
 | DNS resolution | `gaierror [Errno 8]`, a consequence of the socket denial | STRONG-EMPIRICAL |
 
-## 3. Two path traps, both load-bearing
+## 3. Three path traps, all load-bearing
 
 The profile matches resolved paths, and the two clock sources of §`two-clock-sources` apply
 to paths as directly as to instants.
@@ -59,11 +59,29 @@ to paths as directly as to instants.
 |---|---|---|
 | Scratch path not resolved | `mktemp -d` hands back `/var/folders/...`; the profile built on that string denies the **honest** scratch write with `PermissionError` while every confinement still holds. The resolved `/private/var/folders/...` admits it. | PROVEN-by-probe (`--unresolved-scratch`) |
 | Backend path not resolved | `.venv/bin/python3` is a symlink; `(literal)` on the link path fails before the child starts, at `sandbox-exec` exit **71** with `execvp() of '<path>' failed: Operation not permitted`. The `os.path.realpath` form execs. | STRONG-EMPIRICAL |
+| Framework-build interpreter | A macOS framework Python is two files: `<F>.framework/Versions/<v>/bin/python<v>` re-execs itself into `<F>.framework/Versions/<v>/Resources/<F>.app/Contents/MacOS/<F>`. A profile naming only the resolved stub denies that second exec, so the method never starts. | PROVEN-by-probe |
 
 An unresolved path is therefore a false green in one direction and a false red in the other, and
 neither reports itself as a path bug. `src/cairn/allowlist.py` resolves both before it renders a
 profile, and `tests/unit/test_ladder_allowlist.py` asserts the rendered profile carries resolved
 paths only.
+
+The third trap is the one a single-machine measurement hides. The uv-managed CPython is not a
+framework build and never re-execs, so a profile naming the stub alone is green on it; the
+GitHub `macos-latest` runner and Homebrew's `python@3.14` are framework builds, where the same
+profile denies the honest method. `allowlist.reexec_target` derives the second binary from the
+framework layout and `instantiate` admits it alongside the stub, which widens the profile by
+exactly one path: the real executable of the interpreter already named. `check_instantiation`
+counts roots rather than paths, so a derived target buys no room for an unrelated executable.
+The derivation reads the first two bytes and declines a `#!` script, since an arbitrary script
+sharing the framework's `bin` directory is not what the stub re-execs into.
+
+The denial wears a wording no other trap produces:
+
+    python3.14: posix_spawn: <framework>/Resources/Python.app/Contents/MacOS/Python: Undefined error: 0
+
+`errno` is 0, so a namer keyed on `Operation not permitted` alone reads a real denial as no
+violation at all. That is the fail-open direction, and `DENIED` matches this form too.
 
 ## 4. Confinement against naming
 
@@ -104,6 +122,10 @@ refuses rather than producing an unenforced instantiation. CI runs macOS only
 
 - The arm is as strong as Seatbelt on this kernel and no stronger; no probe here measures a
   Seatbelt escape, and none is claimed absent.
+- The framework re-exec derivation is a layout rule, not a report from the interpreter. It holds
+  for the Apple framework layout measured here; an interpreter that re-execs into some other path
+  is confined and its honest method does not start, which is a loud red rather than a silent
+  widening.
 - Read access is unrestricted by design: the method reads its interpreter, its standard library
   and its declared backends. A read-side channel is out of this bead's scope.
 - The counted object slot holds a stand-in. Its binding to the real gate-owned counted object is

@@ -63,10 +63,11 @@ PROFILE = """(version 1)
 (allow file-read* (subpath "/"))
 (allow file-write* (subpath (param "SCRATCH")))
 """
-DENIED = re.compile(rb"Operation not permitted")
+DENIED = re.compile(rb"Operation not permitted|posix_spawn: [^\n]*: Undefined error: 0")
 QUOTED = re.compile(rb"'([^'\n]*)'")
-EXEC_MARKERS = (b"_execute_child", b"execvp(", b"Failed to exec")
+EXEC_MARKERS = (b"_execute_child", b"execvp(", b"Failed to exec", b"posix_spawn:")
 UNCLASSIFIED = "denied_unclassified"
+FRAMEWORK_BIN = re.compile(r"\A(?P<versions>.*/(?P<name>[^/]+)\.framework/Versions/[^/]+)/bin/[^/]+\Z")
 
 
 class AllowListError(BundleError):
@@ -172,6 +173,20 @@ def _executable(label, path):
     return text
 
 
+def reexec_target(path):
+    match = FRAMEWORK_BIN.match(path)
+    if match is None:
+        return None
+    with Path(path).open("rb") as handle:
+        if handle.read(2) == b"#!":
+            return None
+    name = match.group("name")
+    target = f"{match.group('versions')}/Resources/{name}.app/Contents/MacOS/{name}"
+    if target != os.path.realpath(target) or not Path(target).is_file() or not os.access(target, os.X_OK):
+        return None
+    return target
+
+
 def mechanism_for(entry, platform=None):
     plat = sys.platform if platform is None else platform
     for name in entry["mechanisms"]:
@@ -217,7 +232,8 @@ def instantiate(gate_bundle, *, hypothesis, counted_object, scratch_dir, backend
     if set(supplied) != wanted:
         _refuse(f"backend paths {sorted(supplied)} do not match the declared process backends {sorted(wanted)}")
     counted = _executable("counted object", counted_object)
-    execs = {counted, *(_executable(f"backend {n}", supplied[n]) for n in sorted(wanted))}
+    roots = {counted, *(_executable(f"backend {n}", supplied[n]) for n in sorted(wanted))}
+    execs = roots | {t for t in (reexec_target(p) for p in roots) if t is not None}
     writable_root = _resolved("scratch", scratch_dir)
     if not Path(writable_root).is_dir():
         _refuse(f"scratch {writable_root!r} is not a directory")
@@ -264,8 +280,10 @@ def check_instantiation(value, gate_bundle, name=LADDER_METHOD):
     if value.profile_hash != blob_hash(profile_bytes(value.exec_paths)):
         _refuse("allow-list profile hash does not address its own exec paths")
     permitted = 1 + sum(1 for n in value.declared_backends if catalog[n]["kind"] == "process")
-    if len(value.exec_paths) > permitted or value.counted_object not in value.exec_paths:
-        _refuse(f"allow-list permits {len(value.exec_paths)} executables against {permitted} the template allows")
+    derived = {t for p in value.exec_paths if (t := reexec_target(p)) is not None and t in value.exec_paths}
+    roots = set(value.exec_paths) - derived
+    if len(roots) > permitted or value.counted_object not in value.exec_paths:
+        _refuse(f"allow-list permits {len(roots)} executables against {permitted} the template allows")
     for label, path in (("counted object", value.counted_object), ("scratch", value.writable_root)):
         if path != os.path.realpath(path):
             _refuse(f"{label} path {path!r} is unresolved")

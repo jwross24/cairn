@@ -10,7 +10,10 @@ import pytest
 from cairn import allowlist, bundle
 from cairn.substrate import blob_hash
 
+MACHO = b"\xcf\xfa\xed\xfe" + b"\x00" * 28
 BACKEND = os.path.realpath(sys.executable)
+BACKEND_REEXEC = allowlist.reexec_target(BACKEND)
+BACKEND_EXECS = tuple(sorted({BACKEND} | ({BACKEND_REEXEC} if BACKEND_REEXEC else set())))
 
 
 def _hypothesis(**claimed):
@@ -70,6 +73,7 @@ def test_module_defined_public_api_is_closed():
         "detect_violation",
         "within",
         "check_binding",
+        "reexec_target",
         "record",
         "read",
     }
@@ -194,7 +198,7 @@ def test_the_instantiation_matches_the_template_it_came_from(shipped, instance):
     assert instance.bundle_hash == shipped.hash
     assert instance.network_egress == entry["network_egress"]
     assert instance.mechanism in entry["mechanisms"]
-    assert instance.exec_paths == (BACKEND,)
+    assert instance.exec_paths == BACKEND_EXECS
     assert instance.counted_object == BACKEND
     assert instance.declared_backends == ()
     assert instance.profile_hash == blob_hash(allowlist.profile_bytes(instance.exec_paths))
@@ -212,7 +216,7 @@ def test_an_in_process_declaration_needs_no_path_and_a_process_one_does(shipped,
         shipped, hypothesis=_hypothesis(uncounted_backends="gmpy2"), counted_object=BACKEND, scratch_dir=scratch
     )
     assert value.declared_backends == ("gmpy2",)
-    assert value.exec_paths == (BACKEND,)
+    assert value.exec_paths == BACKEND_EXECS
     with pytest.raises(allowlist.AllowListRefused, match="do not match the declared process backends"):
         allowlist.instantiate(
             shipped, hypothesis=_hypothesis(uncounted_backends="gp"), counted_object=BACKEND, scratch_dir=scratch
@@ -238,7 +242,7 @@ def test_a_declared_process_backend_joins_the_exec_paths(shipped, scratch, tmp_p
         scratch_dir=scratch,
         backend_paths={"gp": second},
     )
-    assert value.exec_paths == tuple(sorted({BACKEND, os.path.realpath(second)}))
+    assert value.exec_paths == tuple(sorted({*BACKEND_EXECS, os.path.realpath(second)}))
     assert allowlist.check_instantiation(value, shipped) is True
 
 
@@ -377,6 +381,13 @@ def test_editing_the_template_moves_the_bundle_hash(shipped, pinned_bundle, tmp_
         (1, b"PermissionError: [Errno 1] Operation not permitted: '/etc/planted.txt'\n", "outside_write"),
         (1, b"PermissionError: [Errno 1] Operation not permitted: '/etc'\n", "outside_write"),
         (1, b"PermissionError: [Errno 1] Operation not permitted: '/usr/bin/true'\n", "outside_write"),
+        (
+            1,
+            b"python3.14: posix_spawn: /opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/"
+            b"Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: "
+            b"Undefined error: 0\n",
+            "undeclared_exec",
+        ),
     ],
 )
 def test_a_named_violation_is_read_from_the_child_report(instance, exit_status, stderr, expected):
@@ -449,3 +460,68 @@ def test_the_binding_check_refuses_a_launch_whose_declaration_differs(shipped, s
             counted_object=BACKEND,
             scratch_dir=scratch,
         )
+
+
+def _framework(tmp_path, name="Python", version="3.14", app=True):
+    versions = tmp_path / f"{name}.framework" / "Versions" / version
+    stub = versions / "bin" / f"python{version}"
+    stub.parent.mkdir(parents=True)
+    stub.write_bytes(MACHO)
+    stub.chmod(0o755)
+    if app:
+        target = versions / "Resources" / f"{name}.app" / "Contents" / "MacOS" / name
+        target.parent.mkdir(parents=True)
+        target.write_bytes(MACHO)
+        target.chmod(0o755)
+        return str(stub), str(target)
+    return str(stub), None
+
+
+def test_a_framework_stub_derives_the_binary_it_re_execs_into(tmp_path):
+    stub, target = _framework(tmp_path)
+    assert allowlist.reexec_target(stub) == target
+
+
+@pytest.mark.parametrize("path", ["/usr/bin/true", "/bin/sh"])
+def test_a_plain_executable_derives_no_re_exec_target(path):
+    assert allowlist.reexec_target(path) is None
+
+
+def test_a_framework_layout_without_the_app_binary_derives_nothing(tmp_path):
+    stub, _ = _framework(tmp_path, app=False)
+    assert allowlist.reexec_target(stub) is None
+
+
+def test_the_instantiation_admits_the_binary_its_counted_object_re_execs_into(shipped, scratch, tmp_path):
+    stub, target = _framework(tmp_path)
+    value = allowlist.instantiate(shipped, hypothesis=_hypothesis(), counted_object=stub, scratch_dir=scratch)
+    assert value.counted_object == stub
+    assert set(value.exec_paths) == {stub, target}
+    assert allowlist.check_instantiation(value, shipped) is True
+
+
+def test_a_derived_re_exec_target_does_not_buy_room_for_an_unrelated_executable(shipped, scratch, tmp_path):
+    stub, target = _framework(tmp_path)
+    value = allowlist.instantiate(shipped, hypothesis=_hypothesis(), counted_object=stub, scratch_dir=scratch)
+    smuggled = tuple(sorted({stub, target, "/bin/sh"}))
+    tampered = dataclasses.replace(
+        value, exec_paths=smuggled, profile_hash=blob_hash(allowlist.profile_bytes(smuggled))
+    )
+    with pytest.raises(allowlist.AllowListRefused, match="2 executables against 1"):
+        allowlist.check_instantiation(tampered, shipped)
+
+
+def test_the_profile_names_both_halves_of_a_framework_interpreter(shipped, scratch, tmp_path):
+    stub, target = _framework(tmp_path)
+    value = allowlist.instantiate(shipped, hypothesis=_hypothesis(), counted_object=stub, scratch_dir=scratch)
+    rendered = allowlist.profile_bytes(value.exec_paths)
+    assert f'(literal "{stub}")'.encode() in rendered
+    assert f'(literal "{target}")'.encode() in rendered
+
+
+def test_a_script_in_a_framework_bin_derives_no_re_exec_target(tmp_path):
+    stub, _ = _framework(tmp_path)
+    script = Path(stub).parent / "python3.14-config"
+    script.write_text("#!/bin/sh\nexit 0\n")
+    script.chmod(0o755)
+    assert allowlist.reexec_target(str(script)) is None

@@ -1,4 +1,5 @@
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -12,6 +13,7 @@ from cairn.substrate import blob_hash
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import _substrate_helpers as helpers
 
+INTERPRETER = re.compile(r"\Apython3\.\d+\Z")
 BACKEND = os.path.realpath(sys.executable)
 METHOD = """
 import os, socket, subprocess, sys
@@ -88,7 +90,7 @@ def test_the_honest_method_completes_and_its_allow_list_matches_the_bundle_templ
     assert value.template_hash == blob_hash(shipped.raw(allowlist.BUNDLE_KIND))
     assert (value.bundle_hash, value.network_egress) == (shipped.hash, entry["network_egress"])
     assert value.mechanism in entry["mechanisms"]
-    assert value.exec_paths == (BACKEND,)
+    assert value.exec_paths == BACKEND_EXECS
     assert allowlist.detect_violation(rc, err, value) is None
 
 
@@ -139,7 +141,7 @@ def test_the_same_spawn_declared_as_a_backend_completes(confined, tmp_path):
     declared, scratch, profile = confined(
         hypothesis=_hypothesis(uncounted_backends="gp"), backend_paths={"gp": "/bin/echo"}
     )
-    assert "/bin/echo" in declared.exec_paths
+    assert set(declared.exec_paths) == {*BACKEND_EXECS, "/bin/echo"}
     rc, out, err = _run(declared, profile, scratch, "undeclared_exec", tmp_path / "outside.txt")
     assert (rc, out) == (0, b"spawned\nMETHOD_COMPLETED"), err
     assert allowlist.detect_violation(rc, err, declared) is None
@@ -172,3 +174,56 @@ def test_the_profile_the_gate_wrote_is_the_one_the_allow_list_addresses(confined
     value, _, profile = confined()
     assert blob_hash(Path(profile).read_bytes()) == value.profile_hash
     assert Path(profile).stat().st_mode & 0o222 == 0
+
+
+def _app_binary(path):
+    versions = Path(path).parent.parent
+    framework = versions.parent.parent
+    if Path(path).parent.name != "bin" or not framework.name.endswith(".framework"):
+        return None
+    name = framework.name.removesuffix(".framework")
+    target = versions / "Resources" / f"{name}.app" / "Contents" / "MacOS" / name
+    return target if target.is_file() and os.access(target, os.X_OK) else None
+
+
+def _framework_interpreters():
+    found = []
+    discovered = (os.path.realpath(p) for p in Path("/opt/homebrew/bin").glob("python3.*") if INTERPRETER.match(p.name))
+    for candidate in [BACKEND, *discovered]:
+        if _app_binary(candidate) is not None and candidate not in found:
+            found.append(candidate)
+    return found
+
+
+FRAMEWORK_INTERPRETERS = _framework_interpreters()
+BACKEND_EXECS = tuple(sorted({BACKEND} | ({str(_app_binary(BACKEND))} if _app_binary(BACKEND) else set())))
+
+
+@pytest.mark.skipif(not FRAMEWORK_INTERPRETERS, reason="no framework-build interpreter on this host")
+@pytest.mark.parametrize("interpreter", FRAMEWORK_INTERPRETERS)
+def test_a_framework_interpreter_runs_the_honest_method_and_still_names_a_violation(shipped, tmp_path, interpreter):
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    value = allowlist.instantiate(shipped, hypothesis=_hypothesis(), counted_object=interpreter, scratch_dir=scratch)
+    assert str(_app_binary(interpreter)) in value.exec_paths
+    profile = allowlist.write_profile(value, tmp_path / f"{value.profile_hash[:16]}.sb")
+    outside = tmp_path / "outside.txt"
+
+    def run(action):
+        argv = allowlist.argv_for(
+            value, profile, [interpreter, "-c", METHOD, str(scratch), action, str(outside), interpreter]
+        )
+        done = subprocess.run(argv, capture_output=True)
+        return done.returncode, done.stdout, done.stderr
+
+    rc, out, err = run("honest")
+    assert (rc, out, err) == (0, b"METHOD_COMPLETED", b"")
+
+    rc, out, err = run("network")
+    assert out == b""
+    assert allowlist.detect_violation(rc, err, value) == "network_egress"
+
+    rc, out, err = run("outside_write")
+    assert out == b""
+    assert not outside.exists()
+    assert allowlist.detect_violation(rc, err, value) == "outside_write"
