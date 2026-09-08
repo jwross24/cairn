@@ -1,3 +1,4 @@
+import inspect
 import itertools
 
 import pytest
@@ -146,6 +147,60 @@ COUPLING = {
     "nogo_accepted": {NOGO_UNREVIEWED},
     "scrutiny_unmet": set(scrutiny.REASONS),
 }
+
+
+AXES_COVERED_BY_THE_FOCUSED_BOUNDARY_BATTERY = {"boundary_exempt"}
+
+
+def test_every_predicate_parameter_is_enumerated_or_named_as_covered_elsewhere():
+    params = {
+        name
+        for name, p in inspect.signature(tiergate.predicate_reasons).parameters.items()
+        if p.kind is inspect.Parameter.KEYWORD_ONLY
+    }
+    assert params == set(TRUTH_TABLE_AXES) | AXES_COVERED_BY_THE_FOCUSED_BOUNDARY_BATTERY
+
+
+BOUNDARY_AXES = {
+    "declared_tier": (0, 1, 2, 3),
+    "cost_tier": (0, 1, 2, 3),
+    "boundary_exempt": (False, True),
+    "profile_declared": (True, False),
+}
+
+
+def _boundary_rows():
+    names = tuple(BOUNDARY_AXES)
+    for values in itertools.product(*(BOUNDARY_AXES[n] for n in names)):
+        yield dict(zip(names, values, strict=True))
+
+
+def _boundary_reasons(row):
+    return tiergate.predicate_reasons(**{**CLEAN, "ticket_tier": 3, **row})
+
+
+def test_the_exemption_lifts_the_boundary_reason_exactly_on_a_tier_one_rung_within_the_ceiling():
+    for row in _boundary_rows():
+        refused = BOUNDARY_TABLE in _boundary_reasons(row)
+        exempt = row["boundary_exempt"] and row["declared_tier"] == 1 and row["cost_tier"] in (0, 1, 2)
+        expected = row["profile_declared"] and row["declared_tier"] < row["cost_tier"] and not exempt
+        assert refused is expected, row
+
+
+def test_the_exemption_moves_the_boundary_reason_alone():
+    for row in _boundary_rows():
+        flipped = {**row, "boundary_exempt": not row["boundary_exempt"]}
+        moved = set(_boundary_reasons(row)) ^ set(_boundary_reasons(flipped))
+        assert moved <= {BOUNDARY_TABLE}, row
+
+
+def test_an_admitted_row_is_within_its_tier_or_an_exempt_rung_below_the_ceiling():
+    for row in _boundary_rows():
+        if _boundary_reasons(row) != ():
+            continue
+        assert row["declared_tier"] >= row["cost_tier"] or (
+            row["boundary_exempt"] and row["declared_tier"] == 1 and row["cost_tier"] == 2
+        ), row
 
 
 def _rows():

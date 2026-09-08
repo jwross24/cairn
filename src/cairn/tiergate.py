@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from cairn import canon, claims, cli, keys, log, nogo, prefilter, scrutiny, ticketlattice
+from cairn import canon, claims, cli, keys, ladderplan, log, nogo, prefilter, scrutiny, ticketlattice
 from cairn.profile import ProfileUndeclared
 
 lg = log.get("tiergate")
@@ -39,6 +39,8 @@ class StatementDisagreement(ValueError):
 HYPOTHESIS_TICKET_KIND = "hypothesis_object"
 HYPOTHESIS_TICKET_TIER = 0
 TIER_TWO_TICKET_TIER = 1
+LADDER_RUNG_TIER = 1
+LADDER_EXEMPT_CEILING_TIER = 2
 TIER_THREE_TICKET_TIER = 2
 
 
@@ -96,6 +98,7 @@ def predicate_reasons(
     budget_ok,
     ticket_bundle_matches,
     profile_declared,
+    boundary_exempt=False,
     target_attack=False,
     nogo_declared=False,
     nogo_accepted=False,
@@ -115,7 +118,8 @@ def predicate_reasons(
         elif declared_tier >= 2 and not nogo_accepted:
             reasons.add(NOGO_UNREVIEWED)
     if profile_declared:
-        if declared_tier < cost_tier:
+        exempt = boundary_exempt and declared_tier == LADDER_RUNG_TIER and cost_tier <= LADDER_EXEMPT_CEILING_TIER
+        if declared_tier < cost_tier and not exempt:
             reasons.add(BOUNDARY_TABLE)
         if not budget_ok:
             reasons.add(BUDGET)
@@ -137,6 +141,20 @@ class TierGate:
     @property
     def boundary_table(self):
         return self.bundle.tiers["boundary_table"]
+
+    def _fit_rung(self, launch):
+        """Whether the pinned ladder plan holds a distribution rung for the size the launch declares (PLAN §5).
+
+        A fit rung the boundary table assigns Tier 2 would otherwise need the very KEEP it exists to
+        produce. The plan is gate-owned and the size is the launch's own, so this is a size the plan
+        admits rather than proof of a gate-owned launch: declaring a fit size against a plan holding no
+        such rung is off-plan, the hold-out rung is tiered by its declared cost, and a cost above the
+        plan's Tier-2 ceiling is a Tier-3 request whatever rung it names.
+        """
+        try:
+            return ticketlattice.rung_role(self.bundle, launch.inputs) == ladderplan.ROLE_FIT
+        except ladderplan.LadderPlanInvalid:
+            return False
 
     def _implementation_revision(self, launch):
         """The revision the launch actually runs, read off its certified skill identity.
@@ -243,16 +261,19 @@ class TierGate:
             attest_path=self.attest_path,
         )
 
+        cost_tier = None if evaluation is None else tier_for_cost(self.boundary_table, evaluation.expected_core_s)
+
         reasons = predicate_reasons(
             declared_tier=launch.declared_tier,
             ticket_tier=ticket_tier,
-            cost_tier=None if evaluation is None else tier_for_cost(self.boundary_table, evaluation.expected_core_s),
+            cost_tier=cost_tier,
             certified=self.sub.certified(launch.skill_identity_hash),
             yanked=self.sub.yanked(launch.skill_identity_hash),
             budget_ok=evaluation is None
             or evaluation.expected_core_s + evaluation.expected_verification_core_s <= launch.budget_remaining,
             ticket_bundle_matches=not stale,
             profile_declared=evaluation is not None,
+            boundary_exempt=cost_tier is not None and self._fit_rung(launch),
             target_attack=launch.target_attack,
             nogo_declared=nogo_flag is not None and nogo_flag.declared,
             nogo_accepted=nogo_flag is not None and nogo_flag.accepted,
