@@ -451,3 +451,72 @@ The complete fast gate passed. Commands and raw output are in the archive.
 
 No-Claim: no passing full suite, CI speedup, sixty-second unit tier, production race,
 or identical within-pass metadata-read semantics. Both runtime beads remain open.
+
+### Published CI observations
+
+Confidence: HIGH for the recorded outcomes, not for causal attribution.
+`ci-followup-runs.tar.gz` contains full logs and job metadata retrieved with
+`gh run view <id> --log` and
+`gh run view <id> --json status,conclusion,headSha,jobs`.
+
+| Run / source | Result | Pytest seconds | Setup / job seconds | Session / job margin |
+| --- | --- | --- | --- | --- |
+| 34262145902 / bc0d036ee0ec16cf2b555fbff9f9b15e75750f25 | success, 3435 passed, 5 skipped, 1 xfailed | 871.40 | 46 / 929 | 208.60 / 271 |
+| 34269652176 / 60724f164c3a48b5ce930c625eb37ecc880476e6 | session deadline failure | 1080 deadline, incomplete | 71 / 1164 | exhausted / 36 |
+| 34273673508 / 313d145db4761e3ed33347916035b98ba620bf0b | success, 3448 passed, 5 skipped, 1 xfailed | 985.21 | 43 / 1044 | 94.79 / 156 |
+
+Setup is the interval from job start to the Gates step. Job elapsed includes setup
+and teardown. Margins use the unchanged 1080-second session and 1200-second job
+ceilings. Skips and the expected failure are separate from passing tests.
+
+The deadline dump in `ci-34269652176.log:414` places the main thread in
+`src/cairn/pari.py:104`, through `ellcard`, `selftest._evaluate`, and
+`tests/integration/test_toy_curve_selftest.py:344`,
+`test_the_double_run_is_byte_equal`. This identifies the active call at the deadline;
+it does not establish a stall, the time spent in that call, or host contention.
+The run has no completed duration report and is not a passing baseline.
+
+The successful run on 313d145 contains the guarded traversal checkpoint c01b8ed.
+Its largest reported costs are the axiom matrix, 129.38 seconds; twenty-instance
+BSGS recovery, 90.83 seconds; and the fresh Lean build, 60.96 seconds. These three
+calls total 281.17 seconds. The chronological timeout/success pair does not isolate
+the fixture change: revisions, test populations, and execution conditions differ.
+The earlier successful run is 113.81 seconds faster than the later successful run.
+The paired local CPU measurement remains the bounded optimization evidence.
+
+No-Claim: no causal CI speedup, sixty-second unit tier, mathematical result, reduced
+test population, additional skip, deadline increase, or verified host-hiccup cause.
+
+### Investigation conclusion
+
+CopperRidge message 858 accepts the measured negative conclusion and rejects the
+three additional call-phase candidates. The complete top-25 call ranking and
+module totals are in `call-ranking.md` inside `ci-followup-runs.tar.gz`, alongside
+the candidate probes and raw output. The unrounded call total is 475.098548 seconds;
+justification properties account for 212.280482 seconds. This profile's two
+concurrent-edit failures remain explicit; it is not a passing baseline.
+
+Twenty alternating pairs of 500 corpus copies show median paired CPU savings of
+0.012667 seconds for parsing cached JSON rather than copying the parsed corpus.
+Twenty pairs of 3000 fixed assumption-digest lookups show 0.003494 seconds saved.
+Twenty pairs of 1052 log records show 0.092220 seconds saved by a persistent flushed
+handle, which also changes behavior when a path is replaced. No candidate is
+implemented. The tests' complete durations are not their removable costs.
+
+Fifty direct isolation fixture cycles take 1.907633 seconds, of which snapshots
+account for 1.888418 seconds. The remainder is 0.384310 milliseconds per cycle,
+including generator and MonkeyPatch construction/teardown. This elapsed-time
+profile excludes pytest fixture dispatch and establishes no irreducible floor.
+
+The fresh read-only close audit and both main-session reexecutions are archived.
+Seven exact filesystem cases pass by direct invocation; original and guarded
+variants pass while raw and permission-only classification mutants are rejected.
+The `is_dir` OSError arm and `is_file` ValueError alternative remain unexercised;
+the audit establishes no reachable defect requiring another test. These limits
+are carried to the Mac/Linux parity work, `cairn-hcl`.
+
+The unit target remains unmet at 269.074 seconds. No reviewed candidate reaches
+sixty seconds; impossibility for every invariant-preserving implementation is not
+established. `cairn-sm1.3` owns that target, and `cairn-x54` owns the design-only
+Hypothesis profile-budget decision. No sample, marker, deadline, golden, or
+mathematical gate change is authorized by this investigation conclusion.
