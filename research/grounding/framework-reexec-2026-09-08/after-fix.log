@@ -1,0 +1,23 @@
+# Run against src/cairn/allowlist.py at bc0d036.
+# Exit 1 means the defects the probe looks for are gone.
+
+interpreter     : /opt/homebrew/bin/python3.14
+resolved        : /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/bin/python3.14
+derived re-exec : /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python
+exec paths      : 2
+
+--- honest method ---
+rc     : 0
+stdout : b'4\nMETHOD_COMPLETED\n'
+stderr : b''
+
+--- network method ---
+rc     : 1
+stdout : b''
+stderr : b'Traceback (most recent call last):\n  File "<string>", line 1, in <module>\n    import socket; socket.socket().connect((\'1.1.1.1\', 80)); print(\'METHOD_COMPLETED\')\n                   ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\nPermissionError: [Errno 1] Operation not permitted\n'
+detect_violation -> network_egress
+
+DEFECT 1  a real denial is named None (fail-open)          : False
+DEFECT 2  the honest method never runs on this interpreter : False
+
+EXIT=1

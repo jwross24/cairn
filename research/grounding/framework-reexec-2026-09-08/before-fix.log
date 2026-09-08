@@ -1,0 +1,24 @@
+# Run against src/cairn/allowlist.py at 7fa7ec5, the module state CI run 34255029635 failed on,
+# restored from git into a scratch tree and reached through PYTHONPATH.
+# Exit 0 means both defects are present.
+
+interpreter     : /opt/homebrew/bin/python3.14
+resolved        : /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/bin/python3.14
+derived re-exec : None
+exec paths      : 1
+
+--- honest method ---
+rc     : 1
+stdout : b''
+stderr : b'python3.14: posix_spawn: /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: Undefined error: 0\n'
+
+--- network method ---
+rc     : 1
+stdout : b''
+stderr : b'python3.14: posix_spawn: /opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: Undefined error: 0\n'
+detect_violation -> None
+
+DEFECT 1  a real denial is named None (fail-open)          : True
+DEFECT 2  the honest method never runs on this interpreter : True
+
+EXIT=0
