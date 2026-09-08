@@ -442,7 +442,11 @@ CREATE TABLE IF NOT EXISTS human_queue_closures (
     record_digest TEXT,
     file_offset INTEGER,
     closed_at TEXT NOT NULL,
-    CHECK ((path IN ('attestation', 'acknowledgment')) = (record_digest IS NOT NULL AND file_offset IS NOT NULL))
+    CHECK (CASE
+        WHEN path IN ('attestation', 'acknowledgment') THEN record_digest IS NOT NULL AND file_offset IS NOT NULL
+        WHEN path = 'terminal_status' THEN record_digest IS NULL AND file_offset IS NULL
+        ELSE (record_digest IS NULL) = (file_offset IS NULL)
+    END)
 );
 
 CREATE TABLE IF NOT EXISTS acknowledgments (
@@ -475,6 +479,13 @@ WHEN (NEW.path = 'blocker_cleared' AND (SELECT blocker FROM human_queue_items WH
       AND (SELECT target_kind FROM human_queue_items WHERE item_id = NEW.item_id) = 'statement'
       AND COALESCE((SELECT status FROM claim_statements WHERE hash = (SELECT target FROM human_queue_items WHERE item_id = NEW.item_id)), 'open') = 'open')
 BEGIN SELECT RAISE(ABORT, 'closing rule'); END;
+
+CREATE TRIGGER IF NOT EXISTS human_queue_blocker_clearing_rule BEFORE INSERT ON human_queue_closures
+WHEN NEW.path = 'blocker_cleared'
+  AND (SELECT blocker FROM human_queue_items WHERE item_id = NEW.item_id) IS NOT NULL
+  AND (((SELECT blocker FROM human_queue_items WHERE item_id = NEW.item_id) IN ('null_control_pending', 'already_settled'))
+       IS NOT (NEW.record_digest IS NULL))
+BEGIN SELECT RAISE(ABORT, 'blocker clearing rule'); END;
 
 CREATE TABLE IF NOT EXISTS nogo_declarations (
     hypothesis_key TEXT NOT NULL,

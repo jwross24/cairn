@@ -50,6 +50,14 @@ def _statement(writer, seed):
     return statement
 
 
+def _ruling(writer, attest_path, statement_hash, *, seed, at=AT4):
+    unplaced = factories.review_verdict(statement_hash, verdict="approve", seed=seed, at=at)
+    offset = attest.append_record(attest_path, claims.review_verdict_canonical(unplaced))
+    placed = factories.review_verdict(statement_hash, verdict="approve", seed=seed, at=at, file_offset=offset)
+    claims.write_review_verdict(writer, placed)
+    return {"record_digest": placed.record_digest, "file_offset": placed.file_offset}
+
+
 def _set_tag(writer, statement_hash, tag, *, at=AT0):
     claims.append_tag_history(
         writer, statement_hash, None, tag, None, claims.to_json({"result": "test-fixture"}), "test", at=at
@@ -102,7 +110,10 @@ def test_the_freeze_caps_an_upgrade_and_lifts_on_lawful_closure(writer, attest_p
     if foundations.rank(tag) > foundations.rank(freeze[0]):
         tag = freeze[0]
     assert tag == freeze[0]
-    human_queue.close_by_blocker_clear(writer, rec.item_id, attest_path=attest_path, cleared_by="human:ruling", at=AT2)
+    ruling = _ruling(writer, attest_path, statement.hash, seed=101)
+    human_queue.close_by_blocker_clear(
+        writer, rec.item_id, attest_path=attest_path, cleared_by="human:ruling", at=AT2, **ruling
+    )
     assert disagreement.freeze_for(writer, statement.hash, attest_path) is None
 
 
@@ -117,7 +128,10 @@ def test_a_closure_on_a_different_statements_disagreement_does_not_release_this_
     rec2 = disagreement.record(
         writer, statement_hash=s2.hash, left_hash=LEFT2, right_hash=RIGHT2, classification=STATEMENT_ERROR, at=AT1
     )
-    human_queue.close_by_blocker_clear(writer, rec1.item_id, attest_path=attest_path, cleared_by="human:x", at=AT1)
+    ruling = _ruling(writer, attest_path, s1.hash, seed=102)
+    human_queue.close_by_blocker_clear(
+        writer, rec1.item_id, attest_path=attest_path, cleared_by="human:x", at=AT1, **ruling
+    )
     assert disagreement.freeze_for(writer, s2.hash, attest_path) == ("CONJECTURE", LEFT2, rec2.hash)
     assert disagreement.freeze_for(writer, s1.hash, attest_path) is None
 
@@ -162,8 +176,14 @@ def test_released_names_the_closure_that_lifted_the_freeze(writer, attest_path):
         writer, statement_hash=statement.hash, left_hash=LEFT, right_hash=RIGHT, classification=OUT_OF_SCOPE, at=AT1
     )
     assert disagreement.released(writer, rec.hash, attest_path) is None
+    with pytest.raises(human_queue.ClosingRuleViolation, match="carries an attestation record"):
+        human_queue.close_by_blocker_clear(
+            writer, rec.item_id, attest_path=attest_path, cleared_by="orchestrator:done", at=AT2
+        )
+    assert disagreement.released(writer, rec.hash, attest_path) is None
+    ruling = _ruling(writer, attest_path, statement.hash, seed=103)
     human_queue.close_by_blocker_clear(
-        writer, rec.item_id, attest_path=attest_path, cleared_by="orchestrator:done", at=AT2
+        writer, rec.item_id, attest_path=attest_path, cleared_by="orchestrator:done", at=AT2, **ruling
     )
     closure = disagreement.released(writer, rec.hash, attest_path)
     assert closure is not None
@@ -191,7 +211,15 @@ def test_tag_history_reflects_the_freeze_and_the_release_while_the_disagreement_
         "gate:justify",
         at=AT2,
     )
-    human_queue.close_by_blocker_clear(writer, rec.item_id, attest_path=attest_path, cleared_by="prover:fixed", at=AT3)
+    with pytest.raises(human_queue.ClosingRuleViolation, match="carries an attestation record"):
+        human_queue.close_by_blocker_clear(
+            writer, rec.item_id, attest_path=attest_path, cleared_by="prover:fixed", at=AT3
+        )
+    assert disagreement.freeze_for(writer, statement.hash, attest_path) == freeze
+    ruling = _ruling(writer, attest_path, statement.hash, seed=104)
+    human_queue.close_by_blocker_clear(
+        writer, rec.item_id, attest_path=attest_path, cleared_by="prover:fixed", at=AT3, **ruling
+    )
     assert disagreement.freeze_for(writer, statement.hash, attest_path) is None
     claims.append_tag_history(
         writer,

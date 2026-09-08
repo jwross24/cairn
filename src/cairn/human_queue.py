@@ -9,8 +9,11 @@ its bytes, the same absent-unless-digest-matches rule review verdicts live under
 acknowledgment closure is visible only through an acknowledgment row whose re-derived digest names
 that item. Record 0 of the attestation file is the gate plan's fixture waiver and closes nothing.
 The terminal-status path verifies a statement target against claim_statements; for a branch, rung
-or audit-cycle target, and for a blocker clearing, the calling gate's word is recorded as given,
-because those objects have no status table before M3.
+or audit-cycle target the calling gate's word is recorded as given, because those objects have no
+status table before M3. A blocker names one of two clearers: a gate blocker clears on a substrate
+outcome and carries no record, and every other blocker names a human ruling whose clearing carries
+an attestation record, bound the way the attestation path binds and, on a statement target, issued
+strictly after the item was raised, so a ruling cannot settle a dispute that postdates it.
 """
 
 from dataclasses import dataclass, field
@@ -57,6 +60,8 @@ CLASSES = (
 NO_BLOCKER_CLASSES = (LEAKED, CLOCK_INCONCLUSIVE, SHAPE_DEPARTURE, COST_DRIFT, AUDIT_SHORTFALL)
 BLOCKER_CLASSES = tuple(c for c in CLASSES if c not in NO_BLOCKER_CLASSES)
 BLOCKERS = (*BLOCKER_CLASSES, "already_settled")
+GATE_BLOCKERS = (NULL_CONTROL_PENDING, "already_settled")
+ATTESTED_BLOCKERS = tuple(b for b in BLOCKERS if b not in GATE_BLOCKERS)
 STATEMENT = "statement"
 BRANCH = "branch"
 RUNG = "rung"
@@ -219,7 +224,43 @@ def _attestation_binding(sub, item, record_digest, file_offset):
     return None
 
 
+def blocker_is_attested(item):
+    return item["blocker"] is not None and item["blocker"] not in GATE_BLOCKERS
+
+
+def _blocker_clearing_binding(sub, item, record_digest, file_offset):
+    unbound = _attestation_binding(sub, item, record_digest, file_offset)
+    if unbound:
+        return unbound
+    spent = sub.conn.execute(
+        f"SELECT item_id FROM {CLOSURES} WHERE path = ? AND record_digest = ? AND file_offset = ? AND item_id != ?",
+        (PATH_BLOCKER_CLEARED, record_digest, file_offset, item["item_id"]),
+    ).fetchone()
+    if spent is not None:
+        return f"the record at offset {file_offset} already cleared item {spent['item_id']}; one ruling clears one item"
+    if item["target_kind"] != STATEMENT:
+        return None
+    raised = datetime.fromisoformat(item["enqueued_at"])
+    for row in claims.review_verdicts_for(sub, item["target"]):
+        if row["record_digest"] == record_digest and row["file_offset"] == file_offset:
+            if datetime.fromisoformat(row["at"]) > raised:
+                return None
+            return (
+                f"the verdict at offset {file_offset} was issued {row['at']}, at or before item "
+                f"{item['item_id']} was raised {item['enqueued_at']}; it ruled on nothing that existed yet"
+            )
+    return f"no review verdict on statement {item['target']} is mirrored at offset {file_offset} with digest {record_digest}"
+
+
 def closure_visible(sub, item, row, attest_path):
+    if row["path"] == PATH_BLOCKER_CLEARED:
+        if not blocker_is_attested(item):
+            return True
+        if row["record_digest"] is None or row["file_offset"] is None:
+            return False
+        if _blocker_clearing_binding(sub, item, row["record_digest"], row["file_offset"]):
+            return False
+        return attest.attestation_record_matches(attest_path, row["file_offset"], row["record_digest"])
     if row["path"] not in HUMAN_PATHS:
         return True
     if row["path"] == PATH_ACKNOWLEDGMENT and not _acknowledgment_row_matches(sub, row):
@@ -273,11 +314,30 @@ def close_by_attestation(sub, item_id, *, attest_path, file_offset, record_diges
     )
 
 
-def close_by_blocker_clear(sub, item_id, *, attest_path, cleared_by, at=None):
+def close_by_blocker_clear(sub, item_id, *, attest_path, cleared_by, record_digest=None, file_offset=None, at=None):
     item = _require_open(sub, item_id, attest_path)
     if item["blocker"] is None:
         raise ClosingRuleViolation(f"item {item_id} ({item['class']}) holds no blocker to clear")
-    return _record_closure(sub, item_id, PATH_BLOCKER_CLEARED, ref=cleared_by, at=at)
+    if blocker_is_attested(item):
+        if record_digest is None or file_offset is None:
+            raise ClosingRuleViolation(
+                f"blocker {item['blocker']} on item {item_id} names a human ruling; "
+                f"clearing it carries an attestation record, not {cleared_by!r} alone"
+            )
+        unbound = _blocker_clearing_binding(sub, item, record_digest, file_offset)
+        if unbound:
+            raise ClosingRuleViolation(unbound)
+        if not attest.attestation_record_matches(attest_path, file_offset, record_digest):
+            raise ClosingRuleViolation(
+                f"{attest_path} holds no record at offset {file_offset} with digest {record_digest}"
+            )
+    elif record_digest is not None or file_offset is not None:
+        raise ClosingRuleViolation(
+            f"blocker {item['blocker']} on item {item_id} clears on a gate outcome and carries no attestation record"
+        )
+    return _record_closure(
+        sub, item_id, PATH_BLOCKER_CLEARED, ref=cleared_by, record_digest=record_digest, file_offset=file_offset, at=at
+    )
 
 
 def close_by_terminal_status(sub, item_id, *, attest_path, status, ref, at=None):

@@ -111,11 +111,23 @@ def test_a_statement_review_closes_by_the_review_verdict_the_file_holds(deploy, 
 def test_a_blocker_clearing_closes_the_item_that_held_it(deploy):
     before = _rows(deploy["db"], deploy["attest"])
     with substrate.Substrate.open(deploy["db"]) as sub:
+        canonical = attest.waiver_canonical(attest.fixture_waiver("near-dup-difference"))
+        offset = attest.append_record(deploy["attest"], canonical)
+        with pytest.raises(human_queue.ClosingRuleViolation, match="carries an attestation record"):
+            human_queue.close_by_blocker_clear(
+                sub,
+                deploy["items"]["near_dup"],
+                attest_path=deploy["attest"],
+                cleared_by="librarian:difference-stated",
+                at=AT,
+            )
         human_queue.close_by_blocker_clear(
             sub,
             deploy["items"]["near_dup"],
             attest_path=deploy["attest"],
             cleared_by="librarian:difference-stated",
+            record_digest=attest.blob_hash(canonical),
+            file_offset=offset,
             at=AT,
         )
     after = _rows(deploy["db"], deploy["attest"])

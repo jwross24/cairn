@@ -233,7 +233,17 @@ def test_a_direct_write_to_an_open_item_is_refused(writer, attest_path, statemen
         (("leaked", "rung", RUNG, None), ("acknowledgment", "x", "00" * 32, None), "CHECK"),
         (
             ("disagreement", "statement", STATEMENT_HASH, "disagreement"),
+            ("blocker_cleared", "x", None, None),
+            "blocker clearing rule",
+        ),
+        (
+            ("null_control_pending", "branch", BRANCH, "null_control_pending"),
             ("blocker_cleared", "x", "00" * 32, 0),
+            "blocker clearing rule",
+        ),
+        (
+            ("disagreement", "statement", STATEMENT_HASH, "disagreement"),
+            ("blocker_cleared", "x", "00" * 32, None),
             "CHECK",
         ),
         (("leaked", "rung", RUNG, None), ("vanished", "x", None, None), "CHECK"),
@@ -393,7 +403,16 @@ def test_depth_and_age_fall_only_through_a_lawful_close(writer, attest_path):
         writer, first, attest_path=attest_path, status="re-ran", ref="rung-60-2", at=NOW
     )
     observe("first-closed-lawfully")
-    human_queue.close_by_blocker_clear(writer, second, attest_path=attest_path, cleared_by="librarian", at=NOW)
+    offset, digest = _append_waiver(attest_path)
+    human_queue.close_by_blocker_clear(
+        writer,
+        second,
+        attest_path=attest_path,
+        cleared_by="librarian",
+        record_digest=digest,
+        file_offset=offset,
+        at=NOW,
+    )
     observe("second-closed-lawfully")
     assert trace == [
         ("enqueued", 3, 600.0),

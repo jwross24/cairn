@@ -1,6 +1,7 @@
 import json
 import sqlite3
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -789,7 +790,22 @@ def test_a_standing_disagreement_holds_an_upgrading_derivation_at_the_pre_disput
     assert not held.appended
     assert len(claims.tag_history_for(writer, statement.hash)) == before
 
-    human_queue.close_by_blocker_clear(writer, rec.item_id, attest_path=attest_path, cleared_by="owner-ruling")
+    raised = human_queue.get_item(writer, rec.item_id)["enqueued_at"]
+    ruled_at = (datetime.fromisoformat(raised) + timedelta(seconds=1)).isoformat()
+    unplaced = factories.review_verdict(statement.hash, verdict="approve", seed=77, at=ruled_at)
+    offset = attest.append_record(attest_path, claims.review_verdict_canonical(unplaced))
+    ruling = factories.review_verdict(statement.hash, verdict="approve", seed=77, at=ruled_at, file_offset=offset)
+    claims.write_review_verdict(writer, ruling)
+    with pytest.raises(human_queue.ClosingRuleViolation, match="carries an attestation record"):
+        human_queue.close_by_blocker_clear(writer, rec.item_id, attest_path=attest_path, cleared_by="owner-ruling")
+    human_queue.close_by_blocker_clear(
+        writer,
+        rec.item_id,
+        attest_path=attest_path,
+        cleared_by="owner-ruling",
+        record_digest=ruling.record_digest,
+        file_offset=ruling.file_offset,
+    )
     assert disagreement.freeze_for(writer, statement.hash, attest_path) is None
 
     released = justify.derive_tag(writer, statement.hash, attest_path)
