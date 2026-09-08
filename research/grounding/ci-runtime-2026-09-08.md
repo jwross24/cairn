@@ -309,3 +309,93 @@ pytest overhead, and filesystem cost. Any optimization must preserve distributio
 sample counts, and observables. No such additional optimization is verified within
 this lane's ownership; redefining the tier's test population requires an explicit
 operator decision and is not an implementation of the present contract.
+
+### Collection, imports, and fixture attribution
+
+Confidence: HIGH for these observations, not for a causal explanation of host delays.
+`overhead-profile.tar.gz` contains the measurement scripts, raw output, unrounded
+phase records, and host fingerprint. Twenty serial `uv run pytest tests/unit
+--collect-only -q` invocations each collected 2096 tests and exited zero. Wall time
+had median 13.735 seconds, nearest-rank p95 41.123 seconds, and maximum 51.707 seconds.
+The median user-plus-system CPU time reported by `/usr/bin/time -l` was 2.190 seconds.
+Twenty serial `uv run python -c 'import cairn'` invocations had median wall time
+0.070 seconds, p95 0.120 seconds, and maximum 0.370 seconds. The host fingerprint
+records an Apple M4, 24 GiB RAM, and 14543.50 MiB swap in use. Swap occupancy alone
+does not establish the cause of the wall/CPU gap. No host tuning was performed.
+
+The package initializer is empty. The requested `-X importtime -c 'import cairn'`
+reports 551 microseconds for `cairn`; its ten largest self times, in microseconds,
+are `site` 2807, `_virtualenv` 1679, `encodings` 1368, `encodings.aliases` 1094,
+`time` 861, `encodings.utf_8` 780, `_frozen_importlib_external` 721, `linecache` 685,
+`sitecustomize` 626, and `_collections_abc` 583. A separate collection import trace
+has largest self time `asyncio.sslproto` at 306497 microseconds. Its remaining
+top ten are `_pytest.outcomes` 82043, `operator` 17798, `site` 13924, `_operator`
+10454, `_pytest` 8200, `_colorize` 6991, `anyio._core._sockets` 6389,
+`pygments.lexers._mapping` 6137, and `_pytest._code.code` 5201. These are single
+import traces; cumulative import times overlap and must not be summed.
+
+Installed pytest entry points and `--trace-config` both identify `timeout`,
+`anyio`, and `hypothesispytest`, with no `randomly` plugin. A serial default versus
+`-p no:randomly` collection comparison takes 5.435 versus 5.685 wall seconds and
+collects the same ordered 2098 node IDs. Their newline-joined SHA-256 is
+`8a98bd40d993a56388eadb04ba98efc55fdffee200087e01d48d651cff1185b7`.
+The shared checkout's population differs from the earlier 2096-case batch.
+Disabling an absent plugin establishes no speedup.
+
+A scratch pytest plugin wraps collection, setup, call, teardown, and fixture setup
+without altering membership, samples, or deadlines. A six-test `--setup-show` probe
+passes with all eighteen phase reports present; it also emits 1562 temporary-directory
+cleanup warnings, so it is not a clean timing baseline. The full unit-only attribution
+uses a fresh base directory and completes with 2092 passed, two failed, and two
+deselected in 750.37 seconds. Both failures belong to `test_human_queue.py` during
+concurrent source edits; the raw traceback is routed to its owner. No passing baseline
+or close is claimed from this run.
+
+Official unrounded pytest reports total 152.457 seconds setup, 475.099 seconds call,
+and 97.420 seconds teardown. The measured session is 749.277 seconds, leaving 24.302
+seconds outside those reports, including collection. Inner hook wrappers separately
+measure collection at 5.027 seconds, setup at 149.367, call at 468.902, and teardown
+at 88.158; their smaller totals exclude surrounding pytest hook/report work. Session
+self CPU is 169.089 seconds. These measurements demonstrate that unlisted call
+phases cannot be classified as fixture overhead from a top-ten duration report.
+
+Fixture setup totals are inclusive, not an exclusive partition: `isolation_guard`
+72.624 seconds across 2094 invocations, `tmp_path` 29.750 across 2094, `writer`
+14.878 across 92, `json_test_log` 10.165 across 2094, and `shipped` 7.717 across 116.
+`tests/conftest.py:83` performs two guarded-path snapshots per test, one during
+setup and one during teardown. `tests/conftest.py:123` gives every test its own log
+and temporary directory. Neither autouse fixture constructs a substrate or spawns
+a process during setup. Session scope would change their isolation observables.
+The largest call is a retained justification relation at 28.887 seconds in this
+single run; this is not a three-sample slow-marker classification.
+
+No-Claim: these diagnostics do not establish an irreducible unit floor, a cause for
+host waiting, a CI speedup, or a passing sixty-second tier. They authorize further
+measurement of guarded-path traversal, not weaker isolation or fewer test samples.
+
+The guarded traversal profile executes 100 snapshots over 161 files in 8.342 wall
+seconds and 0.904 CPU seconds. It records 10000 `scandir` calls, 42300 `stat` calls,
+and 26200 `Path` constructions. A scratch candidate removes per-entry `Path`
+construction while retaining `os.path.isfile` followed by `os.stat`. Installed
+Python 3.14 source confirms that these are the existing wrappers' underlying calls.
+Twenty alternating pairs of thirty snapshots retain equal dictionaries on every
+call. Median per-snapshot wall time is 16.177 milliseconds for the existing code
+and 9.545 for the candidate; CPU time is 6.644 versus 5.216 milliseconds. Sixteen
+targeted snapshot and tier tests pass in 2.03 seconds with the candidate.
+
+The candidate fails lint rules PTH113 and PTH116, which require the `Path` wrappers.
+It is absent from the checkout; the existing implementation passes the fast gate.
+Its archived code and measurements support a rule decision, not a landed optimization.
+A read-only audit found no semantic difference, and its installed-wrapper probe was
+re-executed successfully. No lint exception, gate bypass, or whole-suite speedup is
+claimed for the candidate.
+
+The proposed `entry.is_file()`/`entry.stat()` alternative passes the existing lint
+rules but fails a constructed equivalence counterexample. Create a symlink to a
+one-byte file, call `entry.is_file()`, write six bytes to the target, and compare
+metadata reads: `entry.stat().st_size` is 1 while `Path(entry.path).stat().st_size`
+is 6. `direntry-counterexample.py` exits zero with that observation. This is a
+cached-metadata semantic difference, not evidence of a production race. CopperRidge
+message 684 accepts this bounded within-pass cache narrowing for further measurement.
+The mechanism is verified; occurrence is not observed. The accepted narrowing must
+not be described as identical metadata-read semantics.
