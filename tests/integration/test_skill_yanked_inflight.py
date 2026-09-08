@@ -2,6 +2,7 @@ import json
 import multiprocessing
 import os
 import signal
+import sqlite3
 import time
 from pathlib import Path
 
@@ -94,11 +95,12 @@ def _inflight(sub, tmp_path, *, outside=False, ignore_term=False, pause_settleme
     )
     controller.start()
     try:
-        attempt = _launch(sub, tmp_path, ignore_term=ignore_term)
-        closed.set()
-        controller.join(15)
-        assert controller.exitcode == 0
-        return attempt
+        try:
+            return _launch(sub, tmp_path, ignore_term=ignore_term)
+        finally:
+            closed.set()
+            controller.join(15)
+            assert controller.exitcode == 0
     finally:
         closed.set()
         if controller.is_alive():
@@ -122,7 +124,7 @@ def test_a_covering_yank_terminates_the_child_and_releases_escrow_once(writer, t
     assert attempt.status == row["status"] == "SKILL_YANKED"
     assert attempt.launch.skill_yanked and not attempt.launch.timed_out
     assert row["receipt_hash"] == receipt["receipt_hash"]
-    assert receipt["wall_s"] > 0 and receipt["peak_rss_bytes"] > 0
+    assert 0 < receipt["wall_s"] < 5 and receipt["peak_rss_bytes"] > 0
     assert row["disowned_at"] is not None
     assert reservation["released_by"] == "disowned" and reservation["spent_at"] is None
     assert writer.conn.execute("SELECT COUNT(*) FROM settlement_updates").fetchone()[0] == 1
@@ -134,6 +136,7 @@ def test_a_covering_yank_terminates_the_child_and_releases_escrow_once(writer, t
         yank.offer_as_ticket(writer, attempt.attempt_id)
     if ignore_term:
         assert attempt.launch.exit_status == -signal.SIGKILL
+        assert attempt.output_manifest_hash is None
     else:
         assert attempt.launch.exit_status == 0 and attempt.parsed.status == "OK"
         assert (tmp_path / "runs" / attempt.attempt_id / "scratch" / "sigterm_seen").read_text() == "term"
@@ -145,6 +148,20 @@ def test_yank_propagation_owns_settlement_even_when_the_runner_closes_first(writ
     updates = writer.conn.execute("SELECT attempt_id, settler FROM settlement_updates").fetchall()
     assert [tuple(row) for row in updates] == [(attempt.attempt_id, "yank-controller")]
     assert escrow.reservation(writer, attempt.attempt_id)["released_by"] == "disowned"
+
+
+def test_a_receipt_write_failure_honors_the_yank_and_its_settlement_owner(writer, tmp_path):
+    writer.conn.executescript(
+        "CREATE TRIGGER reject_receipt BEFORE INSERT ON receipts BEGIN SELECT RAISE(ABORT, 'receipt rejected'); END;"
+    )
+    with pytest.raises(sqlite3.IntegrityError, match="receipt rejected"):
+        _inflight(writer, tmp_path, pause_settlement=True)
+    row = dict(writer.conn.execute("SELECT * FROM attempts").fetchone())
+    assert row["status"] == "SKILL_YANKED" and row["ended_at"] is not None
+    assert row["receipt_hash"] is None
+    updates = writer.conn.execute("SELECT attempt_id, settler FROM settlement_updates").fetchall()
+    assert [tuple(update) for update in updates] == [(row["attempt_id"], "yank-controller")]
+    assert escrow.reservation(writer, row["attempt_id"])["released_by"] == "disowned"
 
 
 def test_a_skill_yanked_status_alone_is_neither_cacheable_nor_a_ticket(writer):
