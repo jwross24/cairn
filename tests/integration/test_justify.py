@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import attest, claims, exits, justify, keys
+from cairn import attest, claims, disagreement, exits, human_queue, justify, keys
 from cairn.justify import CONJECTURE, PROVEN, SPECULATION, STRONG_EMPIRICAL
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -766,3 +766,33 @@ def test_a_second_writer_exits_conflict(cli_db, attest_path, capsys):
         )
     assert code == exits.CONFLICT and out == ""
     assert "another writer already holds" in err
+
+
+def test_a_standing_disagreement_holds_an_upgrading_derivation_at_the_pre_dispute_tag(writer, attest_path):
+    statement = _statement(writer, seed=41)
+    claims.append_tag_history(
+        writer, statement.hash, None, CONJECTURE, None, claims.to_json({"result": "test-fixture"}), "test"
+    )
+    rec = disagreement.record(
+        writer,
+        statement_hash=statement.hash,
+        left_hash="aa" * 32,
+        right_hash="bb" * 32,
+        classification=disagreement.STATEMENT_ERROR,
+    )
+    assert rec.frozen_tag == CONJECTURE
+    _ladder(writer, statement, _wide_population(statement), seed=41)
+    before = len(claims.tag_history_for(writer, statement.hash))
+
+    held = justify.derive_tag(writer, statement.hash, attest_path)
+    assert held.tag == CONJECTURE
+    assert not held.appended
+    assert len(claims.tag_history_for(writer, statement.hash)) == before
+
+    human_queue.close_by_blocker_clear(writer, rec.item_id, attest_path=attest_path, cleared_by="owner-ruling")
+    assert disagreement.freeze_for(writer, statement.hash, attest_path) is None
+
+    released = justify.derive_tag(writer, statement.hash, attest_path)
+    assert released.tag == STRONG_EMPIRICAL
+    moves = [(r["from_tag"], r["to_tag"]) for r in claims.tag_history_for(writer, statement.hash)]
+    assert moves[-1] == (CONJECTURE, STRONG_EMPIRICAL)

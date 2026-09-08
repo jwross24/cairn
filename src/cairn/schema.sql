@@ -631,3 +631,18 @@ CREATE TRIGGER IF NOT EXISTS ladder_rungs_no_update BEFORE UPDATE ON ladder_rung
 CREATE TRIGGER IF NOT EXISTS ladder_rungs_no_delete BEFORE DELETE ON ladder_rungs BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER IF NOT EXISTS ladder_trials_no_update BEFORE UPDATE ON ladder_trials BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER IF NOT EXISTS ladder_trials_no_delete BEFORE DELETE ON ladder_trials BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+
+CREATE TABLE IF NOT EXISTS disagreements (
+    disagreement_id TEXT PRIMARY KEY,
+    statement_hash TEXT NOT NULL,
+    left_hash TEXT NOT NULL,
+    right_hash TEXT NOT NULL,
+    classification TEXT NOT NULL,
+    owner TEXT NOT NULL,
+    frozen_tag TEXT NOT NULL,
+    item_id TEXT NOT NULL,
+    raised_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS disagreements_by_statement ON disagreements (statement_hash, raised_at);
+CREATE TRIGGER IF NOT EXISTS disagreements_no_update BEFORE UPDATE ON disagreements BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS disagreements_no_delete BEFORE DELETE ON disagreements BEGIN SELECT RAISE(ABORT, 'append-only'); END;

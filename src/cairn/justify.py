@@ -3,7 +3,7 @@ import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 
-from cairn import claims, cli, exits, foundations, log, repro, substrate
+from cairn import claims, cli, disagreement, exits, foundations, log, repro, substrate
 from cairn.errors import CliError
 
 lg = log.get("justify")
@@ -456,6 +456,10 @@ def derive_tag(sub, statement_hash, attest_path, *, actor=ACTOR):
     if premise_cap is not None and rank(tag) > rank(premise_cap[0]):
         tag, justified_by = premise_cap[0], premise_cap[1]
         record = claims.to_json({"result": "PremiseCeiling", "cls": tag, "premise": premise_cap[2]})
+    freeze = disagreement.freeze_for(sub, statement_hash, attest_path)
+    if freeze is not None and rank(tag) > rank(freeze[0]):
+        tag, justified_by = freeze[0], freeze[1]
+        record = claims.to_json({"result": "DisagreementFreeze", "cls": tag, "disagreement": freeze[2]})
     appended = tag != from_tag
     if appended:
         claims.append_tag_history(sub, statement_hash, from_tag, tag, justified_by, record, actor)
