@@ -1,0 +1,12 @@
+{
+  "source_sha": "a1a162515cd3ebde1c5a6df49f4498c92d6f4cfa",
+  "owned_file_sha256": {
+    "tests/_unit_tier.py": "7deb79dc4c2b1b25ce94d43ec93a08e0031ad72ce8855c5dc7d4e0829011db21",
+    "tests/unit/test_check_unit_tier.py": "dab1f4d9d29e39bb8c3bfaf9624b189d6586d269c1384dcb293c5393cf487c88"
+  },
+  "command": "scripts/check.sh --unit",
+  "PYTEST_ADDOPTS": "--basetemp=/tmp/cairn-runtimemoth.U7GUPL/unit-two-markers",
+  "exit_code": 0,
+  "wall_seconds": 269.074,
+  "started_epoch": 1788889908.3443499
+}

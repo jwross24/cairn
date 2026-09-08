@@ -41,8 +41,15 @@ def test_marker_selection_keeps_the_measured_slow_test_in_the_full_run(pytester)
     complete.assert_outcomes(passed=2)
 
 
-def test_recorded_unit_durations_have_no_unmarked_slow_tests():
-    reports = [EVIDENCE / name for name in ("unit-before.log.gz", "slow-repeat-2.log", "slow-repeat-3.log")]
+@pytest.mark.parametrize(
+    "names",
+    [
+        ("unit-before.log.gz", "slow-repeat-2.log", "slow-repeat-3.log"),
+        ("threshold-repeat-1.log", "threshold-repeat-2.log", "threshold-repeat-3.log"),
+    ],
+)
+def test_recorded_unit_durations_have_no_unmarked_slow_tests(names):
+    reports = [EVIDENCE / name for name in names]
     assert unmarked_slow_tests(reports, SLOW_UNIT_TESTS) == {}
     assert unmarked_slow_tests(reports, frozenset())
 

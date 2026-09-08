@@ -7,7 +7,12 @@ from statistics import median
 import pytest
 
 SLOW_SECONDS = 5.0
-SLOW_UNIT_TESTS = frozenset({"tests/unit/test_formal_statement_hasher.py::test_lean_canonicalization_known_answer"})
+SLOW_UNIT_TESTS = frozenset(
+    {
+        "tests/unit/test_formal_statement_hasher.py::test_lean_canonicalization_known_answer",
+        "tests/unit/test_justify_properties.py::test_mr_w_then_mr_a_still_names_the_assumption",
+    }
+)
 
 
 @pytest.hookimpl(tryfirst=True)

@@ -1,0 +1,12 @@
+...                                                                      [100%]
+============================== slowest durations ===============================
+24.25s call     tests/unit/test_justify_properties.py::test_mr_w_then_mr_a_still_names_the_assumption
+9.21s call     tests/unit/test_runner_fuzz.py::test_the_parser_never_raises_and_the_receipt_is_never_trusted
+1.69s call     tests/unit/test_verifier_fuzz.py::test_run_on_junk_instances_never_spawns_on_a_refusal_and_never_raises
+0.03s setup    tests/unit/test_verifier_fuzz.py::test_run_on_junk_instances_never_spawns_on_a_refusal_and_never_raises
+0.02s setup    tests/unit/test_justify_properties.py::test_mr_w_then_mr_a_still_names_the_assumption
+0.02s teardown tests/unit/test_justify_properties.py::test_mr_w_then_mr_a_still_names_the_assumption
+0.01s teardown tests/unit/test_verifier_fuzz.py::test_run_on_junk_instances_never_spawns_on_a_refusal_and_never_raises
+0.01s setup    tests/unit/test_runner_fuzz.py::test_the_parser_never_raises_and_the_receipt_is_never_trusted
+0.01s teardown tests/unit/test_runner_fuzz.py::test_the_parser_never_raises_and_the_receipt_is_never_trusted
+3 passed in 35.60s

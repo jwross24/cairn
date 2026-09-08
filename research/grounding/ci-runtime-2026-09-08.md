@@ -186,8 +186,8 @@ as passing, and do not establish a unit tier below sixty seconds.
 
 `scripts/check.sh --unit` runs the five fast gates and
 `uv run pytest tests/unit -q -m "not slow" --durations=10`. The registered `slow` marker
-applies to the measured Lean canonicalization test through `tests/_unit_tier.py`.
-The unrestricted suite retains that test. The pre-commit hook uses `--fast`; CI uses the
+applies to the measured Lean canonicalization and justification assumption-relation tests
+through `tests/_unit_tier.py`. The unrestricted suite retains both tests. The pre-commit hook uses `--fast`; CI uses the
 unrestricted gate. Neither the Hypothesis sample count nor a deadline depends on this tier.
 
 The duration-budget test sums setup, call, and teardown, then uses the median of available
@@ -237,3 +237,75 @@ its top-ten report exceed five seconds: verifier fuzz at 11.34, runner fuzz at 8
 and the justification assumption relation at 5.41. Those single observations require
 repeat measurements before establishing a median-based marker change. They do not
 authorize reducing sample counts or excluding their whole modules.
+
+Three complete targeted reports, `threshold-repeat-1.log` through `threshold-repeat-3.log`,
+measure setup plus call plus teardown on the current checkout. Justification totals are
+24.29, 6.47, and 3.72 seconds; median 6.47 exceeds the strict five-second threshold.
+Verifier totals are 1.73, 3.29, and 1.18; runner totals are 9.23, 3.77, and 2.47.
+Their medians, 1.73 and 3.77, do not justify slow markers. Each report contains three
+passing tests and no skips. Timing variation is substantial; these observations do not
+support an attributed whole-suite speedup.
+
+The recorded-budget test evaluates these three reports as a separate current-sample group
+from the historical baseline. Without the justification marker it reports an unmarked
+6.47-second median; with the marker it reports no unmarked slow test. The unrestricted
+suite retains the same property test and sample count. The 247.243-second unit measurement
+above includes this case; no sub-sixty-second result is established by its marker.
+
+With both measured markers, the complete gate reports 2085 passed and two deselected in
+263.08 seconds, total command wall time 269.074 seconds. The prior one-marker gate took
+247.243 seconds; this is not an observed speedup. The shared-machine timings vary too much
+to attribute their difference to a single marker. `unit-two-markers.json` records the
+base commit and SHA-256 of the two candidate Python files; `unit-two-markers.log.gz`
+contains the full output. No other pytest process was observed before the run.
+
+```bash
+PYTEST_ADDOPTS='--basetemp=/tmp/cairn-runtimemoth.U7GUPL/unit-two-markers' scripts/check.sh --unit
+```
+
+The final report also contains isolated calls above five seconds in CLI, gate-plan,
+justification, and artifact-check tests. Single observations do not establish their
+median or authorize further exclusions. The unit target and runtime variability remain
+open on `cairn-sm1.3`.
+
+The marker followup's targeted harness tests report 20 passed in 0.50 seconds
+(`marker-followup-tests.log`). Whole-tree collection reports 3431 tests in 2.63 seconds;
+unit collection reports 2085 of 2087 tests, with exactly two deselected, in 2.33 seconds.
+Both slow node ids appear in unrestricted collection and are absent from the unit selection;
+the complete collection outputs are archived as `marker-full-collection.log.gz` and
+`marker-unit-collection.log.gz`. A fresh read-only audit's arithmetic and marker-removal
+probe was re-executed by the main session; removing the justification marker exposes its
+6.47-second median.
+
+### Unit floor and the sixty-second target
+
+An irreducible runtime floor is not measured. The current complete gate takes 269.074
+seconds; its fast-gate portion is 5.994 seconds and pytest takes 263.08 seconds. The
+ten reported call phases sum to 51.52 seconds. The other 211.56 pytest seconds are
+unlisted test phases and pytest overhead, which the top-ten report cannot separate.
+
+Confidence: HIGH for the following arithmetic, conditional on holding all other timings
+fixed. Five reported call phases exceed five seconds and sum to 28.66 seconds. Making
+all five call bodies free would still leave 240.414 seconds of this observed gate.
+That is a subtraction model, not permission to exclude them and not a universal floor.
+Marker classification alone does not explain how to remove the 209.074 seconds required
+to reach sixty seconds in these conditions.
+
+CONJECTURE: a more favorable older-workload model gives approximately 83 seconds. The
+87.52-second historical unit run includes 9.22 seconds for the Lean case and 1.31 seconds
+for the justification case, counting all reported phases. Removing those two costs
+leaves 76.99 seconds; adding the current 5.994-second fast-gate cost gives 82.984 seconds.
+That model has only 1959 selected cases, compared with 2085 in the current gate. It is
+not a measured current floor or a performance promise, and it still exceeds the target
+by 22.984 seconds before accounting for the larger selected population.
+
+Reaching sixty seconds therefore needs reduced cost in retained work, not additional
+single-observation exclusions. In the older complete duration report, modules named
+`*_fuzz.py` or `*_properties.py` account for 41.56 of 78.70 recorded phase seconds.
+Those modules are a measured profiling target; their generators or assertions are not
+yet established as the cause. A CPU/wall profile of retained property tests and shared
+fixtures is the next measurement needed to distinguish algorithmic work from scheduling,
+pytest overhead, and filesystem cost. Any optimization must preserve distributions,
+sample counts, and observables. No such additional optimization is verified within
+this lane's ownership; redefining the tier's test population requires an explicit
+operator decision and is not an implementation of the present contract.
