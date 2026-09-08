@@ -22,6 +22,10 @@ def _scope(family="toy_curve", size=(30, 50), assumptions=(A1,), param_ranges=No
     }
 
 
+def _statement(scope):
+    return {"hash": "s" * 64, "scope": scope}
+
+
 def test_the_class_order_is_total_and_ascending():
     assert justify.CLASSES == (
         "SPECULATION",
@@ -131,6 +135,95 @@ def test_assumption_subset(inner, outer, expected):
 )
 def test_coverage_comparator(population, expected):
     assert justify.coverage_violation(population, _scope()) == expected
+
+
+@pytest.mark.parametrize(
+    ("population", "scope", "expected"),
+    [
+        (_scope(size=(40, 45)), _scope(), None),
+        (_scope(size=(20, 60)), _scope(), "size_interval"),
+        (_scope(size=(40, 45), param_ranges={"bits": [20, 45]}), _scope(), "param_ranges"),
+        (_scope(size=(40, 45), param_ranges={}), _scope(), "param_ranges"),
+        (_scope(family="other_curve", size=(40, 45)), _scope(), "target_family"),
+        (_scope(size=(40, 45), assumptions=()), _scope(), "assumptions"),
+        (_scope(size=(30, None)), _scope(), "size_interval"),
+        (_scope(size=(40, 45), param_ranges={"bits": [40, None]}), _scope(), "param_ranges"),
+        ("not-a-record", _scope(), "population"),
+    ],
+    ids=[
+        "narrower",
+        "outside_size",
+        "outside_param",
+        "missing_required_axis",
+        "wrong_family",
+        "missing_required_assumption",
+        "invalid_interval",
+        "invalid_range",
+        "invalid_record",
+    ],
+)
+def test_counterexample_coverage_requires_a_witness_inside_the_statement(population, scope, expected):
+    assert justify.counterexample_coverage_violation(population, scope) == expected
+
+
+def _hunt_evidence(population, verdict="KILLED", assumptions=()):
+    return {
+        "hash": "e" * 64,
+        "kind": "counterexample_hunt_record",
+        "verdict": verdict,
+        "population": population,
+        "assumptions": list(assumptions),
+    }
+
+
+def test_a_narrower_killed_hunt_record_is_a_refutation():
+    evidence = _hunt_evidence(_scope(size=(40, 45), param_ranges={"bits": [40, 45]}))
+    result = justify.justify(evidence, _statement(_scope()), justify.Context())
+    assert isinstance(result, justify.Refutation)
+    assert result.evidence_hash == evidence["hash"]
+
+
+@pytest.mark.parametrize(
+    ("population", "scope", "field"),
+    [
+        (_scope(size=(20, 40)), _scope(), "size_interval"),
+        (_scope(size=(40, 45), param_ranges={"bits": [20, 40]}), _scope(), "param_ranges"),
+        (_scope(size=(40, 45), param_ranges={}), _scope(), "param_ranges"),
+        (_scope(family="other_curve", size=(40, 45)), _scope(), "target_family"),
+        (_scope(size=(40, 45), assumptions=()), _scope(), "assumptions"),
+    ],
+    ids=["outside_size", "outside_param", "missing_required_axis", "wrong_family", "missing_assumption"],
+)
+def test_an_out_of_scope_killed_hunt_record_is_refused(population, scope, field):
+    result = justify.justify(_hunt_evidence(population), _statement(scope), justify.Context())
+    assert isinstance(result, justify.CoverageViolation) and result.field == field
+
+
+@pytest.mark.parametrize("ctx", [justify.Context(disowned=True), justify.Context(inadmissible=True)])
+def test_a_disowned_or_inadmissible_killed_hunt_record_stays_absent(ctx):
+    evidence = _hunt_evidence(_scope(size=(40, 45), param_ranges={"bits": [40, 45]}))
+    result = justify.justify(evidence, _statement(_scope()), ctx)
+    assert isinstance(result, justify.Absent)
+
+
+def test_a_narrower_survived_hunt_record_keeps_the_positive_coverage_rule():
+    evidence = _hunt_evidence(
+        _scope(size=(40, 45), param_ranges={"bits": [40, 45]}),
+        verdict="SURVIVED",
+    )
+    result = justify.justify(evidence, _statement(_scope()), justify.Context())
+    assert isinstance(result, justify.CoverageViolation) and result.field == "size_interval"
+
+
+@pytest.mark.parametrize("kind", ["lean_artifact", "ladder_table", "repro_node", "statistical", "model_proof"])
+def test_other_kinds_keep_the_positive_coverage_rule(kind):
+    evidence = {
+        **_hunt_evidence(_scope(size=(40, 45), param_ranges={"bits": [40, 45]})),
+        "kind": kind,
+        "verdict": None,
+    }
+    result = justify.justify(evidence, _statement(_scope()), justify.Context())
+    assert isinstance(result, justify.CoverageViolation) and result.field == "size_interval"
 
 
 @pytest.mark.parametrize(

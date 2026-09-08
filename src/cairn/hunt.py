@@ -286,6 +286,7 @@ def _validate_record_trials(record):
         "EXECUTION_UNVERIFIED",
         "VERIFIER_FAILED",
         "VERIFIER_UNVERIFIED",
+        "COUNTEREXAMPLE_OUT_OF_SCOPE",
         RUN_STATUS_BUDGET_EXCEEDED,
     }
     for index, trial in enumerate(record.trials):
@@ -320,7 +321,7 @@ def _validate_record_trials(record):
         elif trial.outcome == "EXECUTION_UNVERIFIED":
             if trial.verifier_status != "NOT_RUN" or trial.verifier_attempt_id is not None:
                 raise ValueError("an unverified execution has inconsistent verifier status")
-        elif trial.outcome in ("VERIFIER_FAILED", "VERIFIER_UNVERIFIED"):
+        elif trial.outcome in ("VERIFIER_FAILED", "VERIFIER_UNVERIFIED", "COUNTEREXAMPLE_OUT_OF_SCOPE"):
             if (
                 trial.execution_status != runner.STATUS_OK
                 or not trial.verifier_attempt_id
@@ -812,6 +813,25 @@ def run_hunt(sub, plan, executor: Callable, verifier: Callable, *, run_id=None, 
             )
             verification_problem = True
             break
+        point_population = {
+            **population,
+            "size_interval": [next(iter(context.point.values()))] * 2,
+            "param_ranges": {axis: [value, value] for axis, value in context.point.items()},
+        }
+        if justify.counterexample_coverage_violation(point_population, json.loads(statement["scope"])) is not None:
+            trials.append(
+                _trial_record(
+                    context,
+                    execution,
+                    "COUNTEREXAMPLE_OUT_OF_SCOPE",
+                    runner.STATUS_OK,
+                    verification.evidence_hash,
+                    verification.attempt_id,
+                )
+            )
+            verification_problem = True
+            break
+        population = point_population
         trials.append(
             _trial_record(
                 context,

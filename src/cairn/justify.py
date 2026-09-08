@@ -179,6 +179,25 @@ def coverage_violation(population, scope):
     return None
 
 
+def counterexample_coverage_violation(population, scope):
+    if not isinstance(population, dict) or not isinstance(scope, dict):
+        return "population"
+    if population.get("target_family") != scope.get("target_family"):
+        return "target_family"
+    if not contains(scope.get("size_interval"), population.get("size_interval")):
+        return "size_interval"
+    point_ranges = population.get("param_ranges")
+    scope_ranges = scope.get("param_ranges", {})
+    if not isinstance(point_ranges, dict) or not isinstance(scope_ranges, dict):
+        return "param_ranges"
+    for axis, bounds in scope_ranges.items():
+        if not contains(bounds, point_ranges.get(axis)):
+            return "param_ranges"
+    if not subset(scope.get("assumption_set"), population.get("assumption_set")):
+        return "assumptions"
+    return None
+
+
 def _origin_values(origins):
     if isinstance(origins, dict):
         values = []
@@ -284,7 +303,9 @@ def _judge(evidence, statement, ctx, kind, ceiling, evidence_hash):
         return Absent("disowned", evidence_hash)
     scope = _load(statement.get("scope"))
     population = _population(evidence)
-    field = coverage_violation(population, scope)
+    is_counterexample = kind == "counterexample_hunt_record" and evidence.get("verdict") == "KILLED"
+    comparison = counterexample_coverage_violation if is_counterexample else coverage_violation
+    field = comparison(population, scope)
     if field is not None:
         return CoverageViolation(field, evidence_hash)
     if ctx.inadmissible:

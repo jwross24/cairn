@@ -55,10 +55,11 @@ def _claim(sub, bounds):
     return statement
 
 
-def _setup(tmp_path, bounds=(40, 41), trials=2, verifier_valid=True):
+def _setup(tmp_path, bounds=(40, 41), trials=2, verifier_valid=True, statement_bounds=None):
     _programs(tmp_path)
     sub = substrate.Substrate.open(tmp_path / "substrate.sqlite")
-    statement = _claim(sub, bounds)
+    statement_bounds = bounds if statement_bounds is None else statement_bounds
+    statement = _claim(sub, statement_bounds)
     distribution = hunt.Distribution({"n": bounds})
     plan = hunt.HuntPlan(
         statement.hash,
@@ -190,6 +191,36 @@ def test_killed_hunt_records_real_counterexample_and_full_transcript(tmp_path):
                 assert sub.get_blob(evidence["stream_blobs"]["stderr"]) == b""
                 assert json.loads(sub.get_blob(evidence["stream_blobs"]["stdout"]))["status"] == "OK"
         print(json.dumps({"record": hunt.canon.decode(hunt.RUN, hunt.run_canonical(result.record)), "ledger": entry}))
+    finally:
+        sub.close()
+
+
+def test_verified_counterexample_refutes_a_statement_wider_than_the_sampling_distribution(tmp_path):
+    sub, plan, executor, verifier, statement = _setup(tmp_path, statement_bounds=(0, 41))
+    try:
+        result = hunt.run_hunt(sub, plan, executor, verifier)
+        assert result.verdict == "KILLED"
+        assert claims.get_claim_statement(sub, statement.hash)["status"] == "refuted"
+        point = result.record.trials[0].point["n"]
+        assert json.loads(claims.get_evidence_node(sub, result.evidence_hash)["population"])["param_ranges"] == {
+            "n": [point, point]
+        }
+        assert plan.distribution.ranges == {"n": (40, 41)}
+    finally:
+        sub.close()
+
+
+def test_verified_counterexample_outside_statement_scope_does_not_refute(tmp_path):
+    sub, plan, executor, verifier, statement = _setup(tmp_path, statement_bounds=(0, 39))
+    try:
+        result = hunt.run_hunt(sub, plan, executor, verifier)
+        assert result.verdict == "INCOMPLETE"
+        assert result.standing is False
+        assert result.record.trials[0].outcome == "COUNTEREXAMPLE_OUT_OF_SCOPE"
+        assert result.record.trials[0].verifier_status == "OK"
+        assert result.ledger_hash is None
+        assert ledger.entries_for(sub, plan.hypothesis_key) == []
+        assert claims.get_claim_statement(sub, statement.hash)["status"] == "open"
     finally:
         sub.close()
 
