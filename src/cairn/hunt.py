@@ -26,6 +26,7 @@ PLAN = Struct(
         Field("distribution_hash", NON_EMPTY_STR),
         Field("trial_count", INT),
         Field("family_bounds", Map(STR, List(INT))),
+        Field("size_axis", NON_EMPTY_STR),
         Field("method_identity", keys.METHOD_IDENTITY),
         Field("target_family", NON_EMPTY_STR),
         Field("assumption_set", Set(STR)),
@@ -142,6 +143,7 @@ class HuntPlan:
     distribution: Distribution
     trial_count: int
     family_bounds: Mapping[str, tuple[int, int]]
+    size_axis: str | None = None
     method_identity: Mapping[str, object] = field(
         default_factory=lambda: {"interface_version": "counterexample_hunt/1", "params": {}}
     )
@@ -159,6 +161,11 @@ class HuntPlan:
         if isinstance(self.trial_count, bool) or not isinstance(self.trial_count, int) or self.trial_count <= 0:
             raise ValueError("trial_count must be a positive integer")
         family_bounds = _ranges(self.family_bounds, "family_bounds")
+        size_axis = self.size_axis
+        if size_axis is None and len(self.distribution.ranges) == 1:
+            size_axis = next(iter(self.distribution.ranges))
+        if not isinstance(size_axis, str) or size_axis not in self.distribution.ranges:
+            raise PlanRefused("size_axis must name a distribution axis; multi-axis plans require it explicitly")
         if not isinstance(self.target_family, str) or not self.target_family:
             raise ValueError("target_family must be non-empty")
         if not isinstance(self.executor_identity, str) or not self.executor_identity:
@@ -182,6 +189,7 @@ class HuntPlan:
         except canon.CanonError as exc:
             raise ValueError(f"method_identity is invalid: {exc}") from None
         object.__setattr__(self, "family_bounds", family_bounds)
+        object.__setattr__(self, "size_axis", size_axis)
         object.__setattr__(self, "assumption_set", assumptions)
         object.__setattr__(self, "method_identity", method)
         object.__setattr__(self, "hash", keys.node_hash("hunt_plan", plan_canonical(self)))
@@ -196,6 +204,7 @@ def plan_canonical(plan):
             "distribution_hash": plan.distribution.hash,
             "trial_count": plan.trial_count,
             "family_bounds": plan.family_bounds,
+            "size_axis": plan.size_axis,
             "method_identity": plan.method_identity,
             "target_family": plan.target_family,
             "assumption_set": plan.assumption_set,
@@ -453,7 +462,7 @@ def _scope(sub, plan):
         raise PlanRefused("claim statement scope is not a mapping")
     return {
         "target_family": plan.target_family,
-        "size_interval": list(next(iter(plan.distribution.ranges.values()))),
+        "size_interval": list(plan.distribution.ranges[plan.size_axis]),
         "param_ranges": {axis: list(bounds) for axis, bounds in plan.distribution.ranges.items()},
         "assumption_set": sorted(plan.assumption_set),
     }, statement
@@ -815,7 +824,7 @@ def run_hunt(sub, plan, executor: Callable, verifier: Callable, *, run_id=None, 
             break
         point_population = {
             **population,
-            "size_interval": [next(iter(context.point.values()))] * 2,
+            "size_interval": [context.point[plan.size_axis]] * 2,
             "param_ranges": {axis: [value, value] for axis, value in context.point.items()},
         }
         if justify.counterexample_coverage_violation(point_population, json.loads(statement["scope"])) is not None:
@@ -882,7 +891,7 @@ def run_hunt(sub, plan, executor: Callable, verifier: Callable, *, run_id=None, 
         producer_identity="gate:hunt",
         producer_tag="gate",
         verdict=verdict,
-        in_sample_sizes=tuple(next(iter(plan.distribution.ranges.values()))),
+        in_sample_sizes=tuple(plan.distribution.ranges[plan.size_axis]),
         attempt_id=trials[-1].attempt_id if trials else None,
     )
     evidence_hash = claims.write_evidence_node(sub, evidence)
@@ -893,6 +902,9 @@ def run_hunt(sub, plan, executor: Callable, verifier: Callable, *, run_id=None, 
         if counterexample_trial is None:
             raise HuntError("KILLED hunt has no counterexample trial")
         point = trials[counterexample_trial].point
+        derivation = justify.derive_tag(sub, plan.statement_hash, attest_path)
+        if derivation.refuted_by != evidence_hash:
+            raise HuntError("hunt KILLED but justify did not derive a refutation")
         ledger_hash = ledger.write(
             sub,
             hypothesis_key=plan.hypothesis_key,
@@ -909,9 +921,6 @@ def run_hunt(sub, plan, executor: Callable, verifier: Callable, *, run_id=None, 
             caught_by="hunt:verified_counterexample",
             at=_now(),
         )
-        derivation = justify.derive_tag(sub, plan.statement_hash, attest_path)
-        if derivation.refuted_by != evidence_hash:
-            raise HuntError("hunt KILLED but justify did not derive a refutation")
     if nonce_record.withheld:
         instances.publish_nonce(sub, nonce)
     return HuntResult(record, run_hash, evidence_hash, ledger_hash, derivation)
