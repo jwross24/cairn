@@ -16,7 +16,9 @@ spends.
 import json
 from dataclasses import dataclass
 
-from cairn import canon, claims, hunt, keys, ladderplan, laddertable, log, profile, scrutiny
+from cairn import canon, claims, hunt, keys, ladderplan, laddertable, log, profile, repro, scrutiny
+from cairn.canon import INT, NON_EMPTY_STR, Field, Struct
+from cairn.substrate import _now
 
 lg = log.get("ticketlattice")
 
@@ -28,8 +30,22 @@ KINDS = (ALGORITHMIC, CONJECTURE, THEOREM)
 CONJECTURE_MARKER = "correctness_conjecture"
 MARKER_TRUE = "true"
 
-KEY_MISMATCH = "key"
-METHOD_MISMATCH = "method_identity"
+BINDING_KIND = "gate_admission_binding"
+BINDING_PRODUCER = "gate:tier"
+
+BINDING = Struct(
+    BINDING_KIND,
+    [
+        Field("attempt_id", NON_EMPTY_STR),
+        Field("hypothesis_key", NON_EMPTY_STR),
+        Field("method_identity", NON_EMPTY_STR),
+        Field("ticket_hash", NON_EMPTY_STR),
+        Field("tier", INT),
+        Field("bundle_hash", NON_EMPTY_STR),
+        Field("at", NON_EMPTY_STR),
+    ],
+)
+
 REVISION_MISMATCH = "implementation_revision"
 SCOPE_MISMATCH = "scope"
 
@@ -151,68 +167,134 @@ def hunt_candidate(sub, hypothesis_key, method_identity):
     return found
 
 
-def mismatches(candidate, *, hypothesis_key, method_identity, implementation_revision, rung_bits):
-    """Every way the selected ticket fails to bind to this launch, by name."""
+def mismatches(candidate, *, implementation_revision, rung_bits):
+    """Every way the selected ticket fails to bind to this launch, by name.
+
+    The hypothesis key and method identity are selection terms rather than binding terms: a candidate
+    carrying another claim's key or another method's identity is never selected, so it refuses as an
+    absent ticket rather than as a bound one that disagrees.
+    """
     found = []
-    if candidate.hypothesis_key != hypothesis_key:
-        found.append(KEY_MISMATCH)
-    if candidate.method_identity != method_identity:
-        found.append(METHOD_MISMATCH)
-    if (
-        candidate.implementation_revision is not None
-        and implementation_revision is not None
-        and candidate.implementation_revision != implementation_revision
-    ):
+    if candidate.implementation_revision is not None and candidate.implementation_revision != implementation_revision:
         found.append(REVISION_MISMATCH)
     if candidate.scoped_rung_bits is not None and candidate.scoped_rung_bits != rung_bits:
         found.append(SCOPE_MISMATCH)
     return tuple(found)
 
 
+APPROVE = "approve"
+
 ADMITTING_VERDICTS = {
     ALGORITHMIC: (laddertable.KEEP, laddertable.KEEP_IN_SAMPLE),
     CONJECTURE: ("SURVIVED",),
+    THEOREM: (APPROVE,),
 }
 
 
-def select_kind(sub, gate_bundle, claim_kind, *, hypothesis_key, method_identity, inputs, implementation_revision):
-    candidate = (
-        ladder_candidate(sub, gate_bundle, hypothesis_key, method_identity)
-        if claim_kind == ALGORITHMIC
-        else hunt_candidate(sub, hypothesis_key, method_identity)
+def theorem_candidate(sub, statement_hash, hypothesis_key, method_identity):
+    """The claim statement node and the standing review verdict on it; quiet pre-filters are not approval."""
+    if statement_hash is None:
+        return None
+    row = claims.get_claim_statement(sub, statement_hash)
+    if row is None:
+        return None
+    verdicts = claims.review_verdicts_for(sub, statement_hash)
+    return Candidate(
+        claim_kind=THEOREM,
+        node_kind="claim_statement",
+        node_hash=statement_hash,
+        verdict=verdicts[-1]["verdict"] if verdicts else "",
+        hypothesis_key=hypothesis_key,
+        method_identity=dict(method_identity),
     )
+
+
+def select_kind(
+    sub,
+    gate_bundle,
+    claim_kind,
+    *,
+    hypothesis_key,
+    method_identity,
+    inputs,
+    implementation_revision,
+    statement_hash=None,
+):
+    if claim_kind == ALGORITHMIC:
+        candidate = ladder_candidate(sub, gate_bundle, hypothesis_key, method_identity)
+    elif claim_kind == CONJECTURE:
+        candidate = hunt_candidate(sub, hypothesis_key, method_identity)
+    else:
+        candidate = theorem_candidate(sub, statement_hash, hypothesis_key, method_identity)
     if candidate is None:
         return Selection(claim_kind, None, False)
     unbound = mismatches(
-        candidate,
-        hypothesis_key=hypothesis_key,
-        method_identity=method_identity,
-        implementation_revision=implementation_revision,
-        rung_bits=profile.declared_bits(inputs),
+        candidate, implementation_revision=implementation_revision, rung_bits=profile.declared_bits(inputs)
     )
     admits = not unbound and candidate.verdict in ADMITTING_VERDICTS[claim_kind]
     return Selection(claim_kind, candidate, admits, unbound)
 
 
 def tier_two_selections(sub, gate_bundle, *, hypothesis_key, statement_hash, method_identity, inputs, revision):
-    """One selection per claim kind the hypothesis carries; a theorem kind is the human review's, not this reader's."""
-    selections = []
-    for claim_kind in claim_kinds(sub, hypothesis_key, statement_hash):
-        if claim_kind == THEOREM:
-            continue
-        selections.append(
-            select_kind(
-                sub,
-                gate_bundle,
-                claim_kind,
-                hypothesis_key=hypothesis_key,
-                method_identity=method_identity,
-                inputs=inputs,
-                implementation_revision=revision,
-            )
+    """One selection per claim kind the hypothesis carries; a claim is refused while any of them is absent."""
+    return tuple(
+        select_kind(
+            sub,
+            gate_bundle,
+            claim_kind,
+            hypothesis_key=hypothesis_key,
+            method_identity=method_identity,
+            inputs=inputs,
+            implementation_revision=revision,
+            statement_hash=statement_hash,
         )
-    return tuple(selections)
+        for claim_kind in claim_kinds(sub, hypothesis_key, statement_hash)
+    )
 
 
 def admits_tier_two(selections):
     return bool(selections) and all(selection.admits for selection in selections)
+
+
+def bind_attempt(sub, gate_bundle, *, attempt_id, hypothesis_key, method_identity, ticket_hash, tier, at=None):
+    """Record what the gate admitted an attempt under, so a later tier reads the admission rather than asserting it."""
+    value = {
+        "attempt_id": attempt_id,
+        "hypothesis_key": hypothesis_key,
+        "method_identity": claims.to_json(method_identity),
+        "ticket_hash": ticket_hash,
+        "tier": tier,
+        "bundle_hash": gate_bundle.hash,
+        "at": at or _now(),
+    }
+    digest = sub.put_node(BINDING_KIND, canon.encode(BINDING, value), producer_identity=BINDING_PRODUCER)
+    lg.info("bind", node=digest, attempt=attempt_id, hypothesis_key=hypothesis_key, tier=tier)
+    return digest
+
+
+def _witness_verified(sub, attempt_id):
+    return any(
+        record["kind"] == repro.WITNESS_CHECK and record["passed"]
+        for record in claims.repro_records_for_attempt(sub, attempt_id)
+    )
+
+
+def tier_three_candidate(sub, gate_bundle, hypothesis_key, method_identity):
+    """The most recent Tier-2 attempt this bundle's gate admitted for the key and method, whose witness verified.
+
+    A Tier-2 ticket the gate never spent on an attempt is not a Tier-3 ticket: holding a KEEP table
+    says the work was admissible, and Tier 3 asks whether it ran and its witness checked out.
+    """
+    method = claims.to_json(method_identity)
+    found = None
+    rows = sub.conn.execute("SELECT canonical FROM nodes WHERE kind = ? ORDER BY rowid", (BINDING_KIND,)).fetchall()
+    for row in rows:
+        value = canon.decode(BINDING, row["canonical"])
+        if value["hypothesis_key"] != hypothesis_key or value["method_identity"] != method:
+            continue
+        if value["tier"] != 2 or value["bundle_hash"] != gate_bundle.hash:
+            continue
+        if not _witness_verified(sub, value["attempt_id"]):
+            continue
+        found = value
+    return found

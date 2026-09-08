@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from cairn import claims, cli, log, nogo, scrutiny
+from cairn import canon, claims, cli, keys, log, nogo, prefilter, scrutiny, ticketlattice
 from cairn.profile import ProfileUndeclared
 
 lg = log.get("tiergate")
@@ -30,8 +30,16 @@ REASON_ORDER = (
     *scrutiny.REASONS,
 )
 COST_DEPENDENT = (BOUNDARY_TABLE, BUDGET)
+
+
+class StatementDisagreement(ValueError):
+    pass
+
+
 HYPOTHESIS_TICKET_KIND = "hypothesis_object"
 HYPOTHESIS_TICKET_TIER = 0
+TIER_TWO_TICKET_TIER = 1
+TIER_THREE_TICKET_TIER = 2
 
 
 @dataclass(frozen=True)
@@ -130,18 +138,87 @@ class TierGate:
     def boundary_table(self):
         return self.bundle.tiers["boundary_table"]
 
-    def _selected_ticket(self, launch):
-        if launch.declared_tier == 0:
+    def _implementation_revision(self, launch):
+        """The revision the launch actually runs, read off its certified skill identity.
+
+        A launch that names its own revision could spend an older table's KEEP by naming none, so the
+        gate reads it rather than accepting it; a skill it cannot resolve has no revision and binds to
+        no table that names one.
+        """
+        if launch.skill_identity_hash is None:
             return None
+        row = self.sub.get_node(launch.skill_identity_hash)
+        if row is None or row["kind"] != "identity_bundle":
+            return None
+        return canon.decode(keys.IDENTITY_BUNDLE, row["canonical"])["implementation_revision"]
+
+    def _statement_hash(self, launch):
+        """The statement the recorded hypothesis names, falling back to the launch's where it names none.
+
+        A launch cannot shed a theorem's pre-filter obligation by omitting the statement its own
+        hypothesis records; where it names a different one, the two disagree and neither is read.
+        """
+        node = claims.get_hypothesis_object(self.sub, launch.hypothesis_key)
+        if node is None:
+            return launch.statement_hash
+        recorded = node["claim_statement_hash"]
+        if recorded is None:
+            return launch.statement_hash
+        if launch.statement_hash is not None and launch.statement_hash != recorded:
+            raise StatementDisagreement(
+                f"launch names statement {launch.statement_hash} against hypothesis-recorded {recorded}"
+            )
+        return recorded
+
+    def _tier_one_ticket(self, launch, kinds, statement_hash):
+        """The recorded hypothesis object, held back where a theorem statement's pre-filter battery did not pass."""
         node = claims.get_hypothesis_object(self.sub, launch.hypothesis_key)
         if node is None:
             return None
+        if ticketlattice.THEOREM in kinds and not prefilter.admits_tier_one(self.sub, self.bundle, statement_hash):
+            return None
         return (HYPOTHESIS_TICKET_TIER, HYPOTHESIS_TICKET_KIND, node["hash"])
 
-    def _recorded_ticket(self, launch):
+    def _selected_ticket(self, launch):
+        """The highest ticket substrate state grants this launch; the launching party supplies none."""
+        if launch.declared_tier == 0:
+            return None
+        try:
+            statement_hash = self._statement_hash(launch)
+            kinds = ticketlattice.claim_kinds(self.sub, launch.hypothesis_key, statement_hash)
+        except StatementDisagreement, ticketlattice.ClaimKindMalformed:
+            return None
+        one = self._tier_one_ticket(launch, kinds, statement_hash)
+        if one is None or launch.declared_tier == 1:
+            return one
+        selections = ticketlattice.tier_two_selections(
+            self.sub,
+            self.bundle,
+            hypothesis_key=launch.hypothesis_key,
+            statement_hash=statement_hash,
+            method_identity=launch.method_identity,
+            inputs=launch.inputs,
+            revision=self._implementation_revision(launch),
+        )
+        if not ticketlattice.admits_tier_two(selections):
+            return one
+        held = selections[0].candidate
+        two = (TIER_TWO_TICKET_TIER, held.node_kind, held.node_hash)
+        if launch.declared_tier == 2:
+            return two
+        binding = ticketlattice.tier_three_candidate(
+            self.sub, self.bundle, launch.hypothesis_key, launch.method_identity
+        )
+        if binding is None:
+            return two
+        return (TIER_THREE_TICKET_TIER, ticketlattice.BINDING_KIND, binding["ticket_hash"])
+
+    def _recorded_ticket(self, launch, selected):
+        tier, _kind, node_hash = selected
         rows = self.sub.conn.execute(
-            "SELECT * FROM tickets WHERE hypothesis_key = ? AND method_identity = ? ORDER BY rowid",
-            (launch.hypothesis_key, claims.to_json(launch.method_identity)),
+            "SELECT * FROM tickets WHERE hypothesis_key = ? AND method_identity = ? AND tier = ? AND node_hash = ?"
+            " ORDER BY rowid",
+            (launch.hypothesis_key, claims.to_json(launch.method_identity), tier, node_hash),
         ).fetchall()
         return dict(rows[-1]) if rows else None
 
@@ -153,7 +230,7 @@ class TierGate:
 
         selected = self._selected_ticket(launch)
         ticket_tier = None if selected is None else selected[0]
-        recorded = self._recorded_ticket(launch) if selected is not None else None
+        recorded = self._recorded_ticket(launch, selected) if selected is not None else None
         stale = recorded is not None and recorded["bundle_hash"] != self.bundle.hash
         nogo_flag = nogo.flag(self.sub, launch.hypothesis_key, self.attest_path) if launch.target_attack else None
         read = scrutiny.gate_read(
