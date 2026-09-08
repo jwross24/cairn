@@ -484,7 +484,7 @@ def test_a_downgrade_carries_the_refuting_evidence_and_moves_the_statement_to_re
     hunt = factories.evidence_node(
         "counterexample_hunt_record",
         statement.hash,
-        _wide_population(statement),
+        {**statement.scope, "size_interval": [40, 40], "param_ranges": {"bits": [40, 40]}},
         frozenset({"A1"}),
         verdict="KILLED",
         seed=22,
@@ -497,6 +497,27 @@ def test_a_downgrade_carries_the_refuting_evidence_and_moves_the_statement_to_re
     assert claims.get_claim_statement(writer, statement.hash)["status"] == "refuted"
     last = claims.tag_history_for(writer, statement.hash)[-1]
     assert last["from_tag"] == STRONG_EMPIRICAL and last["evidence_hash"] == hunt.hash
+
+
+def test_an_out_of_scope_counterexample_does_not_downgrade_the_statement(writer, attest_path):
+    statement = _statement(writer, seed=22)
+    _ladder(writer, statement, _wide_population(statement), seed=22)
+    assert justify.derive_tag(writer, statement.hash, attest_path).tag == STRONG_EMPIRICAL
+    hunt = factories.evidence_node(
+        "counterexample_hunt_record",
+        statement.hash,
+        {**statement.scope, "size_interval": [60, 60], "param_ranges": {"bits": [60, 60]}},
+        frozenset({"A1"}),
+        verdict="KILLED",
+        seed=22,
+    )
+    claims.write_evidence_node(writer, hunt)
+
+    derived = justify.derive_tag(writer, statement.hash, attest_path)
+
+    assert derived.tag == STRONG_EMPIRICAL
+    assert derived.refuted_by is None
+    assert claims.get_claim_statement(writer, statement.hash)["status"] == "open"
 
 
 def test_every_justify_call_logs_one_record(writer, attest_path, json_test_log):
