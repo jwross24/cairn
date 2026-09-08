@@ -26,6 +26,8 @@ fi
 
 FAST=0
 [ "${1:-}" = "--fast" ] && FAST=1
+UNIT=0
+[ "${1:-}" = "--unit" ] && UNIT=1
 
 if ! command -v uv >/dev/null 2>&1; then
   say "DENY infra: uv not on PATH"
@@ -61,6 +63,8 @@ gate theater  ./scripts/theater-patterns.sh
 if [ "$FAST" = "1" ]; then
   say "SKIP tests (--fast)"
   printf '[check] skip tests (--fast; CI runs them)\n'
+elif [ "$UNIT" = "1" ]; then
+  gate unit-tests uv run pytest tests/unit -q -m "not slow" --durations=10
 else
   if [ -n "${CAIRN_SESSION_DEADLINE_SKIP:-}" ]; then
     say "DEADLINE bypassed: $CAIRN_SESSION_DEADLINE_SKIP"
@@ -79,5 +83,5 @@ if [ ${#FAILED[@]} -ne 0 ]; then
   exit 1
 fi
 
-say "RESULT pass (fast=$FAST)"
+say "RESULT pass (fast=$FAST unit=$UNIT)"
 printf '[check] all gates pass\n'

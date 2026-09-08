@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 from hypothesis import settings
 
-pytest_plugins = ["pytester", "_session_deadline", "_libpari_stall"]
+pytest_plugins = ["pytester", "_session_deadline", "_libpari_stall", "_unit_tier"]
 
 ROOT = Path(os.environ.get("CAIRN_REPO_ROOT") or Path(__file__).resolve().parent.parent)
 GUARDED_DIRS = (".doctor", "deploy", "var")
@@ -30,14 +30,31 @@ class IsolationViolation(AssertionError):
 
 def _snapshot(root):
     seen = {}
+    pending = []
     for name in GUARDED_DIRS:
         base = root / name
-        if not base.exists():
+        if base.exists():
+            pending.append((base, name))
+    while pending:
+        directory, relative = pending.pop()
+        try:
+            with os.scandir(directory) as entries:
+                children = list(entries)
+        except OSError:
             continue
-        for path in base.rglob("*"):
+        for entry in children:
+            name = relative + "/" + entry.name
+            path = Path(entry.path)
             if path.is_file():
                 st = path.stat()
-                seen[str(path.relative_to(root))] = (st.st_size, st.st_mtime_ns)
+                seen[name] = (st.st_size, st.st_mtime_ns)
+            else:
+                try:
+                    is_directory = entry.is_dir(follow_symlinks=False)
+                except OSError:
+                    is_directory = False
+                if is_directory:
+                    pending.append((entry.path, name))
     return seen
 
 

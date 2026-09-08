@@ -1,0 +1,6 @@
+.                                                                        [100%]
+============================== slowest durations ===============================
+9.17s call     tests/unit/test_formal_statement_hasher.py::test_lean_canonicalization_known_answer
+0.01s setup    tests/unit/test_formal_statement_hasher.py::test_lean_canonicalization_known_answer
+0.01s teardown tests/unit/test_formal_statement_hasher.py::test_lean_canonicalization_known_answer
+1 passed in 9.27s
