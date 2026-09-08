@@ -44,9 +44,12 @@ def _snapshot(root):
             continue
         for entry in children:
             name = relative + "/" + entry.name
-            path = Path(entry.path)
-            if path.is_file():
-                st = path.stat()
+            try:
+                is_file = entry.is_file()
+            except OSError, ValueError:
+                is_file = False
+            if is_file:
+                st = entry.stat()
                 seen[name] = (st.st_size, st.st_mtime_ns)
             else:
                 try:

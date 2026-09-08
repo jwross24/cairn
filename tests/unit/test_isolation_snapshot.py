@@ -60,3 +60,24 @@ def test_snapshot_ignores_unreadable_subdirectories(tmp_path, isolation_snapshot
         assert isolation_snapshot(tmp_path) == {}
     finally:
         hidden.chmod(0o700)
+
+
+def test_snapshot_ignores_inaccessible_and_cyclic_file_links(tmp_path, isolation_snapshot):
+    deploy = tmp_path / "deploy"
+    deploy.mkdir()
+    hidden = tmp_path / "hidden"
+    hidden.mkdir()
+    (hidden / "file").write_text("content")
+    denied = deploy / "denied"
+    denied.symlink_to(hidden / "file")
+    cycle = deploy / "cycle"
+    cycle.symlink_to(cycle)
+    hidden.chmod(0)
+    try:
+        with pytest.raises(PermissionError):
+            denied.stat()
+        with pytest.raises(OSError, match="Too many levels of symbolic links"):
+            cycle.stat()
+        assert isolation_snapshot(tmp_path) == {}
+    finally:
+        hidden.chmod(0o700)

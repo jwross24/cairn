@@ -399,3 +399,55 @@ cached-metadata semantic difference, not evidence of a production race. CopperRi
 message 684 accepts this bounded within-pass cache narrowing for further measurement.
 The mechanism is verified; occurrence is not observed. The accepted narrowing must
 not be described as identical metadata-read semantics.
+
+### Guarded traversal CPU cost
+
+Confidence: HIGH for the paired CPU measurement. `direntry-profile.tar.gz` holds
+the complete twenty-pair, thirty-call measurements, pinned original fixture source,
+candidate, test output, and audit probe. Each invocation returns the same 161-file
+metadata dictionary. Original median CPU time is 7.611 milliseconds per snapshot;
+guarded DirEntry median is 5.036 milliseconds. The median of paired CPU differences
+is 2.630 milliseconds, projecting to 5.507 seconds across 2094 snapshots. That
+projection counts 2094 snapshots, not both snapshots of 2094 fixture invocations.
+
+Original median wall time is 84.846 milliseconds and candidate median is 62.115
+milliseconds. The median paired wall difference is 36.532 milliseconds, projecting
+to 76.498 seconds across 2094 snapshots. This is a contention-sensitive observation,
+not the optimization claim. CopperRidge reported load average 87 during this work;
+the samples do not capture their own load averages. Message 694 approves the
+CPU-sized checkpoint and supersedes the earlier ten-second criterion. No direct
+2094-invocation timing or CI saving is established by this extrapolation.
+
+`tests/conftest.py:47` classifies each DirEntry with the existing false-on-error
+behavior: `OSError` and `ValueError` from `is_file()` yield false. The subsequent
+`stat()` retains error propagation. Omitting that classification catch raises for
+inaccessible and cyclic file links; broadening it around `stat()` would change the
+existing behavior. The accepted within-pass metadata-cache narrowing remains as
+described above. Independent before/after snapshots still use separate traversals.
+
+The added test at `tests/unit/test_isolation_snapshot.py:65` proves real permission
+and cyclic-link premises before asserting an empty snapshot. It passes against
+both original and guarded implementations, preserving classification behavior.
+The fresh read-only audit's exact-test probe was re-executed in the main session,
+exiting zero with this output:
+
+```text
+original PASS
+guarded PASS
+raw REJECTED PermissionError 13
+permission_only REJECTED OSError 62
+```
+
+The probe verifies permission restoration and retains its scratch directories.
+The permission premise is established under the current non-root runner; a root
+container execution is not verified by this evidence. A peer's discrimination
+finding was withdrawn after reviewing the two negative controls. No syscall-count
+assertion or zero-stat claim is made.
+
+Validation: original snapshot tests, seven passed in 2.30 seconds; candidate snapshot
+and tier tests, seventeen passed in 9.49 seconds; final focused snapshot tests,
+seven passed in 1.45 seconds. Full collection found 3454 tests in 3.73 seconds.
+The complete fast gate passed. Commands and raw output are in the archive.
+
+No-Claim: no passing full suite, CI speedup, sixty-second unit tier, production race,
+or identical within-pass metadata-read semantics. Both runtime beads remain open.
