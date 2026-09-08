@@ -37,7 +37,7 @@ testpaths = ["tests"]
 addopts = "-p no:cacheprovider -p no:faulthandler"
 timeout = 180
 timeout_method = "thread"
-markers = ["slow: measured median unit wall time above five seconds"]
+markers = ["slow: measured unit duration above the calibrated tier threshold"]
 
 [tool.ruff]
 line-length = 120

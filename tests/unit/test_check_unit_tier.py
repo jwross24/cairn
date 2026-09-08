@@ -1,12 +1,22 @@
+import hashlib
 import importlib
 import shlex
+from decimal import Decimal
 from pathlib import Path
+from statistics import median
 
 import pytest
-from _unit_tier import SLOW_UNIT_TESTS, duration_totals, unmarked_slow_tests
+from _unit_tier import (
+    CALIBRATION,
+    CALIBRATION_ROOT,
+    SLOW_SECONDS,
+    SLOW_UNIT_TESTS,
+    duration_totals,
+    unit_duration_samples,
+    unmarked_slow_tests,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE = ROOT / "research" / "grounding" / "ci-runtime-2026-09-08"
 
 
 def test_unit_gate_selects_only_unmarked_units_with_a_duration_table():
@@ -29,7 +39,7 @@ def test_unit_gate_selects_only_unmarked_units_with_a_duration_table():
 def test_marker_selection_keeps_the_measured_slow_test_in_the_full_run(pytester):
     importlib.import_module("test_formal_statement_hasher")
     pytester.makeconftest('pytest_plugins = ["_unit_tier"]')
-    pytester.makeini("[pytest]\nmarkers = slow: measured unit wall time above five seconds\n")
+    pytester.makeini("[pytest]\nmarkers = slow: measured unit duration above the calibrated tier threshold\n")
     directory = pytester.path / "tests" / "unit"
     directory.mkdir(parents=True)
     (directory / "test_formal_statement_hasher.py").write_text(
@@ -41,17 +51,39 @@ def test_marker_selection_keeps_the_measured_slow_test_in_the_full_run(pytester)
     complete.assert_outcomes(passed=2)
 
 
-@pytest.mark.parametrize(
-    "names",
-    [
-        ("unit-before.log.gz", "slow-repeat-2.log", "slow-repeat-3.log"),
-        ("threshold-repeat-1.log", "threshold-repeat-2.log", "threshold-repeat-3.log"),
-    ],
-)
-def test_recorded_unit_durations_have_no_unmarked_slow_tests(names):
-    reports = [EVIDENCE / name for name in names]
+def test_recorded_unit_durations_have_no_unmarked_slow_tests():
+    reports = [CALIBRATION_ROOT / item["path"] for item in CALIBRATION["reports"]]
+    for path, item in zip(reports, CALIBRATION["reports"], strict=True):
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == item["sha256"]
+    samples = unit_duration_samples(reports)
+    assert {node: len(values) for node, values in samples.items()} == CALIBRATION["sample_counts"]
+    unmeasured = {node for node, values in samples.items() if len(values) < 2}
+    assert unmeasured == set(CALIBRATION["unmeasured_nodeids"])
+    assert not unmeasured & SLOW_UNIT_TESTS
+    medians = {node: median(values) for node, values in samples.items() if len(values) >= 2}
+    assert len(medians) == CALIBRATION["measured_count"]
+    assert {node for node, seconds in medians.items() if seconds > SLOW_SECONDS} == SLOW_UNIT_TESTS
+    retained = {node: seconds for node, seconds in medians.items() if seconds <= SLOW_SECONDS}
+    total = sum(retained.values())
+    assert len(retained) == CALIBRATION["retained_count"]
+    assert total == Decimal(CALIBRATION["retained_median_sum_seconds"])
+    budget = Decimal(CALIBRATION["budget_seconds"])
+    assert total <= budget <= 55
+    assert SLOW_SECONDS in medians.values()
+    next_threshold = min(seconds for seconds in medians.values() if seconds > SLOW_SECONDS)
+    assert sum(seconds for seconds in medians.values() if seconds <= next_threshold) > budget
     assert unmarked_slow_tests(reports, SLOW_UNIT_TESTS) == {}
-    assert unmarked_slow_tests(reports, frozenset())
+    planted = max(medians, key=medians.__getitem__)
+    assert unmarked_slow_tests(reports, SLOW_UNIT_TESTS - {planted}) == {planted: medians[planted]}
+
+
+def _report(path, entries):
+    lines = ["slowest durations"]
+    for node, seconds in entries.items():
+        lines.extend((f"0.00s setup {node}", f"{seconds}s call {node}", f"0.00s teardown {node}"))
+    lines.append(f"{len(entries)} passed in 10.00s")
+    path.write_text("\n".join(lines) + "\n")
+    return path
 
 
 def test_a_real_report_with_a_skipped_test_refuses(pytester):
@@ -70,26 +102,54 @@ def test_a_real_report_with_a_skipped_test_refuses(pytester):
 
 
 def test_unmarked_slow_test_is_rejected_from_a_scratch_report(tmp_path):
-    report = tmp_path / "durations.log"
-    report.write_text(
-        "================ slowest durations ================\n"
-        "4.90s call     tests/unit/test_planted.py::test_slow\n"
-        "0.11s setup    tests/unit/test_planted.py::test_slow\n"
-        "1 passed in 5.02s\n"
-    )
-    assert unmarked_slow_tests([report], frozenset()) == {"tests/unit/test_planted.py::test_slow": 5.01}
-    assert unmarked_slow_tests([report], {"tests/unit/test_planted.py::test_slow"}) == {}
+    node = "tests/unit/test_planted.py::test_slow"
+    seconds = SLOW_SECONDS + Decimal("0.01")
+    reports = [_report(tmp_path / f"{index}.log", {node: seconds}) for index in range(2)]
+    assert unmarked_slow_tests(reports, frozenset()) == {node: seconds}
+    assert unmarked_slow_tests(reports, {node}) == {}
 
 
-def test_slow_budget_uses_the_median_and_a_strict_five_second_boundary(tmp_path):
-    reports = []
-    for index, seconds in enumerate((9, 5, 1)):
-        report = tmp_path / f"{index}.log"
-        report.write_text(
-            f"slowest durations\n{seconds:.2f}s call     tests/unit/test_sample.py::test_case\n1 passed in 10.00s\n"
-        )
-        reports.append(report)
+def test_slow_budget_uses_the_median_and_a_strict_threshold(tmp_path):
+    node = "tests/unit/test_sample.py::test_case"
+    reports = [
+        _report(tmp_path / f"{index}.log", {node: seconds})
+        for index, seconds in enumerate((SLOW_SECONDS * 2, SLOW_SECONDS, SLOW_SECONDS / 2))
+    ]
     assert unmarked_slow_tests(reports, frozenset()) == {}
+
+
+def test_parameter_ids_with_spaces_keep_every_duration_phase(tmp_path):
+    node = "tests/unit/test_sample.py::test_case[has space]"
+    report = _report(tmp_path / "report.log", {node: Decimal("0.10")})
+    report.write_text(
+        report.read_text().replace("0.00s setup", "0.02s setup").replace("0.00s teardown", "0.03s teardown")
+    )
+    assert duration_totals(report) == {node: Decimal("0.15")}
+
+
+def test_single_observations_remain_unmeasured_and_duplicate_reports_refuse(tmp_path):
+    node = "tests/unit/test_sample.py::test_case"
+    report = _report(tmp_path / "report.log", {node: SLOW_SECONDS * 2})
+    assert unit_duration_samples([report]) == {node: [SLOW_SECONDS * 2]}
+    assert unmarked_slow_tests([report], frozenset()) == {}
+    with pytest.raises(ValueError, match="distinct"):
+        unmarked_slow_tests([report, report], frozenset())
+
+
+@pytest.mark.parametrize("defect", ["count", "phase", "duplicate"])
+def test_incomplete_or_duplicated_phase_populations_refuse(tmp_path, defect):
+    node = "tests/unit/test_sample.py::test_case"
+    report = _report(tmp_path / "report.log", {node: Decimal("0.10")})
+    text = report.read_text()
+    if defect == "count":
+        text = text.replace("1 passed", "2 passed")
+    elif defect == "phase":
+        text = text.replace(f"0.00s teardown {node}\n", "")
+    else:
+        text = text.replace(f"0.00s setup {node}\n", f"0.00s setup {node}\n" * 2)
+    report.write_text(text)
+    with pytest.raises(ValueError, match=r"incomplete duration|duplicate duration"):
+        duration_totals(report)
 
 
 @pytest.mark.parametrize(
@@ -98,6 +158,7 @@ def test_slow_budget_uses_the_median_and_a_strict_five_second_boundary(tmp_path)
         "slowest durations\n6.00s call tests/unit/test_x.py::test_x\nTimeout (0:01:00)!\n",
         "slowest 25 durations\n6.00s call tests/unit/test_x.py::test_x\n1 passed in 6.00s\n",
         "slowest durations\n1 passed in 6.00s\n",
+        "slowest durations\n1 passed in 6.00s\n1 failed, 1 passed in 7.00s\n",
     ],
 )
 def test_incomplete_or_empty_timing_reports_refuse(tmp_path, text):
