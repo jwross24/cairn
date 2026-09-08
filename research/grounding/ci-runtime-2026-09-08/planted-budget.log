@@ -1,0 +1,16 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________________________ test_unmarked_budget _____________________________
+
+    def test_unmarked_budget():
+>       assert unmarked_slow_tests([Path(__file__).with_name("planted-durations.log")], frozenset()) == {}
+E       AssertionError: assert {'tests/unit/...t_slow': 5.01} == {}
+E         
+E         Left contains 1 more item:
+E         {'tests/unit/test_planted.py::test_slow': 5.01}
+E         Use -v to get more diff
+
+/tmp/cairn-runtimemoth.U7GUPL/test_planted_budget.py:7: AssertionError
+=========================== short test summary info ============================
+FAILED ::test_unmarked_budget - AssertionError: assert {'tests/unit/...t_slow...
+1 failed in 0.68s

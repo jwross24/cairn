@@ -1,3 +1,4 @@
+import importlib
 import shlex
 from pathlib import Path
 
@@ -26,6 +27,7 @@ def test_unit_gate_selects_only_unmarked_units_with_a_duration_table():
 
 
 def test_marker_selection_keeps_the_measured_slow_test_in_the_full_run(pytester):
+    importlib.import_module("test_formal_statement_hasher")
     pytester.makeconftest('pytest_plugins = ["_unit_tier"]')
     pytester.makeini("[pytest]\nmarkers = slow: measured unit wall time above five seconds\n")
     directory = pytester.path / "tests" / "unit"
@@ -33,9 +35,9 @@ def test_marker_selection_keeps_the_measured_slow_test_in_the_full_run(pytester)
     (directory / "test_formal_statement_hasher.py").write_text(
         "def test_lean_canonicalization_known_answer():\n    assert True\ndef test_quick():\n    assert True\n"
     )
-    selected = pytester.runpytest("-q", "-m", "not slow", "-p", "no:cacheprovider")
+    selected = pytester.runpytest("-q", "-m", "not slow", "-p", "no:cacheprovider", "--import-mode=importlib")
     selected.assert_outcomes(passed=1, deselected=1)
-    complete = pytester.runpytest("-q", "-p", "no:cacheprovider")
+    complete = pytester.runpytest("-q", "-p", "no:cacheprovider", "--import-mode=importlib")
     complete.assert_outcomes(passed=2)
 
 

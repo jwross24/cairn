@@ -1,0 +1,28 @@
+...................................                                      [100%]
+============================= slowest 25 durations =============================
+113.54s call     tests/integration/test_axiom_computation.py::test_real_axiom_matrix
+108.45s call     tests/integration/test_bsgs_selftest.py::test_twenty_fresh_forty_bit_instances_drawn_by_postcondition_are_recovered
+103.25s call     tests/integration/test_lean_toolchain.py::test_hello_theorem_builds_and_leanchecker_replays_it_from_empty
+9.23s call     tests/integration/test_axiom_computation.py::test_empty_or_missing_targets_refuse[names1-missing-theorem]
+0.89s call     tests/integration/test_bsgs_selftest.py::test_the_double_run_is_byte_equal_and_the_certificate_recomputes
+0.55s call     tests/integration/test_bsgs_selftest.py::test_the_cli_certifies_bsgs_and_records_its_certificate
+0.46s call     tests/integration/test_lean_toolchain.py::test_the_pinned_toolchain_resolves_and_reports_the_pinned_commit
+0.34s call     tests/integration/test_bsgs_selftest.py::test_the_postcondition_arms_wrong_draw_is_refused
+0.26s call     tests/integration/test_bsgs_selftest.py::test_measured_table_growth_follows_the_declared_sqrt_n_shape[28]
+0.21s call     tests/integration/test_bsgs_selftest.py::test_transcript_floor_and_certificate_goldens
+0.15s call     tests/integration/test_bsgs_selftest.py::test_the_verifier_arm_refuses_a_driver_that_misbehaves[own-answer-refused]
+0.12s call     tests/integration/test_bsgs_selftest.py::test_the_verifier_arm_refuses_a_driver_that_misbehaves[wrong-refusal-reason]
+0.10s call     tests/integration/test_bsgs_selftest.py::test_measured_table_growth_follows_the_declared_sqrt_n_shape[30]
+0.10s call     tests/integration/test_axiom_computation.py::test_empty_or_missing_targets_refuse[names0-empty-theorem-names]
+0.08s call     tests/integration/test_bsgs_selftest.py::test_measured_table_growth_follows_the_declared_sqrt_n_shape[24]
+0.08s call     tests/integration/test_axiom_computation.py::test_pin_mismatch_precedes_lake
+0.06s call     tests/integration/test_bsgs_selftest.py::test_measured_table_growth_follows_the_declared_sqrt_n_shape[20]
+0.05s call     tests/integration/test_bsgs_selftest.py::test_a_corpus_case_altered_by_one_byte_fails_the_certificate_check
+0.05s call     tests/integration/test_bsgs_selftest.py::test_a_case_whose_recorded_x_is_wrong_but_whose_fields_check_out_is_the_skills_refusal
+0.04s call     tests/integration/test_lean_toolchain.py::test_a_pin_naming_another_commit_is_refused_before_any_compile
+0.02s setup    tests/integration/test_bsgs_selftest.py::test_measured_table_growth_follows_the_declared_sqrt_n_shape[20]
+0.02s setup    tests/integration/test_bsgs_selftest.py::test_measured_table_growth_follows_the_declared_sqrt_n_shape[24]
+0.02s teardown tests/integration/test_bsgs_selftest.py::test_twenty_fresh_forty_bit_instances_drawn_by_postcondition_are_recovered
+0.01s teardown tests/integration/test_bsgs_selftest.py::test_measured_table_growth_follows_the_declared_sqrt_n_shape[28]
+0.01s setup    tests/integration/test_axiom_computation.py::test_real_axiom_matrix
+35 passed in 338.81s (0:05:38)

@@ -79,3 +79,42 @@ is part of these measurements.
 
 No-Claim: runtime measurements provide no mathematical evidence, do not certify all tests
 as passing, and do not establish a unit tier below sixty seconds.
+
+## Unit gate contract and validation
+
+`scripts/check.sh --unit` runs the five fast gates and
+`uv run pytest tests/unit -q -m "not slow" --durations=10`. The registered `slow` marker
+applies to the measured Lean canonicalization test through `tests/_unit_tier.py`.
+The unrestricted suite retains that test. The pre-commit hook uses `--fast`; CI uses the
+unrestricted gate. Neither the Hypothesis sample count nor a deadline depends on this tier.
+
+The duration-budget test sums setup, call, and teardown, then uses the median of available
+samples against a strict five-second threshold. It reads the archived baseline and repeat
+reports. Updating those recorded reports is necessary to detect drift in the budget test;
+this is not a live timing assertion on every unit execution. A report with skipped tests,
+missing durations, or no passing summary refuses validation. Pytest 9.1.1 is the installed
+version; Context7's pytest documentation and its upstream import-mode test establish the
+scratch collection's `--import-mode=importlib` behavior.
+
+`final-targeted.log` reports 31 passed in 1.57 seconds. Its marker test imports the actual
+Lean test module before collecting the scratch module, then checks both one selected plus
+one deselected test and two tests in the unrestricted scratch run. A normal import of the
+same basename produces an import-file mismatch in the real unit collection; importlib mode
+avoids that collision without changing which tests execute.
+
+`planted-budget.log` records the deliberate negative: a 4.90-second call plus 0.11-second
+setup is an unmarked 5.01-second test, and the assertion that no slow test exists fails.
+`skipped-repro-after.log` records refusal of a real pytest report with one pass and one skip.
+Neither negative is counted as a passing production test.
+
+```bash
+uv run pytest -q tests/unit/test_check_unit_tier.py tests/unit/test_check_gate_instruments.py tests/unit/test_golden_harness.py tests/unit/test_isolation_snapshot.py
+uv run pytest -q tests/integration/test_axiom_computation.py tests/integration/test_bsgs_selftest.py tests/integration/test_lean_toolchain.py --durations=25
+```
+
+The three integration modules report 35 passed in 338.81 seconds (`top-three.log`).
+`unit-gate.log.gz` reports 2 failed, 1986 passed, 1 deselected in 392.26 seconds, with
+403.18 seconds of total command wall time. A concurrent full suite was active, so this is
+not a valid idle timing measurement. The two failures are the scratch import collision
+described above and `m0-run` refusing a receipt without `measurement_scope`, which belongs
+to the receipt lane. The under-sixty-second acceptance criterion remains open.

@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/tmp/cairn-unit-audit-skipped-repro.py", line 23, in <module>
+    accepted = duration_totals(report)
+  File "/Users/jr843u/Documents/cairn/tests/_unit_tier.py", line 24, in duration_totals
+    raise ValueError(f"{path}: expected a complete passing --durations=0 report")
+ValueError: /var/folders/8r/mztncc5x11x42rtx33pmqbww0000gp/T/cairn-skipped-timing-7wmy5ty4/report.log: expected a complete passing --durations=0 report
