@@ -576,6 +576,18 @@ CREATE TRIGGER IF NOT EXISTS worker_dispatches_no_delete BEFORE DELETE ON worker
 CREATE TRIGGER IF NOT EXISTS worker_results_no_update BEFORE UPDATE ON worker_results BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER IF NOT EXISTS worker_results_no_delete BEFORE DELETE ON worker_results BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 
+CREATE TABLE IF NOT EXISTS dispatch_canaries (
+    canary_id TEXT PRIMARY KEY,
+    record_hash TEXT NOT NULL UNIQUE REFERENCES nodes(hash),
+    sdk_version TEXT NOT NULL,
+    cli_version TEXT NOT NULL,
+    verdict TEXT NOT NULL CHECK (verdict IN ('pass', 'fail')),
+    record_json TEXT NOT NULL
+);
+
+CREATE TRIGGER IF NOT EXISTS dispatch_canaries_no_update BEFORE UPDATE ON dispatch_canaries BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS dispatch_canaries_no_delete BEFORE DELETE ON dispatch_canaries BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+
 CREATE TABLE IF NOT EXISTS ladder_tables (
     hash TEXT PRIMARY KEY,
     run_id TEXT NOT NULL UNIQUE,

@@ -11,6 +11,7 @@ TAG_GATE_BUNDLE = "cairn/gate-bundle/v1"
 TAG_INSTANCE = "cairn/instance/v1"
 TAG_CHAIN = "cairn/chain/v1"
 TAG_TRIAL_SEED = "cairn/trial-seed/v1"
+TAG_DISPATCH_CANARY = "cairn/dispatch-canary/v1"
 DOMAIN_TAGS = (
     TAG_RECIPE_KEY,
     TAG_HYPOTHESIS_KEY,
@@ -22,6 +23,7 @@ DOMAIN_TAGS = (
     TAG_INSTANCE,
     TAG_CHAIN,
     TAG_TRIAL_SEED,
+    TAG_DISPATCH_CANARY,
 )
 
 ENV_MANIFEST = Struct(

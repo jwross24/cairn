@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from uuid import uuid4
 
-from cairn import bundle, cli, log, roles, skeptic, worker
+from cairn import bundle, canary, cli, log, roles, skeptic, worker
 from cairn.substrate import HashMismatch, UnknownNode, node_hash_for
 
 lg = log.get("dispatch")
@@ -241,6 +241,10 @@ def result(sub, dispatch_id):
 
 async def run(sub, gate_bundle, *, role, node_ids):
     prepared = _prepare(sub, gate_bundle, role=role, node_ids=node_ids)
+    try:
+        canary.require_grounded(sub)
+    except canary.CanaryRefused as exc:
+        raise DispatchRefused(str(exc)) from None
     record = _record(sub, prepared)
     cwd = Path(tempfile.mkdtemp(prefix="cairn-worker-"))
     try:
