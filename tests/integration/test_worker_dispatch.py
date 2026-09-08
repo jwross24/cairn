@@ -99,3 +99,21 @@ if __name__ == "__main__":
     directory = Path(tempfile.mkdtemp(prefix="cairn-live-dispatch-"))
     print(json.dumps({"artifact_directory": str(directory)}), flush=True)
     asyncio.run(live_check(directory))
+
+
+def test_a_scoped_mcp_server_reaches_the_options_the_sdk_receives(arena, tmp_path):
+    sub, gate_bundle, node = arena
+    prepared = dispatch._prepare(sub, gate_bundle, role="echo", node_ids=(node,))
+    servers = {"cairn_scope": {"type": "sdk", "name": "cairn_scope"}}
+    assert worker._options(prepared, tmp_path, servers).mcp_servers == servers
+    assert worker._options(prepared, tmp_path).mcp_servers == {}
+
+
+def test_the_worker_envelope_pins_permission_mode_and_disables_thinking(arena, tmp_path):
+    sub, gate_bundle, node = arena
+    prepared = dispatch._prepare(sub, gate_bundle, role="echo", node_ids=(node,))
+    options = worker._options(prepared, tmp_path)
+    assert options.permission_mode == "dontAsk"
+    assert options.thinking == {"type": "disabled"}
+    assert options.setting_sources == []
+    assert options.strict_mcp_config is True

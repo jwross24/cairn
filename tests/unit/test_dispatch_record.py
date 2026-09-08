@@ -11,7 +11,7 @@ import pytest
 from claude_agent_sdk import ResultMessage
 from claude_agent_sdk._cli_version import __cli_version__
 
-from cairn import bundle, dispatch, worker
+from cairn import bundle, dispatch, skeptic_tools, worker
 from cairn.substrate import HashMismatch, UnknownNode, blob_hash, node_hash_for
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -320,3 +320,9 @@ def test_worker_results_are_append_only(arena, sql):
     with pytest.raises(sqlite3.IntegrityError, match="UNIQUE constraint"):
         dispatch._write(sub, "worker_result", "worker_results", outcome, (record.hash,))
     assert sub.conn.execute("SELECT COUNT(*) FROM worker_results").fetchone()[0] == 1
+
+
+def test_the_dispatch_tool_registry_is_the_skeptic_registry_and_nothing_wider():
+    assert worker.TOOLS == skeptic_tools.TOOLS
+    assert "Bash" not in worker.TOOLS
+    assert not any(name in worker.TOOLS for name in ("Read", "Write", "Edit", "WebSearch", "WebFetch"))

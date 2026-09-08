@@ -619,3 +619,28 @@ if __name__ == "__main__":
     directory = Path(tempfile.mkdtemp(prefix="cairn-live-skeptic-"))
     print(json.dumps({"artifact_directory": str(directory)}), flush=True)
     asyncio.run(live_check(directory))
+
+
+def test_a_handed_bundle_that_is_not_the_pinned_bundle_is_refused(tmp_path, clear_flags):
+    bundle_path, pin_path = _make_skeptic_bundle(tmp_path, clear_flags, "pinned-narrow", ["lean_artifact"])
+    gate = bundle.GateBundle.open(bundle_path, pin_path)
+    widened = json.dumps({"evidence_kinds": sorted(skeptic.MAX_EVIDENCE_KINDS)}).encode()
+    forged_rows = [
+        bundle._row(kind, bundle.canonical_bytes(kind, json.loads(widened)))
+        if kind == "skeptic_scope"
+        else (kind, canonical, digest)
+        for kind, canonical, digest in gate.rows
+    ]
+    forged_hash = bundle.bundle_hash(forged_rows)
+    forged = bundle.GateBundle(bundle_path, pin_path, forged_rows, forged_hash, forged_hash)
+    assert forged.object("skeptic_scope")["evidence_kinds"] == sorted(skeptic.MAX_EVIDENCE_KINDS)
+    with substrate.Substrate.open(tmp_path / "forged.sqlite") as writer:
+        seeded = _seed(writer, gate)
+        assert (
+            skeptic.snapshot(writer, gate, seeded["statement"].hash).read(seeded["evidence"]["lean_artifact"].hash)[
+                "verdict"
+            ]
+            == "pass"
+        )
+        with pytest.raises(skeptic.ScopedReadRefused, match="supplied gate bundle is not the pinned bundle"):
+            skeptic.snapshot(writer, forged, seeded["statement"].hash)
