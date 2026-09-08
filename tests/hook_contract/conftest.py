@@ -27,6 +27,7 @@ ROOT = Path(os.environ.get("CAIRN_REPO_ROOT") or Path(__file__).resolve().parent
 
 HOOK_SCRIPTS = (
     "check.sh",
+    "gate_scope.py",
     "theater-patterns.sh",
     "theater_patterns.py",
     "closing_commit.py",

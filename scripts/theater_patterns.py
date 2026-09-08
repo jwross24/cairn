@@ -1,12 +1,15 @@
 """Scan the working tree for the theater patterns audit-policy.yaml declares.
 
-    scripts/theater_patterns.py [--root DIR] [--policy FILE] [--log FILE]
+    scripts/theater_patterns.py [--root DIR] [--policy FILE] [--log FILE] [PATH ...]
 
 The vendored compliance skill reads `project_theater_patterns` only from its
 `theater-detector.md` subagent, which the pre-commit path never runs;
 `scripts/theater-scan.sh` carries a fixed catalog and opens no policy file. This
 gate is cairn-owned, runs over the whole tree rather than one bead's cited files,
-and keeps the skill unforked. Its findings gate the commit; they reach no
+and keeps the skill unforked. Named paths narrow the scan to those files, which is
+how `scripts/check.sh --paths` keeps a commit's gate off files the commit does not
+touch; the exemption cross-check stays whole-tree, since a stale allowance is stale
+wherever the file sits. Its findings gate the commit; they reach no
 dimension of the audit's score.
 
 The section is the switch: with no `project_theater_patterns` key the gate is off
@@ -243,7 +246,7 @@ def exemption_problems(root: Path, pattern: Pattern, reachable: list[str]) -> li
     return problems
 
 
-def evaluate(root: Path, document: object, *, bead_status=None, resolver_absence=None) -> Outcome:
+def evaluate(root: Path, document: object, *, bead_status=None, resolver_absence=None, scope=None) -> Outcome:
     try:
         patterns = load_patterns(document)
     except PolicyError as exc:
@@ -258,8 +261,13 @@ def evaluate(root: Path, document: object, *, bead_status=None, resolver_absence
 
     for pattern in patterns:
         reachable = targets(root, pattern)
-        scanned.update(reachable)
+        # The exemption cross-check reads the whole tree whatever the scan covers: an
+        # allowance whose count has dropped is stale wherever the file sits, and a scope
+        # that hid it would let the next skip in unseen.
         problems.extend(exemption_problems(root, pattern, reachable))
+        if scope is not None:
+            reachable = [rel for rel in reachable if rel in scope]
+        scanned.update(reachable)
 
         # An unreadable expiry costs one auxiliary cross-check; the scan, the counts and
         # every finding are unaffected, so it warns. A resolver that IS available and
@@ -369,6 +377,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", default=None)
     parser.add_argument("--policy", default=None)
     parser.add_argument("--log", default=None)
+    parser.add_argument("paths", nargs="*")
     ns = parser.parse_args(argv)
 
     root = Path(ns.root).resolve() if ns.root else Path(__file__).resolve().parents[1]
@@ -411,6 +420,7 @@ def main(argv: list[str] | None = None) -> int:
         document,
         bead_status=None if blocked is not None else bead_status_resolver(),
         resolver_absence=blocked,
+        scope=set(ns.paths) or None,
     )
 
     tag = f"[{blocked.condition}]" if blocked is not None else "[unavailable]"

@@ -555,3 +555,31 @@ def test_cli_refuses_an_exemption_whose_bead_is_not_in_the_store(tmp_path):
     assert "cairn-zzz9 is not in the bead store" in proc.stderr
     assert "br list --all" in proc.stderr
     assert "DENY theater-patterns policy" in log.read_text()
+
+
+def test_a_scope_narrows_the_scan_to_the_files_it_names(tmp_path):
+    tree(
+        tmp_path,
+        {
+            "tests/unit/test_a.py": ONE_LINE_SKIP.format(mark=MARK),
+            "tests/unit/test_b.py": ONE_LINE_SKIP.format(mark=MARK),
+        },
+    )
+    outcome = evaluate(tmp_path, document(), scope={"tests/unit/test_a.py"})
+    assert [f.path for f in outcome.findings] == ["tests/unit/test_a.py"]
+    assert outcome.scanned == ["tests/unit/test_a.py"]
+
+
+def test_a_scope_naming_no_reachable_file_scans_nothing_and_passes(tmp_path):
+    tree(tmp_path, {"tests/unit/test_a.py": ONE_LINE_SKIP.format(mark=MARK)})
+    outcome = evaluate(tmp_path, document(), scope={"src/cairn/elsewhere.py"})
+    assert outcome.kind == "PASS"
+    assert outcome.scanned == []
+
+
+def test_a_stale_exemption_is_refused_though_the_scope_hides_the_file_it_names(tmp_path):
+    tree(tmp_path, {"tests/unit/test_a.py": "x = 1\n", "tests/unit/test_b.py": "y = 2\n"})
+    doc = document(exempt_paths=exempt("tests/unit/test_a.py"), exempt_until_bead="cairn-hcl")
+    outcome = evaluate(tmp_path, doc, bead_status=open_bead, scope={"tests/unit/test_b.py"})
+    assert outcome.kind == "DENY"
+    assert any("no longer matches the signature" in problem for problem in outcome.problems)

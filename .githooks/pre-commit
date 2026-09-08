@@ -3,7 +3,9 @@
 #
 #   git config core.hooksPath .githooks
 #
-# 1. scripts/check.sh --fast — format, lint and spelling on the whole tree.
+# 1. scripts/check.sh --fast — format, lint and spelling on the paths this commit
+#    stages, so a file the commit does not touch cannot refuse it. The tree-wide
+#    run is CI's (.github/workflows/ci.yml).
 # 2. The beads compliance audit, for any bead this commit closes.
 #
 # Both leave a trace (.check.log, .beads_hook.log). Neither passes quietly when
@@ -43,8 +45,30 @@ record_gate() {
   fi
 }
 
+# The gates run over the paths in the index, not the working tree, so another lane's
+# unformatted or misspelled file cannot refuse this commit. An index that stages nothing
+# -- an amend, or a commit of metadata git already holds -- has no scope to narrow to, so
+# it takes the tree-wide form rather than a run with no gate in it.
 if [ -x scripts/check.sh ]; then
-  if ! scripts/check.sh --fast; then
+  STAGED_LIST="$(mktemp)"
+  uv run python scripts/gate_scope.py staged --root "$ROOT" > "$STAGED_LIST"
+  STAGED_RC=$?
+  if [ "$STAGED_RC" -ne 0 ]; then
+    printf '%s DENY staged-path resolver rc=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$STAGED_RC" >> .beads_hook.log
+    echo "[pre-commit] BLOCKED: scripts/gate_scope.py staged exited $STAGED_RC." >&2
+    echo "             Which paths this commit stages is unknown, so the gates were not scoped to them." >&2
+    exit 1
+  fi
+  STAGED_PATHS=()
+  while IFS= read -r staged_path; do
+    [ -n "$staged_path" ] && STAGED_PATHS+=("$staged_path")
+  done < "$STAGED_LIST"
+  if [ ${#STAGED_PATHS[@]} -eq 0 ]; then
+    CHECK_ARGS=(--fast)
+  else
+    CHECK_ARGS=(--fast --paths "${STAGED_PATHS[@]}")
+  fi
+  if ! scripts/check.sh "${CHECK_ARGS[@]}"; then
     echo "[pre-commit] BLOCKED by scripts/check.sh; see the output above and .check.log" >&2
     exit 1
   fi
