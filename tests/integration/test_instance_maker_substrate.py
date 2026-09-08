@@ -1,11 +1,29 @@
+import dataclasses
 import hashlib
+import json
 import sys
 from pathlib import Path
 
 import pytest
 
-from cairn import bundle, instances, runner, selftest_skills, substrate, tiergate
+from cairn import (
+    bundle,
+    canon,
+    claims,
+    instances,
+    ladderplan,
+    laddertable,
+    repro,
+    runner,
+    selftest_skills,
+    substrate,
+    ticketlattice,
+    tiergate,
+)
 from cairn.skills import instance_maker
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import factories
 
 pytestmark = pytest.mark.skipif(
     sys.platform != "darwin",
@@ -27,7 +45,7 @@ def harness(tmp_path, pinned_bundle):
         yield sub, gate, tmp_path / "runs"
 
 
-def _launch(sub, gate, scratch, *, bits=28, trial=0, nonce=NONCE):
+def _launch(sub, gate, scratch, *, bits=28, trial=0, nonce=NONCE, declared_tier=instances.DECLARED_TIER):
     return instances.launch_trial(
         sub,
         gate,
@@ -38,6 +56,7 @@ def _launch(sub, gate, scratch, *, bits=28, trial=0, nonce=NONCE):
         method_identity=METHOD_IDENTITY,
         budget_remaining=BUDGET,
         ceiling_multiplier=CEILING,
+        declared_tier=declared_tier,
     )
 
 
@@ -179,3 +198,135 @@ def test_the_ceiling_multiplier_defaults_to_the_bundles_tiers_object(harness, mo
     )
     assert seen["ceiling_multiplier"] == gate.tiers["ceiling_multiplier"] == 4
     assert seen["do_not_cache"] is True and seen["skip_cache_lookup"] is True and seen["stdin_document"]["bits"] == 28
+
+
+HOLD_OUT_BITS = 60
+TRIAL_BASE = laddertable.Trial(
+    bits=0,
+    trial=0,
+    seed=1,
+    instance_hash="aa" * 32,
+    recovered=True,
+    completed=True,
+    gate_ops=1000000,
+    reported_ops=1000000,
+    cpu_seconds="1",
+    wall_seconds="1",
+    peak_rss_bytes=1000,
+    scratch_bytes=1000,
+    reported_memory_bytes=1000,
+    replay_grade="Replayable",
+)
+RUNG_BASE = laddertable.RungRow(
+    bits=0,
+    role=ladderplan.ROLE_FIT,
+    trials=2,
+    mean_ops="1000000",
+    sd_ops="0",
+    cpu_seconds="1",
+    reference_rate="1000000",
+    memory_bytes=100000,
+    success_rate="1",
+    radius="0.1216",
+    claim_ci_low="1.5",
+    claim_ci_high="1.8",
+    model_prediction="1000000",
+    model_band="0.05",
+    shape_statistic="1",
+    declared_shape="stable",
+)
+
+
+@pytest.fixture
+def plan():
+    return ladderplan.LadderPlan.load(
+        json.loads((Path(__file__).resolve().parents[2] / "bundle" / "ladder_plan.json").read_text())
+    )
+
+
+def keep_table(hypothesis_hash, gate_bundle):
+    sizes = [30, 40, 50, HOLD_OUT_BITS]
+    return laddertable.ResultTable(
+        run_id="run-keep",
+        nonce="nonce-keep",
+        hypothesis_hash=hypothesis_hash,
+        method_identity=METHOD_IDENTITY,
+        implementation_revision=instance_maker.identity_bundle()["implementation_revision"],
+        gate_bundle_hash=gate_bundle.hash,
+        plan_hash="dd" * 32,
+        uncounted_backend=None,
+        rungs=tuple(
+            dataclasses.replace(
+                RUNG_BASE, bits=b, role=ladderplan.ROLE_HOLD_OUT if b == HOLD_OUT_BITS else ladderplan.ROLE_FIT
+            )
+            for b in sizes
+        ),
+        trials=tuple(dataclasses.replace(TRIAL_BASE, bits=b, trial=t) for b in sizes for t in (0, 1)),
+    )
+
+
+def bindings(sub):
+    rows = sub.conn.execute(
+        "SELECT canonical FROM nodes WHERE kind = ? ORDER BY rowid", (ticketlattice.BINDING_KIND,)
+    ).fetchall()
+    return [canon.decode(ticketlattice.BINDING, row["canonical"]) for row in rows]
+
+
+def seeded_keep(sub, gate):
+    obj = factories.hypothesis_object(seed=0, method_identity=METHOD_IDENTITY)
+    claims.write_hypothesis_object(sub, obj)
+    instances.commit_nonce(sub, obj.hash, "run-1", NONCE)
+    return obj
+
+
+def test_a_tier_two_launch_binds_its_attempt_to_the_ticket_the_gate_selected(harness, plan):
+    sub, gate, scratch = harness
+    selftest_skills.certify(sub, gate.verifier_config(), selftest_skills.INSTANCE_MAKER)
+    obj = seeded_keep(sub, gate)
+    table = keep_table(obj.hash, gate)
+    laddertable.write(sub, table, plan)
+    attempt, out = _launch(sub, gate, scratch, declared_tier=2)
+    assert attempt.status == runner.STATUS_OK and out is not None
+    bound = bindings(sub)
+    assert [(b["attempt_id"], b["hypothesis_key"], b["tier"], b["bundle_hash"]) for b in bound] == [
+        (attempt.attempt_id, obj.hash, 2, gate.hash)
+    ]
+    ticket = claims.get_ticket(sub, bound[0]["ticket_hash"])
+    assert (ticket["node_hash"], ticket["tier"]) == (table.hash, tiergate.TIER_TWO_TICKET_TIER)
+
+
+def test_a_tier_zero_launch_selects_no_ticket_and_records_no_binding(harness):
+    sub, gate, scratch = harness
+    selftest_skills.certify(sub, gate.verifier_config(), selftest_skills.INSTANCE_MAKER)
+    seeded_keep(sub, gate)
+    attempt, out = _launch(sub, gate, scratch)
+    assert attempt.status == runner.STATUS_OK and out is not None
+    assert bindings(sub) == []
+
+
+def test_the_binding_carries_a_refused_launch_no_further_than_the_refusal(harness):
+    sub, gate, scratch = harness
+    selftest_skills.certify(sub, gate.verifier_config(), selftest_skills.INSTANCE_MAKER)
+    seeded_keep(sub, gate)
+    with pytest.raises(instances.TrialRefused) as info:
+        _launch(sub, gate, scratch, declared_tier=2)
+    assert tiergate.TIER_TWO_ABOVE in info.value.reasons
+    assert bindings(sub) == []
+
+
+def test_a_bound_tier_two_attempt_is_the_record_a_tier_three_launch_reads(harness, plan):
+    sub, gate, scratch = harness
+    selftest_skills.certify(sub, gate.verifier_config(), selftest_skills.INSTANCE_MAKER)
+    obj = seeded_keep(sub, gate)
+    laddertable.write(sub, keep_table(obj.hash, gate), plan)
+    attempt, _ = _launch(sub, gate, scratch, declared_tier=2)
+    candidate = ticketlattice.tier_three_candidate(sub, gate, obj.hash, METHOD_IDENTITY)
+    assert candidate is None, "an unverified witness is not a Tier-3 candidate"
+    claims.write_repro_record(
+        sub,
+        claims.ReproRecord(
+            attempt_id=attempt.attempt_id, kind=repro.WITNESS_CHECK, passed=True, at="2026-09-08T00:00:00.000000+00:00"
+        ),
+    )
+    verified = ticketlattice.tier_three_candidate(sub, gate, obj.hash, METHOD_IDENTITY)
+    assert verified is not None and verified["attempt_id"] == attempt.attempt_id

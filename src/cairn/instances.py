@@ -13,7 +13,7 @@ engine's; this module records what it is handed.
 import secrets
 from dataclasses import dataclass
 
-from cairn import cli, keys, log, runner, substrate, tiergate
+from cairn import cli, keys, log, runner, substrate, ticketlattice, tiergate
 from cairn.skills import instance_maker
 
 LOG_STEP = "instances"
@@ -191,7 +191,9 @@ def maker_recipe(seed, salt):
     }
 
 
-def admit(sub, gate_bundle, *, hypothesis_key, method_identity, bits, seed, budget_remaining):
+def admit(
+    sub, gate_bundle, *, hypothesis_key, method_identity, bits, seed, budget_remaining, declared_tier=DECLARED_TIER
+):
     launch = tiergate.Launch(
         cost_profile=instance_maker.COST_PROFILE,
         inputs={"bits": bits, "seed": seed},
@@ -199,7 +201,7 @@ def admit(sub, gate_bundle, *, hypothesis_key, method_identity, bits, seed, budg
         hypothesis_key=hypothesis_key,
         method_identity=method_identity,
         skill_identity_hash=instance_maker.skill_identity_hash(),
-        declared_tier=DECLARED_TIER,
+        declared_tier=declared_tier,
     )
     decision = tiergate.TierGate(sub, gate_bundle).admit(launch)
     if isinstance(decision, tiergate.TierRefused):
@@ -218,12 +220,13 @@ def launch_trial(
     method_identity,
     budget_remaining,
     ceiling_multiplier=None,
+    declared_tier=DECLARED_TIER,
 ):
     record = get_nonce(sub, nonce)
     if record is None:
         raise UnknownNonce(f"no nonce {nonce[:12]} is recorded")
     seed = trial_seed(nonce, record.hypothesis_key, bits, trial)
-    admit(
+    admission = admit(
         sub,
         gate_bundle,
         hypothesis_key=record.hypothesis_key,
@@ -231,6 +234,7 @@ def launch_trial(
         bits=bits,
         seed=seed,
         budget_remaining=budget_remaining,
+        declared_tier=declared_tier,
     )
     tiers = gate_bundle.tiers
     attempt = runner.launch(
@@ -249,11 +253,35 @@ def launch_trial(
         skip_cache_lookup=True,
         do_not_cache=instance_maker.DO_NOT_CACHE,
     )
+    bind_admission(sub, gate_bundle, admission, attempt.attempt_id, record.hypothesis_key, method_identity)
     if attempt.status != runner.STATUS_OK or attempt.parsed is None or attempt.parsed.document is None:
         return attempt, None
     out = instance_maker.InstanceOutput.from_dict(_from_wire(attempt.parsed.document))
     record_trial(sub, nonce, bits, trial, seed, out.instance_hash, out.x, attempt.attempt_id)
     return attempt, out
+
+
+def bind_admission(sub, gate_bundle, admission, attempt_id, hypothesis_key, method_identity):
+    """Record the ticket an attempt ran under, where the gate selected one.
+
+    A Tier-0 admission selects no ticket and `BINDING.ticket_hash` is non-empty, so there is no
+    record to write: a binding naming no ticket would assert an admission the gate never granted.
+
+    The recorded tier is the launch's declared tier, not `Admitted.ticket_tier`: the latter names
+    the lattice rung a ticket sits on (`TIER_TWO_TICKET_TIER` is 1), while `tier_three_candidate`
+    reads this field as the tier the attempt ran at.
+    """
+    if admission.ticket_hash is None:
+        return None
+    return ticketlattice.bind_attempt(
+        sub,
+        gate_bundle,
+        attempt_id=attempt_id,
+        hypothesis_key=hypothesis_key,
+        method_identity=method_identity,
+        ticket_hash=admission.ticket_hash,
+        tier=admission.launch.declared_tier,
+    )
 
 
 def _from_wire(document):
