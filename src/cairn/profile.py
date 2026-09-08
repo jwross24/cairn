@@ -9,6 +9,20 @@ class ProfileUndeclared(LookupError):
         self.declared = tuple(sorted(declared))
 
 
+def declared_bits(inputs):
+    """The size a launch's inputs name, or None where they name none.
+
+    A launch carries its inputs either as the bare size or as a mapping holding one under `bits`;
+    both shapes reach the gate, and every reader of a launch's size resolves it here so the tier
+    gate and the ladder-rung predicate cannot disagree about what a launch declared.
+    """
+    if isinstance(inputs, Mapping):
+        inputs = inputs.get("bits")
+    if isinstance(inputs, bool) or not isinstance(inputs, int):
+        return None
+    return inputs
+
+
 @dataclass(frozen=True)
 class Evaluation:
     expected_wall_s: float
@@ -70,10 +84,10 @@ class CostProfile:
         return tuple(sorted(self.production.per_size))
 
     def evaluate(self, bits):
-        if isinstance(bits, Mapping):
-            bits = bits.get("bits")
-        if isinstance(bits, bool) or not isinstance(bits, int) or bits not in self.production.per_size:
-            raise ProfileUndeclared(bits, self.production.per_size)
+        raw = bits.get("bits") if isinstance(bits, Mapping) else bits
+        bits = declared_bits(bits)
+        if bits is None or bits not in self.production.per_size:
+            raise ProfileUndeclared(raw, self.production.per_size)
         cost = self.production.per_size[bits]
         wall = float(cost.mean_wall_s)
         if self.verification.cost_model == SAME_AS_PRODUCTION:
