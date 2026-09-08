@@ -643,6 +643,7 @@ CREATE TABLE IF NOT EXISTS ladder_trials (
     scratch_bytes INTEGER NOT NULL,
     reported_memory_bytes INTEGER NOT NULL,
     replay_grade TEXT NOT NULL,
+    measurement_scope TEXT NOT NULL,
     witness_hash TEXT,
     PRIMARY KEY (table_hash, bits, trial)
 );

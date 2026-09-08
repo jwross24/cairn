@@ -6,6 +6,10 @@ in the fixed order PLAN section 6 sets: the REJECT predicates, then the INCONCLU
 then a pass. Nothing here measures a claim; the module composes predicates over numbers a
 caller already produced. The shape diagnostic is separate from the verdict: a departure is
 queued for a human and never moves what the verdict says.
+
+A trial whose receipt scope is weaker than a verified-complete process-tree figure makes the
+run INCONCLUSIVE, and that check sits after the REJECT predicates: a scope short of `tree`
+undercounts, so a refutation drawn from it stands, while a pass drawn from it does not.
 """
 
 import dataclasses
@@ -13,7 +17,7 @@ import json
 from dataclasses import dataclass, field
 from decimal import Decimal
 
-from cairn import canon, claims, human_queue, keys, ladderplan, ledger, log, repro, substrate
+from cairn import canon, claims, human_queue, keys, ladderplan, ledger, log, repro, runner, substrate
 from cairn.canon import BOOL, INT, NON_EMPTY_STR, STR, Field, List, Optional, Struct
 from cairn.substrate import SubstrateError, _now
 
@@ -37,6 +41,7 @@ REFUTATION_FLOOR = "refutation_floor"
 IN_SAMPLE_MISS = "in_sample_model_miss"
 OUT_OF_SAMPLE_MISS = "out_of_sample_model_miss"
 UNCOUNTED_BACKEND = "uncounted_backend"
+MEASUREMENT_SCOPE = "measurement_scope"
 CLOCK = "clock"
 WALL = "wall"
 FAILED_TRIAL = "failed_trial"
@@ -44,7 +49,7 @@ INSIDE_BAND = "inside_band"
 ALL_RUNGS_PASS = "all_rungs_pass"
 
 REJECT_PREDICATES = (RECOVERY, COUNT_DIVERGENCE, MEMORY_CAP, REFUTATION_FLOOR, IN_SAMPLE_MISS, OUT_OF_SAMPLE_MISS)
-INCONCLUSIVE_PREDICATES = (UNCOUNTED_BACKEND, CLOCK, WALL, FAILED_TRIAL, INSIDE_BAND)
+INCONCLUSIVE_PREDICATES = (UNCOUNTED_BACKEND, MEASUREMENT_SCOPE, CLOCK, WALL, FAILED_TRIAL, INSIDE_BAND)
 PREDICATES = (*REJECT_PREDICATES, *INCONCLUSIVE_PREDICATES, ALL_RUNGS_PASS)
 
 REFUTATION_KIND = {
@@ -73,6 +78,7 @@ TRIAL = Struct(
         Field("scratch_bytes", INT),
         Field("reported_memory_bytes", INT),
         Field("replay_grade", NON_EMPTY_STR),
+        Field("measurement_scope", NON_EMPTY_STR),
         Field("witness_hash", Optional(STR)),
     ],
 )
@@ -136,6 +142,7 @@ def _trial_fields(t):
         "scratch_bytes": t.scratch_bytes,
         "reported_memory_bytes": t.reported_memory_bytes,
         "replay_grade": t.replay_grade,
+        "measurement_scope": t.measurement_scope,
         "witness_hash": t.witness_hash,
     }
 
@@ -204,6 +211,7 @@ class Trial:
     scratch_bytes: int
     reported_memory_bytes: int
     replay_grade: str
+    measurement_scope: str
     witness_hash: str | None = None
     hash: str = field(init=False, compare=False)
 
@@ -418,6 +426,25 @@ def _uncounted_backend(table):
     return None
 
 
+def _measurement_scope(trials):
+    for t in trials:
+        if not runner.scope_is_verified_complete(t.measurement_scope):
+            return Verdict(
+                INCONCLUSIVE,
+                MEASUREMENT_SCOPE,
+                rung_bits=t.bits,
+                trial=t.trial,
+                measured_points=(
+                    {
+                        "numeric": {"bits": t.bits, "trial": t.trial, "cpu_seconds": t.cpu_seconds},
+                        "categorical": {"predicate": MEASUREMENT_SCOPE, "measurement_scope": t.measurement_scope},
+                    },
+                ),
+                ci=None,
+            )
+    return None
+
+
 def _clock(trials, rows_by_bits, plan):
     tolerance = plan.tolerances.clock
     rate_ratio = plan.rate_ratio
@@ -526,6 +553,7 @@ def verdict(table, plan):
         lambda: _model_miss(rows_by_bits, ladderplan.ROLE_FIT, IN_SAMPLE_MISS),
         lambda: _model_miss(rows_by_bits, ladderplan.ROLE_HOLD_OUT, OUT_OF_SAMPLE_MISS),
         lambda: _uncounted_backend(table),
+        lambda: _measurement_scope(trials),
         lambda: _clock(trials, rows_by_bits, plan),
         lambda: _wall(trials, plan),
         lambda: _failed_trial(rungs),
@@ -660,6 +688,7 @@ def _trial_from_row(r):
         scratch_bytes=r["scratch_bytes"],
         reported_memory_bytes=r["reported_memory_bytes"],
         replay_grade=r["replay_grade"],
+        measurement_scope=r["measurement_scope"],
         witness_hash=r["witness_hash"],
     )
 

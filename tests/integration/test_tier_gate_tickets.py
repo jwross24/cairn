@@ -16,6 +16,7 @@ from cairn import (
     nogo,
     prefilter,
     repro,
+    runner,
     substrate,
     ticketlattice,
     tiergate,
@@ -174,6 +175,7 @@ TRIAL_BASE = laddertable.Trial(
     scratch_bytes=1000,
     reported_memory_bytes=1000,
     replay_grade="Replayable",
+    measurement_scope=runner.SCOPE_TREE,
 )
 RUNG_BASE = laddertable.RungRow(
     bits=0,

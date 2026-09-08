@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import ladderplan, laddertable
+from cairn import ladderplan, laddertable, runner
 
 ROOT = Path(__file__).resolve().parents[2]
 COMMITTED = json.loads((ROOT / "bundle" / "ladder_plan.json").read_text())
@@ -27,6 +27,7 @@ _TRIAL_BASE = laddertable.Trial(
     scratch_bytes=1000,
     reported_memory_bytes=1000,
     replay_grade="Replayable",
+    measurement_scope=runner.SCOPE_TREE,
 )
 _RUNG_BASE = laddertable.RungRow(
     bits=0,
@@ -144,6 +145,10 @@ def _inside_band_case():
     return _with_rung(_clean_table(), 30, claim_ci_low="1.0")
 
 
+def _measurement_scope_case():
+    return _with_trial(_clean_table(), 30, 0, measurement_scope=runner.SCOPE_TRUNCATED)
+
+
 PREDICATE_CASES = [
     (laddertable.RECOVERY, _recovery_case, laddertable.REJECT, 30),
     (laddertable.COUNT_DIVERGENCE, _count_divergence_case, laddertable.REJECT, 30),
@@ -152,6 +157,7 @@ PREDICATE_CASES = [
     (laddertable.IN_SAMPLE_MISS, _in_sample_miss_case, laddertable.REJECT, 30),
     (laddertable.OUT_OF_SAMPLE_MISS, _out_of_sample_miss_case, laddertable.REJECT, 60),
     (laddertable.UNCOUNTED_BACKEND, _uncounted_backend_case, laddertable.INCONCLUSIVE, None),
+    (laddertable.MEASUREMENT_SCOPE, _measurement_scope_case, laddertable.INCONCLUSIVE, 30),
     (laddertable.CLOCK, _clock_case, laddertable.INCONCLUSIVE, 30),
     (laddertable.WALL, _wall_case, laddertable.INCONCLUSIVE, 30),
     (laddertable.FAILED_TRIAL, _failed_trial_case, laddertable.INCONCLUSIVE, 30),
@@ -186,6 +192,7 @@ def test_struct_field_names_are_exact():
         "scratch_bytes",
         "reported_memory_bytes",
         "replay_grade",
+        "measurement_scope",
         "witness_hash",
     )
     assert laddertable.RUNG.names == (
@@ -263,6 +270,7 @@ def test_module_defined_public_api_is_closed():
         "IN_SAMPLE_MISS",
         "OUT_OF_SAMPLE_MISS",
         "UNCOUNTED_BACKEND",
+        "MEASUREMENT_SCOPE",
         "CLOCK",
         "WALL",
         "FAILED_TRIAL",
@@ -370,3 +378,37 @@ def test_golden_verdict_summary(plan, assert_golden):
     table = _clean_table()
     v = laddertable.verdict(table, plan)
     assert_golden("ladder_table_verdict", _render(table, v))
+
+
+WEAKER_SCOPES = tuple(scope for scope in runner.MEASUREMENT_SCOPES if scope != runner.SCOPE_TREE)
+
+
+@pytest.mark.parametrize("scope", WEAKER_SCOPES)
+def test_a_scope_short_of_tree_makes_the_run_inconclusive(plan, scope):
+    table = _with_trial(_clean_table(), 30, 0, measurement_scope=scope)
+    v = laddertable.verdict(table, plan)
+    assert (v.kind, v.predicate, v.rung_bits, v.trial) == (
+        laddertable.INCONCLUSIVE,
+        laddertable.MEASUREMENT_SCOPE,
+        30,
+        0,
+    )
+    assert v.measured_points[0]["categorical"]["measurement_scope"] == scope
+
+
+def test_every_tree_scope_trial_leaves_the_verdict_alone(plan):
+    assert laddertable.verdict(_clean_table(), plan).predicate == laddertable.ALL_RUNGS_PASS
+
+
+@pytest.mark.parametrize("scope", WEAKER_SCOPES)
+def test_a_weak_scope_does_not_soften_a_refutation(plan, scope):
+    table = _with_trial(_recovery_case(), 30, 0, measurement_scope=scope)
+    v = laddertable.verdict(table, plan)
+    assert (v.kind, v.predicate) == (laddertable.REJECT, laddertable.RECOVERY)
+
+
+def test_the_scope_survives_the_trial_hash_and_a_field_change_moves_it():
+    base = _trial(30, 0)
+    moved = dataclasses.replace(base, measurement_scope=runner.SCOPE_TRUNCATED)
+    assert base.measurement_scope == runner.SCOPE_TREE
+    assert base.hash != moved.hash

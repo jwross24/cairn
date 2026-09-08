@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import bundle, claims, ladderplan, laddertable, tiergate
+from cairn import bundle, claims, ladderplan, laddertable, runner, tiergate
 from cairn.profile import CostProfile, Production, SizeCost, Verification
 from cairn.tiergate import (
     BOUNDARY_TABLE,
@@ -48,6 +48,7 @@ TRIAL_BASE = laddertable.Trial(
     scratch_bytes=1000,
     reported_memory_bytes=1000,
     replay_grade="Replayable",
+    measurement_scope=runner.SCOPE_TREE,
 )
 RUNG_BASE = laddertable.RungRow(
     bits=0,

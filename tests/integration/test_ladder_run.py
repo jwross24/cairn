@@ -140,6 +140,9 @@ def test_a_full_small_run_writes_a_table_with_every_arm_on_one_instance_stream(
 
     stored = laddertable.read(writer, table.hash)
     assert stored.hash == table.hash
+    assert {t.measurement_scope for t in stored.trials} == {t.measurement_scope for t in table.trials}
+    assert all(scope in runner.MEASUREMENT_SCOPES for scope in {t.measurement_scope for t in table.trials})
+    assert laddertable.verdict(table, plan).predicate != laddertable.MEASUREMENT_SCOPE
     recorded = laddertable.recorded_verdict(writer, table.hash)
     assert (recorded.kind, recorded.predicate) == (
         laddertable.verdict(table, plan).kind,

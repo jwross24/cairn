@@ -510,6 +510,7 @@ def _trial_row(claim):
         scratch_bytes=claim.scratch_bytes,
         reported_memory_bytes=claim.reported_memory_bytes,
         replay_grade=claim.replay_grade,
+        measurement_scope=claim.measurement_scope,
     )
 
 

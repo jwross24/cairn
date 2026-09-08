@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from _substrate_helpers import open_writer
 
-from cairn import human_queue, ladderplan, laddertable, repro
+from cairn import human_queue, ladderplan, laddertable, repro, runner
 
 ROOT = Path(__file__).resolve().parents[2]
 COMMITTED = json.loads((ROOT / "bundle" / "ladder_plan.json").read_text())
@@ -27,6 +27,7 @@ _TRIAL_BASE = laddertable.Trial(
     scratch_bytes=1000,
     reported_memory_bytes=1000,
     replay_grade="Replayable",
+    measurement_scope=runner.SCOPE_TREE,
 )
 _RUNG_BASE = laddertable.RungRow(
     bits=0,
