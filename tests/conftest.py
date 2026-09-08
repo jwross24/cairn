@@ -58,6 +58,11 @@ def _snapshot(root):
     return seen
 
 
+@pytest.fixture
+def isolation_snapshot():
+    return _snapshot
+
+
 def _allowed_argv0():
     import cairn.allowlist
     import cairn.container

@@ -1,10 +1,9 @@
 import os
 
 import pytest
-from conftest import _snapshot
 
 
-def test_snapshot_tracks_files_without_following_directory_links(tmp_path):
+def test_snapshot_tracks_files_without_following_directory_links(tmp_path, isolation_snapshot):
     root = tmp_path / "root"
     nested = root / "deploy" / "nested"
     nested.mkdir(parents=True)
@@ -24,17 +23,17 @@ def test_snapshot_tracks_files_without_following_directory_links(tmp_path):
         "deploy/nested/regular": (regular.stat().st_size, regular.stat().st_mtime_ns),
         "deploy/file_link": (external.stat().st_size, external.stat().st_mtime_ns),
     }
-    assert _snapshot(root) == expected
+    assert isolation_snapshot(root) == expected
     alias = tmp_path / "alias"
     alias.symlink_to(root, target_is_directory=True)
-    assert _snapshot(alias) == expected
-    assert _snapshot(root / ".." / "root") == expected
+    assert isolation_snapshot(alias) == expected
+    assert isolation_snapshot(root / ".." / "root") == expected
     regular.write_text("different payload")
-    assert _snapshot(root) != expected
+    assert isolation_snapshot(root) != expected
 
 
 @pytest.mark.parametrize("name", [".doctor", "deploy", "var"])
-def test_snapshot_follows_a_guarded_root_link(tmp_path, name):
+def test_snapshot_follows_a_guarded_root_link(tmp_path, name, isolation_snapshot):
     root = tmp_path / "root"
     root.mkdir()
     outside = tmp_path / "outside"
@@ -42,15 +41,15 @@ def test_snapshot_follows_a_guarded_root_link(tmp_path, name):
     target = outside / "file"
     target.write_text("content")
     (root / name).symlink_to(outside, target_is_directory=True)
-    assert _snapshot(root) == {f"{name}/file": (7, target.stat().st_mtime_ns)}
+    assert isolation_snapshot(root) == {f"{name}/file": (7, target.stat().st_mtime_ns)}
 
 
-def test_snapshot_of_missing_roots_is_empty(tmp_path):
-    assert _snapshot(tmp_path) == {}
-    assert _snapshot(tmp_path / "missing") == {}
+def test_snapshot_of_missing_roots_is_empty(tmp_path, isolation_snapshot):
+    assert isolation_snapshot(tmp_path) == {}
+    assert isolation_snapshot(tmp_path / "missing") == {}
 
 
-def test_snapshot_ignores_unreadable_subdirectories(tmp_path):
+def test_snapshot_ignores_unreadable_subdirectories(tmp_path, isolation_snapshot):
     hidden = tmp_path / "deploy" / "hidden"
     hidden.mkdir(parents=True)
     (hidden / "file").write_text("content")
@@ -58,6 +57,6 @@ def test_snapshot_ignores_unreadable_subdirectories(tmp_path):
     try:
         with pytest.raises(PermissionError):
             list(hidden.iterdir())
-        assert _snapshot(tmp_path) == {}
+        assert isolation_snapshot(tmp_path) == {}
     finally:
         hidden.chmod(0o700)
