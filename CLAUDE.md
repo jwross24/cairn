@@ -23,8 +23,14 @@ Facts below hold only under Claude Code on this machine; each was established by
   `python3` on PATH is Homebrew's and has none; `bootstrap-audit.sh` calls
   `sync-rubric-from-policy.py` before pinning `rubric_sha256`, because `score-bead.py` reads
   `weights_by_type` only from the rubric frontmatter and the hook path has no orchestrator to fold
-  it in; and `score-bead.py` refuses a bead directory that holds no `spec.json`. Three further
-  changes live in files already on that list. `score-bead.py` renders a dimension the policy
+  it in; and `score-bead.py` refuses a bead directory that holds no `spec.json`. Four further
+  changes live in files already on that list. `run-pass.sh` and `single-bead-audit.sh` reach the
+  audit archive's own repository through an `audit_git` helper that clears `GIT_DIR`,
+  `GIT_INDEX_FILE`, `GIT_WORK_TREE`, `GIT_OBJECT_DIRECTORY` and
+  `GIT_ALTERNATE_OBJECT_DIRECTORIES`: `git -C` sets the directory but not the repository, so the
+  bare `git -C "$AUDIT_DIR" add -A` inherits the committing repository from the pre-commit hook's
+  environment and stages all of `beads_compliance_audit/` into that commit's index under `passes/`,
+  which `.gitignore` excludes and which breaks every bead-closing commit in the tree. `score-bead.py` renders a dimension the policy
   excluded as `—` rather than at full weight, and states the exclusion in the stub-mode banner and
   the TOTAL row, so the table, banner and denominator agree with the arithmetic; it owns a synthesis
   finding by the row's subject bead rather than by every id the row names, because being cited by
