@@ -4,10 +4,11 @@ import json
 import sqlite3
 from pathlib import Path
 
+import factories
 import pytest
 from _substrate_helpers import open_writer
 
-from cairn import human_queue, ladderplan, laddertable, repro, runner
+from cairn import claims, human_queue, ladderplan, laddertable, repro, runner, substrate
 
 ROOT = Path(__file__).resolve().parents[2]
 COMMITTED = json.loads((ROOT / "bundle" / "ladder_plan.json").read_text())
@@ -209,3 +210,48 @@ def test_policy_maps_trials_by_replay_grade_and_tier(writer, plan):
     policy = laddertable.policy(table, 1)
     assert policy[(30, 0)] == repro.CHECK_WITNESS
     assert policy[(30, 1)] == repro.RERUN_NOW
+
+
+def test_rewriting_a_table_under_a_second_attempt_id_is_refused(writer, plan):
+    table = _clean_table()
+    laddertable.write(writer, table, plan, attempt_id="attempt-A")
+    with pytest.raises(substrate.HashCollision, match="attempt_id"):
+        laddertable.write(writer, table, plan, attempt_id="attempt-B")
+    stored = writer.conn.execute("SELECT attempt_id FROM ladder_tables WHERE hash = ?", (table.hash,)).fetchone()
+    assert stored["attempt_id"] == "attempt-A"
+
+
+def test_rewriting_a_table_under_a_plan_that_verdicts_it_differently_is_refused(writer, plan):
+    table = _clean_table()
+    laddertable.write(writer, table, plan)
+    capped = copy.deepcopy(COMMITTED)
+    for rung in capped["rungs"]:
+        rung["refutation_floor"]["memory_bytes"] = 1
+        rung["memory_cap_bytes"] = 1
+        rung["floor_binds"] = True
+    with pytest.raises(substrate.HashCollision, match="verdict"):
+        laddertable.write(writer, table, ladderplan.LadderPlan.load(capped))
+
+
+def test_rewriting_an_evidence_node_with_the_same_companions_stays_a_silent_no_op(writer):
+    scope = factories.scope(param_ranges={"bits": [30, 60]})
+    node = factories.evidence_node(
+        "statistical",
+        "ab" * 32,
+        scope,
+        frozenset(scope["assumption_set"]),
+        attempt_id="attempt-A",
+    )
+    first = claims.write_evidence_node(writer, node)
+    assert claims.write_evidence_node(writer, node) == first
+    rows = writer.conn.execute("SELECT attempt_id FROM evidence_nodes WHERE hash = ?", (first,)).fetchall()
+    assert [r["attempt_id"] for r in rows] == ["attempt-A"]
+
+
+def test_rewriting_a_statement_after_its_status_transitioned_stays_a_silent_no_op(writer):
+    statement = factories.claim_statement(seed=77)
+    claims.write_claim_statement(writer, statement)
+    claims.transition_status(writer, statement.hash, "refuted")
+    claims.write_claim_statement(writer, statement)
+    row = writer.conn.execute("SELECT status FROM claim_statements WHERE hash = ?", (statement.hash,)).fetchone()
+    assert row["status"] == "refuted"

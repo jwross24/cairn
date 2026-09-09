@@ -386,9 +386,13 @@ class Ticket:
         object.__setattr__(self, "hash", keys.node_hash("ticket", ticket_canonical(self)))
 
 
-def _insert_once(sub, table, pk_column, values, node_hash):
+def _insert_once(sub, table, pk_column, values, node_hash, *, write_time=("created_at",)):
+    """A column outside the hash can differ under an identical key, and a silent keep would record the first write's value as if the second agreed."""
     row = sub.conn.execute(f"SELECT * FROM {table} WHERE {pk_column} = ?", (values[pk_column],)).fetchone()
     if row is not None:
+        disagreed = sorted(k for k, v in values.items() if k not in write_time and row[k] != v)
+        if disagreed:
+            raise HashCollision(f"{table} row {values[pk_column]} exists with different {', '.join(disagreed)}")
         lg.info("write", table=table, hash=node_hash, status="exists")
         return False
     columns = ", ".join(values)
@@ -438,6 +442,7 @@ def write_claim_statement(sub, stmt):
                 "created_at": stmt.created_at or _now(),
             },
             stmt.hash,
+            write_time=("created_at", "status"),
         )
     return stmt.hash
 
