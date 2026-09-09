@@ -283,6 +283,7 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
         ceiling_multiplier=gate_bundle.tiers["ceiling_multiplier"],
         wall_cap_multiplier=gate_bundle.tiers["wall_cap_multiplier"],
         wall_cap_floor_s=gate_bundle.tiers["wall_cap_floor_s"],
+        subprocess_startup_ms=gate_bundle.tiers["subprocess_startup_ms"],
         tool_digests=bundle_identity["tool_digests"],
         scratch_root=scratch_root,
         budget_remaining=BUDGET_CORE_S,

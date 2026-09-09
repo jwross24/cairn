@@ -6,6 +6,7 @@
     {"tier": 3, "max_core_s": null}
   ],
   "ceiling_multiplier": 4,
+  "subprocess_startup_ms": 77,
   "wall_cap_multiplier": 4,
   "wall_cap_floor_s": 120,
   "tier1_cumulative_edge": null

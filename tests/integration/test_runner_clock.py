@@ -15,7 +15,7 @@ SLEEPS_TWO_SECONDS = "skills.sleep2"
 BURNS_CPU = "skills.cpu_burner"
 
 CHEAP_CPU_SLOW_WALL = Evaluation(0.25, 0.25, 0.0)
-CPU_SMALLER_THAN_INTERPRETER_STARTUP = Evaluation(0.005, 0.005, 0.0)
+DECLARES_ALMOST_NO_CPU = Evaluation(0.005, 0.005, 0.0)
 
 
 @pytest.fixture
@@ -59,8 +59,8 @@ def test_cheap_cpu_behind_a_slow_wall_is_not_a_budget_refusal(writer, tmp_path):
 
 
 def test_cpu_past_the_ceiling_is_still_refused(writer, tmp_path):
-    attempt = _launch(writer, tmp_path, BURNS_CPU, 102, CPU_SMALLER_THAN_INTERPRETER_STARTUP)
-    ceiling_s = runner.ceiling_for(CPU_SMALLER_THAN_INTERPRETER_STARTUP.expected_wall_s, 4)
+    attempt = _launch(writer, tmp_path, BURNS_CPU, 102, DECLARES_ALMOST_NO_CPU, subprocess_startup_ms=0)
+    ceiling_s = runner.ceiling_for(DECLARES_ALMOST_NO_CPU.expected_wall_s, 4, subprocess_startup_ms=0)
     cpu_s = attempt.launch.cpu_user_s + attempt.launch.cpu_sys_s
     assert cpu_s > ceiling_s
     assert attempt.status == "BUDGET_EXCEEDED"

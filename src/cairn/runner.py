@@ -39,6 +39,7 @@ PGRP_SAMPLE_CAP = 4096
 GRACE_S = 0.25
 WALL_CAP_MULTIPLIER = 4.0
 WALL_CAP_FLOOR_S = 120.0
+SUBPROCESS_STARTUP_MS = 77
 UTF8_BOM = b"\xef\xbb\xbf"
 
 
@@ -109,8 +110,10 @@ def status_for(parsed, exit_status, cpu_s, ceiling_s, *, wall_capped=False, skil
     return STATUS_FAIL
 
 
-def ceiling_for(declared_expectation_s, ceiling_multiplier):
-    return float(ceiling_multiplier) * float(declared_expectation_s)
+def ceiling_for(declared_expectation_s, ceiling_multiplier, subprocess_startup_ms=SUBPROCESS_STARTUP_MS):
+    """A cost profile declares the skill's own work, so the multiplier funds that alone and the
+    interpreter start every spawn pays is added once, unmultiplied."""
+    return float(subprocess_startup_ms) / 1000 + float(ceiling_multiplier) * float(declared_expectation_s)
 
 
 def wall_cap_for(ceiling_s, wall_cap_multiplier=WALL_CAP_MULTIPLIER, wall_cap_floor_s=WALL_CAP_FLOOR_S):
@@ -447,6 +450,7 @@ def launch(
     scratch_root,
     wall_cap_multiplier=WALL_CAP_MULTIPLIER,
     wall_cap_floor_s=WALL_CAP_FLOOR_S,
+    subprocess_startup_ms=SUBPROCESS_STARTUP_MS,
     replay="Replayable",
     skip_cache_lookup=False,
     do_not_cache=False,
@@ -456,7 +460,7 @@ def launch(
 ):
     lg = log.get(LOG_STEP)
     startup_scan(sub)
-    ceiling_s = ceiling_for(evaluation.expected_wall_s, ceiling_multiplier)
+    ceiling_s = ceiling_for(evaluation.expected_wall_s, ceiling_multiplier, subprocess_startup_ms)
     wall_cap_s = wall_cap_for(ceiling_s, wall_cap_multiplier, wall_cap_floor_s)
     if budget_remaining is not None and budget_remaining < ceiling_s:
         raise BudgetRefused(budget_remaining, ceiling_s)

@@ -10,7 +10,7 @@ from cairn.skills import toy_curve
 from cairn.substrate import blob_hash
 
 FIXTURES = str(Path(__file__).resolve().parent.parent / "fixtures")
-TIGHT_WALL_CAP = {"wall_cap_multiplier": 1.0, "wall_cap_floor_s": 0.0}
+TIGHT_WALL_CAP = {"wall_cap_multiplier": 1.0, "wall_cap_floor_s": 0.0, "subprocess_startup_ms": 0}
 HANDLER_INSTALLS_WITHIN_S = 3.0
 HANDLER_INSTALLS_WITHIN = Evaluation(
     HANDLER_INSTALLS_WITHIN_S / 4, HANDLER_INSTALLS_WITHIN_S / 4, HANDLER_INSTALLS_WITHIN_S / 4

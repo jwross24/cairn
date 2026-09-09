@@ -162,6 +162,7 @@ def test_the_shipped_tiers_carry_both_clocks():
     assert tiers["ceiling_multiplier"] == 4
     assert tiers["wall_cap_multiplier"] == 4
     assert tiers["wall_cap_floor_s"] == 120
+    assert tiers["subprocess_startup_ms"] == runner.SUBPROCESS_STARTUP_MS
 
 
 @pytest.mark.parametrize(
@@ -170,7 +171,29 @@ def test_the_shipped_tiers_carry_both_clocks():
     ids=["the-bead's-0.2s", "toy-curve-30-bit", "unit-multiplier", "zero-expectation"],
 )
 def test_ceiling_arithmetic(declared, multiplier, expected):
-    assert runner.ceiling_for(declared, multiplier) == pytest.approx(expected)
+    assert runner.ceiling_for(declared, multiplier, subprocess_startup_ms=0) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    ("declared", "multiplier", "startup_ms", "expected"),
+    [(0.0336, 4, 77, 0.2114), (0.0491, 4, 77, 0.2734), (0.0, 4, 77, 0.077)],
+    ids=["30-bit", "28-bit", "zero-expectation"],
+)
+def test_the_startup_term_is_added_once_and_never_multiplied(declared, multiplier, startup_ms, expected):
+    assert runner.ceiling_for(declared, multiplier, startup_ms) == pytest.approx(expected)
+
+
+INSTANCE_MAKER_30_BIT_DECLARED_S = 0.0336
+INSTANCE_MAKER_30_BIT_OBSERVED_CPU_S = 0.1691
+
+
+def test_a_sub_second_skill_busts_the_ceiling_when_the_startup_term_is_zero():
+    parsed = _parsed(True, "OK")
+    without = runner.ceiling_for(INSTANCE_MAKER_30_BIT_DECLARED_S, 4, subprocess_startup_ms=0)
+    with_startup = runner.ceiling_for(INSTANCE_MAKER_30_BIT_DECLARED_S, 4, runner.SUBPROCESS_STARTUP_MS)
+    observed = INSTANCE_MAKER_30_BIT_OBSERVED_CPU_S
+    assert runner.status_for(parsed, 0, observed, without) == runner.STATUS_BUDGET_EXCEEDED
+    assert runner.status_for(parsed, 0, observed, with_startup) == runner.STATUS_OK
 
 
 LEAKY_ENV = {

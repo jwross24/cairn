@@ -340,7 +340,9 @@ def _quantize(value, places):
 
 def _ceiling_ops(module, bits, multiplier):
     cost = module.COST_PROFILE.production.per_size[bits]
-    ceiling_s = runner.ceiling_for(module.COST_PROFILE.evaluate(bits).expected_wall_s, multiplier)
+    ceiling_s = runner.ceiling_for(
+        module.COST_PROFILE.evaluate(bits).expected_wall_s, multiplier, subprocess_startup_ms=0
+    )
     return int(ceiling_s / cost.per_try_s)
 
 
@@ -411,6 +413,7 @@ def run_arm(sub, gate_bundle, value, *, plan, instance, instance_hash, bits, tri
         ceiling_multiplier=plan.patience_multiplier,
         wall_cap_multiplier=gate_bundle.tiers["wall_cap_multiplier"],
         wall_cap_floor_s=gate_bundle.tiers["wall_cap_floor_s"],
+        subprocess_startup_ms=gate_bundle.tiers["subprocess_startup_ms"],
         tool_digests=value.identity_bundle["tool_digests"],
         scratch_root=scratch_root,
         replay=module.REPLAY_GRADE,
