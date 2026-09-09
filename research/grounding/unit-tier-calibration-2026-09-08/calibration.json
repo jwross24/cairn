@@ -1,4 +1,5 @@
 {
+  "validation_status": "historical calibration; quiet-box recalibration and under-60 command remain unverified with collection warm",
   "reports": [
     {
       "path": "full-unit.log.gz",

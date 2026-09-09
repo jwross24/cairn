@@ -14,6 +14,29 @@ from hypothesis import settings
 
 pytest_plugins = ["pytester", "_session_deadline", "_libpari_stall", "_unit_tier"]
 
+BEAD_STORE_CONSUMER_MODULES = frozenset(
+    {"test_bead_artifact_block.py", "test_br_lookup.py", "test_theater_patterns.py"}
+)
+
+
+def pytest_collection_finish(session):
+    if session.config.option.collectonly or not any(
+        item.path.name in BEAD_STORE_CONSUMER_MODULES for item in session.items
+    ):
+        return
+    from _bead_store import bead_store
+
+    start = time.monotonic()
+    try:
+        bead_store()
+    except Exception as exc:
+        raise pytest.UsageError(f"bead-store warm failed: {exc}") from exc
+    elapsed = time.monotonic() - start
+    reporter = session.config.pluginmanager.get_plugin("terminalreporter")
+    if reporter is not None:
+        reporter.write_line(f"[unit-tier] bead-store warm {elapsed:.6f}s")
+
+
 ROOT = Path(os.environ.get("CAIRN_REPO_ROOT") or Path(__file__).resolve().parent.parent)
 GUARDED_DIRS = (".doctor", "deploy", "var")
 VECTORS = ROOT / "tests" / "vectors"

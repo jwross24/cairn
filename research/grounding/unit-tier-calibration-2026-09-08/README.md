@@ -1,16 +1,25 @@
 # Measured unit tier
 
+The collection-warm checkpoint is not validated against the 60-second target.
+The exact hold is `--unit under-60 close run needs a quiet box: no other pytest,
+1-minute load under 10`. The first job of the next quiet slot is two qualifying
+duration reports followed by recalibration and the actual timed unit command.
+See `warm-checkpoint.md` and `warm-checkpoint-evidence.tar.gz` for all attempts,
+exclusion reasons, warm-hook verification and the fresh audit reproduction.
+
 The unit tier marks tests whose measured median duration exceeds **0.11 seconds**.
 The plugin reads `calibration.json`; a test absent from its slow-node list runs by
 default. Full pytest and CI execute the marked tests. This is tier selection,
 not a speedup of the full suite or a change to Hypothesis examples.
 
-Two passing samples provide two observations for 2,156 nodes. Their 265 slow nodes
+Two historical passing samples provide two observations for 2,156 nodes. Their 265 slow nodes
 are all under `tests/unit/`; integration, end-to-end and other directories have
 zero nodes in this marker list. The 1,891 measured retained nodes sum to 54.775
 seconds in per-node medians, within a 55-second measurement budget. Their phase
 totals in the two individual reports are 54.80 and 54.75 seconds. These quantities
 exclude collection/session overhead and do not establish command wall time.
+These samples precede the collection warm; no later attempt qualifies for this
+calibration. The historical marker list remains the checkpoint's selection.
 
 The largest observed threshold satisfying that budget is 0.11 seconds. Reports
 print hundredths of a second; arithmetic uses `Decimal`, and a two-sample median

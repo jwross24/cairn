@@ -1,5 +1,8 @@
+import ast
 import hashlib
 import importlib
+import re
+import runpy
 import shlex
 from decimal import Decimal
 from pathlib import Path
@@ -17,6 +20,87 @@ from _unit_tier import (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_bead_store_consumer_modules_match_every_direct_import():
+    namespace = runpy.run_path(str(ROOT / "tests/conftest.py"))
+    consumers = {
+        path.name
+        for path in (ROOT / "tests").rglob("*.py")
+        if path.name != "conftest.py"
+        and any(
+            isinstance(node, ast.ImportFrom)
+            and node.module == "_bead_store"
+            and any(alias.name == "bead_store" for alias in node.names)
+            for node in ast.walk(ast.parse(path.read_text()))
+        )
+    }
+    assert consumers == namespace["BEAD_STORE_CONSUMER_MODULES"]
+
+
+def _install_warm_hook(pytester):
+    pytester.makeconftest(
+        f"import runpy\npytest_collection_finish = runpy.run_path({str(ROOT / 'tests/conftest.py')!r})"
+        '["pytest_collection_finish"]\n'
+    )
+
+
+def _consumer_module(pytester, source):
+    directory = pytester.path / "warm_cases"
+    directory.mkdir()
+    (directory / "test_br_lookup.py").write_text(source)
+
+
+def test_unrelated_selection_leaves_the_bead_store_cache_untouched(pytester):
+    _install_warm_hook(pytester)
+    store = importlib.import_module("_bead_store").bead_store
+    before = store.cache_info()
+    pytester.makepyfile(test_unrelated="def test_ok():\n    assert True\n")
+    result = pytester.runpytest("-q", "--import-mode=importlib")
+    result.assert_outcomes(passed=1)
+    assert store.cache_info() == before
+    assert "[unit-tier] bead-store warm" not in result.stdout.str()
+
+
+def test_collect_only_leaves_the_bead_store_cache_untouched(pytester):
+    _install_warm_hook(pytester)
+    store = importlib.import_module("_bead_store").bead_store
+    before = store.cache_info()
+    _consumer_module(pytester, "def test_ok():\n    assert True\n")
+    result = pytester.runpytest("-q", "--collect-only", "--import-mode=importlib")
+    assert result.ret == 0
+    assert store.cache_info() == before
+    assert "[unit-tier] bead-store warm" not in result.stdout.str()
+
+
+def test_consumer_selection_warms_the_real_store_before_the_test(pytester):
+    importlib.import_module("test_br_lookup")
+    _install_warm_hook(pytester)
+    store = importlib.import_module("_bead_store").bead_store
+    before = store.cache_info()
+    _consumer_module(
+        pytester,
+        "import importlib\ndef test_ready():\n"
+        '    assert importlib.import_module("_bead_store").bead_store.cache_info().currsize == 1\n',
+    )
+    result = pytester.runpytest("-q", "--import-mode=importlib")
+    result.assert_outcomes(passed=1)
+    after = store.cache_info()
+    assert after.hits + after.misses == before.hits + before.misses + 1
+    assert re.search(r"\[unit-tier\] bead-store warm \d+\.\d{6}s", result.stdout.str())
+
+
+def test_bead_store_warm_failure_stops_the_session_loudly(pytester, monkeypatch):
+    _install_warm_hook(pytester)
+
+    def unavailable():
+        raise RuntimeError("planted store import failure")
+
+    monkeypatch.setattr(importlib.import_module("_bead_store"), "bead_store", unavailable)
+    _consumer_module(pytester, "def test_must_not_run():\n    assert False\n")
+    result = pytester.runpytest("-q", "--import-mode=importlib")
+    assert result.ret == pytest.ExitCode.USAGE_ERROR
+    assert "bead-store warm failed: planted store import failure" in result.stderr.str()
 
 
 def test_unit_gate_selects_only_unmarked_units_with_a_duration_table():
