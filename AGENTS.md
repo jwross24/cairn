@@ -70,10 +70,27 @@ so the protocol holds on its own. A guard's refusal is a safety mechanism, never
   only such a commit, logging `PUSHED`, `SKIP` or `DENY` to `.check.log`; a failed push is loud and
   leaves the commit local. Bypass, logged: `CAIRN_PUSH_SKIP='<reason>'`.
 - A bead is not done until its closing commit is pushed and `git status` is up to date with `origin/main`.
-- Identity-bearing files: `src/cairn/pari.py`, `src/cairn/skills/toy_curve.py` and the toy-curve corpus
-  (skill revision); `src/cairn/challenge.py`, `bundle/challenge_prelude.lean`, `src/cairn/gp/verify.gp`
-  and `lean/lake-manifest.json` (gate bundle). Any edit, a formatting pass included, moves the goldens
-  and every deployed pin; regenerate the golden in the same attributed commit after reviewing its diff.
+- Identity-bearing files, skill revision: `src/cairn/ec.py`, `src/cairn/instances.py`,
+  `src/cairn/pari.py`, `src/cairn/skills/bsgs.py`, `src/cairn/skills/bsgs_corpus.json`,
+  `src/cairn/skills/instance_maker.py`, `src/cairn/skills/instance_maker_corpus.json`,
+  `src/cairn/skills/rho_dp.py`, `src/cairn/skills/rho_dp_corpus.json`,
+  `src/cairn/skills/toy_curve.py`, `src/cairn/skills/toy_curve_corpus.json`.
+- Identity-bearing files, gate bundle: `bundle/Containerfile`, `bundle/allow_lists.json`,
+  `bundle/auditor.json`, `bundle/challenge_prelude.lean`, `bundle/container.json`,
+  `bundle/gate_plan.json`, `bundle/ladder_plan.json`, `bundle/lean.json`,
+  `bundle/role_templates.json`, `bundle/scrutiny.json`, `bundle/tiers.json`,
+  `bundle/verifier.json`, `bundle/waivable_checks.json`, `lean/Cairn/Axioms.lean`,
+  `lean/Cairn/StatementHash.lean`, `lean/lake-manifest.json`, `src/cairn/challenge.py`,
+  `src/cairn/gp/verify.gp`, and the four vendored prefilter linter sources
+  `lean/vendor/formal_conjectures/FormalConjecturesForMathlib/Lean/Elab/InfoTree/Util.lean`,
+  `lean/vendor/formal_conjectures/FormalConjecturesForMathlib/Tactic/Linter/Term.lean`,
+  `lean/vendor/formal_conjectures/FormalConjecturesUtil/Linters/ExistsImplicationLinter.lean`,
+  `lean/vendor/formal_conjectures/FormalConjecturesUtil/Linters/StubLinter.lean`.
+- Any edit to a file on either list, a formatting pass included, moves the goldens and every
+  deployed pin; regenerate the golden in the same attributed commit after reviewing its diff.
+  `tests/unit/test_identity_sources.py` holds both lists against the code, so a skill that
+  gains an identity source, or a gate bundle that gains an object, fails a gate here rather
+  than later as a stale golden in CI.
 
 ## Toolchain: Python 3.14 and uv
 
