@@ -75,7 +75,17 @@ ESTIMATOR_FIELDS = ("statistic", "numerator", "denominator", "form")
 PAIRING_FIELDS = ("instance_stream", "method_seeds", "arms")
 CI_FIELDS = ("method", "coverage")
 TOLERANCE_FIELDS = ("count_divergence", "clock", "wall")
-CLOCK_FIELDS = ("rate_ratio",)
+CLOCK_FIELDS = ("rate_ratio", "reference_cost")
+REFERENCE_COST_FIELDS = ("arm", "cost_s_per_group_op", "arms", "grounding")
+REFERENCE_ARM_FIELDS = (
+    "cost_s_per_group_op_min",
+    "cost_s_per_group_op_median",
+    "cost_s_per_group_op_max",
+    "cost_s_per_group_op_sd",
+)
+# A group operation costing a whole second is not a cost but a throughput stored by mistake,
+# and the plan divides by this field.
+MAX_GROUP_OP_COST_S = Decimal(1)
 BASELINE_FIELDS = ("skill", "method_identity", "identity_bundle_hash", "implementation_revision")
 METHOD_IDENTITY_FIELDS = ("interface_version", "params")
 PATIENCE_FIELDS = ("multiplier", "basis")
@@ -87,6 +97,7 @@ PROVENANCE_KEYS = (
     "rungs.memory_cap_bytes",
     "baseline",
     "clock.rate_ratio",
+    "clock.reference_cost",
     "tolerances",
     "comparison",
     "keep_band_floor",
@@ -180,6 +191,28 @@ class Baseline:
 
 
 @dataclass(frozen=True)
+class ReferenceCost:
+    """The fastest per-operation cost measured on the build machine, in seconds per group operation.
+
+    `ClockBound.rate_ratio` divides the counted object's per-operation cost by this one, so a
+    throughput stored here inverts the bound the plan validates rather than failing loudly.
+    """
+
+    arm: str
+    cost_s_per_group_op: Decimal
+    arms: dict
+    grounding: str
+
+    def node(self):
+        return {
+            "arm": self.arm,
+            "cost_s_per_group_op": _text(self.cost_s_per_group_op),
+            "arms": {name: {key: _text(value) for key, value in row.items()} for name, row in self.arms.items()},
+            "grounding": self.grounding,
+        }
+
+
+@dataclass(frozen=True)
 class ClockBound:
     clock_tolerance: Decimal
     rate_ratio: Decimal
@@ -224,6 +257,7 @@ class LadderPlan:
     keep_band_floor: Decimal
     tolerances: Tolerances
     rate_ratio: Decimal
+    reference_cost: ReferenceCost
     baseline: Baseline
     patience_multiplier: int
     shape_departure_tolerance: Decimal
@@ -255,6 +289,7 @@ class LadderPlan:
         rate_ratio = _decimal(clock["rate_ratio"], "clock.rate_ratio")
         if rate_ratio < 1:
             raise LadderPlanInvalid(f"rate-ratio-below-one:{_text(rate_ratio)}")
+        reference_cost = _reference_cost(clock["reference_cost"])
         baseline = _baseline(obj["baseline"])
         multiplier = _patience(obj["patience_ceiling"], tiers_ceiling)
         shape = _decimal(obj["shape_departure_tolerance"], "shape_departure_tolerance")
@@ -273,6 +308,7 @@ class LadderPlan:
             keep_band_floor=keep_band_floor,
             tolerances=tolerances,
             rate_ratio=rate_ratio,
+            reference_cost=reference_cost,
             baseline=baseline,
             patience_multiplier=multiplier,
             shape_departure_tolerance=shape,
@@ -324,6 +360,7 @@ class LadderPlan:
             "keep_band_floor": _text(self.keep_band_floor),
             "tolerances": self.tolerances.node(),
             "rate_ratio": _text(self.rate_ratio),
+            "reference_cost": self.reference_cost.node(),
             "baseline": self.baseline.node(),
             "patience_multiplier": self.patience_multiplier,
             "shape_departure_tolerance": _text(self.shape_departure_tolerance),
@@ -511,6 +548,41 @@ def _patience(raw, tiers_ceiling):
     if tiers_ceiling is not None and multiplier != tiers_ceiling:
         raise LadderPlanInvalid(f"patience-ceiling-ne-tiers:{multiplier}!={tiers_ceiling}")
     return multiplier
+
+
+def _reference_cost(raw):
+    fields = _mapping(raw, "clock.reference_cost", REFERENCE_COST_FIELDS)
+    arm = _str(fields["arm"], "clock.reference_cost.arm")
+    grounding = _str(fields["grounding"], "clock.reference_cost.grounding")
+    raw_arms = fields["arms"]
+    if not isinstance(raw_arms, dict) or not raw_arms:
+        raise _wrong("clock.reference_cost.arms")
+    arms = {}
+    for name in sorted(raw_arms):
+        path = f"clock.reference_cost.arms.{name}"
+        row = _mapping(raw_arms[name], path, REFERENCE_ARM_FIELDS)
+        parsed = {key: _decimal(row[key], f"{path}.{key}") for key in REFERENCE_ARM_FIELDS}
+        if parsed["cost_s_per_group_op_sd"] < 0:
+            raise LadderPlanInvalid(f"reference-cost-spread-negative:{name}")
+        low = parsed["cost_s_per_group_op_min"]
+        mid = parsed["cost_s_per_group_op_median"]
+        high = parsed["cost_s_per_group_op_max"]
+        if low <= 0:
+            raise LadderPlanInvalid(f"reference-cost-not-positive:{name}")
+        if not low <= mid <= high:
+            raise LadderPlanInvalid(f"reference-cost-not-ordered:{name}")
+        arms[name] = parsed
+    if arm not in arms:
+        raise LadderPlanInvalid(f"reference-cost-arm-unmeasured:{arm}")
+    cost = _decimal(fields["cost_s_per_group_op"], "clock.reference_cost.cost_s_per_group_op")
+    if cost != arms[arm]["cost_s_per_group_op_median"]:
+        raise LadderPlanInvalid(f"reference-cost-not-its-arm-median:{_text(cost)}")
+    fastest = min(arms, key=lambda name: arms[name]["cost_s_per_group_op_median"])
+    if arms[arm]["cost_s_per_group_op_median"] != arms[fastest]["cost_s_per_group_op_median"]:
+        raise LadderPlanInvalid(f"reference-cost-not-the-fastest-arm:{arm}!={fastest}")
+    if not 0 < cost < MAX_GROUP_OP_COST_S:
+        raise LadderPlanInvalid(f"reference-cost-not-a-per-operation-cost:{_text(cost)}")
+    return ReferenceCost(arm=arm, cost_s_per_group_op=cost, arms=arms, grounding=grounding)
 
 
 def _provenance(raw):

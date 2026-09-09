@@ -54,7 +54,20 @@
   },
   "keep_band_floor": "1.01",
   "tolerances": {"count_divergence": "0.01", "clock": "0.10", "wall": "0.25"},
-  "clock": {"rate_ratio": "1.0"},
+  "clock": {
+    "rate_ratio": "1.0",
+    "reference_cost": {
+      "arm": "c_reference",
+      "cost_s_per_group_op": "0.000000217100",
+      "arms": {
+        "c_reference": {"cost_s_per_group_op_min": "0.000000184900", "cost_s_per_group_op_median": "0.000000217100", "cost_s_per_group_op_max": "0.000000243700", "cost_s_per_group_op_sd": "0.000000017965"},
+        "cypari2": {"cost_s_per_group_op_min": "0.000000603800", "cost_s_per_group_op_median": "0.000000767900", "cost_s_per_group_op_max": "0.000000884800", "cost_s_per_group_op_sd": "0.000000117044"},
+        "gmpy2": {"cost_s_per_group_op_min": "0.000000647500", "cost_s_per_group_op_median": "0.000000676500", "cost_s_per_group_op_max": "0.000000937100", "cost_s_per_group_op_sd": "0.000000101126"},
+        "python_int": {"cost_s_per_group_op_min": "0.000002458600", "cost_s_per_group_op_median": "0.000002767600", "cost_s_per_group_op_max": "0.000003137800", "cost_s_per_group_op_sd": "0.000000236166"}
+      },
+      "grounding": "research/grounding/clock-reference-cost.md"
+    }
+  },
   "baseline": {
     "skill": "rho_dp",
     "method_identity": {"interface_version": "rho_dp/1", "params": {"variant": "plain", "r": "32"}},
@@ -76,6 +89,7 @@
     "keep_band_floor": "policy:PLAN §6(2)",
     "hold_out_m": "policy:PLAN §6(2b)",
     "patience_ceiling": "policy:PLAN §5",
-    "shape_departure_tolerance": "policy:PLAN §6(2)"
+    "shape_departure_tolerance": "policy:PLAN §6(2)",
+    "clock.reference_cost": "measured:research/grounding/clock-reference-cost.md, cairn-m1-cqt.2.5 (operator decision 12; four arms over a 60-bit prime-order toy curve on the build machine, 10000 group operations per arm per rep over 7 reps, medians recorded; a build-machine fact at measurement time, not a claim)"
   }
 }
