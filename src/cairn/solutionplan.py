@@ -11,12 +11,22 @@ KIND_IMPORT_ALLOWLIST = "import_allowlist"
 KIND_BUILD = "build"
 KIND_AXIOMS = "axiom_computation"
 KIND_KERNEL_REPLAY = "kernel_replay"
-STEP_KINDS = (KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST, KIND_BUILD, KIND_AXIOMS, KIND_KERNEL_REPLAY)
+KIND_CLOSURE_COMPARISON = "closure_comparison"
+STEP_KINDS = (
+    KIND_STATEMENT_BINDING,
+    KIND_IMPORT_ALLOWLIST,
+    KIND_BUILD,
+    KIND_AXIOMS,
+    KIND_KERNEL_REPLAY,
+    KIND_CLOSURE_COMPARISON,
+)
 
 # An axiom carries no proof for the kernel to replay and a forged unchecked theorem is invisible to
 # the axiom computation, so neither step sees the other's forgery and a plan carrying one is open to
 # the forgery the other catches (research/grounding/solution-forgery-2026-09-08/probe.log).
 CHECKER_KINDS = (KIND_AXIOMS, KIND_KERNEL_REPLAY)
+# A mandatory kind obliges every plan to supply a comparator binary, and CI has none, so the
+# closure comparison stays optional and check iv is unenforced while that holds.
 MANDATORY_KINDS = (KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST, KIND_BUILD, *CHECKER_KINDS)
 
 RESULT_TIMEOUT = "timeout"
@@ -27,7 +37,15 @@ EXPECT_ADMITTED = "admitted"
 EXPECT_BUILT = "built"
 EXPECT_NO_OFFENDING_AXIOM = "no-offending-axiom"
 EXPECT_REPLAYED = "replayed"
-EXPECTATIONS = (EXPECT_BOUND, EXPECT_ADMITTED, EXPECT_BUILT, EXPECT_NO_OFFENDING_AXIOM, EXPECT_REPLAYED)
+EXPECT_CLOSURE_MATCHED = "closure-matched"
+EXPECTATIONS = (
+    EXPECT_BOUND,
+    EXPECT_ADMITTED,
+    EXPECT_BUILT,
+    EXPECT_NO_OFFENDING_AXIOM,
+    EXPECT_REPLAYED,
+    EXPECT_CLOSURE_MATCHED,
+)
 
 KIND_EXPECTATION = {
     KIND_STATEMENT_BINDING: EXPECT_BOUND,
@@ -35,6 +53,7 @@ KIND_EXPECTATION = {
     KIND_BUILD: EXPECT_BUILT,
     KIND_AXIOMS: EXPECT_NO_OFFENDING_AXIOM,
     KIND_KERNEL_REPLAY: EXPECT_REPLAYED,
+    KIND_CLOSURE_COMPARISON: EXPECT_CLOSURE_MATCHED,
 }
 
 TIMEOUT_REASON = "step-timeout"
@@ -214,6 +233,13 @@ def _assert_canonical_order(steps):
     for kind in CHECKER_KINDS:
         if positions[kind] < positions[KIND_BUILD]:
             raise PlanInvalid(f"checker-before-build:{kind}")
+    if KIND_CLOSURE_COMPARISON in positions:
+        at = positions[KIND_CLOSURE_COMPARISON]
+        if at < positions[KIND_BUILD]:
+            raise PlanInvalid("comparison-before-build")
+        for kind in CHECKER_KINDS:
+            if at < positions[kind]:
+                raise PlanInvalid(f"comparison-before-checker:{kind}")
 
 
 ADMITTED_ROOTS = ("Mathlib", "Challenge")

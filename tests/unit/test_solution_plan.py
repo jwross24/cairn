@@ -4,6 +4,7 @@ from cairn import container, solutionplan
 from cairn.solutionplan import (
     KIND_AXIOMS,
     KIND_BUILD,
+    KIND_CLOSURE_COMPARISON,
     KIND_IMPORT_ALLOWLIST,
     KIND_KERNEL_REPLAY,
     KIND_STATEMENT_BINDING,
@@ -30,6 +31,7 @@ def _plan_rows(*kinds):
 
 
 COMPLETE = (KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST, KIND_BUILD, KIND_AXIOMS, KIND_KERNEL_REPLAY)
+WITH_COMPARISON = (*COMPLETE, KIND_CLOSURE_COMPARISON)
 
 
 def _observer(verdicts):
@@ -94,6 +96,54 @@ def test_the_import_allowlist_may_not_sit_after_the_build():
     with pytest.raises(PlanInvalid) as caught:
         SolutionPlan.load(_plan_rows(*kinds), arm=ARM)
     assert caught.value.reason == "import-allowlist-after-build"
+
+
+def test_a_plan_carrying_the_closure_comparison_loads_with_it_last():
+    plan = SolutionPlan.load(_plan_rows(*WITH_COMPARISON), arm=ARM)
+    assert [step.kind for step in plan.steps] == list(WITH_COMPARISON)
+    assert plan.steps[-1].expect == solutionplan.EXPECT_CLOSURE_MATCHED
+
+
+def test_a_plan_omitting_the_closure_comparison_still_loads():
+    assert [step.kind for step in SolutionPlan.load(_plan_rows(*COMPLETE), arm=ARM).steps] == list(COMPLETE)
+
+
+def test_the_closure_comparison_may_not_sit_before_the_build():
+    kinds = (
+        KIND_STATEMENT_BINDING,
+        KIND_IMPORT_ALLOWLIST,
+        KIND_CLOSURE_COMPARISON,
+        KIND_BUILD,
+        KIND_AXIOMS,
+        KIND_KERNEL_REPLAY,
+    )
+    with pytest.raises(PlanInvalid) as caught:
+        SolutionPlan.load(_plan_rows(*kinds), arm=ARM)
+    assert caught.value.reason == "comparison-before-build"
+
+
+@pytest.mark.parametrize("checker", [KIND_AXIOMS, KIND_KERNEL_REPLAY])
+def test_the_closure_comparison_may_not_sit_before_either_checker(checker):
+    kinds = [kind for kind in WITH_COMPARISON if kind != checker]
+    kinds.insert(kinds.index(KIND_CLOSURE_COMPARISON) + 1, checker)
+    with pytest.raises(PlanInvalid) as caught:
+        SolutionPlan.load(_plan_rows(*kinds), arm=ARM)
+    assert caught.value.reason == f"comparison-before-checker:{checker}"
+
+
+def test_the_closure_comparison_passes_when_the_observation_matches_its_expectation():
+    verdicts = {**_all_expected(), KIND_CLOSURE_COMPARISON: solutionplan.EXPECT_CLOSURE_MATCHED}
+    result = SolutionPlan.load(_plan_rows(*WITH_COMPARISON), arm=ARM).run(_observer(verdicts))
+    assert result.ok is True
+    assert result.steps[-1].kind == KIND_CLOSURE_COMPARISON
+
+
+def test_a_closure_mismatch_fails_the_plan_even_when_every_earlier_step_passed():
+    verdicts = {**_all_expected(), KIND_CLOSURE_COMPARISON: solutionplan.OBSERVED_REFUSED}
+    result = SolutionPlan.load(_plan_rows(*WITH_COMPARISON), arm=ARM).run(_observer(verdicts))
+    assert result.ok is False
+    assert result.first_failure.step == KIND_CLOSURE_COMPARISON
+    assert [step.result for step in result.steps] == [solutionplan.RESULT_PASS] * 5 + [solutionplan.RESULT_FAIL]
 
 
 def test_a_checker_step_before_the_build_is_refused():
