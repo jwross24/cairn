@@ -254,16 +254,8 @@ def axiom_result(result, theorem_names, permitted_axioms):
     return {**value, "offending_axioms": offending, "passed": not offending}
 
 
-def check_axioms(
-    gate, module, theorem_names, *, project_dir, work_dir, checker_config=None, timeout_s=DEFAULT_TIMEOUT_S
-):
+def axiom_tool(gate, work_dir, *, timeout_s=DEFAULT_TIMEOUT_S):
     pins = gate.lean
-    expected = {key: pins[key] for key in ("permitted_axioms", "checker", "external_kernels")}
-    if checker_config is not None and checker_config != expected:
-        raise LeanRejected("checker-config-mismatch")
-    assert_pinned(pins)
-    if not theorem_names:
-        raise LeanRejected("empty-theorem-names")
     root = Path(work_dir)
     root.mkdir(parents=True, exist_ok=False)
     (root / "Cairn").mkdir()
@@ -273,8 +265,33 @@ def check_axioms(
         'name = "cairn_axiom_tool"\n\n[[lean_exe]]\nname = "axioms"\nroot = "Cairn.Axioms"\n'
     )
     require_success(run_argv(command(pins, "build", module="axioms"), cwd=root, timeout_s=timeout_s))
+    return root.resolve() / ".lake" / "build" / "bin" / "axioms"
+
+
+def check_axioms(
+    gate,
+    module,
+    theorem_names,
+    *,
+    project_dir,
+    work_dir=None,
+    tool=None,
+    checker_config=None,
+    timeout_s=DEFAULT_TIMEOUT_S,
+):
+    pins = gate.lean
+    expected = {key: pins[key] for key in ("permitted_axioms", "checker", "external_kernels")}
+    if checker_config is not None and checker_config != expected:
+        raise LeanRejected("checker-config-mismatch")
+    assert_pinned(pins)
+    if not theorem_names:
+        raise LeanRejected("empty-theorem-names")
+    if (work_dir is None) == (tool is None):
+        raise LeanRejected("axiom-tool-needs-a-work-dir-or-a-prebuilt-tool")
+    executable = Path(tool) if tool is not None else axiom_tool(gate, work_dir, timeout_s=timeout_s)
+    if not executable.is_file():
+        raise LeanRejected(f"axiom-tool-absent:{executable}")
     require_success(run_argv(command(pins, "build", module=module), cwd=project_dir, timeout_s=timeout_s))
-    executable = root.resolve() / ".lake" / "build" / "bin" / "axioms"
     result = run_argv(
         [*command(pins, "axioms", executable=str(executable), module=module), *theorem_names],
         cwd=project_dir,

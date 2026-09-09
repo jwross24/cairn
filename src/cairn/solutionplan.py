@@ -6,8 +6,6 @@ from cairn.gateplan import BLOCKED_PREFIX, MISMATCH_REASON, RESULT_BLOCKED, RESU
 
 lg = log.get("solutionplan")
 
-GATE = "solution_plan"
-
 KIND_IMPORT_ALLOWLIST = "import_allowlist"
 KIND_BUILD = "build"
 KIND_AXIOMS = "axiom_computation"

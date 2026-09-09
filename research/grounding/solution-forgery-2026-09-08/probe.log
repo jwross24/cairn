@@ -1,0 +1,63 @@
+Probe of the F6 (cairn-m1-cqt.5.6) P-6d precondition, 2026-09-08, on
+leanprover/lean4:v4.34.0-rc1, in a mathlib-free scratch lake project holding one
+lean_lib `Solution` with glob `Solution.+`. Commands run through cairn.lean, so the
+toolchain resolution is the gate's own.
+
+Q1. Is `import Lean` admissible in a Solution-shaped module?
+
+  lake build Solution   rc 0   Built Solution.Forge (10s)
+  #check @Environment.addDeclCore
+  @Environment.addDeclCore : Environment ->
+    USize -> USize -> Declaration -> Option IO.CancelToken -> optParam Bool true ->
+    Except Kernel.Exception Environment
+
+Q2. Does an unchecked THEOREM survive the build and fail kernel replay?
+    Fixture: forge_unchecked_theorem.lean, Declaration.thmDecl named `forged` with
+    type `False` and value `trivial`, added with doCheck := false.
+
+  lake build Solution                        rc 0   Built Solution.Forge (7.7s)
+  lake env leanchecker -v Solution.Forge     rc 1
+      leanchecker found a problem in Solution.Forge
+      uncaught exception: while replaying declaration 'forged':
+      (kernel) declaration type mismatch, 'forged' has type
+        True
+      but it is expected to have type
+        False
+  lake env leanchecker --fresh -v Solution.Forge   rc 1   same kernel exception
+
+Q3. Does an unchecked AXIOM behave the same?
+    Fixture: forge_unchecked_axiom.lean, Declaration.axiomDecl named `forged` with
+    type `False`, added with doCheck := false, then `theorem forged_false : False`.
+
+  lake build Solution                              rc 0   Built Solution.Forge (19s)
+  lake env leanchecker -v Solution.Forge           rc 0   replaying Solution.Forge
+  lake env leanchecker --fresh -v Solution.Forge   rc 0   replaying Solution.Forge with --fresh
+
+WHAT Q3 MEANS FOR THE ORDERED PLAN. The kernel replay does not catch a forged axiom,
+and it is right not to: an axiom carries no proof for the kernel to disagree with, so
+replaying it is a no-op. The axiom computation is the only step that sees it, and the
+kernel replay is the only step that sees the unchecked theorem. Neither step subsumes
+the other and a plan carrying one of them is open to the forgery the other catches.
+The two planted negatives therefore stop at different steps by construction, which is
+the property F6's plan record has to make visible rather than assert.
+
+NO-CLAIM. These fixtures were built in a mathlib-free scratch project, not under the
+Challenge protocol, and no Solution build path exists in src/cairn/ yet, so this
+establishes what the toolchain does and not what the gate does. Whether the protocol
+should admit `import Lean` in a Solution is a separate decision from whether Lean
+admits it; this probe answers only the second. The 12s and 19s figures are single
+observations on a loaded machine.
+
+Q4. What does each kernel replay variant cost on a module importing Lean?
+    Same forge_unchecked_theorem.lean fixture, a fresh mathlib-free scratch project,
+    both commands built from bundle/lean.json through cairn.lean.
+
+  lake build Forge                              rc 0   8370 ms
+  lake env leanchecker -v Forge                 rc 1   3711 ms
+  lake env leanchecker --fresh -v Forge         rc 1   302343 ms
+
+  Both variants refuse with the same kernel exception ("declaration type mismatch,
+  'forged' has type True but it is expected to have type False"). --fresh replays every
+  import, so on a module importing Lean it replays Lean core: 302 s, against a 180 s
+  per-test cap and a 1080 s CI session deadline. The trusting variant replays the module
+  alone. Single observations on one machine.
