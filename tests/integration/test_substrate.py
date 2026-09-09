@@ -797,15 +797,24 @@ def test_a_store_from_an_older_schema_is_refused_before_a_trigger_reaches_it(tmp
     assert master_of(db) == before
 
 
-def test_a_store_from_before_the_attempt_id_column_is_refused_by_name(tmp_path):
+def last_droppable_column(conn, table):
+    """The shipped schema is read at runtime, so the planted store is one revision behind
+    whatever it currently declares rather than behind a column name pinned here."""
+    rows = list(conn.execute("SELECT * FROM pragma_table_info(?)", (table,)))
+    droppable = [r[1] for r in rows if not r[3] and not r[5]]
+    assert droppable
+    return droppable[-1]
+
+
+def test_a_store_missing_the_newest_shipped_column_is_refused_by_name(tmp_path):
     db = tmp_path / "narrow.sqlite"
     build_store(db, substrate.SCHEMA_PATH.read_text())
     conn = sqlite3.connect(str(db), autocommit=True)
-    assert "attempt_id" in [r[1] for r in conn.execute("PRAGMA table_info(ladder_tables)")]
-    conn.execute("ALTER TABLE ladder_tables DROP COLUMN attempt_id")
+    column = last_droppable_column(conn, "ladder_tables")
+    conn.execute(f"ALTER TABLE ladder_tables DROP COLUMN {column}")
     conn.close()
 
-    with pytest.raises(substrate.SchemaMismatch, match="table ladder_tables: missing attempt_id"):
+    with pytest.raises(substrate.SchemaMismatch, match=f"table ladder_tables: missing {column}"):
         Substrate.open(db, role="writer")
 
 
