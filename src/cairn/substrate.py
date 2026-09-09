@@ -75,6 +75,10 @@ class WriterAlreadyOpen(SubstrateError):
     pass
 
 
+class SchemaMismatch(SubstrateError):
+    pass
+
+
 @dataclass(frozen=True)
 class Served:
     attempt_id: str
@@ -191,6 +195,79 @@ def serve_sql(*, exclude_disowned=True, require_blobs=True, require_ok=True):
 SERVE_SQL = serve_sql()
 
 _WRITER = None
+_SHIPPED_SCHEMA = None
+
+
+def _schema_objects(conn):
+    objects = {}
+    for row in conn.execute("SELECT type, name, tbl_name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'"):
+        kind, name, tbl_name, sql = row[0], row[1], row[2], row[3] or ""
+        columns = None
+        if kind == "table":
+            columns = tuple(
+                (c[1], (c[2] or "").upper(), int(c[3]), c[4], int(c[5]))
+                for c in conn.execute("SELECT * FROM pragma_table_info(?)", (name,))
+            )
+        objects[(kind, name)] = (tbl_name, " ".join(sql.split()), columns)
+    return objects
+
+
+def _shipped_schema():
+    global _SHIPPED_SCHEMA
+    if _SHIPPED_SCHEMA is None:
+        conn = sqlite3.connect(":memory:")
+        try:
+            conn.executescript(SCHEMA_PATH.read_text())
+            _SHIPPED_SCHEMA = _schema_objects(conn)
+        finally:
+            conn.close()
+    return _SHIPPED_SCHEMA
+
+
+def _column_mismatch(name, expected, actual):
+    expected_names = [c[0] for c in expected]
+    actual_names = [c[0] for c in actual]
+    missing = [c for c in expected_names if c not in actual_names]
+    unknown = [c for c in actual_names if c not in expected_names]
+    parts = []
+    if missing:
+        parts.append("missing " + ", ".join(missing))
+    if unknown:
+        parts.append("unknown " + ", ".join(unknown))
+    if not parts:
+        parts.append("column definitions differ")
+    return f"table {name}: " + "; ".join(parts)
+
+
+def _schema_mismatches(expected, actual):
+    """Every object the shipped schema names, present and identical.
+
+    An object the shipped schema does not name is ignored: a live store legitimately
+    carries observer tables and triggers a session attached to it, and refusing those
+    would refuse a store the shipped schema did create.
+    """
+    reasons = [f"{kind} {name}: absent from the store" for kind, name in sorted(expected.keys() - actual.keys())]
+    for key in sorted(expected.keys() & actual.keys()):
+        want, have = expected[key], actual[key]
+        if want == have:
+            continue
+        if key[0] == "table" and want[2] != have[2]:
+            reasons.append(_column_mismatch(key[1], want[2], have[2]))
+        else:
+            reasons.append(f"{key[0]} {key[1]}: definition differs from the shipped schema")
+    return reasons
+
+
+def _require_shipped_schema(conn, path):
+    actual = _schema_objects(conn)
+    reasons = ["the store holds no schema at all"] if not actual else _schema_mismatches(_shipped_schema(), actual)
+    if reasons:
+        shown = "; ".join(reasons[:8])
+        if len(reasons) > 8:
+            shown += f"; and {len(reasons) - 8} more"
+        raise SchemaMismatch(
+            f"{path} was not created by the shipped schema and this project ships no migration: {shown}"
+        )
 
 
 class Substrate:
@@ -213,19 +290,32 @@ class Substrate:
                 raise WriterAlreadyOpen(f"a writer is already open on {_WRITER.path}")
             conn = sqlite3.connect(str(path), timeout=BUSY_TIMEOUT_MS / 1000, autocommit=True)
             conn.row_factory = sqlite3.Row
-            mode = conn.execute("PRAGMA journal_mode=WAL").fetchone()[0]
-            if mode != "wal":
+            try:
+                # the refusal reads the store before any pragma writes to it
+                fresh = not _schema_objects(conn)
+                if not fresh:
+                    _require_shipped_schema(conn, path)
+                mode = conn.execute("PRAGMA journal_mode=WAL").fetchone()[0]
+                if mode != "wal":
+                    raise SubstrateError(f"journal_mode is {mode!r}, expected 'wal'")
+                conn.execute(f"PRAGMA busy_timeout={BUSY_TIMEOUT_MS}")
+                conn.execute("PRAGMA synchronous=NORMAL")
+                conn.execute("PRAGMA foreign_keys=ON")
+                if fresh:
+                    conn.executescript(SCHEMA_PATH.read_text())
+            except BaseException:
                 conn.close()
-                raise SubstrateError(f"journal_mode is {mode!r}, expected 'wal'")
-            conn.execute(f"PRAGMA busy_timeout={BUSY_TIMEOUT_MS}")
-            conn.execute("PRAGMA synchronous=NORMAL")
-            conn.execute("PRAGMA foreign_keys=ON")
-            conn.executescript(SCHEMA_PATH.read_text())
+                raise
             self = cls(conn, path, role)
             _WRITER = self
         else:
             conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=BUSY_TIMEOUT_MS / 1000, autocommit=True)
             conn.row_factory = sqlite3.Row
+            try:
+                _require_shipped_schema(conn, path)
+            except BaseException:
+                conn.close()
+                raise
             self = cls(conn, path, role)
         lg.info("open", path=str(path), role=role, journal_mode=conn.execute("PRAGMA journal_mode").fetchone()[0])
         return self

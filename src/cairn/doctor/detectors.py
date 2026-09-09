@@ -502,7 +502,7 @@ def d_certificate(ctx):
     try:
         with substrate.Substrate.open(ctx.db, role="reader") as sub:
             certificate = sub.get_certificate(identity)
-    except sqlite3.Error as exc:
+    except (sqlite3.Error, substrate.SubstrateError) as exc:
         return [
             Finding(
                 "D-certificate/unreadable",

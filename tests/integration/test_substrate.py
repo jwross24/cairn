@@ -761,3 +761,164 @@ def test_a_block_that_failed_does_not_poison_the_next_one(writer):
         writer.put_blob(b"kept")
     assert writer.has_blob(substrate.blob_hash(b"discarded")) is False
     assert writer.has_blob(substrate.blob_hash(b"kept")) is True
+
+
+def build_store(path, schema_text):
+    conn = sqlite3.connect(str(path), autocommit=True)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.executescript(schema_text)
+    conn.close()
+
+
+def schema_without(trigger):
+    shipped = substrate.SCHEMA_PATH.read_text()
+    kept = [line for line in shipped.splitlines() if f"CREATE TRIGGER IF NOT EXISTS {trigger} " not in line]
+    assert len(kept) == len(shipped.splitlines()) - 1
+    return "\n".join(kept) + "\n"
+
+
+def master_of(path):
+    conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    try:
+        return sorted(conn.execute("SELECT type, name, tbl_name, sql FROM sqlite_master"))
+    finally:
+        conn.close()
+
+
+def test_a_store_from_an_older_schema_is_refused_before_a_trigger_reaches_it(tmp_path):
+    db = tmp_path / "older.sqlite"
+    build_store(db, schema_without("nodes_no_delete"))
+    before = master_of(db)
+    assert "nodes_no_delete" not in {name for _, name, _, _ in before}
+
+    with pytest.raises(substrate.SchemaMismatch, match="trigger nodes_no_delete: absent from the store"):
+        Substrate.open(db, role="writer")
+
+    assert master_of(db) == before
+
+
+def test_a_store_from_before_the_attempt_id_column_is_refused_by_name(tmp_path):
+    db = tmp_path / "narrow.sqlite"
+    build_store(db, substrate.SCHEMA_PATH.read_text())
+    conn = sqlite3.connect(str(db), autocommit=True)
+    assert "attempt_id" in [r[1] for r in conn.execute("PRAGMA table_info(ladder_tables)")]
+    conn.execute("ALTER TABLE ladder_tables DROP COLUMN attempt_id")
+    conn.close()
+
+    with pytest.raises(substrate.SchemaMismatch, match="table ladder_tables: missing attempt_id"):
+        Substrate.open(db, role="writer")
+
+
+def test_a_store_carrying_a_column_the_shipped_schema_lacks_is_refused_by_name(tmp_path):
+    db = tmp_path / "wide.sqlite"
+    build_store(db, substrate.SCHEMA_PATH.read_text())
+    conn = sqlite3.connect(str(db), autocommit=True)
+    conn.execute("ALTER TABLE ladder_tables ADD COLUMN unshipped_column TEXT")
+    conn.close()
+
+    with pytest.raises(substrate.SchemaMismatch, match="table ladder_tables: unknown unshipped_column"):
+        Substrate.open(db, role="writer")
+
+
+def test_a_store_carrying_a_table_and_trigger_the_shipped_schema_never_named_still_opens(tmp_path):
+    db = tmp_path / "instrumented.sqlite"
+    build_store(db, substrate.SCHEMA_PATH.read_text())
+    conn = sqlite3.connect(str(db), autocommit=True)
+    conn.executescript(
+        "CREATE TABLE observer (seen TEXT);"
+        "CREATE TRIGGER observe_salts AFTER INSERT ON salts BEGIN INSERT INTO observer (seen) VALUES ('salt'); END;"
+    )
+    conn.close()
+
+    sub = Substrate.open(db, role="writer")
+    sub.close()
+
+
+def test_a_reader_refuses_a_store_from_an_older_schema(tmp_path):
+    db = tmp_path / "older_reader.sqlite"
+    build_store(db, schema_without("nodes_no_delete"))
+
+    with pytest.raises(substrate.SchemaMismatch):
+        Substrate.open(db, role="reader")
+
+
+def test_a_reader_refuses_a_store_that_holds_no_schema_at_all(tmp_path):
+    db = tmp_path / "hollow.sqlite"
+    db.touch()
+
+    with pytest.raises(substrate.SchemaMismatch, match="holds no schema at all"):
+        Substrate.open(db, role="reader")
+
+
+def test_a_store_built_from_the_shipped_schema_opens_and_reopens(tmp_path):
+    db = tmp_path / "shipped.sqlite"
+    build_store(db, substrate.SCHEMA_PATH.read_text())
+    before = master_of(db)
+
+    for role in ("writer", "reader", "writer"):
+        sub = Substrate.open(db, role=role)
+        sub.close()
+
+    assert master_of(db) == before
+
+
+def test_a_refused_open_leaves_the_stores_journal_mode_alone(tmp_path):
+    db = tmp_path / "delete_mode.sqlite"
+    conn = sqlite3.connect(str(db), autocommit=True)
+    conn.execute("PRAGMA journal_mode=delete")
+    conn.executescript(schema_without("nodes_no_delete"))
+    conn.close()
+
+    with pytest.raises(substrate.SchemaMismatch):
+        Substrate.open(db, role="writer")
+
+    conn = sqlite3.connect(str(db), autocommit=True)
+    assert conn.execute("PRAGMA journal_mode").fetchone()[0] == "delete"
+    conn.close()
+
+
+@pytest.mark.parametrize(
+    ("drift", "statements", "expected"),
+    [
+        ("an_index", ["DROP INDEX attempts_by_recipe"], "index attempts_by_recipe: absent from the store"),
+        (
+            "a_trigger_body",
+            [
+                "DROP TRIGGER nodes_no_update",
+                "CREATE TRIGGER nodes_no_update BEFORE UPDATE ON nodes BEGIN SELECT RAISE(ABORT, 'other'); END",
+            ],
+            "trigger nodes_no_update: definition differs from the shipped schema",
+        ),
+    ],
+)
+def test_a_shipped_object_that_drifted_is_refused_by_name(tmp_path, drift, statements, expected):
+    db = tmp_path / f"{drift}.sqlite"
+    build_store(db, substrate.SCHEMA_PATH.read_text())
+    conn = sqlite3.connect(str(db), autocommit=True)
+    for statement in statements:
+        conn.execute(statement)
+    conn.close()
+
+    with pytest.raises(substrate.SchemaMismatch, match=expected):
+        Substrate.open(db, role="writer")
+
+
+def test_a_column_that_kept_its_name_but_changed_its_type_is_refused(tmp_path):
+    db = tmp_path / "retyped.sqlite"
+    shipped = substrate.SCHEMA_PATH.read_text()
+    retyped = shipped.replace("    verdict_predicate TEXT NOT NULL,", "    verdict_predicate BLOB NOT NULL,")
+    assert retyped != shipped
+    build_store(db, retyped)
+
+    with pytest.raises(substrate.SchemaMismatch, match="table ladder_tables: column definitions differ"):
+        Substrate.open(db, role="writer")
+
+
+def test_a_refused_open_leaves_no_writer_registered(tmp_path):
+    build_store(tmp_path / "older_leak.sqlite", schema_without("nodes_no_delete"))
+
+    with pytest.raises(substrate.SchemaMismatch):
+        Substrate.open(tmp_path / "older_leak.sqlite", role="writer")
+
+    sub = Substrate.open(tmp_path / "after.sqlite", role="writer")
+    sub.close()
