@@ -244,6 +244,7 @@ def test_module_defined_public_api_is_closed():
         "Recomputation",
         "verdict",
         "in_sample_sizes",
+        "inputs_for_attempt",
         "replay_grade",
         "shape_departures",
         "enqueue_shape_departures",

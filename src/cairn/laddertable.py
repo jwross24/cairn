@@ -613,7 +613,7 @@ def _insert_trial(sub, table_hash, t):
     sub.conn.execute(f"INSERT OR IGNORE INTO {TRIALS} ({columns}) VALUES ({marks})", tuple(values.values()))
 
 
-def write(sub, table, plan, *, at=None):
+def write(sub, table, plan, *, at=None, attempt_id=None):
     v = verdict(table, plan)
     grade = replay_grade(table)
     canonical = _table_canonical(table)
@@ -634,6 +634,7 @@ def write(sub, table, plan, *, at=None):
                 "gate_bundle_hash": table.gate_bundle_hash,
                 "plan_hash": table.plan_hash,
                 "uncounted_backend": table.uncounted_backend,
+                "attempt_id": attempt_id,
                 "verdict": v.kind,
                 "verdict_predicate": v.predicate,
                 "refutation_kind": v.refutation_kind,
@@ -691,6 +692,17 @@ def _trial_from_row(r):
         measurement_scope=r["measurement_scope"],
         witness_hash=r["witness_hash"],
     )
+
+
+def inputs_for_attempt(sub, attempt_id):
+    """The size bound the run behind this attempt spanned, as a param_ranges map: an interval, not the set of sizes run."""
+    row = sub.conn.execute(f"SELECT hash FROM {TABLES} WHERE attempt_id = ? ORDER BY rowid", (attempt_id,)).fetchone()
+    if row is None:
+        return None
+    bits = [
+        r["bits"] for r in sub.conn.execute(f"SELECT DISTINCT bits FROM {TRIALS} WHERE table_hash = ?", (row["hash"],))
+    ]
+    return {"bits": [min(bits), max(bits)]} if bits else None
 
 
 def read(sub, table_hash):

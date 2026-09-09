@@ -3,7 +3,7 @@ import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 
-from cairn import claims, cli, disagreement, exits, foundations, log, repro, substrate
+from cairn import claims, cli, disagreement, exits, foundations, laddertable, log, repro, substrate
 from cairn.errors import CliError
 
 lg = log.get("justify")
@@ -388,8 +388,16 @@ def _grade(sub, evidence_hash):
         return "Replayable"
 
 
+def _attempt_inputs(sub, evidence):
+    """The run's own inputs where a table records them; the declared population is weaker and is the fallback."""
+    attempt_id = evidence.get("attempt_id")
+    measured = laddertable.inputs_for_attempt(sub, attempt_id) if attempt_id else None
+    if measured is not None:
+        return measured
+    return (_load(evidence.get("population")) or {}).get("param_ranges")
+
+
 def context_for(sub, evidence, statement, attest_path, *, offered_class=None):
-    population = _load(evidence.get("population")) or {}
     approved = any(
         row["verdict"] == "approve" for row in claims.visible_review_verdicts(sub, statement["hash"], attest_path)
     )
@@ -401,7 +409,7 @@ def context_for(sub, evidence, statement, attest_path, *, offered_class=None):
         disowned=_disowned(sub, evidence),
         statement_status=statement.get("status", "open"),
         producer_summary=_certificate_summary(sub, evidence),
-        attempt_inputs=population.get("param_ranges"),
+        attempt_inputs=_attempt_inputs(sub, evidence),
         offered_class=offered_class,
         tier=claims.ticket_tier_for(sub, statement["hash"]),
         inadmissible=_inadmissible(sub, evidence),

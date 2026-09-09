@@ -598,6 +598,7 @@ CREATE TABLE IF NOT EXISTS ladder_tables (
     gate_bundle_hash TEXT NOT NULL,
     plan_hash TEXT NOT NULL,
     uncounted_backend TEXT,
+    attempt_id TEXT,
     verdict TEXT NOT NULL CHECK (verdict IN ('KEEP', 'KEEP_IN_SAMPLE', 'REJECT', 'INCONCLUSIVE')),
     verdict_predicate TEXT NOT NULL,
     refutation_kind TEXT CHECK (refutation_kind IS NULL OR refutation_kind IN ('measured', 'implementation')),
