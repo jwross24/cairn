@@ -36,6 +36,10 @@ class StatementDisagreement(ValueError):
     pass
 
 
+class StatementUnrecorded(ValueError):
+    pass
+
+
 HYPOTHESIS_TICKET_KIND = "hypothesis_object"
 HYPOTHESIS_TICKET_TIER = 0
 TIER_TWO_TICKET_TIER = 1
@@ -171,17 +175,22 @@ class TierGate:
         return canon.decode(keys.IDENTITY_BUNDLE, row["canonical"])["implementation_revision"]
 
     def _statement_hash(self, launch):
-        """The statement the recorded hypothesis names, falling back to the launch's where it names none.
+        """The statement the recorded hypothesis names; a launch never supplies one the hypothesis does not bind.
 
         A launch cannot shed a theorem's pre-filter obligation by omitting the statement its own
-        hypothesis records; where it names a different one, the two disagree and neither is read.
+        hypothesis records, nor borrow another statement's passing battery by naming one its
+        hypothesis binds no link to; where the two name different statements, neither is read.
         """
         node = claims.get_hypothesis_object(self.sub, launch.hypothesis_key)
         if node is None:
             return launch.statement_hash
         recorded = node["claim_statement_hash"]
         if recorded is None:
-            return launch.statement_hash
+            if launch.statement_hash is not None:
+                raise StatementUnrecorded(
+                    f"launch names statement {launch.statement_hash} against a hypothesis recording none"
+                )
+            return None
         if launch.statement_hash is not None and launch.statement_hash != recorded:
             raise StatementDisagreement(
                 f"launch names statement {launch.statement_hash} against hypothesis-recorded {recorded}"
@@ -204,7 +213,7 @@ class TierGate:
         try:
             statement_hash = self._statement_hash(launch)
             kinds = ticketlattice.claim_kinds(self.sub, launch.hypothesis_key, statement_hash)
-        except StatementDisagreement, ticketlattice.ClaimKindMalformed:
+        except StatementDisagreement, StatementUnrecorded, ticketlattice.ClaimKindMalformed:
             return None
         one = self._tier_one_ticket(launch, kinds, statement_hash)
         if one is None or launch.declared_tier == 1:

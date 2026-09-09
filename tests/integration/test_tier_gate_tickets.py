@@ -505,8 +505,8 @@ def admit(sub, gate_bundle, launch):
 def test_a_theorem_statement_admits_tier_one_on_a_passed_prefilter_battery(gate):
     sub, gate_bundle = gate
     skill = certify(sub)
-    obj = record_hypothesis(sub)
     stmt = theorem_statement(sub)
+    obj = record_hypothesis(sub, claim_statement_hash=stmt.hash)
     prefilter.record(sub, gate_bundle, statement_hash=stmt.hash, verdicts=ALL_QUIET, at=AT)
     decision = admit(sub, gate_bundle, gate_launch(obj.hash, declared_tier=1, statement_hash=stmt.hash, skill=skill))
     assert isinstance(decision, tiergate.Admitted), decision.reasons
@@ -524,8 +524,8 @@ def test_a_theorem_statement_admits_tier_one_on_a_passed_prefilter_battery(gate)
 def test_a_theorem_statement_without_a_passed_battery_is_refused_with_ticket_absent(gate, verdicts, case):
     sub, gate_bundle = gate
     skill = certify(sub)
-    obj = record_hypothesis(sub)
     stmt = theorem_statement(sub)
+    obj = record_hypothesis(sub, claim_statement_hash=stmt.hash)
     if verdicts is not None:
         flags = (prefilter.VACUITY,) if prefilter.FLAG in verdicts.values() else ()
         prefilter.record(sub, gate_bundle, statement_hash=stmt.hash, verdicts=verdicts, flags=flags, at=AT)
@@ -689,8 +689,8 @@ def test_the_tier_one_predicate_composes_the_prefilter_battery_with_the_section_
     sub, gate_bundle = gate
     tier_gate, attest_path = attested_gate(sub, gate_bundle, tmp_path)
     skill = certify(sub)
-    obj = record_hypothesis(sub)
     stmt = theorem_statement(sub)
+    obj = record_hypothesis(sub, claim_statement_hash=stmt.hash)
     prefilter.record(sub, gate_bundle, statement_hash=stmt.hash, verdicts=ALL_QUIET, at=AT)
     launch = target_attack_launch(obj.hash, stmt.hash, skill)
 
@@ -713,8 +713,8 @@ def test_a_declared_target_attack_still_needs_the_prefilter_battery_for_its_theo
     sub, gate_bundle = gate
     tier_gate, attest_path = attested_gate(sub, gate_bundle, tmp_path)
     skill = certify(sub)
-    obj = record_hypothesis(sub)
     stmt = theorem_statement(sub)
+    obj = record_hypothesis(sub, claim_statement_hash=stmt.hash)
     nogo.write_declaration(
         sub,
         nogo.Declaration(hypothesis_key=obj.hash, evasions=EVASIONS, declared_by="worker", at=AT),
