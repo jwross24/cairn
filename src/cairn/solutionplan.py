@@ -6,28 +6,31 @@ from cairn.gateplan import BLOCKED_PREFIX, MISMATCH_REASON, RESULT_BLOCKED, RESU
 
 lg = log.get("solutionplan")
 
+KIND_STATEMENT_BINDING = "statement_binding"
 KIND_IMPORT_ALLOWLIST = "import_allowlist"
 KIND_BUILD = "build"
 KIND_AXIOMS = "axiom_computation"
 KIND_KERNEL_REPLAY = "kernel_replay"
-STEP_KINDS = (KIND_IMPORT_ALLOWLIST, KIND_BUILD, KIND_AXIOMS, KIND_KERNEL_REPLAY)
+STEP_KINDS = (KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST, KIND_BUILD, KIND_AXIOMS, KIND_KERNEL_REPLAY)
 
 # An axiom carries no proof for the kernel to replay and a forged unchecked theorem is invisible to
 # the axiom computation, so neither step sees the other's forgery and a plan carrying one is open to
 # the forgery the other catches (research/grounding/solution-forgery-2026-09-08/probe.log).
 CHECKER_KINDS = (KIND_AXIOMS, KIND_KERNEL_REPLAY)
-MANDATORY_KINDS = (KIND_IMPORT_ALLOWLIST, KIND_BUILD, *CHECKER_KINDS)
+MANDATORY_KINDS = (KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST, KIND_BUILD, *CHECKER_KINDS)
 
 RESULT_TIMEOUT = "timeout"
 RESULTS = (RESULT_PASS, RESULT_FAIL, RESULT_TIMEOUT, RESULT_BLOCKED)
 
+EXPECT_BOUND = "bound"
 EXPECT_ADMITTED = "admitted"
 EXPECT_BUILT = "built"
 EXPECT_NO_OFFENDING_AXIOM = "no-offending-axiom"
 EXPECT_REPLAYED = "replayed"
-EXPECTATIONS = (EXPECT_ADMITTED, EXPECT_BUILT, EXPECT_NO_OFFENDING_AXIOM, EXPECT_REPLAYED)
+EXPECTATIONS = (EXPECT_BOUND, EXPECT_ADMITTED, EXPECT_BUILT, EXPECT_NO_OFFENDING_AXIOM, EXPECT_REPLAYED)
 
 KIND_EXPECTATION = {
+    KIND_STATEMENT_BINDING: EXPECT_BOUND,
     KIND_IMPORT_ALLOWLIST: EXPECT_ADMITTED,
     KIND_BUILD: EXPECT_BUILT,
     KIND_AXIOMS: EXPECT_NO_OFFENDING_AXIOM,
@@ -204,6 +207,8 @@ def _assert_every_mandatory_kind(steps):
 
 def _assert_canonical_order(steps):
     positions = {step.kind: index for index, step in enumerate(steps)}
+    if positions[KIND_STATEMENT_BINDING] > positions[KIND_IMPORT_ALLOWLIST]:
+        raise PlanInvalid("statement-binding-after-import-allowlist")
     if positions[KIND_IMPORT_ALLOWLIST] > positions[KIND_BUILD]:
         raise PlanInvalid("import-allowlist-after-build")
     for kind in CHECKER_KINDS:

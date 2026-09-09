@@ -6,6 +6,7 @@ from cairn.solutionplan import (
     KIND_BUILD,
     KIND_IMPORT_ALLOWLIST,
     KIND_KERNEL_REPLAY,
+    KIND_STATEMENT_BINDING,
     PlanInvalid,
     SolutionPlan,
     StepTimeout,
@@ -28,7 +29,7 @@ def _plan_rows(*kinds):
     return [_row(kind) for kind in kinds]
 
 
-COMPLETE = (KIND_IMPORT_ALLOWLIST, KIND_BUILD, KIND_AXIOMS, KIND_KERNEL_REPLAY)
+COMPLETE = (KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST, KIND_BUILD, KIND_AXIOMS, KIND_KERNEL_REPLAY)
 
 
 def _observer(verdicts):
@@ -69,27 +70,34 @@ def test_a_plan_missing_a_mandatory_step_is_refused(dropped):
 
 def test_a_plan_carrying_neither_checker_step_names_the_first_missing_one():
     with pytest.raises(PlanInvalid) as caught:
-        SolutionPlan.load(_plan_rows(KIND_IMPORT_ALLOWLIST, KIND_BUILD), arm=ARM)
+        SolutionPlan.load(_plan_rows(KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST, KIND_BUILD), arm=ARM)
     assert caught.value.reason == f"missing-mandatory-step:{KIND_AXIOMS}"
 
 
 def test_a_mandatory_step_declared_non_blocking_is_refused():
     rows = _plan_rows(*COMPLETE)
-    rows[2]["blocking"] = False
+    rows[COMPLETE.index(KIND_AXIOMS)]["blocking"] = False
     with pytest.raises(PlanInvalid) as caught:
         SolutionPlan.load(rows, arm=ARM)
     assert caught.value.reason == f"mandatory-step-not-blocking:{KIND_AXIOMS}"
 
 
+def test_the_statement_binding_may_not_sit_after_the_import_allowlist():
+    kinds = (KIND_IMPORT_ALLOWLIST, KIND_STATEMENT_BINDING, KIND_BUILD, KIND_AXIOMS, KIND_KERNEL_REPLAY)
+    with pytest.raises(PlanInvalid) as caught:
+        SolutionPlan.load(_plan_rows(*kinds), arm=ARM)
+    assert caught.value.reason == "statement-binding-after-import-allowlist"
+
+
 def test_the_import_allowlist_may_not_sit_after_the_build():
-    kinds = (KIND_BUILD, KIND_IMPORT_ALLOWLIST, KIND_AXIOMS, KIND_KERNEL_REPLAY)
+    kinds = (KIND_STATEMENT_BINDING, KIND_BUILD, KIND_IMPORT_ALLOWLIST, KIND_AXIOMS, KIND_KERNEL_REPLAY)
     with pytest.raises(PlanInvalid) as caught:
         SolutionPlan.load(_plan_rows(*kinds), arm=ARM)
     assert caught.value.reason == "import-allowlist-after-build"
 
 
 def test_a_checker_step_before_the_build_is_refused():
-    kinds = (KIND_IMPORT_ALLOWLIST, KIND_AXIOMS, KIND_BUILD, KIND_KERNEL_REPLAY)
+    kinds = (KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST, KIND_AXIOMS, KIND_BUILD, KIND_KERNEL_REPLAY)
     with pytest.raises(PlanInvalid) as caught:
         SolutionPlan.load(_plan_rows(*kinds), arm=ARM)
     assert caught.value.reason == f"checker-before-build:{KIND_AXIOMS}"
@@ -111,11 +119,12 @@ def test_a_duplicate_step_name_is_refused():
 
 
 def test_an_expectation_belonging_to_another_kind_is_refused():
+    at = COMPLETE.index(KIND_BUILD)
     rows = _plan_rows(*COMPLETE)
-    rows[1]["expect"] = solutionplan.EXPECT_REPLAYED
+    rows[at]["expect"] = solutionplan.EXPECT_REPLAYED
     with pytest.raises(PlanInvalid) as caught:
         SolutionPlan.load(rows, arm=ARM)
-    assert caught.value.reason == f"expect-not-this-kind:1.{KIND_BUILD}.{solutionplan.EXPECT_REPLAYED}"
+    assert caught.value.reason == f"expect-not-this-kind:{at}.{KIND_BUILD}.{solutionplan.EXPECT_REPLAYED}"
 
 
 @pytest.mark.parametrize(
@@ -155,7 +164,7 @@ def test_every_step_passes_when_each_observation_matches_its_expectation():
     result = plan.run(_observer(_all_expected()))
     assert result.ok is True
     assert result.first_failure is None
-    assert [step.result for step in result.steps] == [solutionplan.RESULT_PASS] * 4
+    assert [step.result for step in result.steps] == [solutionplan.RESULT_PASS] * len(COMPLETE)
 
 
 def test_a_failed_step_blocks_every_step_below_it_and_the_checkers_never_run():
@@ -165,11 +174,12 @@ def test_a_failed_step_blocks_every_step_below_it_and_the_checkers_never_run():
     assert result.ok is False
     assert result.first_failure.step == KIND_IMPORT_ALLOWLIST
     assert [step.result for step in result.steps] == [
+        solutionplan.RESULT_PASS,
         solutionplan.RESULT_FAIL,
         *[solutionplan.RESULT_BLOCKED] * 3,
     ]
-    assert result.steps[0].reasons == (solutionplan.MISMATCH_REASON, "observed:refused:Lean")
-    assert result.steps[1].reasons == (f"{solutionplan.BLOCKED_PREFIX}{KIND_IMPORT_ALLOWLIST}",)
+    assert result.steps[1].reasons == (solutionplan.MISMATCH_REASON, "observed:refused:Lean")
+    assert result.steps[2].reasons == (f"{solutionplan.BLOCKED_PREFIX}{KIND_IMPORT_ALLOWLIST}",)
 
 
 def test_a_timeout_is_its_own_result_and_is_not_a_failed_verdict():

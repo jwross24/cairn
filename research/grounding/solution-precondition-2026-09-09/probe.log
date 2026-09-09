@@ -1,0 +1,71 @@
+Run of research/grounding/probe_solution_precondition.py, 2026-09-09, for cairn-fsvi
+(the F6 Solution build path). The script was tracked and unexecuted; this log is the run
+that takes its assertions out of CONJECTURE (PLAN §16).
+
+SETUP. Comparator cloned from https://github.com/leanprover/comparator and checked out at
+575674928e239f5bc452aab72d1dd7b0f1326494, the rev bundle/Containerfile line 16 pins as
+COMPARATOR_REV. Its lean-toolchain reads leanprover/lean4:v4.34.0-rc1, the same string
+bundle/lean.json pins. Built with `lake +leanprover/lean4:v4.34.0-rc1 build lean4export
+comparator`, rc 0, 21 jobs. Mathlib-free throughout. Dev arm: the probe points
+COMPARATOR_LANDRUN at the comparator's own scripts/fake-landrun.sh, which prints
+"WARNING: THIS IS NOT REAL LANDRUN!" on every exec, so nothing here is sandboxed and
+nothing here speaks for the gold arm.
+
+COMMAND
+  uv run python research/grounding/probe_solution_precondition.py --comparator <checkout>
+
+  rc 0   wall 14053 ms   1-minute load average 14.7 on 10 cores
+
+  argv: lake +leanprover/lean4:v4.34.0-rc1 env <checkout>/.lake/build/bin/comparator config.json
+  cwd:  a mktemp root holding lean-toolchain, lakefile.toml with two lean_libs
+        (Challenge, Solution), Challenge.lean, Solution.lean and config.json.
+
+  Challenge.lean: theorem target : True := by sorry
+  Solution.lean:  import Lean
+                  run_elab Lean.logInfo "CAIRN_ELABORATOR_EXECUTED"
+                  theorem target : True := True.intro
+  config.json:    challenge_module, solution_module, theorem_names ["target"],
+                  permitted_axioms from bundle/lean.json, enable_nanoda false.
+
+Raw stdout is beside this file as comparator-stdout.txt. The three findings:
+
+Q1. Does a Solution-shaped module admit `import Lean`, and do its elaborator commands run
+    under the comparator's own build?
+
+  YES. stdout carries `info: Solution.lean:2:0: CAIRN_ELABORATOR_EXECUTED`. This confirms
+  under the Challenge/Solution protocol what the 2026-09-08 forgery probe's Q1 established
+  in a bare lake project: worker-authored code executes at build time. It is the whole
+  reason the build path assembles a throwaway per-submission project rather than building
+  in place beside the gate's own Challenge sources.
+
+Q2. Who runs `lake build`?
+
+  THE COMPARATOR DOES, from config.json, for both modules and in order:
+  "Building Challenge" ... "Built Challenge (497ms)" then "Building Solution" ...
+  "Built Solution (5.0s)". Each build is spawned through the landrun wrapper. So on the
+  gold arm the gate's deliverable is the assembled directory plus config.json and not a
+  separate cairn-driven build step; a `KIND_BUILD` step that shells out to `lake build`
+  itself is the in-toolchain (dev) path only, and the two arms do not share one executor.
+  This refines the architecture comment posted on cairn-m1-cqt.5.6 the same day, which
+  described the build as gate-driven on both arms.
+
+Q3. What does the comparator compare, and does it kernel-check?
+
+  It exports the transitive constant closure of the named theorem from each module — the
+  same 30-constant list from both here — then reports "Running Lean default kernel on
+  solution." / "Lean default kernel accepts the solution" / "Your solution is okay!".
+  So one comparator invocation covers the closure comparison AND a kernel check of the
+  Solution. Note the Challenge in this fixture is `by sorry` and the run still passes:
+  the comparator compares the Challenge's STATEMENT against the Solution's, and takes no
+  interest in how the Challenge was proved. That is the intended protocol shape (the
+  Challenge is a statement carrier), and it is worth stating because a reader can mistake
+  a passing run for a claim about the Challenge's own proof.
+
+NO-CLAIM. One run, one machine, mathlib-free, dev arm with a fake landrun. This says what
+the pinned comparator does with a two-lib project; it says nothing about the gold arm over
+a cairn-rendered pair (still unevidenced, [R7] on cairn-m1-cqt.5.6), nothing about
+behavior on a mathlib-importing Challenge, and nothing about the mismatch direction — no
+weaker-Solution config was run here, so the refusal path is evidenced only by the
+comparator's own simple_mismatch fixture inside the container
+(tests/integration/test_lean_container.py). The 14.1 s figure is a single observation at
+load average 14.7 and is not a cost profile.

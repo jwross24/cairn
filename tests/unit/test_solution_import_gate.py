@@ -6,6 +6,7 @@ from cairn.solutionplan import (
     KIND_BUILD,
     KIND_IMPORT_ALLOWLIST,
     KIND_KERNEL_REPLAY,
+    KIND_STATEMENT_BINDING,
     ImportsUnparsable,
     SolutionPlan,
     check_imports,
@@ -26,7 +27,7 @@ def _rows():
             "blocking": True,
             "timeout_s": 600.0,
         }
-        for kind in (KIND_IMPORT_ALLOWLIST, KIND_BUILD, KIND_AXIOMS, KIND_KERNEL_REPLAY)
+        for kind in (KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST, KIND_BUILD, KIND_AXIOMS, KIND_KERNEL_REPLAY)
     ]
 
 
@@ -59,11 +60,11 @@ def test_the_refused_solution_never_reaches_the_build_or_the_checkers():
         return step.expect, (), 2
 
     result = SolutionPlan.load(_rows(), arm=container.DEV_ARM).run(observe)
-    assert ran == [KIND_IMPORT_ALLOWLIST]
+    assert ran == [KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST]
     assert result.ok is False
-    assert result.steps[0].result == solutionplan.RESULT_FAIL
-    assert f"{solutionplan.IMPORT_REFUSED_PREFIX}Lean" in result.steps[0].reasons
-    assert [step.result for step in result.steps[1:]] == [solutionplan.RESULT_BLOCKED] * 3
+    assert result.steps[1].result == solutionplan.RESULT_FAIL
+    assert f"{solutionplan.IMPORT_REFUSED_PREFIX}Lean" in result.steps[1].reasons
+    assert [step.result for step in result.steps[2:]] == [solutionplan.RESULT_BLOCKED] * 3
 
 
 @pytest.mark.parametrize(
