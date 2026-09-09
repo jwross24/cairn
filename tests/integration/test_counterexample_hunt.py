@@ -483,6 +483,7 @@ def test_ceiling_stopped_real_attempt_is_incomplete_without_standing(tmp_path):
             bundle_hash="b" * 64,
             evaluation=Evaluation(0.005, 0.005, 0.005),
             ceiling_multiplier=4,
+            subprocess_startup_ms=0,
             tool_digests=TOOL_DIGESTS,
             scratch_root=tmp_path / "runs",
             skip_cache_lookup=True,
