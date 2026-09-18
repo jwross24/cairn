@@ -357,28 +357,66 @@ def _certificate_summary(sub, evidence):
 
 def _repro_passed(sub, evidence):
     digest = evidence.get("repro_record_hash")
+    attempt_id = evidence.get("attempt_id")
+    table_hash = (
+        laddertable.mapped_table_for_attempt(sub, attempt_id)
+        if evidence.get("kind") == laddertable.NODE_KIND and attempt_id
+        else None
+    )
+    if table_hash is not None:
+        if digest:
+            row = claims.get_repro_record(sub, digest)
+            if row is None or row["attempt_id"] != attempt_id:
+                return None
+            return bool(row["passed"]) if _table_bindings(sub, digest) == {table_hash} else None
+        rows = [
+            row
+            for row in claims.repro_records_for_attempt(sub, attempt_id)
+            if _table_bindings(sub, row["hash"]) == {table_hash}
+        ]
+        return bool(rows[-1]["passed"]) if rows else None
     if digest:
         row = claims.get_repro_record(sub, digest)
         return None if row is None else bool(row["passed"])
-    attempt_id = evidence.get("attempt_id")
     rows = claims.repro_records_for_attempt(sub, attempt_id) if attempt_id else []
     return bool(rows[-1]["passed"]) if rows else None
 
 
-def _disowned(sub, evidence):
+def _table_bindings(sub, node_hash):
+    rows = sub.conn.execute(
+        "SELECT l.parent_hash FROM lineage l JOIN nodes n ON n.hash = l.parent_hash "
+        "WHERE l.child_hash = ? AND l.edge_kind = ? AND n.kind = ?",
+        (node_hash, substrate.EDGE_INPUT, laddertable.NODE_KIND),
+    ).fetchall()
+    return {row["parent_hash"] for row in rows}
+
+
+def _member_attempts(sub, evidence):
     attempt_id = evidence.get("attempt_id")
-    if not attempt_id:
-        return False
-    row = sub.get_attempt(attempt_id)
-    return row is not None and row["disowned_at"] is not None
+    table_hash = (
+        laddertable.mapped_table_for_attempt(sub, attempt_id)
+        if evidence.get("kind") == laddertable.NODE_KIND and attempt_id
+        else None
+    )
+    if table_hash is None:
+        return () if attempt_id is None else (attempt_id,)
+    return laddertable.attempt_ids_for_table(sub, table_hash)
+
+
+def _disowned(sub, evidence):
+    return any(
+        row is not None and row["disowned_at"] is not None
+        for attempt_id in _member_attempts(sub, evidence)
+        if (row := sub.get_attempt(attempt_id)) is not None
+    )
 
 
 def _inadmissible(sub, evidence):
-    attempt_id = evidence.get("attempt_id")
-    if not attempt_id:
-        return False
-    row = sub.get_attempt(attempt_id)
-    return row is not None and bool(row["inadmissible"])
+    return any(
+        row is not None and bool(row["inadmissible"])
+        for attempt_id in _member_attempts(sub, evidence)
+        if (row := sub.get_attempt(attempt_id)) is not None
+    )
 
 
 def _grade(sub, evidence_hash):

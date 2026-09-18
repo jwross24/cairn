@@ -177,7 +177,7 @@ def test_a_run_missing_an_arm_refuses_before_any_instance_is_drawn(
     assert instances.trials_for(writer, nonce.nonce) == []
 
 
-def test_a_trial_driven_into_the_patience_ceiling_lands_as_a_success_rate_failure(
+def test_a_patience_limited_run_records_the_observed_claimant_success_rate(
     writer, shipped, tmp_path, plan, hypothesis_object
 ):
     impatient = dataclasses.replace(plan, patience_multiplier=1)
@@ -197,12 +197,30 @@ def test_a_trial_driven_into_the_patience_ceiling_lands_as_a_success_rate_failur
         ceiling_multiplier=MAKER_CEILING,
     )
     claimant = [t for t in arm_trials if t.arm == ladder.CLAIMANT]
-    assert claimant and all(t.status == runner.STATUS_BUDGET_EXCEEDED for t in claimant)
-    assert all(not t.completed and not t.recovered for t in claimant)
+    diagnostics = [
+        {
+            "bits": t.bits,
+            "seed": t.seed,
+            "status": t.status,
+            "cpu_seconds": t.cpu_seconds,
+            "ceiling_seconds": runner.ceiling_for(
+                bsgs.COST_PROFILE.evaluate(t.bits).expected_wall_s,
+                impatient.patience_multiplier,
+                subprocess_startup_ms=shipped.tiers["subprocess_startup_ms"],
+            ),
+        }
+        for t in claimant
+    ]
+    assert claimant, diagnostics
     for t in claimant:
-        assert t.ops == ladder._ceiling_ops(bsgs, t.bits, impatient.patience_multiplier)
+        if t.status == runner.STATUS_BUDGET_EXCEEDED:
+            assert not t.completed and not t.recovered, diagnostics
     for row in table.rungs:
-        assert Decimal(row.success_rate) == 0
+        trials = [t for t in claimant if t.bits == row.bits]
+        successes = sum(t.status == runner.STATUS_OK and t.completed and t.recovered for t in trials)
+        expected = (Decimal(successes) / len(trials)).quantize(ladder.SUCCESS_PLACES)
+        assert Decimal(row.success_rate) == expected, diagnostics
     found = laddertable.verdict(table, impatient)
-    assert found.kind != laddertable.KEEP
+    if any(not t.completed or not t.recovered or t.status != runner.STATUS_OK for t in claimant):
+        assert found.kind not in (laddertable.KEEP, laddertable.KEEP_IN_SAMPLE), diagnostics
     assert laddertable.recorded_verdict(writer, table.hash).kind == found.kind

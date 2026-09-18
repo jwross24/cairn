@@ -5,8 +5,22 @@ from pathlib import Path
 
 import pytest
 
-from cairn import attest, claims, foundations, justify, ladderplan, laddertable, runner
+from cairn import (
+    attest,
+    bundle,
+    claims,
+    foundations,
+    instances,
+    justify,
+    ladder,
+    ladderplan,
+    laddertable,
+    runner,
+    substrate,
+)
 from cairn.justify import CONJECTURE, PROVEN, STRONG_EMPIRICAL
+from cairn.skills import bsgs, rho_dp
+from cairn.substrate import HashCollision
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import factories
@@ -158,6 +172,91 @@ def judge(writer, node, statement, attest_path, **kw):
     return justify.justify(row, {"hash": statement.hash, "scope": statement.scope}, ctx)
 
 
+def production_plan():
+    obj = json.loads((Path(__file__).resolve().parents[2] / "bundle" / "ladder_plan.json").read_text())
+    obj["baseline"]["implementation_revision"] = rho_dp.implementation_revision()
+    full = ladderplan.LadderPlan.load(obj)
+    fit = dataclasses.replace(full.rung(30), bits=28, trials=2)
+    hold_out = dataclasses.replace(full.rung(40), bits=30, role=ladderplan.ROLE_HOLD_OUT, trials=2)
+    return dataclasses.replace(full, rungs=(fit, hold_out), hold_out_m=2, patience_multiplier=60)
+
+
+def bound_production_run(writer, shipped, tmp_path, run_id, declared_size=(7, 77)):
+    from test_ladder_run import _dispatch_run
+
+    plan = production_plan()
+    statement = factories.claim_statement(
+        family="dlp",
+        size=declared_size,
+        param_ranges={"bits": list(declared_size)},
+        seed=91,
+    )
+    claims.write_claim_statement(writer, statement)
+    hypothesis = claims.HypothesisObject(
+        target_family="dlp",
+        claimed={"model": "c_sqrt_n_ops"},
+        method_identity={"interface_version": bsgs.INTERFACE_VERSION, "params": {}},
+        declared_parameter_ranges={"bits": list(declared_size)},
+        claim_statement_hash=statement.hash,
+    )
+    nonce = _dispatch_run(writer, shipped, tmp_path, plan, hypothesis, run_id)
+    scratch = tmp_path / f"bound-{run_id}"
+    scratch.mkdir()
+    table, arm_trials = ladder.run(
+        writer,
+        shipped,
+        plan=plan,
+        plan_hash=ladderplan.plan_digest(shipped) or "dd" * 32,
+        run_id=run_id,
+        hypothesis_hash=hypothesis.hash,
+        nonce=nonce,
+        scratch_root=scratch,
+        budget_remaining=10_000.0,
+        ceiling_multiplier=60,
+    )
+    claimant_ids = {trial.attempt_id for trial in arm_trials if trial.arm == ladder.CLAIMANT}
+    evidence = [
+        dict(row)
+        for row in writer.conn.execute(
+            "SELECT * FROM evidence_nodes WHERE kind = ? AND target_statement_hash = ? ORDER BY attempt_id",
+            (laddertable.NODE_KIND, statement.hash),
+        ).fetchall()
+        if row["attempt_id"] in claimant_ids
+    ]
+    return plan, statement, table, arm_trials, evidence
+
+
+def replay_attempt(writer, attempt_id):
+    original = writer.get_attempt(attempt_id)
+    replay = writer.start_attempt(
+        original["recipe_key"],
+        replay_grade=original["replay_grade"],
+        skip_cache_lookup=True,
+    )
+    writer.close_attempt(
+        replay,
+        original["status"],
+        output_manifest_hash=original["output_manifest_hash"],
+        receipt_hash=original["receipt_hash"],
+        verifier_result_hash=original["verifier_result_hash"],
+        certificate_hash=original["certificate_hash"],
+    )
+    return replay
+
+
+def assert_membership_refused(writer, table, plan, mapping, slot, replacement, match, before, db_snapshot):
+    with pytest.raises(laddertable.LadderTableError, match=match):
+        laddertable.write(writer, table, plan, trial_attempts={**mapping, slot: replacement})
+    assert db_snapshot(writer.conn, f"after-{replacement}") == before
+
+
+def assert_evidence_refused(writer, table, node, match, before, db_snapshot):
+    with pytest.raises(laddertable.LadderTableError, match=match):
+        laddertable.write_evidence_node(writer, table, node)
+    assert claims.get_evidence_node(writer, node.hash) is None
+    assert db_snapshot(writer.conn, f"after-{node.hash}") == before
+
+
 def test_a_real_ladder_table_with_its_recomputed_repro_record_justifies_strong_empirical(writer, plan, attest_path):
     statement = statement_with(writer, cost_model=True)
     identity = certify(writer, "11" * 32, factories.selftest_summary(GENERATED_ORIGINS, True, None))
@@ -245,6 +344,230 @@ def test_a_node_declaring_a_wide_population_over_a_narrow_run_is_judged_on_the_r
     _, node, _ = live_ladder_node(writer, plan, statement, producer_identity=identity, run_id="run-wide")
     assert laddertable.inputs_for_attempt(writer, "attempt-run-wide") == {"bits": [30, 60]}
     assert judge(writer, node, statement, attest_path).cls == STRONG_EMPIRICAL
+
+
+def test_a_bound_production_ladder_run_emits_evidence_for_every_claimant_attempt(writer, pinned_bundle, tmp_path):
+    shipped = bundle.GateBundle.open(*pinned_bundle())
+    _, statement, table, arm_trials, rows = bound_production_run(writer, shipped, tmp_path, "run-bound-production")
+    claimant_attempts = {
+        (trial.bits, trial.trial): trial.attempt_id for trial in arm_trials if trial.arm == ladder.CLAIMANT
+    }
+    assert laddertable.membership_for_table(writer, table.hash) == tuple(
+        (bits, trial, attempt_id) for (bits, trial), attempt_id in sorted(claimant_attempts.items())
+    )
+    assert {row["attempt_id"] for row in rows} == set(claimant_attempts.values())
+    assert all(justify._attempt_inputs(writer, row) == {"bits": [28, 30]} for row in rows)
+    assert all(
+        laddertable.inputs_for_attempt(writer, attempt_id) == {"bits": [28, 30]}
+        for attempt_id in claimant_attempts.values()
+    )
+    expected_population = {
+        "target_family": "dlp",
+        "size_interval": [28, 30],
+        "param_ranges": {"bits": [28, 30]},
+        "assumption_set": sorted(statement.scope["assumption_set"]),
+    }
+    claimant_identity = ladder.dispatches_for(writer, table.run_id)[ladder.CLAIMANT].identity_bundle_hash
+    recorded = laddertable.recorded_verdict(writer, table.hash)
+    assert all(json.loads(row["population"]) == expected_population for row in rows)
+    assert all(json.loads(row["assumptions"]) == sorted(statement.scope["assumption_set"]) for row in rows)
+    assert all(json.loads(row["in_sample_sizes"]) == [28] for row in rows)
+    assert all(row["producer_identity"] == claimant_identity and row["producer_tag"] == "skill" for row in rows)
+    assert all(row["verdict"] == recorded.kind and row["repro_record_hash"] is None for row in rows)
+    assert all(
+        laddertable.inputs_for_attempt(writer, trial.attempt_id) is None
+        for trial in arm_trials
+        if trial.arm != ladder.CLAIMANT
+    )
+    assert all(
+        laddertable.inputs_for_attempt(writer, row["attempt_id"]) is None
+        for row in instances.trials_for(writer, table.nonce)
+    )
+    assert bytes(writer.get_node(table.hash)["canonical"]) == laddertable._table_canonical(table)
+    assert all(
+        laddertable._trial_canonical(stored) == laddertable._trial_canonical(actual)
+        for stored, actual in zip(laddertable.read(writer, table.hash).trials, table.trials, strict=True)
+    )
+
+
+def test_only_exact_claimant_attempts_resolve_to_their_production_table(writer, pinned_bundle, tmp_path, db_snapshot):
+    shipped = bundle.GateBundle.open(*pinned_bundle())
+    plan, _, table, arm_trials, _ = bound_production_run(writer, shipped, tmp_path, "run-membership")
+    mapping = {(trial.bits, trial.trial): trial.attempt_id for trial in arm_trials if trial.arm == ladder.CLAIMANT}
+    first_slot, first_attempt = next(iter(sorted(mapping.items())))
+    replay = replay_attempt(writer, first_attempt)
+    _, _, foreign_table, foreign_trials, _ = bound_production_run(writer, shipped, tmp_path, "run-membership-foreign")
+    baseline = next(trial.attempt_id for trial in arm_trials if trial.arm == ladder.BASELINE)
+    maker = instances.trials_for(writer, table.nonce)[0]["attempt_id"]
+    foreign = next(trial.attempt_id for trial in foreign_trials if trial.arm == ladder.CLAIMANT)
+
+    assert laddertable.inputs_for_attempt(writer, baseline) is None
+    assert laddertable.inputs_for_attempt(writer, maker) is None
+    assert laddertable.inputs_for_attempt(writer, "attempt-unknown") is None
+    assert laddertable.inputs_for_attempt(writer, replay) is None
+    assert laddertable.mapped_table_for_attempt(writer, foreign) == foreign_table.hash
+    assert laddertable.mapped_table_for_attempt(writer, foreign) != table.hash
+
+    before = db_snapshot(writer.conn, "before-wrong-origin-memberships")
+    assert_membership_refused(
+        writer, table, plan, mapping, first_slot, baseline, "is not the claimant trial", before, db_snapshot
+    )
+    assert_membership_refused(
+        writer, table, plan, mapping, first_slot, maker, "is not the claimant trial", before, db_snapshot
+    )
+    assert_membership_refused(
+        writer, table, plan, mapping, first_slot, "attempt-unknown", "names no attempt", before, db_snapshot
+    )
+    assert_membership_refused(
+        writer, table, plan, mapping, first_slot, foreign, "is not the claimant trial", before, db_snapshot
+    )
+
+
+def test_membership_repeats_idempotently_and_refuses_incomplete_extra_or_conflicting_maps(
+    writer, pinned_bundle, tmp_path, db_snapshot
+):
+    shipped = bundle.GateBundle.open(*pinned_bundle())
+    plan, _, table, arm_trials, _ = bound_production_run(writer, shipped, tmp_path, "run-map-atomicity")
+    mapping = {(trial.bits, trial.trial): trial.attempt_id for trial in arm_trials if trial.arm == ladder.CLAIMANT}
+    before = db_snapshot(writer.conn, "before-idempotent-membership")
+
+    laddertable.write(writer, table, plan, trial_attempts=mapping)
+    assert db_snapshot(writer.conn, "after-idempotent-membership") == before
+
+    first_slot, first_attempt = next(iter(sorted(mapping.items())))
+    incomplete = {slot: attempt_id for slot, attempt_id in mapping.items() if slot != first_slot}
+    extra = {**mapping, (31, 0): "attempt-extra"}
+    incomplete_table = dataclasses.replace(table, uncounted_backend="/incomplete")
+    with pytest.raises(laddertable.LadderTableError, match="every and only table trial"):
+        laddertable.write(writer, incomplete_table, plan, trial_attempts=incomplete)
+    assert writer.get_node(incomplete_table.hash) is None
+    assert laddertable.read(writer, incomplete_table.hash) is None
+    assert db_snapshot(writer.conn, "after-incomplete-membership") == before
+
+    extra_table = dataclasses.replace(table, uncounted_backend="/extra")
+    with pytest.raises(laddertable.LadderTableError, match="every and only table trial"):
+        laddertable.write(writer, extra_table, plan, trial_attempts=extra)
+    assert writer.get_node(extra_table.hash) is None
+    assert laddertable.read(writer, extra_table.hash) is None
+    assert db_snapshot(writer.conn, "after-extra-membership") == before
+
+    replay = replay_attempt(writer, first_attempt)
+    before_conflict = db_snapshot(writer.conn, "before-conflicting-membership")
+    with pytest.raises(HashCollision, match="different trial_attempts"):
+        laddertable.write(writer, table, plan, trial_attempts={**mapping, first_slot: replay})
+    assert db_snapshot(writer.conn, "after-conflicting-membership") == before_conflict
+    assert laddertable.membership_for_table(writer, table.hash) == tuple(
+        (bits, trial, attempt_id) for (bits, trial), attempt_id in sorted(mapping.items())
+    )
+    assert laddertable.inputs_for_attempt(writer, replay) is None
+
+
+def test_bound_evidence_refuses_wrong_attempt_target_producer_and_table_binding(
+    writer, pinned_bundle, tmp_path, db_snapshot
+):
+    shipped = bundle.GateBundle.open(*pinned_bundle())
+    plan, statement, table, arm_trials, rows = bound_production_run(writer, shipped, tmp_path, "run-evidence-refusals")
+    valid = laddertable.evidence_node(
+        table,
+        plan,
+        target_statement_hash=statement.hash,
+        population=json.loads(rows[0]["population"]),
+        assumptions=frozenset(json.loads(rows[0]["assumptions"])),
+        producer_identity=rows[0]["producer_identity"],
+        producer_tag=rows[0]["producer_tag"],
+        attempt_id=rows[0]["attempt_id"],
+    )
+    baseline = next(trial.attempt_id for trial in arm_trials if trial.arm == ladder.BASELINE)
+    other_statement = factories.claim_statement(seed=92)
+    claims.write_claim_statement(writer, other_statement)
+    baseline_identity = ladder.dispatches_for(writer, table.run_id)[ladder.BASELINE].identity_bundle_hash
+    refused = (
+        (dataclasses.replace(valid, attempt_id=baseline), "is not a claimant member"),
+        (dataclasses.replace(valid, target_statement_hash=other_statement.hash), "is not table"),
+        (dataclasses.replace(valid, producer_identity=baseline_identity), "producer is not"),
+    )
+    before = db_snapshot(writer.conn, "before-evidence-refusals")
+    assert_evidence_refused(writer, table, refused[0][0], refused[0][1], before, db_snapshot)
+    assert_evidence_refused(writer, table, refused[1][0], refused[1][1], before, db_snapshot)
+    assert_evidence_refused(writer, table, refused[2][0], refused[2][1], before, db_snapshot)
+
+    _, _, other_table, _, _ = bound_production_run(writer, shipped, tmp_path, "run-evidence-other")
+    writer.add_lineage(valid.hash, other_table.hash, substrate.EDGE_INPUT)
+    with pytest.raises(HashCollision, match="already bound to another ladder table"):
+        laddertable.write_evidence_node(writer, table, valid)
+    assert laddertable._binding_table_hashes(writer, valid.hash) == {table.hash, other_table.hash}
+
+
+@pytest.mark.parametrize("mutation", ["disown", "mark_inadmissible"], ids=["disowned", "inadmissible"])
+def test_every_table_evidence_node_reads_the_standing_of_every_claimant_member(
+    writer, pinned_bundle, tmp_path, attest_path, mutation
+):
+    shipped = bundle.GateBundle.open(*pinned_bundle())
+    _, statement, _, _, rows = bound_production_run(
+        writer,
+        shipped,
+        tmp_path,
+        f"run-standing-{mutation}",
+        declared_size=(28, 30),
+    )
+    statement_row = claims.get_claim_statement(writer, statement.hash)
+    named_attempt = rows[0]["attempt_id"]
+    affected_attempt = next(row["attempt_id"] for row in rows if row["attempt_id"] != named_attempt)
+    statistical = factories.evidence_node(
+        "statistical",
+        statement.hash,
+        statement.scope,
+        frozenset(statement.scope["assumption_set"]),
+        producer=(rows[0]["producer_identity"], "skill"),
+        seed=93,
+        attempt_id=named_attempt,
+    )
+    claims.write_evidence_node(writer, statistical)
+    statistical_row = claims.get_evidence_node(writer, statistical.hash)
+
+    getattr(writer, mutation)(affected_attempt)
+
+    table_contexts = [justify.context_for(writer, row, statement_row, attest_path) for row in rows]
+    field = "disowned" if mutation == "disown" else "inadmissible"
+    reason = "disowned" if mutation == "disown" else justify.REASON_INADMISSIBLE
+    assert all(getattr(context, field) for context in table_contexts)
+    results = [justify.justify(row, statement_row, context) for row, context in zip(rows, table_contexts, strict=True)]
+    assert all(isinstance(result, justify.Absent) and result.reason == reason for result in results)
+    unrelated = justify.context_for(writer, statistical_row, statement_row, attest_path)
+    assert unrelated.disowned is False
+    assert unrelated.inadmissible is False
+
+
+def test_table_reproduction_requires_a_complete_linked_recomputation(writer, pinned_bundle, tmp_path):
+    shipped = bundle.GateBundle.open(*pinned_bundle())
+    plan, _, table, _, rows = bound_production_run(writer, shipped, tmp_path, "run-table-repro")
+    attempt_id = rows[0]["attempt_id"]
+    ordinary = claims.ReproRecord(
+        attempt_id=attempt_id,
+        kind=claims.REPRO_KINDS[0],
+        passed=True,
+        at="2026-09-18T10:00:00Z",
+    )
+    claims.write_repro_record(writer, ordinary)
+    assert justify._repro_passed(writer, rows[0]) is None
+    assert justify._repro_passed(writer, {**rows[0], "repro_record_hash": ordinary.hash}) is None
+
+    one_trial = {(table.trials[0].bits, table.trials[0].trial)}
+    with pytest.raises(laddertable.LadderTableError, match="must verify every trial"):
+        laddertable.record(writer, table, plan, one_trial, attempt_id=attempt_id)
+
+    complete, recomputation = laddertable.record(
+        writer,
+        table,
+        plan,
+        {(trial.bits, trial.trial) for trial in table.trials},
+        attempt_id=attempt_id,
+    )
+    assert recomputation.agrees is True
+    assert justify._repro_passed(writer, rows[0]) is True
+    assert justify._repro_passed(writer, {**rows[0], "repro_record_hash": complete.hash}) is True
+    sibling = next(row for row in rows if row["attempt_id"] != attempt_id)
+    assert justify._repro_passed(writer, {**sibling, "repro_record_hash": complete.hash}) is None
 
 
 def test_a_node_carrying_no_attempt_is_judged_on_its_declared_population(writer, plan, attest_path):

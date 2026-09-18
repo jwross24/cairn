@@ -52,8 +52,7 @@ def test_a_rendered_challenge_compiles_under_the_pinned_toolchain(monkeypatch, t
 
 
 def test_the_real_prelude_compiles_in_the_gate_project_when_mathlib_is_present(request):
-    if not MATHLIB.is_dir():
-        pytest.skip(f"mathlib checkout absent at {MATHLIB}; `lake update` in lean/ writes it (7.8 GB)")
+    assert MATHLIB.is_dir(), f"mathlib checkout absent at {MATHLIB}; CI must provision the pinned dependency"
     pins = lean.source_pins()
     stmt = factories.claim_statement(seed=4, formal_source=CURVE_FORMAL)
     rendered = challenge.write_challenge(stmt, challenge.prelude_bytes())

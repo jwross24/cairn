@@ -517,6 +517,48 @@ def _trial_row(claim):
     )
 
 
+def _table_evidence_nodes(sub, table, plan, trial_attempts, claimant):
+    hypothesis_node = sub.get_node(table.hypothesis_hash)
+    hypothesis = (
+        None
+        if hypothesis_node is None or hypothesis_node["kind"] != "hypothesis_object"
+        else canon.decode(keys.HYPOTHESIS_OBJECT, bytes(hypothesis_node["canonical"]))
+    )
+    hypothesis_row = claims.get_hypothesis_object(sub, table.hypothesis_hash)
+    statement_hash = None if hypothesis_row is None else hypothesis_row["claim_statement_hash"]
+    if statement_hash is None:
+        return ()
+    if hypothesis is None:
+        raise laddertable.LadderTableError(f"table {table.hash} names missing hypothesis {table.hypothesis_hash}")
+    statement = claims.get_claim_statement(sub, statement_hash)
+    if statement is None:
+        raise laddertable.LadderTableError(
+            f"hypothesis {table.hypothesis_hash} names missing claim statement {statement_hash}"
+        )
+    scope = json.loads(statement["scope"])
+    bits = sorted({trial.bits for trial in table.trials})
+    population = {
+        "target_family": hypothesis["target_family"],
+        "size_interval": [bits[0], bits[-1]],
+        "param_ranges": {"bits": [bits[0], bits[-1]]},
+        "assumption_set": scope["assumption_set"],
+    }
+    assumptions = frozenset(scope["assumption_set"])
+    return tuple(
+        laddertable.evidence_node(
+            table,
+            plan,
+            target_statement_hash=statement_hash,
+            population=population,
+            assumptions=assumptions,
+            producer_identity=claimant.identity_bundle_hash,
+            producer_tag="skill",
+            attempt_id=attempt_id,
+        )
+        for _, attempt_id in sorted(trial_attempts.items())
+    )
+
+
 def arms_for(rung):
     return (CLAIMANT,) if rung.role == ladderplan.ROLE_HOLD_OUT else tuple(ladderplan.ARMS)
 
@@ -600,7 +642,9 @@ def run(
     )
     if ops_counter is not None:
         table = _counted(table, ops_counter)
-    laddertable.write(sub, table, plan)
+    trial_attempts = {(trial.bits, trial.trial): trial.attempt_id for trial in arm_trials if trial.arm == CLAIMANT}
+    evidence_nodes = _table_evidence_nodes(sub, table, plan, trial_attempts, claimant)
+    laddertable.write(sub, table, plan, trial_attempts=trial_attempts, evidence_nodes=evidence_nodes)
     lg.info("run", run_id=run_id, table=table.hash, rungs=len(rungs), trials=len(trials))
     return table, tuple(arm_trials)
 

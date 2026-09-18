@@ -101,6 +101,22 @@ jobs:
           "$HOME/.elan/bin/elan" --version | tee /dev/stderr | grep -F "elan $ELAN_VERSION " > /dev/null
           "$HOME/.elan/bin/lean" "+$(cat lean/lean-toolchain)" --version
 
+      - name: Restore the pinned mathlib cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: |
+            lean/.lake
+            ~/.cache/mathlib
+          key: mathlib-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean/lean-toolchain', 'lean/lake-manifest.json', 'lean/lakefile.toml') }}
+
+      - name: Provision the pinned mathlib prerequisite
+        working-directory: lean
+        run: |
+          set -euo pipefail
+          toolchain="$(cat lean-toolchain)"
+          "$HOME/.elan/bin/lake" "+$toolchain" exe cache get Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point
+          git diff --exit-code -- lake-manifest.json
+
       - name: Restore br
         id: br-cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
@@ -168,7 +184,7 @@ jobs:
         run: cat .check.log
 
       - name: The artifacts a red run leaves behind
-        # A run killed by the job ceiling is cancelled, not failed, and it is the
+        # A run killed by the job ceiling is canceled, not failed, and it is the
         # run whose artifacts are hardest to get any other way.
         if: failure() || cancelled()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1

@@ -288,27 +288,34 @@ def _rung_of(plan, bits):
     return plan.rung(bits)
 
 
-def test_a_trial_at_the_patience_ceiling_is_a_success_rate_failure_and_no_rung_keeps(plan):
+@pytest.mark.parametrize(("cpu_seconds", "expected"), [(1.0, runner.STATUS_OK), (1.001, runner.STATUS_BUDGET_EXCEEDED)])
+def test_the_patience_boundary_is_strict(cpu_seconds, expected):
+    parsed = runner.ParsedOutput.of({"status": "OK"}, "OK")
+    assert runner.status_for(parsed, 0, cpu_seconds, 1.0) == expected
+
+
+def test_a_trial_past_the_patience_ceiling_is_a_success_rate_failure_and_no_rung_keeps(plan):
     rung = _rung_of(plan, 30)
     mean = bsgs.COST_PROFILE.production.per_size[30].mean_tries
-    ceiling = ladder._ceiling_ops(bsgs, 30, plan.patience_multiplier)
+    parsed = runner.ParsedOutput.of({"status": "OK"}, "OK")
+    status = runner.status_for(parsed, 0, 1.001, 1.0)
+    assert status == runner.STATUS_BUDGET_EXCEEDED
     claim = [
         _arm_trial(ladder.CLAIMANT, 30, 0, int(mean)),
         _arm_trial(
             ladder.CLAIMANT,
             30,
             1,
-            ceiling,
-            completed=False,
-            recovered=False,
-            status=runner.STATUS_BUDGET_EXCEEDED,
+            int(mean),
+            completed=status == runner.STATUS_OK,
+            recovered=status == runner.STATUS_OK,
+            status=status,
         ),
     ]
     base = [_arm_trial(ladder.BASELINE, 30, i, int(mean) * 4) for i in (0, 1)]
     row = ladder._rung_row(plan, rung, bsgs, claim, {ladder.BASELINE: base})
     assert Decimal(row.success_rate) == Decimal("0.5")
-    assert Decimal(row.mean_ops) > Decimal(str(mean))
-    assert ceiling > int(mean)
+    assert laddertable._failed_trial([row]).predicate == laddertable.FAILED_TRIAL
     table = laddertable.ResultTable(
         run_id=RUN_ID,
         nonce="n",
