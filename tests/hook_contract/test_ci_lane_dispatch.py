@@ -47,7 +47,7 @@ def dispatch(tmp_path: Path):
     return run
 
 
-@pytest.mark.parametrize("lane", ["python", "lean", "all"])
+@pytest.mark.parametrize("lane", ["python", "lean", "solution", "all"])
 def test_lane_dispatch_preserves_pytest_arguments(dispatch, lane):
     args = [] if lane == "all" else ["--ci-lane", lane]
     result, calls = dispatch(*args)
@@ -57,7 +57,7 @@ def test_lane_dispatch_preserves_pytest_arguments(dispatch, lane):
     ]
 
 
-@pytest.mark.parametrize("lane", ["python", "lean"])
+@pytest.mark.parametrize("lane", ["python", "lean", "solution"])
 def test_a_failed_lane_refuses_the_gate(dispatch, lane):
     result, calls = dispatch("--ci-lane", lane, pytest_exit=1)
     assert result.returncode == 1
@@ -73,6 +73,9 @@ def test_a_failed_lane_refuses_the_gate(dispatch, lane):
         ["--ci-lane", "python", "--fast"],
         ["--ci-lane", "lean", "--unit"],
         ["--ci-lane", "python", "--paths", "src/cairn/lean.py"],
+        ["--ci-lane", "solution", "--fast"],
+        ["--ci-lane", "solution", "--unit"],
+        ["--ci-lane", "solution", "--paths", "src/cairn/lean.py"],
     ],
 )
 def test_invalid_lane_selection_runs_no_gates(dispatch, args):
@@ -82,13 +85,17 @@ def test_invalid_lane_selection_runs_no_gates(dispatch, args):
     assert calls == []
 
 
-def test_the_lean_gate_command_collects_the_real_repository():
+@pytest.mark.parametrize(
+    ("lane", "test_file"),
+    [("lean", "test_lean_toolchain.py"), ("solution", "test_solution_build_compile.py")],
+)
+def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
     line = next(
         line
         for line in (ROOT / "scripts/check.sh").read_text().splitlines()
         if line.strip().startswith("gate tests uv run pytest ")
     )
-    argv = [arg.replace("$CI_LANE", "lean") for arg in shlex.split(line)[4:]]
+    argv = [arg.replace("$CI_LANE", lane) for arg in shlex.split(line)[4:]]
     env = dict(os.environ)
     env.pop("PYTEST_ADDOPTS", None)
     result = subprocess.run(
@@ -100,4 +107,4 @@ def test_the_lean_gate_command_collects_the_real_repository():
         timeout=60,
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "tests/integration/test_lean_toolchain.py::" in result.stdout
+    assert f"tests/integration/{test_file}::" in result.stdout

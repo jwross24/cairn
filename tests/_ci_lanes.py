@@ -8,12 +8,12 @@ LEAN_TEST_PATHS = (
     "tests/integration/test_axiom_computation.py",
     "tests/integration/test_challenge_compile.py",
     "tests/integration/test_hasher_stability.py",
-    "tests/integration/test_solution_build_compile.py",
     "tests/integration/test_solution_forgery_steps.py",
     "tests/integration/test_lean_container.py",
     "tests/integration/test_prefilters_in_gate.py",
     "tests/unit/test_formal_statement_hasher.py",
 )
+SOLUTION_TEST_PATHS = ("tests/integration/test_solution_build_compile.py",)
 
 
 def validate_manifest(root, paths):
@@ -33,11 +33,13 @@ def validate_manifest(root, paths):
 
 
 def pytest_addoption(parser):
-    parser.addoption("--cairn-ci-lane", choices=("all", "python", "lean"), default="all")
+    parser.addoption("--cairn-ci-lane", choices=("all", "python", "lean", "solution"), default="all")
 
 
 def pytest_collection_modifyitems(config, items):
     validate_manifest(ROOT, LEAN_TEST_PATHS)
+    validate_manifest(ROOT, SOLUTION_TEST_PATHS)
+    validate_manifest(ROOT, (*LEAN_TEST_PATHS, *SOLUTION_TEST_PATHS))
     lane = config.getoption("--cairn-ci-lane")
     if lane == "all":
         return
@@ -45,7 +47,12 @@ def pytest_collection_modifyitems(config, items):
     deselected = []
     for item in items:
         path = item.path.relative_to(config.rootpath).as_posix()
-        is_lean = path in LEAN_TEST_PATHS
-        (selected if is_lean == (lane == "lean") else deselected).append(item)
+        if path in SOLUTION_TEST_PATHS:
+            item_lane = "solution"
+        elif path in LEAN_TEST_PATHS:
+            item_lane = "lean"
+        else:
+            item_lane = "python"
+        (selected if item_lane == lane else deselected).append(item)
     items[:] = selected
     config.hook.pytest_deselected(items=deselected)

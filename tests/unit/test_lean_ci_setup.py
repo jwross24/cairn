@@ -62,25 +62,35 @@ def test_ci_contract_refuses_a_missing_mathlib_prerequisite():
 
 
 def _assert_ci_lanes(text):
-    assert "lane: [python, lean]" in text
+    assert "lane: [python, lean, solution]" in text
     assert "fail-fast: false" in text
     assert "continue-on-error:" not in text
     assert 'CAIRN_SESSION_DEADLINE: "1080"' in text
     assert "timeout-minutes: 20" in text
     assert 'run: scripts/check.sh --ci-lane "${{ matrix.lane }}"' in _step(text, GATES)
     assert "name: cairn-failure-diagnostics-${{ matrix.lane }}" in text
+    for name in (
+        "Read comparator pins",
+        "Provision comparator source",
+        "Provision exporter source",
+        "Build pinned comparator and exporter",
+    ):
+        assert "if: matrix.lane == 'solution'" in _step(text, name)
+        assert _steps(text)[name] < _steps(text)[GATES]
 
 
-def test_both_ci_lanes_run_the_same_gates_with_independent_deadlines():
+def test_all_ci_lanes_run_the_same_gates_with_independent_deadlines():
     _assert_ci_lanes(WORKFLOW.read_text())
 
 
 @pytest.mark.parametrize(
     ("old", "new"),
     [
-        ("lane: [python, lean]", "lane: [python]"),
+        ("lane: [python, lean, solution]", "lane: [python, lean]"),
         ("fail-fast: false", "fail-fast: true"),
         ('CAIRN_SESSION_DEADLINE: "1080"', 'CAIRN_SESSION_DEADLINE: "1800"'),
+        ("timeout-minutes: 20", "timeout-minutes: 30"),
+        ("if: matrix.lane == 'solution'", "if: matrix.lane == 'lean'"),
         ('--ci-lane "${{ matrix.lane }}"', "--unit"),
         ("name: cairn-failure-diagnostics-${{ matrix.lane }}", "name: cairn-failure-diagnostics"),
     ],

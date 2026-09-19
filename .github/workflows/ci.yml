@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lane: [python, lean]
+        lane: [python, lean, solution]
     # macOS, because that is the platform M0 supports. The write boundary is set
     # with os.chflags and stat.UF_APPEND, which exist on macOS and BSD and not on
     # Linux; cairn-hcl owns the Linux arm. An ubuntu run fails before it starts.
@@ -182,13 +182,13 @@ jobs:
         run: uv sync --locked --all-groups
 
       - name: Read comparator pins
-        if: matrix.lane == 'lean'
+        if: matrix.lane == 'solution'
         id: comparator-pins
         run: |
           uv run python -c 'import json; from pathlib import Path; p=json.loads(Path("bundle/container.json").read_text())["comparator"]; print("repository=" + p["repo"].removeprefix("https://github.com/")); print("revision=" + p["rev"]); print("exporter=" + p["lean4export_rev"])' >> "$GITHUB_OUTPUT"
 
       - name: Provision comparator source
-        if: matrix.lane == 'lean'
+        if: matrix.lane == 'solution'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: ${{ steps.comparator-pins.outputs.repository }}
@@ -198,7 +198,7 @@ jobs:
           clean: false
 
       - name: Provision exporter source
-        if: matrix.lane == 'lean'
+        if: matrix.lane == 'solution'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: leanprover/lean4export
@@ -208,7 +208,7 @@ jobs:
           clean: false
 
       - name: Build pinned comparator and exporter
-        if: matrix.lane == 'lean'
+        if: matrix.lane == 'solution'
         working-directory: .doctor/comparator
         run: |
           set -euo pipefail
