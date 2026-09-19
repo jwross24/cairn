@@ -132,10 +132,10 @@ Missing prerequisites fail the tests. Developer-mode comparator tests use upstre
 The real-prelude ordered-plan test requires fresh kernel replay, rejects `sorry` before
 replay, and distinguishes replay timeout from rejection. Its per-test watchdog is 900 seconds,
 including setup and teardown; the replay subprocess retains its 600-second bound.
-CI runs disjoint Python, Lean, and Solution lanes. The Lean lane includes the
+CI runs disjoint Python, Lean, Solution, and container lanes. The Lean lane includes the
 lower-level real-prelude build, closure-comparison, and fresh-replay forgery cases from
 `tests/integration/test_solution_build_compile.py`; the Solution lane owns the
-remaining cases in that file. Each lane retains the 1080-second session deadline
+remaining cases in that file. Each lane has a 1080-second session deadline
 and 20-minute job ceiling. The default local check runs every lane's tests.
 
 `solutionchecks.prepare_dev` compiles a gate-owned Challenge-only project and computes
@@ -151,6 +151,16 @@ authentication of an arbitrary caller-constructed value or a persisted gate-run 
 The caller selects the theorem names. Fingerprints cover tracked inputs, not cached
 artifact certification or concurrent-write containment. A passing developer-arm
 result does not provide containment, persist evidence, or grant PROVEN.
+
+`container.formal_statement_hash` builds the bundled hasher and a caller-prepared
+Challenge project in the pinned ARM64 Linux image, then computes the formal digest.
+It checks the toolchain version and commit, executes by OCI image ID with networking
+disabled, and logs that ID beside the digest. Its project dependencies must be
+provisioned for Linux by the trusted caller. It does not execute a Solution or emit
+a gold verification result. The `container` CI lane runs the real elliptic-curve
+hash pair and rejection cases on a native Linux ARM64 runner; absent Docker is a failure.
+The check script's whole-project typing targets macOS, the M0 host platform. The Linux job also checks
+the container adapter, Lean invocation code, and container tests against Linux APIs.
 
 ## Quick start
 

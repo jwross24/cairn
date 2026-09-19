@@ -50,7 +50,7 @@ while [ $# -gt 0 ]; do
     *)
       say "DENY usage: unknown argument $1"
       echo "[check] unknown argument: $1" >&2
-      echo "        usage: scripts/check.sh [--fast|--unit|--ci-lane python|lean|solution] [--paths <path> ...]" >&2
+      echo "        usage: scripts/check.sh [--fast|--unit|--ci-lane python|lean|solution|container] [--paths <path> ...]" >&2
       exit 3
       ;;
   esac
@@ -58,9 +58,9 @@ done
 
 case "$CI_LANE:$FAST:$UNIT:$SCOPED" in
   all:*) ;;
-  python:0:0:0|lean:0:0:0|solution:0:0:0) ;;
+  python:0:0:0|lean:0:0:0|solution:0:0:0|container:0:0:0) ;;
   *)
-    say "DENY usage: --ci-lane requires python, lean, or solution and cannot combine with --fast, --unit, or --paths"
+    say "DENY usage: --ci-lane requires python, lean, solution, or container and cannot combine with --fast, --unit, or --paths"
     echo "[check] invalid CI lane or incompatible selection flags" >&2
     exit 3
     ;;
@@ -170,7 +170,7 @@ else
   gate format   uv run ruff format --check src tests scripts
   gate lint     uv run ruff check src tests scripts
   gate spelling uv run codespell
-  gate types    uv run ty check src tests
+  gate types    uv run ty check --python-platform darwin src tests
   gate theater  ./scripts/theater-patterns.sh
 fi
 if [ "$FAST" = "1" ]; then

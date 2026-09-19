@@ -17,6 +17,66 @@ permissions:
   contents: read
 
 jobs:
+  container:
+    name: check (container)
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    env:
+      CAIRN_SESSION_DEADLINE: "1080"
+      BR_VERSION: "0.5.7"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - name: Install Linux Python build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pari-gp libpari-dev libgmp-dev libmpfr-dev build-essential
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d
+        with:
+          version: "0.10.9"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Sync Linux locked environment
+        run: uv sync --locked --all-groups
+      - name: Install Linux br
+        run: |
+          set -euo pipefail
+          asset="beads_rust-$BR_VERSION-linux_aarch64.tar.gz"
+          base="https://github.com/Dicklesworthstone/beads_rust/releases/download/v$BR_VERSION"
+          work="$(mktemp -d)"
+          curl -fsSL -o "$work/$asset" "$base/$asset"
+          curl -fsSL -o "$work/$asset.sha256" "$base/$asset.sha256"
+          (cd "$work" && sha256sum -c "$asset.sha256")
+          tar xzf "$work/$asset" -C "$work"
+          mkdir -p "$HOME/.local/bin"
+          install -m 755 "$work/br" "$HOME/.local/bin/br"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Import Linux bead store
+        run: |
+          set -euo pipefail
+          mv .beads "$RUNNER_TEMP/beads-tracked"
+          br init
+          cp "$RUNNER_TEMP/beads-tracked/.gitignore" .beads/.gitignore
+          cp "$RUNNER_TEMP/beads-tracked/config.yaml" .beads/config.yaml
+          cp "$RUNNER_TEMP/beads-tracked/metadata.json" .beads/metadata.json
+          cp "$RUNNER_TEMP/beads-tracked/issues.jsonl" .beads/issues.jsonl
+          br sync --import-only
+          br show cairn-exi --json
+      - name: Linux container gates
+        run: scripts/check.sh --ci-lane container
+      - name: Linux adapter types
+        run: uv run ty check --python-platform linux src/cairn/container.py src/cairn/lean.py tests/integration/test_container_statement_hash.py
+      - name: Linux failure diagnostics
+        if: failure() || cancelled()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: cairn-failure-diagnostics-container
+          path: |
+            .check.log
+            /tmp/pytest-of-runner/**/test.log.jsonl
+          if-no-files-found: warn
+          retention-days: 7
   check:
     name: check (${{ matrix.lane }})
     strategy:

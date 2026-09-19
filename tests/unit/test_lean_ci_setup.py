@@ -83,6 +83,45 @@ def test_all_ci_lanes_run_the_same_gates_with_independent_deadlines():
     _assert_ci_lanes(WORKFLOW.read_text())
 
 
+def _assert_container_lane(text):
+    job = text.split("  container:\n", 1)[1].split("  check:\n", 1)[0]
+    assert "runs-on: ubuntu-24.04-arm" in job
+    assert "timeout-minutes: 20" in job
+    assert 'CAIRN_SESSION_DEADLINE: "1080"' in job
+    assert "continue-on-error:" not in job
+    assert "uv sync --locked --all-groups" in job
+    assert "pari-gp libpari-dev" in job
+    assert "br sync --import-only" in job
+    step = _step(job, "Linux container gates")
+    assert "run: scripts/check.sh --ci-lane container" in step
+    assert "if:" not in step
+    types = _step(job, "Linux adapter types")
+    assert "ty check --python-platform linux" in types
+    for path in ("src/cairn/container.py", "src/cairn/lean.py", "tests/integration/test_container_statement_hash.py"):
+        assert path in types
+    assert "if:" not in types
+
+
+def test_container_lane_runs_real_tests_without_an_optional_gate():
+    _assert_container_lane(WORKFLOW.read_text())
+
+
+@pytest.mark.parametrize(
+    ("old", "new"),
+    [
+        ("runs-on: ubuntu-24.04-arm", "runs-on: macos-latest"),
+        ("--ci-lane container", "--fast"),
+        ("ty check --python-platform linux", "ty check --python-platform darwin"),
+        ("- name: Linux container gates", "- name: Linux container gates\n        if: false"),
+    ],
+)
+def test_container_lane_contract_refuses_missing_execution(old, new):
+    text = WORKFLOW.read_text()
+    assert old in text
+    with pytest.raises(AssertionError):
+        _assert_container_lane(text.replace(old, new))
+
+
 @pytest.mark.parametrize(
     ("old", "new"),
     [

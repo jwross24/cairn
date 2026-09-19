@@ -14,6 +14,7 @@ LEAN_TEST_PATHS = (
     "tests/unit/test_formal_statement_hasher.py",
 )
 SOLUTION_TEST_PATHS = ("tests/integration/test_solution_build_compile.py",)
+CONTAINER_TEST_PATHS = ("tests/integration/test_container_statement_hash.py",)
 LEAN_SOLUTION_TESTS = (
     "test_real_prelude_solution_and_challenge_build_with_private_pinned_dependencies",
     "test_a_compiling_weaker_statement_fails_real_prelude_closure_comparison",
@@ -38,13 +39,14 @@ def validate_manifest(root, paths):
 
 
 def pytest_addoption(parser):
-    parser.addoption("--cairn-ci-lane", choices=("all", "python", "lean", "solution"), default="all")
+    parser.addoption("--cairn-ci-lane", choices=("all", "python", "lean", "solution", "container"), default="all")
 
 
 def pytest_collection_modifyitems(config, items):
     validate_manifest(ROOT, LEAN_TEST_PATHS)
     validate_manifest(ROOT, SOLUTION_TEST_PATHS)
-    validate_manifest(ROOT, (*LEAN_TEST_PATHS, *SOLUTION_TEST_PATHS))
+    validate_manifest(ROOT, CONTAINER_TEST_PATHS)
+    validate_manifest(ROOT, (*LEAN_TEST_PATHS, *SOLUTION_TEST_PATHS, *CONTAINER_TEST_PATHS))
     lane = config.getoption("--cairn-ci-lane")
     if lane == "all":
         return
@@ -56,6 +58,8 @@ def pytest_collection_modifyitems(config, items):
             item_lane = "lean" if item.originalname in LEAN_SOLUTION_TESTS else "solution"
         elif path in LEAN_TEST_PATHS:
             item_lane = "lean"
+        elif path in CONTAINER_TEST_PATHS:
+            item_lane = "container"
         else:
             item_lane = "python"
         (selected if item_lane == lane else deselected).append(item)

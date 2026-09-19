@@ -212,9 +212,8 @@ def statement_digest(result):
     return canon.digest(STATEMENT_DOMAIN, bytes.fromhex(encoded))
 
 
-def formal_statement_hash(gate, module, theorem_names, *, project_dir, work_dir, timeout_s=DEFAULT_TIMEOUT_S):
+def write_statement_tool(gate, work_dir):
     pins = gate.lean
-    assert_pinned(pins)
     root = Path(work_dir)
     root.mkdir(parents=True, exist_ok=False)
     (root / "Cairn").mkdir()
@@ -223,6 +222,13 @@ def formal_statement_hash(gate, module, theorem_names, *, project_dir, work_dir,
     (root / "lakefile.toml").write_text(
         'name = "cairn_statement_tool"\n\n[[lean_exe]]\nname = "statement_hash"\nroot = "Cairn.StatementHash"\n'
     )
+    return root
+
+
+def formal_statement_hash(gate, module, theorem_names, *, project_dir, work_dir, timeout_s=DEFAULT_TIMEOUT_S):
+    pins = gate.lean
+    assert_pinned(pins)
+    root = write_statement_tool(gate, work_dir)
     require_success(run_argv(command(pins, "build", module="statement_hash"), cwd=root, timeout_s=timeout_s))
     require_success(run_argv(command(pins, "build", module=module), cwd=project_dir, timeout_s=timeout_s))
     executable = root.resolve() / ".lake" / "build" / "bin" / "statement_hash"

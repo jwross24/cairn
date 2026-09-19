@@ -193,3 +193,46 @@ def run(
         args += ["--env", f"{name}={value}"]
     tag = image.tag if isinstance(image, Image) else image
     return run_docker(ctx, *args, tag, *argv, timeout_s=timeout_s)
+
+
+def formal_statement_hash(gate, image, module, theorem_names, *, project_dir, work_dir, timeout_s=RUN_TIMEOUT_S):
+    if image.identity != gate.container_identity or not IMAGE_ID_RE.fullmatch(image.image_id):
+        raise ContainerError("statement-hasher-image-mismatch")
+    pins = gate.lean
+    result = run(image.context, image.image_id, ["lean", f"+{pins['toolchain']}", "--version"], timeout_s=timeout_s)
+    lean.require_success(result)
+    observed = lean.VERSION_RE.match(result.stdout)
+    expected = {"version": lean.toolchain_version(pins["toolchain"]), "commit": pins["lean_commit"]}
+    if observed is None or any(observed[key] != value for key, value in expected.items()):
+        raise lean.LeanPinMismatch(expected, observed.groupdict() if observed else result.stdout)
+    if observed["target"] != "aarch64-unknown-linux-gnu":
+        raise ContainerError(f"statement-hasher-target-mismatch:{observed['target']}")
+    root = lean.write_statement_tool(gate, work_dir)
+    mounts = ((project_dir, "/project", "readonly=false"), (root, "/statement-tool", "readonly=false"))
+
+    def invoke(name, cwd, **fields):
+        tool, *arguments = pins["checker"][name]
+        if tool not in lean.TOOLS:
+            raise ContainerError(f"statement-hasher-tool-unknown:{tool}")
+        argv = [tool, f"+{pins['toolchain']}", *(part.format(**fields) for part in arguments)]
+        if name == "statement_hash":
+            argv.extend(theorem_names)
+        return run(image.context, image.image_id, argv, mounts=mounts, workdir=cwd, timeout_s=timeout_s)
+
+    lean.require_success(invoke("build", "/statement-tool", module="statement_hash"))
+    lean.require_success(invoke("build", "/project", module=module))
+    result = invoke(
+        "statement_hash", "/project", module=module, executable="/statement-tool/.lake/build/bin/statement_hash"
+    )
+    digest = lean.statement_digest(result)
+    lg.info(
+        "formal_statement_hash",
+        module=module,
+        theorem_names=theorem_names,
+        digest=digest,
+        identity=image.identity,
+        image_id=image.image_id,
+        context=image.context,
+        wall_ms=result.wall_ms,
+    )
+    return digest

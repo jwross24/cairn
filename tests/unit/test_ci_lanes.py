@@ -3,7 +3,7 @@ from pathlib import Path
 
 import _ci_lanes
 import pytest
-from _ci_lanes import LEAN_SOLUTION_TESTS, LEAN_TEST_PATHS, SOLUTION_TEST_PATHS, validate_manifest
+from _ci_lanes import CONTAINER_TEST_PATHS, LEAN_SOLUTION_TESTS, LEAN_TEST_PATHS, SOLUTION_TEST_PATHS, validate_manifest
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -13,6 +13,7 @@ def _suite(pytester):
     for relative in (
         "tests/integration/test_lean_toolchain.py",
         "tests/integration/test_solution_build_compile.py",
+        "tests/integration/test_container_statement_hash.py",
         "tests/unit/test_unlisted.py",
     ):
         path = pytester.path / relative
@@ -26,7 +27,8 @@ def _suite(pytester):
 
 
 @pytest.mark.parametrize(
-    ("lane", "passed", "deselected"), [("all", 9, 0), ("python", 1, 8), ("lean", 7, 2), ("solution", 1, 8)]
+    ("lane", "passed", "deselected"),
+    [("all", 10, 0), ("python", 1, 9), ("lean", 7, 3), ("solution", 1, 9), ("container", 1, 9)],
 )
 def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
     _suite(pytester)
@@ -37,9 +39,9 @@ def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
 def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytester):
     _suite(pytester)
     default = pytester.runpytest("-q", "--import-mode=importlib")
-    default.assert_outcomes(passed=9)
+    default.assert_outcomes(passed=10)
     populations = {}
-    for lane in ("all", "python", "lean", "solution"):
+    for lane in ("all", "python", "lean", "solution", "container"):
         result = pytester.runpytest("-q", "--collect-only", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
         assert result.ret == pytest.ExitCode.OK
         populations[lane] = {line for line in result.outlines if line.startswith("tests/") and "::" in line}
@@ -48,18 +50,26 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
     }
     assert populations["python"] == {"tests/unit/test_unlisted.py::test_pass"}
     assert populations["solution"] == {"tests/integration/test_solution_build_compile.py::test_pass"}
+    assert populations["container"] == {"tests/integration/test_container_statement_hash.py::test_pass"}
     assert not populations["lean"] & populations["python"]
     assert not populations["solution"] & (populations["lean"] | populations["python"])
-    assert populations["all"] == populations["lean"] | populations["python"] | populations["solution"]
+    assert not populations["container"] & (populations["lean"] | populations["python"] | populations["solution"])
+    assert populations["all"] == (
+        populations["lean"] | populations["python"] | populations["solution"] | populations["container"]
+    )
 
 
-@pytest.mark.parametrize(("lane", "passed", "deselected"), [("python", 0, 8), ("lean", 6, 2), ("solution", 0, 2)])
+@pytest.mark.parametrize(
+    ("lane", "passed", "deselected"),
+    [("python", 0, 9), ("lean", 6, 3), ("solution", 0, 3), ("container", 0, 9)],
+)
 def test_a_selected_failure_keeps_the_lane_red(pytester, lane, passed, deselected):
     _suite(pytester)
     relative = {
         "lean": "tests/integration/test_lean_toolchain.py",
         "solution": "tests/integration/test_solution_build_compile.py",
         "python": "tests/unit/test_unlisted.py",
+        "container": "tests/integration/test_container_statement_hash.py",
     }[lane]
     (pytester.path / relative).write_text("def test_planted_failure():\n    assert False\n")
     result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
@@ -72,7 +82,7 @@ def test_a_reassigned_solution_failure_keeps_the_lean_lane_red(pytester, name):
     _suite(pytester)
     (pytester.path / SOLUTION_TEST_PATHS[0]).write_text(f"def {name}():\n    assert False\n")
     result = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=lean")
-    result.assert_outcomes(failed=1, passed=1, deselected=1)
+    result.assert_outcomes(failed=1, passed=1, deselected=2)
     assert result.ret == pytest.ExitCode.TESTS_FAILED
 
 
@@ -158,8 +168,8 @@ def test_every_direct_lean_import_has_one_explicit_lane_classification():
     }
     indirect_lean = {"tests/integration/test_prefilters_in_gate.py"}
     assert not set(LEAN_TEST_PATHS) & set(SOLUTION_TEST_PATHS)
-    lean = set(LEAN_TEST_PATHS) | set(SOLUTION_TEST_PATHS)
-    validate_manifest(ROOT, (*LEAN_TEST_PATHS, *SOLUTION_TEST_PATHS))
+    lean = set(LEAN_TEST_PATHS) | set(SOLUTION_TEST_PATHS) | set(CONTAINER_TEST_PATHS)
+    validate_manifest(ROOT, (*LEAN_TEST_PATHS, *SOLUTION_TEST_PATHS, *CONTAINER_TEST_PATHS))
     assert not python_only & lean
     assert imports == (lean - indirect_lean) | python_only
     assert indirect_lean <= lean
