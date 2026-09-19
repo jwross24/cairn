@@ -1,16 +1,27 @@
 # Measured unit tier
 
-The collection-warm checkpoint is not validated against the 60-second target.
-The exact hold is `--unit under-60 close run needs a quiet box: no other pytest,
-1-minute load under 10`. The first job of the next quiet slot is two qualifying
-duration reports followed by recalibration and the actual timed unit command.
-See `warm-checkpoint.md` and `warm-checkpoint-evidence.tar.gz` for all attempts,
-exclusion reasons, warm-hook verification and the fresh audit reproduction.
+The personal-MBP calibration and command verification are recorded in
+`mbp-verification.md`. The operating condition is no competing pytest process
+and a one-minute load below 10 at both measurement endpoints.
 
-The unit tier marks tests whose measured median duration exceeds **0.11 seconds**.
+The unit tier marks tests whose measured median duration exceeds **1.075 seconds**.
 The plugin reads `calibration.json`; a test absent from its slow-node list runs by
 default. Full pytest and CI execute the marked tests. This is tier selection,
 not a speedup of the full suite or a change to Hypothesis examples.
+
+Two complete passing samples provide two observations for 2,432 nodes. Ten nodes
+are marked slow; 2,422 retained nodes sum to 43.880 seconds in per-node medians.
+The 45-second phase budget reserves 15 seconds of the command target for startup,
+fast gates and variation. Full-unit command overhead outside the recorded phases
+was 9.23 and 9.51 seconds; the unchanged unit command's non-pytest overhead was
+2.42 seconds. The actual unit command, rather than that arithmetic, settles the
+60-second target. No unit node is omitted from the measurement population.
+
+## Historical source-machine evidence
+
+`warm-checkpoint.md` and `warm-checkpoint-evidence.tar.gz` preserve the source-machine
+attempts, exclusions, warm-hook verification and independent audit reproduction.
+The paragraphs below describe those archived measurements, not `calibration.json`.
 
 Two historical passing samples provide two observations for 2,156 nodes. Their 265 slow nodes
 are all under `tests/unit/`; integration, end-to-end and other directories have
@@ -18,8 +29,8 @@ zero nodes in this marker list. The 1,891 measured retained nodes sum to 54.775
 seconds in per-node medians, within a 55-second measurement budget. Their phase
 totals in the two individual reports are 54.80 and 54.75 seconds. These quantities
 exclude collection/session overhead and do not establish command wall time.
-These samples precede the collection warm; no later attempt qualifies for this
-calibration. The historical marker list remains the checkpoint's selection.
+The source-machine checkpoint has no qualifying post-warm sample and uses
+the 265-node selection described in its archived reports.
 
 The largest observed threshold satisfying that budget is 0.11 seconds. Reports
 print hundredths of a second; arithmetic uses `Decimal`, and a two-sample median
@@ -65,5 +76,4 @@ command are unrun under the coordinator's disk restriction. This is a checkpoint
 not closing evidence.
 
 No-Claim: full-suite speedup, changed example budget, timing portability, an
-irreducible runtime floor, or mathematical evidence. A live under-60-second unit
-command remains required before the bead closes.
+irreducible runtime floor, or mathematical evidence.
