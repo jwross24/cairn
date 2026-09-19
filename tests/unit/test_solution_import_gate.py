@@ -4,6 +4,7 @@ from cairn import challenge, container, solutionplan
 from cairn.solutionplan import (
     KIND_AXIOMS,
     KIND_BUILD,
+    KIND_CLOSURE_COMPARISON,
     KIND_IMPORT_ALLOWLIST,
     KIND_KERNEL_REPLAY,
     KIND_STATEMENT_BINDING,
@@ -27,7 +28,14 @@ def _rows():
             "blocking": True,
             "timeout_s": 600.0,
         }
-        for kind in (KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST, KIND_BUILD, KIND_AXIOMS, KIND_KERNEL_REPLAY)
+        for kind in (
+            KIND_STATEMENT_BINDING,
+            KIND_IMPORT_ALLOWLIST,
+            KIND_BUILD,
+            KIND_AXIOMS,
+            KIND_KERNEL_REPLAY,
+            KIND_CLOSURE_COMPARISON,
+        )
     ]
 
 
@@ -64,7 +72,7 @@ def test_the_refused_solution_never_reaches_the_build_or_the_checkers():
     assert result.ok is False
     assert result.steps[1].result == solutionplan.RESULT_FAIL
     assert f"{solutionplan.IMPORT_REFUSED_PREFIX}Lean" in result.steps[1].reasons
-    assert [step.result for step in result.steps[2:]] == [solutionplan.RESULT_BLOCKED] * 3
+    assert [step.result for step in result.steps[2:]] == [solutionplan.RESULT_BLOCKED] * 4
 
 
 @pytest.mark.parametrize(

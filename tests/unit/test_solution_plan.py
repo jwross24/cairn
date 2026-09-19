@@ -30,8 +30,14 @@ def _plan_rows(*kinds):
     return [_row(kind) for kind in kinds]
 
 
-COMPLETE = (KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST, KIND_BUILD, KIND_AXIOMS, KIND_KERNEL_REPLAY)
-WITH_COMPARISON = (*COMPLETE, KIND_CLOSURE_COMPARISON)
+COMPLETE = (
+    KIND_STATEMENT_BINDING,
+    KIND_IMPORT_ALLOWLIST,
+    KIND_BUILD,
+    KIND_AXIOMS,
+    KIND_KERNEL_REPLAY,
+    KIND_CLOSURE_COMPARISON,
+)
 
 
 def _observer(verdicts):
@@ -76,36 +82,39 @@ def test_a_plan_carrying_neither_checker_step_names_the_first_missing_one():
     assert caught.value.reason == f"missing-mandatory-step:{KIND_AXIOMS}"
 
 
-def test_a_mandatory_step_declared_non_blocking_is_refused():
+@pytest.mark.parametrize("kind", COMPLETE)
+def test_a_mandatory_step_declared_non_blocking_is_refused(kind):
     rows = _plan_rows(*COMPLETE)
-    rows[COMPLETE.index(KIND_AXIOMS)]["blocking"] = False
+    rows[COMPLETE.index(kind)]["blocking"] = False
     with pytest.raises(PlanInvalid) as caught:
         SolutionPlan.load(rows, arm=ARM)
-    assert caught.value.reason == f"mandatory-step-not-blocking:{KIND_AXIOMS}"
+    assert caught.value.reason == f"mandatory-step-not-blocking:{kind}"
 
 
 def test_the_statement_binding_may_not_sit_after_the_import_allowlist():
-    kinds = (KIND_IMPORT_ALLOWLIST, KIND_STATEMENT_BINDING, KIND_BUILD, KIND_AXIOMS, KIND_KERNEL_REPLAY)
+    kinds = (KIND_IMPORT_ALLOWLIST, KIND_STATEMENT_BINDING, *COMPLETE[2:])
     with pytest.raises(PlanInvalid) as caught:
         SolutionPlan.load(_plan_rows(*kinds), arm=ARM)
     assert caught.value.reason == "statement-binding-after-import-allowlist"
 
 
 def test_the_import_allowlist_may_not_sit_after_the_build():
-    kinds = (KIND_STATEMENT_BINDING, KIND_BUILD, KIND_IMPORT_ALLOWLIST, KIND_AXIOMS, KIND_KERNEL_REPLAY)
+    kinds = (KIND_STATEMENT_BINDING, KIND_BUILD, KIND_IMPORT_ALLOWLIST, *COMPLETE[3:])
     with pytest.raises(PlanInvalid) as caught:
         SolutionPlan.load(_plan_rows(*kinds), arm=ARM)
     assert caught.value.reason == "import-allowlist-after-build"
 
 
 def test_a_plan_carrying_the_closure_comparison_loads_with_it_last():
-    plan = SolutionPlan.load(_plan_rows(*WITH_COMPARISON), arm=ARM)
-    assert [step.kind for step in plan.steps] == list(WITH_COMPARISON)
+    plan = SolutionPlan.load(_plan_rows(*COMPLETE), arm=ARM)
+    assert [step.kind for step in plan.steps] == list(COMPLETE)
     assert plan.steps[-1].expect == solutionplan.EXPECT_CLOSURE_MATCHED
 
 
-def test_a_plan_omitting_the_closure_comparison_still_loads():
-    assert [step.kind for step in SolutionPlan.load(_plan_rows(*COMPLETE), arm=ARM).steps] == list(COMPLETE)
+def test_a_plan_omitting_the_closure_comparison_is_refused():
+    kinds = [kind for kind in COMPLETE if kind != KIND_CLOSURE_COMPARISON]
+    with pytest.raises(PlanInvalid, match="missing-mandatory-step:closure_comparison"):
+        SolutionPlan.load(_plan_rows(*kinds), arm=ARM)
 
 
 def test_the_closure_comparison_may_not_sit_before_the_build():
@@ -124,7 +133,7 @@ def test_the_closure_comparison_may_not_sit_before_the_build():
 
 @pytest.mark.parametrize("checker", [KIND_AXIOMS, KIND_KERNEL_REPLAY])
 def test_the_closure_comparison_may_not_sit_before_either_checker(checker):
-    kinds = [kind for kind in WITH_COMPARISON if kind != checker]
+    kinds = [kind for kind in COMPLETE if kind != checker]
     kinds.insert(kinds.index(KIND_CLOSURE_COMPARISON) + 1, checker)
     with pytest.raises(PlanInvalid) as caught:
         SolutionPlan.load(_plan_rows(*kinds), arm=ARM)
@@ -133,21 +142,21 @@ def test_the_closure_comparison_may_not_sit_before_either_checker(checker):
 
 def test_the_closure_comparison_passes_when_the_observation_matches_its_expectation():
     verdicts = {**_all_expected(), KIND_CLOSURE_COMPARISON: solutionplan.EXPECT_CLOSURE_MATCHED}
-    result = SolutionPlan.load(_plan_rows(*WITH_COMPARISON), arm=ARM).run(_observer(verdicts))
+    result = SolutionPlan.load(_plan_rows(*COMPLETE), arm=ARM).run(_observer(verdicts))
     assert result.ok is True
     assert result.steps[-1].kind == KIND_CLOSURE_COMPARISON
 
 
 def test_a_closure_mismatch_fails_the_plan_even_when_every_earlier_step_passed():
     verdicts = {**_all_expected(), KIND_CLOSURE_COMPARISON: solutionplan.OBSERVED_REFUSED}
-    result = SolutionPlan.load(_plan_rows(*WITH_COMPARISON), arm=ARM).run(_observer(verdicts))
+    result = SolutionPlan.load(_plan_rows(*COMPLETE), arm=ARM).run(_observer(verdicts))
     assert result.ok is False
     assert result.first_failure.step == KIND_CLOSURE_COMPARISON
     assert [step.result for step in result.steps] == [solutionplan.RESULT_PASS] * 5 + [solutionplan.RESULT_FAIL]
 
 
 def test_a_checker_step_before_the_build_is_refused():
-    kinds = (KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST, KIND_AXIOMS, KIND_BUILD, KIND_KERNEL_REPLAY)
+    kinds = (KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST, KIND_AXIOMS, KIND_BUILD, *COMPLETE[4:])
     with pytest.raises(PlanInvalid) as caught:
         SolutionPlan.load(_plan_rows(*kinds), arm=ARM)
     assert caught.value.reason == f"checker-before-build:{KIND_AXIOMS}"
@@ -226,7 +235,7 @@ def test_a_failed_step_blocks_every_step_below_it_and_the_checkers_never_run():
     assert [step.result for step in result.steps] == [
         solutionplan.RESULT_PASS,
         solutionplan.RESULT_FAIL,
-        *[solutionplan.RESULT_BLOCKED] * 3,
+        *[solutionplan.RESULT_BLOCKED] * 4,
     ]
     assert result.steps[1].reasons == (solutionplan.MISMATCH_REASON, "observed:refused:Lean")
     assert result.steps[2].reasons == (f"{solutionplan.BLOCKED_PREFIX}{KIND_IMPORT_ALLOWLIST}",)
@@ -236,9 +245,10 @@ def test_a_timeout_is_its_own_result_and_is_not_a_failed_verdict():
     verdicts = {**_all_expected(), KIND_KERNEL_REPLAY: StepTimeout(KIND_KERNEL_REPLAY, 600.0)}
     plan = SolutionPlan.load(_plan_rows(*COMPLETE), arm=ARM)
     result = plan.run(_observer(verdicts))
-    replay = result.steps[-1]
+    replay = result.steps[COMPLETE.index(KIND_KERNEL_REPLAY)]
     assert replay.result == solutionplan.RESULT_TIMEOUT
     assert replay.result != solutionplan.RESULT_FAIL
     assert replay.reasons == (solutionplan.TIMEOUT_REASON, "timeout_s:600.0")
     assert result.ok is False
     assert result.first_failure.step == KIND_KERNEL_REPLAY
+    assert result.steps[-1].result == solutionplan.RESULT_BLOCKED

@@ -111,6 +111,25 @@ installer, and the project's own rules forbid the others.
   `uv sync`) for in-process arithmetic. `cairn env --json` reports whether both are found and
   which versions.
 
+The Lean integration suite requires the comparator and exporter pinned in
+`bundle/container.json`. Provision them outside pytest, from the repository root:
+
+```bash
+comparator_work="$(mktemp -d)"
+comparator_rev="$(uv run python -c 'import json; print(json.load(open("bundle/container.json"))["comparator"]["rev"])')"
+exporter_rev="$(uv run python -c 'import json; print(json.load(open("bundle/container.json"))["comparator"]["lean4export_rev"])')"
+git clone https://github.com/leanprover/comparator "$comparator_work/comparator"
+git -C "$comparator_work/comparator" checkout --detach "$comparator_rev"
+git clone https://github.com/leanprover/lean4export "$comparator_work/comparator/.lake/packages/lean4export"
+git -C "$comparator_work/comparator/.lake/packages/lean4export" checkout --detach "$exporter_rev"
+(cd "$comparator_work/comparator" && "$HOME/.elan/bin/lake" "+$(cat lean-toolchain)" build lean4export comparator)
+export CAIRN_COMPARATOR_CHECKOUT="$comparator_work/comparator"
+```
+
+CI provisions the same pins under `.doctor/comparator`, the default lookup path.
+Missing prerequisites fail the tests. Developer-mode comparator tests use upstream
+`fake-landrun.sh` with reviewed fixtures; they establish comparison behavior, not containment.
+
 ## Quick start
 
 ```bash

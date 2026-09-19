@@ -181,6 +181,39 @@ jobs:
       - name: Sync the locked environment
         run: uv sync --locked --all-groups
 
+      - name: Read comparator pins
+        if: matrix.lane == 'lean'
+        id: comparator-pins
+        run: |
+          uv run python -c 'import json; from pathlib import Path; p=json.loads(Path("bundle/container.json").read_text())["comparator"]; print("repository=" + p["repo"].removeprefix("https://github.com/")); print("revision=" + p["rev"]); print("exporter=" + p["lean4export_rev"])' >> "$GITHUB_OUTPUT"
+
+      - name: Provision comparator source
+        if: matrix.lane == 'lean'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: ${{ steps.comparator-pins.outputs.repository }}
+          ref: ${{ steps.comparator-pins.outputs.revision }}
+          path: .doctor/comparator
+          persist-credentials: false
+          clean: false
+
+      - name: Provision exporter source
+        if: matrix.lane == 'lean'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: leanprover/lean4export
+          ref: ${{ steps.comparator-pins.outputs.exporter }}
+          path: .doctor/comparator/.lake/packages/lean4export
+          persist-credentials: false
+          clean: false
+
+      - name: Build pinned comparator and exporter
+        if: matrix.lane == 'lean'
+        working-directory: .doctor/comparator
+        run: |
+          set -euo pipefail
+          "$HOME/.elan/bin/lake" "+$(cat lean-toolchain)" build lean4export comparator
+
       - name: Gates
         run: scripts/check.sh --ci-lane "${{ matrix.lane }}"
 

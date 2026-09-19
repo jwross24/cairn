@@ -1,5 +1,7 @@
 import json
+import os
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -22,6 +24,7 @@ PLAN_KINDS = (
     solutionplan.KIND_BUILD,
     solutionplan.KIND_AXIOMS,
     solutionplan.KIND_KERNEL_REPLAY,
+    solutionplan.KIND_CLOSURE_COMPARISON,
 )
 
 
@@ -74,6 +77,31 @@ def statement():
     return factories.claim_statement(seed=11, formal_source=FORMAL)
 
 
+@pytest.fixture
+def comparator(monkeypatch):
+    checkout = Path(os.environ.get("CAIRN_COMPARATOR_CHECKOUT", lean.REPO_ROOT / ".doctor/comparator")).resolve()
+    pins = json.loads((lean.REPO_ROOT / "bundle/container.json").read_text())["comparator"]
+    exporter = checkout / ".lake/packages/lean4export"
+    for project, revision in ((checkout, pins["rev"]), (exporter, pins["lean4export_rev"])):
+        assert project.is_dir(), "Provision the pinned comparator using README.md; set CAIRN_COMPARATOR_CHECKOUT"
+        result = subprocess.run(
+            ["/usr/bin/git", "-C", str(project), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=10,
+        )
+        assert result.stdout.strip() == revision
+        assert (project / "lean-toolchain").read_text().strip() == lean.source_pins()["toolchain"]
+    binary = solutionchecks.comparator_binary(checkout)
+    export_binary = exporter / ".lake/build/bin/lean4export"
+    assert os.access(binary, os.X_OK), "Build the pinned comparator using README.md"
+    assert os.access(export_binary, os.X_OK), "Build the pinned exporter using README.md"
+    monkeypatch.setenv("COMPARATOR_LANDRUN", str(checkout / "scripts/fake-landrun.sh"))
+    monkeypatch.setenv("COMPARATOR_LEAN4EXPORT", str(export_binary))
+    return binary
+
+
 def _assemble(gate, statement, root, blob):
     return solutionbuild.assemble(
         gate,
@@ -123,7 +151,9 @@ def test_a_solution_that_rewrites_the_challenge_during_its_build_is_named_by_the
     assert reasons == (f"solution-inputs-changed:{relative}",)
 
 
-def test_the_ordered_plan_runs_a_solution_end_to_end_on_the_dev_arm(mathlib_free_bundle, statement, tmp_path):
+def test_the_ordered_plan_runs_a_solution_end_to_end_on_the_dev_arm(
+    mathlib_free_bundle, statement, tmp_path, comparator
+):
     assembled = _assemble(mathlib_free_bundle, statement, tmp_path / "plan", _honest())
     submission = challenge.Submission(solution_module=_honest(), formal_statement_hash=FSH)
     pins = mathlib_free_bundle.lean
@@ -147,12 +177,17 @@ def test_the_ordered_plan_runs_a_solution_end_to_end_on_the_dev_arm(mathlib_free
                 timeout_s=step.timeout_s,
                 tool=tool,
             )
-        return solutionchecks.observe_kernel_replay(
-            pins,
-            assembled.solution_module,
-            project_dir=assembled.root,
-            timeout_s=step.timeout_s,
-            variant=solutionchecks.REPLAY_TRUSTING_IMPORTS,
+        if step.kind == solutionplan.KIND_KERNEL_REPLAY:
+            return solutionchecks.observe_kernel_replay(
+                pins,
+                assembled.solution_module,
+                project_dir=assembled.root,
+                timeout_s=step.timeout_s,
+                variant=solutionchecks.REPLAY_TRUSTING_IMPORTS,
+            )
+        assert step.kind == solutionplan.KIND_CLOSURE_COMPARISON
+        return solutionchecks.observe_closure_comparison(
+            mathlib_free_bundle, assembled, comparator=comparator, timeout_s=step.timeout_s
         )
 
     result = solutionplan.SolutionPlan.load(_plan_rows(), arm=container.DEV_ARM).run(observe)
@@ -165,7 +200,7 @@ def test_the_ordered_plan_runs_a_solution_end_to_end_on_the_dev_arm(mathlib_free
 
 @pytest.mark.parametrize("tamper_manifest", [False, True])
 def test_real_prelude_solution_and_challenge_build_with_private_pinned_dependencies(
-    pinned_bundle, tmp_path, tamper_manifest
+    pinned_bundle, tmp_path, tamper_manifest, comparator
 ):
     gate = bundle.GateBundle.open(*pinned_bundle())
     formal = "theorem challenge_curve {R : Type} [CommRing R] (W : WeierstrassCurve R) : W.Δ = W.Δ := by\n  sorry\n"
@@ -195,6 +230,8 @@ def test_real_prelude_solution_and_challenge_build_with_private_pinned_dependenc
         assert (root / ".lake/build/lib/lean" / (module.replace(".", "/") + ".olean")).is_file()
     assert json.loads((root / "lake-manifest.json").read_text()) == gate.lake_manifest
     solutionbuild.assert_unchanged(assembled)
+    compared = solutionchecks.observe_closure_comparison(gate, assembled, comparator=comparator, timeout_s=120)
+    assert compared[:2] == (solutionplan.EXPECT_CLOSURE_MATCHED, ())
     source_readme = lean.PROJECT_DIR / ".lake/packages/mathlib/README.md"
     copied_readme = root / ".lake/packages/mathlib/README.md"
     original = source_readme.read_bytes()
@@ -224,3 +261,26 @@ def test_real_prelude_solution_and_challenge_build_with_private_pinned_dependenc
         solutionplan.OBSERVED_REFUSED,
         ("dependency-checkout-mismatch:mathlib:remote",),
     )
+
+
+def test_a_compiling_weaker_statement_fails_real_prelude_closure_comparison(pinned_bundle, tmp_path, comparator):
+    gate = bundle.GateBundle.open(*pinned_bundle())
+    formal = "theorem challenge_curve {R : Type} [CommRing R] (W : WeierstrassCurve R) : W.Δ = W.Δ := by\n  sorry\n"
+    statement = factories.claim_statement(seed=4, formal_source=formal)
+    proof = gate.challenge_prelude + b"theorem challenge_curve : True := by trivial\n"
+    assembled = solutionbuild.assemble(
+        gate,
+        statement,
+        challenge.Submission(solution_module=proof, formal_statement_hash=FSH),
+        ("challenge_curve",),
+        root=tmp_path / "weaker-statement",
+        formal_statement_hash=FSH,
+        dependency_project=lean.PROJECT_DIR,
+    )
+    built = solutionbuild.observe_build(gate, assembled)
+    assert built[:2] == (solutionplan.EXPECT_BUILT, ())
+    observed, reasons, _ = solutionchecks.observe_closure_comparison(
+        gate, assembled, comparator=comparator, timeout_s=120
+    )
+    assert observed == solutionplan.OBSERVED_REFUSED
+    assert reasons[:2] == (solutionchecks.CLOSURE_MISMATCH, "rc:1")

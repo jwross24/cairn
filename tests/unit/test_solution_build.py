@@ -189,6 +189,7 @@ def test_a_submission_naming_another_hash_blocks_every_later_step_including_the_
         solutionplan.KIND_BUILD,
         solutionplan.KIND_AXIOMS,
         solutionplan.KIND_KERNEL_REPLAY,
+        solutionplan.KIND_CLOSURE_COMPARISON,
     )
     rows = [
         {
@@ -210,7 +211,7 @@ def test_a_submission_naming_another_hash_blocks_every_later_step_including_the_
     result = solutionplan.SolutionPlan.load(rows, arm=container.DEV_ARM).run(observe)
     assert ran == [solutionplan.KIND_STATEMENT_BINDING]
     assert result.steps[0].result == solutionplan.RESULT_FAIL
-    assert [step.result for step in result.steps[1:]] == [solutionplan.RESULT_BLOCKED] * 4
+    assert [step.result for step in result.steps[1:]] == [solutionplan.RESULT_BLOCKED] * 5
 
 
 def test_a_build_that_exceeds_its_timeout_is_a_step_timeout_and_never_a_failed_verdict(gate, statement, tmp_path):

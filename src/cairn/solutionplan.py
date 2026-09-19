@@ -25,9 +25,7 @@ STEP_KINDS = (
 # the axiom computation, so neither step sees the other's forgery and a plan carrying one is open to
 # the forgery the other catches (research/grounding/solution-forgery-2026-09-08/probe.log).
 CHECKER_KINDS = (KIND_AXIOMS, KIND_KERNEL_REPLAY)
-# A mandatory kind obliges every plan to supply a comparator binary, and CI has none, so the
-# closure comparison stays optional and check iv is unenforced while that holds.
-MANDATORY_KINDS = (KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST, KIND_BUILD, *CHECKER_KINDS)
+MANDATORY_KINDS = (KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST, KIND_BUILD, *CHECKER_KINDS, KIND_CLOSURE_COMPARISON)
 
 RESULT_TIMEOUT = "timeout"
 RESULTS = (RESULT_PASS, RESULT_FAIL, RESULT_TIMEOUT, RESULT_BLOCKED)
