@@ -20,6 +20,27 @@ set -uo pipefail
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT" || exit 1
 
+if [ -f scripts/fd_ceiling_gate.py ] && command -v uv >/dev/null 2>&1; then
+  uv run python scripts/fd_ceiling_gate.py --root "$ROOT"
+  FD_PREFLIGHT_RC=$?
+  if [ "$FD_PREFLIGHT_RC" -ne 0 ]; then
+    if ! printf '%s FD-PREFLIGHT-DENY uv run exited %s\n' \
+        "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$FD_PREFLIGHT_RC" >> .check.log; then
+      echo "[pre-commit] BLOCKED: file-descriptor preflight exited $FD_PREFLIGHT_RC and .check.log could not be written." >&2
+    fi
+    echo "[pre-commit] BLOCKED by the file-descriptor capacity preflight; see .check.log" >&2
+    exit 1
+  fi
+else
+  if ! printf '%s FD-INFRA-DENY fd-ceiling bootstrap missing uv or scripts/fd_ceiling_gate.py\n' \
+      "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .check.log; then
+    echo "[pre-commit] BLOCKED: file-descriptor preflight bootstrap is missing and .check.log could not be written." >&2
+  else
+    echo "[pre-commit] BLOCKED: file-descriptor preflight bootstrap is missing; see .check.log" >&2
+  fi
+  exit 1
+fi
+
 # `git diff --cached` is blind to a close an amend already wrote into HEAD, so the gates
 # below sit out an amended close while post-commit still pushes it. Every successful
 # path through this hook records the ids it gated; post-commit refuses to push a closed

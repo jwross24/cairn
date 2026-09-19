@@ -64,8 +64,10 @@ def arms(tmp_path_factory):
             _recipe(41),
             stdin_document={"bits": 40, "seed": 1},
             bundle_hash=BUNDLE_HASH,
-            evaluation=toy_curve.COST_PROFILE.evaluate(40),
+            evaluation=BURNER_BUDGET,
             ceiling_multiplier=4,
+            wall_cap_multiplier=1.0,
+            wall_cap_floor_s=0.0,
             tool_digests=TOOL_DIGESTS,
             scratch_root=tmp_path / "runs",
         )

@@ -1,0 +1,4 @@
+[fd-ceiling] INFRASTRUCTURE DENY: cannot write /private/tmp/cairn-fd-review.6Tch4X/repo/.check.log: [Errno 13] Permission denied: '/private/tmp/cairn-fd-review.6Tch4X/repo/.check.log'
+/private/tmp/cairn-fd-review.6Tch4X/repo/.githooks/pre-commit: line 27: .check.log: Permission denied
+[pre-commit] BLOCKED: file-descriptor preflight exited 3 and .check.log could not be written.
+[pre-commit] BLOCKED by the file-descriptor capacity preflight; see .check.log

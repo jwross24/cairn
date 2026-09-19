@@ -37,6 +37,7 @@ HOOK_SCRIPTS = (
     "bead_artifact_block.py",
     "br_lookup.py",
     "beads_doctor_gate.py",
+    "fd_ceiling_gate.py",
     "audit_attribution.py",
     "scorecard_coherence.py",
     "audit_missing_items.py",
@@ -166,11 +167,19 @@ def scratch(tmp_path: Path) -> ScratchRepo:
     ):
         env.setdefault(key, str(default))
     env.pop("CAIRN_PUSH_SKIP", None)
+    env.pop("CAIRN_FD_CEILING_SKIP", None)
     env.pop("GIT_DIR", None)
     env.pop("GIT_INDEX_FILE", None)
 
     subprocess.run(["git", "init", "--bare", "-b", "main", str(origin)], check=True, capture_output=True, env=env)
     subprocess.run(["git", "init", "-b", "main", str(repo)], check=True, capture_output=True, env=env)
+
+    bin_dir = repo / "bin"
+    bin_dir.mkdir()
+    sysctl = bin_dir / "sysctl"
+    sysctl.write_text("#!/usr/bin/env bash\nprintf '320\\n400\\n'\n")
+    sysctl.chmod(0o755)
+    env["PATH"] = f"{bin_dir}:{env['PATH']}"
 
     shutil.copytree(ROOT / ".githooks", repo / ".githooks")
     for entry in (repo / ".githooks").iterdir():
