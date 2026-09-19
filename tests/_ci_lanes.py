@@ -42,6 +42,16 @@ def pytest_addoption(parser):
     parser.addoption("--cairn-ci-lane", choices=("all", "python", "lean", "solution", "container"), default="all")
 
 
+def pytest_ignore_collect(collection_path, config):
+    if config.getoption("--cairn-ci-lane") != "container" or not collection_path.is_file():
+        return None
+    if not collection_path.is_relative_to(config.rootpath):
+        return None
+    if collection_path.relative_to(config.rootpath).as_posix() not in CONTAINER_TEST_PATHS:
+        return True
+    return None
+
+
 def pytest_collection_modifyitems(config, items):
     validate_manifest(ROOT, LEAN_TEST_PATHS)
     validate_manifest(ROOT, SOLUTION_TEST_PATHS)

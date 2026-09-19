@@ -28,7 +28,7 @@ def _suite(pytester):
 
 @pytest.mark.parametrize(
     ("lane", "passed", "deselected"),
-    [("all", 10, 0), ("python", 1, 9), ("lean", 7, 3), ("solution", 1, 9), ("container", 1, 9)],
+    [("all", 10, 0), ("python", 1, 9), ("lean", 7, 3), ("solution", 1, 9), ("container", 1, 0)],
 )
 def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
     _suite(pytester)
@@ -61,7 +61,7 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
 
 @pytest.mark.parametrize(
     ("lane", "passed", "deselected"),
-    [("python", 0, 9), ("lean", 6, 3), ("solution", 0, 3), ("container", 0, 9)],
+    [("python", 0, 9), ("lean", 6, 3), ("solution", 0, 3), ("container", 0, 0)],
 )
 def test_a_selected_failure_keeps_the_lane_red(pytester, lane, passed, deselected):
     _suite(pytester)
@@ -75,6 +75,27 @@ def test_a_selected_failure_keeps_the_lane_red(pytester, lane, passed, deselecte
     result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
     result.assert_outcomes(failed=1, passed=passed, deselected=deselected)
     assert result.ret == pytest.ExitCode.TESTS_FAILED
+
+
+def test_container_lane_does_not_import_modules_owned_by_other_lanes(pytester):
+    _suite(pytester)
+    path = pytester.path / "tests/unit/test_unlisted.py"
+    path.write_text('raise RuntimeError("mac-only-import")\n')
+    result = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=container")
+    result.assert_outcomes(passed=1)
+    for lane in ("all", "python"):
+        result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
+        assert result.ret == pytest.ExitCode.INTERRUPTED
+        assert "mac-only-import" in result.stdout.str()
+
+
+def test_container_lane_refuses_an_import_error_in_its_own_module(pytester):
+    _suite(pytester)
+    (pytester.path / CONTAINER_TEST_PATHS[0]).write_text('raise RuntimeError("container-import")\n')
+    result = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=container")
+    result.assert_outcomes(errors=1)
+    assert result.ret == pytest.ExitCode.INTERRUPTED
+    assert "container-import" in result.stdout.str()
 
 
 @pytest.mark.parametrize("name", LEAN_SOLUTION_TESTS)
