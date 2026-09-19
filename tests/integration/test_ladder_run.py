@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import allowlist, bundle, claims, instances, ladder, ladderplan, laddertable, runner
+from cairn import allowlist, bundle, claims, instances, ladder, ladderplan, laddertable, ledger, runner
 from cairn.skills import bsgs, instance_maker, rho_dp
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -57,11 +57,11 @@ def hypothesis_object():
     )
 
 
-def _dispatch_run(writer, shipped, tmp_path, plan, hypothesis_object, run_id):
+def _dispatch_run(writer, shipped, tmp_path, plan, hypothesis_object, run_id, *, claimant=bsgs):
     if claims.get_hypothesis_object(writer, hypothesis_object.hash) is None:
         claims.write_hypothesis_object(writer, hypothesis_object)
     _, nonce = ladder.commit_entropy(writer, hypothesis_hash=hypothesis_object.hash, run_id=run_id)
-    for module in (bsgs, rho_dp, instance_maker):
+    for module in (claimant, rho_dp, instance_maker):
         identity = module.identity_bundle()
         digest = writer.put_identity_bundle(identity)
         if not writer.certified(digest):
@@ -77,7 +77,7 @@ def _dispatch_run(writer, shipped, tmp_path, plan, hypothesis_object, run_id):
     }
     allow = allowlist.instantiate(shipped, hypothesis=hypothesis, counted_object=BACKEND, scratch_dir=scratch)
     for arm, module in (
-        (ladder.CLAIMANT, bsgs),
+        (ladder.CLAIMANT, claimant),
         (ladder.BASELINE, rho_dp),
         (ladder.BASELINE_AA, rho_dp),
     ):
@@ -101,8 +101,15 @@ def dispatched(writer, shipped, tmp_path, plan, hypothesis_object):
     return _dispatch_run(writer, shipped, tmp_path, plan, hypothesis_object, RUN_ID)
 
 
+@pytest.fixture
+def attest_path(tmp_path):
+    path = tmp_path / "attestations.log"
+    path.touch()
+    return path
+
+
 def test_a_full_small_run_writes_a_table_with_every_arm_on_one_instance_stream(
-    writer, shipped, tmp_path, plan, hypothesis_object, dispatched
+    writer, shipped, tmp_path, plan, hypothesis_object, dispatched, attest_path
 ):
     scratch = tmp_path / "runs"
     scratch.mkdir()
@@ -117,6 +124,7 @@ def test_a_full_small_run_writes_a_table_with_every_arm_on_one_instance_stream(
         scratch_root=scratch,
         budget_remaining=10_000.0,
         ceiling_multiplier=MAKER_CEILING,
+        attest_path=attest_path,
     )
 
     assert {r.bits for r in table.rungs} == {FIT_BITS, HOLD_OUT_BITS}
@@ -156,7 +164,7 @@ def test_a_full_small_run_writes_a_table_with_every_arm_on_one_instance_stream(
 
 
 def test_an_injected_gate_counter_aggregates_all_arms_before_persistence(
-    writer, shipped, tmp_path, plan, hypothesis_object, dispatched
+    writer, shipped, tmp_path, plan, hypothesis_object, dispatched, attest_path
 ):
     scratch = tmp_path / "counted-runs"
     scratch.mkdir()
@@ -177,6 +185,7 @@ def test_an_injected_gate_counter_aggregates_all_arms_before_persistence(
         budget_remaining=10_000.0,
         ceiling_multiplier=MAKER_CEILING,
         ops_counter=count,
+        attest_path=attest_path,
     )
 
     assert all(trial.gate_ops.kind == laddertable.OPS_EXACT for trial in table.trials)
@@ -189,10 +198,17 @@ def test_an_injected_gate_counter_aggregates_all_arms_before_persistence(
     assert laddertable.recompute(table, plan, verified).agrees
     assert laddertable.read(writer, table.hash).hash == table.hash
     assert len(arm_trials) == len(table.trials)
+    claimant = ladder.dispatches_for(writer, RUN_ID)[ladder.CLAIMANT]
+    assert writer.yanked(claimant.identity_bundle_hash)
+    assert laddertable.recorded_verdict(writer, table.hash).predicate == laddertable.COUNT_DIVERGENCE
+    entries = ledger.entries_for(writer, hypothesis_object.hash)
+    assert [(entry["refutation_kind"], entry["faulting_revision"], entry["caught_by"]) for entry in entries] == [
+        (ledger.IMPLEMENTATION, claimant.identity_bundle_hash, "ladder:count_divergence")
+    ]
 
 
 def test_a_run_missing_an_arm_refuses_before_any_instance_is_drawn(
-    writer, shipped, tmp_path, plan, hypothesis_object, popen_spy
+    writer, shipped, tmp_path, plan, hypothesis_object, popen_spy, attest_path
 ):
     claims.write_hypothesis_object(writer, hypothesis_object)
     _, nonce = ladder.commit_entropy(writer, hypothesis_hash=hypothesis_object.hash, run_id=RUN_ID)
@@ -209,6 +225,7 @@ def test_a_run_missing_an_arm_refuses_before_any_instance_is_drawn(
             nonce=nonce.nonce,
             scratch_root=scratch,
             budget_remaining=10_000.0,
+            attest_path=attest_path,
         )
     assert raised.value.reason == ladder.ARMS_MISSING
     assert popen_spy == []
@@ -216,7 +233,7 @@ def test_a_run_missing_an_arm_refuses_before_any_instance_is_drawn(
 
 
 def test_a_patience_limited_run_records_the_observed_claimant_success_rate(
-    writer, shipped, tmp_path, plan, hypothesis_object
+    writer, shipped, tmp_path, plan, hypothesis_object, attest_path
 ):
     impatient = dataclasses.replace(plan, patience_multiplier=1)
     nonce = _dispatch_run(writer, shipped, tmp_path, impatient, hypothesis_object, "run-ladder-impatient")
@@ -233,6 +250,7 @@ def test_a_patience_limited_run_records_the_observed_claimant_success_rate(
         scratch_root=scratch,
         budget_remaining=10_000.0,
         ceiling_multiplier=MAKER_CEILING,
+        attest_path=attest_path,
     )
     claimant = [t for t in arm_trials if t.arm == ladder.CLAIMANT]
     diagnostics = [

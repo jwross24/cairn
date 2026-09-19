@@ -222,6 +222,8 @@ def write(sub, **fields):
 
 def write_entry(sub, entry):
     node = claims.get_evidence_node(sub, entry.evidence_node)
+    if node is None and entry.writer == LADDER and entry.refutation_kind == IMPLEMENTATION:
+        node = _implementation_table_evidence(sub, entry)
     if node is None:
         raise LedgerError(f"evidence node {entry.evidence_node} is not in the substrate")
     _check_evidence(entry, node)
@@ -261,6 +263,29 @@ def write_entry(sub, entry):
         status="inserted" if row is None else "exists",
     )
     return entry.hash
+
+
+def _implementation_table_evidence(sub, entry):
+    from cairn import laddertable
+
+    table = laddertable.read(sub, entry.evidence_node)
+    if table is None:
+        return None
+    verdict = laddertable.recorded_verdict(sub, table.hash)
+    if (
+        verdict.kind != laddertable.REJECT
+        or laddertable.REFUTATION_KIND.get(verdict.predicate) != IMPLEMENTATION
+        or entry.caught_by != f"ladder:{verdict.predicate}"
+        or entry.hypothesis_key != table.hypothesis_hash
+        or entry.method != table.method_identity
+    ):
+        raise LedgerError("implementation entry disagrees with its ladder table")
+    dispatch = laddertable._claimant_dispatch(sub, table)
+    if entry.faulting_revision != dispatch["identity_bundle_hash"]:
+        raise LedgerError("implementation entry names another dispatched identity")
+    if not laddertable.membership_for_table(sub, table.hash):
+        raise LedgerError("implementation table has no trial membership")
+    return {"kind": laddertable.NODE_KIND, "verdict": verdict.kind}
 
 
 def get_entry(sub, digest):

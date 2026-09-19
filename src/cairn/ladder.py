@@ -13,6 +13,7 @@ import importlib
 import json
 from dataclasses import asdict, dataclass
 from decimal import Decimal
+from pathlib import Path
 from uuid import uuid4
 
 from cairn import (
@@ -25,11 +26,13 @@ from cairn import (
     keys,
     ladderplan,
     laddertable,
+    ledger,
     log,
     runner,
     substrate,
     tiergate,
     verifier,
+    yank,
 )
 from cairn.substrate import node_hash_for
 
@@ -528,11 +531,14 @@ def run(
     nonce,
     scratch_root,
     budget_remaining,
+    attest_path,
     ceiling_multiplier=None,
     ops_counter=None,
     at=None,
 ):
     """One ladder run: every rung, every trial, every arm on the gate's instance stream."""
+    with Path(attest_path).open("rb"):
+        pass
     records = dispatches_for(sub, run_id)
     missing = [arm for arm in ladderplan.ARMS if arm not in records]
     if missing:
@@ -614,6 +620,33 @@ def run(
         (bits, trial): attempt_id for (arm, bits, trial), attempt_id in trial_attempts.items() if arm == CLAIMANT
     }
     evidence_nodes = _table_evidence_nodes(sub, table, plan, claimant_attempts, claimant)
-    laddertable.write(sub, table, plan, trial_attempts=trial_attempts, evidence_nodes=evidence_nodes)
+    verdict = laddertable.verdict(table, plan)
+    if verdict.kind == laddertable.REJECT and verdict.refutation_kind == ledger.MEASURED:
+        raise RunRefused(
+            "measured-settlement-unavailable", "measured REJECT settlement requires measured-result intervals"
+        )
+    with sub.transaction():
+        laddertable.write(sub, table, plan, trial_attempts=trial_attempts, evidence_nodes=evidence_nodes)
+        if verdict.kind == laddertable.REJECT:
+            entry = ledger.write(
+                sub,
+                hypothesis_key=table.hypothesis_hash,
+                decision=ledger.REFUTED,
+                refutation_kind=ledger.IMPLEMENTATION,
+                evidence_node=table.hash,
+                method=table.method_identity,
+                faulting_revision=claimant.identity_bundle_hash,
+                caught_by=f"ladder:{verdict.predicate}",
+                at=table.created_at,
+            )
+            yank.record(
+                sub,
+                yank_id=f"ladder:{entry}",
+                skill_identity_hash=claimant.identity_bundle_hash,
+                kind=yank.GATE_VERDICT,
+                attest_path=attest_path,
+                verdict_ref=entry,
+                at=table.created_at,
+            )
     lg.info("run", run_id=run_id, table=table.hash, rungs=len(rungs), trials=len(canonical_trials))
     return table, tuple(arm_trials)

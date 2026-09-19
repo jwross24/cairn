@@ -222,6 +222,8 @@ def bound_production_run(writer, shipped, tmp_path, run_id, declared_size=(7, 77
     nonce = _dispatch_run(writer, shipped, tmp_path, plan, hypothesis, run_id)
     scratch = tmp_path / f"bound-{run_id}"
     scratch.mkdir()
+    attestation_log = scratch / "attestations.log"
+    attestation_log.touch()
     table, arm_trials = ladder.run(
         writer,
         shipped,
@@ -233,6 +235,7 @@ def bound_production_run(writer, shipped, tmp_path, run_id, declared_size=(7, 77
         scratch_root=scratch,
         budget_remaining=10_000.0,
         ceiling_multiplier=60,
+        attest_path=attestation_log,
     )
     claimant_ids = {trial.attempt_id for trial in arm_trials if trial.arm == ladder.CLAIMANT}
     evidence = [

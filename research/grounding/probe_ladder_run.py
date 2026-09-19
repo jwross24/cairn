@@ -78,6 +78,8 @@ for arm, module in ((ladder.CLAIMANT, bsgs), (ladder.BASELINE, rho_dp), (ladder.
     )
 runs = root / "runs"
 runs.mkdir()
+attestation_log = root / "attestations.log"
+attestation_log.touch()
 table, arm_trials = ladder.run(
     sub,
     gate,
@@ -89,6 +91,7 @@ table, arm_trials = ladder.run(
     scratch_root=runs,
     budget_remaining=100_000.0,
     ceiling_multiplier=60,
+    attest_path=attestation_log,
 )
 row = sub.conn.execute(
     "SELECT run_id, arm, hypothesis_hash, implementation_revision, allow_list_hash, gate_bundle_hash, plan_hash"
