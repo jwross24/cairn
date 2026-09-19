@@ -22,6 +22,8 @@ set -uo pipefail
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$ROOT" || exit 3
 LOG="$ROOT/.check.log"
+BR_BIN="${BR_BIN:-${HOME}/.local/bin/br}"
+PATH="$(dirname "$BR_BIN"):$PATH"
 STAMP() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 say() { printf '%s %s\n' "$(STAMP)" "$*" >> "$LOG"; }
 
@@ -35,12 +37,15 @@ FAST=0
 UNIT=0
 CI_LANE=all
 SCOPED=0
+BEAD=""
+REPORT=0
 PATHS=()
 while [ $# -gt 0 ]; do
   case "$1" in
     --fast) FAST=1; shift ;;
     --unit) UNIT=1; shift ;;
     --ci-lane) CI_LANE="${2:-}"; shift; [ $# -eq 0 ] || shift ;;
+    --bead) REPORT=1; BEAD="${2:-}"; shift; [ $# -eq 0 ] || shift ;;
     --paths) SCOPED=1; shift; PATHS=("$@"); break ;;
     *)
       say "DENY usage: unknown argument $1"
@@ -60,6 +65,43 @@ case "$CI_LANE:$FAST:$UNIT:$SCOPED" in
     exit 3
     ;;
 esac
+
+if [ "$REPORT" = "1" ] && [ -z "$BEAD" ]; then
+  say "DENY gate-report reason=missing-bead"
+  echo "[check] --bead requires an issue id" >&2
+  exit 3
+fi
+
+if [ "$REPORT" = "1" ] && { [ "$FAST" = "1" ] || [ "$UNIT" = "1" ] || [ "$SCOPED" = "1" ] || [ "$CI_LANE" != "all" ]; }; then
+  say "DENY gate-report bead=$BEAD reason=reduced-mode"
+  echo "[check] --bead requires the complete unscoped all-lane gate" >&2
+  exit 3
+fi
+
+if [ "$REPORT" = "1" ]; then
+  if ! BEAD_STATUS="$("$BR_BIN" show "$BEAD" --json | jq -r 'if type == "array" then .[0].status else .status end')"; then
+    say "DENY gate-report bead=$BEAD reason=unreadable"
+    echo "[check] cannot read bead $BEAD" >&2
+    exit 3
+  fi
+  if [ "$BEAD_STATUS" != "in_progress" ]; then
+    say "DENY gate-report bead=$BEAD reason=status-$BEAD_STATUS"
+    echo "[check] claim bead $BEAD before reporting a gate result" >&2
+    exit 3
+  fi
+fi
+
+report_gate() {
+  local status="$1"
+  local rc
+  if "$BR_BIN" gate report "$BEAD" --gate check --provider gate-script --status "$status" --to closed; then
+    rc=0
+  else
+    rc=$?
+  fi
+  say "GATE_REPORT bead=$BEAD gate=check status=$status exit=$rc"
+  return "$rc"
+}
 
 if ! command -v uv >/dev/null 2>&1; then
   say "DENY infra: uv not on PATH"
@@ -151,8 +193,14 @@ if [ ${#FAILED[@]} -ne 0 ]; then
   printf '        fix formatting: uv run ruff format src tests scripts\n' >&2
   printf '        fix lint:       uv run ruff check --fix src tests scripts\n' >&2
   printf '        bypass (logged): CAIRN_CHECK_SKIP=%s scripts/check.sh\n' "'<reason>'" >&2
+  if [ "$REPORT" = "1" ]; then
+    report_gate fail || exit 2
+  fi
   exit 1
 fi
 
 say "RESULT pass (fast=$FAST unit=$UNIT scoped=$SCOPED lane=$CI_LANE)"
 printf '[check] all gates pass\n'
+if [ "$REPORT" = "1" ]; then
+  report_gate pass || exit 2
+fi

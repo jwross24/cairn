@@ -1,0 +1,27 @@
+allow_bypass: false
+workflow:
+  strict: true
+  statuses:
+    - open
+    - in_progress
+    - closed
+  gates:
+    in_progress->closed:
+      require_all:
+        - check
+    open->closed:
+      require_all:
+        - check
+  capacity:
+    statuses:
+      in_progress:
+        hard: 1000000
+    groups:
+      token-ceiling:
+        statuses:
+          - in_progress
+        hard: 1000000
+    exemptions:
+      providers:
+        - ceiling-override
+      require_expiry: true
