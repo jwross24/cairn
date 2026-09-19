@@ -16,7 +16,15 @@ KEY = "1a" * 32
 REVISION = "2b" * 32
 METHOD = {"interface_version": "rho_dp/1", "params": {"r": "20"}}
 POINTS = ({"numeric": {"bits": 50, "trials": 40}, "categorical": {"model": "c_sqrt_n"}},)
-RESULT = {"summary": "in-sample model miss at 50 bits", "value": "1310000000", "ci": ["1200000000", "1400000000"]}
+RESULT = {
+    "kind": "statistical_interval",
+    "quantity": "mean_group_operations",
+    "summary": "in-sample model miss at 50 bits",
+    "value": "1310000000",
+    "ci": ["1200000000", "1400000000"],
+    "ci_method": "normal_mean",
+    "coverage": "0.95",
+}
 AT = "2026-09-02T00:00:00Z"
 
 
@@ -142,15 +150,82 @@ def test_a_caller_supplied_retry_predicate_is_refused_and_nothing_is_written(wri
     assert db_snapshot(writer.conn, "after") == before
 
 
+@pytest.mark.parametrize("kind", ["exact", "lower_bound"])
+def test_observed_results_round_trip_without_an_invented_interval(writer, evidence, kind):
+    result = {**RESULT, "kind": kind, "ci": None, "ci_method": None, "coverage": None}
+    digest = ledger.write(writer, **measured(evidence, result=result, caught_by="ladder:refutation_floor"))
+    assert json.loads(ledger.get_entry(writer, digest)["result"]) == result
+    canonical = ledger.entry_canonical(
+        ledger.LedgerEntry(**measured(evidence, result=result, caught_by="ladder:refutation_floor"))
+    )
+    assert ledger.canon.decode(ledger.LEDGER_ENTRY, canonical)["result"] == result
+
+
+def test_exact_values_and_lower_bounds_have_distinct_content_identity(writer, evidence):
+    common = {**RESULT, "ci": None, "ci_method": None, "coverage": None}
+    exact = ledger.write(
+        writer,
+        **measured(evidence, result={**common, "kind": "exact"}, caught_by="ladder:refutation_floor"),
+    )
+    bound = ledger.write(
+        writer,
+        **measured(evidence, result={**common, "kind": "lower_bound"}, caught_by="ladder:refutation_floor"),
+    )
+    assert exact != bound
+
+
+@pytest.mark.parametrize("predicate", ["ladder:in_sample_model_miss", "ladder:out_of_sample_model_miss", "hunt:KILLED"])
+def test_a_lower_bound_cannot_substitute_for_exact_model_or_counterexample_evidence(writer, evidence, predicate):
+    result = {**RESULT, "kind": "lower_bound", "ci": None, "ci_method": None, "coverage": None}
+    node = evidence["killed"] if predicate.startswith("hunt:") else evidence["reject"]
+    with pytest.raises(LedgerError, match="lower bounds support only the ladder refutation floor"):
+        ledger.write(writer, **measured(evidence, result=result, caught_by=predicate, evidence_node=node))
+    assert ledger.entries_for(writer, KEY) == []
+
+
+@pytest.mark.parametrize(
+    "result",
+    [
+        {key: value for key, value in RESULT.items() if key != "kind"},
+        {**RESULT, "kind": "unknown"},
+        {**RESULT, "kind": "exact"},
+        {**RESULT, "kind": "lower_bound"},
+        {**RESULT, "kind": "exact", "ci": None},
+        {**RESULT, "kind": "lower_bound", "ci": None},
+        {**RESULT, "value": "NaN"},
+        {**RESULT, "value": "Infinity"},
+        {**RESULT, "value": "-Infinity"},
+        {**RESULT, "value": 1},
+        {**RESULT, "ci": ["0", "Infinity"]},
+        {**RESULT, "ci": ["-Infinity", "1"]},
+        {**RESULT, "ci": ["NaN", "1"]},
+        {**RESULT, "ci": ["0", "sNaN"]},
+        {**RESULT, "ci_method": None},
+        {**RESULT, "ci_method": " "},
+        {**RESULT, "coverage": None},
+        {**RESULT, "coverage": "NaN"},
+        {**RESULT, "coverage": "Infinity"},
+        {**RESULT, "coverage": "0"},
+        {**RESULT, "coverage": "1"},
+        {**RESULT, "quantity": ""},
+    ],
+)
+def test_mislabeled_or_nonfinite_results_are_refused_without_writes(writer, evidence, db_snapshot, result):
+    before = db_snapshot(writer.conn, "before")
+    with pytest.raises(LedgerError):
+        ledger.write(writer, **measured(evidence, result=result))
+    assert db_snapshot(writer.conn, "after") == before
+
+
 @pytest.mark.parametrize(
     ("build", "overrides", "message"),
     [
         (measured, {"measured_points": ()}, "carries the parameter points"),
-        (measured, {"result": None}, "two-sided CI"),
+        (measured, {"result": None}, "declares a kind"),
         (measured, {"result": {**RESULT, "ci": None}}, "two-sided CI"),
         (measured, {"result": {**RESULT, "ci": ["1"]}}, "two-sided CI"),
         (measured, {"result": {**RESULT, "ci": ["1400000000", "1200000000"]}}, "CI low bound exceeds its high bound"),
-        (measured, {"result": {**RESULT, "ci": ["low", "high"]}}, "CI bounds are decimal strings"),
+        (measured, {"result": {**RESULT, "ci": ["low", "high"]}}, "CI bound must be a finite decimal string"),
         (measured, {"measured_points": ({"numeric": {}, "categorical": {}},)}, "at least one numeric or categorical"),
         (measured, {"faulting_revision": REVISION}, "only an implementation entry names a faulting revision"),
         (measured, {"blocker": "near_dup_review"}, "a REFUTED entry holds no blocker"),

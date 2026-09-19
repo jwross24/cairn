@@ -273,7 +273,15 @@ def test_a_ledger_entry_hash_is_a_recorded_verdict_too(writer, revision):
         evidence_node=node.hash,
         method=hyp.method_identity,
         measured_points=({"numeric": {"bits": 50, "trials": 40}, "categorical": {"model": "c_sqrt_n"}},),
-        result={"summary": "in-sample model miss", "value": "1310000000", "ci": ["1200000000", "1400000000"]},
+        result={
+            "kind": "statistical_interval",
+            "quantity": "mean_group_operations",
+            "summary": "in-sample model miss",
+            "value": "1310000000",
+            "ci": ["1200000000", "1400000000"],
+            "ci_method": "normal_mean",
+            "coverage": "0.95",
+        },
         caught_by="ladder:in_sample_model_miss",
         at=AT,
     )

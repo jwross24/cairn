@@ -209,12 +209,21 @@ def test_killed_hunt_records_real_counterexample_and_full_transcript(tmp_path):
         assert result.record.trials[0].outcome == "COUNTEREXAMPLE"
         assert result.ledger_hash is not None
         entry = ledger.get_entry(sub, result.ledger_hash)
+        assert json.loads(entry["result"]) == {
+            "kind": "exact",
+            "quantity": "counterexample_count",
+            "summary": "verified counterexample count at the recorded point",
+            "value": "1",
+            "ci": None,
+            "ci_method": None,
+            "coverage": None,
+        }
         assert entry["decision"] == "REFUTED"
         assert entry["evidence_node"] == result.evidence_hash
         assert json.loads(entry["measured_points"]) == [
             {"numeric": dict(result.record.trials[0].point), "categorical": {}}
         ]
-        assert json.loads(entry["result"])["ci"] == ["1", "1"]
+        assert json.loads(entry["result"])["ci"] is None
         verified = sub.get_attempt(result.record.trials[0].verifier_attempt_id)
         assert verified["status"] == "OK"
         assert sub.get_receipt(verified["receipt_hash"])["exit_status"] == 0

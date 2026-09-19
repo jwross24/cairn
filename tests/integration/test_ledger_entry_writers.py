@@ -13,11 +13,23 @@ from _substrate_helpers import IDENTITY_A, open_writer
 AT = "2026-09-02T00:00:00Z"
 FIFTY_BITS = ({"numeric": {"bits": 50, "trials": 40}, "categorical": {"model": "c_sqrt_n"}},)
 REJECT_RESULT = {
+    "kind": "statistical_interval",
+    "quantity": "mean_group_operations",
     "summary": "in-sample model miss: 1.31e9 ops at 50 bits against a sub-rho model",
     "value": "1310000000",
     "ci": ["1200000000", "1400000000"],
+    "ci_method": "normal_mean",
+    "coverage": "0.95",
 }
-KILLED_RESULT = {"summary": "verified counterexample at 44 bits", "value": "1", "ci": ["1", "1"]}
+KILLED_RESULT = {
+    "kind": "exact",
+    "quantity": "counterexample_count",
+    "summary": "verified counterexample at 44 bits",
+    "value": "1",
+    "ci": None,
+    "ci_method": None,
+    "coverage": None,
+}
 
 
 @pytest.fixture

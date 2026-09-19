@@ -41,10 +41,23 @@ BLOCKERS = ("null_control_pending", "near_dup_review", "supersedes_refuted_revie
 NODE_KIND = "ledger_entry"
 ROOT_KIND = "ledger_row"
 TABLE = "ledger_entries"
+EXACT = "exact"
+LOWER_BOUND = "lower_bound"
+STATISTICAL_INTERVAL = "statistical_interval"
+RESULT_KINDS = (EXACT, LOWER_BOUND, STATISTICAL_INTERVAL)
 
 POINT = Struct("measured_point", [Field("numeric", Map(STR, INT)), Field("categorical", Map(STR, STR))])
 RESULT = Struct(
-    "result", [Field("summary", NON_EMPTY_STR), Field("value", Optional(STR)), Field("ci", Optional(List(STR)))]
+    "result",
+    [
+        Field("kind", NON_EMPTY_STR),
+        Field("quantity", NON_EMPTY_STR),
+        Field("summary", NON_EMPTY_STR),
+        Field("value", NON_EMPTY_STR),
+        Field("ci", Optional(List(STR))),
+        Field("ci_method", Optional(STR)),
+        Field("coverage", Optional(STR)),
+    ],
 )
 RETRY = Struct("retry_predicate", [Field("kind", NON_EMPTY_STR), Field("target", NON_EMPTY_STR)])
 LEDGER_ENTRY = Struct(
@@ -89,6 +102,38 @@ def writer_of(caught_by):
     return writer
 
 
+def _finite_decimal(value, label):
+    if not isinstance(value, str) or not value:
+        raise LedgerError(f"{label} must be a finite decimal string")
+    try:
+        number = Decimal(value)
+    except InvalidOperation:
+        raise LedgerError(f"{label} must be a finite decimal string") from None
+    if not number.is_finite():
+        raise LedgerError(f"{label} must be a finite decimal string")
+    return number
+
+
+def _validate_result(result):
+    if not isinstance(result, dict) or result.get("kind") not in RESULT_KINDS:
+        raise LedgerError(f"a measured result declares a kind from {RESULT_KINDS}")
+    _finite_decimal(result.get("value"), "result value")
+    if result["kind"] != STATISTICAL_INTERVAL:
+        if any(result.get(name) is not None for name in ("ci", "ci_method", "coverage")):
+            raise LedgerError("exact observations and lower bounds carry no confidence interval metadata")
+        return
+    ci = result.get("ci")
+    if not isinstance(ci, (list, tuple)) or len(ci) != 2:
+        raise LedgerError("a statistical result carries a two-sided CI")
+    low, high = (_finite_decimal(c, "CI bound") for c in ci)
+    if low > high:
+        raise LedgerError("CI low bound exceeds its high bound")
+    if not isinstance(result.get("ci_method"), str) or not result["ci_method"].strip():
+        raise LedgerError("a statistical result names its CI method")
+    if not 0 < _finite_decimal(result.get("coverage"), "CI coverage") < 1:
+        raise LedgerError("CI coverage must be strictly between zero and one")
+
+
 def _validate(entry):
     if entry.decision not in DECISIONS:
         raise LedgerError(f"decision must be one of {DECISIONS}, got {entry.decision!r}")
@@ -118,15 +163,9 @@ def _validate(entry):
             not isinstance(p, dict) or not (p.get("numeric") or p.get("categorical")) for p in entry.measured_points
         ):
             raise LedgerError("a measured point names at least one numeric or categorical field")
-        ci = None if entry.result is None else entry.result.get("ci")
-        if not isinstance(ci, (list, tuple)) or len(ci) != 2 or not all(isinstance(c, str) and c for c in ci):
-            raise LedgerError("a measured entry carries a result with a two-sided CI")
-        try:
-            low, high = (Decimal(c) for c in ci)
-        except InvalidOperation:
-            raise LedgerError("CI bounds are decimal strings") from None
-        if low > high:
-            raise LedgerError("CI low bound exceeds its high bound")
+        _validate_result(entry.result)
+        if entry.result["kind"] == LOWER_BOUND and entry.caught_by != "ladder:refutation_floor":
+            raise LedgerError("lower bounds support only the ladder refutation floor")
     if entry.refutation_kind == IMPLEMENTATION and not entry.faulting_revision:
         raise LedgerError("an implementation entry names the faulting revision")
     if entry.refutation_kind != IMPLEMENTATION and entry.faulting_revision is not None:
