@@ -1,5 +1,6 @@
 import json
 import sys
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -39,6 +40,7 @@ def _assemble(gate, statement, root, **kwargs):
         kwargs.pop("theorem_names", THEOREMS),
         root=root,
         formal_statement_hash=kwargs.pop("formal_statement_hash", FSH),
+        **kwargs,
     )
 
 
@@ -228,3 +230,40 @@ def test_a_build_that_exceeds_its_timeout_is_a_step_timeout_and_never_a_failed_v
 def test_the_build_command_names_the_solution_module_under_the_pinned_toolchain(gate, statement, tmp_path):
     assembled = _assemble(gate, statement, tmp_path / "run")
     assert lean.command(gate.lean, "build", module=assembled.solution_module)[-1] == assembled.solution_module
+
+
+@pytest.mark.parametrize("manifest_kind", ["absent", "malformed", "wrong-revision", "missing-package"])
+def test_dependency_provisioning_refuses_before_creating_the_submission_root(gate, statement, tmp_path, manifest_kind):
+    source = tmp_path / "dependencies"
+    source.mkdir()
+    manifest = deepcopy(gate.lake_manifest)
+    if manifest_kind == "wrong-revision":
+        manifest["packages"][0]["rev"] = "0" * 40
+    if manifest_kind != "absent":
+        (source / "lake-manifest.json").write_text("{" if manifest_kind == "malformed" else json.dumps(manifest))
+    reason = {
+        "absent": "dependency-manifest-unavailable",
+        "malformed": "dependency-manifest-unavailable",
+        "wrong-revision": "dependency-manifest-mismatch",
+        "missing-package": "dependency-checkout-unavailable:mathlib",
+    }[manifest_kind]
+    root = tmp_path / "submission"
+    with pytest.raises(solutionbuild.SolutionRefused, match=reason):
+        _assemble(gate, statement, root, dependency_project=source)
+    assert not root.exists()
+
+
+@pytest.mark.parametrize("absolute", [False, True])
+def test_dependency_links_cannot_escape_the_private_copy(gate, statement, tmp_path, absolute):
+    source = tmp_path / "dependencies"
+    package = source / ".lake/packages/mathlib"
+    (package / ".git").mkdir(parents=True)
+    (source / "lake-manifest.json").write_text(json.dumps(gate.lake_manifest))
+    outside = tmp_path / "outside.txt"
+    outside.write_text("not a package input")
+    (package / "escape").symlink_to(outside if absolute else Path("../../../../outside.txt"))
+    root = tmp_path / "submission"
+    with pytest.raises(solutionbuild.SolutionRefused, match="dependency-symlink-escapes:mathlib"):
+        _assemble(gate, statement, root, dependency_project=source)
+    assert not root.exists()
+    assert outside.read_text() == "not a package input"

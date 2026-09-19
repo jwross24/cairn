@@ -1,4 +1,7 @@
 import json
+import os
+import shutil
+import subprocess
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,6 +17,13 @@ SOLUTION_DIR = "Solution"
 CHALLENGE_DIR = "Challenge"
 TOOLCHAIN_NAME = "lean-toolchain"
 LAKEFILE_NAME = "lakefile.toml"
+MANIFEST_NAME = "lake-manifest.json"
+GIT = "/usr/bin/git"
+DEPENDENCY_QUERIES = (
+    ("rev-parse", "HEAD"),
+    ("remote", "get-url", "origin"),
+    ("status", "--porcelain", "--untracked-files=normal"),
+)
 CONFIG_NAME = "config.json"
 LAKEFILE = (
     'name = "cairn_solution"\n\n'
@@ -112,7 +122,54 @@ def config(challenge_module, solution_module, theorem_names, pins):
     }
 
 
-def assemble(gate, statement, submission, theorem_names, *, root, formal_statement_hash):
+def _dependency_packages(project, manifest, pins):
+    project = Path(project)
+    try:
+        actual = json.loads((project / MANIFEST_NAME).read_text())
+    except OSError, ValueError:
+        raise SolutionRefused("dependency-manifest-unavailable") from None
+    if actual != manifest or lean.manifest_rev(manifest) != pins["mathlib_rev"]:
+        raise SolutionRefused("dependency-manifest-mismatch")
+    if manifest.get("packagesDir") != ".lake/packages":
+        raise SolutionRefused("dependency-packages-directory-unsupported")
+    packages = []
+    for entry in manifest["packages"]:
+        name = entry["name"]
+        if not isinstance(name, str) or not name or Path(name).name != name or name in (".", ".."):
+            raise SolutionRefused("dependency-package-name-invalid")
+        if entry["type"] != "git" or entry.get("subDir") is not None:
+            raise SolutionRefused(f"dependency-checkout-unsupported:{name}")
+        package = project / ".lake" / "packages" / name
+        git_dir = package / ".git"
+        if not git_dir.is_dir() or git_dir.is_symlink() or (git_dir / "objects/info/alternates").exists():
+            raise SolutionRefused(f"dependency-checkout-unavailable:{name}")
+        for path in package.rglob("*"):
+            if path.is_symlink():
+                try:
+                    target = path.resolve(strict=True)
+                except OSError:
+                    raise SolutionRefused(f"dependency-symlink-invalid:{name}") from None
+                if path.readlink().is_absolute() or not target.is_relative_to(package.resolve()):
+                    raise SolutionRefused(f"dependency-symlink-escapes:{name}")
+        for query, expected in zip(DEPENDENCY_QUERIES, (entry["rev"], entry["url"], ""), strict=True):
+            try:
+                result = subprocess.run(
+                    [GIT, "-C", str(package), *query],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                    check=False,
+                    env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"},
+                )
+            except OSError, subprocess.TimeoutExpired:
+                raise SolutionRefused(f"dependency-checkout-unreadable:{name}") from None
+            if result.returncode != 0 or result.stdout.strip() != expected:
+                raise SolutionRefused(f"dependency-checkout-mismatch:{name}:{query[0]}")
+        packages.append(package)
+    return packages
+
+
+def assemble(gate, statement, submission, theorem_names, *, root, formal_statement_hash, dependency_project=None):
     pins = gate.lean
     lean.assert_pinned(pins)
     assert_binding(submission, formal_statement_hash)
@@ -120,12 +177,24 @@ def assemble(gate, statement, submission, theorem_names, *, root, formal_stateme
         raise SolutionRefused(EMPTY_SOLUTION)
     if not theorem_names:
         raise SolutionRefused(EMPTY_THEOREM_NAMES)
+    manifest = gate.lake_manifest if dependency_project is not None else None
+    packages = _dependency_packages(dependency_project, manifest, pins) if manifest is not None else ()
     root = Path(root)
     root.mkdir(parents=True, exist_ok=False)
     (root / CHALLENGE_DIR).mkdir()
     (root / SOLUTION_DIR).mkdir()
     (root / TOOLCHAIN_NAME).write_text(pins["toolchain"] + "\n")
-    (root / LAKEFILE_NAME).write_text(LAKEFILE)
+    lakefile = LAKEFILE
+    if manifest is not None:
+        mathlib = next(entry for entry in manifest["packages"] if entry["name"] == "mathlib")
+        lakefile += (
+            f'\n[[require]]\nname = "mathlib"\ngit = {json.dumps(mathlib["url"])}\nrev = {json.dumps(mathlib["rev"])}\n'
+        )
+        (root / MANIFEST_NAME).write_text(json.dumps(manifest, sort_keys=True, indent=2) + "\n")
+        for package in packages:
+            shutil.copytree(package, root / ".lake" / "packages" / package.name, symlinks=True)
+        _dependency_packages(root, manifest, pins)
+    (root / LAKEFILE_NAME).write_text(lakefile)
     challenge_source = challenge.render(statement, gate.raw(challenge.PRELUDE_KIND))
     challenge_path = challenge.module_path(statement, root / CHALLENGE_DIR)
     challenge_path.write_bytes(challenge_source)
@@ -141,6 +210,8 @@ def assemble(gate, statement, submission, theorem_names, *, root, formal_stateme
         str(path.relative_to(root))
         for path in (root / TOOLCHAIN_NAME, root / LAKEFILE_NAME, config_path, challenge_path, solution_path)
     )
+    if manifest is not None:
+        inputs += (MANIFEST_NAME,)
     assembled = Assembled(
         root=str(root),
         challenge_module=challenge_module,
@@ -166,6 +237,8 @@ def observe_build(gate, assembled, *, timeout_s=lean.DEFAULT_TIMEOUT_S):
         result = build(gate, assembled, timeout_s=timeout_s)
     except lean.LeanTimeout as exc:
         raise solutionplan.StepTimeout(solutionplan.KIND_BUILD, exc.timeout_s) from None
+    except SolutionRefused as exc:
+        return solutionplan.OBSERVED_REFUSED, (exc.reason,), 0
     try:
         assert_unchanged(assembled)
     except InputsChanged as exc:
@@ -184,8 +257,13 @@ def _head(text):
 
 def build(gate, assembled, *, timeout_s=lean.DEFAULT_TIMEOUT_S):
     pins = gate.lean
+    assert_unchanged(assembled)
+    if MANIFEST_NAME in assembled.inputs:
+        _dependency_packages(assembled.root, gate.lake_manifest, pins)
+        if (Path(assembled.root) / ".lake/package-overrides.json").exists():
+            raise SolutionRefused("dependency-overrides-refused")
     result = lean.run_argv(
-        lean.command(pins, "build", module=assembled.solution_module),
+        [*lean.command(pins, "build", module=assembled.solution_module), assembled.challenge_module],
         cwd=assembled.root,
         timeout_s=timeout_s,
     )

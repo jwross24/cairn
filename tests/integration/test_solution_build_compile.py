@@ -1,3 +1,4 @@
+import json
 import shutil
 import sys
 from pathlib import Path
@@ -160,3 +161,66 @@ def test_the_ordered_plan_runs_a_solution_end_to_end_on_the_dev_arm(mathlib_free
     assert [step.result for step in result.steps] == [solutionplan.RESULT_PASS] * len(PLAN_KINDS)
     assert result.ok is True
     solutionbuild.assert_unchanged(assembled)
+
+
+@pytest.mark.parametrize("tamper_manifest", [False, True])
+def test_real_prelude_solution_and_challenge_build_with_private_pinned_dependencies(
+    pinned_bundle, tmp_path, tamper_manifest
+):
+    gate = bundle.GateBundle.open(*pinned_bundle())
+    formal = "theorem challenge_curve {R : Type} [CommRing R] (W : WeierstrassCurve R) : W.Δ = W.Δ := by\n  sorry\n"
+    statement = factories.claim_statement(seed=4, formal_source=formal)
+    proof = gate.challenge_prelude + formal.replace("sorry", "rfl").encode()
+    if tamper_manifest:
+        proof += b'\n#eval (IO.FS.writeFile "lake-manifest.json" "{}" : IO Unit)\n'
+    assembled = solutionbuild.assemble(
+        gate,
+        statement,
+        challenge.Submission(solution_module=proof, formal_statement_hash=FSH),
+        ("challenge_curve",),
+        root=tmp_path / "real-prelude",
+        formal_statement_hash=FSH,
+        dependency_project=lean.PROJECT_DIR,
+    )
+    observed, reasons, _ = solutionbuild.observe_build(gate, assembled)
+    if tamper_manifest:
+        assert (observed, reasons) == (
+            solutionplan.OBSERVED_REFUSED,
+            ("solution-inputs-changed:lake-manifest.json",),
+        )
+        return
+    assert (observed, reasons) == (solutionplan.EXPECT_BUILT, ())
+    root = Path(assembled.root)
+    for module in (assembled.challenge_module, assembled.solution_module):
+        assert (root / ".lake/build/lib/lean" / (module.replace(".", "/") + ".olean")).is_file()
+    assert json.loads((root / "lake-manifest.json").read_text()) == gate.lake_manifest
+    solutionbuild.assert_unchanged(assembled)
+    source_readme = lean.PROJECT_DIR / ".lake/packages/mathlib/README.md"
+    copied_readme = root / ".lake/packages/mathlib/README.md"
+    original = source_readme.read_bytes()
+    copied_readme.write_bytes(original + b"\nmodified dependency\n")
+    assert source_readme.read_bytes() == original
+    observed, reasons, _ = solutionbuild.observe_build(gate, assembled)
+    assert (observed, reasons) == (
+        solutionplan.OBSERVED_REFUSED,
+        ("dependency-checkout-mismatch:mathlib:status",),
+    )
+    copied_readme.write_bytes(original)
+    git_dir = copied_readme.parent / ".git"
+    head = (git_dir / "HEAD").read_bytes()
+    (git_dir / "HEAD").write_text("0" * 40 + "\n")
+    observed, reasons, _ = solutionbuild.observe_build(gate, assembled)
+    assert (observed, reasons) == (
+        solutionplan.OBSERVED_REFUSED,
+        ("dependency-checkout-mismatch:mathlib:rev-parse",),
+    )
+    (git_dir / "HEAD").write_bytes(head)
+    config = (git_dir / "config").read_text()
+    url = "https://github.com/leanprover-community/mathlib4"
+    assert config.count(url) == 1
+    (git_dir / "config").write_text(config.replace(url, url + "-unexpected"))
+    observed, reasons, _ = solutionbuild.observe_build(gate, assembled)
+    assert (observed, reasons) == (
+        solutionplan.OBSERVED_REFUSED,
+        ("dependency-checkout-mismatch:mathlib:remote",),
+    )

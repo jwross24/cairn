@@ -1,6 +1,9 @@
 .DS_Store
 .claude/.artifact-effectiveness.jsonl
 .claude/.artifact-effectiveness.jsonl.lock
+.cass/context-log.jsonl
+.cass/outcomes.jsonl
+.cass/privacy-audit.jsonl
 
 # bv (beads viewer) local config and caches
 .bv/

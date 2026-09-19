@@ -113,7 +113,19 @@ def isolation_guard(monkeypatch):
     class GuardedPopen(real_popen):
         def __init__(self, args, *a, **kw):
             argv0 = args[0] if isinstance(args, (list, tuple)) else str(args).split()[0]
-            if str(argv0) not in _allowed_argv0():
+            dependency_query = (
+                isinstance(args, (list, tuple))
+                and len(args) > 3
+                and args[0] == "/usr/bin/git"
+                and args[1] == "-C"
+                and tuple(args[3:])
+                in (
+                    ("rev-parse", "HEAD"),
+                    ("remote", "get-url", "origin"),
+                    ("status", "--porcelain", "--untracked-files=normal"),
+                )
+            )
+            if str(argv0) not in _allowed_argv0() and not dependency_query:
                 raise IsolationViolation(f"subprocess outside the allow-list: {argv0}")
             super().__init__(args, *a, **kw)
 

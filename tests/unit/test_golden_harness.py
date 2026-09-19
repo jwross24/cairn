@@ -53,3 +53,33 @@ def test_isolation_guard_fails_a_test_that_spawns_outside_the_allow_list(pyteste
     result = pytester.runpytest("-p", "no:cacheprovider", "-q")
     result.assert_outcomes(failed=1)
     result.stdout.fnmatch_lines(["*IsolationViolation*/bin/echo*"])
+
+
+def test_isolation_guard_admits_only_the_exact_read_only_dependency_queries(pytester, monkeypatch):
+    monkeypatch.setenv("CAIRN_REPO_ROOT", str(pytester.path))
+    pytester.makeconftest(CONFTEST_SRC)
+    pytester.makepyfile(
+        """
+        import subprocess
+        import pytest
+
+        def test_read_only_query():
+            result = subprocess.run(
+                ["/usr/bin/git", "-C", "/nonexistent-cairn-dependency", "rev-parse", "HEAD"],
+                capture_output=True,
+            )
+            assert result.returncode != 0
+            assert b"cannot change to" in result.stderr
+
+        @pytest.mark.parametrize("tail", [
+            ["config", "test.value", "changed"],
+            ["status", "--porcelain", "--untracked-files=normal", "--short"],
+            ["remote", "set-url", "origin", "https://example.invalid"],
+        ])
+        def test_mutation_or_extra_flags_are_denied(tail):
+            subprocess.run(["/usr/bin/git", "-C", ".", *tail])
+        """
+    )
+    result = pytester.runpytest("-p", "no:cacheprovider", "-q")
+    result.assert_outcomes(passed=1, failed=3)
+    result.stdout.fnmatch_lines(["*IsolationViolation*/usr/bin/git*"])
