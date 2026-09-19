@@ -10,7 +10,7 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from cairn import allowlist, bundle, claims, ladder, ladderplan, runner
+from cairn import allowlist, bundle, claims, ladder, ladderplan, laddertable, runner
 from cairn.skills import bsgs, rho_dp
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -140,9 +140,10 @@ def _arm_trial(arm, bits, trial, ops, *, completed=True):
         trial=trial,
         seed=1,
         status=runner.STATUS_OK if completed else runner.STATUS_BUDGET_EXCEEDED,
-        ops=ops,
         recovered=completed,
-        completed=completed,
+        output_complete=True,
+        reported_ops=ops,
+        gate_ops=laddertable.OpsObservation(laddertable.OPS_EXACT, ops),
         cpu_seconds="0.010000",
         wall_seconds="0.010000",
         peak_rss_bytes=1000,
@@ -165,7 +166,7 @@ def test_the_success_rate_counts_only_completed_and_recovered_trials(outcomes, o
     rung = plan.rung(30)
     claim = [_arm_trial(ladder.CLAIMANT, 30, i, ops, completed=done) for i, done in enumerate(outcomes)]
     base = [_arm_trial(ladder.BASELINE, 30, i, ops * 2) for i, _ in enumerate(outcomes)]
-    row = ladder._rung_row(plan, rung, bsgs, claim, {ladder.BASELINE: base})
+    row = ladder._rung_row(plan, rung, bsgs, [*claim, *base])
     expected = Decimal(sum(1 for done in outcomes if done)) / Decimal(len(outcomes))
     assert Decimal(row.success_rate) == expected.quantize(Decimal("0.0001"))
     assert Decimal(row.mean_ops) == Decimal(ops)

@@ -612,8 +612,9 @@ CREATE TABLE IF NOT EXISTS ladder_rungs (
     bits INTEGER NOT NULL,
     role TEXT NOT NULL,
     trials INTEGER NOT NULL,
-    mean_ops TEXT NOT NULL,
-    sd_ops TEXT NOT NULL,
+    ops_kind TEXT NOT NULL CHECK (ops_kind IN ('exact', 'lower_bound', 'unknown')),
+    mean_ops TEXT,
+    sd_ops TEXT,
     cpu_seconds TEXT NOT NULL,
     reference_rate TEXT NOT NULL,
     memory_bytes INTEGER NOT NULL,
@@ -623,21 +624,24 @@ CREATE TABLE IF NOT EXISTS ladder_rungs (
     claim_ci_high TEXT,
     model_prediction TEXT NOT NULL,
     model_band TEXT NOT NULL,
-    shape_statistic TEXT NOT NULL,
+    shape_statistic TEXT,
     declared_shape TEXT NOT NULL,
     PRIMARY KEY (table_hash, bits)
 );
 
 CREATE TABLE IF NOT EXISTS ladder_trials (
     table_hash TEXT NOT NULL REFERENCES ladder_tables (hash),
+    arm TEXT NOT NULL,
     bits INTEGER NOT NULL,
     trial INTEGER NOT NULL,
     seed INTEGER NOT NULL,
     instance_hash TEXT NOT NULL,
+    status TEXT NOT NULL,
+    output_complete INTEGER NOT NULL,
     recovered INTEGER NOT NULL,
-    completed INTEGER NOT NULL,
-    gate_ops INTEGER NOT NULL,
-    reported_ops INTEGER NOT NULL,
+    gate_ops_kind TEXT NOT NULL CHECK (gate_ops_kind IN ('exact', 'lower_bound', 'unknown')),
+    gate_ops INTEGER,
+    reported_ops INTEGER,
     cpu_seconds TEXT NOT NULL,
     wall_seconds TEXT NOT NULL,
     peak_rss_bytes INTEGER NOT NULL,
@@ -646,7 +650,7 @@ CREATE TABLE IF NOT EXISTS ladder_trials (
     replay_grade TEXT NOT NULL,
     measurement_scope TEXT NOT NULL,
     witness_hash TEXT,
-    PRIMARY KEY (table_hash, bits, trial)
+    PRIMARY KEY (table_hash, arm, bits, trial)
 );
 
 CREATE INDEX IF NOT EXISTS ladder_tables_by_hypothesis ON ladder_tables (hypothesis_hash);

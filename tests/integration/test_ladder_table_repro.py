@@ -14,13 +14,15 @@ ROOT = Path(__file__).resolve().parents[2]
 COMMITTED = json.loads((ROOT / "bundle" / "ladder_plan.json").read_text())
 
 _TRIAL_BASE = laddertable.Trial(
+    arm=ladderplan.ARMS[0],
     bits=0,
     trial=0,
     seed=1,
     instance_hash="aa" * 32,
+    status=runner.STATUS_OK,
+    output_complete=True,
     recovered=True,
-    completed=True,
-    gate_ops=1000000,
+    gate_ops=laddertable.OpsObservation(laddertable.OPS_EXACT, 1000000),
     reported_ops=1000000,
     cpu_seconds="1",
     wall_seconds="1",
@@ -34,18 +36,19 @@ _RUNG_BASE = laddertable.RungRow(
     bits=0,
     role=ladderplan.ROLE_FIT,
     trials=2,
-    mean_ops="1000000",
-    sd_ops="0",
+    ops_kind=laddertable.OPS_EXACT,
+    mean_ops="1000000.000000",
+    sd_ops="0.000000",
     cpu_seconds="1",
     reference_rate="1000000",
     memory_bytes=100000,
-    success_rate="1",
+    success_rate="1.0000",
     radius="0.1216",
-    claim_ci_low="1.5",
-    claim_ci_high="1.8",
+    claim_ci_low="2.000000",
+    claim_ci_high="2.000000",
     model_prediction="1000000",
     model_band="0.05",
-    shape_statistic="1",
+    shape_statistic="1.000000",
     declared_shape="stable",
 )
 _TABLE_BASE = laddertable.ResultTable(
@@ -74,12 +77,14 @@ def writer(tmp_path):
     sub.close()
 
 
-def _trial(bits, trial, **overrides):
-    return dataclasses.replace(_TRIAL_BASE, bits=bits, trial=trial, **overrides)
+def _trial(bits, trial, arm=ladderplan.ARMS[0], **overrides):
+    gate_ops = laddertable.OpsObservation(laddertable.OPS_EXACT, 2000000 if arm == ladderplan.ARMS[1] else 1000000)
+    return dataclasses.replace(_TRIAL_BASE, arm=arm, bits=bits, trial=trial, gate_ops=gate_ops, **overrides)
 
 
 def _rung(bits, role, **overrides):
-    return dataclasses.replace(_RUNG_BASE, bits=bits, role=role, **overrides)
+    ci = {"claim_ci_low": None, "claim_ci_high": None} if role == ladderplan.ROLE_HOLD_OUT else {}
+    return dataclasses.replace(_RUNG_BASE, bits=bits, role=role, **ci, **overrides)
 
 
 def _table(rungs, trials, **overrides):
@@ -89,7 +94,14 @@ def _table(rungs, trials, **overrides):
 def _clean_table(include_hold_out=True, run_id="run-1"):
     bits_list = [30, 40, 50] + ([60] if include_hold_out else [])
     rungs = tuple(_rung(bits, ladderplan.ROLE_HOLD_OUT if bits == 60 else ladderplan.ROLE_FIT) for bits in bits_list)
-    trials = tuple(_trial(bits, trial) for bits in bits_list for trial in (0, 1))
+    trials = tuple(
+        _trial(bits, trial, arm)
+        for bits in bits_list
+        for arm in (
+            (ladderplan.ARMS[0],) if bits == 60 else (ladderplan.ARMS[0], ladderplan.ARMS[1], ladderplan.ARMS[2])
+        )
+        for trial in (0, 1)
+    )
     return _table(rungs, trials, run_id=run_id)
 
 
@@ -150,7 +162,7 @@ def test_writing_the_same_table_twice_inserts_one_row_set(writer, plan, db_snaps
 def test_recompute_over_all_trials_reproduces_the_recorded_verdict(writer, plan):
     table = _clean_table()
     laddertable.write(writer, table, plan)
-    verified = {(t.bits, t.trial) for t in table.trials}
+    verified = {(t.arm, t.bits, t.trial) for t in table.trials}
     recomputation = laddertable.recompute(table, plan, verified)
     assert recomputation.agrees is True
     assert recomputation.divergences == ()
@@ -162,7 +174,7 @@ def test_altered_mean_ops_makes_recompute_diverge(writer, plan):
     table = _clean_table()
     tampered = _with_rung(table, 30, mean_ops="999999999")
     laddertable.write(writer, tampered, plan)
-    verified = {(t.bits, t.trial) for t in tampered.trials}
+    verified = {(t.arm, t.bits, t.trial) for t in tampered.trials}
     recomputation = laddertable.recompute(tampered, plan, verified)
     assert recomputation.agrees is False
     assert any("30" in d and "mean_ops" in d for d in recomputation.divergences)
@@ -174,7 +186,7 @@ def test_withholding_the_failed_trial_flips_the_verdict(writer, plan):
     original = laddertable.verdict(table, plan)
     assert original.kind == laddertable.REJECT
 
-    verified = {(t.bits, t.trial) for t in table.trials if not (t.bits == 30 and t.trial == 0)}
+    verified = {(t.arm, t.bits, t.trial) for t in table.trials if not (t.bits == 30 and t.trial == 0)}
     recomputation = laddertable.recompute(table, plan, verified)
     assert recomputation.agrees is False
     assert any(d.startswith("verdict recorded") for d in recomputation.divergences)
@@ -199,7 +211,7 @@ def test_enqueue_shape_departure_writes_a_human_queue_item_and_leaves_the_verdic
 def test_record_writes_a_repro_record_whose_passed_matches_agrees(writer, plan):
     table = _clean_table()
     laddertable.write(writer, table, plan)
-    verified = {(t.bits, t.trial) for t in table.trials}
+    verified = {(t.arm, t.bits, t.trial) for t in table.trials}
     repro_record, recomputation = laddertable.record(writer, table, plan, verified, attempt_id="attempt-1")
     row = writer.conn.execute("SELECT * FROM repro_records WHERE hash = ?", (repro_record.hash,)).fetchone()
     assert bool(row["passed"]) == recomputation.agrees
@@ -208,8 +220,8 @@ def test_record_writes_a_repro_record_whose_passed_matches_agrees(writer, plan):
 def test_policy_maps_trials_by_replay_grade_and_tier(writer, plan):
     table = _with_trial(_clean_table(), 30, 0, replay_grade="Verifiable")
     policy = laddertable.policy(table, 1)
-    assert policy[(30, 0)] == repro.CHECK_WITNESS
-    assert policy[(30, 1)] == repro.RERUN_NOW
+    assert policy[(ladderplan.ARMS[0], 30, 0)] == repro.CHECK_WITNESS
+    assert policy[(ladderplan.ARMS[0], 30, 1)] == repro.RERUN_NOW
 
 
 def test_rewriting_a_table_under_a_second_attempt_id_is_refused(writer, plan):

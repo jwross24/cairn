@@ -267,9 +267,10 @@ def _arm_trial(arm, bits, trial, ops, **overrides):
         "trial": trial,
         "seed": 1,
         "status": runner.STATUS_OK,
-        "ops": ops,
         "recovered": True,
-        "completed": True,
+        "output_complete": True,
+        "reported_ops": ops,
+        "gate_ops": laddertable.OpsObservation(laddertable.OPS_EXACT, ops),
         "cpu_seconds": "0.010000",
         "wall_seconds": "0.010000",
         "peak_rss_bytes": 1000,
@@ -307,13 +308,13 @@ def test_a_trial_past_the_patience_ceiling_is_a_success_rate_failure_and_no_rung
             30,
             1,
             int(mean),
-            completed=status == runner.STATUS_OK,
+            output_complete=True,
             recovered=status == runner.STATUS_OK,
             status=status,
         ),
     ]
     base = [_arm_trial(ladder.BASELINE, 30, i, int(mean) * 4) for i in (0, 1)]
-    row = ladder._rung_row(plan, rung, bsgs, claim, {ladder.BASELINE: base})
+    row = ladder._rung_row(plan, rung, bsgs, [*claim, *base])
     assert Decimal(row.success_rate) == Decimal("0.5")
     assert laddertable._failed_trial([row]).predicate == laddertable.FAILED_TRIAL
     table = laddertable.ResultTable(
@@ -326,7 +327,7 @@ def test_a_trial_past_the_patience_ceiling_is_a_success_rate_failure_and_no_rung
         plan_hash="dd" * 32,
         uncounted_backend=None,
         rungs=(row,),
-        trials=tuple(ladder._trial_row(t) for t in claim),
+        trials=tuple(ladder._trial_row(t) for t in [*claim, *base]),
     )
     with pytest.raises(laddertable.LadderTableError):
         laddertable.verdict(table, plan)
@@ -340,7 +341,7 @@ def test_an_uncounted_run_names_its_backend_and_cannot_keep(plan):
     mean = int(bsgs.COST_PROFILE.production.per_size[30].mean_tries)
     claim = [_arm_trial(ladder.CLAIMANT, 30, i, mean) for i in (0, 1)]
     base = [_arm_trial(ladder.BASELINE, 30, i, mean * 4) for i in (0, 1)]
-    row = ladder._rung_row(plan, rung, bsgs, claim, {ladder.BASELINE: base})
+    row = ladder._rung_row(plan, rung, bsgs, [*claim, *base])
     table = laddertable.ResultTable(
         run_id=RUN_ID,
         nonce="n",
@@ -351,7 +352,7 @@ def test_an_uncounted_run_names_its_backend_and_cannot_keep(plan):
         plan_hash="dd" * 32,
         uncounted_backend=BACKEND,
         rungs=(row,),
-        trials=tuple(ladder._trial_row(t) for t in claim),
+        trials=tuple(ladder._trial_row(t) for t in [*claim, *base]),
     )
     single = dataclasses.replace(plan, rungs=(rung, plan.hold_out_rung))
     found = laddertable.verdict(table, single)

@@ -8,9 +8,9 @@ A method seed is drawn from the run's nonce under an arm-separated hypothesis ke
 arm's seed is fixed before the method sees the instance and no two arms share a walk.
 """
 
+import dataclasses
 import importlib
 import json
-import statistics
 from dataclasses import asdict, dataclass
 from decimal import Decimal
 from uuid import uuid4
@@ -74,14 +74,9 @@ PRE_SPAWN_REASONS = (
 )
 
 ARMS_MISSING = "arms-missing"
-CI_METHOD_UNSUPPORTED = "ci-method-unsupported"
 TIER_REFUSED = "tier-refused"
 INSTANCE_FAILED = "instance-failed"
 
-OPS_PLACES = Decimal("0.000001")
-RATE_PLACES = Decimal("0.000001")
-RATIO_PLACES = Decimal("0.000001")
-SUCCESS_PLACES = Decimal("0.0001")
 SECONDS_PLACES = Decimal("0.000001")
 
 
@@ -338,18 +333,6 @@ def _quantize(value, places):
     return str(Decimal(value).quantize(places))
 
 
-def _ceiling_ops(module, bits, multiplier):
-    cost = module.COST_PROFILE.production.per_size[bits]
-    ceiling_s = runner.ceiling_for(
-        module.COST_PROFILE.evaluate(bits).expected_wall_s, multiplier, subprocess_startup_ms=0
-    )
-    return int(ceiling_s / cost.per_try_s)
-
-
-def _reference_rate(module, bits):
-    return Decimal(1) / Decimal(str(module.COST_PROFILE.production.per_size[bits].per_try_s))
-
-
 @dataclass(frozen=True)
 class ArmTrial:
     arm: str
@@ -357,9 +340,10 @@ class ArmTrial:
     trial: int
     seed: int
     status: str
-    ops: int
     recovered: bool
-    completed: bool
+    output_complete: bool
+    reported_ops: int | None
+    gate_ops: laddertable.OpsObservation
     cpu_seconds: str
     wall_seconds: str
     peak_rss_bytes: int
@@ -423,9 +407,10 @@ def run_arm(sub, gate_bundle, value, *, plan, instance, instance_hash, bits, tri
     )
     launch = attempt.launch
     parsed = attempt.parsed.document if attempt.parsed is not None else {}
-    completed = attempt.status == runner.STATUS_OK and bool(parsed)
-    ops = int(parsed.get("ops", 0)) if completed else _ceiling_ops(module, bits, plan.patience_multiplier)
-    solved = int(parsed["x"]) if completed and "x" in parsed else None
+    output_complete = bool(parsed) and "x" in parsed
+    reported = parsed.get("ops")
+    reported_ops = reported if isinstance(reported, int) and not isinstance(reported, bool) and reported >= 0 else None
+    solved = int(parsed["x"]) if output_complete else None
     recovered = False
     if solved is not None:
         recovered = verifier.Verifier(gate_bundle.verifier_config()).run(instance, solved).accepted
@@ -436,9 +421,10 @@ def run_arm(sub, gate_bundle, value, *, plan, instance, instance_hash, bits, tri
         trial=trial,
         seed=seed,
         status=attempt.status,
-        ops=ops,
         recovered=recovered,
-        completed=completed,
+        output_complete=output_complete,
+        reported_ops=reported_ops,
+        gate_ops=laddertable.OpsObservation(laddertable.OPS_UNKNOWN, None),
         cpu_seconds=_quantize(str(launch.cpu_user_s + launch.cpu_sys_s), SECONDS_PLACES) if launch else "0",
         wall_seconds=_quantize(str(launch.wall_s), SECONDS_PLACES) if launch else "0",
         peak_rss_bytes=launch.peak_rss_bytes if launch else 0,
@@ -451,62 +437,30 @@ def run_arm(sub, gate_bundle, value, *, plan, instance, instance_hash, bits, tri
     )
 
 
-def _z(coverage):
-    return Decimal(str(statistics.NormalDist().inv_cdf(float(1 - (1 - coverage) / 2))))
-
-
-def _speedup_ci(plan, claim, base):
-    if plan.comparison.ci_method != ladderplan.CI_METHODS[0]:
-        raise RunRefused(CI_METHOD_UNSUPPORTED, f"ci method {plan.comparison.ci_method} is not built")
-    ratios = [Decimal(b.ops) / Decimal(c.ops) for c, b in zip(claim, base, strict=True) if c.ops]
-    if len(ratios) < 2:
-        return None, None
-    mean = sum(ratios) / Decimal(len(ratios))
-    variance = sum((r - mean) ** 2 for r in ratios) / Decimal(len(ratios) - 1)
-    half = _z(plan.comparison.ci_coverage) * (variance / Decimal(len(ratios))).sqrt()
-    return _quantize(mean - half, RATIO_PLACES), _quantize(mean + half, RATIO_PLACES)
-
-
-def _rung_row(plan, rung, module, claim, arms):
-    ops = [Decimal(t.ops) for t in claim]
-    count = len(ops)
-    mean = sum(ops) / Decimal(count)
-    sd = (sum((v - mean) ** 2 for v in ops) / Decimal(count - 1)).sqrt() if count >= 2 else Decimal(0)
-    successes = sum(1 for t in claim if t.completed and t.recovered)
-    prediction = Decimal(str(module.COST_PROFILE.production.per_size[rung.bits].mean_tries))
-    low, high = (None, None)
-    if arms.get(BASELINE):
-        low, high = _speedup_ci(plan, claim, arms[BASELINE])
-    return laddertable.RungRow(
-        bits=rung.bits,
-        role=rung.role,
-        trials=count,
-        mean_ops=_quantize(mean, OPS_PLACES),
-        sd_ops=_quantize(sd, OPS_PLACES),
-        cpu_seconds=_quantize(sum(Decimal(t.cpu_seconds) for t in claim), SECONDS_PLACES),
-        reference_rate=_quantize(_reference_rate(module, rung.bits), RATE_PLACES),
-        memory_bytes=max(t.reported_memory_bytes for t in claim),
-        success_rate=_quantize(Decimal(successes) / Decimal(count), SUCCESS_PLACES),
-        radius=str(plan.design_radius),
-        claim_ci_low=low,
-        claim_ci_high=high,
-        model_prediction=_quantize(prediction, OPS_PLACES),
-        model_band=str(plan.design_radius),
-        shape_statistic=_quantize(mean / prediction, RATIO_PLACES),
+def _rung_row(plan, rung, module, trials):
+    production = module.COST_PROFILE.production.per_size[rung.bits]
+    return laddertable.aggregate_rung(
+        plan,
+        rung,
+        tuple(_trial_row(trial) for trial in trials),
+        model_prediction=str(production.mean_tries),
+        reference_rate=str(Decimal(1) / Decimal(str(production.per_try_s))),
         declared_shape=module.COST_PROFILE.production.model,
     )
 
 
 def _trial_row(claim):
     return laddertable.Trial(
+        arm=claim.arm,
         bits=claim.bits,
         trial=claim.trial,
         seed=claim.seed,
         instance_hash=claim.instance_hash,
         recovered=claim.recovered,
-        completed=claim.completed,
-        gate_ops=claim.ops,
-        reported_ops=claim.ops,
+        status=claim.status,
+        output_complete=claim.output_complete,
+        gate_ops=claim.gate_ops,
+        reported_ops=claim.reported_ops,
         cpu_seconds=claim.cpu_seconds,
         wall_seconds=claim.wall_seconds,
         peak_rss_bytes=claim.peak_rss_bytes,
@@ -587,7 +541,7 @@ def run(
         check_dispatch(sub, gate_bundle, value, plan)
     claimant = records[CLAIMANT]
 
-    rungs, trials, arm_trials = [], [], []
+    arm_trials = []
     for rung in plan.rungs:
         by_arm = {arm: [] for arm in arms_for(rung)}
         for trial in range(rung.trials):
@@ -621,11 +575,26 @@ def run(
                         budget_remaining=budget_remaining,
                     )
                 )
-        claim = by_arm[CLAIMANT]
-        rungs.append(_rung_row(plan, rung, claimant.module, claim, by_arm))
-        trials.extend(_trial_row(t) for t in claim)
         for values in by_arm.values():
             arm_trials.extend(values)
+
+    if ops_counter is not None:
+        observed = []
+        for trial in arm_trials:
+            observation = ops_counter(trial)
+            if not isinstance(observation, laddertable.OpsObservation):
+                raise laddertable.LadderTableError("ops_counter must return an OpsObservation")
+            observed.append(dataclasses.replace(trial, gate_ops=observation))
+        arm_trials = observed
+
+    canonical_trials = tuple(
+        sorted((_trial_row(trial) for trial in arm_trials), key=lambda trial: (trial.arm, trial.bits, trial.trial))
+    )
+    rungs = []
+    for rung in plan.rungs:
+        rung_trials = tuple(trial for trial in arm_trials if trial.bits == rung.bits)
+        rungs.append(_rung_row(plan, rung, claimant.module, rung_trials))
+    uncounted = any(trial.gate_ops.kind == laddertable.OPS_UNKNOWN for trial in arm_trials)
 
     table = laddertable.ResultTable(
         run_id=run_id,
@@ -635,22 +604,16 @@ def run(
         implementation_revision=claimant.implementation_revision,
         gate_bundle_hash=gate_bundle.hash,
         plan_hash=plan_hash,
-        uncounted_backend=None if ops_counter is not None else claimant.allow_list["counted_object"],
+        uncounted_backend=claimant.allow_list["counted_object"] if uncounted else None,
         rungs=tuple(rungs),
-        trials=tuple(trials),
+        trials=canonical_trials,
         created_at=cli.now_iso() if at is None else at,
     )
-    if ops_counter is not None:
-        table = _counted(table, ops_counter)
-    trial_attempts = {(trial.bits, trial.trial): trial.attempt_id for trial in arm_trials if trial.arm == CLAIMANT}
-    evidence_nodes = _table_evidence_nodes(sub, table, plan, trial_attempts, claimant)
+    trial_attempts = {(trial.arm, trial.bits, trial.trial): trial.attempt_id for trial in arm_trials}
+    claimant_attempts = {
+        (bits, trial): attempt_id for (arm, bits, trial), attempt_id in trial_attempts.items() if arm == CLAIMANT
+    }
+    evidence_nodes = _table_evidence_nodes(sub, table, plan, claimant_attempts, claimant)
     laddertable.write(sub, table, plan, trial_attempts=trial_attempts, evidence_nodes=evidence_nodes)
-    lg.info("run", run_id=run_id, table=table.hash, rungs=len(rungs), trials=len(trials))
+    lg.info("run", run_id=run_id, table=table.hash, rungs=len(rungs), trials=len(canonical_trials))
     return table, tuple(arm_trials)
-
-
-def _counted(table, ops_counter):
-    import dataclasses
-
-    counted = tuple(dataclasses.replace(t, gate_ops=ops_counter(t)) for t in table.trials)
-    return dataclasses.replace(table, trials=counted)

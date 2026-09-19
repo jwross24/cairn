@@ -14,7 +14,9 @@ undercounts, so a refutation drawn from it stands, while a pass drawn from it do
 
 import dataclasses
 import json
+import statistics
 from dataclasses import dataclass, field
+from decimal import ROUND_FLOOR as _ROUND_FLOOR
 from decimal import Decimal
 
 from cairn import canon, claims, human_queue, keys, ladderplan, ledger, log, repro, runner, substrate
@@ -34,6 +36,11 @@ ATTEMPT_MEMBERSHIP_KIND = "ladder_attempt_membership"
 TABLES = "ladder_tables"
 RUNGS = "ladder_rungs"
 TRIALS = "ladder_trials"
+
+OPS_EXACT = "exact"
+OPS_LOWER_BOUND = "lower_bound"
+OPS_UNKNOWN = "unknown"
+OPS_KINDS = (OPS_EXACT, OPS_LOWER_BOUND, OPS_UNKNOWN)
 
 RECOVERY = "recovery"
 COUNT_DIVERGENCE = "count_divergence"
@@ -65,14 +72,17 @@ REFUTATION_KIND = {
 TRIAL = Struct(
     "ladder_trial",
     [
+        Field("arm", NON_EMPTY_STR),
         Field("bits", INT),
         Field("trial", INT),
         Field("seed", INT),
         Field("instance_hash", NON_EMPTY_STR),
+        Field("status", NON_EMPTY_STR),
+        Field("output_complete", BOOL),
         Field("recovered", BOOL),
-        Field("completed", BOOL),
-        Field("gate_ops", INT),
-        Field("reported_ops", INT),
+        Field("gate_ops_kind", NON_EMPTY_STR),
+        Field("gate_ops", Optional(INT)),
+        Field("reported_ops", Optional(INT)),
         Field("cpu_seconds", NON_EMPTY_STR),
         Field("wall_seconds", NON_EMPTY_STR),
         Field("peak_rss_bytes", INT),
@@ -90,8 +100,9 @@ RUNG = Struct(
         Field("bits", INT),
         Field("role", NON_EMPTY_STR),
         Field("trials", INT),
-        Field("mean_ops", NON_EMPTY_STR),
-        Field("sd_ops", NON_EMPTY_STR),
+        Field("ops_kind", NON_EMPTY_STR),
+        Field("mean_ops", Optional(STR)),
+        Field("sd_ops", Optional(STR)),
         Field("cpu_seconds", NON_EMPTY_STR),
         Field("reference_rate", NON_EMPTY_STR),
         Field("memory_bytes", INT),
@@ -101,7 +112,7 @@ RUNG = Struct(
         Field("claim_ci_high", Optional(STR)),
         Field("model_prediction", NON_EMPTY_STR),
         Field("model_band", NON_EMPTY_STR),
-        Field("shape_statistic", NON_EMPTY_STR),
+        Field("shape_statistic", Optional(STR)),
         Field("declared_shape", NON_EMPTY_STR),
     ],
 )
@@ -125,6 +136,7 @@ TABLE_STRUCT = Struct(
 ATTEMPT_MEMBER = Struct(
     "ladder_attempt_member",
     [
+        Field("arm", NON_EMPTY_STR),
         Field("bits", INT),
         Field("trial", INT),
         Field("attempt_id", NON_EMPTY_STR),
@@ -144,15 +156,34 @@ class LadderTableError(SubstrateError):
     pass
 
 
+@dataclass(frozen=True)
+class OpsObservation:
+    kind: str
+    value: int | None
+
+    def __post_init__(self):
+        if self.kind not in OPS_KINDS:
+            raise LadderTableError(f"gate observation kind {self.kind!r} is not supported")
+        if self.kind == OPS_UNKNOWN:
+            if self.value is not None:
+                raise LadderTableError("unknown gate observation must not carry a value")
+            return
+        if isinstance(self.value, bool) or not isinstance(self.value, int) or self.value < 0:
+            raise LadderTableError(f"{self.kind} gate observation requires a nonnegative integer value")
+
+
 def _trial_fields(t):
     return {
+        "arm": t.arm,
         "bits": t.bits,
         "trial": t.trial,
         "seed": t.seed,
         "instance_hash": t.instance_hash,
+        "status": t.status,
+        "output_complete": t.output_complete,
         "recovered": t.recovered,
-        "completed": t.completed,
-        "gate_ops": t.gate_ops,
+        "gate_ops_kind": t.gate_ops.kind,
+        "gate_ops": t.gate_ops.value,
         "reported_ops": t.reported_ops,
         "cpu_seconds": t.cpu_seconds,
         "wall_seconds": t.wall_seconds,
@@ -174,6 +205,7 @@ def _rung_fields(r):
         "bits": r.bits,
         "role": r.role,
         "trials": r.trials,
+        "ops_kind": r.ops_kind,
         "mean_ops": r.mean_ops,
         "sd_ops": r.sd_ops,
         "cpu_seconds": r.cpu_seconds,
@@ -204,8 +236,10 @@ def _table_fields(table):
         "gate_bundle_hash": table.gate_bundle_hash,
         "plan_hash": table.plan_hash,
         "uncounted_backend": table.uncounted_backend,
-        "rungs": [_rung_fields(r) for r in table.rungs],
-        "trials": [_trial_fields(t) for t in table.trials],
+        "rungs": [_rung_fields(r) for r in sorted(table.rungs, key=lambda rung: rung.bits)],
+        "trials": [
+            _trial_fields(t) for t in sorted(table.trials, key=lambda trial: (trial.arm, trial.bits, trial.trial))
+        ],
     }
 
 
@@ -215,14 +249,16 @@ def _table_canonical(table):
 
 @dataclass(frozen=True)
 class Trial:
+    arm: str
     bits: int
     trial: int
     seed: int
     instance_hash: str
+    status: str
+    output_complete: bool
     recovered: bool
-    completed: bool
-    gate_ops: int
-    reported_ops: int
+    gate_ops: OpsObservation
+    reported_ops: int | None
     cpu_seconds: str
     wall_seconds: str
     peak_rss_bytes: int
@@ -234,6 +270,16 @@ class Trial:
     hash: str = field(init=False, compare=False)
 
     def __post_init__(self):
+        if self.arm not in ladderplan.ARMS:
+            raise LadderTableError(f"trial arm {self.arm!r} is not one of {ladderplan.ARMS}")
+        if self.status not in substrate.TERMINAL_STATUSES:
+            raise LadderTableError(f"trial status {self.status!r} is not terminal")
+        if not isinstance(self.gate_ops, OpsObservation):
+            raise LadderTableError("trial gate_ops must be an OpsObservation")
+        if isinstance(self.reported_ops, bool) or (
+            self.reported_ops is not None and (not isinstance(self.reported_ops, int) or self.reported_ops < 0)
+        ):
+            raise LadderTableError("reported_ops must be a nonnegative integer or None")
         object.__setattr__(self, "hash", keys.node_hash("ladder_trial", _trial_canonical(self)))
 
 
@@ -242,8 +288,9 @@ class RungRow:
     bits: int
     role: str
     trials: int
-    mean_ops: str
-    sd_ops: str
+    ops_kind: str
+    mean_ops: str | None
+    sd_ops: str | None
     cpu_seconds: str
     reference_rate: str
     memory_bytes: int
@@ -251,14 +298,123 @@ class RungRow:
     radius: str
     model_prediction: str
     model_band: str
-    shape_statistic: str
+    shape_statistic: str | None
     declared_shape: str
     claim_ci_low: str | None = None
     claim_ci_high: str | None = None
     hash: str = field(init=False, compare=False)
 
     def __post_init__(self):
+        if self.ops_kind not in OPS_KINDS:
+            raise LadderTableError(f"rung operation kind {self.ops_kind!r} is not supported")
+        if self.ops_kind == OPS_EXACT and (
+            self.mean_ops is None or self.sd_ops is None or self.shape_statistic is None
+        ):
+            raise LadderTableError("exact rung rows require mean, SD, and shape statistic")
+        if self.ops_kind == OPS_LOWER_BOUND and (
+            self.mean_ops is None or self.sd_ops is not None or self.shape_statistic is not None
+        ):
+            raise LadderTableError("lower-bound rung rows carry only a mean lower bound")
+        if self.ops_kind == OPS_UNKNOWN and any(
+            value is not None for value in (self.mean_ops, self.sd_ops, self.shape_statistic)
+        ):
+            raise LadderTableError("unknown rung rows carry no operation statistics")
+        if self.ops_kind != OPS_EXACT and any(value is not None for value in (self.claim_ci_low, self.claim_ci_high)):
+            raise LadderTableError("non-exact rung rows carry no paired speedup interval")
         object.__setattr__(self, "hash", keys.node_hash("ladder_rung", _rung_canonical(self)))
+
+
+def _decimal_text(value, places, *, rounding=None):
+    return str(Decimal(value).quantize(Decimal(places), rounding=rounding))
+
+
+def _speedup_ci(plan, claimant, baseline):
+    if plan.comparison.ci_method != ladderplan.CI_METHODS[0]:
+        raise LadderTableError(f"ci method {plan.comparison.ci_method} is not built")
+    claimant_by_trial = {t.trial: t for t in claimant}
+    baseline_by_trial = {t.trial: t for t in baseline}
+    if claimant_by_trial.keys() != baseline_by_trial.keys() or len(claimant_by_trial) < 2:
+        return None, None
+    pairs = [(claimant_by_trial[key], baseline_by_trial[key]) for key in sorted(claimant_by_trial)]
+    if any(
+        claim.gate_ops.kind != OPS_EXACT
+        or base.gate_ops.kind != OPS_EXACT
+        or claim.gate_ops.value == 0
+        or claim.status != runner.STATUS_OK
+        or base.status != runner.STATUS_OK
+        or not claim.output_complete
+        or not base.output_complete
+        or not claim.recovered
+        or not base.recovered
+        or claim.instance_hash != base.instance_hash
+        for claim, base in pairs
+    ):
+        return None, None
+    ratios = [Decimal(base.gate_ops.value) / Decimal(claim.gate_ops.value) for claim, base in pairs]
+    if len(ratios) < 2:
+        return None, None
+    mean = sum(ratios) / Decimal(len(ratios))
+    variance = sum((ratio - mean) ** 2 for ratio in ratios) / Decimal(len(ratios) - 1)
+    z = Decimal(str(statistics.NormalDist().inv_cdf(float(1 - (1 - plan.comparison.ci_coverage) / 2))))
+    half = z * (variance / Decimal(len(ratios))).sqrt()
+    return _decimal_text(mean - half, "0.000001"), _decimal_text(mean + half, "0.000001")
+
+
+def aggregate_rung(plan, rung, trials, *, model_prediction, reference_rate, declared_shape):
+    by_arm = {}
+    for trial in trials:
+        by_arm.setdefault(trial.arm, []).append(trial)
+    claimant = sorted(by_arm.get(ladderplan.ARMS[0], ()), key=lambda t: t.trial)
+    if not claimant:
+        raise LadderTableError(f"rung {rung.bits} has no claimant observations")
+    observations = [t.gate_ops for t in claimant]
+    if any(observation.kind == OPS_UNKNOWN for observation in observations):
+        ops_kind, mean_ops, sd_ops, shape = OPS_UNKNOWN, None, None, None
+    else:
+        values = [Decimal(observation.value) for observation in observations]
+        mean = sum(values) / Decimal(len(values))
+        if any(observation.kind == OPS_LOWER_BOUND for observation in observations):
+            ops_kind, mean_ops, sd_ops, shape = (
+                OPS_LOWER_BOUND,
+                _decimal_text(mean, "0.000001", rounding=_ROUND_FLOOR),
+                None,
+                None,
+            )
+        else:
+            sd = (
+                (sum((value - mean) ** 2 for value in values) / Decimal(len(values) - 1)).sqrt()
+                if len(values) >= 2
+                else Decimal(0)
+            )
+            prediction = Decimal(model_prediction)
+            ops_kind = OPS_EXACT
+            mean_ops = _decimal_text(mean, "0.000001")
+            sd_ops = _decimal_text(sd, "0.000001")
+            shape = _decimal_text(mean / prediction, "0.000001")
+    baseline = by_arm.get(ladderplan.ARMS[1], ())
+    low, high = _speedup_ci(plan, claimant, baseline) if baseline else (None, None)
+    successes = sum(t.status == runner.STATUS_OK and t.output_complete and t.recovered for t in claimant)
+    prediction = Decimal(model_prediction)
+    rate = Decimal(reference_rate)
+    return RungRow(
+        bits=rung.bits,
+        role=rung.role,
+        trials=len(claimant),
+        ops_kind=ops_kind,
+        mean_ops=mean_ops,
+        sd_ops=sd_ops,
+        cpu_seconds=_decimal_text(sum(Decimal(t.cpu_seconds) for t in claimant), "0.000001"),
+        reference_rate=_decimal_text(rate, "0.000001"),
+        memory_bytes=max(t.reported_memory_bytes for t in claimant),
+        success_rate=_decimal_text(Decimal(successes) / Decimal(len(claimant)), "0.0001"),
+        radius=str(plan.design_radius),
+        claim_ci_low=low,
+        claim_ci_high=high,
+        model_prediction=_decimal_text(prediction, "0.000001"),
+        model_band=str(plan.design_radius),
+        shape_statistic=shape,
+        declared_shape=declared_shape,
+    )
 
 
 @dataclass(frozen=True)
@@ -315,9 +471,16 @@ def _validate_rungs(table, plan):
             raise LadderTableError(f"plan fit rung bits={rung.bits} has no row in the table")
 
 
+def _trial_numeric(t):
+    value = {"bits": t.bits, "trial": t.trial}
+    if t.gate_ops.value is not None:
+        value["gate_ops"] = t.gate_ops.value
+    return value
+
+
 def _recovery(trials):
     for t in trials:
-        if t.completed and not t.recovered:
+        if t.arm == ladderplan.ARMS[0] and t.status == runner.STATUS_OK and t.output_complete and not t.recovered:
             return Verdict(
                 REJECT,
                 RECOVERY,
@@ -326,7 +489,7 @@ def _recovery(trials):
                 trial=t.trial,
                 measured_points=(
                     {
-                        "numeric": {"bits": t.bits, "trial": t.trial, "gate_ops": t.gate_ops},
+                        "numeric": _trial_numeric(t),
                         "categorical": {"predicate": RECOVERY, "instance_hash": t.instance_hash},
                     },
                 ),
@@ -338,9 +501,14 @@ def _recovery(trials):
 def _count_divergence(trials, plan):
     tolerance = plan.tolerances.count_divergence
     for t in trials:
-        gate = Decimal(t.gate_ops)
+        if t.arm != ladderplan.ARMS[0] or t.reported_ops is None or t.gate_ops.kind == OPS_UNKNOWN:
+            continue
+        gate = Decimal(t.gate_ops.value)
         reported = Decimal(t.reported_ops)
-        divergent = t.reported_ops != 0 if t.gate_ops == 0 else abs(reported - gate) / gate > tolerance
+        if t.gate_ops.kind == OPS_EXACT:
+            divergent = t.reported_ops != 0 if t.gate_ops.value == 0 else abs(reported - gate) / gate > tolerance
+        else:
+            divergent = reported < gate * (1 - tolerance)
         if divergent:
             return Verdict(
                 REJECT,
@@ -353,7 +521,7 @@ def _count_divergence(trials, plan):
                         "numeric": {
                             "bits": t.bits,
                             "trial": t.trial,
-                            "gate_ops": t.gate_ops,
+                            "gate_ops": t.gate_ops.value,
                             "reported_ops": t.reported_ops,
                         },
                         "categorical": {"predicate": COUNT_DIVERGENCE},
@@ -391,7 +559,12 @@ def _memory_cap(rungs, plan):
 def _refutation_floor(rungs, plan):
     for row in rungs:
         prung = plan.rung(row.bits)
-        if prung.floor_binds and Decimal(row.mean_ops) >= Decimal(prung.refutation_floor.group_ops):
+        if (
+            row.ops_kind in (OPS_EXACT, OPS_LOWER_BOUND)
+            and row.mean_ops is not None
+            and prung.floor_binds
+            and Decimal(row.mean_ops) >= Decimal(prung.refutation_floor.group_ops)
+        ):
             return Verdict(
                 REJECT,
                 REFUTATION_FLOOR,
@@ -415,8 +588,11 @@ def _model_miss(rows_by_bits, role, predicate):
             continue
         prediction = Decimal(row.model_prediction)
         band = Decimal(row.model_band)
+        if row.ops_kind == OPS_UNKNOWN or row.mean_ops is None:
+            continue
         mean = Decimal(row.mean_ops)
-        if abs(mean / prediction - 1) > band:
+        missed = row.ops_kind == OPS_EXACT and abs(mean / prediction - 1) > band
+        if missed:
             return Verdict(
                 REJECT,
                 predicate,
@@ -468,10 +644,12 @@ def _clock(trials, rows_by_bits, plan):
     rate_ratio = plan.rate_ratio
     effective = tolerance if rate_ratio == 0 else min(tolerance, 2 * plan.design_radius / rate_ratio)
     for t in trials:
+        if t.gate_ops.kind != OPS_EXACT:
+            continue
         row = rows_by_bits.get(t.bits)
         if row is None:
             continue
-        expected = Decimal(t.gate_ops) / Decimal(row.reference_rate)
+        expected = Decimal(t.gate_ops.value) / Decimal(row.reference_rate)
         if Decimal(t.cpu_seconds) > expected * (1 + effective):
             return Verdict(
                 INCONCLUSIVE,
@@ -559,7 +737,7 @@ def _inside_band(rows_by_bits, plan):
 
 def verdict(table, plan):
     _validate_rungs(table, plan)
-    trials = sorted(table.trials, key=lambda t: (t.bits, t.trial))
+    trials = sorted((t for t in table.trials if t.arm == ladderplan.ARMS[0]), key=lambda t: (t.bits, t.trial))
     rungs = sorted(table.rungs, key=lambda r: r.bits)
     rows_by_bits = {r.bits: r for r in rungs}
 
@@ -605,7 +783,15 @@ def replay_grade(table):
 def shape_departures(table, plan):
     """Ascending bits of every rung row whose shape statistic departs beyond the plan's tolerance."""
     tolerance = plan.shape_departure_tolerance
-    return tuple(sorted(row.bits for row in table.rungs if abs(Decimal(row.shape_statistic) - 1) > tolerance))
+    return tuple(
+        sorted(
+            row.bits
+            for row in table.rungs
+            if row.ops_kind == OPS_EXACT
+            and row.shape_statistic is not None
+            and abs(Decimal(row.shape_statistic) - 1) > tolerance
+        )
+    )
 
 
 def enqueue_shape_departures(sub, table, plan, *, at=None):
@@ -624,8 +810,8 @@ def _insert_rung(sub, table_hash, row):
 
 def _insert_trial(sub, table_hash, t):
     values = {"table_hash": table_hash, **_trial_fields(t)}
+    values["output_complete"] = int(values["output_complete"])
     values["recovered"] = int(values["recovered"])
-    values["completed"] = int(values["completed"])
     columns = ", ".join(values)
     marks = ", ".join("?" for _ in values)
     sub.conn.execute(f"INSERT OR IGNORE INTO {TRIALS} ({columns}) VALUES ({marks})", tuple(values.values()))
@@ -634,25 +820,30 @@ def _insert_trial(sub, table_hash, t):
 def _members_fields(table_hash, members):
     return {
         "table_hash": table_hash,
-        "members": [{"bits": bits, "trial": trial, "attempt_id": attempt_id} for bits, trial, attempt_id in members],
+        "members": [
+            {"arm": arm, "bits": bits, "trial": trial, "attempt_id": attempt_id}
+            for arm, bits, trial, attempt_id in members
+        ],
     }
 
 
 def _canonical_members(trial_attempts):
     if not isinstance(trial_attempts, dict):
-        raise LadderTableError("trial_attempts must map (bits, trial) to attempt_id")
+        raise LadderTableError("trial_attempts must map (arm, bits, trial) to attempt_id")
     members = []
     for key, attempt_id in trial_attempts.items():
-        if not isinstance(key, tuple) or len(key) != 2:
-            raise LadderTableError("trial_attempts keys must be (bits, trial) pairs")
-        bits, trial = key
+        if not isinstance(key, tuple) or len(key) != 3:
+            raise LadderTableError("trial_attempts keys must be (arm, bits, trial) tuples")
+        arm, bits, trial = key
+        if arm not in ladderplan.ARMS:
+            raise LadderTableError("trial_attempts keys must name a ladder arm")
         if isinstance(bits, bool) or isinstance(trial, bool) or not isinstance(bits, int) or not isinstance(trial, int):
             raise LadderTableError("trial_attempts keys must contain integer bits and trial")
         if not isinstance(attempt_id, str) or not attempt_id:
             raise LadderTableError("trial_attempts values must be non-empty attempt IDs")
-        members.append((bits, trial, attempt_id))
+        members.append((arm, bits, trial, attempt_id))
     members.sort()
-    if len({attempt_id for _, _, attempt_id in members}) != len(members):
+    if len({attempt_id for _, _, _, attempt_id in members}) != len(members):
         raise LadderTableError("every ladder trial must name a distinct attempt")
     return tuple(members)
 
@@ -682,33 +873,49 @@ def _claimant_dispatch(sub, table):
     return dispatch
 
 
-def _validate_trial_attempts(sub, table, trial_attempts):
+def _expected_trial_slots(plan):
+    return {
+        (arm, rung.bits, trial)
+        for rung in plan.rungs
+        for arm in ((ladderplan.ARMS[0],) if rung.role == ladderplan.ROLE_HOLD_OUT else ladderplan.ARMS)
+        for trial in range(rung.trials)
+    }
+
+
+def _validate_trial_attempts(sub, table, plan, trial_attempts):
     from cairn import instances
 
     members = _canonical_members(trial_attempts)
-    expected = {(t.bits, t.trial) for t in table.trials}
-    found = {(bits, trial) for bits, trial, _ in members}
+    expected = _expected_trial_slots(plan)
+    actual = {(t.arm, t.bits, t.trial) for t in table.trials}
+    if actual != expected:
+        raise LadderTableError("table trials must match the plan arm topology")
+    found = {(arm, bits, trial) for arm, bits, trial, _ in members}
     if found != expected:
         raise LadderTableError("trial_attempts must name every and only table trial")
-    dispatch = _claimant_dispatch(sub, table)
-    trials = {(t.bits, t.trial): t for t in table.trials}
-    for bits, trial, attempt_id in members:
+    trials = {(t.arm, t.bits, t.trial): t for t in table.trials}
+    dispatches = {
+        value["arm"]: value
+        for row in sub.conn.execute("SELECT record_json FROM ladder_dispatches ORDER BY rowid").fetchall()
+        if (value := json.loads(row["record_json"])).get("run_id") == table.run_id
+    }
+    for arm, bits, trial, attempt_id in members:
         attempt = sub.get_attempt(attempt_id)
         if attempt is None:
             raise LadderTableError(f"trial {bits}/{trial} names no attempt {attempt_id}")
         recipe = sub.get_recipe(attempt["recipe_key"])
-        expected_seed = instances.trial_seed(table.nonce, f"{table.hypothesis_hash}/{ladderplan.ARMS[0]}", bits, trial)
-        expected_salt = f"ladder/{table.run_id}/{ladderplan.ARMS[0]}/{bits}/{trial}"
+        dispatch_for_arm = dispatches.get(arm)
+        expected_seed = instances.trial_seed(table.nonce, f"{table.hypothesis_hash}/{arm}", bits, trial)
+        expected_salt = f"ladder/{table.run_id}/{arm}/{bits}/{trial}"
         if (
-            trials[(bits, trial)].seed != expected_seed
+            trials[(arm, bits, trial)].seed != expected_seed
             or recipe is None
             or recipe["seed"] != expected_seed
             or recipe["salt"] != expected_salt
-            or recipe["skill_identity_hash"] != dispatch["identity_bundle_hash"]
+            or dispatch_for_arm is None
+            or recipe["skill_identity_hash"] != dispatch_for_arm["identity_bundle_hash"]
         ):
-            raise LadderTableError(
-                f"attempt {attempt_id} is not the claimant trial {bits}/{trial} for table {table.hash}"
-            )
+            raise LadderTableError(f"attempt {attempt_id} is not the {arm} trial {bits}/{trial} for table {table.hash}")
     return members
 
 
@@ -723,8 +930,10 @@ def _membership_rows(sub, table_hash):
         value = canon.decode(ATTEMPT_MEMBERSHIP, bytes(row["canonical"]))
         if value["table_hash"] != table_hash:
             raise substrate.HashCollision(f"membership node {row['hash']} names another table")
-        members = tuple((m["bits"], m["trial"], m["attempt_id"]) for m in value["members"])
-        if tuple(sorted(members)) != members or len({(bits, trial) for bits, trial, _ in members}) != len(members):
+        members = tuple((m["arm"], m["bits"], m["trial"], m["attempt_id"]) for m in value["members"])
+        if tuple(sorted(members)) != members or len({(arm, bits, trial) for arm, bits, trial, _ in members}) != len(
+            members
+        ):
             raise substrate.HashCollision(f"membership node {row['hash']} is not canonical")
         memberships.append((row["hash"], members))
     return memberships
@@ -772,7 +981,7 @@ def table_for_attempt(sub, attempt_id):
 
 def attempt_ids_for_table(sub, table_hash):
     members = membership_for_table(sub, table_hash)
-    return () if members is None else tuple(attempt_id for _, _, attempt_id in members)
+    return () if members is None else tuple(attempt_id for _, _, _, attempt_id in members)
 
 
 def _store_membership(sub, table, members):
@@ -799,7 +1008,8 @@ def _validate_evidence_node(sub, table, node):
     if node.kind != NODE_KIND:
         raise LadderTableError("a ladder table can bind only ladder_table evidence")
     members = membership_for_table(sub, table.hash)
-    if members is None or node.attempt_id not in {attempt_id for _, _, attempt_id in members}:
+    claimant_ids = {attempt_id for arm, _, _, attempt_id in members or () if arm == ladderplan.ARMS[0]}
+    if members is None or node.attempt_id not in claimant_ids:
         raise LadderTableError(f"evidence attempt {node.attempt_id} is not a claimant member of table {table.hash}")
     hypothesis = claims.get_hypothesis_object(sub, table.hypothesis_hash)
     statement_hash = None if hypothesis is None else hypothesis["claim_statement_hash"]
@@ -832,7 +1042,7 @@ def write(sub, table, plan, *, at=None, attempt_id=None, trial_attempts=None, ev
     grade = replay_grade(table)
     canonical = _table_canonical(table)
     created_at = table.created_at or at or _now()
-    members = None if trial_attempts is None else _validate_trial_attempts(sub, table, trial_attempts)
+    members = None if trial_attempts is None else _validate_trial_attempts(sub, table, plan, trial_attempts)
     with sub._tx():
         sub._put_node(NODE_KIND, canonical, table.hash, grade, None)
         inserted = claims._insert_once(
@@ -876,6 +1086,7 @@ def _rung_from_row(r):
         bits=r["bits"],
         role=r["role"],
         trials=r["trials"],
+        ops_kind=r["ops_kind"],
         mean_ops=r["mean_ops"],
         sd_ops=r["sd_ops"],
         cpu_seconds=r["cpu_seconds"],
@@ -894,13 +1105,15 @@ def _rung_from_row(r):
 
 def _trial_from_row(r):
     return Trial(
+        arm=r["arm"],
         bits=r["bits"],
         trial=r["trial"],
         seed=r["seed"],
         instance_hash=r["instance_hash"],
+        status=r["status"],
+        output_complete=bool(r["output_complete"]),
         recovered=bool(r["recovered"]),
-        completed=bool(r["completed"]),
-        gate_ops=r["gate_ops"],
+        gate_ops=OpsObservation(r["gate_ops_kind"], r["gate_ops"]),
         reported_ops=r["reported_ops"],
         cpu_seconds=r["cpu_seconds"],
         wall_seconds=r["wall_seconds"],
@@ -930,7 +1143,7 @@ def read(sub, table_hash):
         return None
     rung_rows = sub.conn.execute(f"SELECT * FROM {RUNGS} WHERE table_hash = ? ORDER BY bits", (table_hash,)).fetchall()
     trial_rows = sub.conn.execute(
-        f"SELECT * FROM {TRIALS} WHERE table_hash = ? ORDER BY bits, trial", (table_hash,)
+        f"SELECT * FROM {TRIALS} WHERE table_hash = ? ORDER BY arm, bits, trial", (table_hash,)
     ).fetchall()
     table = ResultTable(
         run_id=row["run_id"],
@@ -965,18 +1178,9 @@ def recorded_verdict(sub, table_hash):
     )
 
 
-def _decimal_places(text):
-    return len(text.split(".", 1)[1]) if "." in text else 0
-
-
-def _quantize(value, places):
-    quantum = Decimal(1).scaleb(-places)
-    return str(value.quantize(quantum))
-
-
 def recompute(table, plan, verified):
     verified_set = set(verified)
-    restricted_trials = tuple(t for t in table.trials if (t.bits, t.trial) in verified_set)
+    restricted_trials = tuple(t for t in table.trials if (t.arm, t.bits, t.trial) in verified_set)
     grouped = {}
     for t in restricted_trials:
         grouped.setdefault(t.bits, []).append(t)
@@ -990,33 +1194,29 @@ def recompute(table, plan, verified):
             divergences.append(f"{row.bits}: no verified trials")
             continue
 
-        count = len(group)
-        gate_ops_values = [Decimal(t.gate_ops) for t in group]
-        mean = sum(gate_ops_values) / Decimal(count)
-        if count >= 2:
-            variance = sum((v - mean) ** 2 for v in gate_ops_values) / Decimal(count - 1)
-            sd = variance.sqrt()
-        else:
-            sd = Decimal(0)
-        successes = sum(1 for t in group if t.completed and t.recovered)
-        success_rate = Decimal(successes) / Decimal(count)
-
-        new_mean = _quantize(mean, _decimal_places(row.mean_ops))
-        new_sd = _quantize(sd, _decimal_places(row.sd_ops))
-        new_success = _quantize(success_rate, _decimal_places(row.success_rate))
-
-        for name, old, new in (
-            ("trials", row.trials, count),
-            ("mean_ops", row.mean_ops, new_mean),
-            ("sd_ops", row.sd_ops, new_sd),
-            ("success_rate", row.success_rate, new_success),
+        prung = plan.rung(row.bits)
+        rebuilt = aggregate_rung(
+            plan,
+            prung,
+            group,
+            model_prediction=row.model_prediction,
+            reference_rate=row.reference_rate,
+            declared_shape=row.declared_shape,
+        )
+        for name in (
+            "trials",
+            "ops_kind",
+            "mean_ops",
+            "sd_ops",
+            "success_rate",
+            "claim_ci_low",
+            "claim_ci_high",
+            "shape_statistic",
         ):
+            old, new = getattr(row, name), getattr(rebuilt, name)
             if str(old) != str(new):
                 divergences.append(f"{row.bits}: {name} recorded {old} recomputed {new}")
-
-        new_rows.append(
-            dataclasses.replace(row, trials=count, mean_ops=new_mean, sd_ops=new_sd, success_rate=new_success)
-        )
+        new_rows.append(rebuilt)
 
     new_table = dataclasses.replace(table, rungs=tuple(new_rows), trials=restricted_trials)
     recomputed_verdict = verdict(new_table, plan)
@@ -1032,15 +1232,15 @@ def recompute(table, plan, verified):
 
 
 def policy(table, tier):
-    return {(t.bits, t.trial): repro.policy(t.replay_grade, tier) for t in table.trials}
+    return {(t.arm, t.bits, t.trial): repro.policy(t.replay_grade, tier) for t in table.trials}
 
 
 def record(sub, table, plan, verified, *, attempt_id, at=None):
     """A second derivation of the table; its agreement with the first is what the record carries."""
     members = membership_for_table(sub, table.hash)
     if members is not None:
-        member_ids = {member_attempt_id for _, _, member_attempt_id in members}
-        expected = {(t.bits, t.trial) for t in table.trials}
+        member_ids = {member_attempt_id for arm, _, _, member_attempt_id in members if arm == ladderplan.ARMS[0]}
+        expected = {(t.arm, t.bits, t.trial) for t in table.trials}
         if attempt_id not in member_ids:
             raise LadderTableError(f"recomputation attempt {attempt_id} is not a claimant member of table {table.hash}")
         if set(verified) != expected:

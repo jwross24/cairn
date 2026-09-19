@@ -202,13 +202,15 @@ def test_the_ceiling_multiplier_defaults_to_the_bundles_tiers_object(harness, mo
 
 HOLD_OUT_BITS = 60
 TRIAL_BASE = laddertable.Trial(
+    arm=ladderplan.ARMS[0],
     bits=0,
     trial=0,
     seed=1,
     instance_hash="aa" * 32,
+    status=runner.STATUS_OK,
+    output_complete=True,
     recovered=True,
-    completed=True,
-    gate_ops=1000000,
+    gate_ops=laddertable.OpsObservation(laddertable.OPS_EXACT, 1000000),
     reported_ops=1000000,
     cpu_seconds="1",
     wall_seconds="1",
@@ -222,6 +224,7 @@ RUNG_BASE = laddertable.RungRow(
     bits=0,
     role=ladderplan.ROLE_FIT,
     trials=2,
+    ops_kind=laddertable.OPS_EXACT,
     mean_ops="1000000",
     sd_ops="0",
     cpu_seconds="1",

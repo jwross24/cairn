@@ -13,13 +13,15 @@ ROOT = Path(__file__).resolve().parents[2]
 COMMITTED = json.loads((ROOT / "bundle" / "ladder_plan.json").read_text())
 
 _TRIAL_BASE = laddertable.Trial(
+    arm=ladderplan.ARMS[0],
     bits=0,
     trial=0,
     seed=1,
     instance_hash="aa" * 32,
+    status=runner.STATUS_OK,
+    output_complete=True,
     recovered=True,
-    completed=True,
-    gate_ops=1000,
+    gate_ops=laddertable.OpsObservation(laddertable.OPS_EXACT, 1000),
     reported_ops=1000,
     cpu_seconds="1",
     wall_seconds="1",
@@ -33,6 +35,7 @@ _RUNG_BASE = laddertable.RungRow(
     bits=0,
     role=ladderplan.ROLE_FIT,
     trials=2,
+    ops_kind=laddertable.OPS_EXACT,
     mean_ops="1000000",
     sd_ops="0",
     cpu_seconds="1",
@@ -176,14 +179,126 @@ def test_each_predicate_fires_the_expected_verdict(plan, predicate, build, kind,
     )
 
 
+@pytest.mark.parametrize(
+    ("kind", "value"),
+    [
+        (laddertable.OPS_EXACT, None),
+        (laddertable.OPS_LOWER_BOUND, -1),
+        (laddertable.OPS_EXACT, True),
+        (laddertable.OPS_UNKNOWN, 0),
+        ("point", 1),
+    ],
+)
+def test_invalid_gate_observations_are_refused(kind, value):
+    with pytest.raises(laddertable.LadderTableError):
+        laddertable.OpsObservation(kind, value)
+
+
+def test_unknown_gate_observation_has_no_operation_statistics_or_refutation(plan):
+    unknown = laddertable.OpsObservation(laddertable.OPS_UNKNOWN, None)
+    trial = _trial(30, 0, gate_ops=unknown)
+    row = _rung(
+        30,
+        ladderplan.ROLE_FIT,
+        ops_kind=laddertable.OPS_UNKNOWN,
+        mean_ops=None,
+        sd_ops=None,
+        shape_statistic=None,
+        claim_ci_low=None,
+        claim_ci_high=None,
+    )
+    table = _table((row,), (trial,), uncounted_backend="gate-counter-absent")
+    found = laddertable.verdict(table, dataclasses.replace(plan, rungs=(plan.rung(30),)))
+    assert trial.gate_ops.value is None
+    assert (row.mean_ops, row.sd_ops, row.shape_statistic, row.claim_ci_low, row.claim_ci_high) == (
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    assert (found.kind, found.predicate) == (laddertable.INCONCLUSIVE, laddertable.UNCOUNTED_BACKEND)
+
+
+def test_lower_bound_can_refute_a_floor_but_not_a_model_miss(plan):
+    floor = plan.rung(50).refutation_floor.group_ops
+    row = _rung(
+        50,
+        ladderplan.ROLE_FIT,
+        ops_kind=laddertable.OPS_LOWER_BOUND,
+        mean_ops=str(floor),
+        sd_ops=None,
+        shape_statistic=None,
+        model_prediction="1",
+        model_band="0.01",
+        claim_ci_low=None,
+        claim_ci_high=None,
+    )
+    trial = _trial(
+        50,
+        0,
+        status=runner.STATUS_BUDGET_EXCEEDED,
+        output_complete=True,
+        recovered=True,
+        gate_ops=laddertable.OpsObservation(laddertable.OPS_LOWER_BOUND, floor),
+        reported_ops=None,
+    )
+    table = _table((row,), (trial,))
+    found = laddertable.verdict(table, dataclasses.replace(plan, rungs=(plan.rung(50),)))
+    assert (found.kind, found.predicate) == (laddertable.REJECT, laddertable.REFUTATION_FLOOR)
+
+
+def test_lower_bound_mean_never_rounds_up(plan):
+    trials = tuple(
+        _trial(
+            30,
+            trial_no,
+            gate_ops=laddertable.OpsObservation(laddertable.OPS_LOWER_BOUND, value),
+            reported_ops=value,
+        )
+        for trial_no, value in enumerate((0, 1, 1))
+    )
+    row = laddertable.aggregate_rung(
+        plan,
+        plan.rung(30),
+        trials,
+        model_prediction="1",
+        reference_rate="1",
+        declared_shape="stable",
+    )
+    assert row.ops_kind == laddertable.OPS_LOWER_BOUND
+    assert Decimal(row.mean_ops) <= Decimal(2) / Decimal(3)
+
+
+def test_an_ok_verifier_rejection_refutes_without_a_gate_count(plan):
+    trial = _trial(30, 0, recovered=False, gate_ops=laddertable.OpsObservation(laddertable.OPS_UNKNOWN, None))
+    row = _rung(
+        30,
+        ladderplan.ROLE_FIT,
+        ops_kind=laddertable.OPS_UNKNOWN,
+        mean_ops=None,
+        sd_ops=None,
+        shape_statistic=None,
+        claim_ci_low=None,
+        claim_ci_high=None,
+    )
+    table = _table((row,), (trial,), uncounted_backend="gate-counter-absent")
+    found = laddertable.verdict(table, dataclasses.replace(plan, rungs=(plan.rung(30),)))
+    assert (found.kind, found.predicate) == (laddertable.REJECT, laddertable.RECOVERY)
+    assert "gate_ops" not in found.measured_points[0]["numeric"]
+
+
 def test_struct_field_names_are_exact():
     assert laddertable.TRIAL.names == (
+        "arm",
         "bits",
         "trial",
         "seed",
         "instance_hash",
+        "status",
+        "output_complete",
         "recovered",
-        "completed",
+        "gate_ops_kind",
         "gate_ops",
         "reported_ops",
         "cpu_seconds",
@@ -199,6 +314,7 @@ def test_struct_field_names_are_exact():
         "bits",
         "role",
         "trials",
+        "ops_kind",
         "mean_ops",
         "sd_ops",
         "cpu_seconds",
@@ -242,6 +358,8 @@ def test_module_defined_public_api_is_closed():
         "ResultTable",
         "Verdict",
         "Recomputation",
+        "OpsObservation",
+        "aggregate_rung",
         "verdict",
         "in_sample_sizes",
         "inputs_for_attempt",
@@ -270,6 +388,10 @@ def test_module_defined_public_api_is_closed():
         "TABLES",
         "RUNGS",
         "TRIALS",
+        "OPS_EXACT",
+        "OPS_LOWER_BOUND",
+        "OPS_UNKNOWN",
+        "OPS_KINDS",
         "RECOVERY",
         "COUNT_DIVERGENCE",
         "MEMORY_CAP",

@@ -34,13 +34,15 @@ AUTHOR_ORIGINS = {"F5": {"P": justify.AUTHOR_SUPPLIED, "p": justify.AUTHOR_SUPPL
 GENERATED_ORIGINS = {"F5": {"P": "generated", "p": "generated"}}
 
 TRIAL = laddertable.Trial(
+    arm=ladderplan.ARMS[0],
     bits=0,
     trial=0,
     seed=1,
     instance_hash="aa" * 32,
+    status=runner.STATUS_OK,
+    output_complete=True,
     recovered=True,
-    completed=True,
-    gate_ops=1000000,
+    gate_ops=laddertable.OpsObservation(laddertable.OPS_EXACT, 1000000),
     reported_ops=1000000,
     cpu_seconds="1",
     wall_seconds="1",
@@ -54,18 +56,19 @@ RUNG = laddertable.RungRow(
     bits=0,
     role=ladderplan.ROLE_FIT,
     trials=2,
-    mean_ops="1000000",
-    sd_ops="0",
+    ops_kind=laddertable.OPS_EXACT,
+    mean_ops="1000000.000000",
+    sd_ops="0.000000",
     cpu_seconds="1",
     reference_rate="1000000",
     memory_bytes=100000,
-    success_rate="1",
+    success_rate="1.0000",
     radius="0.1216",
-    claim_ci_low="1.5",
-    claim_ci_high="1.8",
+    claim_ci_low="2.000000",
+    claim_ci_high="2.000000",
     model_prediction="1000000",
     model_band="0.05",
-    shape_statistic="1",
+    shape_statistic="1.000000",
     declared_shape="stable",
 )
 TABLE = laddertable.ResultTable(
@@ -111,11 +114,28 @@ def real_table(hypothesis_hash, run_id="run-live"):
         hypothesis_hash=hypothesis_hash,
         rungs=tuple(
             dataclasses.replace(
-                RUNG, bits=b, role=ladderplan.ROLE_HOLD_OUT if b == HOLD_OUT_BITS else ladderplan.ROLE_FIT
+                RUNG,
+                bits=b,
+                role=ladderplan.ROLE_HOLD_OUT if b == HOLD_OUT_BITS else ladderplan.ROLE_FIT,
+                claim_ci_low=None if b == HOLD_OUT_BITS else RUNG.claim_ci_low,
+                claim_ci_high=None if b == HOLD_OUT_BITS else RUNG.claim_ci_high,
             )
             for b in BITS
         ),
-        trials=tuple(dataclasses.replace(TRIAL, bits=b, trial=t) for b in BITS for t in (0, 1)),
+        trials=tuple(
+            dataclasses.replace(
+                TRIAL,
+                arm=arm,
+                bits=b,
+                trial=t,
+                gate_ops=laddertable.OpsObservation(
+                    laddertable.OPS_EXACT, 2000000 if arm == ladder.BASELINE else 1000000
+                ),
+            )
+            for b in BITS
+            for arm in ((ladder.CLAIMANT,) if b == HOLD_OUT_BITS else ladderplan.ARMS)
+            for t in (0, 1)
+        ),
     )
 
 
@@ -136,7 +156,7 @@ def live_ladder_node(writer, plan, statement, *, producer_identity, producer_tag
     table = real_table(statement.hash, run_id=run_id)
     attempt_id = f"attempt-{run_id}"
     laddertable.write(writer, table, plan, attempt_id=attempt_id)
-    verified = tuple((t.bits, t.trial) for t in table.trials)
+    verified = tuple((t.arm, t.bits, t.trial) for t in table.trials)
     record, recomputation = laddertable.record(writer, table, plan, verified, attempt_id=attempt_id)
     node = laddertable.evidence_node(
         table,
@@ -350,10 +370,11 @@ def test_a_bound_production_ladder_run_emits_evidence_for_every_claimant_attempt
     shipped = bundle.GateBundle.open(*pinned_bundle())
     _, statement, table, arm_trials, rows = bound_production_run(writer, shipped, tmp_path, "run-bound-production")
     claimant_attempts = {
-        (trial.bits, trial.trial): trial.attempt_id for trial in arm_trials if trial.arm == ladder.CLAIMANT
+        (trial.arm, trial.bits, trial.trial): trial.attempt_id for trial in arm_trials if trial.arm == ladder.CLAIMANT
     }
+    membership = {(trial.arm, trial.bits, trial.trial): trial.attempt_id for trial in arm_trials}
     assert laddertable.membership_for_table(writer, table.hash) == tuple(
-        (bits, trial, attempt_id) for (bits, trial), attempt_id in sorted(claimant_attempts.items())
+        (arm, bits, trial, attempt_id) for (arm, bits, trial), attempt_id in sorted(membership.items())
     )
     assert {row["attempt_id"] for row in rows} == set(claimant_attempts.values())
     assert all(justify._attempt_inputs(writer, row) == {"bits": [28, 30]} for row in rows)
@@ -374,11 +395,7 @@ def test_a_bound_production_ladder_run_emits_evidence_for_every_claimant_attempt
     assert all(json.loads(row["in_sample_sizes"]) == [28] for row in rows)
     assert all(row["producer_identity"] == claimant_identity and row["producer_tag"] == "skill" for row in rows)
     assert all(row["verdict"] == recorded.kind and row["repro_record_hash"] is None for row in rows)
-    assert all(
-        laddertable.inputs_for_attempt(writer, trial.attempt_id) is None
-        for trial in arm_trials
-        if trial.arm != ladder.CLAIMANT
-    )
+    assert all(laddertable.inputs_for_attempt(writer, trial.attempt_id) == {"bits": [28, 30]} for trial in arm_trials)
     assert all(
         laddertable.inputs_for_attempt(writer, row["attempt_id"]) is None
         for row in instances.trials_for(writer, table.nonce)
@@ -393,15 +410,17 @@ def test_a_bound_production_ladder_run_emits_evidence_for_every_claimant_attempt
 def test_only_exact_claimant_attempts_resolve_to_their_production_table(writer, pinned_bundle, tmp_path, db_snapshot):
     shipped = bundle.GateBundle.open(*pinned_bundle())
     plan, _, table, arm_trials, _ = bound_production_run(writer, shipped, tmp_path, "run-membership")
-    mapping = {(trial.bits, trial.trial): trial.attempt_id for trial in arm_trials if trial.arm == ladder.CLAIMANT}
-    first_slot, first_attempt = next(iter(sorted(mapping.items())))
+    mapping = {(trial.arm, trial.bits, trial.trial): trial.attempt_id for trial in arm_trials}
+    first_slot, first_attempt = next(
+        (slot, attempt_id) for slot, attempt_id in sorted(mapping.items()) if slot[0] == ladder.CLAIMANT
+    )
     replay = replay_attempt(writer, first_attempt)
     _, _, foreign_table, foreign_trials, _ = bound_production_run(writer, shipped, tmp_path, "run-membership-foreign")
     baseline = next(trial.attempt_id for trial in arm_trials if trial.arm == ladder.BASELINE)
     maker = instances.trials_for(writer, table.nonce)[0]["attempt_id"]
     foreign = next(trial.attempt_id for trial in foreign_trials if trial.arm == ladder.CLAIMANT)
 
-    assert laddertable.inputs_for_attempt(writer, baseline) is None
+    assert laddertable.inputs_for_attempt(writer, baseline) == {"bits": [28, 30]}
     assert laddertable.inputs_for_attempt(writer, maker) is None
     assert laddertable.inputs_for_attempt(writer, "attempt-unknown") is None
     assert laddertable.inputs_for_attempt(writer, replay) is None
@@ -409,18 +428,12 @@ def test_only_exact_claimant_attempts_resolve_to_their_production_table(writer, 
     assert laddertable.mapped_table_for_attempt(writer, foreign) != table.hash
 
     before = db_snapshot(writer.conn, "before-wrong-origin-memberships")
-    assert_membership_refused(
-        writer, table, plan, mapping, first_slot, baseline, "is not the claimant trial", before, db_snapshot
-    )
-    assert_membership_refused(
-        writer, table, plan, mapping, first_slot, maker, "is not the claimant trial", before, db_snapshot
-    )
+    assert_membership_refused(writer, table, plan, mapping, first_slot, baseline, "attempt", before, db_snapshot)
+    assert_membership_refused(writer, table, plan, mapping, first_slot, maker, "attempt", before, db_snapshot)
     assert_membership_refused(
         writer, table, plan, mapping, first_slot, "attempt-unknown", "names no attempt", before, db_snapshot
     )
-    assert_membership_refused(
-        writer, table, plan, mapping, first_slot, foreign, "is not the claimant trial", before, db_snapshot
-    )
+    assert_membership_refused(writer, table, plan, mapping, first_slot, foreign, "attempt", before, db_snapshot)
 
 
 def test_membership_repeats_idempotently_and_refuses_incomplete_extra_or_conflicting_maps(
@@ -428,7 +441,7 @@ def test_membership_repeats_idempotently_and_refuses_incomplete_extra_or_conflic
 ):
     shipped = bundle.GateBundle.open(*pinned_bundle())
     plan, _, table, arm_trials, _ = bound_production_run(writer, shipped, tmp_path, "run-map-atomicity")
-    mapping = {(trial.bits, trial.trial): trial.attempt_id for trial in arm_trials if trial.arm == ladder.CLAIMANT}
+    mapping = {(trial.arm, trial.bits, trial.trial): trial.attempt_id for trial in arm_trials}
     before = db_snapshot(writer.conn, "before-idempotent-membership")
 
     laddertable.write(writer, table, plan, trial_attempts=mapping)
@@ -436,7 +449,7 @@ def test_membership_repeats_idempotently_and_refuses_incomplete_extra_or_conflic
 
     first_slot, first_attempt = next(iter(sorted(mapping.items())))
     incomplete = {slot: attempt_id for slot, attempt_id in mapping.items() if slot != first_slot}
-    extra = {**mapping, (31, 0): "attempt-extra"}
+    extra = {**mapping, (ladder.CLAIMANT, 31, 0): "attempt-extra"}
     incomplete_table = dataclasses.replace(table, uncounted_backend="/incomplete")
     with pytest.raises(laddertable.LadderTableError, match="every and only table trial"):
         laddertable.write(writer, incomplete_table, plan, trial_attempts=incomplete)
@@ -457,7 +470,7 @@ def test_membership_repeats_idempotently_and_refuses_incomplete_extra_or_conflic
         laddertable.write(writer, table, plan, trial_attempts={**mapping, first_slot: replay})
     assert db_snapshot(writer.conn, "after-conflicting-membership") == before_conflict
     assert laddertable.membership_for_table(writer, table.hash) == tuple(
-        (bits, trial, attempt_id) for (bits, trial), attempt_id in sorted(mapping.items())
+        (arm, bits, trial, attempt_id) for (arm, bits, trial), attempt_id in sorted(mapping.items())
     )
     assert laddertable.inputs_for_attempt(writer, replay) is None
 
@@ -552,7 +565,7 @@ def test_table_reproduction_requires_a_complete_linked_recomputation(writer, pin
     assert justify._repro_passed(writer, rows[0]) is None
     assert justify._repro_passed(writer, {**rows[0], "repro_record_hash": ordinary.hash}) is None
 
-    one_trial = {(table.trials[0].bits, table.trials[0].trial)}
+    one_trial = {(table.trials[0].arm, table.trials[0].bits, table.trials[0].trial)}
     with pytest.raises(laddertable.LadderTableError, match="must verify every trial"):
         laddertable.record(writer, table, plan, one_trial, attempt_id=attempt_id)
 
@@ -560,7 +573,7 @@ def test_table_reproduction_requires_a_complete_linked_recomputation(writer, pin
         writer,
         table,
         plan,
-        {(trial.bits, trial.trial) for trial in table.trials},
+        {(trial.arm, trial.bits, trial.trial) for trial in table.trials},
         attempt_id=attempt_id,
     )
     assert recomputation.agrees is True

@@ -1,6 +1,14 @@
 # cairn-98ab verification handoff
 
-Status: implementation present, acceptance blocked, bead in progress. No Cairn commit or push from this session.
+Status: implementation committed and pushed as `d722b72575be49372a8acc3b26d44c332670b6f6`; CI passed. Beads remain in progress because skipped lanes are not established.
+
+## Pushed verification, 2026-09-18
+
+GitHub Actions run [35405200557](https://github.com/jwross24/cairn/actions/runs/35405200557) passes on the exact implementation SHA: 3,890 passed, four skipped, one expected failure in 864.56 seconds. Cold mathlib provisioning passed in 90 seconds. Full log: `/tmp/cairn-98ab-work.acX1Nv/ci-d722b72.log`. Neither CI's skipped lanes nor the expected failure are claimed as passes.
+
+The HTTPS login lacked the workflow scope. The existing Mac SSH key was already registered and authenticated as `jwross24`; the repository uses `git@github.com:jwross24/cairn.git`, with GitHub's published Ed25519 host key pinned. No token scope was expanded.
+
+Bound-aware accounting is a separate in-progress change under `cairn-kjgf`, not part of this pushed commit. Independent review requires complete successful exact pairs for speedup CI, refuses model-miss inference from censored observations without a sample-error-aware band, and identified upward rounding of a lower-bound mean. Its implementation is not accepted at this checkpoint.
 
 ## Acceptance checkpoint, 2026-09-18
 

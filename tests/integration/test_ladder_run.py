@@ -120,7 +120,9 @@ def test_a_full_small_run_writes_a_table_with_every_arm_on_one_instance_stream(
     )
 
     assert {r.bits for r in table.rungs} == {FIT_BITS, HOLD_OUT_BITS}
-    assert len(table.trials) == 4
+    assert len(table.trials) == len(arm_trials)
+    assert {trial.gate_ops.kind for trial in table.trials} == {laddertable.OPS_UNKNOWN}
+    assert all(trial.gate_ops.value is None for trial in table.trials)
     assert table.method_identity == hypothesis_object.method_identity
     assert table.implementation_revision == bsgs.implementation_revision()
     assert table.uncounted_backend == BACKEND
@@ -136,7 +138,7 @@ def test_a_full_small_run_writes_a_table_with_every_arm_on_one_instance_stream(
         assert len({t.instance_hash for t in arms.values()}) == 1
         assert len({t.seed for t in arms.values()}) == len(arms)
         for t in arms.values():
-            assert t.completed and t.recovered
+            assert t.output_complete and t.recovered
 
     stored = laddertable.read(writer, table.hash)
     assert stored.hash == table.hash
@@ -151,6 +153,42 @@ def test_a_full_small_run_writes_a_table_with_every_arm_on_one_instance_stream(
     assert recorded.kind != laddertable.KEEP
     published = instances.trials_for(writer, dispatched)
     assert len(published) == 4
+
+
+def test_an_injected_gate_counter_aggregates_all_arms_before_persistence(
+    writer, shipped, tmp_path, plan, hypothesis_object, dispatched
+):
+    scratch = tmp_path / "counted-runs"
+    scratch.mkdir()
+
+    def count(trial):
+        arm_offset = {ladder.CLAIMANT: 0, ladder.BASELINE: 1_000_000, ladder.BASELINE_AA: 2_000_000}[trial.arm]
+        return laddertable.OpsObservation(laddertable.OPS_EXACT, 10_000_000 + arm_offset + trial.trial)
+
+    table, arm_trials = ladder.run(
+        writer,
+        shipped,
+        plan=plan,
+        plan_hash=ladderplan.plan_digest(shipped) or "dd" * 32,
+        run_id=RUN_ID,
+        hypothesis_hash=hypothesis_object.hash,
+        nonce=dispatched,
+        scratch_root=scratch,
+        budget_remaining=10_000.0,
+        ceiling_multiplier=MAKER_CEILING,
+        ops_counter=count,
+    )
+
+    assert all(trial.gate_ops.kind == laddertable.OPS_EXACT for trial in table.trials)
+    assert {trial.gate_ops.value for trial in table.trials if trial.arm == ladder.CLAIMANT} == {10_000_000, 10_000_001}
+    assert all(trial.reported_ops != trial.gate_ops.value for trial in table.trials)
+    assert all(row.ops_kind == laddertable.OPS_EXACT for row in table.rungs)
+    assert all(row.claim_ci_low is not None for row in table.rungs if row.role == ladderplan.ROLE_FIT)
+    assert all(row.claim_ci_low is None for row in table.rungs if row.role == ladderplan.ROLE_HOLD_OUT)
+    verified = {(trial.arm, trial.bits, trial.trial) for trial in table.trials}
+    assert laddertable.recompute(table, plan, verified).agrees
+    assert laddertable.read(writer, table.hash).hash == table.hash
+    assert len(arm_trials) == len(table.trials)
 
 
 def test_a_run_missing_an_arm_refuses_before_any_instance_is_drawn(
@@ -214,13 +252,13 @@ def test_a_patience_limited_run_records_the_observed_claimant_success_rate(
     assert claimant, diagnostics
     for t in claimant:
         if t.status == runner.STATUS_BUDGET_EXCEEDED:
-            assert not t.completed and not t.recovered, diagnostics
+            assert t.output_complete and t.reported_ops is not None, diagnostics
     for row in table.rungs:
         trials = [t for t in claimant if t.bits == row.bits]
-        successes = sum(t.status == runner.STATUS_OK and t.completed and t.recovered for t in trials)
-        expected = (Decimal(successes) / len(trials)).quantize(ladder.SUCCESS_PLACES)
+        successes = sum(t.status == runner.STATUS_OK and t.output_complete and t.recovered for t in trials)
+        expected = (Decimal(successes) / len(trials)).quantize(Decimal("0.0001"))
         assert Decimal(row.success_rate) == expected, diagnostics
     found = laddertable.verdict(table, impatient)
-    if any(not t.completed or not t.recovered or t.status != runner.STATUS_OK for t in claimant):
+    if any(not t.output_complete or not t.recovered or t.status != runner.STATUS_OK for t in claimant):
         assert found.kind not in (laddertable.KEEP, laddertable.KEEP_IN_SAMPLE), diagnostics
     assert laddertable.recorded_verdict(writer, table.hash).kind == found.kind
