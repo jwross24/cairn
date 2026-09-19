@@ -27,11 +27,13 @@ class PreparedChallenge:
     renderer_hash: str
     prelude_hash: str
     formal_statement_hash: str
+    image: container.Image | None
 
 
 def prepare_dev(gate, statement, theorem_names, *, root, dependency_project=None, timeout_s=lean.DEFAULT_TIMEOUT_S):
     if gate.challenge_renderer != challenge.renderer_bytes():
         raise solutionbuild.SolutionRefused("challenge-renderer-mismatch")
+    lean.assert_pinned(gate.lean)
     project = solutionbuild.prepare_challenge(
         gate, statement, theorem_names, root=root, dependency_project=dependency_project
     )
@@ -43,6 +45,32 @@ def prepare_dev(gate, statement, theorem_names, *, root, dependency_project=None
         work_dir=Path(project.root) / "statement-tool",
         timeout_s=timeout_s,
     )
+    return _prepared(gate, statement, project, formal_hash, None)
+
+
+def prepare_container(
+    gate, image, statement, theorem_names, *, root, dependency_project=None, timeout_s=container.RUN_TIMEOUT_S
+):
+    if gate.challenge_renderer != challenge.renderer_bytes():
+        raise solutionbuild.SolutionRefused("challenge-renderer-mismatch")
+    if image.identity != gate.container_identity or not container.IMAGE_ID_RE.fullmatch(image.image_id):
+        raise container.ContainerError("statement-hasher-image-mismatch")
+    project = solutionbuild.prepare_challenge(
+        gate, statement, theorem_names, root=root, dependency_project=dependency_project
+    )
+    formal_hash = container.formal_statement_hash(
+        gate,
+        image,
+        project.challenge_module,
+        list(project.theorem_names),
+        project_dir=project.root,
+        work_dir=Path(project.root) / "statement-tool",
+        timeout_s=timeout_s,
+    )
+    return _prepared(gate, statement, project, formal_hash, image)
+
+
+def _prepared(gate, statement, project, formal_hash, image):
     solutionbuild.assert_unchanged(project)
     solutionbuild.assert_dependencies(gate, project)
     return PreparedChallenge(
@@ -53,16 +81,18 @@ def prepare_dev(gate, statement, theorem_names, *, root, dependency_project=None
         renderer_hash=gate.digest_of(challenge.RENDERER_KIND),
         prelude_hash=gate.digest_of(challenge.PRELUDE_KIND),
         formal_statement_hash=formal_hash,
+        image=image,
     )
 
 
-def assert_prepared(gate, statement, theorem_names, prepared):
+def assert_prepared(gate, statement, theorem_names, prepared, *, image=None):
     expected = {
         "statement_hash": statement.hash,
         "bundle_hash": gate.hash,
         "pin_hash": gate.pin_hash,
         "renderer_hash": gate.digest_of(challenge.RENDERER_KIND),
         "prelude_hash": gate.digest_of(challenge.PRELUDE_KIND),
+        "image": image,
     }
     for name, value in expected.items():
         if getattr(prepared, name) != value:

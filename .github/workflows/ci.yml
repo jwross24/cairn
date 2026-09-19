@@ -66,7 +66,7 @@ jobs:
       - name: Linux container gates
         run: scripts/check.sh --ci-lane container
       - name: Linux adapter types
-        run: uv run ty check --python-platform linux src/cairn/container.py src/cairn/lean.py tests/integration/test_container_statement_hash.py
+        run: uv run ty check --python-platform linux src/cairn/container.py src/cairn/lean.py src/cairn/solutionbuild.py src/cairn/solutionchecks.py tests/integration/test_container_statement_hash.py
       - name: Linux failure diagnostics
         if: failure() || cancelled()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

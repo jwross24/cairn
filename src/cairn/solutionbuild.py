@@ -203,7 +203,6 @@ def _write_project(gate, root, dependency_project):
 
 
 def prepare_challenge(gate, statement, theorem_names, *, root, dependency_project=None):
-    lean.assert_pinned(gate.lean)
     if not theorem_names:
         raise SolutionRefused(EMPTY_THEOREM_NAMES)
     root = Path(root)

@@ -1,11 +1,12 @@
 import json
 import os
 from dataclasses import replace
+from pathlib import Path
 
 import factories
 import pytest
 
-from cairn import bundle, challenge, container, lean, log
+from cairn import bundle, challenge, container, lean, log, solutionbuild, solutionchecks, solutionplan
 
 lg = log.get("test")
 MATHLIB_MODULE = "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
@@ -147,3 +148,132 @@ def test_root_host_user_is_refused(monkeypatch):
     monkeypatch.setattr(os, "getuid", lambda: 0)
     with pytest.raises(container.ContainerError, match="container-host-user-root"):
         container.host_user()
+
+
+@pytest.mark.timeout(1800)
+def test_container_preparation_binds_the_claim_without_host_lean(
+    linux_bundle, linux_image, linux_project, tmp_path, monkeypatch, popen_spy
+):
+    dependencies, _ = linux_project
+    monkeypatch.setenv("ELAN_HOME", str(tmp_path / "absent-elan"))
+    assert not lean.tool_path("lean").exists()
+    statement = factories.claim_statement(seed=4, formal_source=FORMAL.replace("W.Δ = W.Δ", "W.Δ + 0 = W.Δ"))
+    prepared = solutionchecks.prepare_container(
+        linux_bundle,
+        linux_image,
+        statement,
+        ("challenge_curve",),
+        root=tmp_path / "prepared",
+        dependency_project=dependencies,
+    )
+    assert prepared.formal_statement_hash == "556a38bd0fd7f32b31c6f4fefebd92ad7568788e3639a5f2a0b7102f4eaf53ac"
+    assert prepared.statement_hash == statement.hash
+    assert prepared.bundle_hash == linux_bundle.hash
+    assert prepared.pin_hash == linux_bundle.pin_hash
+    assert prepared.renderer_hash == linux_bundle.digest_of(challenge.RENDERER_KIND)
+    assert prepared.prelude_hash == linux_bundle.digest_of(challenge.PRELUDE_KIND)
+    assert prepared.image == linux_image
+    assert prepared.project.theorem_names == ("challenge_curve",)
+    root = Path(prepared.project.root)
+    assert not list((root / "Solution").rglob("*.lean"))
+    rendered = challenge.module_path(statement, root / "Challenge")
+    assert rendered.read_bytes() == challenge.render(statement, linux_bundle.challenge_prelude)
+    solutionbuild.assert_dependencies(linux_bundle, prepared.project)
+    solutionchecks.assert_prepared(linux_bundle, statement, ("challenge_curve",), prepared, image=linux_image)
+    assert all(command[0] == container.DOCKER or command[0] == solutionbuild.GIT for command in popen_spy)
+    popen_spy.clear()
+    for field in ("statement_hash", "bundle_hash", "pin_hash", "renderer_hash", "prelude_hash"):
+        with pytest.raises(solutionbuild.SolutionRefused, match=f"prepared-challenge-mismatch:{field}"):
+            solutionchecks.assert_prepared(
+                linux_bundle, statement, ("challenge_curve",), replace(prepared, **{field: "0" * 64}), image=linux_image
+            )
+    with pytest.raises(solutionbuild.SolutionRefused, match="prepared-challenge-mismatch:image"):
+        solutionchecks.assert_prepared(
+            linux_bundle,
+            statement,
+            ("challenge_curve",),
+            prepared,
+            image=replace(linux_image, image_id="sha256:" + "0" * 64),
+        )
+    candidate = tmp_path / "candidate"
+    result = solutionchecks.run_dev(
+        linux_bundle,
+        statement,
+        challenge.Submission(solution_module=b"", formal_statement_hash=prepared.formal_statement_hash),
+        ("challenge_curve",),
+        [
+            {
+                "step": kind,
+                "kind": kind,
+                "expect": solutionplan.KIND_EXPECTATION[kind],
+                "blocking": True,
+                "timeout_s": 120,
+            }
+            for kind in solutionplan.STEP_KINDS
+        ],
+        root=candidate,
+        prepared=prepared,
+        comparator=tmp_path / "absent-comparator",
+    )
+    assert not result.ok
+    assert "prepared-challenge-mismatch:image" in result.first_failure.reasons
+    assert all(step.result == solutionplan.RESULT_BLOCKED for step in result.steps[1:])
+    assert not candidate.exists()
+    rendered.write_bytes(rendered.read_bytes() + b"\n")
+    with pytest.raises(solutionbuild.InputsChanged):
+        solutionchecks.assert_prepared(linux_bundle, statement, ("challenge_curve",), prepared, image=linux_image)
+    assert popen_spy == []
+    lg.info("container_prepared_claim", claim=statement.hash, formal_hash=prepared.formal_statement_hash)
+
+
+def test_container_preparation_rejects_the_wrong_image_before_writing(linux_bundle, tmp_path, popen_spy):
+    image = container.Image("0" * 64, "unused", "sha256:" + "1" * 64, None)
+    with pytest.raises(container.ContainerError, match="statement-hasher-image-mismatch"):
+        solutionchecks.prepare_container(
+            linux_bundle,
+            image,
+            factories.claim_statement(seed=4, formal_source=FORMAL),
+            ("challenge_curve",),
+            root=tmp_path / "prepared",
+        )
+    assert not (tmp_path / "prepared").exists()
+    assert popen_spy == []
+
+
+@pytest.mark.timeout(1800)
+def test_container_preparation_returns_no_value_when_compilation_fails(linux_bundle, linux_image, tmp_path):
+    with pytest.raises(lean.LeanRejected, match="unknown module prefix 'Mathlib'"):
+        solutionchecks.prepare_container(
+            linux_bundle,
+            linux_image,
+            factories.claim_statement(seed=4, formal_source=FORMAL),
+            ("challenge_curve",),
+            root=tmp_path / "prepared",
+        )
+
+
+@pytest.mark.timeout(1800)
+def test_container_preparation_rejects_inputs_changed_during_hashing(
+    linux_bundle, linux_image, linux_project, tmp_path, monkeypatch
+):
+    dependencies, _ = linux_project
+    statement = factories.claim_statement(seed=4, formal_source=FORMAL)
+    real_hash = container.formal_statement_hash
+
+    def hash_then_change(*args, **kwargs):
+        digest = real_hash(*args, **kwargs)
+        assert digest == "f4cd161738602628f5d766379b78605147761457507b9320ef14dcf115aeaa42"
+        source = challenge.module_path(statement, Path(kwargs["project_dir"]) / "Challenge")
+        source.write_bytes(source.read_bytes() + b"\n")
+        return digest
+
+    monkeypatch.setattr(container, "formal_statement_hash", hash_then_change)
+    with pytest.raises(solutionbuild.InputsChanged):
+        solutionchecks.prepare_container(
+            linux_bundle,
+            linux_image,
+            statement,
+            ("challenge_curve",),
+            root=tmp_path / "prepared",
+            dependency_project=dependencies,
+        )

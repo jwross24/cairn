@@ -97,7 +97,13 @@ def _assert_container_lane(text):
     assert "if:" not in step
     types = _step(job, "Linux adapter types")
     assert "ty check --python-platform linux" in types
-    for path in ("src/cairn/container.py", "src/cairn/lean.py", "tests/integration/test_container_statement_hash.py"):
+    for path in (
+        "src/cairn/container.py",
+        "src/cairn/lean.py",
+        "src/cairn/solutionbuild.py",
+        "src/cairn/solutionchecks.py",
+        "tests/integration/test_container_statement_hash.py",
+    ):
         assert path in types
     assert "if:" not in types
 
@@ -112,6 +118,7 @@ def test_container_lane_runs_real_tests_without_an_optional_gate():
         ("runs-on: ubuntu-24.04-arm", "runs-on: macos-latest"),
         ("--ci-lane container", "--fast"),
         ("ty check --python-platform linux", "ty check --python-platform darwin"),
+        (" src/cairn/solutionchecks.py", ""),
         ("- name: Linux container gates", "- name: Linux container gates\n        if: false"),
     ],
 )

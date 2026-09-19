@@ -146,6 +146,12 @@ candidate files or subprocesses. It checks imports, assembles a private project,
 builds, checks axioms, performs fresh kernel replay, and compares statement closures.
 Rejection or timeout blocks subsequent steps.
 
+`solutionchecks.prepare_container` renders the gate-owned Challenge in a private
+project and computes its hash inside the pinned Linux image without host Lean.
+It validates inputs and copied dependencies before returning a prepared value
+bound to the claim and image. `assert_prepared(..., image=image)` checks this
+handoff; `run_dev` refuses container-prepared values before candidate work.
+
 The prepared value is an in-process handoff owned by the trusted gate caller, not
 authentication of an arbitrary caller-constructed value or a persisted gate-run row.
 The caller selects the theorem names. Fingerprints cover tracked inputs, not cached
@@ -162,7 +168,7 @@ provisioned for Linux by the trusted caller. It does not execute a Solution or e
 a gold verification result. The `container` CI lane runs the real elliptic-curve
 hash pair and rejection cases on a native Linux ARM64 runner; absent Docker is a failure.
 The check script's whole-project typing targets macOS, the M0 host platform. The Linux job also checks
-the container adapter, Lean invocation code, and container tests against Linux APIs.
+the container adapter, preparation code, Lean invocation code, and container tests against Linux APIs.
 
 ## Quick start
 
