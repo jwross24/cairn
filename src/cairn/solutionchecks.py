@@ -1,7 +1,7 @@
 import time
 from pathlib import Path
 
-from cairn import lean, log, solutionbuild, solutionplan
+from cairn import container, lean, log, solutionbuild, solutionplan
 
 lg = log.get("solutionchecks")
 
@@ -15,6 +15,70 @@ STDERR_HEAD_CHARS = 200
 COMPARATOR_ABSENT_PREFIX = "comparator-binary-absent:"
 CLOSURE_MISMATCH = "closure-mismatch"
 COMPARATOR_RELATIVE_BINARY = Path(".lake") / "build" / "bin" / "comparator"
+
+
+def run_dev(
+    gate,
+    statement,
+    submission,
+    theorem_names,
+    plan_rows,
+    *,
+    root,
+    formal_statement_hash,
+    comparator,
+    dependency_project=None,
+):
+    plan = solutionplan.SolutionPlan.load(plan_rows, arm=container.DEV_ARM)
+    if tuple(step.kind for step in plan.steps) != solutionplan.STEP_KINDS:
+        raise solutionplan.PlanInvalid("dev-plan-requires-axioms-before-replay")
+    assembled = None
+
+    def observe(step):
+        nonlocal assembled
+        start = time.monotonic()
+        if step.kind == solutionplan.KIND_STATEMENT_BINDING:
+            return solutionbuild.observe_binding(submission, formal_statement_hash)
+        if step.kind == solutionplan.KIND_IMPORT_ALLOWLIST:
+            return (*solutionplan.check_imports(submission.solution_module), _elapsed_ms(start))
+        try:
+            if step.kind == solutionplan.KIND_BUILD:
+                assembled = solutionbuild.assemble(
+                    gate,
+                    statement,
+                    submission,
+                    theorem_names,
+                    root=root,
+                    formal_statement_hash=formal_statement_hash,
+                    dependency_project=dependency_project,
+                )
+                return solutionbuild.observe_build(gate, assembled, timeout_s=step.timeout_s)
+            assert assembled is not None
+            if step.kind == solutionplan.KIND_AXIOMS:
+                result = observe_axioms(
+                    gate,
+                    assembled.solution_module,
+                    list(assembled.theorem_names),
+                    project_dir=assembled.root,
+                    work_dir=Path(assembled.root) / "axiom-tool",
+                    timeout_s=step.timeout_s,
+                )
+            elif step.kind == solutionplan.KIND_KERNEL_REPLAY:
+                result = observe_kernel_replay(
+                    gate.lean,
+                    assembled.solution_module,
+                    project_dir=assembled.root,
+                    timeout_s=step.timeout_s,
+                    variant=REPLAY_FRESH,
+                )
+            else:
+                result = observe_closure_comparison(gate, assembled, comparator=comparator, timeout_s=step.timeout_s)
+            solutionbuild.assert_unchanged(assembled)
+            return result
+        except solutionbuild.SolutionRefused as exc:
+            return solutionplan.OBSERVED_REFUSED, (exc.reason,), _elapsed_ms(start)
+
+    return plan.run(observe)
 
 
 def _elapsed_ms(start):

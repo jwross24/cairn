@@ -143,59 +143,127 @@ def test_a_solution_that_rewrites_the_challenge_during_its_build_is_named_by_the
 ):
     relative = str(Path("Challenge") / f"C_{statement.hash[:16]}.lean")
     root = tmp_path / "tamper"
-    assembled = _assemble(mathlib_free_bundle, statement, root, _rewrites_the_challenge(relative))
-    before = (root / relative).read_bytes()
-    observed, reasons, _ = solutionbuild.observe_build(mathlib_free_bundle, assembled)
+    before = challenge.render(statement, TEST_PRELUDE)
+    result = solutionchecks.run_dev(
+        mathlib_free_bundle,
+        statement,
+        challenge.Submission(solution_module=_rewrites_the_challenge(relative), formal_statement_hash=FSH),
+        THEOREMS,
+        _plan_rows(),
+        root=root,
+        formal_statement_hash=FSH,
+        comparator=tmp_path / "absent-comparator",
+    )
     assert (root / relative).read_bytes() != before
-    assert observed == solutionplan.OBSERVED_REFUSED
-    assert reasons == (f"solution-inputs-changed:{relative}",)
+    assert result.ok is False
+    assert result.first_failure == result.steps[2]
+    assert result.first_failure.observed == solutionplan.OBSERVED_REFUSED
+    assert f"solution-inputs-changed:{relative}" in result.first_failure.reasons
+    assert [step.result for step in result.steps[3:]] == [solutionplan.RESULT_BLOCKED] * 3
 
 
-def test_the_ordered_plan_runs_a_solution_end_to_end_on_the_dev_arm(
-    mathlib_free_bundle, statement, tmp_path, comparator
+def test_the_dev_runner_rejects_a_compiling_weaker_solution(
+    mathlib_free_bundle, statement, tmp_path, comparator, popen_spy
 ):
-    assembled = _assemble(mathlib_free_bundle, statement, tmp_path / "plan", _honest())
-    submission = challenge.Submission(solution_module=_honest(), formal_statement_hash=FSH)
-    pins = mathlib_free_bundle.lean
-    tool = lean.axiom_tool(mathlib_free_bundle, tmp_path / "axiom-tool")
-    ran = []
-
-    def observe(step):
-        ran.append(step.kind)
-        if step.kind == solutionplan.KIND_STATEMENT_BINDING:
-            return solutionbuild.observe_binding(submission, FSH)
-        if step.kind == solutionplan.KIND_IMPORT_ALLOWLIST:
-            return (*solutionplan.check_imports(submission.solution_module), 0)
-        if step.kind == solutionplan.KIND_BUILD:
-            return solutionbuild.observe_build(mathlib_free_bundle, assembled, timeout_s=step.timeout_s)
-        if step.kind == solutionplan.KIND_AXIOMS:
-            return solutionchecks.observe_axioms(
-                mathlib_free_bundle,
-                assembled.solution_module,
-                list(assembled.theorem_names),
-                project_dir=assembled.root,
-                timeout_s=step.timeout_s,
-                tool=tool,
-            )
-        if step.kind == solutionplan.KIND_KERNEL_REPLAY:
-            return solutionchecks.observe_kernel_replay(
-                pins,
-                assembled.solution_module,
-                project_dir=assembled.root,
-                timeout_s=step.timeout_s,
-                variant=solutionchecks.REPLAY_TRUSTING_IMPORTS,
-            )
-        assert step.kind == solutionplan.KIND_CLOSURE_COMPARISON
-        return solutionchecks.observe_closure_comparison(
-            mathlib_free_bundle, assembled, comparator=comparator, timeout_s=step.timeout_s
-        )
-
-    result = solutionplan.SolutionPlan.load(_plan_rows(), arm=container.DEV_ARM).run(observe)
+    submission = challenge.Submission(
+        solution_module=b"theorem challenge_hello : True := by trivial\n", formal_statement_hash=FSH
+    )
+    result = solutionchecks.run_dev(
+        mathlib_free_bundle,
+        statement,
+        submission,
+        THEOREMS,
+        _plan_rows(),
+        root=tmp_path / "plan",
+        formal_statement_hash=FSH,
+        comparator=comparator,
+    )
     lg.info("plan", steps=[(s.kind, s.result, s.observed, list(s.reasons)) for s in result.steps])
-    assert ran == list(PLAN_KINDS)
-    assert [step.result for step in result.steps] == [solutionplan.RESULT_PASS] * len(PLAN_KINDS)
-    assert result.ok is True
-    solutionbuild.assert_unchanged(assembled)
+    assert result.arm == container.DEV_ARM
+    assert [step.kind for step in result.steps] == list(PLAN_KINDS)
+    assert [step.result for step in result.steps] == [solutionplan.RESULT_PASS] * 5 + [solutionplan.RESULT_FAIL]
+    assert result.ok is False
+    assert result.first_failure == result.steps[-1]
+    assert solutionchecks.CLOSURE_MISMATCH in result.first_failure.reasons
+    replay_commands = [command for command in popen_spy if "leanchecker" in command]
+    assert len(replay_commands) == 1
+    assert "--fresh" in replay_commands[0]
+
+
+@pytest.mark.parametrize("case", ["stale-hash", "forbidden-import"])
+def test_the_dev_runner_refuses_bad_submissions_before_any_files_or_subprocesses(
+    mathlib_free_bundle, statement, tmp_path, popen_spy, case
+):
+    root = tmp_path / "unassembled"
+    source = b"import Lean\n" + _honest() if case == "forbidden-import" else _honest()
+    submission = challenge.Submission(
+        solution_module=source, formal_statement_hash="0" * 64 if case == "stale-hash" else FSH
+    )
+    result = solutionchecks.run_dev(
+        mathlib_free_bundle,
+        statement,
+        submission,
+        THEOREMS,
+        _plan_rows(),
+        root=root,
+        formal_statement_hash=FSH,
+        comparator=tmp_path / "absent-comparator",
+    )
+    at = 0 if case == "stale-hash" else 1
+    assert result.ok is False
+    assert result.first_failure == result.steps[at]
+    assert result.steps[at].result == solutionplan.RESULT_FAIL
+    assert [step.result for step in result.steps[:at]] == [solutionplan.RESULT_PASS] * at
+    for step in result.steps[at + 1 :]:
+        assert step.result == solutionplan.RESULT_BLOCKED
+        assert step.reasons == (f"blocked-by:{result.steps[at].step}",)
+    assert not root.exists()
+    assert popen_spy == []
+
+
+def test_the_dev_runner_refuses_replay_before_axioms_without_work(mathlib_free_bundle, statement, tmp_path, popen_spy):
+    rows = _plan_rows()
+    rows[3], rows[4] = rows[4], rows[3]
+    root = tmp_path / "unassembled"
+    with pytest.raises(solutionplan.PlanInvalid, match="dev-plan-requires-axioms-before-replay"):
+        solutionchecks.run_dev(
+            mathlib_free_bundle,
+            statement,
+            challenge.Submission(solution_module=_honest(), formal_statement_hash=FSH),
+            THEOREMS,
+            rows,
+            root=root,
+            formal_statement_hash=FSH,
+            comparator=tmp_path / "absent-comparator",
+        )
+    assert not root.exists()
+    assert popen_spy == []
+
+
+def test_the_dev_runner_records_an_empty_solution_as_build_refusal(mathlib_free_bundle, statement, tmp_path):
+    root = tmp_path / "unassembled"
+    result = solutionchecks.run_dev(
+        mathlib_free_bundle,
+        statement,
+        challenge.Submission(solution_module=b"", formal_statement_hash=FSH),
+        THEOREMS,
+        _plan_rows(),
+        root=root,
+        formal_statement_hash=FSH,
+        comparator=tmp_path / "absent-comparator",
+    )
+    assert result.ok is False
+    assert result.first_failure == result.steps[2]
+    assert solutionbuild.EMPTY_SOLUTION in result.first_failure.reasons
+    assert [step.result for step in result.steps] == [
+        solutionplan.RESULT_PASS,
+        solutionplan.RESULT_PASS,
+        solutionplan.RESULT_FAIL,
+        solutionplan.RESULT_BLOCKED,
+        solutionplan.RESULT_BLOCKED,
+        solutionplan.RESULT_BLOCKED,
+    ]
+    assert not root.exists()
 
 
 @pytest.mark.parametrize("tamper_manifest", [False, True])
@@ -298,60 +366,30 @@ def test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks(
     submission = challenge.Submission(
         solution_module=gate.challenge_prelude + source.encode(), formal_statement_hash=FSH
     )
-    assembled = solutionbuild.assemble(
-        gate,
-        statement,
-        submission,
-        ("challenge_curve",),
-        root=tmp_path / "ordered-real-prelude",
-        formal_statement_hash=FSH,
-        dependency_project=lean.PROJECT_DIR,
-    )
-    tool = lean.axiom_tool(gate, tmp_path / "axiom-tool", timeout_s=120)
     rows = _plan_rows()
     for row in rows:
         if row["kind"] == solutionplan.KIND_KERNEL_REPLAY:
             row["timeout_s"] = 0.001 if case == "timeout" else lean.DEFAULT_TIMEOUT_S
-    ran = []
-
-    def observe(step):
-        ran.append(step.kind)
-        if step.kind == solutionplan.KIND_STATEMENT_BINDING:
-            return solutionbuild.observe_binding(submission, FSH)
-        if step.kind == solutionplan.KIND_IMPORT_ALLOWLIST:
-            return (*solutionplan.check_imports(submission.solution_module), 0)
-        if step.kind == solutionplan.KIND_BUILD:
-            return solutionbuild.observe_build(gate, assembled, timeout_s=step.timeout_s)
-        if step.kind == solutionplan.KIND_AXIOMS:
-            return solutionchecks.observe_axioms(
-                gate,
-                assembled.solution_module,
-                list(assembled.theorem_names),
-                project_dir=assembled.root,
-                timeout_s=step.timeout_s,
-                tool=tool,
-            )
-        if step.kind == solutionplan.KIND_KERNEL_REPLAY:
-            return solutionchecks.observe_kernel_replay(
-                gate.lean,
-                assembled.solution_module,
-                project_dir=assembled.root,
-                timeout_s=step.timeout_s,
-            )
-        assert step.kind == solutionplan.KIND_CLOSURE_COMPARISON
-        return solutionchecks.observe_closure_comparison(
-            gate, assembled, comparator=comparator, timeout_s=step.timeout_s
-        )
-
-    result = solutionplan.SolutionPlan.load(rows, arm=container.DEV_ARM).run(observe)
+    root = tmp_path / "ordered-real-prelude"
+    result = solutionchecks.run_dev(
+        gate,
+        statement,
+        submission,
+        ("challenge_curve",),
+        rows,
+        root=root,
+        formal_statement_hash=FSH,
+        comparator=comparator,
+        dependency_project=lean.PROJECT_DIR,
+    )
     lg.info("real_prelude_plan", case=case, steps=[step.__dict__ for step in result.steps])
+    assert result.arm == container.DEV_ARM
     assert [step.kind for step in result.steps] == list(PLAN_KINDS)
     assert [step.result for step in result.steps[:3]] == [solutionplan.RESULT_PASS] * 3
     replay_commands = [command for command in popen_spy if "leanchecker" in command]
     comparison_commands = [command for command in popen_spy if str(comparator) in command]
     if case == "sorry":
         assert result.ok is False
-        assert ran == list(PLAN_KINDS[:4])
         assert result.first_failure == result.steps[3]
         assert result.steps[3].result == solutionplan.RESULT_FAIL
         assert "offending-axiom:sorryAx" in result.steps[3].reasons
@@ -361,12 +399,11 @@ def test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks(
             assert step.result == solutionplan.RESULT_BLOCKED
             assert step.reasons == (f"blocked-by:{solutionplan.KIND_AXIOMS}",)
     else:
-        assert replay_commands == [lean.command(gate.lean, "replay_fresh", module=assembled.solution_module)]
+        assert replay_commands == [lean.command(gate.lean, "replay_fresh", module=solutionbuild.module_name(FSH))]
         assert "--fresh" in replay_commands[0]
         assert result.steps[3].result == solutionplan.RESULT_PASS
         if case == "timeout":
             assert result.ok is False
-            assert ran == list(PLAN_KINDS[:5])
             assert result.first_failure == result.steps[4]
             assert result.steps[4].result == solutionplan.RESULT_TIMEOUT
             assert result.steps[4].reasons == (solutionplan.TIMEOUT_REASON, "timeout_s:0.001")
@@ -376,7 +413,10 @@ def test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks(
         else:
             assert result.ok is True
             assert result.first_failure is None
-            assert ran == list(PLAN_KINDS)
             assert [step.result for step in result.steps] == [solutionplan.RESULT_PASS] * len(PLAN_KINDS)
             assert comparison_commands == [solutionchecks.comparator_argv(gate.lean, comparator)]
-    solutionbuild.assert_unchanged(assembled)
+    assert solutionbuild.module_path(FSH, root).read_bytes() == submission.solution_module
+    assert challenge.module_path(statement, root / "Challenge").read_bytes() == challenge.render(
+        statement, gate.challenge_prelude
+    )
+    assert json.loads((root / "lake-manifest.json").read_text()) == gate.lake_manifest

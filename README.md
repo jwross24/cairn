@@ -136,6 +136,13 @@ CI runs disjoint Python, Lean, and Solution lanes. The Solution lane owns
 `tests/integration/test_solution_build_compile.py`; each lane retains the 1080-second
 session deadline and 20-minute job ceiling. The default local check runs every lane's tests.
 
+`solutionchecks.run_dev` runs the ordered Solution checks on the developer arm. It
+checks the declared statement hash and imports before assembling a private project,
+then builds, checks axioms, performs fresh kernel replay, and compares statement
+closures. Rejection or timeout blocks subsequent steps. The expected statement hash
+is trusted caller input, not computed by this entry point. A passing result does not
+provide containment, persist evidence, or grant PROVEN.
+
 ## Quick start
 
 ```bash
