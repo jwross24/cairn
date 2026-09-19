@@ -461,6 +461,52 @@ def test_a_compiling_weaker_statement_fails_real_prelude_closure_comparison(pinn
 
 
 @pytest.mark.timeout(900)
+def test_real_prelude_forgery_passes_axioms_but_fails_fresh_replay(prepared_real, tmp_path, comparator, popen_spy):
+    gate, statement, prepared = prepared_real
+    fixture = (Path(__file__).parents[1] / "fixtures/solution_forgery/forge_unchecked_theorem.lean").read_text()
+    assert fixture.startswith("import Lean\n")
+    source = (
+        gate.challenge_prelude
+        + fixture.removeprefix("import Lean\n").encode()
+        + b"\n"
+        + statement.formal_source.replace("sorry", "exact False.elim forged").encode()
+    )
+    submission = challenge.Submission(solution_module=source, formal_statement_hash=prepared.formal_statement_hash)
+    rows = _plan_rows()
+    rows[4]["timeout_s"] = lean.DEFAULT_TIMEOUT_S
+    root = tmp_path / "forged-real-prelude"
+    result = solutionchecks.run_dev(
+        gate,
+        statement,
+        submission,
+        ("challenge_curve",),
+        rows,
+        root=root,
+        prepared=prepared,
+        comparator=comparator,
+    )
+    lg.info("real_prelude_forgery_plan", steps=[step.__dict__ for step in result.steps])
+    assert result.arm == container.DEV_ARM
+    assert [step.kind for step in result.steps] == list(PLAN_KINDS)
+    assert [step.result for step in result.steps[:4]] == [solutionplan.RESULT_PASS] * 4
+    assert result.ok is False
+    assert result.first_failure == result.steps[4]
+    assert result.steps[4].result == solutionplan.RESULT_FAIL
+    assert solutionchecks.KERNEL_REJECTED in result.steps[4].reasons
+    assert any("while replaying declaration 'forged'" in reason for reason in result.steps[4].reasons)
+    assert result.steps[5].result == solutionplan.RESULT_BLOCKED
+    assert result.steps[5].reasons == (f"blocked-by:{solutionplan.KIND_KERNEL_REPLAY}",)
+    assert [command for command in popen_spy if "leanchecker" in command] == [
+        lean.command(gate.lean, "replay_fresh", module=solutionbuild.module_name(prepared.formal_statement_hash))
+    ]
+    assert not any(str(comparator) in command for command in popen_spy)
+    assert solutionbuild.module_path(prepared.formal_statement_hash, root).read_bytes() == source
+    assert challenge.module_path(statement, root / "Challenge").read_bytes() == challenge.render(
+        statement, gate.challenge_prelude
+    )
+
+
+@pytest.mark.timeout(900)
 @pytest.mark.parametrize("case", ["exact", "sorry", "timeout"])
 def test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks(
     prepared_real, tmp_path, comparator, popen_spy, case

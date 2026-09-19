@@ -26,7 +26,7 @@ def _suite(pytester):
 
 
 @pytest.mark.parametrize(
-    ("lane", "passed", "deselected"), [("all", 7, 0), ("python", 1, 6), ("lean", 5, 2), ("solution", 1, 6)]
+    ("lane", "passed", "deselected"), [("all", 9, 0), ("python", 1, 8), ("lean", 7, 2), ("solution", 1, 8)]
 )
 def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
     _suite(pytester)
@@ -37,7 +37,7 @@ def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
 def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytester):
     _suite(pytester)
     default = pytester.runpytest("-q", "--import-mode=importlib")
-    default.assert_outcomes(passed=7)
+    default.assert_outcomes(passed=9)
     populations = {}
     for lane in ("all", "python", "lean", "solution"):
         result = pytester.runpytest("-q", "--collect-only", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
@@ -53,7 +53,7 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
     assert populations["all"] == populations["lean"] | populations["python"] | populations["solution"]
 
 
-@pytest.mark.parametrize(("lane", "passed", "deselected"), [("python", 0, 6), ("lean", 4, 2), ("solution", 0, 2)])
+@pytest.mark.parametrize(("lane", "passed", "deselected"), [("python", 0, 8), ("lean", 6, 2), ("solution", 0, 2)])
 def test_a_selected_failure_keeps_the_lane_red(pytester, lane, passed, deselected):
     _suite(pytester)
     relative = {
