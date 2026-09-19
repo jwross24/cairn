@@ -59,3 +59,34 @@ def test_ci_contract_refuses_a_missing_mathlib_prerequisite():
     broken = WORKFLOW.read_text().replace(f"- name: {MATHLIB_SETUP}", "- name: mathlib prerequisite absent", 1)
     with pytest.raises(AssertionError, match="no mathlib prerequisite step"):
         _assert_mathlib_prerequisite(broken)
+
+
+def _assert_ci_lanes(text):
+    assert "lane: [python, lean]" in text
+    assert "fail-fast: false" in text
+    assert "continue-on-error:" not in text
+    assert 'CAIRN_SESSION_DEADLINE: "1080"' in text
+    assert "timeout-minutes: 20" in text
+    assert 'run: scripts/check.sh --ci-lane "${{ matrix.lane }}"' in _step(text, GATES)
+    assert "name: cairn-failure-diagnostics-${{ matrix.lane }}" in text
+
+
+def test_both_ci_lanes_run_the_same_gates_with_independent_deadlines():
+    _assert_ci_lanes(WORKFLOW.read_text())
+
+
+@pytest.mark.parametrize(
+    ("old", "new"),
+    [
+        ("lane: [python, lean]", "lane: [python]"),
+        ("fail-fast: false", "fail-fast: true"),
+        ('CAIRN_SESSION_DEADLINE: "1080"', 'CAIRN_SESSION_DEADLINE: "1800"'),
+        ('--ci-lane "${{ matrix.lane }}"', "--unit"),
+        ("name: cairn-failure-diagnostics-${{ matrix.lane }}", "name: cairn-failure-diagnostics"),
+    ],
+)
+def test_ci_lane_contract_refuses_missing_or_weakened_execution(old, new):
+    text = WORKFLOW.read_text()
+    assert old in text
+    with pytest.raises(AssertionError):
+        _assert_ci_lanes(text.replace(old, new))

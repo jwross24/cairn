@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 from hypothesis import settings
 
-pytest_plugins = ["pytester", "_session_deadline", "_libpari_stall", "_unit_tier"]
+pytest_plugins = ["pytester", "_session_deadline", "_libpari_stall", "_unit_tier", "_ci_lanes"]
 
 BEAD_STORE_CONSUMER_MODULES = frozenset(
     {"test_bead_artifact_block.py", "test_br_lookup.py", "test_theater_patterns.py"}

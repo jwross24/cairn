@@ -18,6 +18,11 @@ permissions:
 
 jobs:
   check:
+    name: check (${{ matrix.lane }})
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [python, lean]
     # macOS, because that is the platform M0 supports. The write boundary is set
     # with os.chflags and stat.UF_APPEND, which exist on macOS and BSD and not on
     # Linux; cairn-hcl owns the Linux arm. An ubuntu run fails before it starts.
@@ -177,7 +182,7 @@ jobs:
         run: uv sync --locked --all-groups
 
       - name: Gates
-        run: scripts/check.sh
+        run: scripts/check.sh --ci-lane "${{ matrix.lane }}"
 
       - name: The trace every gate left
         if: always()
@@ -189,7 +194,7 @@ jobs:
         if: failure() || cancelled()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: cairn-failure-diagnostics
+          name: cairn-failure-diagnostics-${{ matrix.lane }}
           path: |
             .check.log
             .doctor/runs/**

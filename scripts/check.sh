@@ -33,21 +33,33 @@ fi
 
 FAST=0
 UNIT=0
+CI_LANE=all
 SCOPED=0
 PATHS=()
 while [ $# -gt 0 ]; do
   case "$1" in
     --fast) FAST=1; shift ;;
     --unit) UNIT=1; shift ;;
+    --ci-lane) CI_LANE="${2:-}"; shift; [ $# -eq 0 ] || shift ;;
     --paths) SCOPED=1; shift; PATHS=("$@"); break ;;
     *)
       say "DENY usage: unknown argument $1"
       echo "[check] unknown argument: $1" >&2
-      echo "        usage: scripts/check.sh [--fast|--unit] [--paths <path> ...]" >&2
+      echo "        usage: scripts/check.sh [--fast|--unit|--ci-lane python|lean] [--paths <path> ...]" >&2
       exit 3
       ;;
   esac
 done
+
+case "$CI_LANE:$FAST:$UNIT:$SCOPED" in
+  all:*) ;;
+  python:0:0:0|lean:0:0:0) ;;
+  *)
+    say "DENY usage: --ci-lane requires python or lean and cannot combine with --fast, --unit, or --paths"
+    echo "[check] invalid CI lane or incompatible selection flags" >&2
+    exit 3
+    ;;
+esac
 
 if ! command -v uv >/dev/null 2>&1; then
   say "DENY infra: uv not on PATH"
@@ -130,7 +142,7 @@ else
   else
     say "DEADLINE ${CAIRN_SESSION_DEADLINE:-3000}s session (dumps every thread; a kill prints 'Timeout (' on stderr, and the watchdog exits 124, its faulthandler backstop 15s later exits 1; an in-process libpari call past cairn.pari.CALL_BOUND_S prints 'libpari stall in <test>' and also exits 124)"
   fi
-  gate tests uv run pytest -q --durations=25
+  gate tests uv run pytest -q --durations=25 --cairn-ci-lane="$CI_LANE"
 fi
 
 if [ ${#FAILED[@]} -ne 0 ]; then
@@ -142,5 +154,5 @@ if [ ${#FAILED[@]} -ne 0 ]; then
   exit 1
 fi
 
-say "RESULT pass (fast=$FAST unit=$UNIT scoped=$SCOPED)"
+say "RESULT pass (fast=$FAST unit=$UNIT scoped=$SCOPED lane=$CI_LANE)"
 printf '[check] all gates pass\n'

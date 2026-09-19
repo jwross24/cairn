@@ -65,7 +65,7 @@ so the protocol holds on its own. A guard's refusal is a safety mechanism, never
 - `.githooks/pre-commit` runs `scripts/check.sh --fast --paths <the commit's staged paths>`,
   `scripts/bead-test-plan.sh` for each bead the commit closes, then the compliance audit. The gates
   see the index, not the working tree, so a file the commit does not stage cannot refuse it; the
-  tree-wide run belongs to CI, which calls `scripts/check.sh` with no arguments. An index that
+  tree-wide run belongs to CI, which calls `scripts/check.sh --ci-lane python` and `--ci-lane lean`. An index that
   stages nothing takes the tree-wide form. `.githooks/post-commit` pushes a bead-closing commit and
   only such a commit, logging `PUSHED`, `SKIP` or `DENY` to `.check.log`; a failed push is loud and
   leaves the commit local. Bypass, logged: `CAIRN_PUSH_SKIP='<reason>'`.
@@ -125,7 +125,9 @@ We use **uv** for everything. Never `pip`, `poetry`, `conda` or an ad-hoc `pytho
 
 `scripts/check.sh` is the one place that says what green means; the pre-commit hook and CI both call it.
 `--paths <path> ...` scopes every gate to that list and is the form the hook uses; with no `--paths`
-each gate has the scope it always had, which is the form CI runs. After any substantive change:
+each gate has the scope it always had. CI runs both `--ci-lane python` and `--ci-lane lean`;
+their test sets are disjoint and exhaustive. With no lane argument, the local check runs both sets.
+After any substantive change:
 
 ```bash
 scripts/check.sh --fast
