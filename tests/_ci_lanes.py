@@ -14,6 +14,10 @@ LEAN_TEST_PATHS = (
     "tests/unit/test_formal_statement_hasher.py",
 )
 SOLUTION_TEST_PATHS = ("tests/integration/test_solution_build_compile.py",)
+LEAN_SOLUTION_TESTS = (
+    "test_real_prelude_solution_and_challenge_build_with_private_pinned_dependencies",
+    "test_a_compiling_weaker_statement_fails_real_prelude_closure_comparison",
+)
 
 
 def validate_manifest(root, paths):
@@ -48,7 +52,7 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         path = item.path.relative_to(config.rootpath).as_posix()
         if path in SOLUTION_TEST_PATHS:
-            item_lane = "solution"
+            item_lane = "lean" if item.originalname in LEAN_SOLUTION_TESTS else "solution"
         elif path in LEAN_TEST_PATHS:
             item_lane = "lean"
         else:

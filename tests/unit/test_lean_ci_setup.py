@@ -75,7 +75,7 @@ def _assert_ci_lanes(text):
         "Provision exporter source",
         "Build pinned comparator and exporter",
     ):
-        assert "if: matrix.lane == 'solution'" in _step(text, name)
+        assert "if: matrix.lane != 'python'" in _step(text, name)
         assert _steps(text)[name] < _steps(text)[GATES]
 
 
@@ -90,7 +90,8 @@ def test_all_ci_lanes_run_the_same_gates_with_independent_deadlines():
         ("fail-fast: false", "fail-fast: true"),
         ('CAIRN_SESSION_DEADLINE: "1080"', 'CAIRN_SESSION_DEADLINE: "1800"'),
         ("timeout-minutes: 20", "timeout-minutes: 30"),
-        ("if: matrix.lane == 'solution'", "if: matrix.lane == 'lean'"),
+        ("if: matrix.lane != 'python'", "if: matrix.lane == 'lean'"),
+        ("if: matrix.lane != 'python'", "if: matrix.lane == 'solution'"),
         ('--ci-lane "${{ matrix.lane }}"', "--unit"),
         ("name: cairn-failure-diagnostics-${{ matrix.lane }}", "name: cairn-failure-diagnostics"),
     ],

@@ -3,7 +3,7 @@ from pathlib import Path
 
 import _ci_lanes
 import pytest
-from _ci_lanes import LEAN_TEST_PATHS, SOLUTION_TEST_PATHS, validate_manifest
+from _ci_lanes import LEAN_SOLUTION_TESTS, LEAN_TEST_PATHS, SOLUTION_TEST_PATHS, validate_manifest
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -18,10 +18,15 @@ def _suite(pytester):
         path = pytester.path / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("def test_pass():\n    assert True\n")
+    path = pytester.path / SOLUTION_TEST_PATHS[0]
+    with path.open("a") as stream:
+        stream.write("import pytest\n")
+        for name in LEAN_SOLUTION_TESTS:
+            stream.write(f'@pytest.mark.parametrize("case", [0, 1])\ndef {name}(case):\n    assert True\n')
 
 
 @pytest.mark.parametrize(
-    ("lane", "passed", "deselected"), [("all", 3, 0), ("python", 1, 2), ("lean", 1, 2), ("solution", 1, 2)]
+    ("lane", "passed", "deselected"), [("all", 7, 0), ("python", 1, 6), ("lean", 5, 2), ("solution", 1, 6)]
 )
 def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
     _suite(pytester)
@@ -32,13 +37,15 @@ def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
 def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytester):
     _suite(pytester)
     default = pytester.runpytest("-q", "--import-mode=importlib")
-    default.assert_outcomes(passed=3)
+    default.assert_outcomes(passed=7)
     populations = {}
     for lane in ("all", "python", "lean", "solution"):
         result = pytester.runpytest("-q", "--collect-only", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
         assert result.ret == pytest.ExitCode.OK
         populations[lane] = {line for line in result.outlines if line.startswith("tests/") and "::" in line}
-    assert populations["lean"] == {"tests/integration/test_lean_toolchain.py::test_pass"}
+    assert populations["lean"] == {"tests/integration/test_lean_toolchain.py::test_pass"} | {
+        f"{SOLUTION_TEST_PATHS[0]}::{name}[{case}]" for name in LEAN_SOLUTION_TESTS for case in (0, 1)
+    }
     assert populations["python"] == {"tests/unit/test_unlisted.py::test_pass"}
     assert populations["solution"] == {"tests/integration/test_solution_build_compile.py::test_pass"}
     assert not populations["lean"] & populations["python"]
@@ -46,8 +53,8 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
     assert populations["all"] == populations["lean"] | populations["python"] | populations["solution"]
 
 
-@pytest.mark.parametrize("lane", ["python", "lean", "solution"])
-def test_a_selected_failure_keeps_the_lane_red(pytester, lane):
+@pytest.mark.parametrize(("lane", "passed", "deselected"), [("python", 0, 6), ("lean", 4, 2), ("solution", 0, 2)])
+def test_a_selected_failure_keeps_the_lane_red(pytester, lane, passed, deselected):
     _suite(pytester)
     relative = {
         "lean": "tests/integration/test_lean_toolchain.py",
@@ -56,8 +63,28 @@ def test_a_selected_failure_keeps_the_lane_red(pytester, lane):
     }[lane]
     (pytester.path / relative).write_text("def test_planted_failure():\n    assert False\n")
     result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
-    result.assert_outcomes(failed=1, deselected=2)
+    result.assert_outcomes(failed=1, passed=passed, deselected=deselected)
     assert result.ret == pytest.ExitCode.TESTS_FAILED
+
+
+@pytest.mark.parametrize("name", LEAN_SOLUTION_TESTS)
+def test_a_reassigned_solution_failure_keeps_the_lean_lane_red(pytester, name):
+    _suite(pytester)
+    (pytester.path / SOLUTION_TEST_PATHS[0]).write_text(f"def {name}():\n    assert False\n")
+    result = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=lean")
+    result.assert_outcomes(failed=1, passed=1, deselected=1)
+    assert result.ret == pytest.ExitCode.TESTS_FAILED
+
+
+def test_reassigned_solution_cases_exist_in_the_declared_file():
+    definitions = {
+        node.name
+        for node in ast.walk(ast.parse((ROOT / SOLUTION_TEST_PATHS[0]).read_text()))
+        if isinstance(node, ast.FunctionDef)
+    }
+    assert LEAN_SOLUTION_TESTS
+    assert len(set(LEAN_SOLUTION_TESTS)) == len(LEAN_SOLUTION_TESTS)
+    assert set(LEAN_SOLUTION_TESTS) <= definitions
 
 
 def test_invalid_lane_refuses(pytester):

@@ -182,13 +182,13 @@ jobs:
         run: uv sync --locked --all-groups
 
       - name: Read comparator pins
-        if: matrix.lane == 'solution'
+        if: matrix.lane != 'python'
         id: comparator-pins
         run: |
           uv run python -c 'import json; from pathlib import Path; p=json.loads(Path("bundle/container.json").read_text())["comparator"]; print("repository=" + p["repo"].removeprefix("https://github.com/")); print("revision=" + p["rev"]); print("exporter=" + p["lean4export_rev"])' >> "$GITHUB_OUTPUT"
 
       - name: Provision comparator source
-        if: matrix.lane == 'solution'
+        if: matrix.lane != 'python'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: ${{ steps.comparator-pins.outputs.repository }}
@@ -198,7 +198,7 @@ jobs:
           clean: false
 
       - name: Provision exporter source
-        if: matrix.lane == 'solution'
+        if: matrix.lane != 'python'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: leanprover/lean4export
@@ -208,7 +208,7 @@ jobs:
           clean: false
 
       - name: Build pinned comparator and exporter
-        if: matrix.lane == 'solution'
+        if: matrix.lane != 'python'
         working-directory: .doctor/comparator
         run: |
           set -euo pipefail
