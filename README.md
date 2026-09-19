@@ -133,7 +133,7 @@ The real-prelude ordered-plan test requires fresh kernel replay, rejects `sorry`
 replay, and distinguishes replay timeout from rejection. Its per-test watchdog is 900 seconds,
 including setup and teardown; the replay subprocess retains its 600-second bound.
 CI runs disjoint Python, Lean, Solution, and container lanes. The Lean lane includes the
-lower-level real-prelude build, closure-comparison, and fresh-replay forgery cases from
+real-prelude closure-comparison and fresh-replay forgery cases from
 `tests/integration/test_solution_build_compile.py`; the Solution lane owns the
 remaining cases in that file. Each lane has a 1080-second session deadline
 and 20-minute job ceiling. The default local check runs every lane's tests.

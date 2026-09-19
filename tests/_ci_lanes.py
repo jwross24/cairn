@@ -16,7 +16,6 @@ LEAN_TEST_PATHS = (
 SOLUTION_TEST_PATHS = ("tests/integration/test_solution_build_compile.py",)
 CONTAINER_TEST_PATHS = ("tests/integration/test_container_statement_hash.py",)
 LEAN_SOLUTION_TESTS = (
-    "test_real_prelude_solution_and_challenge_build_with_private_pinned_dependencies",
     "test_a_compiling_weaker_statement_fails_real_prelude_closure_comparison",
     "test_real_prelude_forgery_passes_axioms_but_fails_fresh_replay",
 )

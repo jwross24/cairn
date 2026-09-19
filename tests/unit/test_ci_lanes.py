@@ -6,6 +6,11 @@ import pytest
 from _ci_lanes import CONTAINER_TEST_PATHS, LEAN_SOLUTION_TESTS, LEAN_TEST_PATHS, SOLUTION_TEST_PATHS, validate_manifest
 
 ROOT = Path(__file__).resolve().parents[2]
+SOLUTION_CASES = (
+    "test_real_prelude_solution_and_challenge_build_with_private_pinned_dependencies",
+    "test_a_compiling_weaker_statement_fails_real_prelude_closure_comparison",
+    "test_real_prelude_forgery_passes_axioms_but_fails_fresh_replay",
+)
 
 
 def _suite(pytester):
@@ -22,13 +27,13 @@ def _suite(pytester):
     path = pytester.path / SOLUTION_TEST_PATHS[0]
     with path.open("a") as stream:
         stream.write("import pytest\n")
-        for name in LEAN_SOLUTION_TESTS:
+        for name in SOLUTION_CASES:
             stream.write(f'@pytest.mark.parametrize("case", [0, 1])\ndef {name}(case):\n    assert True\n')
 
 
 @pytest.mark.parametrize(
     ("lane", "passed", "deselected"),
-    [("all", 10, 0), ("python", 1, 9), ("lean", 7, 3), ("solution", 1, 9), ("container", 1, 0)],
+    [("all", 10, 0), ("python", 1, 9), ("lean", 5, 5), ("solution", 3, 7), ("container", 1, 0)],
 )
 def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
     _suite(pytester)
@@ -49,7 +54,9 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
         f"{SOLUTION_TEST_PATHS[0]}::{name}[{case}]" for name in LEAN_SOLUTION_TESTS for case in (0, 1)
     }
     assert populations["python"] == {"tests/unit/test_unlisted.py::test_pass"}
-    assert populations["solution"] == {"tests/integration/test_solution_build_compile.py::test_pass"}
+    assert populations["solution"] == {"tests/integration/test_solution_build_compile.py::test_pass"} | {
+        f"{SOLUTION_TEST_PATHS[0]}::{SOLUTION_CASES[0]}[{case}]" for case in (0, 1)
+    }
     assert populations["container"] == {"tests/integration/test_container_statement_hash.py::test_pass"}
     assert not populations["lean"] & populations["python"]
     assert not populations["solution"] & (populations["lean"] | populations["python"])
@@ -61,7 +68,7 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
 
 @pytest.mark.parametrize(
     ("lane", "passed", "deselected"),
-    [("python", 0, 9), ("lean", 6, 3), ("solution", 0, 3), ("container", 0, 0)],
+    [("python", 0, 9), ("lean", 4, 5), ("solution", 0, 3), ("container", 0, 0)],
 )
 def test_a_selected_failure_keeps_the_lane_red(pytester, lane, passed, deselected):
     _suite(pytester)
@@ -98,12 +105,15 @@ def test_container_lane_refuses_an_import_error_in_its_own_module(pytester):
     assert "container-import" in result.stdout.str()
 
 
-@pytest.mark.parametrize("name", LEAN_SOLUTION_TESTS)
-def test_a_reassigned_solution_failure_keeps_the_lean_lane_red(pytester, name):
+@pytest.mark.parametrize(
+    ("name", "lane", "passed", "deselected"),
+    [(SOLUTION_CASES[0], "solution", 0, 3), *((name, "lean", 1, 2) for name in SOLUTION_CASES[1:])],
+)
+def test_a_reassigned_solution_failure_keeps_its_lane_red(pytester, name, lane, passed, deselected):
     _suite(pytester)
     (pytester.path / SOLUTION_TEST_PATHS[0]).write_text(f"def {name}():\n    assert False\n")
-    result = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=lean")
-    result.assert_outcomes(failed=1, passed=1, deselected=2)
+    result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
+    result.assert_outcomes(failed=1, passed=passed, deselected=deselected)
     assert result.ret == pytest.ExitCode.TESTS_FAILED
 
 
@@ -116,6 +126,7 @@ def test_reassigned_solution_cases_exist_in_the_declared_file():
     assert LEAN_SOLUTION_TESTS
     assert len(set(LEAN_SOLUTION_TESTS)) == len(LEAN_SOLUTION_TESTS)
     assert set(LEAN_SOLUTION_TESTS) <= definitions
+    assert set(SOLUTION_CASES) <= definitions
 
 
 def test_invalid_lane_refuses(pytester):
