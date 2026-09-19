@@ -35,6 +35,7 @@ def linux_image(linux_bundle):
 @pytest.fixture(scope="module")
 def linux_project(linux_bundle, linux_image, tmp_path_factory):
     root = tmp_path_factory.mktemp("linux-challenge")
+    lg.info("linux_project_owner", uid=os.getuid(), gid=os.getgid(), mode=oct(root.stat().st_mode & 0o777))
     (root / "Challenge").mkdir()
     pins = linux_bundle.lean
     (root / "lean-toolchain").write_text(pins["toolchain"] + "\n")
@@ -57,6 +58,8 @@ def linux_project(linux_bundle, linux_image, tmp_path_factory):
         ["lake", f"+{pins['toolchain']}", "exe", "cache", "get", MATHLIB_MODULE],
         mounts=((root, "/project", "readonly=false"),),
         workdir="/project",
+        user=container.host_user(),
+        env=(("HOME", "/project"),),
         network="bridge",
     )
     lg.info("linux_mathlib_provision", rc=result.rc, stdout=result.stdout[-1500:], stderr=result.stderr[-1500:])
@@ -101,6 +104,7 @@ def test_linux_hashes_real_challenges_and_rejects_absent_theorems(
     assert popen_spy
     assert all(command[command.index("--network") + 1] == "none" for command in popen_spy)
     assert all(linux_image.image_id in command for command in popen_spy)
+    assert all(command[command.index("--user") + 1] == container.host_user() for command in popen_spy)
     lg.info("linux_hash_pair", hashes=hashes, image_id=linux_image.image_id)
 
 
@@ -111,7 +115,7 @@ def test_linux_build_error_returns_no_hash(linux_bundle, linux_image, tmp_path):
     (project / "lakefile.toml").write_text('name = "broken"\n\n[[lean_lib]]\nname = "Challenge"\n')
     (project / "lean-toolchain").write_text(linux_bundle.lean["toolchain"] + "\n")
     (project / "Challenge.lean").write_text("theorem broken : False := by exact True.intro\n")
-    with pytest.raises(lean.LeanRejected, match="rc=1"):
+    with pytest.raises(lean.LeanRejected, match="Type mismatch") as rejected:
         container.formal_statement_hash(
             linux_bundle,
             linux_image,
@@ -120,6 +124,8 @@ def test_linux_build_error_returns_no_hash(linux_bundle, linux_image, tmp_path):
             project_dir=project,
             work_dir=tmp_path / "tool",
         )
+    assert "True.intro" in str(rejected.value)
+    assert "False" in str(rejected.value)
 
 
 def test_wrong_image_identity_refuses_before_creating_a_project(linux_bundle, tmp_path, popen_spy):
@@ -135,3 +141,9 @@ def test_wrong_image_identity_refuses_before_creating_a_project(linux_bundle, tm
         )
     assert not (tmp_path / "tool").exists()
     assert popen_spy == []
+
+
+def test_root_host_user_is_refused(monkeypatch):
+    monkeypatch.setattr(os, "getuid", lambda: 0)
+    with pytest.raises(container.ContainerError, match="container-host-user-root"):
+        container.host_user()

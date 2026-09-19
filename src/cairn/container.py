@@ -195,11 +195,21 @@ def run(
     return run_docker(ctx, *args, tag, *argv, timeout_s=timeout_s)
 
 
+def host_user():
+    uid = os.getuid()
+    if uid == 0:
+        raise ContainerError("container-host-user-root")
+    return f"{uid}:{os.getgid()}"
+
+
 def formal_statement_hash(gate, image, module, theorem_names, *, project_dir, work_dir, timeout_s=RUN_TIMEOUT_S):
     if image.identity != gate.container_identity or not IMAGE_ID_RE.fullmatch(image.image_id):
         raise ContainerError("statement-hasher-image-mismatch")
     pins = gate.lean
-    result = run(image.context, image.image_id, ["lean", f"+{pins['toolchain']}", "--version"], timeout_s=timeout_s)
+    user = host_user()
+    result = run(
+        image.context, image.image_id, ["lean", f"+{pins['toolchain']}", "--version"], user=user, timeout_s=timeout_s
+    )
     lean.require_success(result)
     observed = lean.VERSION_RE.match(result.stdout)
     expected = {"version": lean.toolchain_version(pins["toolchain"]), "commit": pins["lean_commit"]}
@@ -217,7 +227,16 @@ def formal_statement_hash(gate, image, module, theorem_names, *, project_dir, wo
         argv = [tool, f"+{pins['toolchain']}", *(part.format(**fields) for part in arguments)]
         if name == "statement_hash":
             argv.extend(theorem_names)
-        return run(image.context, image.image_id, argv, mounts=mounts, workdir=cwd, timeout_s=timeout_s)
+        return run(
+            image.context,
+            image.image_id,
+            argv,
+            user=user,
+            mounts=mounts,
+            workdir=cwd,
+            env=(("HOME", cwd),),
+            timeout_s=timeout_s,
+        )
 
     lean.require_success(invoke("build", "/statement-tool", module="statement_hash"))
     lean.require_success(invoke("build", "/project", module=module))

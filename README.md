@@ -155,7 +155,9 @@ result does not provide containment, persist evidence, or grant PROVEN.
 `container.formal_statement_hash` builds the bundled hasher and a caller-prepared
 Challenge project in the pinned ARM64 Linux image, then computes the formal digest.
 It checks the toolchain version and commit, executes by OCI image ID with networking
-disabled, and logs that ID beside the digest. Its project dependencies must be
+disabled as the caller's non-root UID/GID, and logs that ID beside the digest.
+Private project permissions remain unchanged; build caches use the mounted project.
+Its project dependencies must be
 provisioned for Linux by the trusted caller. It does not execute a Solution or emit
 a gold verification result. The `container` CI lane runs the real elliptic-curve
 hash pair and rejection cases on a native Linux ARM64 runner; absent Docker is a failure.
