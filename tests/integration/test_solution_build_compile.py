@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -77,6 +78,28 @@ def statement():
     return factories.claim_statement(seed=11, formal_source=FORMAL)
 
 
+@pytest.fixture(scope="module")
+def prepared_free(mathlib_free_bundle, statement, tmp_path_factory):
+    return solutionchecks.prepare_dev(
+        mathlib_free_bundle, statement, THEOREMS, root=tmp_path_factory.mktemp("challenge-free") / "project"
+    )
+
+
+@pytest.fixture(scope="module")
+def prepared_real(tmp_path_factory):
+    out = tmp_path_factory.mktemp("real-binding")
+    bundle_path, pin_path = out / "gate-bundle.sqlite", out / "gate-bundle.pin"
+    bundle.build(lean.REPO_ROOT / "bundle", bundle_path)
+    bundle.write_pin(bundle_path, pin_path)
+    gate = bundle.GateBundle.open(bundle_path, pin_path)
+    formal = "theorem challenge_curve {R : Type} [CommRing R] (W : WeierstrassCurve R) : W.Δ = W.Δ := by\n  sorry\n"
+    statement = factories.claim_statement(seed=4, formal_source=formal)
+    prepared = solutionchecks.prepare_dev(
+        gate, statement, ("challenge_curve",), root=out / "challenge", dependency_project=lean.PROJECT_DIR
+    )
+    return gate, statement, prepared
+
+
 @pytest.fixture
 def comparator(monkeypatch):
     checkout = Path(os.environ.get("CAIRN_COMPARATOR_CHECKOUT", lean.REPO_ROOT / ".doctor/comparator")).resolve()
@@ -127,6 +150,81 @@ def _log(event, result, **fields):
     return result
 
 
+def test_preparation_computes_a_challenge_hash_without_a_candidate(mathlib_free_bundle, statement, tmp_path, popen_spy):
+    root = tmp_path / "prepared"
+    prepared = solutionchecks.prepare_dev(mathlib_free_bundle, statement, THEOREMS, root=root)
+    assert prepared.statement_hash == statement.hash
+    assert prepared.bundle_hash == mathlib_free_bundle.hash
+    assert prepared.formal_statement_hash != FSH
+    assert len(prepared.formal_statement_hash) == 64
+    assert prepared.project.theorem_names == THEOREMS
+    assert not (root / "config.json").exists()
+    assert list((root / "Solution").glob("*.lean")) == []
+    assert any("statement_hash" in Path(command[-3]).name for command in popen_spy if len(command) >= 3)
+    solutionbuild.assert_unchanged(prepared.project)
+    changed = replace(statement, formal_source="theorem challenge_hello : True := by sorry\n")
+    other = solutionchecks.prepare_dev(mathlib_free_bundle, changed, THEOREMS, root=tmp_path / "changed")
+    assert other.formal_statement_hash != prepared.formal_statement_hash
+
+
+def test_preparation_with_an_absent_theorem_cannot_return_a_binding(mathlib_free_bundle, statement, tmp_path):
+    with pytest.raises(lean.LeanRejected, match="missing-theorem"):
+        solutionchecks.prepare_dev(mathlib_free_bundle, statement, ("absent_theorem",), root=tmp_path / "prepared")
+
+
+@pytest.mark.parametrize(
+    "field", ["statement_hash", "bundle_hash", "pin_hash", "renderer_hash", "prelude_hash", "theorem_names"]
+)
+def test_the_dev_runner_refuses_mismatched_preparation_before_candidate_work(
+    mathlib_free_bundle, statement, prepared_free, tmp_path, popen_spy, field
+):
+    prepared = prepared_free
+    names = ("another_theorem",) if field == "theorem_names" else THEOREMS
+    if field != "theorem_names":
+        prepared = replace(prepared, **{field: "0" * 64})
+    root = tmp_path / "unassembled"
+    result = solutionchecks.run_dev(
+        mathlib_free_bundle,
+        statement,
+        challenge.Submission(solution_module=_honest(), formal_statement_hash=prepared.formal_statement_hash),
+        names,
+        _plan_rows(),
+        root=root,
+        prepared=prepared,
+        comparator=tmp_path / "absent-comparator",
+    )
+    assert result.ok is False
+    assert result.first_failure == result.steps[0]
+    assert f"prepared-challenge-mismatch:{field}" in result.first_failure.reasons
+    assert [step.result for step in result.steps[1:]] == [solutionplan.RESULT_BLOCKED] * 5
+    assert not root.exists()
+    assert popen_spy == []
+
+
+def test_altered_prepared_challenge_refuses_before_candidate_work(mathlib_free_bundle, statement, tmp_path, popen_spy):
+    prepared = solutionchecks.prepare_dev(mathlib_free_bundle, statement, THEOREMS, root=tmp_path / "prepared")
+    changed = challenge.module_path(statement, Path(prepared.project.root) / "Challenge")
+    changed.write_bytes(b"theorem challenge_hello : True := by trivial\n")
+    popen_spy.clear()
+    root = tmp_path / "unassembled"
+    result = solutionchecks.run_dev(
+        mathlib_free_bundle,
+        statement,
+        challenge.Submission(solution_module=_honest(), formal_statement_hash=prepared.formal_statement_hash),
+        THEOREMS,
+        _plan_rows(),
+        root=root,
+        prepared=prepared,
+        comparator=tmp_path / "absent-comparator",
+    )
+    assert result.ok is False
+    assert result.first_failure == result.steps[0]
+    assert f"solution-inputs-changed:Challenge/{changed.name}" in result.first_failure.reasons
+    assert [step.result for step in result.steps[1:]] == [solutionplan.RESULT_BLOCKED] * 5
+    assert not root.exists()
+    assert popen_spy == []
+
+
 def test_an_honest_solution_builds_in_the_assembled_project_and_the_inputs_are_unchanged(
     mathlib_free_bundle, statement, tmp_path
 ):
@@ -139,7 +237,7 @@ def test_an_honest_solution_builds_in_the_assembled_project_and_the_inputs_are_u
 
 
 def test_a_solution_that_rewrites_the_challenge_during_its_build_is_named_by_the_fingerprint(
-    mathlib_free_bundle, statement, tmp_path
+    mathlib_free_bundle, statement, prepared_free, tmp_path
 ):
     relative = str(Path("Challenge") / f"C_{statement.hash[:16]}.lean")
     root = tmp_path / "tamper"
@@ -147,11 +245,13 @@ def test_a_solution_that_rewrites_the_challenge_during_its_build_is_named_by_the
     result = solutionchecks.run_dev(
         mathlib_free_bundle,
         statement,
-        challenge.Submission(solution_module=_rewrites_the_challenge(relative), formal_statement_hash=FSH),
+        challenge.Submission(
+            solution_module=_rewrites_the_challenge(relative), formal_statement_hash=prepared_free.formal_statement_hash
+        ),
         THEOREMS,
         _plan_rows(),
         root=root,
-        formal_statement_hash=FSH,
+        prepared=prepared_free,
         comparator=tmp_path / "absent-comparator",
     )
     assert (root / relative).read_bytes() != before
@@ -163,10 +263,11 @@ def test_a_solution_that_rewrites_the_challenge_during_its_build_is_named_by_the
 
 
 def test_the_dev_runner_rejects_a_compiling_weaker_solution(
-    mathlib_free_bundle, statement, tmp_path, comparator, popen_spy
+    mathlib_free_bundle, statement, prepared_free, tmp_path, comparator, popen_spy
 ):
     submission = challenge.Submission(
-        solution_module=b"theorem challenge_hello : True := by trivial\n", formal_statement_hash=FSH
+        solution_module=b"theorem challenge_hello : True := by trivial\n",
+        formal_statement_hash=prepared_free.formal_statement_hash,
     )
     result = solutionchecks.run_dev(
         mathlib_free_bundle,
@@ -175,7 +276,7 @@ def test_the_dev_runner_rejects_a_compiling_weaker_solution(
         THEOREMS,
         _plan_rows(),
         root=tmp_path / "plan",
-        formal_statement_hash=FSH,
+        prepared=prepared_free,
         comparator=comparator,
     )
     lg.info("plan", steps=[(s.kind, s.result, s.observed, list(s.reasons)) for s in result.steps])
@@ -192,12 +293,13 @@ def test_the_dev_runner_rejects_a_compiling_weaker_solution(
 
 @pytest.mark.parametrize("case", ["stale-hash", "forbidden-import"])
 def test_the_dev_runner_refuses_bad_submissions_before_any_files_or_subprocesses(
-    mathlib_free_bundle, statement, tmp_path, popen_spy, case
+    mathlib_free_bundle, statement, prepared_free, tmp_path, popen_spy, case
 ):
     root = tmp_path / "unassembled"
     source = b"import Lean\n" + _honest() if case == "forbidden-import" else _honest()
     submission = challenge.Submission(
-        solution_module=source, formal_statement_hash="0" * 64 if case == "stale-hash" else FSH
+        solution_module=source,
+        formal_statement_hash="0" * 64 if case == "stale-hash" else prepared_free.formal_statement_hash,
     )
     result = solutionchecks.run_dev(
         mathlib_free_bundle,
@@ -206,7 +308,7 @@ def test_the_dev_runner_refuses_bad_submissions_before_any_files_or_subprocesses
         THEOREMS,
         _plan_rows(),
         root=root,
-        formal_statement_hash=FSH,
+        prepared=prepared_free,
         comparator=tmp_path / "absent-comparator",
     )
     at = 0 if case == "stale-hash" else 1
@@ -221,7 +323,9 @@ def test_the_dev_runner_refuses_bad_submissions_before_any_files_or_subprocesses
     assert popen_spy == []
 
 
-def test_the_dev_runner_refuses_replay_before_axioms_without_work(mathlib_free_bundle, statement, tmp_path, popen_spy):
+def test_the_dev_runner_refuses_replay_before_axioms_without_work(
+    mathlib_free_bundle, statement, prepared_free, tmp_path, popen_spy
+):
     rows = _plan_rows()
     rows[3], rows[4] = rows[4], rows[3]
     root = tmp_path / "unassembled"
@@ -233,23 +337,25 @@ def test_the_dev_runner_refuses_replay_before_axioms_without_work(mathlib_free_b
             THEOREMS,
             rows,
             root=root,
-            formal_statement_hash=FSH,
+            prepared=prepared_free,
             comparator=tmp_path / "absent-comparator",
         )
     assert not root.exists()
     assert popen_spy == []
 
 
-def test_the_dev_runner_records_an_empty_solution_as_build_refusal(mathlib_free_bundle, statement, tmp_path):
+def test_the_dev_runner_records_an_empty_solution_as_build_refusal(
+    mathlib_free_bundle, statement, prepared_free, tmp_path
+):
     root = tmp_path / "unassembled"
     result = solutionchecks.run_dev(
         mathlib_free_bundle,
         statement,
-        challenge.Submission(solution_module=b"", formal_statement_hash=FSH),
+        challenge.Submission(solution_module=b"", formal_statement_hash=prepared_free.formal_statement_hash),
         THEOREMS,
         _plan_rows(),
         root=root,
-        formal_statement_hash=FSH,
+        prepared=prepared_free,
         comparator=tmp_path / "absent-comparator",
     )
     assert result.ok is False
@@ -357,14 +463,13 @@ def test_a_compiling_weaker_statement_fails_real_prelude_closure_comparison(pinn
 @pytest.mark.timeout(900)
 @pytest.mark.parametrize("case", ["exact", "sorry", "timeout"])
 def test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks(
-    pinned_bundle, tmp_path, comparator, popen_spy, case
+    prepared_real, tmp_path, comparator, popen_spy, case
 ):
-    gate = bundle.GateBundle.open(*pinned_bundle())
-    formal = "theorem challenge_curve {R : Type} [CommRing R] (W : WeierstrassCurve R) : W.Δ = W.Δ := by\n  sorry\n"
-    statement = factories.claim_statement(seed=4, formal_source=formal)
+    gate, statement, prepared = prepared_real
+    formal = statement.formal_source
     source = formal if case == "sorry" else formal.replace("sorry", "rfl")
     submission = challenge.Submission(
-        solution_module=gate.challenge_prelude + source.encode(), formal_statement_hash=FSH
+        solution_module=gate.challenge_prelude + source.encode(), formal_statement_hash=prepared.formal_statement_hash
     )
     rows = _plan_rows()
     for row in rows:
@@ -378,9 +483,8 @@ def test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks(
         ("challenge_curve",),
         rows,
         root=root,
-        formal_statement_hash=FSH,
+        prepared=prepared,
         comparator=comparator,
-        dependency_project=lean.PROJECT_DIR,
     )
     lg.info("real_prelude_plan", case=case, steps=[step.__dict__ for step in result.steps])
     assert result.arm == container.DEV_ARM
@@ -399,7 +503,9 @@ def test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks(
             assert step.result == solutionplan.RESULT_BLOCKED
             assert step.reasons == (f"blocked-by:{solutionplan.KIND_AXIOMS}",)
     else:
-        assert replay_commands == [lean.command(gate.lean, "replay_fresh", module=solutionbuild.module_name(FSH))]
+        assert replay_commands == [
+            lean.command(gate.lean, "replay_fresh", module=solutionbuild.module_name(prepared.formal_statement_hash))
+        ]
         assert "--fresh" in replay_commands[0]
         assert result.steps[3].result == solutionplan.RESULT_PASS
         if case == "timeout":
@@ -415,7 +521,7 @@ def test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks(
             assert result.first_failure is None
             assert [step.result for step in result.steps] == [solutionplan.RESULT_PASS] * len(PLAN_KINDS)
             assert comparison_commands == [solutionchecks.comparator_argv(gate.lean, comparator)]
-    assert solutionbuild.module_path(FSH, root).read_bytes() == submission.solution_module
+    assert solutionbuild.module_path(prepared.formal_statement_hash, root).read_bytes() == submission.solution_module
     assert challenge.module_path(statement, root / "Challenge").read_bytes() == challenge.render(
         statement, gate.challenge_prelude
     )

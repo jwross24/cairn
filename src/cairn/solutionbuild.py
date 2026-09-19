@@ -51,6 +51,16 @@ class InputsChanged(SolutionRefused):
 
 
 @dataclass(frozen=True)
+class ChallengeProject:
+    root: str
+    challenge_module: str
+    theorem_names: tuple
+    inputs: tuple
+    input_hashes: tuple
+    fingerprint: str
+
+
+@dataclass(frozen=True)
 class Assembled:
     root: str
     challenge_module: str
@@ -169,14 +179,8 @@ def _dependency_packages(project, manifest, pins):
     return packages
 
 
-def assemble(gate, statement, submission, theorem_names, *, root, formal_statement_hash, dependency_project=None):
+def _write_project(gate, root, dependency_project):
     pins = gate.lean
-    lean.assert_pinned(pins)
-    assert_binding(submission, formal_statement_hash)
-    if not submission.solution_module:
-        raise SolutionRefused(EMPTY_SOLUTION)
-    if not theorem_names:
-        raise SolutionRefused(EMPTY_THEOREM_NAMES)
     manifest = gate.lake_manifest if dependency_project is not None else None
     packages = _dependency_packages(dependency_project, manifest, pins) if manifest is not None else ()
     root = Path(root)
@@ -195,6 +199,40 @@ def assemble(gate, statement, submission, theorem_names, *, root, formal_stateme
             shutil.copytree(package, root / ".lake" / "packages" / package.name, symlinks=True)
         _dependency_packages(root, manifest, pins)
     (root / LAKEFILE_NAME).write_text(lakefile)
+    return manifest
+
+
+def prepare_challenge(gate, statement, theorem_names, *, root, dependency_project=None):
+    lean.assert_pinned(gate.lean)
+    if not theorem_names:
+        raise SolutionRefused(EMPTY_THEOREM_NAMES)
+    root = Path(root)
+    manifest = _write_project(gate, root, dependency_project)
+    challenge_path = challenge.module_path(statement, root / CHALLENGE_DIR)
+    challenge_path.write_bytes(challenge.render(statement, gate.challenge_prelude))
+    inputs = (TOOLCHAIN_NAME, LAKEFILE_NAME, str(challenge_path.relative_to(root)))
+    if manifest is not None:
+        inputs += (MANIFEST_NAME,)
+    return ChallengeProject(
+        root=str(root),
+        challenge_module=challenge.module_name(statement),
+        theorem_names=tuple(theorem_names),
+        inputs=inputs,
+        input_hashes=tuple(blob_hash((root / relative).read_bytes()) for relative in inputs),
+        fingerprint=fingerprint(root, inputs),
+    )
+
+
+def assemble(gate, statement, submission, theorem_names, *, root, formal_statement_hash, dependency_project=None):
+    pins = gate.lean
+    lean.assert_pinned(pins)
+    assert_binding(submission, formal_statement_hash)
+    if not submission.solution_module:
+        raise SolutionRefused(EMPTY_SOLUTION)
+    if not theorem_names:
+        raise SolutionRefused(EMPTY_THEOREM_NAMES)
+    root = Path(root)
+    manifest = _write_project(gate, root, dependency_project)
     challenge_source = challenge.render(statement, gate.raw(challenge.PRELUDE_KIND))
     challenge_path = challenge.module_path(statement, root / CHALLENGE_DIR)
     challenge_path.write_bytes(challenge_source)
@@ -255,13 +293,17 @@ def _head(text):
     return ""
 
 
+def assert_dependencies(gate, assembled):
+    if MANIFEST_NAME in assembled.inputs:
+        _dependency_packages(assembled.root, gate.lake_manifest, gate.lean)
+        if (Path(assembled.root) / ".lake/package-overrides.json").exists():
+            raise SolutionRefused("dependency-overrides-refused")
+
+
 def build(gate, assembled, *, timeout_s=lean.DEFAULT_TIMEOUT_S):
     pins = gate.lean
     assert_unchanged(assembled)
-    if MANIFEST_NAME in assembled.inputs:
-        _dependency_packages(assembled.root, gate.lake_manifest, pins)
-        if (Path(assembled.root) / ".lake/package-overrides.json").exists():
-            raise SolutionRefused("dependency-overrides-refused")
+    assert_dependencies(gate, assembled)
     result = lean.run_argv(
         [*lean.command(pins, "build", module=assembled.solution_module), assembled.challenge_module],
         cwd=assembled.root,

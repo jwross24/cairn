@@ -1,7 +1,8 @@
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
-from cairn import container, lean, log, solutionbuild, solutionplan
+from cairn import challenge, container, lean, log, solutionbuild, solutionplan
 
 lg = log.get("solutionchecks")
 
@@ -17,6 +18,62 @@ CLOSURE_MISMATCH = "closure-mismatch"
 COMPARATOR_RELATIVE_BINARY = Path(".lake") / "build" / "bin" / "comparator"
 
 
+@dataclass(frozen=True)
+class PreparedChallenge:
+    project: solutionbuild.ChallengeProject
+    statement_hash: str
+    bundle_hash: str
+    pin_hash: str
+    renderer_hash: str
+    prelude_hash: str
+    formal_statement_hash: str
+
+
+def prepare_dev(gate, statement, theorem_names, *, root, dependency_project=None, timeout_s=lean.DEFAULT_TIMEOUT_S):
+    if gate.challenge_renderer != challenge.renderer_bytes():
+        raise solutionbuild.SolutionRefused("challenge-renderer-mismatch")
+    project = solutionbuild.prepare_challenge(
+        gate, statement, theorem_names, root=root, dependency_project=dependency_project
+    )
+    formal_hash = lean.formal_statement_hash(
+        gate,
+        project.challenge_module,
+        list(project.theorem_names),
+        project_dir=project.root,
+        work_dir=Path(project.root) / "statement-tool",
+        timeout_s=timeout_s,
+    )
+    solutionbuild.assert_unchanged(project)
+    solutionbuild.assert_dependencies(gate, project)
+    return PreparedChallenge(
+        project=project,
+        statement_hash=statement.hash,
+        bundle_hash=gate.hash,
+        pin_hash=gate.pin_hash,
+        renderer_hash=gate.digest_of(challenge.RENDERER_KIND),
+        prelude_hash=gate.digest_of(challenge.PRELUDE_KIND),
+        formal_statement_hash=formal_hash,
+    )
+
+
+def assert_prepared(gate, statement, theorem_names, prepared):
+    expected = {
+        "statement_hash": statement.hash,
+        "bundle_hash": gate.hash,
+        "pin_hash": gate.pin_hash,
+        "renderer_hash": gate.digest_of(challenge.RENDERER_KIND),
+        "prelude_hash": gate.digest_of(challenge.PRELUDE_KIND),
+    }
+    for name, value in expected.items():
+        if getattr(prepared, name) != value:
+            raise solutionbuild.SolutionRefused(f"prepared-challenge-mismatch:{name}")
+    if prepared.project.theorem_names != tuple(theorem_names):
+        raise solutionbuild.SolutionRefused("prepared-challenge-mismatch:theorem_names")
+    if gate.challenge_renderer != challenge.renderer_bytes():
+        raise solutionbuild.SolutionRefused("challenge-renderer-mismatch")
+    solutionbuild.assert_unchanged(prepared.project)
+
+
 def run_dev(
     gate,
     statement,
@@ -25,9 +82,8 @@ def run_dev(
     plan_rows,
     *,
     root,
-    formal_statement_hash,
+    prepared,
     comparator,
-    dependency_project=None,
 ):
     plan = solutionplan.SolutionPlan.load(plan_rows, arm=container.DEV_ARM)
     if tuple(step.kind for step in plan.steps) != solutionplan.STEP_KINDS:
@@ -38,7 +94,11 @@ def run_dev(
         nonlocal assembled
         start = time.monotonic()
         if step.kind == solutionplan.KIND_STATEMENT_BINDING:
-            return solutionbuild.observe_binding(submission, formal_statement_hash)
+            try:
+                assert_prepared(gate, statement, theorem_names, prepared)
+            except solutionbuild.SolutionRefused as exc:
+                return solutionplan.OBSERVED_REFUSED, (exc.reason,), _elapsed_ms(start)
+            return solutionbuild.observe_binding(submission, prepared.formal_statement_hash)
         if step.kind == solutionplan.KIND_IMPORT_ALLOWLIST:
             return (*solutionplan.check_imports(submission.solution_module), _elapsed_ms(start))
         try:
@@ -49,8 +109,10 @@ def run_dev(
                     submission,
                     theorem_names,
                     root=root,
-                    formal_statement_hash=formal_statement_hash,
-                    dependency_project=dependency_project,
+                    formal_statement_hash=prepared.formal_statement_hash,
+                    dependency_project=(
+                        prepared.project.root if solutionbuild.MANIFEST_NAME in prepared.project.inputs else None
+                    ),
                 )
                 return solutionbuild.observe_build(gate, assembled, timeout_s=step.timeout_s)
             assert assembled is not None
