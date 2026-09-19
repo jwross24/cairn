@@ -284,3 +284,99 @@ def test_a_compiling_weaker_statement_fails_real_prelude_closure_comparison(pinn
     )
     assert observed == solutionplan.OBSERVED_REFUSED
     assert reasons[:2] == (solutionchecks.CLOSURE_MISMATCH, "rc:1")
+
+
+@pytest.mark.timeout(900)
+@pytest.mark.parametrize("case", ["exact", "sorry", "timeout"])
+def test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks(
+    pinned_bundle, tmp_path, comparator, popen_spy, case
+):
+    gate = bundle.GateBundle.open(*pinned_bundle())
+    formal = "theorem challenge_curve {R : Type} [CommRing R] (W : WeierstrassCurve R) : W.Δ = W.Δ := by\n  sorry\n"
+    statement = factories.claim_statement(seed=4, formal_source=formal)
+    source = formal if case == "sorry" else formal.replace("sorry", "rfl")
+    submission = challenge.Submission(
+        solution_module=gate.challenge_prelude + source.encode(), formal_statement_hash=FSH
+    )
+    assembled = solutionbuild.assemble(
+        gate,
+        statement,
+        submission,
+        ("challenge_curve",),
+        root=tmp_path / "ordered-real-prelude",
+        formal_statement_hash=FSH,
+        dependency_project=lean.PROJECT_DIR,
+    )
+    tool = lean.axiom_tool(gate, tmp_path / "axiom-tool", timeout_s=120)
+    rows = _plan_rows()
+    for row in rows:
+        if row["kind"] == solutionplan.KIND_KERNEL_REPLAY:
+            row["timeout_s"] = 0.001 if case == "timeout" else lean.DEFAULT_TIMEOUT_S
+    ran = []
+
+    def observe(step):
+        ran.append(step.kind)
+        if step.kind == solutionplan.KIND_STATEMENT_BINDING:
+            return solutionbuild.observe_binding(submission, FSH)
+        if step.kind == solutionplan.KIND_IMPORT_ALLOWLIST:
+            return (*solutionplan.check_imports(submission.solution_module), 0)
+        if step.kind == solutionplan.KIND_BUILD:
+            return solutionbuild.observe_build(gate, assembled, timeout_s=step.timeout_s)
+        if step.kind == solutionplan.KIND_AXIOMS:
+            return solutionchecks.observe_axioms(
+                gate,
+                assembled.solution_module,
+                list(assembled.theorem_names),
+                project_dir=assembled.root,
+                timeout_s=step.timeout_s,
+                tool=tool,
+            )
+        if step.kind == solutionplan.KIND_KERNEL_REPLAY:
+            return solutionchecks.observe_kernel_replay(
+                gate.lean,
+                assembled.solution_module,
+                project_dir=assembled.root,
+                timeout_s=step.timeout_s,
+            )
+        assert step.kind == solutionplan.KIND_CLOSURE_COMPARISON
+        return solutionchecks.observe_closure_comparison(
+            gate, assembled, comparator=comparator, timeout_s=step.timeout_s
+        )
+
+    result = solutionplan.SolutionPlan.load(rows, arm=container.DEV_ARM).run(observe)
+    lg.info("real_prelude_plan", case=case, steps=[step.__dict__ for step in result.steps])
+    assert [step.kind for step in result.steps] == list(PLAN_KINDS)
+    assert [step.result for step in result.steps[:3]] == [solutionplan.RESULT_PASS] * 3
+    replay_commands = [command for command in popen_spy if "leanchecker" in command]
+    comparison_commands = [command for command in popen_spy if str(comparator) in command]
+    if case == "sorry":
+        assert result.ok is False
+        assert ran == list(PLAN_KINDS[:4])
+        assert result.first_failure == result.steps[3]
+        assert result.steps[3].result == solutionplan.RESULT_FAIL
+        assert "offending-axiom:sorryAx" in result.steps[3].reasons
+        assert replay_commands == []
+        assert comparison_commands == []
+        for step in result.steps[4:]:
+            assert step.result == solutionplan.RESULT_BLOCKED
+            assert step.reasons == (f"blocked-by:{solutionplan.KIND_AXIOMS}",)
+    else:
+        assert replay_commands == [lean.command(gate.lean, "replay_fresh", module=assembled.solution_module)]
+        assert "--fresh" in replay_commands[0]
+        assert result.steps[3].result == solutionplan.RESULT_PASS
+        if case == "timeout":
+            assert result.ok is False
+            assert ran == list(PLAN_KINDS[:5])
+            assert result.first_failure == result.steps[4]
+            assert result.steps[4].result == solutionplan.RESULT_TIMEOUT
+            assert result.steps[4].reasons == (solutionplan.TIMEOUT_REASON, "timeout_s:0.001")
+            assert result.steps[5].result == solutionplan.RESULT_BLOCKED
+            assert result.steps[5].reasons == (f"blocked-by:{solutionplan.KIND_KERNEL_REPLAY}",)
+            assert comparison_commands == []
+        else:
+            assert result.ok is True
+            assert result.first_failure is None
+            assert ran == list(PLAN_KINDS)
+            assert [step.result for step in result.steps] == [solutionplan.RESULT_PASS] * len(PLAN_KINDS)
+            assert comparison_commands == [solutionchecks.comparator_argv(gate.lean, comparator)]
+    solutionbuild.assert_unchanged(assembled)

@@ -129,6 +129,9 @@ export CAIRN_COMPARATOR_CHECKOUT="$comparator_work/comparator"
 CI provisions the same pins under `.doctor/comparator`, the default lookup path.
 Missing prerequisites fail the tests. Developer-mode comparator tests use upstream
 `fake-landrun.sh` with reviewed fixtures; they establish comparison behavior, not containment.
+The real-prelude ordered-plan test requires fresh kernel replay, rejects `sorry` before
+replay, and distinguishes replay timeout from rejection. Its per-test watchdog is 900 seconds,
+including setup and teardown; the replay subprocess retains its 600-second bound.
 
 ## Quick start
 
