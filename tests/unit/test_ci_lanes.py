@@ -11,6 +11,8 @@ SOLUTION_CASES = (
     "test_a_compiling_weaker_statement_fails_real_prelude_closure_comparison",
     "test_real_prelude_forgery_passes_axioms_but_fails_fresh_replay",
 )
+PLAN_CASE = "test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks"
+PLAN_VARIANTS = ("exact", "sorry", "timeout")
 
 
 def _suite(pytester):
@@ -29,11 +31,19 @@ def _suite(pytester):
         stream.write("import pytest\n")
         for name in SOLUTION_CASES:
             stream.write(f'@pytest.mark.parametrize("case", [0, 1])\ndef {name}(case):\n    assert True\n')
+        stream.write(f'@pytest.mark.parametrize("case", {PLAN_VARIANTS!r})\ndef {PLAN_CASE}(case):\n    assert True\n')
 
 
 @pytest.mark.parametrize(
     ("lane", "passed", "deselected"),
-    [("all", 10, 0), ("python", 1, 9), ("lean", 5, 5), ("solution", 3, 7), ("container", 1, 0)],
+    [
+        ("all", 13, 0),
+        ("python", 1, 12),
+        ("lean", 5, 8),
+        ("solution", 3, 10),
+        ("solution-plan", 3, 10),
+        ("container", 1, 0),
+    ],
 )
 def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
     _suite(pytester)
@@ -44,9 +54,9 @@ def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
 def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytester):
     _suite(pytester)
     default = pytester.runpytest("-q", "--import-mode=importlib")
-    default.assert_outcomes(passed=10)
+    default.assert_outcomes(passed=13)
     populations = {}
-    for lane in ("all", "python", "lean", "solution", "container"):
+    for lane in ("all", "python", "lean", "solution", "solution-plan", "container"):
         result = pytester.runpytest("-q", "--collect-only", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
         assert result.ret == pytest.ExitCode.OK
         populations[lane] = {line for line in result.outlines if line.startswith("tests/") and "::" in line}
@@ -58,17 +68,25 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
         f"{SOLUTION_TEST_PATHS[0]}::{SOLUTION_CASES[0]}[{case}]" for case in (0, 1)
     }
     assert populations["container"] == {"tests/integration/test_container_statement_hash.py::test_pass"}
+    assert populations["solution-plan"] == {f"{SOLUTION_TEST_PATHS[0]}::{PLAN_CASE}[{case}]" for case in PLAN_VARIANTS}
     assert not populations["lean"] & populations["python"]
     assert not populations["solution"] & (populations["lean"] | populations["python"])
     assert not populations["container"] & (populations["lean"] | populations["python"] | populations["solution"])
-    assert populations["all"] == (
+    assert not populations["solution-plan"] & (
         populations["lean"] | populations["python"] | populations["solution"] | populations["container"]
+    )
+    assert populations["all"] == (
+        populations["lean"]
+        | populations["python"]
+        | populations["solution"]
+        | populations["solution-plan"]
+        | populations["container"]
     )
 
 
 @pytest.mark.parametrize(
     ("lane", "passed", "deselected"),
-    [("python", 0, 9), ("lean", 4, 5), ("solution", 0, 3), ("container", 0, 0)],
+    [("python", 0, 12), ("lean", 4, 8), ("solution", 0, 3), ("container", 0, 0)],
 )
 def test_a_selected_failure_keeps_the_lane_red(pytester, lane, passed, deselected):
     _suite(pytester)
@@ -127,6 +145,19 @@ def test_reassigned_solution_cases_exist_in_the_declared_file():
     assert len(set(LEAN_SOLUTION_TESTS)) == len(LEAN_SOLUTION_TESTS)
     assert set(LEAN_SOLUTION_TESTS) <= definitions
     assert set(SOLUTION_CASES) <= definitions
+    assert PLAN_CASE in definitions
+
+
+@pytest.mark.parametrize("failed_case", PLAN_VARIANTS)
+def test_each_ordered_plan_failure_keeps_its_lane_red(pytester, failed_case):
+    _suite(pytester)
+    (pytester.path / SOLUTION_TEST_PATHS[0]).write_text(
+        f'import pytest\n@pytest.mark.parametrize("case", {PLAN_VARIANTS!r})\n'
+        f"def {PLAN_CASE}(case):\n    assert case != {failed_case!r}\n"
+    )
+    result = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=solution-plan")
+    result.assert_outcomes(failed=1, passed=2, deselected=3)
+    assert result.ret == pytest.ExitCode.TESTS_FAILED
 
 
 def test_invalid_lane_refuses(pytester):

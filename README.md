@@ -132,9 +132,10 @@ Missing prerequisites fail the tests. Developer-mode comparator tests use upstre
 The real-prelude ordered-plan test requires fresh kernel replay, rejects `sorry` before
 replay, and distinguishes replay timeout from rejection. Its per-test watchdog is 900 seconds,
 including setup and teardown; the replay subprocess retains its 600-second bound.
-CI runs disjoint Python, Lean, Solution, and container lanes. The Lean lane includes the
+CI runs disjoint Python, Lean, Solution, solution-plan, and container lanes. The Lean lane includes the
 real-prelude closure-comparison and fresh-replay forgery cases from
-`tests/integration/test_solution_build_compile.py`; the Solution lane owns the
+`tests/integration/test_solution_build_compile.py`; the solution-plan lane owns all three
+ordered-plan cases (exact proof, admitted proof, and replay timeout), and the Solution lane owns the
 remaining cases in that file. Each lane has a 1080-second session deadline
 and 20-minute job ceiling. The default local check runs every lane's tests.
 

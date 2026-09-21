@@ -47,7 +47,7 @@ def dispatch(tmp_path: Path):
     return run
 
 
-@pytest.mark.parametrize("lane", ["python", "lean", "solution", "all"])
+@pytest.mark.parametrize("lane", ["python", "lean", "solution", "solution-plan", "container", "all"])
 def test_lane_dispatch_preserves_pytest_arguments(dispatch, lane):
     args = [] if lane == "all" else ["--ci-lane", lane]
     result, calls = dispatch(*args)
@@ -57,7 +57,7 @@ def test_lane_dispatch_preserves_pytest_arguments(dispatch, lane):
     ]
 
 
-@pytest.mark.parametrize("lane", ["python", "lean", "solution"])
+@pytest.mark.parametrize("lane", ["python", "lean", "solution", "solution-plan", "container"])
 def test_a_failed_lane_refuses_the_gate(dispatch, lane):
     result, calls = dispatch("--ci-lane", lane, pytest_exit=1)
     assert result.returncode == 1
@@ -76,6 +76,9 @@ def test_a_failed_lane_refuses_the_gate(dispatch, lane):
         ["--ci-lane", "solution", "--fast"],
         ["--ci-lane", "solution", "--unit"],
         ["--ci-lane", "solution", "--paths", "src/cairn/lean.py"],
+        ["--ci-lane", "solution-plan", "--fast"],
+        ["--ci-lane", "solution-plan", "--unit"],
+        ["--ci-lane", "solution-plan", "--paths", "src/cairn/lean.py"],
     ],
 )
 def test_invalid_lane_selection_runs_no_gates(dispatch, args):
@@ -87,7 +90,11 @@ def test_invalid_lane_selection_runs_no_gates(dispatch, args):
 
 @pytest.mark.parametrize(
     ("lane", "test_file"),
-    [("lean", "test_lean_toolchain.py"), ("solution", "test_solution_build_compile.py")],
+    [
+        ("lean", "test_lean_toolchain.py"),
+        ("solution", "test_solution_build_compile.py"),
+        ("solution-plan", "test_solution_build_compile.py"),
+    ],
 )
 def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
     line = next(

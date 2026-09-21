@@ -19,6 +19,7 @@ LEAN_SOLUTION_TESTS = (
     "test_a_compiling_weaker_statement_fails_real_prelude_closure_comparison",
     "test_real_prelude_forgery_passes_axioms_but_fails_fresh_replay",
 )
+SOLUTION_PLAN_TESTS = ("test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks",)
 
 
 def validate_manifest(root, paths):
@@ -38,7 +39,9 @@ def validate_manifest(root, paths):
 
 
 def pytest_addoption(parser):
-    parser.addoption("--cairn-ci-lane", choices=("all", "python", "lean", "solution", "container"), default="all")
+    parser.addoption(
+        "--cairn-ci-lane", choices=("all", "python", "lean", "solution", "solution-plan", "container"), default="all"
+    )
 
 
 def pytest_ignore_collect(collection_path, config):
@@ -64,7 +67,10 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         path = item.path.relative_to(config.rootpath).as_posix()
         if path in SOLUTION_TEST_PATHS:
-            item_lane = "lean" if item.originalname in LEAN_SOLUTION_TESTS else "solution"
+            if item.originalname in SOLUTION_PLAN_TESTS:
+                item_lane = "solution-plan"
+            else:
+                item_lane = "lean" if item.originalname in LEAN_SOLUTION_TESTS else "solution"
         elif path in LEAN_TEST_PATHS:
             item_lane = "lean"
         elif path in CONTAINER_TEST_PATHS:

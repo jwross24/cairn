@@ -62,7 +62,7 @@ def test_ci_contract_refuses_a_missing_mathlib_prerequisite():
 
 
 def _assert_ci_lanes(text):
-    assert "lane: [python, lean, solution]" in text
+    assert "lane: [python, lean, solution, solution-plan]" in text
     assert "fail-fast: false" in text
     assert "continue-on-error:" not in text
     assert 'CAIRN_SESSION_DEADLINE: "1080"' in text
@@ -132,7 +132,8 @@ def test_container_lane_contract_refuses_missing_execution(old, new):
 @pytest.mark.parametrize(
     ("old", "new"),
     [
-        ("lane: [python, lean, solution]", "lane: [python, lean]"),
+        ("lane: [python, lean, solution, solution-plan]", "lane: [python, lean]"),
+        ("lane: [python, lean, solution, solution-plan]", "lane: [python, lean, solution]"),
         ("fail-fast: false", "fail-fast: true"),
         ('CAIRN_SESSION_DEADLINE: "1080"', 'CAIRN_SESSION_DEADLINE: "1800"'),
         ("timeout-minutes: 20", "timeout-minutes: 30"),
