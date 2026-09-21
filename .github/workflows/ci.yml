@@ -24,7 +24,6 @@ jobs:
     env:
       CAIRN_SESSION_DEADLINE: "1080"
       BR_VERSION: "0.5.7"
-      PYTEST_DEBUG_TEMPROOT: ${{ runner.temp }}
       PYTEST_ADDOPTS: "-vv"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -66,6 +65,8 @@ jobs:
           br sync --import-only
           br show cairn-exi --json
       - name: Linux container gates
+        env:
+          PYTEST_DEBUG_TEMPROOT: ${{ runner.temp }}
         run: scripts/check.sh --ci-lane container
       - name: Linux adapter types
         run: uv run ty check --python-platform linux src/cairn/container.py src/cairn/lean.py src/cairn/solutionbuild.py src/cairn/solutionchecks.py tests/_linux_dependencies.py tests/integration/test_container_statement_hash.py
@@ -103,7 +104,6 @@ jobs:
     # (50.6 s at load average 7 on the build machine).
     timeout-minutes: 20
     env:
-      PYTEST_DEBUG_TEMPROOT: ${{ runner.temp }}
       PYTEST_ADDOPTS: "-vv"
       # Under the job ceiling by enough that pytest dies first and leaves a thread
       # profile, rather than the job being canceled with a blank transcript. The
@@ -280,6 +280,8 @@ jobs:
           "$HOME/.elan/bin/lake" "+$(cat lean-toolchain)" build lean4export comparator
 
       - name: Gates
+        env:
+          PYTEST_DEBUG_TEMPROOT: ${{ runner.temp }}
         run: scripts/check.sh --ci-lane "${{ matrix.lane }}"
 
       - name: The trace every gate left

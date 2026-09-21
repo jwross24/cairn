@@ -115,7 +115,9 @@ def test_container_lane_runs_real_tests_without_an_optional_gate():
 
 def _assert_test_diagnostics(text):
     for job in text.split("  container:\n", 1)[1].split("  check:\n", 1):
-        assert "PYTEST_DEBUG_TEMPROOT: ${{ runner.temp }}" in job
+        assert "${{ runner." not in job.split("    steps:\n", 1)[0]
+        gate_name = "Linux container gates" if "Linux container gates" in job else GATES
+        assert "PYTEST_DEBUG_TEMPROOT: ${{ runner.temp }}" in _step(job, gate_name)
         assert 'PYTEST_ADDOPTS: "-vv"' in job
         upload = _step(job, "Test diagnostics")
         assert "if: always()" in upload
@@ -127,6 +129,12 @@ def _assert_test_diagnostics(text):
 
 def test_ci_retains_gate_and_test_logs_from_every_lane():
     _assert_test_diagnostics(WORKFLOW.read_text())
+
+
+def test_diagnostics_contract_refuses_runner_context_before_a_runner_exists():
+    text = WORKFLOW.read_text().replace("    env:\n", "    env:\n      PYTEST_DEBUG_TEMPROOT: ${{ runner.temp }}\n", 1)
+    with pytest.raises(AssertionError):
+        _assert_test_diagnostics(text)
 
 
 @pytest.mark.parametrize(
