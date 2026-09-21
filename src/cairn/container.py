@@ -2,6 +2,7 @@ import json
 import os
 import re
 import shutil
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -21,6 +22,7 @@ DOCKER = shutil.which("docker") or "/usr/local/bin/docker"
 CONTEXT_ENV = "CAIRN_CONTAINER_CONTEXT"
 BUILD_TIMEOUT_S = 3600.0
 RUN_TIMEOUT_S = 900.0
+CLEANUP_TIMEOUT_S = 60.0
 ARG_RE = re.compile(r"^ARG ([A-Z0-9_]+)=(\S+)$", re.MULTILINE)
 FROM_RE = re.compile(r"^FROM (\S+)@(sha256:[0-9a-f]{64})$", re.MULTILINE)
 IMAGE_ID_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
@@ -180,7 +182,8 @@ def image_id(ctx, tag):
 def run(
     ctx, image, argv, *, user=None, cap_add=(), mounts=(), workdir=None, env=(), network="none", timeout_s=RUN_TIMEOUT_S
 ):
-    args = ["run", "--rm", "--network", network]
+    name = "cairn-run-" + uuid.uuid4().hex
+    args = ["run", "--rm", "--name", name, "--network", network]
     if user:
         args += ["--user", user]
     for cap in cap_add:
@@ -189,10 +192,22 @@ def run(
         args += ["--mount", f"type=bind,source={Path(host).resolve()},target={guest},{mode}"]
     if workdir:
         args += ["--workdir", workdir]
-    for name, value in env:
-        args += ["--env", f"{name}={value}"]
+    for key, value in env:
+        args += ["--env", f"{key}={value}"]
     tag = image.tag if isinstance(image, Image) else image
-    return run_docker(ctx, *args, tag, *argv, timeout_s=timeout_s)
+    try:
+        return run_docker(ctx, *args, tag, *argv, timeout_s=timeout_s)
+    except lean.LeanTimeout as timeout:
+        try:
+            stopped = run_docker(ctx, "stop", "--time", "0", name, timeout_s=CLEANUP_TIMEOUT_S)
+        except (lean.LeanMissing, lean.LeanTimeout, OSError) as exc:
+            lg.info("timeout_cleanup_failed", name=name, context=ctx, reason=str(exc))
+            raise ContainerError(f"container-timeout-cleanup-unconfirmed:{name}") from exc
+        if stopped.rc != 0:
+            lg.info("timeout_cleanup_failed", name=name, context=ctx, rc=stopped.rc, stderr=stopped.stderr)
+            raise ContainerError(f"container-timeout-cleanup-unconfirmed:{name}:{stopped.stderr.strip()}") from timeout
+        lg.info("timeout_stopped", name=name, context=ctx)
+        raise
 
 
 def host_user():

@@ -163,6 +163,9 @@ Challenge project in the pinned ARM64 Linux image, then computes the formal dige
 It checks the toolchain version and commit, executes by OCI image ID with networking
 disabled as the caller's non-root UID/GID, and logs that ID beside the digest.
 Private project permissions remain unchanged; build caches use the mounted project.
+Each container run has a unique owned name. A client timeout stops that container
+before returning the timeout; an unsuccessful stop raises a cleanup error naming
+the container, so termination is not claimed when the daemon cannot confirm it.
 Its project dependencies must be
 provisioned for Linux by the trusted caller. It does not execute a Solution or emit
 a gold verification result. The `container` CI lane runs the real elliptic-curve

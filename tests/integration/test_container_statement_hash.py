@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 from dataclasses import replace
 from pathlib import Path
 
@@ -11,6 +12,84 @@ from cairn import bundle, challenge, container, lean, log, solutionbuild, soluti
 lg = log.get("test")
 MATHLIB_MODULE = "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
 FORMAL = "theorem challenge_curve {R : Type} [CommRing R] (W : WeierstrassCurve R) : W.Δ = W.Δ := by\n  sorry\n"
+
+
+def test_container_timeout_stops_only_its_own_work(linux_image, tmp_path):
+    sibling = "cairn-sibling-" + uuid.uuid4().hex
+    ctx = linux_image.context
+    lean.require_success(
+        container.run_docker(ctx, "run", "--rm", "--detach", "--name", sibling, linux_image.image_id, "sleep", "60")
+    )
+    owned = None
+    try:
+        with pytest.raises(lean.LeanTimeout) as timeout:
+            container.run(
+                ctx,
+                linux_image.image_id,
+                ["sh", "-c", "touch /project/started; sleep 60"],
+                user=container.host_user(),
+                mounts=((tmp_path, "/project", "readonly=false"),),
+                env=(("HOME", "/project"), (sibling, "owned elsewhere")),
+                timeout_s=2,
+            )
+        argv = timeout.value.argv
+        owned = argv[argv.index("--name") + 1]
+        assert (tmp_path / "started").is_file()
+        running = container.run_docker(ctx, "ps", "--format", "{{.Names}}")
+        lean.require_success(running)
+        assert owned not in running.stdout.splitlines()
+        assert sibling in running.stdout.splitlines()
+        lg.info("container_timeout_stopped", owned=owned, sibling=sibling, timeout_s=timeout.value.timeout_s)
+    finally:
+        lean.require_success(container.run_docker(ctx, "stop", "--time", "0", sibling))
+        if owned is not None:
+            container.run_docker(ctx, "stop", "--time", "0", owned)
+
+
+def test_container_exit_preserves_its_status_and_output(linux_image):
+    for code in (0, 7):
+        result = container.run(
+            linux_image.context,
+            linux_image.image_id,
+            ["sh", "-c", f"printf output; printf diagnostic >&2; exit {code}"],
+            user=container.host_user(),
+        )
+        assert (result.rc, result.stdout, result.stderr) == (code, "output", "diagnostic")
+        lg.info("container_exit_preserved", rc=result.rc, stdout=result.stdout, stderr=result.stderr)
+
+
+def test_container_timeout_reports_failed_cleanup(linux_image, tmp_path, monkeypatch):
+    real_run = container.run_docker
+    absent_context = "cairn-absent-" + uuid.uuid4().hex
+
+    def unavailable_cleanup(ctx, *args, **kwargs):
+        return real_run(absent_context if args[0] == "stop" else ctx, *args, **kwargs)
+
+    monkeypatch.setattr(container, "run_docker", unavailable_cleanup)
+    owned = None
+    try:
+        with pytest.raises(container.ContainerError, match="container-timeout-cleanup-unconfirmed") as failure:
+            container.run(
+                linux_image.context,
+                linux_image.image_id,
+                ["sh", "-c", "touch /project/started; sleep 60"],
+                user=container.host_user(),
+                mounts=((tmp_path, "/project", "readonly=false"),),
+                timeout_s=2,
+            )
+        cause = failure.value.__cause__
+        assert isinstance(cause, lean.LeanTimeout)
+        owned = cause.argv[cause.argv.index("--name") + 1]
+        assert owned in str(failure.value)
+        assert absent_context in str(failure.value)
+        assert (tmp_path / "started").is_file()
+        running = real_run(linux_image.context, "ps", "--format", "{{.Names}}")
+        lean.require_success(running)
+        assert owned in running.stdout.splitlines()
+        lg.info("container_cleanup_failure_reported", name=owned, reason=str(failure.value))
+    finally:
+        if owned is not None:
+            lean.require_success(real_run(linux_image.context, "stop", "--time", "0", owned))
 
 
 @pytest.fixture(scope="module")
