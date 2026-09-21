@@ -161,6 +161,14 @@ compilation result. The prepared project is not mounted during candidate executi
 A successful compilation, including one containing `sorry`, is not proof acceptance.
 This step does not run the axiom check, fresh replay, or statement comparison.
 
+`solutionchecks.check_container_axioms` accepts a successful compilation bound to
+the same bundle and pin. It checks candidate inputs and dependencies, builds the
+bundled axiom extractor in a separate Linux project, and validates its canonical
+theorem-indexed output against the permitted axioms. Candidate compilation does
+not mount the extractor; inspection mounts it read-only. A `sorryAx` dependency
+fails this check. Input and dependency integrity are checked before returning.
+This is axiom evidence only, not fresh replay, statement comparison, or PROVEN.
+
 The prepared value is an in-process handoff owned by the trusted gate caller, not
 authentication of an arbitrary caller-constructed value or a persisted gate-run row.
 The caller selects the theorem names. Fingerprints cover tracked inputs, not cached

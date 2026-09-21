@@ -234,6 +234,46 @@ def assert_pinned(gate, image, *, timeout_s=RUN_TIMEOUT_S):
         raise ContainerError(f"statement-hasher-target-mismatch:{observed['target']}")
 
 
+def check_axioms(gate, image, module, theorem_names, *, project_dir, work_dir, timeout_s=RUN_TIMEOUT_S):
+    if not theorem_names:
+        raise lean.LeanRejected("empty-theorem-names")
+    assert_pinned(gate, image, timeout_s=timeout_s)
+    pins = gate.lean
+    root = lean.write_axiom_tool(gate, work_dir)
+    project_mount = (project_dir, "/project", "readonly=false")
+
+    def invoke(name, cwd, mounts, **fields):
+        tool, *arguments = pins["checker"][name]
+        if tool not in lean.TOOLS:
+            raise ContainerError(f"axiom-checker-tool-unknown:{tool}")
+        argv = [tool, f"+{pins['toolchain']}", *(part.format(**fields) for part in arguments)]
+        if name == "axioms":
+            argv.extend(theorem_names)
+        return run(
+            image.context,
+            image.image_id,
+            argv,
+            user=host_user(),
+            mounts=mounts,
+            workdir=cwd,
+            env=(("HOME", cwd),),
+            timeout_s=timeout_s,
+        )
+
+    lean.require_success(invoke("build", "/axiom-tool", ((root, "/axiom-tool", "readonly=false"),), module="axioms"))
+    lean.require_success(invoke("build", "/project", (project_mount,), module=module))
+    result = invoke(
+        "axioms",
+        "/project",
+        (project_mount, (root, "/axiom-tool", "readonly=true")),
+        module=module,
+        executable="/axiom-tool/.lake/build/bin/axioms",
+    )
+    record = lean.axiom_result(result, theorem_names, pins["permitted_axioms"])
+    lg.info("axiom_check", module=module, record=record, image_id=image.image_id, result=result.__dict__)
+    return record
+
+
 def formal_statement_hash(gate, image, module, theorem_names, *, project_dir, work_dir, timeout_s=RUN_TIMEOUT_S):
     assert_pinned(gate, image, timeout_s=timeout_s)
     pins = gate.lean

@@ -260,7 +260,7 @@ def axiom_result(result, theorem_names, permitted_axioms):
     return {**value, "offending_axioms": offending, "passed": not offending}
 
 
-def axiom_tool(gate, work_dir, *, timeout_s=DEFAULT_TIMEOUT_S):
+def write_axiom_tool(gate, work_dir):
     pins = gate.lean
     root = Path(work_dir)
     root.mkdir(parents=True, exist_ok=False)
@@ -270,6 +270,12 @@ def axiom_tool(gate, work_dir, *, timeout_s=DEFAULT_TIMEOUT_S):
     (root / "lakefile.toml").write_text(
         'name = "cairn_axiom_tool"\n\n[[lean_exe]]\nname = "axioms"\nroot = "Cairn.Axioms"\n'
     )
+    return root
+
+
+def axiom_tool(gate, work_dir, *, timeout_s=DEFAULT_TIMEOUT_S):
+    pins = gate.lean
+    root = write_axiom_tool(gate, work_dir)
     require_success(run_argv(command(pins, "build", module="axioms"), cwd=root, timeout_s=timeout_s))
     return root.resolve() / ".lake" / "build" / "bin" / "axioms"
 

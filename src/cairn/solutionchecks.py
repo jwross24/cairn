@@ -35,6 +35,30 @@ class ContainerCompilation:
     project: solutionbuild.Assembled
     image: container.Image
     result: lean.Run
+    bundle_hash: str
+    pin_hash: str
+
+
+def check_container_axioms(gate, compilation, *, work_dir, timeout_s=container.RUN_TIMEOUT_S):
+    for name, expected in (("bundle_hash", gate.hash), ("pin_hash", gate.pin_hash)):
+        if getattr(compilation, name) != expected:
+            raise solutionbuild.SolutionRefused(f"container-compilation-mismatch:{name}")
+    lean.require_success(compilation.result)
+    project = compilation.project
+    solutionbuild.assert_unchanged(project)
+    solutionbuild.assert_dependencies(gate, project)
+    record = container.check_axioms(
+        gate,
+        compilation.image,
+        project.solution_module,
+        project.theorem_names,
+        project_dir=project.root,
+        work_dir=work_dir,
+        timeout_s=timeout_s,
+    )
+    solutionbuild.assert_unchanged(project)
+    solutionbuild.assert_dependencies(gate, project)
+    return record
 
 
 def compile_container(
@@ -82,7 +106,7 @@ def compile_container(
         rc=result.rc,
         wall_ms=result.wall_ms,
     )
-    return ContainerCompilation(project, image, result)
+    return ContainerCompilation(project, image, result, gate.hash, gate.pin_hash)
 
 
 def prepare_dev(gate, statement, theorem_names, *, root, dependency_project=None, timeout_s=lean.DEFAULT_TIMEOUT_S):

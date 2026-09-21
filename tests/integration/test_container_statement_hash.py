@@ -51,6 +51,10 @@ def test_linux_candidate_compilation_is_not_proof_acceptance(
         assert result.rc != 0
         assert "Type mismatch" in result.stdout
         assert "True.intro" in result.stdout
+        tool = tmp_path / "axioms"
+        with pytest.raises(lean.LeanRejected, match="Type mismatch"):
+            solutionchecks.check_container_axioms(linux_bundle, compilation, work_dir=tool)
+        assert not tool.exists()
     else:
         assert result.rc == 0, result.stdout + result.stderr
         for module in (compilation.project.solution_module, compilation.project.challenge_module):
@@ -70,6 +74,86 @@ def test_linux_candidate_compilation_is_not_proof_acceptance(
     assert compilation.project.solution_module in docker[-1]
     assert compilation.project.challenge_module in docker[-1]
     lg.info("candidate_compilation", proof=proof, rc=result.rc, stdout=result.stdout, image_id=linux_image.image_id)
+
+
+@pytest.mark.timeout(1800)
+@pytest.mark.parametrize("proof", ["rfl", "sorry"])
+def test_linux_candidate_axioms(linux_bundle, linux_image, linux_prepared, tmp_path, monkeypatch, popen_spy, proof):
+    statement, prepared = linux_prepared
+    monkeypatch.setenv("ELAN_HOME", str(tmp_path / "absent-elan"))
+    assert not lean.tool_path("lean").exists()
+    source = linux_bundle.challenge_prelude + FORMAL.replace("sorry", proof).encode()
+    compilation = solutionchecks.compile_container(
+        linux_bundle,
+        linux_image,
+        statement,
+        challenge.Submission(solution_module=source, formal_statement_hash=prepared.formal_statement_hash),
+        ("challenge_curve",),
+        prepared=prepared,
+        root=tmp_path / "candidate",
+    )
+    assert compilation.result.rc == 0
+    popen_spy.clear()
+    tool = tmp_path / "axioms"
+    record = solutionchecks.check_container_axioms(linux_bundle, compilation, work_dir=tool)
+    assert record["passed"] is (proof == "rfl")
+    assert record["offending_axioms"] == ([] if proof == "rfl" else ["sorryAx"])
+    assert set(record["theorems"]) == {"challenge_curve"}
+    assert (tool / "Cairn/Axioms.lean").read_bytes() == linux_bundle.raw(lean.AXIOM_KIND)
+    docker = [argv for argv in popen_spy if "--network" in argv]
+    assert len(docker) == 4
+    assert all(argv[argv.index("--network") + 1] == "none" for argv in docker)
+    assert all(linux_image.image_id in argv for argv in docker)
+    assert all(argv[argv.index("--user") + 1] == container.host_user() for argv in docker)
+    assert not any(str(tool) in arg for arg in docker[-2])
+    assert f"type=bind,source={tool},target=/axiom-tool,readonly=true" in docker[-1]
+    solutionbuild.assert_unchanged(compilation.project)
+    solutionbuild.assert_dependencies(linux_bundle, compilation.project)
+    lg.info("candidate_axioms", proof=proof, record=record, image_id=linux_image.image_id)
+    if proof == "rfl":
+        popen_spy.clear()
+        cases = (
+            (replace(compilation, bundle_hash="0" * 64), solutionbuild.SolutionRefused, "bundle_hash"),
+            (replace(compilation, pin_hash="0" * 64), solutionbuild.SolutionRefused, "pin_hash"),
+            (
+                replace(compilation, image=replace(linux_image, identity="0" * 64)),
+                container.ContainerError,
+                "image-mismatch",
+            ),
+        )
+        for index, (candidate, error, reason) in enumerate(cases):
+            refused_tool = tmp_path / f"refused-{index}"
+            with pytest.raises(error, match=reason):
+                solutionchecks.check_container_axioms(linux_bundle, candidate, work_dir=refused_tool)
+            assert not refused_tool.exists()
+        assert all(argv[0] == solutionbuild.GIT for argv in popen_spy)
+        missing = replace(compilation, project=replace(compilation.project, theorem_names=("missing",)))
+        with pytest.raises(lean.LeanRejected, match="missing-theorem:missing"):
+            solutionchecks.check_container_axioms(linux_bundle, missing, work_dir=tmp_path / "missing")
+    real_check = container.check_axioms
+    changed = (
+        solutionbuild.module_path(compilation.project.formal_statement_hash, compilation.project.root)
+        if proof == "rfl"
+        else Path(compilation.project.root) / ".lake/package-overrides.json"
+    )
+    mutation = changed.read_bytes() + b"\n" if proof == "rfl" else b"{}"
+    reason = "solution-inputs-changed" if proof == "rfl" else "dependency-overrides-refused"
+
+    def check_then_change(*args, **kwargs):
+        observed = real_check(*args, **kwargs)
+        assert observed == record
+        changed.write_bytes(mutation)
+        return observed
+
+    monkeypatch.setattr(container, "check_axioms", check_then_change)
+    with pytest.raises(solutionbuild.SolutionRefused, match=reason):
+        solutionchecks.check_container_axioms(linux_bundle, compilation, work_dir=tmp_path / "mutating")
+    assert changed.read_bytes() == mutation
+    popen_spy.clear()
+    with pytest.raises(solutionbuild.SolutionRefused, match=reason):
+        solutionchecks.check_container_axioms(linux_bundle, compilation, work_dir=tmp_path / "changed")
+    assert not (tmp_path / "changed").exists()
+    assert all(argv[0] == solutionbuild.GIT for argv in popen_spy)
 
 
 @pytest.mark.timeout(1800)
