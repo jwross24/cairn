@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from cairn import canon, challenge, lean, log, solutionplan
+from cairn import canon, challenge, container, lean, log, solutionplan
 from cairn.substrate import blob_hash
 
 lg = log.get("solutionbuild")
@@ -223,8 +223,44 @@ def prepare_challenge(gate, statement, theorem_names, *, root, dependency_projec
 
 
 def assemble(gate, statement, submission, theorem_names, *, root, formal_statement_hash, dependency_project=None):
+    lean.assert_pinned(gate.lean)
+    return _assemble(
+        gate,
+        statement,
+        submission,
+        theorem_names,
+        root=root,
+        formal_statement_hash=formal_statement_hash,
+        dependency_project=dependency_project,
+    )
+
+
+def assemble_container(
+    gate,
+    image,
+    statement,
+    submission,
+    theorem_names,
+    *,
+    root,
+    formal_statement_hash,
+    dependency_project=None,
+    timeout_s=container.RUN_TIMEOUT_S,
+):
+    container.assert_pinned(gate, image, timeout_s=timeout_s)
+    return _assemble(
+        gate,
+        statement,
+        submission,
+        theorem_names,
+        root=root,
+        formal_statement_hash=formal_statement_hash,
+        dependency_project=dependency_project,
+    )
+
+
+def _assemble(gate, statement, submission, theorem_names, *, root, formal_statement_hash, dependency_project):
     pins = gate.lean
-    lean.assert_pinned(pins)
     assert_binding(submission, formal_statement_hash)
     if not submission.solution_module:
         raise SolutionRefused(EMPTY_SOLUTION)

@@ -30,6 +30,61 @@ class PreparedChallenge:
     image: container.Image | None
 
 
+@dataclass(frozen=True)
+class ContainerCompilation:
+    project: solutionbuild.Assembled
+    image: container.Image
+    result: lean.Run
+
+
+def compile_container(
+    gate, image, statement, submission, theorem_names, *, root, prepared, timeout_s=container.RUN_TIMEOUT_S
+):
+    assert_prepared(gate, statement, theorem_names, prepared, image=image)
+    solutionbuild.assert_binding(submission, prepared.formal_statement_hash)
+    admission, reasons = solutionplan.check_imports(submission.solution_module)
+    if admission != solutionplan.EXPECT_ADMITTED:
+        raise solutionbuild.SolutionRefused(",".join(reasons))
+    solutionbuild.assert_dependencies(gate, prepared.project)
+    project = solutionbuild.assemble_container(
+        gate,
+        image,
+        statement,
+        submission,
+        theorem_names,
+        root=root,
+        formal_statement_hash=prepared.formal_statement_hash,
+        dependency_project=(prepared.project.root if solutionbuild.MANIFEST_NAME in prepared.project.inputs else None),
+        timeout_s=timeout_s,
+    )
+    tool, *arguments = gate.lean["checker"]["build"]
+    if tool not in lean.TOOLS:
+        raise container.ContainerError(f"candidate-build-tool-unknown:{tool}")
+    argv = [tool, f"+{gate.lean['toolchain']}", *(part.format(module=project.solution_module) for part in arguments)]
+    solutionbuild.assert_unchanged(project)
+    solutionbuild.assert_dependencies(gate, project)
+    result = container.run(
+        image.context,
+        image.image_id,
+        [*argv, project.challenge_module],
+        user=container.host_user(),
+        mounts=((project.root, "/project", "readonly=false"),),
+        workdir="/project",
+        env=(("HOME", "/project"),),
+        timeout_s=timeout_s,
+    )
+    solutionbuild.assert_unchanged(project)
+    solutionbuild.assert_dependencies(gate, project)
+    lg.info(
+        "container_compilation",
+        module=project.solution_module,
+        image_id=image.image_id,
+        rc=result.rc,
+        wall_ms=result.wall_ms,
+    )
+    return ContainerCompilation(project, image, result)
+
+
 def prepare_dev(gate, statement, theorem_names, *, root, dependency_project=None, timeout_s=lean.DEFAULT_TIMEOUT_S):
     if gate.challenge_renderer != challenge.renderer_bytes():
         raise solutionbuild.SolutionRefused("challenge-renderer-mismatch")

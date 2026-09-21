@@ -153,6 +153,14 @@ It validates inputs and copied dependencies before returning a prepared value
 bound to the claim and image. `assert_prepared(..., image=image)` checks this
 handoff; `run_dev` refuses container-prepared values before candidate work.
 
+`solutionchecks.compile_container` checks that handoff, the submitted hash, and
+the import allowlist before assembling a separate candidate project. It copies
+pinned Linux dependencies, builds both Solution and Challenge by image ID without
+network access, and checks input and dependency integrity before returning the
+compilation result. The prepared project is not mounted during candidate execution.
+A successful compilation, including one containing `sorry`, is not proof acceptance.
+This step does not run the axiom check, fresh replay, or statement comparison.
+
 The prepared value is an in-process handoff owned by the trusted gate caller, not
 authentication of an arbitrary caller-constructed value or a persisted gate-run row.
 The caller selects the theorem names. Fingerprints cover tracked inputs, not cached

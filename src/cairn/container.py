@@ -217,7 +217,7 @@ def host_user():
     return f"{uid}:{os.getgid()}"
 
 
-def formal_statement_hash(gate, image, module, theorem_names, *, project_dir, work_dir, timeout_s=RUN_TIMEOUT_S):
+def assert_pinned(gate, image, *, timeout_s=RUN_TIMEOUT_S):
     if image.identity != gate.container_identity or not IMAGE_ID_RE.fullmatch(image.image_id):
         raise ContainerError("statement-hasher-image-mismatch")
     pins = gate.lean
@@ -232,6 +232,12 @@ def formal_statement_hash(gate, image, module, theorem_names, *, project_dir, wo
         raise lean.LeanPinMismatch(expected, observed.groupdict() if observed else result.stdout)
     if observed["target"] != "aarch64-unknown-linux-gnu":
         raise ContainerError(f"statement-hasher-target-mismatch:{observed['target']}")
+
+
+def formal_statement_hash(gate, image, module, theorem_names, *, project_dir, work_dir, timeout_s=RUN_TIMEOUT_S):
+    assert_pinned(gate, image, timeout_s=timeout_s)
+    pins = gate.lean
+    user = host_user()
     root = lean.write_statement_tool(gate, work_dir)
     mounts = ((project_dir, "/project", "readonly=false"), (root, "/statement-tool", "readonly=false"))
 

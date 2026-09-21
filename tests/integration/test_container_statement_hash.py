@@ -14,6 +14,109 @@ MATHLIB_MODULE = "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
 FORMAL = "theorem challenge_curve {R : Type} [CommRing R] (W : WeierstrassCurve R) : W.Δ = W.Δ := by\n  sorry\n"
 
 
+@pytest.fixture(scope="module")
+def linux_prepared(linux_bundle, linux_image, linux_project, tmp_path_factory):
+    statement = factories.claim_statement(seed=4, formal_source=FORMAL)
+    prepared = solutionchecks.prepare_container(
+        linux_bundle,
+        linux_image,
+        statement,
+        ("challenge_curve",),
+        root=tmp_path_factory.mktemp("linux-candidate") / "prepared",
+        dependency_project=linux_project[0],
+    )
+    return statement, prepared
+
+
+@pytest.mark.timeout(1800)
+@pytest.mark.parametrize("proof", ["rfl", "sorry", "exact True.intro"])
+def test_linux_candidate_compilation_is_not_proof_acceptance(
+    linux_bundle, linux_image, linux_prepared, tmp_path, monkeypatch, popen_spy, proof
+):
+    statement, prepared = linux_prepared
+    monkeypatch.setenv("ELAN_HOME", str(tmp_path / "absent-elan"))
+    assert not lean.tool_path("lean").exists()
+    source = linux_bundle.challenge_prelude + FORMAL.replace("sorry", proof).encode()
+    compilation = solutionchecks.compile_container(
+        linux_bundle,
+        linux_image,
+        statement,
+        challenge.Submission(solution_module=source, formal_statement_hash=prepared.formal_statement_hash),
+        ("challenge_curve",),
+        prepared=prepared,
+        root=tmp_path / "candidate",
+    )
+    result = compilation.result
+    if proof == "exact True.intro":
+        assert result.rc != 0
+        assert "Type mismatch" in result.stdout
+        assert "True.intro" in result.stdout
+    else:
+        assert result.rc == 0, result.stdout + result.stderr
+        for module in (compilation.project.solution_module, compilation.project.challenge_module):
+            assert (
+                Path(compilation.project.root) / ".lake/build/lib/lean" / (module.replace(".", "/") + ".olean")
+            ).is_file()
+        if proof == "sorry":
+            assert "declaration uses `sorry`" in result.stdout
+    solutionbuild.assert_unchanged(prepared.project)
+    solutionbuild.assert_dependencies(linux_bundle, prepared.project)
+    docker = [argv for argv in popen_spy if "--network" in argv]
+    assert len(docker) == 2
+    assert all(argv[argv.index("--network") + 1] == "none" for argv in docker)
+    assert all(linux_image.image_id in argv for argv in docker)
+    assert all(argv[argv.index("--user") + 1] == container.host_user() for argv in docker)
+    assert all(prepared.project.root not in " ".join(argv) for argv in docker)
+    assert compilation.project.solution_module in docker[-1]
+    assert compilation.project.challenge_module in docker[-1]
+    lg.info("candidate_compilation", proof=proof, rc=result.rc, stdout=result.stdout, image_id=linux_image.image_id)
+
+
+@pytest.mark.timeout(1800)
+@pytest.mark.parametrize("mutation", ["lake-manifest.json", ".lake/package-overrides.json"])
+def test_linux_candidate_refuses_project_mutation(linux_bundle, linux_image, linux_prepared, tmp_path, mutation):
+    statement, prepared = linux_prepared
+    source = linux_bundle.challenge_prelude + FORMAL.replace("sorry", "rfl").encode()
+    source += f'\n#eval (IO.FS.writeFile "{mutation}" "{{}}" : IO Unit)\n'.encode()
+    with pytest.raises(solutionbuild.SolutionRefused, match=r"solution-inputs-changed|dependency-overrides-refused"):
+        solutionchecks.compile_container(
+            linux_bundle,
+            linux_image,
+            statement,
+            challenge.Submission(solution_module=source, formal_statement_hash=prepared.formal_statement_hash),
+            ("challenge_curve",),
+            prepared=prepared,
+            root=tmp_path / "candidate",
+        )
+    assert (tmp_path / "candidate" / mutation).read_text() == "{}"
+    solutionbuild.assert_unchanged(prepared.project)
+    solutionbuild.assert_dependencies(linux_bundle, prepared.project)
+
+
+@pytest.mark.timeout(1800)
+def test_linux_candidate_admission_precedes_writes_and_processes(
+    linux_bundle, linux_image, linux_prepared, tmp_path, popen_spy
+):
+    statement, prepared = linux_prepared
+    source = linux_bundle.challenge_prelude + FORMAL.replace("sorry", "rfl").encode()
+    submission = challenge.Submission(solution_module=source, formal_statement_hash=prepared.formal_statement_hash)
+    cases = (
+        (replace(submission, formal_statement_hash="0" * 64), prepared, "statement-hash-mismatch"),
+        (replace(submission, solution_module=b"import Lake\n"), prepared, "import"),
+        (submission, replace(prepared, image=None), "prepared-challenge-mismatch:image"),
+        (submission, replace(prepared, statement_hash="0" * 64), "prepared-challenge-mismatch:statement_hash"),
+        (submission, replace(prepared, pin_hash="0" * 64), "prepared-challenge-mismatch:pin_hash"),
+    )
+    for index, (candidate, handoff, reason) in enumerate(cases):
+        root = tmp_path / str(index)
+        with pytest.raises(solutionbuild.SolutionRefused, match=reason):
+            solutionchecks.compile_container(
+                linux_bundle, linux_image, statement, candidate, ("challenge_curve",), prepared=handoff, root=root
+            )
+        assert not root.exists()
+    assert popen_spy == []
+
+
 def test_container_timeout_stops_only_its_own_work(linux_image, tmp_path):
     sibling = "cairn-sibling-" + uuid.uuid4().hex
     ctx = linux_image.context
