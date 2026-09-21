@@ -123,7 +123,9 @@ def _assert_test_diagnostics(text):
         assert "if: always()" in upload
         assert "include-hidden-files: true" in upload
         assert ".check.log" in upload
-        assert "${{ runner.temp }}/pytest-of-*/**/test.log.jsonl" in upload
+        assert "${{ runner.temp }}/pytest-of-*/pytest-[0-9]*/*[0-9]/test.log.jsonl" in upload
+        assert "${{ runner.temp }}/pytest-of-*/pytest-[0-9]*/basetemp/*[0-9]/test.log.jsonl" in upload
+        assert "**" not in upload
         assert "retention-days: 7" in upload
 
 
@@ -145,7 +147,8 @@ def test_diagnostics_contract_refuses_runner_context_before_a_runner_exists():
         "if: always()",
         "include-hidden-files: true",
         ".check.log",
-        "${{ runner.temp }}/pytest-of-*/**/test.log.jsonl",
+        "${{ runner.temp }}/pytest-of-*/pytest-[0-9]*/*[0-9]/test.log.jsonl",
+        "${{ runner.temp }}/pytest-of-*/pytest-[0-9]*/basetemp/*[0-9]/test.log.jsonl",
     ],
 )
 def test_diagnostics_contract_refuses_lost_test_evidence(removed):
