@@ -26,7 +26,24 @@ an absent mathlib checkout as an assertion failure.
   failure modes.
 - A cache-hit conditional preparation step: a restored cache can be incomplete.
 - An unpinned dependency update: the manifest defines the accepted dependency
-  revision.
+revision.
+
+## Linux developer cache
+
+`tests/_linux_dependencies.py` provisions a dependency-only seed outside pytest.
+Its key binds the exact image ID, gate container identity, Lean pins, canonical
+manifest, Lake configuration, requested modules, and cache layout. A separate
+Docker tag retains that image; an atomic image record selects it without a rebuild.
+Per-key locks serialize population, and publication follows successful provisioning
+and complete inventory validation. Failed work remains available for diagnosis.
+
+The configured cache is read-only to tests. Readers validate file bytes, modes,
+types, symlink containment, and pinned Git checkouts before copying to private
+projects, then check the copy against the same inventory. The inventory assumes
+a trusted producer; it does not authenticate one. Candidate code never mounts
+the seed. Proof replay, statement matching, and axiom checks retain their execution
+requirements. CI uses the temporary cold path until exact-image persistence is
+available across runners.
 
 ## Verification contract
 

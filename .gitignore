@@ -21,6 +21,7 @@ __pycache__/
 # runtime state
 var/
 .doctor/
+.cache/linux-dependencies/
 deploy/*
 !deploy/README.md
 

@@ -102,6 +102,7 @@ def _assert_container_lane(text):
         "src/cairn/lean.py",
         "src/cairn/solutionbuild.py",
         "src/cairn/solutionchecks.py",
+        "tests/_linux_dependencies.py",
         "tests/integration/test_container_statement_hash.py",
     ):
         assert path in types
@@ -119,6 +120,7 @@ def test_container_lane_runs_real_tests_without_an_optional_gate():
         ("--ci-lane container", "--fast"),
         ("ty check --python-platform linux", "ty check --python-platform darwin"),
         (" src/cairn/solutionchecks.py", ""),
+        (" tests/_linux_dependencies.py", ""),
         ("- name: Linux container gates", "- name: Linux container gates\n        if: false"),
     ],
 )

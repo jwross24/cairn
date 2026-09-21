@@ -190,6 +190,29 @@ hash pair and rejection cases on a native Linux ARM64 runner; absent Docker is a
 The check script's whole-project typing targets macOS, the M0 host platform. The Linux job also checks
 the container adapter, preparation code, Lean invocation code, and container tests against Linux APIs.
 
+Linux test dependencies support an explicitly provisioned local cache:
+
+```bash
+uv run python tests/_linux_dependencies.py --cache .cache/linux-dependencies
+CAIRN_LINUX_DEPENDENCY_CACHE="$PWD/.cache/linux-dependencies" scripts/check.sh
+```
+
+Provisioning runs outside pytest. Tests only read the configured cache, validate every
+file including ignored compiled artifacts, and copy dependencies into private temporary
+projects. The key binds the actual Docker image ID, Lean pins, manifest, project
+configuration, and requested modules. Missing or corrupt configured entries fail;
+without the variable, tests provision a temporary seed. Failed provisioning directories
+remain available for diagnosis. Cache records require a trusted local producer and
+are not proof certificates. Every proof check retains its execution requirements.
+The provisioning command records the exact local image ID; warm runs inspect and
+validate that image without rebuilding it. A cache-specific Docker tag retains the
+image independently of the build tag. A removed image requires provisioning
+into a fresh cache directory. Changing bundle identity selects a separate image record.
+
+CI provisions temporary Linux dependencies. Cross-run CI seed reuse requires persistence
+of the exact Docker image as well as the dependency cache; a matching image tag alone
+does not establish that identity.
+
 ## Quick start
 
 ```bash

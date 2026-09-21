@@ -4,14 +4,64 @@ import uuid
 from dataclasses import replace
 from pathlib import Path
 
+import _linux_dependencies as dependencies
 import factories
 import pytest
 
 from cairn import bundle, challenge, container, lean, log, solutionbuild, solutionchecks, solutionplan
 
 lg = log.get("test")
-MATHLIB_MODULE = "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
 FORMAL = "theorem challenge_curve {R : Type} [CommRing R] (W : WeierstrassCurve R) : W.Δ = W.Δ := by\n  sorry\n"
+
+
+def test_cached_linux_image_is_resolved_by_exact_id_without_a_rebuild(linux_bundle, linux_image, tmp_path, popen_spy):
+    dependencies.image_record(linux_bundle, tmp_path).write_text(
+        json.dumps({"identity": linux_image.identity, "image_id": linux_image.image_id})
+    )
+    observed = dependencies.cached_image(linux_bundle, tmp_path)
+    assert observed.image_id == linux_image.image_id
+    assert len(popen_spy) == 2
+    assert "inspect" in popen_spy[0]
+    assert popen_spy[0][-1] == linux_image.image_id
+    assert "--network" in popen_spy[1]
+    assert popen_spy[1][popen_spy[1].index("--network") + 1] == "none"
+
+
+@pytest.mark.timeout(1800)
+def test_linux_dependency_cache_restores_without_provisioning(
+    linux_bundle, linux_image, linux_dependencies, tmp_path, popen_spy, monkeypatch
+):
+    root = tmp_path / "private"
+    entry = linux_dependencies / dependencies.cache_key(linux_bundle, linux_image)
+    before = dependencies.inventory(entry / "project")
+    dependencies.restore(linux_bundle, linux_image, linux_dependencies, root)
+    assert all(argv[0] == solutionbuild.GIT for argv in popen_spy)
+    statement = factories.claim_statement(seed=4, formal_source=FORMAL)
+    prepared = solutionchecks.prepare_container(
+        linux_bundle, linux_image, statement, ("challenge_curve",), root=tmp_path / "prepared", dependency_project=root
+    )
+    assert prepared.formal_statement_hash == "f4cd161738602628f5d766379b78605147761457507b9320ef14dcf115aeaa42"
+    docker = [argv for argv in popen_spy if "--network" in argv]
+    assert docker
+    assert all(argv[argv.index("--network") + 1] == "none" for argv in docker)
+    assert not any(str(entry) in arg for argv in docker for arg in argv)
+    artifact = next((root / ".lake/packages/mathlib").rglob("*.olean"))
+    artifact.write_bytes(b"private mutation")
+    assert dependencies.inventory(entry / "project") == before
+    dependencies.validate(linux_bundle, linux_image, entry)
+    real_copy = dependencies.shutil.copytree
+
+    def copy_then_change(source, destination, *args, **kwargs):
+        copied = real_copy(source, destination, *args, **kwargs)
+        if Path(source) == entry / "project":
+            artifact = next((Path(destination) / ".lake/packages/mathlib").rglob("*.olean"))
+            artifact.write_bytes(b"changed during copy")
+        return copied
+
+    monkeypatch.setattr(dependencies.shutil, "copytree", copy_then_change)
+    with pytest.raises(dependencies.CacheRefused, match="dependency-cache-copy-mismatch"):
+        dependencies.restore(linux_bundle, linux_image, linux_dependencies, tmp_path / "corrupt-copy")
+    assert dependencies.inventory(entry / "project") == before
 
 
 @pytest.fixture(scope="module")
@@ -296,22 +346,30 @@ def linux_bundle(tmp_path_factory):
 def linux_image(linux_bundle):
     ctx = container.context()
     lg.info("container_daemon", context=ctx, info=container.daemon_info(ctx))
+    configured = os.environ.get(dependencies.CACHE_ENV)
+    if configured:
+        return dependencies.cached_image(linux_bundle, configured)
     return container.build(ctx, linux_bundle.container_identity)
 
 
 @pytest.fixture(scope="module")
-def linux_project(linux_bundle, linux_image, tmp_path_factory):
-    root = tmp_path_factory.mktemp("linux-challenge")
+def linux_dependencies(linux_bundle, linux_image, tmp_path_factory):
+    configured = os.environ.get(dependencies.CACHE_ENV)
+    if configured:
+        cache = Path(configured)
+        dependencies.validate(linux_bundle, linux_image, cache / dependencies.cache_key(linux_bundle, linux_image))
+    else:
+        cache = tmp_path_factory.mktemp("linux-dependencies")
+        dependencies.prepare(linux_bundle, linux_image, cache)
+    return cache
+
+
+@pytest.fixture(scope="module")
+def linux_project(linux_bundle, linux_image, linux_dependencies, tmp_path_factory):
+    root = tmp_path_factory.mktemp("linux-challenge") / "project"
+    dependencies.restore(linux_bundle, linux_image, linux_dependencies, root)
     lg.info("linux_project_owner", uid=os.getuid(), gid=os.getgid(), mode=oct(root.stat().st_mode & 0o777))
     (root / "Challenge").mkdir()
-    pins = linux_bundle.lean
-    (root / "lean-toolchain").write_text(pins["toolchain"] + "\n")
-    (root / "lake-manifest.json").write_text(json.dumps(linux_bundle.lake_manifest))
-    (root / "lakefile.toml").write_text(
-        'name = "cairn_lean"\n\n[[lean_lib]]\nname = "Challenge"\nglobs = ["Challenge.+"]\n\n'
-        '[[require]]\nname = "mathlib"\ngit = "https://github.com/leanprover-community/mathlib4"\n'
-        f'rev = "{pins["mathlib_rev"]}"\n'
-    )
     modules = []
     for source in (FORMAL, FORMAL.replace("W.Δ = W.Δ", "W.Δ + 0 = W.Δ")):
         statement = factories.claim_statement(seed=4, formal_source=source)
@@ -319,19 +377,6 @@ def linux_project(linux_bundle, linux_image, tmp_path_factory):
             challenge.render(statement, linux_bundle.challenge_prelude)
         )
         modules.append(challenge.module_name(statement))
-    result = container.run(
-        linux_image.context,
-        linux_image.image_id,
-        ["lake", f"+{pins['toolchain']}", "exe", "cache", "get", MATHLIB_MODULE],
-        mounts=((root, "/project", "readonly=false"),),
-        workdir="/project",
-        user=container.host_user(),
-        env=(("HOME", "/project"),),
-        network="bridge",
-    )
-    lg.info("linux_mathlib_provision", rc=result.rc, stdout=result.stdout[-1500:], stderr=result.stderr[-1500:])
-    lean.require_success(result)
-    assert json.loads((root / "lake-manifest.json").read_text()) == linux_bundle.lake_manifest
     return root, modules
 
 
