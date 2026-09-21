@@ -113,6 +113,40 @@ def test_container_lane_runs_real_tests_without_an_optional_gate():
     _assert_container_lane(WORKFLOW.read_text())
 
 
+def _assert_test_diagnostics(text):
+    for job in text.split("  container:\n", 1)[1].split("  check:\n", 1):
+        assert "PYTEST_DEBUG_TEMPROOT: ${{ runner.temp }}" in job
+        assert 'PYTEST_ADDOPTS: "-vv"' in job
+        upload = _step(job, "Test diagnostics")
+        assert "if: always()" in upload
+        assert "include-hidden-files: true" in upload
+        assert ".check.log" in upload
+        assert "${{ runner.temp }}/pytest-of-*/**/test.log.jsonl" in upload
+        assert "retention-days: 7" in upload
+
+
+def test_ci_retains_gate_and_test_logs_from_every_lane():
+    _assert_test_diagnostics(WORKFLOW.read_text())
+
+
+@pytest.mark.parametrize(
+    "removed",
+    [
+        "PYTEST_DEBUG_TEMPROOT: ${{ runner.temp }}",
+        'PYTEST_ADDOPTS: "-vv"',
+        "if: always()",
+        "include-hidden-files: true",
+        ".check.log",
+        "${{ runner.temp }}/pytest-of-*/**/test.log.jsonl",
+    ],
+)
+def test_diagnostics_contract_refuses_lost_test_evidence(removed):
+    text = WORKFLOW.read_text()
+    assert removed in text
+    with pytest.raises(AssertionError):
+        _assert_test_diagnostics(text.replace(removed, "", 1))
+
+
 @pytest.mark.parametrize(
     ("old", "new"),
     [

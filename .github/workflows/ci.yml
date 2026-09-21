@@ -24,6 +24,8 @@ jobs:
     env:
       CAIRN_SESSION_DEADLINE: "1080"
       BR_VERSION: "0.5.7"
+      PYTEST_DEBUG_TEMPROOT: ${{ runner.temp }}
+      PYTEST_ADDOPTS: "-vv"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -67,14 +69,15 @@ jobs:
         run: scripts/check.sh --ci-lane container
       - name: Linux adapter types
         run: uv run ty check --python-platform linux src/cairn/container.py src/cairn/lean.py src/cairn/solutionbuild.py src/cairn/solutionchecks.py tests/_linux_dependencies.py tests/integration/test_container_statement_hash.py
-      - name: Linux failure diagnostics
-        if: failure() || cancelled()
+      - name: Test diagnostics
+        if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: cairn-failure-diagnostics-container
           path: |
             .check.log
-            /tmp/pytest-of-runner/**/test.log.jsonl
+            ${{ runner.temp }}/pytest-of-*/**/test.log.jsonl
+          include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7
   check:
@@ -100,6 +103,8 @@ jobs:
     # (50.6 s at load average 7 on the build machine).
     timeout-minutes: 20
     env:
+      PYTEST_DEBUG_TEMPROOT: ${{ runner.temp }}
+      PYTEST_ADDOPTS: "-vv"
       # Under the job ceiling by enough that pytest dies first and leaves a thread
       # profile, rather than the job being canceled with a blank transcript. The
       # local default is higher; nothing meters a local run.
@@ -293,4 +298,17 @@ jobs:
             .doctor/runs/**
             beads_compliance_audit/passes/**
           if-no-files-found: ignore
+          retention-days: 7
+          include-hidden-files: true
+
+      - name: Test diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: cairn-test-diagnostics-${{ matrix.lane }}
+          path: |
+            .check.log
+            ${{ runner.temp }}/pytest-of-*/**/test.log.jsonl
+          include-hidden-files: true
+          if-no-files-found: warn
           retention-days: 7
