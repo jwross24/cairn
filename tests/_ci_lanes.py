@@ -21,7 +21,18 @@ LEAN_SOLUTION_TESTS = (
 )
 SOLUTION_PLAN_TESTS = ("test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks",)
 SOLUTION_PLAN_CASES = ("exact", "sorry", "timeout")
-CI_LANES = ("python", "lean", "solution", *(f"solution-plan-{case}" for case in SOLUTION_PLAN_CASES), "container")
+CONTAINER_REPLAY_TESTS = (
+    "test_linux_candidate_fresh_replay",
+    "test_linux_replay_timeouts_keep_their_stage_and_check_inputs",
+)
+CI_LANES = (
+    "python",
+    "lean",
+    "solution",
+    *(f"solution-plan-{case}" for case in SOLUTION_PLAN_CASES),
+    "container",
+    "container-replay",
+)
 
 
 def validate_manifest(root, paths):
@@ -45,7 +56,7 @@ def pytest_addoption(parser):
 
 
 def pytest_ignore_collect(collection_path, config):
-    if config.getoption("--cairn-ci-lane") != "container" or not collection_path.is_file():
+    if config.getoption("--cairn-ci-lane") not in ("container", "container-replay") or not collection_path.is_file():
         return None
     if not collection_path.is_relative_to(config.rootpath):
         return None
@@ -76,7 +87,7 @@ def pytest_collection_modifyitems(config, items):
         elif path in LEAN_TEST_PATHS:
             item_lane = "lean"
         elif path in CONTAINER_TEST_PATHS:
-            item_lane = "container"
+            item_lane = "container-replay" if item.originalname in CONTAINER_REPLAY_TESTS else "container"
         else:
             item_lane = "python"
         matches = (

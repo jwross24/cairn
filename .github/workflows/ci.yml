@@ -18,7 +18,11 @@ permissions:
 
 jobs:
   container:
-    name: check (container)
+    name: check (${{ matrix.lane }})
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [container, container-replay]
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
     env:
@@ -67,14 +71,14 @@ jobs:
       - name: Linux container gates
         env:
           PYTEST_DEBUG_TEMPROOT: ${{ runner.temp }}
-        run: scripts/check.sh --ci-lane container
+        run: scripts/check.sh --ci-lane "${{ matrix.lane }}"
       - name: Linux adapter types
         run: uv run ty check --python-platform linux src/cairn/container.py src/cairn/lean.py src/cairn/solutionbuild.py src/cairn/solutionchecks.py tests/_linux_dependencies.py tests/integration/test_container_statement_hash.py
       - name: Test diagnostics
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: cairn-failure-diagnostics-container
+          name: cairn-failure-diagnostics-${{ matrix.lane }}
           path: |
             .check.log
             ${{ runner.temp }}/pytest-of-*/pytest-[0-9]*/*[0-9]/test.log.jsonl

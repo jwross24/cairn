@@ -132,11 +132,12 @@ Missing prerequisites fail the tests. Developer-mode comparator tests use upstre
 The real-prelude ordered-plan test requires fresh kernel replay, rejects `sorry` before
 replay, and distinguishes replay timeout from rejection. Its per-test watchdog is 900 seconds,
 including setup and teardown; the replay subprocess retains its 600-second bound.
-CI runs seven disjoint lanes: Python, Lean, Solution, three ordered-plan cases, and container. The Lean lane includes the
+CI runs eight disjoint lanes: Python, Lean, Solution, three ordered-plan cases, container, and container-replay. The Lean lane includes the
 real-prelude closure-comparison and fresh-replay forgery cases from
 `tests/integration/test_solution_build_compile.py`; `solution-plan-exact`, `solution-plan-sorry`, and
 `solution-plan-timeout` each run one ordered-plan case on an isolated runner. The Solution lane owns the
-remaining cases in that file. Each lane has a 1080-second session deadline
+remaining cases in that file. The container-replay lane owns Linux candidate fresh replay,
+axiom refusal, forgery rejection, and stage-specific timeout tests. Each lane has a 1080-second session deadline
 and 20-minute job ceiling. The default local check runs every lane's tests;
 `scripts/check.sh --ci-lane solution-plan` runs the three ordered-plan cases locally in sequence.
 
@@ -169,6 +170,13 @@ theorem-indexed output against the permitted axioms. Candidate compilation does
 not mount the extractor; inspection mounts it read-only. A `sorryAx` dependency
 fails this check. Input and dependency integrity are checked before returning.
 This is axiom evidence only, not fresh replay, statement comparison, or PROVEN.
+
+`solutionchecks.observe_container_replay` runs that real axiom check before invoking
+the pinned `leanchecker --fresh` command by image ID, without network or host Lean.
+Offending axioms block replay. Input and dependency changes refuse, including after
+a nonzero replay result or a confirmed replay timeout. Axiom and replay timeouts name
+their respective stages; an unconfirmed container cleanup remains an infrastructure
+error. A successful replay does not establish statement equivalence or grant PROVEN.
 
 The prepared value is an in-process handoff owned by the trusted gate caller, not
 authentication of an arbitrary caller-constructed value or a persisted gate-run row.

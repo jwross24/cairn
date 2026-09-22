@@ -67,7 +67,7 @@ so the protocol holds on its own. A guard's refusal is a safety mechanism, never
   see the index, not the working tree, so a file the commit does not stage cannot refuse it; the
   tree-wide run belongs to CI, which calls `scripts/check.sh --ci-lane python`, `--ci-lane lean`,
   `--ci-lane solution`, `--ci-lane solution-plan-exact`, `--ci-lane solution-plan-sorry`,
-  `--ci-lane solution-plan-timeout`, and `--ci-lane container`. An index that
+  `--ci-lane solution-plan-timeout`, `--ci-lane container`, and `--ci-lane container-replay`. An index that
   stages nothing takes the tree-wide form. `.githooks/post-commit` pushes a bead-closing commit and
   only such a commit, logging `PUSHED`, `SKIP` or `DENY` to `.check.log`; a failed push is loud and
   leaves the commit local. Bypass, logged: `CAIRN_PUSH_SKIP='<reason>'`.
@@ -129,8 +129,8 @@ We use **uv** for everything. Never `pip`, `poetry`, `conda` or an ad-hoc `pytho
 `--paths <path> ...` scopes every gate to that list and is the form the hook uses; with no `--paths`
 each gate has the scope it always had. CI runs `--ci-lane python`, `--ci-lane lean`, and
 `--ci-lane solution`, `--ci-lane solution-plan-exact`, `--ci-lane solution-plan-sorry`,
-`--ci-lane solution-plan-timeout`, and `--ci-lane container`; their test sets are disjoint and exhaustive.
-With no lane argument, the local check runs all seven sets and requires Docker for the container tests.
+`--ci-lane solution-plan-timeout`, `--ci-lane container`, and `--ci-lane container-replay`; their test sets are disjoint and exhaustive.
+With no lane argument, the local check runs all eight sets and requires Docker for the container tests.
 The local aggregate `--ci-lane solution-plan` runs all three ordered-plan cases in sequence.
 After any substantive change:
 

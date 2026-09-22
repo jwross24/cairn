@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import bundle, challenge, container, lean, solutionbuild, solutionplan
+from cairn import bundle, challenge, container, lean, solutionbuild, solutionchecks, solutionplan
 from cairn.substrate import blob_hash
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -30,6 +30,16 @@ def statement():
 
 def _submission(hash_hex=FSH, blob=SOLUTION):
     return challenge.Submission(solution_module=blob, formal_statement_hash=hash_hex)
+
+
+@pytest.mark.parametrize("command", [["lake", "env", "leanchecker", "{module}"], ["echo", "--fresh", "{module}"]])
+def test_container_replay_refuses_an_unpinned_or_nonfresh_command(gate, tmp_path, popen_spy, command):
+    gate.lean["checker"]["replay_fresh"] = command
+    popen_spy.clear()
+    with pytest.raises(container.ContainerError, match="candidate-replay-command-not-fresh"):
+        solutionchecks.observe_container_replay(gate, None, work_dir=tmp_path / "unused")
+    assert popen_spy == []
+    assert not (tmp_path / "unused").exists()
 
 
 def _assemble(gate, statement, root, **kwargs):

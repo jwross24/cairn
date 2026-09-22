@@ -207,6 +207,133 @@ def test_linux_candidate_axioms(linux_bundle, linux_image, linux_prepared, tmp_p
 
 
 @pytest.mark.timeout(1800)
+@pytest.mark.parametrize("proof", ["rfl", "sorry", "forged"])
+def test_linux_candidate_fresh_replay(
+    linux_bundle, linux_image, linux_prepared, tmp_path, monkeypatch, popen_spy, proof
+):
+    statement, prepared = linux_prepared
+    monkeypatch.setenv("ELAN_HOME", str(tmp_path / "absent-elan"))
+    assert not lean.tool_path("lean").exists()
+    source = linux_bundle.challenge_prelude
+    if proof == "forged":
+        fixture = (Path(__file__).parents[1] / "fixtures/solution_forgery/forge_unchecked_theorem.lean").read_text()
+        assert fixture.startswith("import Lean\n")
+        source += fixture.removeprefix("import Lean\n").encode() + b"\n"
+    source += FORMAL.replace("sorry", "exact False.elim forged" if proof == "forged" else proof).encode()
+    compilation = solutionchecks.compile_container(
+        linux_bundle,
+        linux_image,
+        statement,
+        challenge.Submission(solution_module=source, formal_statement_hash=prepared.formal_statement_hash),
+        ("challenge_curve",),
+        prepared=prepared,
+        root=tmp_path / "candidate",
+    )
+    lean.require_success(compilation.result)
+    popen_spy.clear()
+    if proof == "rfl":
+        for field in ("bundle_hash", "pin_hash"):
+            with pytest.raises(solutionbuild.SolutionRefused, match=f"container-compilation-mismatch:{field}"):
+                solutionchecks.observe_container_replay(
+                    linux_bundle, replace(compilation, **{field: "0" * 64}), work_dir=tmp_path / field
+                )
+            assert not (tmp_path / field).exists()
+        assert popen_spy == []
+    observed, reasons, wall_ms = solutionchecks.observe_container_replay(
+        linux_bundle, compilation, work_dir=tmp_path / "axioms"
+    )
+    lg.info("candidate_replay", proof=proof, observed=observed, reasons=reasons, wall_ms=wall_ms)
+    replay = [argv for argv in popen_spy if "leanchecker" in argv]
+    if proof == "sorry":
+        assert observed == solutionplan.OBSERVED_REFUSED
+        assert reasons == ("offending-axiom:sorryAx",)
+        assert replay == []
+    else:
+        assert len(replay) == 1
+        assert replay[0][-7:] == [
+            "lake",
+            f"+{linux_bundle.lean['toolchain']}",
+            "env",
+            "leanchecker",
+            "--fresh",
+            "-v",
+            compilation.project.solution_module,
+        ]
+        if proof == "rfl":
+            assert (observed, reasons) == (solutionplan.EXPECT_REPLAYED, ())
+        else:
+            assert observed == solutionplan.OBSERVED_REFUSED
+            assert reasons[:2] == (solutionchecks.KERNEL_REJECTED, "rc:1")
+            assert any("while replaying declaration 'forged'" in reason for reason in reasons)
+    docker = [argv for argv in popen_spy if "--network" in argv]
+    assert docker
+    assert all(linux_image.image_id in argv for argv in docker)
+    assert all(argv[argv.index("--network") + 1] == "none" for argv in docker)
+    assert all(argv[argv.index("--user") + 1] == container.host_user() for argv in docker)
+    axioms = [argv for argv in docker if "/axiom-tool/.lake/build/bin/axioms" in argv]
+    assert len(axioms) == 1
+    if replay:
+        assert docker.index(axioms[0]) < docker.index(replay[0])
+    solutionbuild.assert_unchanged(compilation.project)
+    solutionbuild.assert_dependencies(linux_bundle, compilation.project)
+
+
+@pytest.mark.timeout(1800)
+def test_linux_replay_timeouts_keep_their_stage_and_check_inputs(
+    linux_bundle, linux_image, linux_prepared, tmp_path, monkeypatch, popen_spy
+):
+    statement, prepared = linux_prepared
+    monkeypatch.setenv("ELAN_HOME", str(tmp_path / "absent-elan"))
+    compilation = solutionchecks.compile_container(
+        linux_bundle,
+        linux_image,
+        statement,
+        challenge.Submission(
+            solution_module=linux_bundle.challenge_prelude + FORMAL.replace("sorry", "rfl").encode(),
+            formal_statement_hash=prepared.formal_statement_hash,
+        ),
+        ("challenge_curve",),
+        prepared=prepared,
+        root=tmp_path / "candidate",
+    )
+    lean.require_success(compilation.result)
+    for stage, bounds in (
+        (solutionplan.KIND_AXIOMS, {"axiom_timeout_s": 2.0}),
+        (solutionplan.KIND_KERNEL_REPLAY, {"timeout_s": 2.0}),
+    ):
+        popen_spy.clear()
+        with pytest.raises(solutionplan.StepTimeout) as expired:
+            solutionchecks.observe_container_replay(linux_bundle, compilation, work_dir=tmp_path / stage, **bounds)
+        assert (expired.value.step, expired.value.timeout_s) == (stage, 2.0)
+        replay = [argv for argv in popen_spy if "leanchecker" in argv]
+        assert len(replay) == (1 if stage == solutionplan.KIND_KERNEL_REPLAY else 0)
+        assert any("stop" in argv for argv in popen_spy)
+        lg.info("candidate_replay_timeout", step=expired.value.step, timeout_s=expired.value.timeout_s)
+    real_run = container.run
+    changed = Path(compilation.project.root) / ".lake/package-overrides.json"
+
+    def change_after_timeout(ctx, image, argv, **kwargs):
+        try:
+            return real_run(ctx, image, argv, **kwargs)
+        except lean.LeanTimeout:
+            if "leanchecker" in argv:
+                changed.write_text("{}")
+            raise
+
+    monkeypatch.setattr(container, "run", change_after_timeout)
+    with pytest.raises(solutionbuild.SolutionRefused, match="dependency-overrides-refused"):
+        solutionchecks.observe_container_replay(
+            linux_bundle, compilation, work_dir=tmp_path / "mutating", timeout_s=2.0
+        )
+    assert changed.read_text() == "{}"
+    popen_spy.clear()
+    with pytest.raises(solutionbuild.SolutionRefused, match="dependency-overrides-refused"):
+        solutionchecks.observe_container_replay(linux_bundle, compilation, work_dir=tmp_path / "changed")
+    assert not (tmp_path / "changed").exists()
+    assert not any("--network" in argv for argv in popen_spy)
+
+
+@pytest.mark.timeout(1800)
 @pytest.mark.parametrize("mutation", ["lake-manifest.json", ".lake/package-overrides.json"])
 def test_linux_candidate_refuses_project_mutation(linux_bundle, linux_image, linux_prepared, tmp_path, mutation):
     statement, prepared = linux_prepared

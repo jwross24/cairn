@@ -61,6 +61,50 @@ def check_container_axioms(gate, compilation, *, work_dir, timeout_s=container.R
     return record
 
 
+def observe_container_replay(
+    gate, compilation, *, work_dir, timeout_s=lean.DEFAULT_TIMEOUT_S, axiom_timeout_s=container.RUN_TIMEOUT_S
+):
+    start = time.monotonic()
+    tool, *arguments = gate.lean["checker"][REPLAY_FRESH]
+    if tool not in lean.TOOLS or "--fresh" not in arguments:
+        raise container.ContainerError("candidate-replay-command-not-fresh")
+    try:
+        axioms = check_container_axioms(gate, compilation, work_dir=work_dir, timeout_s=axiom_timeout_s)
+    except lean.LeanTimeout as exc:
+        raise solutionplan.StepTimeout(solutionplan.KIND_AXIOMS, exc.timeout_s) from None
+    except lean.LeanRejected as exc:
+        return solutionplan.OBSERVED_REFUSED, (f"{AXIOM_STEP_ERROR_PREFIX}{exc}",), _elapsed_ms(start)
+    if not axioms["passed"]:
+        reasons = tuple(f"{OFFENDING_AXIOM_PREFIX}{name}" for name in axioms["offending_axioms"])
+        lg.info("container_replay_blocked", reasons=reasons, image_id=compilation.image.image_id)
+        return solutionplan.OBSERVED_REFUSED, reasons, _elapsed_ms(start)
+    project, image = compilation.project, compilation.image
+    argv = [tool, f"+{gate.lean['toolchain']}", *(part.format(module=project.solution_module) for part in arguments)]
+    try:
+        result = container.run(
+            image.context,
+            image.image_id,
+            argv,
+            user=container.host_user(),
+            mounts=((project.root, "/project", "readonly=false"),),
+            workdir="/project",
+            env=(("HOME", "/project"),),
+            timeout_s=timeout_s,
+        )
+    except lean.LeanTimeout as exc:
+        solutionbuild.assert_unchanged(project)
+        solutionbuild.assert_dependencies(gate, project)
+        raise solutionplan.StepTimeout(solutionplan.KIND_KERNEL_REPLAY, exc.timeout_s) from None
+    solutionbuild.assert_unchanged(project)
+    solutionbuild.assert_dependencies(gate, project)
+    wall_ms = _elapsed_ms(start)
+    lg.info("container_kernel_replay", module=project.solution_module, image_id=image.image_id, result=result.__dict__)
+    if result.rc == 0:
+        return solutionplan.EXPECT_REPLAYED, (), wall_ms
+    reasons = (KERNEL_REJECTED, f"rc:{result.rc}", _head(result.stderr) or _head(result.stdout))
+    return solutionplan.OBSERVED_REFUSED, reasons, wall_ms
+
+
 def compile_container(
     gate, image, statement, submission, theorem_names, *, root, prepared, timeout_s=container.RUN_TIMEOUT_S
 ):
