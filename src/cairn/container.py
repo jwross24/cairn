@@ -189,7 +189,7 @@ def run(
     for cap in cap_add:
         args += ["--cap-add", cap]
     for host, guest, mode in mounts:
-        args += ["--mount", f"type=bind,source={Path(host).resolve()},target={guest},{mode}"]
+        args += ["--mount", f"type=bind,source={Path(host).absolute()},target={guest},{mode}"]
     if workdir:
         args += ["--workdir", workdir]
     for key, value in env:

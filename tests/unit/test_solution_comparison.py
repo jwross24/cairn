@@ -1,9 +1,10 @@
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
-from cairn import bundle, challenge, lean, solutionbuild, solutionchecks, solutionplan
+from cairn import bundle, challenge, container, lean, solutionbuild, solutionchecks, solutionplan
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import factories
@@ -37,6 +38,13 @@ def comparator(tmp_path):
     binary.parent.mkdir(parents=True)
     binary.write_bytes(b"")
     return binary
+
+
+@pytest.fixture
+def container_compilation(gate, assembled):
+    image = container.Image(gate.container_identity, "unused", "sha256:" + "1" * 64, None)
+    result = lean.Run(argv=("lake", "build"), cwd=assembled.root, rc=0, stdout="", stderr="", wall_ms=1.0)
+    return solutionchecks.ContainerCompilation(assembled, image, result, gate.hash, gate.pin_hash)
 
 
 def _run(rc=0, stdout="Your solution is okay!\n", stderr=""):
@@ -111,3 +119,42 @@ def test_a_comparison_that_exceeds_its_timeout_is_a_step_timeout_and_never_a_mis
         _observe(gate, assembled, comparator, call, timeout_s=0.25)
     assert caught.value.step == solutionplan.KIND_CLOSURE_COMPARISON
     assert caught.value.timeout_s == 0.25
+
+
+def test_a_container_comparison_timeout_is_attributed_to_the_closure_step(gate, container_compilation, monkeypatch):
+    monkeypatch.setattr(container, "assert_pinned", lambda *args, **kwargs: None)
+
+    def expire(ctx, image, argv, **kwargs):
+        raise lean.LeanTimeout(tuple(argv), 0.25)
+
+    monkeypatch.setattr(container, "run", expire)
+    with pytest.raises(solutionplan.StepTimeout) as caught:
+        solutionchecks.observe_container_comparison(gate, container_compilation, timeout_s=0.25)
+    assert caught.value.step == solutionplan.KIND_CLOSURE_COMPARISON
+    assert caught.value.timeout_s == 0.25
+
+
+def test_a_container_comparison_rechecks_inputs_after_a_timeout(gate, container_compilation, monkeypatch):
+    monkeypatch.setattr(container, "assert_pinned", lambda *args, **kwargs: None)
+    target = next(name for name in container_compilation.project.inputs if name.startswith(solutionbuild.CHALLENGE_DIR))
+
+    def mutate_then_expire(ctx, image, argv, **kwargs):
+        (Path(container_compilation.project.root) / target).write_bytes(b"theorem challenge_hello : True := trivial\n")
+        raise lean.LeanTimeout(tuple(argv), 0.25)
+
+    monkeypatch.setattr(container, "run", mutate_then_expire)
+    with pytest.raises(solutionbuild.SolutionRefused, match=f"solution-inputs-changed:{target}"):
+        solutionchecks.observe_container_comparison(gate, container_compilation, timeout_s=0.25)
+
+
+@pytest.mark.parametrize("field", ["bundle_hash", "pin_hash"])
+def test_a_container_comparison_refuses_unbound_compilation_before_running(
+    gate, container_compilation, monkeypatch, field
+):
+    def unexpected(*args, **kwargs):
+        raise AssertionError("unbound compilation reached the container")
+
+    monkeypatch.setattr(container, "assert_pinned", unexpected)
+    candidate = replace(container_compilation, **{field: "0" * 64})
+    with pytest.raises(solutionbuild.SolutionRefused, match=f"container-compilation-mismatch:{field}"):
+        solutionchecks.observe_container_comparison(gate, candidate)

@@ -16,6 +16,7 @@ STDERR_HEAD_CHARS = 200
 COMPARATOR_ABSENT_PREFIX = "comparator-binary-absent:"
 CLOSURE_MISMATCH = "closure-mismatch"
 COMPARATOR_RELATIVE_BINARY = Path(".lake") / "build" / "bin" / "comparator"
+CONTAINER_COMPARATOR_BINARY = "/home/cairn/comparator/.lake/build/bin/comparator"
 
 
 @dataclass(frozen=True)
@@ -102,6 +103,41 @@ def observe_container_replay(
     if result.rc == 0:
         return solutionplan.EXPECT_REPLAYED, (), wall_ms
     reasons = (KERNEL_REJECTED, f"rc:{result.rc}", _head(result.stderr) or _head(result.stdout))
+    return solutionplan.OBSERVED_REFUSED, reasons, wall_ms
+
+
+def observe_container_comparison(gate, compilation, *, timeout_s=lean.DEFAULT_TIMEOUT_S):
+    start = time.monotonic()
+    for name, expected in (("bundle_hash", gate.hash), ("pin_hash", gate.pin_hash)):
+        if getattr(compilation, name) != expected:
+            raise solutionbuild.SolutionRefused(f"container-compilation-mismatch:{name}")
+    lean.require_success(compilation.result)
+    project, image = compilation.project, compilation.image
+    solutionbuild.assert_unchanged(project)
+    solutionbuild.assert_dependencies(gate, project)
+    try:
+        container.assert_pinned(gate, image, timeout_s=timeout_s)
+        result = container.run(
+            image.context,
+            image.image_id,
+            ["lake", f"+{gate.lean['toolchain']}", "env", CONTAINER_COMPARATOR_BINARY, solutionbuild.CONFIG_NAME],
+            user=container.host_user(),
+            mounts=((project.root, "/project", "readonly=false"),),
+            workdir="/project",
+            env=(("HOME", "/project"),),
+            timeout_s=timeout_s,
+        )
+    except lean.LeanTimeout as exc:
+        solutionbuild.assert_unchanged(project)
+        solutionbuild.assert_dependencies(gate, project)
+        raise solutionplan.StepTimeout(solutionplan.KIND_CLOSURE_COMPARISON, exc.timeout_s) from None
+    solutionbuild.assert_unchanged(project)
+    solutionbuild.assert_dependencies(gate, project)
+    wall_ms = _elapsed_ms(start)
+    lg.info("container_comparison", image_id=image.image_id, result=result.__dict__)
+    if result.rc == 0:
+        return solutionplan.EXPECT_CLOSURE_MATCHED, (), wall_ms
+    reasons = (CLOSURE_MISMATCH, f"rc:{result.rc}", _head(result.stderr) or _head(result.stdout))
     return solutionplan.OBSERVED_REFUSED, reasons, wall_ms
 
 

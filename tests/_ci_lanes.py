@@ -25,6 +25,10 @@ CONTAINER_REPLAY_TESTS = (
     "test_linux_candidate_fresh_replay",
     "test_linux_replay_timeouts_keep_their_stage_and_check_inputs",
 )
+CONTAINER_COMPARISON_TESTS = (
+    "test_linux_candidate_closure_comparison_matches_exact_statement",
+    "test_linux_candidate_closure_comparison_refuses_weaker_statement",
+)
 CI_LANES = (
     "python",
     "lean",
@@ -92,6 +96,12 @@ def pytest_collection_modifyitems(config, items):
                 case = getattr(item, "callspec", None)
                 proof = case.params.get("proof") if case is not None else None
                 item_lane = "container-replay-exact" if proof == "rfl" else "container-replay-refusals"
+            elif item.originalname in CONTAINER_COMPARISON_TESTS:
+                item_lane = (
+                    "container-replay-exact"
+                    if item.originalname == CONTAINER_COMPARISON_TESTS[0]
+                    else "container-replay-refusals"
+                )
             else:
                 item_lane = "container"
         else:

@@ -279,6 +279,88 @@ def test_linux_candidate_fresh_replay(
 
 
 @pytest.mark.timeout(1800)
+def test_linux_candidate_closure_comparison_matches_exact_statement(
+    linux_bundle, linux_image, linux_prepared, tmp_path, monkeypatch, popen_spy
+):
+    statement, prepared = linux_prepared
+    monkeypatch.setenv("ELAN_HOME", str(tmp_path / "absent-elan"))
+    assert not lean.tool_path("lean").exists()
+    compilation = solutionchecks.compile_container(
+        linux_bundle,
+        linux_image,
+        statement,
+        challenge.Submission(
+            solution_module=linux_bundle.challenge_prelude + FORMAL.replace("sorry", "rfl").encode(),
+            formal_statement_hash=prepared.formal_statement_hash,
+        ),
+        ("challenge_curve",),
+        prepared=prepared,
+        root=tmp_path / "candidate",
+    )
+    lean.require_success(compilation.result)
+    popen_spy.clear()
+    observed, reasons, wall_ms = solutionchecks.observe_container_comparison(linux_bundle, compilation)
+    assert (observed, reasons) == (solutionplan.EXPECT_CLOSURE_MATCHED, ())
+    assert wall_ms >= 0
+    comparison = [argv for argv in popen_spy if "/home/cairn/comparator/.lake/build/bin/comparator" in argv]
+    assert len(comparison) == 1
+    assert comparison[0][-5:] == [
+        "lake",
+        f"+{linux_bundle.lean['toolchain']}",
+        "env",
+        "/home/cairn/comparator/.lake/build/bin/comparator",
+        solutionbuild.CONFIG_NAME,
+    ]
+    assert comparison[0][comparison[0].index("--network") + 1] == "none"
+    assert linux_image.image_id in comparison[0]
+    assert comparison[0][comparison[0].index("--user") + 1] == container.host_user()
+    solutionbuild.assert_unchanged(compilation.project)
+    solutionbuild.assert_dependencies(linux_bundle, compilation.project)
+    popen_spy.clear()
+    with pytest.raises(solutionplan.StepTimeout) as expired:
+        solutionchecks.observe_container_comparison(linux_bundle, compilation, timeout_s=2.0)
+    assert (expired.value.step, expired.value.timeout_s) == (solutionplan.KIND_CLOSURE_COMPARISON, 2.0)
+    timed_comparison = [argv for argv in popen_spy if solutionchecks.CONTAINER_COMPARATOR_BINARY in argv]
+    assert len(timed_comparison) == 1
+    assert any("stop" in argv for argv in popen_spy)
+
+
+@pytest.mark.timeout(1800)
+def test_linux_candidate_closure_comparison_refuses_weaker_statement(
+    linux_bundle, linux_image, linux_prepared, tmp_path, monkeypatch, popen_spy
+):
+    statement, prepared = linux_prepared
+    monkeypatch.setenv("ELAN_HOME", str(tmp_path / "absent-elan"))
+    assert not lean.tool_path("lean").exists()
+    compilation = solutionchecks.compile_container(
+        linux_bundle,
+        linux_image,
+        statement,
+        challenge.Submission(
+            solution_module=linux_bundle.challenge_prelude + b"theorem challenge_curve : True := by trivial\n",
+            formal_statement_hash=prepared.formal_statement_hash,
+        ),
+        ("challenge_curve",),
+        prepared=prepared,
+        root=tmp_path / "candidate",
+    )
+    lean.require_success(compilation.result)
+    popen_spy.clear()
+    observed, reasons, wall_ms = solutionchecks.observe_container_comparison(linux_bundle, compilation)
+    assert observed == solutionplan.OBSERVED_REFUSED
+    assert reasons[:2] == (solutionchecks.CLOSURE_MISMATCH, "rc:1")
+    assert "Challenge and solution theorem statement do not match: 'challenge_curve'" in reasons[2]
+    assert wall_ms >= 0
+    comparison = [argv for argv in popen_spy if solutionchecks.CONTAINER_COMPARATOR_BINARY in argv]
+    assert len(comparison) == 1
+    assert comparison[0][comparison[0].index("--network") + 1] == "none"
+    assert linux_image.image_id in comparison[0]
+    assert comparison[0][comparison[0].index("--user") + 1] == container.host_user()
+    solutionbuild.assert_unchanged(compilation.project)
+    solutionbuild.assert_dependencies(linux_bundle, compilation.project)
+
+
+@pytest.mark.timeout(1800)
 def test_linux_replay_timeouts_keep_their_stage_and_check_inputs(
     linux_bundle, linux_image, linux_prepared, tmp_path, monkeypatch, popen_spy
 ):
