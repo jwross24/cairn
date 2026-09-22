@@ -55,8 +55,11 @@ bead `cairn-sm1`.
 ## Feedback tiers
 
 `scripts/check.sh --fast` answers in seconds (format, lint, spelling, types, theater). A unit
-tier under one minute is a child of bead `cairn-sm1`. The full suite is the definition of
-green for a bead close and for CI, which bills macOS at ten times wall clock.
+tier under one minute is a child of bead `cairn-sm1`. A bead close requires the fast checks,
+focused tests for the changed behavior and its callers, relevant local-only checks, and green
+CI on the pushed commit. A full local suite is reserved for a named cross-suite risk or
+investigation; CI partitions the broad regression suite because it bills macOS at ten times
+wall clock.
 
 ## Where the evidence lives
 

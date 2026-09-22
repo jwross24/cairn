@@ -30,10 +30,18 @@ The pinned toolchain and mathlib prerequisite are described in
 
 ```bash
 scripts/check.sh --fast
-scripts/check.sh
+uv run pytest -q tests/<affected-test-module>.py
 ```
 
-The full local check runs every test and requires Docker. CI partitions that same test
+Use focused local tests for the changed behavior and its callers, and CI for broad regression
+coverage. Run a relevant `--ci-lane` locally when test selection is uncertain, and local-only
+checks for affected behavior CI cannot exercise. A full local `scripts/check.sh` is available
+for a named cross-suite risk or investigation; it runs every test and requires Docker.
+Shared fixture and collection changes require their contract tests and all affected CI lanes.
+Record the tested revision, scope, and exclusions. An interrupted run is incomplete; skipped
+tests are not passed. These development checks do not replace Cairn's mathematical gates.
+
+CI partitions the test
 population into nine disjoint lanes:
 
 - `python`: tests outside the explicit Lean, Solution, and container manifests.

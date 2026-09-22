@@ -139,18 +139,22 @@ and `--ci-lane container-replay-refusals`; their test sets are disjoint and exha
 With no lane argument, the local check runs all nine sets and requires Docker for the container tests.
 The local aggregate `--ci-lane solution-plan` runs all three ordered-plan cases in sequence.
 The local aggregate `--ci-lane container-replay` runs both container replay lanes.
-After any substantive change:
+During development, run the fast checks and the tests covering the changed behavior:
 
 ```bash
 scripts/check.sh --fast
-scripts/check.sh
-uv run ruff format --check src tests scripts
-uv run ruff check src tests scripts
-uv run codespell
-uv run ty check src tests
-scripts/theater-patterns.sh
-uv run pytest -q --durations=25
+uv run pytest -q tests/<affected-test-module>.py
 ```
+
+Choose tests from the changed behavior and its callers, including a positive case and a refusal
+where applicable. If the affected scope is unclear, run the relevant CI lane locally. CI supplies
+broad regression coverage on the pushed commit; a full local `scripts/check.sh` is for a named
+cross-suite risk or investigation, not an automatic prerequisite to every commit or bead close.
+Run local-only checks when CI cannot exercise the affected behavior. Report exclusions explicitly;
+a skipped test is not passed. Shared fixture or collection changes require their contract tests
+and all affected CI lanes. Record the tested revision and scope; edits invalidate evidence for
+the behavior they change, not unrelated results. Mathematical verification under RULE 2 always
+runs as required and is never replaced by developer checks or cached verdicts.
 
 The fast form is the first five gates; the full form adds pytest under a session deadline. Fix findings
 the right way: read enough context, never suppress a rule or delete a module to get green. A gate whose
@@ -268,9 +272,12 @@ committed (`.gitignore` re-includes it against the global ignore). `br` never ru
 ## Landing the Plane (Session Completion)
 
 1. File beads for remaining work, with the exact hold on anything left in progress.
-2. Run `scripts/check.sh --fast`, and the full form if anything under `src/` or `tests/` changed.
+2. Run `scripts/check.sh --fast` and affected tests under Quality Checks. Verify pushed CI before
+   declaring shipped; retain relevant local-only evidence and name any unverified scope.
 3. Update bead status; a close carries its ARTIFACTS block. `br sync --flush-only`, then stage `.beads/`
-   beside the exact code paths.
+   beside the exact code paths. Batch tracker evidence and closes with useful implementation or
+   documentation changes when their acceptance is met; pending verification keeps the bead open.
+   A separate bookkeeping-only commit is not a required work step.
 4. `git status` -> `git add <exact files>` -> `git commit` -> confirm the post-commit push landed or push
    by hand -> `git status` shows up to date.
 5. Hand off: what changed, gates run and their results, remaining risks, concrete next steps.
