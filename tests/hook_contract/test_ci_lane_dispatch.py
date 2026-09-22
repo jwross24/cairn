@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from _ci_lanes import CI_LANES, SOLUTION_PLAN_CASES
+from _ci_lanes import CI_LANES, SOLUTION_PLAN_LANES
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -71,6 +71,8 @@ def test_a_failed_lane_refuses_the_gate(dispatch, lane):
     [
         ["--ci-lane"],
         ["--ci-lane", "typo"],
+        ["--ci-lane", "solution-plan-sorry"],
+        ["--ci-lane", "solution-plan-timeout"],
         ["--ci-lane", "python", "--fast"],
         ["--ci-lane", "lean", "--unit"],
         ["--ci-lane", "python", "--paths", "src/cairn/lean.py"],
@@ -81,8 +83,8 @@ def test_a_failed_lane_refuses_the_gate(dispatch, lane):
         ["--ci-lane", "solution-plan", "--unit"],
         ["--ci-lane", "solution-plan", "--paths", "src/cairn/lean.py"],
         *(
-            ["--ci-lane", f"solution-plan-{case}", *flags]
-            for case in SOLUTION_PLAN_CASES
+            ["--ci-lane", lane, *flags]
+            for lane in SOLUTION_PLAN_LANES
             for flags in (["--fast"], ["--unit"], ["--paths", "src/cairn/lean.py"])
         ),
     ],
@@ -100,7 +102,7 @@ def test_invalid_lane_selection_runs_no_gates(dispatch, args):
         ("lean", "test_lean_toolchain.py"),
         ("solution", "test_solution_build_compile.py"),
         ("solution-plan", "test_solution_build_compile.py"),
-        *((f"solution-plan-{case}", "test_solution_build_compile.py") for case in SOLUTION_PLAN_CASES),
+        *((lane, "test_solution_build_compile.py") for lane in SOLUTION_PLAN_LANES),
     ],
 )
 def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
@@ -124,7 +126,9 @@ def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
     assert f"tests/integration/{test_file}::" in result.stdout
     if lane.startswith("solution-plan-"):
         selected = [line for line in result.stdout.splitlines() if line.startswith("tests/") and "::" in line]
+        cases = ("exact",) if lane == "solution-plan-exact" else ("sorry", "timeout")
         assert selected == [
             "tests/integration/test_solution_build_compile.py::"
-            f"test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks[{lane.removeprefix('solution-plan-')}]"
+            f"test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks[{case}]"
+            for case in cases
         ]

@@ -60,8 +60,7 @@ def _suite(pytester):
         ("solution", 3, 14),
         ("solution-plan", 3, 14),
         ("solution-plan-exact", 1, 16),
-        ("solution-plan-sorry", 1, 16),
-        ("solution-plan-timeout", 1, 16),
+        ("solution-plan-refusals", 2, 15),
         ("container", 1, 4),
         ("container-replay", 4, 1),
         ("container-replay-exact", 2, 3),
@@ -111,8 +110,11 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
         assert not combined & populations[lane]
         combined |= populations[lane]
     assert combined == populations["all"]
-    for case in PLAN_VARIANTS:
-        assert populations[f"solution-plan-{case}"] == {f"{SOLUTION_TEST_PATHS[0]}::{PLAN_CASE}[{case}]"}
+    assert populations["solution-plan-exact"] == {f"{SOLUTION_TEST_PATHS[0]}::{PLAN_CASE}[exact]"}
+    assert populations["solution-plan-refusals"] == {
+        f"{SOLUTION_TEST_PATHS[0]}::{PLAN_CASE}[sorry]",
+        f"{SOLUTION_TEST_PATHS[0]}::{PLAN_CASE}[timeout]",
+    }
     assert not populations["lean"] & populations["python"]
     assert not populations["solution"] & (populations["lean"] | populations["python"])
     assert not populations["container"] & (populations["lean"] | populations["python"] | populations["solution"])
@@ -261,12 +263,13 @@ def test_plan_shards_route_by_parameter_value_and_propagate_failure(pytester, ca
         f'import pytest\n@pytest.mark.parametrize("case", {PLAN_VARIANTS!r}, ids=["a", "b", "c"])\n'
         f"def {PLAN_CASE}(case):\n    assert case != {case!r}\n"
     )
-    result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane=solution-plan-{case}")
-    result.assert_outcomes(failed=1, deselected=9)
+    lane = "solution-plan-exact" if case == "exact" else "solution-plan-refusals"
+    result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
+    result.assert_outcomes(failed=1, passed=0 if case == "exact" else 1, deselected=9 if case == "exact" else 8)
     assert result.ret == pytest.ExitCode.TESTS_FAILED
 
 
-@pytest.mark.parametrize("lane", ["all", "solution-plan", "solution-plan-exact", "python"])
+@pytest.mark.parametrize("lane", ["all", "solution-plan", "solution-plan-exact", "solution-plan-refusals", "python"])
 @pytest.mark.parametrize("case", ["unknown", None, 1])
 def test_unknown_plan_parameters_refuse_collection(pytester, lane, case):
     _suite(pytester)

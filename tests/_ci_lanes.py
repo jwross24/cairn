@@ -21,6 +21,7 @@ LEAN_SOLUTION_TESTS = (
 )
 SOLUTION_PLAN_TESTS = ("test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks",)
 SOLUTION_PLAN_CASES = ("exact", "sorry", "timeout")
+SOLUTION_PLAN_LANES = ("solution-plan-exact", "solution-plan-refusals")
 CONTAINER_REPLAY_TESTS = (
     "test_linux_candidate_fresh_replay",
     "test_linux_replay_timeouts_keep_their_stage_and_check_inputs",
@@ -33,7 +34,7 @@ CI_LANES = (
     "python",
     "lean",
     "solution",
-    *(f"solution-plan-{case}" for case in SOLUTION_PLAN_CASES),
+    *SOLUTION_PLAN_LANES,
     "container",
     "container-replay-exact",
     "container-replay-refusals",
@@ -86,7 +87,7 @@ def pytest_collection_modifyitems(config, items):
                 case = case.params.get("case") if case is not None else None
                 if case not in SOLUTION_PLAN_CASES:
                     raise pytest.UsageError(f"invalid ordered-plan case: {item.nodeid}: {case!r}")
-                item_lane = f"solution-plan-{case}"
+                item_lane = "solution-plan-exact" if case == "exact" else "solution-plan-refusals"
             else:
                 item_lane = "lean" if item.originalname in LEAN_SOLUTION_TESTS else "solution"
         elif path in LEAN_TEST_PATHS:

@@ -122,7 +122,7 @@ def test_comparator_cache_contract_refuses_skipping_build_validation_on_a_hit():
 def _assert_ci_lanes(text):
     assert "lane: [container, container-replay-exact, container-replay-refusals]" in text
     assert 'run: scripts/check.sh --ci-lane "${{ matrix.lane }}"' in _step(text, "Linux container gates")
-    assert "lane: [python, lean, solution, solution-plan-exact, solution-plan-sorry, solution-plan-timeout]" in text
+    assert "lane: [python, lean, solution, solution-plan-exact, solution-plan-refusals]" in text
     assert "fail-fast: false" in text
     assert "continue-on-error:" not in text
     assert 'CAIRN_SESSION_DEADLINE: "1080"' in text
@@ -248,9 +248,8 @@ def test_container_lane_contract_refuses_missing_execution(old, new):
     ("old", "new"),
     [
         ("solution-plan-exact, ", ""),
-        ("solution-plan-sorry, ", ""),
-        (", solution-plan-timeout", ""),
-        ("solution-plan-exact, solution-plan-sorry, solution-plan-timeout", "solution-plan"),
+        (", solution-plan-refusals", ""),
+        ("solution-plan-exact, solution-plan-refusals", "solution-plan"),
         ("fail-fast: false", "fail-fast: true"),
         ('CAIRN_SESSION_DEADLINE: "1080"', 'CAIRN_SESSION_DEADLINE: "1800"'),
         ("timeout-minutes: 20", "timeout-minutes: 30"),

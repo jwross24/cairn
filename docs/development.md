@@ -42,12 +42,13 @@ Record the tested revision, scope, and exclusions. An interrupted run is incompl
 tests are not passed. These development checks do not replace Cairn's mathematical gates.
 
 CI partitions the test
-population into nine disjoint lanes:
+population into eight disjoint lanes:
 
 - `python`: tests outside the explicit Lean, Solution, and container manifests.
 - `lean`: toolchain tests plus real-prelude closure-comparison and fresh-replay forgery cases.
 - `solution`: remaining candidate preparation and build tests.
-- `solution-plan-exact`, `solution-plan-sorry`, `solution-plan-timeout`: one ordered-plan case each.
+- `solution-plan-exact`: the successful ordered-plan case.
+- `solution-plan-refusals`: the `sorry` and replay-timeout ordered-plan cases with shared setup.
 - `container`: Linux hashing, preparation, compilation, axiom, dependency-cache, and lifecycle tests.
 - `container-replay-exact`: successful Linux fresh replay.
 - `container-replay-refusals`: axiom refusal, forged-proof rejection, and stage-specific timeouts.
