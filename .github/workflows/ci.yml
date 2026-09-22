@@ -144,6 +144,7 @@ jobs:
 
       - name: Restore the Lean toolchain
         id: elan-cache
+        if: matrix.lane != 'python'
         # The pinned toolchain unpacks to 2.7 GB from a 561 MB release archive, so a miss
         # is a download plus an unpack. The key names everything the Lean tests resolve:
         # the elan release and the toolchain file the gate's lake project declares.
@@ -153,7 +154,7 @@ jobs:
           key: elan-${{ env.ELAN_VERSION }}-${{ hashFiles('lean/lean-toolchain') }}-${{ runner.os }}-${{ runner.arch }}
 
       - name: Install the Lean toolchain
-        if: steps.elan-cache.outputs.cache-hit != 'true'
+        if: matrix.lane != 'python' && steps.elan-cache.outputs.cache-hit != 'true'
         # No default toolchain and no PATH edit: every invocation names the toolchain with
         # `+<name>` and reaches the proxies through `$ELAN_HOME/bin`, which is the arm
         # `src/cairn/lean.py` takes, so the runner and the machines that write this repo
@@ -172,12 +173,14 @@ jobs:
           "$HOME/.elan/bin/elan" toolchain install "$(cat lean/lean-toolchain)"
 
       - name: The Lean toolchain the gate resolves
+        if: matrix.lane != 'python'
         run: |
           set -euo pipefail
           "$HOME/.elan/bin/elan" --version | tee /dev/stderr | grep -F "elan $ELAN_VERSION " > /dev/null
           "$HOME/.elan/bin/lean" "+$(cat lean/lean-toolchain)" --version
 
       - name: Restore the pinned mathlib cache
+        if: matrix.lane != 'python'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: |
@@ -186,6 +189,7 @@ jobs:
           key: mathlib-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean/lean-toolchain', 'lean/lake-manifest.json', 'lean/lakefile.toml') }}
 
       - name: Provision the pinned mathlib prerequisite
+        if: matrix.lane != 'python'
         working-directory: lean
         run: |
           set -euo pipefail

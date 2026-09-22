@@ -7,6 +7,9 @@ ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 MATHLIB_CACHE = "Restore the pinned mathlib cache"
 MATHLIB_SETUP = "Provision the pinned mathlib prerequisite"
+LEAN_CACHE = "Restore the Lean toolchain"
+LEAN_INSTALL = "Install the Lean toolchain"
+LEAN_RESOLVE = "The Lean toolchain the gate resolves"
 COMPARATOR_CACHE = "Restore the pinned comparator build"
 COMPARATOR_BUILD = "Build pinned comparator and exporter"
 GATES = "Gates"
@@ -46,7 +49,6 @@ def _assert_mathlib_prerequisite(text: str) -> None:
     setup_step = _step(text, MATHLIB_SETUP)
     setup = _step_body(text, MATHLIB_SETUP)
     assert "working-directory: lean" in setup_step
-    assert "\n        if:" not in setup_step
     assert "set -euo pipefail" in setup
     assert 'toolchain="$(cat lean-toolchain)"' in setup
     assert f'"$HOME/.elan/bin/lake" "+$toolchain" exe cache get {MODULE}' in setup
@@ -61,6 +63,27 @@ def test_ci_contract_refuses_a_missing_mathlib_prerequisite():
     broken = WORKFLOW.read_text().replace(f"- name: {MATHLIB_SETUP}", "- name: mathlib prerequisite absent", 1)
     with pytest.raises(AssertionError, match="no mathlib prerequisite step"):
         _assert_mathlib_prerequisite(broken)
+
+
+def _assert_python_lane_skips_lean_prerequisites(text: str) -> None:
+    for name in (LEAN_CACHE, LEAN_RESOLVE, MATHLIB_CACHE, MATHLIB_SETUP):
+        assert "if: matrix.lane != 'python'" in _step(text, name)
+    install = _step(text, LEAN_INSTALL)
+    assert "matrix.lane != 'python'" in install
+    assert "steps.elan-cache.outputs.cache-hit != 'true'" in install
+
+
+def test_python_lane_skips_lean_and_mathlib_provisioning():
+    _assert_python_lane_skips_lean_prerequisites(WORKFLOW.read_text())
+
+
+@pytest.mark.parametrize("step", [LEAN_CACHE, LEAN_INSTALL, LEAN_RESOLVE, MATHLIB_CACHE, MATHLIB_SETUP])
+def test_python_lane_setup_contract_refuses_an_unconditional_lean_step(step):
+    text = WORKFLOW.read_text()
+    body = _step(text, step)
+    conditional = next(line for line in body.splitlines() if "if:" in line)
+    with pytest.raises(AssertionError):
+        _assert_python_lane_skips_lean_prerequisites(text.replace(conditional + "\n", "", 1))
 
 
 def _assert_comparator_cache(text: str) -> None:

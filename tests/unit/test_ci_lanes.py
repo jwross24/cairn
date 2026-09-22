@@ -8,6 +8,7 @@ from _ci_lanes import (
     CONTAINER_COMPARISON_TESTS,
     CONTAINER_REPLAY_TESTS,
     CONTAINER_TEST_PATHS,
+    LEAN_PREREQUISITE_TEST_PATHS,
     LEAN_SOLUTION_TESTS,
     LEAN_TEST_PATHS,
     SOLUTION_TEST_PATHS,
@@ -356,8 +357,6 @@ def test_every_direct_lean_import_has_one_explicit_lane_classification():
         "tests/unit/test_container.py",
         "tests/unit/test_identity_sources.py",
         "tests/unit/test_lean_pins.py",
-        "tests/unit/test_solution_build.py",
-        "tests/unit/test_solution_comparison.py",
     }
     indirect_lean = {"tests/integration/test_prefilters_in_gate.py"}
     assert not set(LEAN_TEST_PATHS) & set(SOLUTION_TEST_PATHS)
@@ -366,3 +365,11 @@ def test_every_direct_lean_import_has_one_explicit_lane_classification():
     assert not python_only & lean
     assert imports == (lean - indirect_lean) | python_only
     assert indirect_lean <= lean
+
+
+def test_tests_that_assemble_solution_projects_run_with_lean_prerequisites():
+    assert set(LEAN_PREREQUISITE_TEST_PATHS) == {
+        "tests/unit/test_solution_build.py",
+        "tests/unit/test_solution_comparison.py",
+    }
+    assert set(LEAN_PREREQUISITE_TEST_PATHS) <= set(LEAN_TEST_PATHS)

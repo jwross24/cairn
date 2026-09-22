@@ -3,6 +3,10 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+LEAN_PREREQUISITE_TEST_PATHS = (
+    "tests/unit/test_solution_build.py",
+    "tests/unit/test_solution_comparison.py",
+)
 LEAN_TEST_PATHS = (
     "tests/integration/test_lean_toolchain.py",
     "tests/integration/test_axiom_computation.py",
@@ -12,6 +16,7 @@ LEAN_TEST_PATHS = (
     "tests/integration/test_lean_container.py",
     "tests/integration/test_prefilters_in_gate.py",
     "tests/unit/test_formal_statement_hasher.py",
+    *LEAN_PREREQUISITE_TEST_PATHS,
 )
 SOLUTION_TEST_PATHS = ("tests/integration/test_solution_build_compile.py",)
 CONTAINER_TEST_PATHS = ("tests/integration/test_container_statement_hash.py",)
