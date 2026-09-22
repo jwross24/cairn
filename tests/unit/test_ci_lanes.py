@@ -3,7 +3,14 @@ from pathlib import Path
 
 import _ci_lanes
 import pytest
-from _ci_lanes import CONTAINER_TEST_PATHS, LEAN_SOLUTION_TESTS, LEAN_TEST_PATHS, SOLUTION_TEST_PATHS, validate_manifest
+from _ci_lanes import (
+    CI_LANES,
+    CONTAINER_TEST_PATHS,
+    LEAN_SOLUTION_TESTS,
+    LEAN_TEST_PATHS,
+    SOLUTION_TEST_PATHS,
+    validate_manifest,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 SOLUTION_CASES = (
@@ -42,6 +49,9 @@ def _suite(pytester):
         ("lean", 5, 8),
         ("solution", 3, 10),
         ("solution-plan", 3, 10),
+        ("solution-plan-exact", 1, 12),
+        ("solution-plan-sorry", 1, 12),
+        ("solution-plan-timeout", 1, 12),
         ("container", 1, 0),
     ],
 )
@@ -56,7 +66,7 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
     default = pytester.runpytest("-q", "--import-mode=importlib")
     default.assert_outcomes(passed=13)
     populations = {}
-    for lane in ("all", "python", "lean", "solution", "solution-plan", "container"):
+    for lane in ("all", "solution-plan", *CI_LANES):
         result = pytester.runpytest("-q", "--collect-only", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
         assert result.ret == pytest.ExitCode.OK
         populations[lane] = {line for line in result.outlines if line.startswith("tests/") and "::" in line}
@@ -69,6 +79,14 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
     }
     assert populations["container"] == {"tests/integration/test_container_statement_hash.py::test_pass"}
     assert populations["solution-plan"] == {f"{SOLUTION_TEST_PATHS[0]}::{PLAN_CASE}[{case}]" for case in PLAN_VARIANTS}
+    combined = set()
+    for lane in CI_LANES:
+        assert populations[lane]
+        assert not combined & populations[lane]
+        combined |= populations[lane]
+    assert combined == populations["all"]
+    for case in PLAN_VARIANTS:
+        assert populations[f"solution-plan-{case}"] == {f"{SOLUTION_TEST_PATHS[0]}::{PLAN_CASE}[{case}]"}
     assert not populations["lean"] & populations["python"]
     assert not populations["solution"] & (populations["lean"] | populations["python"])
     assert not populations["container"] & (populations["lean"] | populations["python"] | populations["solution"])
@@ -158,6 +176,38 @@ def test_each_ordered_plan_failure_keeps_its_lane_red(pytester, failed_case):
     result = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=solution-plan")
     result.assert_outcomes(failed=1, passed=2, deselected=3)
     assert result.ret == pytest.ExitCode.TESTS_FAILED
+
+
+@pytest.mark.parametrize("case", PLAN_VARIANTS)
+def test_plan_shards_route_by_parameter_value_and_propagate_failure(pytester, case):
+    _suite(pytester)
+    (pytester.path / SOLUTION_TEST_PATHS[0]).write_text(
+        f'import pytest\n@pytest.mark.parametrize("case", {PLAN_VARIANTS!r}, ids=["a", "b", "c"])\n'
+        f"def {PLAN_CASE}(case):\n    assert case != {case!r}\n"
+    )
+    result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane=solution-plan-{case}")
+    result.assert_outcomes(failed=1, deselected=5)
+    assert result.ret == pytest.ExitCode.TESTS_FAILED
+
+
+@pytest.mark.parametrize("lane", ["all", "solution-plan", "solution-plan-exact", "python"])
+@pytest.mark.parametrize("case", ["unknown", None, 1])
+def test_unknown_plan_parameters_refuse_collection(pytester, lane, case):
+    _suite(pytester)
+    (pytester.path / SOLUTION_TEST_PATHS[0]).write_text(
+        f'import pytest\n@pytest.mark.parametrize("case", [{case!r}])\ndef {PLAN_CASE}(case):\n    assert True\n'
+    )
+    result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
+    assert result.ret == pytest.ExitCode.USAGE_ERROR
+    assert "invalid ordered-plan case" in result.stderr.str()
+
+
+def test_missing_plan_parameter_refuses_collection(pytester):
+    _suite(pytester)
+    (pytester.path / SOLUTION_TEST_PATHS[0]).write_text(f"def {PLAN_CASE}():\n    assert True\n")
+    result = pytester.runpytest("-q", "--import-mode=importlib")
+    assert result.ret == pytest.ExitCode.USAGE_ERROR
+    assert "invalid ordered-plan case" in result.stderr.str()
 
 
 def test_invalid_lane_refuses(pytester):

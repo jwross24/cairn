@@ -20,6 +20,8 @@ LEAN_SOLUTION_TESTS = (
     "test_real_prelude_forgery_passes_axioms_but_fails_fresh_replay",
 )
 SOLUTION_PLAN_TESTS = ("test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks",)
+SOLUTION_PLAN_CASES = ("exact", "sorry", "timeout")
+CI_LANES = ("python", "lean", "solution", *(f"solution-plan-{case}" for case in SOLUTION_PLAN_CASES), "container")
 
 
 def validate_manifest(root, paths):
@@ -39,9 +41,7 @@ def validate_manifest(root, paths):
 
 
 def pytest_addoption(parser):
-    parser.addoption(
-        "--cairn-ci-lane", choices=("all", "python", "lean", "solution", "solution-plan", "container"), default="all"
-    )
+    parser.addoption("--cairn-ci-lane", choices=("all", "solution-plan", *CI_LANES), default="all")
 
 
 def pytest_ignore_collect(collection_path, config):
@@ -60,15 +60,17 @@ def pytest_collection_modifyitems(config, items):
     validate_manifest(ROOT, CONTAINER_TEST_PATHS)
     validate_manifest(ROOT, (*LEAN_TEST_PATHS, *SOLUTION_TEST_PATHS, *CONTAINER_TEST_PATHS))
     lane = config.getoption("--cairn-ci-lane")
-    if lane == "all":
-        return
     selected = []
     deselected = []
     for item in items:
         path = item.path.relative_to(config.rootpath).as_posix()
         if path in SOLUTION_TEST_PATHS:
             if item.originalname in SOLUTION_PLAN_TESTS:
-                item_lane = "solution-plan"
+                case = getattr(item, "callspec", None)
+                case = case.params.get("case") if case is not None else None
+                if case not in SOLUTION_PLAN_CASES:
+                    raise pytest.UsageError(f"invalid ordered-plan case: {item.nodeid}: {case!r}")
+                item_lane = f"solution-plan-{case}"
             else:
                 item_lane = "lean" if item.originalname in LEAN_SOLUTION_TESTS else "solution"
         elif path in LEAN_TEST_PATHS:
@@ -77,6 +79,9 @@ def pytest_collection_modifyitems(config, items):
             item_lane = "container"
         else:
             item_lane = "python"
-        (selected if item_lane == lane else deselected).append(item)
+        matches = (
+            lane == "all" or item_lane == lane or (lane == "solution-plan" and item_lane.startswith("solution-plan-"))
+        )
+        (selected if matches else deselected).append(item)
     items[:] = selected
     config.hook.pytest_deselected(items=deselected)

@@ -50,7 +50,7 @@ while [ $# -gt 0 ]; do
     *)
       say "DENY usage: unknown argument $1"
       echo "[check] unknown argument: $1" >&2
-      echo "        usage: scripts/check.sh [--fast|--unit|--ci-lane python|lean|solution|solution-plan|container] [--paths <path> ...]" >&2
+      echo "        usage: scripts/check.sh [--fast|--unit|--ci-lane python|lean|solution|solution-plan[-exact|-sorry|-timeout]|container] [--paths <path> ...]" >&2
       exit 3
       ;;
   esac
@@ -58,9 +58,9 @@ done
 
 case "$CI_LANE:$FAST:$UNIT:$SCOPED" in
   all:*) ;;
-  python:0:0:0|lean:0:0:0|solution:0:0:0|solution-plan:0:0:0|container:0:0:0) ;;
+  python:0:0:0|lean:0:0:0|solution:0:0:0|solution-plan:0:0:0|solution-plan-exact:0:0:0|solution-plan-sorry:0:0:0|solution-plan-timeout:0:0:0|container:0:0:0) ;;
   *)
-    say "DENY usage: --ci-lane requires python, lean, solution, solution-plan, or container and cannot combine with --fast, --unit, or --paths"
+    say "DENY usage: --ci-lane requires python, lean, solution, solution-plan[-exact|-sorry|-timeout], or container and cannot combine with --fast, --unit, or --paths"
     echo "[check] invalid CI lane or incompatible selection flags" >&2
     exit 3
     ;;

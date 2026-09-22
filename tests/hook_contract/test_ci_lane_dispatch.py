@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from _ci_lanes import CI_LANES, SOLUTION_PLAN_CASES
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -47,7 +48,7 @@ def dispatch(tmp_path: Path):
     return run
 
 
-@pytest.mark.parametrize("lane", ["python", "lean", "solution", "solution-plan", "container", "all"])
+@pytest.mark.parametrize("lane", [*CI_LANES, "solution-plan", "all"])
 def test_lane_dispatch_preserves_pytest_arguments(dispatch, lane):
     args = [] if lane == "all" else ["--ci-lane", lane]
     result, calls = dispatch(*args)
@@ -57,7 +58,7 @@ def test_lane_dispatch_preserves_pytest_arguments(dispatch, lane):
     ]
 
 
-@pytest.mark.parametrize("lane", ["python", "lean", "solution", "solution-plan", "container"])
+@pytest.mark.parametrize("lane", [*CI_LANES, "solution-plan"])
 def test_a_failed_lane_refuses_the_gate(dispatch, lane):
     result, calls = dispatch("--ci-lane", lane, pytest_exit=1)
     assert result.returncode == 1
@@ -79,6 +80,11 @@ def test_a_failed_lane_refuses_the_gate(dispatch, lane):
         ["--ci-lane", "solution-plan", "--fast"],
         ["--ci-lane", "solution-plan", "--unit"],
         ["--ci-lane", "solution-plan", "--paths", "src/cairn/lean.py"],
+        *(
+            ["--ci-lane", f"solution-plan-{case}", *flags]
+            for case in SOLUTION_PLAN_CASES
+            for flags in (["--fast"], ["--unit"], ["--paths", "src/cairn/lean.py"])
+        ),
     ],
 )
 def test_invalid_lane_selection_runs_no_gates(dispatch, args):
@@ -94,6 +100,7 @@ def test_invalid_lane_selection_runs_no_gates(dispatch, args):
         ("lean", "test_lean_toolchain.py"),
         ("solution", "test_solution_build_compile.py"),
         ("solution-plan", "test_solution_build_compile.py"),
+        *((f"solution-plan-{case}", "test_solution_build_compile.py") for case in SOLUTION_PLAN_CASES),
     ],
 )
 def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
@@ -115,3 +122,9 @@ def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert f"tests/integration/{test_file}::" in result.stdout
+    if lane.startswith("solution-plan-"):
+        selected = [line for line in result.stdout.splitlines() if line.startswith("tests/") and "::" in line]
+        assert selected == [
+            "tests/integration/test_solution_build_compile.py::"
+            f"test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks[{lane.removeprefix('solution-plan-')}]"
+        ]
