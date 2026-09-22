@@ -278,6 +278,16 @@ jobs:
           persist-credentials: false
           clean: false
 
+      - name: Restore the pinned comparator build
+        if: matrix.lane != 'python'
+        id: comparator-build-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: |
+            .doctor/comparator/.lake/build
+            .doctor/comparator/.lake/packages/lean4export/.lake/build
+          key: comparator-build-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.comparator-pins.outputs.revision }}-${{ steps.comparator-pins.outputs.exporter }}-${{ hashFiles('lean/lean-toolchain', '.doctor/comparator/lean-toolchain') }}
+
       - name: Build pinned comparator and exporter
         if: matrix.lane != 'python'
         working-directory: .doctor/comparator

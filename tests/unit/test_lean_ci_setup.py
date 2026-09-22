@@ -7,6 +7,8 @@ ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 MATHLIB_CACHE = "Restore the pinned mathlib cache"
 MATHLIB_SETUP = "Provision the pinned mathlib prerequisite"
+COMPARATOR_CACHE = "Restore the pinned comparator build"
+COMPARATOR_BUILD = "Build pinned comparator and exporter"
 GATES = "Gates"
 MODULE = "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
 
@@ -59,6 +61,62 @@ def test_ci_contract_refuses_a_missing_mathlib_prerequisite():
     broken = WORKFLOW.read_text().replace(f"- name: {MATHLIB_SETUP}", "- name: mathlib prerequisite absent", 1)
     with pytest.raises(AssertionError, match="no mathlib prerequisite step"):
         _assert_mathlib_prerequisite(broken)
+
+
+def _assert_comparator_cache(text: str) -> None:
+    steps = _steps(text)
+    assert COMPARATOR_CACHE in steps, "CI has no comparator build cache step"
+    assert steps["Provision exporter source"] < steps[COMPARATOR_CACHE] < steps[COMPARATOR_BUILD] < steps[GATES]
+
+    cache = _step(text, COMPARATOR_CACHE)
+    assert "if: matrix.lane != 'python'" in cache
+    assert "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" in cache
+    assert ".doctor/comparator/.lake/build" in cache
+    assert ".doctor/comparator/.lake/packages/lean4export/.lake/build" in cache
+    for identity in (
+        "runner.os",
+        "runner.arch",
+        "steps.comparator-pins.outputs.revision",
+        "steps.comparator-pins.outputs.exporter",
+        "lean/lean-toolchain",
+        ".doctor/comparator/lean-toolchain",
+    ):
+        assert identity in cache
+
+    build = _step(text, COMPARATOR_BUILD)
+    assert "if: matrix.lane != 'python'" in build
+    assert "cache-hit" not in build
+    assert "build lean4export comparator" in build
+
+
+def test_ci_caches_identity_bound_comparator_outputs_and_revalidates_them():
+    _assert_comparator_cache(WORKFLOW.read_text())
+
+
+@pytest.mark.parametrize(
+    "removed",
+    [
+        "steps.comparator-pins.outputs.revision",
+        "steps.comparator-pins.outputs.exporter",
+        ".doctor/comparator/.lake/packages/lean4export/.lake/build",
+        ".doctor/comparator/lean-toolchain",
+    ],
+)
+def test_comparator_cache_contract_refuses_incomplete_identity_or_outputs(removed):
+    text = WORKFLOW.read_text()
+    cache = _step(text, COMPARATOR_CACHE)
+    assert removed in cache
+    with pytest.raises(AssertionError):
+        _assert_comparator_cache(text.replace(cache, cache.replace(removed, "", 1), 1))
+
+
+def test_comparator_cache_contract_refuses_skipping_build_validation_on_a_hit():
+    text = WORKFLOW.read_text()
+    marker = f"- name: {COMPARATOR_BUILD}\n"
+    assert marker in text
+    broken = text.replace(marker, marker + "        if: steps.comparator-build-cache.outputs.cache-hit != 'true'\n", 1)
+    with pytest.raises(AssertionError, match="cache-hit"):
+        _assert_comparator_cache(broken)
 
 
 def _assert_ci_lanes(text):
