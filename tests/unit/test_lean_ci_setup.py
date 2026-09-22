@@ -62,7 +62,7 @@ def test_ci_contract_refuses_a_missing_mathlib_prerequisite():
 
 
 def _assert_ci_lanes(text):
-    assert "lane: [container, container-replay]" in text
+    assert "lane: [container, container-replay-exact, container-replay-refusals]" in text
     assert 'run: scripts/check.sh --ci-lane "${{ matrix.lane }}"' in _step(text, "Linux container gates")
     assert "lane: [python, lean, solution, solution-plan-exact, solution-plan-sorry, solution-plan-timeout]" in text
     assert "fail-fast: false" in text
@@ -94,7 +94,7 @@ def _assert_container_lane(text):
     assert "uv sync --locked --all-groups" in job
     assert "pari-gp libpari-dev" in job
     assert "br sync --import-only" in job
-    assert "lane: [container, container-replay]" in job
+    assert "lane: [container, container-replay-exact, container-replay-refusals]" in job
     assert "fail-fast: false" in job
     assert "name: cairn-failure-diagnostics-${{ matrix.lane }}" in job
     step = _step(job, "Linux container gates")
@@ -130,6 +130,7 @@ def _assert_test_diagnostics(text):
         assert ".check.log" in upload
         assert "${{ runner.temp }}/pytest-of-*/pytest-[0-9]*/*[0-9]/test.log.jsonl" in upload
         assert "${{ runner.temp }}/pytest-of-*/pytest-[0-9]*/basetemp/*[0-9]/test.log.jsonl" in upload
+        assert "${{ runner.temp }}/pytest-of-*/cairn-test-logs/pytest-[0-9]*/*/test.log.jsonl" in upload
         assert "**" not in upload
         assert "retention-days: 7" in upload
 
@@ -154,6 +155,7 @@ def test_diagnostics_contract_refuses_runner_context_before_a_runner_exists():
         ".check.log",
         "${{ runner.temp }}/pytest-of-*/pytest-[0-9]*/*[0-9]/test.log.jsonl",
         "${{ runner.temp }}/pytest-of-*/pytest-[0-9]*/basetemp/*[0-9]/test.log.jsonl",
+        "${{ runner.temp }}/pytest-of-*/cairn-test-logs/pytest-[0-9]*/*/test.log.jsonl",
     ],
 )
 def test_diagnostics_contract_refuses_lost_test_evidence(removed):
@@ -168,7 +170,7 @@ def test_diagnostics_contract_refuses_lost_test_evidence(removed):
     [
         ("runs-on: ubuntu-24.04-arm", "runs-on: macos-latest"),
         ('--ci-lane "${{ matrix.lane }}"', "--fast"),
-        ("lane: [container, container-replay]", "lane: [container]"),
+        ("lane: [container, container-replay-exact, container-replay-refusals]", "lane: [container]"),
         ("fail-fast: false", "fail-fast: true"),
         ("name: cairn-failure-diagnostics-${{ matrix.lane }}", "name: cairn-failure-diagnostics"),
         ("ty check --python-platform linux", "ty check --python-platform darwin"),

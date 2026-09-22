@@ -31,7 +31,8 @@ CI_LANES = (
     "solution",
     *(f"solution-plan-{case}" for case in SOLUTION_PLAN_CASES),
     "container",
-    "container-replay",
+    "container-replay-exact",
+    "container-replay-refusals",
 )
 
 
@@ -52,11 +53,11 @@ def validate_manifest(root, paths):
 
 
 def pytest_addoption(parser):
-    parser.addoption("--cairn-ci-lane", choices=("all", "solution-plan", *CI_LANES), default="all")
+    parser.addoption("--cairn-ci-lane", choices=("all", "solution-plan", "container-replay", *CI_LANES), default="all")
 
 
 def pytest_ignore_collect(collection_path, config):
-    if config.getoption("--cairn-ci-lane") not in ("container", "container-replay") or not collection_path.is_file():
+    if not config.getoption("--cairn-ci-lane").startswith("container") or not collection_path.is_file():
         return None
     if not collection_path.is_relative_to(config.rootpath):
         return None
@@ -87,11 +88,18 @@ def pytest_collection_modifyitems(config, items):
         elif path in LEAN_TEST_PATHS:
             item_lane = "lean"
         elif path in CONTAINER_TEST_PATHS:
-            item_lane = "container-replay" if item.originalname in CONTAINER_REPLAY_TESTS else "container"
+            if item.originalname in CONTAINER_REPLAY_TESTS:
+                case = getattr(item, "callspec", None)
+                proof = case.params.get("proof") if case is not None else None
+                item_lane = "container-replay-exact" if proof == "rfl" else "container-replay-refusals"
+            else:
+                item_lane = "container"
         else:
             item_lane = "python"
         matches = (
-            lane == "all" or item_lane == lane or (lane == "solution-plan" and item_lane.startswith("solution-plan-"))
+            lane == "all"
+            or item_lane == lane
+            or (lane in ("solution-plan", "container-replay") and item_lane.startswith(f"{lane}-"))
         )
         (selected if matches else deselected).append(item)
     items[:] = selected

@@ -36,7 +36,6 @@ off by mechanism, not by prompt:
 
 ```bash
 uv sync
-uv run pytest -q                       # unit + integration, integration-first, zero mocks
 
 uv run cairn capabilities --json       # the CLI contract: commands, exit codes, env vars
 uv run cairn robot-docs                # agent handbook, printed in-tool
@@ -111,116 +110,9 @@ installer, and the project's own rules forbid the others.
   `uv sync`) for in-process arithmetic. `cairn env --json` reports whether both are found and
   which versions.
 
-The Lean integration suite requires the comparator and exporter pinned in
-`bundle/container.json`. Provision them outside pytest, from the repository root:
-
-```bash
-comparator_work="$(mktemp -d)"
-comparator_rev="$(uv run python -c 'import json; print(json.load(open("bundle/container.json"))["comparator"]["rev"])')"
-exporter_rev="$(uv run python -c 'import json; print(json.load(open("bundle/container.json"))["comparator"]["lean4export_rev"])')"
-git clone https://github.com/leanprover/comparator "$comparator_work/comparator"
-git -C "$comparator_work/comparator" checkout --detach "$comparator_rev"
-git clone https://github.com/leanprover/lean4export "$comparator_work/comparator/.lake/packages/lean4export"
-git -C "$comparator_work/comparator/.lake/packages/lean4export" checkout --detach "$exporter_rev"
-(cd "$comparator_work/comparator" && "$HOME/.elan/bin/lake" "+$(cat lean-toolchain)" build lean4export comparator)
-export CAIRN_COMPARATOR_CHECKOUT="$comparator_work/comparator"
-```
-
-CI provisions the same pins under `.doctor/comparator`, the default lookup path.
-Missing prerequisites fail the tests. Developer-mode comparator tests use upstream
-`fake-landrun.sh` with reviewed fixtures; they establish comparison behavior, not containment.
-The real-prelude ordered-plan test requires fresh kernel replay, rejects `sorry` before
-replay, and distinguishes replay timeout from rejection. Its per-test watchdog is 900 seconds,
-including setup and teardown; the replay subprocess retains its 600-second bound.
-CI runs eight disjoint lanes: Python, Lean, Solution, three ordered-plan cases, container, and container-replay. The Lean lane includes the
-real-prelude closure-comparison and fresh-replay forgery cases from
-`tests/integration/test_solution_build_compile.py`; `solution-plan-exact`, `solution-plan-sorry`, and
-`solution-plan-timeout` each run one ordered-plan case on an isolated runner. The Solution lane owns the
-remaining cases in that file. The container-replay lane owns Linux candidate fresh replay,
-axiom refusal, forgery rejection, and stage-specific timeout tests. Each lane has a 1080-second session deadline
-and 20-minute job ceiling. The default local check runs every lane's tests;
-`scripts/check.sh --ci-lane solution-plan` runs the three ordered-plan cases locally in sequence.
-
-`solutionchecks.prepare_dev` compiles a gate-owned Challenge-only project and computes
-its formal statement hash with the bundled Lean hasher. Its prepared value binds the
-claim, bundle, pin, renderer, prelude, theorem selection, and input fingerprints.
-`solutionchecks.run_dev` validates that handoff and the submitted hash before any
-candidate files or subprocesses. It checks imports, assembles a private project,
-builds, checks axioms, performs fresh kernel replay, and compares statement closures.
-Rejection or timeout blocks subsequent steps.
-
-`solutionchecks.prepare_container` renders the gate-owned Challenge in a private
-project and computes its hash inside the pinned Linux image without host Lean.
-It validates inputs and copied dependencies before returning a prepared value
-bound to the claim and image. `assert_prepared(..., image=image)` checks this
-handoff; `run_dev` refuses container-prepared values before candidate work.
-
-`solutionchecks.compile_container` checks that handoff, the submitted hash, and
-the import allowlist before assembling a separate candidate project. It copies
-pinned Linux dependencies, builds both Solution and Challenge by image ID without
-network access, and checks input and dependency integrity before returning the
-compilation result. The prepared project is not mounted during candidate execution.
-A successful compilation, including one containing `sorry`, is not proof acceptance.
-This step does not run the axiom check, fresh replay, or statement comparison.
-
-`solutionchecks.check_container_axioms` accepts a successful compilation bound to
-the same bundle and pin. It checks candidate inputs and dependencies, builds the
-bundled axiom extractor in a separate Linux project, and validates its canonical
-theorem-indexed output against the permitted axioms. Candidate compilation does
-not mount the extractor; inspection mounts it read-only. A `sorryAx` dependency
-fails this check. Input and dependency integrity are checked before returning.
-This is axiom evidence only, not fresh replay, statement comparison, or PROVEN.
-
-`solutionchecks.observe_container_replay` runs that real axiom check before invoking
-the pinned `leanchecker --fresh` command by image ID, without network or host Lean.
-Offending axioms block replay. Input and dependency changes refuse, including after
-a nonzero replay result or a confirmed replay timeout. Axiom and replay timeouts name
-their respective stages; an unconfirmed container cleanup remains an infrastructure
-error. A successful replay does not establish statement equivalence or grant PROVEN.
-
-The prepared value is an in-process handoff owned by the trusted gate caller, not
-authentication of an arbitrary caller-constructed value or a persisted gate-run row.
-The caller selects the theorem names. Fingerprints cover tracked inputs, not cached
-artifact certification or concurrent-write containment. A passing developer-arm
-result does not provide containment, persist evidence, or grant PROVEN.
-
-`container.formal_statement_hash` builds the bundled hasher and a caller-prepared
-Challenge project in the pinned ARM64 Linux image, then computes the formal digest.
-It checks the toolchain version and commit, executes by OCI image ID with networking
-disabled as the caller's non-root UID/GID, and logs that ID beside the digest.
-Private project permissions remain unchanged; build caches use the mounted project.
-Each container run has a unique owned name. A client timeout stops that container
-before returning the timeout; an unsuccessful stop raises a cleanup error naming
-the container, so termination is not claimed when the daemon cannot confirm it.
-Its project dependencies must be
-provisioned for Linux by the trusted caller. It does not execute a Solution or emit
-a gold verification result. The `container` CI lane runs the real elliptic-curve
-hash pair and rejection cases on a native Linux ARM64 runner; absent Docker is a failure.
-The check script's whole-project typing targets macOS, the M0 host platform. The Linux job also checks
-the container adapter, preparation code, Lean invocation code, and container tests against Linux APIs.
-
-Linux test dependencies support an explicitly provisioned local cache:
-
-```bash
-uv run python tests/_linux_dependencies.py --cache .cache/linux-dependencies
-CAIRN_LINUX_DEPENDENCY_CACHE="$PWD/.cache/linux-dependencies" scripts/check.sh
-```
-
-Provisioning runs outside pytest. Tests only read the configured cache, validate every
-file including ignored compiled artifacts, and copy dependencies into private temporary
-projects. The key binds the actual Docker image ID, Lean pins, manifest, project
-configuration, and requested modules. Missing or corrupt configured entries fail;
-without the variable, tests provision a temporary seed. Failed provisioning directories
-remain available for diagnosis. Cache records require a trusted local producer and
-are not proof certificates. Every proof check retains its execution requirements.
-The provisioning command records the exact local image ID; warm runs inspect and
-validate that image without rebuilding it. A cache-specific Docker tag retains the
-image independently of the build tag. A removed image requires provisioning
-into a fresh cache directory. Changing bundle identity selects a separate image record.
-
-CI provisions temporary Linux dependencies. Cross-run CI seed reuse requires persistence
-of the exact Docker image as well as the dependency cache; a matching image tag alone
-does not establish that identity.
+Development tests also require pinned Lean/mathlib tools and Docker. See
+[Development and verification](docs/development.md) for provisioning, test commands,
+cache setup, diagnostic retention, and formalization adapter details.
 
 ## Quick start
 
@@ -228,7 +120,7 @@ does not establish that identity.
 uv sync
 uv run cairn capabilities --json       # read this first: every command, exit code, env var
 uv run cairn robot-docs                # the same contract as a handbook, meant to be pasted into an agent's context
-uv run pytest -q                       # confirm the checkout is green before touching anything
+uv run cairn env --json
 ```
 
 `cairn capabilities --json` and `cairn robot-docs` are the canonical entry points for an
@@ -360,14 +252,13 @@ writer role on a given `--db` file at a time.
   this size costs roughly 2¹²⁷ group operations, beyond all realistic compute; this is written
   into the project as an invariant, not a target to be argued down later. The achievable goal
   is publishable increments on open subproblems, not breaking the curve.
-- **Every stack fact in `research/grounding/` was measured on one machine**: arm64 macOS,
-  APFS, PARI 2.17.4, libpari 2.17.2. Nothing is claimed for Linux, another OS user, or another
-  filesystem; those rows are marked `OPEN` with the milestone that will ground them.
+- **Platform coverage is partial.** The main suite targets arm64 macOS. Native Linux ARM64
+  CI checks the formalization adapters, not the complete substrate or a general Linux port.
 - **The write-boundary protection is single-user and macOS-only.** At M0 the pin and
   attestation file are protected by file mode and flags (`os.chflags`, `stat.UF_APPEND`) under
   one OS user on macOS/BSD; this resists overwrite, truncation and rename but not a process
-  that clears the flag first, and an Ubuntu CI runner fails before the suite starts. A second
-  OS user's worth of protection, and any Linux support, arrives at M3 at the earliest.
+  that clears the flag first. Those substrate protections are not established by the Linux
+  formalization tests.
 - **Problem selection is deliberately human-anchored**, and is called out in the project's own
   design as its weakest layer. Model panels propose and rank candidates with legible reasons;
   they never return verdicts, because ensembling cuts variance, not shared bias.

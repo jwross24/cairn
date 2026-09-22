@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lane: [container, container-replay]
+        lane: [container, container-replay-exact, container-replay-refusals]
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
     env:
@@ -83,6 +83,7 @@ jobs:
             .check.log
             ${{ runner.temp }}/pytest-of-*/pytest-[0-9]*/*[0-9]/test.log.jsonl
             ${{ runner.temp }}/pytest-of-*/pytest-[0-9]*/basetemp/*[0-9]/test.log.jsonl
+            ${{ runner.temp }}/pytest-of-*/cairn-test-logs/pytest-[0-9]*/*/test.log.jsonl
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7
@@ -317,6 +318,7 @@ jobs:
             .check.log
             ${{ runner.temp }}/pytest-of-*/pytest-[0-9]*/*[0-9]/test.log.jsonl
             ${{ runner.temp }}/pytest-of-*/pytest-[0-9]*/basetemp/*[0-9]/test.log.jsonl
+            ${{ runner.temp }}/pytest-of-*/cairn-test-logs/pytest-[0-9]*/*/test.log.jsonl
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7

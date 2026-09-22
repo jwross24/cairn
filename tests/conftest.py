@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 from hypothesis import settings
 
-pytest_plugins = ["pytester", "_session_deadline", "_libpari_stall", "_unit_tier", "_ci_lanes"]
+pytest_plugins = ["pytester", "_session_deadline", "_libpari_stall", "_unit_tier", "_ci_lanes", "_test_logging"]
 
 BEAD_STORE_CONSUMER_MODULES = frozenset(
     {"test_bead_artifact_block.py", "test_br_lookup.py", "test_theater_patterns.py"}
@@ -138,49 +138,6 @@ def isolation_guard(monkeypatch):
     if before != after:
         changed = sorted(set(before) ^ set(after) | {k for k in before if after.get(k) != before[k]})
         raise IsolationViolation(f"test touched guarded paths: {changed}")
-
-
-class _JsonLineHandler(logging.Handler):
-    def __init__(self, path):
-        super().__init__(level=logging.DEBUG)
-        self.path = path
-
-    def emit(self, record):
-        data = {
-            "ts": record.created,
-            "level": record.levelname,
-            "step": getattr(record, "step", None),
-            "event": record.getMessage(),
-        }
-        data.update(getattr(record, "fields", {}) or {})
-        with self.path.open("a") as fh:
-            fh.write(json.dumps(data, sort_keys=True, default=str) + "\n")
-
-
-@pytest.fixture(autouse=True)
-def json_test_log(tmp_path, request):
-    path = tmp_path / "test.log.jsonl"
-    handler = _JsonLineHandler(path)
-    logger = logging.getLogger("cairn")
-    previous = logger.level
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
-    start = time.monotonic()
-    logger.debug("phase", extra={"step": "test", "fields": {"phase": "start", "test": request.node.nodeid}})
-    yield path
-    logger.debug(
-        "phase",
-        extra={
-            "step": "test",
-            "fields": {
-                "phase": "end",
-                "test": request.node.nodeid,
-                "wall_ms": round((time.monotonic() - start) * 1000, 3),
-            },
-        },
-    )
-    logger.removeHandler(handler)
-    logger.setLevel(previous)
 
 
 @pytest.fixture

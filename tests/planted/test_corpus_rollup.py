@@ -278,7 +278,8 @@ def test_discovery_reads_every_family_module_and_nothing_else(tmp_path):
         ),
     ],
 )
-def test_only_the_harness_module_may_register_the_self_check_family(tmp_path, body, message):
+def test_only_the_harness_module_may_register_the_self_check_family(tmp_path, body, message, monkeypatch):
+    monkeypatch.delitem(sys.modules, "family_c", raising=False)
     (tmp_path / "family_c.py").write_text(body)
     with pytest.raises(RegistryError, match=message):
         _corpus.discover(tmp_path)

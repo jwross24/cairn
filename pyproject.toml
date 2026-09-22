@@ -38,6 +38,7 @@ testpaths = ["tests"]
 addopts = "-p no:cacheprovider -p no:faulthandler"
 timeout = 180
 timeout_method = "thread"
+tmp_path_retention_policy = "failed"
 markers = ["slow: measured unit duration above the calibrated tier threshold"]
 
 [tool.ruff]

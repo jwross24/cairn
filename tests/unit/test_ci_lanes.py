@@ -41,8 +41,11 @@ def _suite(pytester):
             stream.write(f'@pytest.mark.parametrize("case", [0, 1])\ndef {name}(case):\n    assert True\n')
         stream.write(f'@pytest.mark.parametrize("case", {PLAN_VARIANTS!r})\ndef {PLAN_CASE}(case):\n    assert True\n')
     with (pytester.path / CONTAINER_TEST_PATHS[0]).open("a") as stream:
-        for name in CONTAINER_REPLAY_TESTS:
-            stream.write(f"def {name}():\n    assert True\n")
+        stream.write("import pytest\n")
+        stream.write(
+            f'@pytest.mark.parametrize("proof", ["rfl"])\ndef {CONTAINER_REPLAY_TESTS[0]}(proof):\n    assert True\n'
+        )
+        stream.write(f"def {CONTAINER_REPLAY_TESTS[1]}():\n    assert True\n")
 
 
 @pytest.mark.parametrize(
@@ -58,6 +61,8 @@ def _suite(pytester):
         ("solution-plan-timeout", 1, 14),
         ("container", 1, 2),
         ("container-replay", 2, 1),
+        ("container-replay-exact", 1, 2),
+        ("container-replay-refusals", 1, 2),
     ],
 )
 def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
@@ -71,7 +76,7 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
     default = pytester.runpytest("-q", "--import-mode=importlib")
     default.assert_outcomes(passed=15)
     populations = {}
-    for lane in ("all", "solution-plan", *CI_LANES):
+    for lane in ("all", "solution-plan", "container-replay", *CI_LANES):
         result = pytester.runpytest("-q", "--collect-only", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
         assert result.ret == pytest.ExitCode.OK
         populations[lane] = {line for line in result.outlines if line.startswith("tests/") and "::" in line}
@@ -83,7 +88,12 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
         f"{SOLUTION_TEST_PATHS[0]}::{SOLUTION_CASES[0]}[{case}]" for case in (0, 1)
     }
     assert populations["container"] == {"tests/integration/test_container_statement_hash.py::test_pass"}
-    assert populations["container-replay"] == {f"{CONTAINER_TEST_PATHS[0]}::{name}" for name in CONTAINER_REPLAY_TESTS}
+    assert populations["container-replay"] == {
+        f"{CONTAINER_TEST_PATHS[0]}::{CONTAINER_REPLAY_TESTS[0]}[rfl]",
+        f"{CONTAINER_TEST_PATHS[0]}::{CONTAINER_REPLAY_TESTS[1]}",
+    }
+    assert populations["container-replay-exact"] == {f"{CONTAINER_TEST_PATHS[0]}::{CONTAINER_REPLAY_TESTS[0]}[rfl]"}
+    assert populations["container-replay-refusals"] == {f"{CONTAINER_TEST_PATHS[0]}::{CONTAINER_REPLAY_TESTS[1]}"}
     assert populations["solution-plan"] == {f"{SOLUTION_TEST_PATHS[0]}::{PLAN_CASE}[{case}]" for case in PLAN_VARIANTS}
     combined = set()
     for lane in CI_LANES:
@@ -127,7 +137,15 @@ def test_a_selected_failure_keeps_the_lane_red(pytester, lane, passed, deselecte
     assert result.ret == pytest.ExitCode.TESTS_FAILED
 
 
-@pytest.mark.parametrize(("lane", "passed", "deselected"), [("container", 1, 2), ("container-replay", 2, 1)])
+@pytest.mark.parametrize(
+    ("lane", "passed", "deselected"),
+    [
+        ("container", 1, 2),
+        ("container-replay", 2, 1),
+        ("container-replay-exact", 1, 2),
+        ("container-replay-refusals", 1, 2),
+    ],
+)
 def test_container_lane_does_not_import_modules_owned_by_other_lanes(pytester, lane, passed, deselected):
     _suite(pytester)
     path = pytester.path / "tests/unit/test_unlisted.py"
@@ -140,7 +158,9 @@ def test_container_lane_does_not_import_modules_owned_by_other_lanes(pytester, l
         assert "mac-only-import" in result.stdout.str()
 
 
-@pytest.mark.parametrize("lane", ["container", "container-replay"])
+@pytest.mark.parametrize(
+    "lane", ["container", "container-replay", "container-replay-exact", "container-replay-refusals"]
+)
 def test_container_lane_refuses_an_import_error_in_its_own_module(pytester, lane):
     _suite(pytester)
     (pytester.path / CONTAINER_TEST_PATHS[0]).write_text('raise RuntimeError("container-import")\n')
@@ -193,6 +213,20 @@ def test_container_replay_cases_exist_in_the_declared_file():
     assert CONTAINER_REPLAY_TESTS
     assert len(set(CONTAINER_REPLAY_TESTS)) == len(CONTAINER_REPLAY_TESTS)
     assert set(CONTAINER_REPLAY_TESTS) <= definitions
+
+
+@pytest.mark.parametrize("proof", ["rfl", "sorry", "forged"])
+def test_container_replay_shards_route_proof_parameters_and_propagate_failure(pytester, proof):
+    _suite(pytester)
+    (pytester.path / CONTAINER_TEST_PATHS[0]).write_text(
+        'import pytest\n@pytest.mark.parametrize("proof", ["rfl", "sorry", "forged"], ids=["a", "b", "c"])\n'
+        f"def {CONTAINER_REPLAY_TESTS[0]}(proof):\n    assert proof != {proof!r}\n"
+    )
+    exact = proof == "rfl"
+    lane = "container-replay-exact" if exact else "container-replay-refusals"
+    result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
+    result.assert_outcomes(failed=1, passed=0 if exact else 1, deselected=2 if exact else 1)
+    assert result.ret == pytest.ExitCode.TESTS_FAILED
 
 
 @pytest.mark.parametrize("failed_case", PLAN_VARIANTS)

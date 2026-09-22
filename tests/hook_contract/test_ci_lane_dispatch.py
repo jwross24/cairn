@@ -48,7 +48,7 @@ def dispatch(tmp_path: Path):
     return run
 
 
-@pytest.mark.parametrize("lane", [*CI_LANES, "solution-plan", "all"])
+@pytest.mark.parametrize("lane", [*CI_LANES, "solution-plan", "container-replay", "all"])
 def test_lane_dispatch_preserves_pytest_arguments(dispatch, lane):
     args = [] if lane == "all" else ["--ci-lane", lane]
     result, calls = dispatch(*args)
@@ -58,7 +58,7 @@ def test_lane_dispatch_preserves_pytest_arguments(dispatch, lane):
     ]
 
 
-@pytest.mark.parametrize("lane", [*CI_LANES, "solution-plan"])
+@pytest.mark.parametrize("lane", [*CI_LANES, "solution-plan", "container-replay"])
 def test_a_failed_lane_refuses_the_gate(dispatch, lane):
     result, calls = dispatch("--ci-lane", lane, pytest_exit=1)
     assert result.returncode == 1
