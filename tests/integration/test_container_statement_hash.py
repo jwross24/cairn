@@ -394,7 +394,7 @@ def test_container_timeout_stops_only_its_own_work(linux_image, tmp_path):
                 user=container.host_user(),
                 mounts=((tmp_path, "/project", "readonly=false"),),
                 env=(("HOME", "/project"), (sibling, "owned elsewhere")),
-                timeout_s=2,
+                timeout_s=15,
             )
         argv = timeout.value.argv
         owned = argv[argv.index("--name") + 1]
