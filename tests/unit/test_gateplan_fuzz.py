@@ -111,7 +111,8 @@ def test_an_empty_plan_is_refused():
 def test_a_ten_thousand_step_plan_is_refused_on_the_first_duplicate_not_by_running_out_of_memory():
     rows = copy.deepcopy(COMMITTED) * 1429
     assert len(rows) > 10_000
-    with pytest.raises(gateplan.PlanInvalid, match=r"duplicate-step-name:7\."):
+    duplicate_name = re.escape(COMMITTED[0]["step"])
+    with pytest.raises(gateplan.PlanInvalid, match=rf"duplicate-step-name:{len(COMMITTED)}\.{duplicate_name}"):
         gateplan.GatePlan.load(rows)
 
 
