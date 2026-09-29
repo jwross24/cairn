@@ -1,6 +1,7 @@
 import json
 import sqlite3
 import sys
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -180,6 +181,99 @@ def test_exact_attested_records_bind_each_authorized_action(authority_store):
             f"DELETE FROM {human_authority.TABLE} WHERE record_digest = ?",
             (session["record_digest"],),
         )
+
+
+def test_operator_session_renewal_requires_a_fresh_attested_record(authority_store):
+    sub, attest_path, _ = authority_store
+    gate = SimpleNamespace(
+        hash=GATE_HASH,
+        tiers={"operator_session": {"required": True, "max_duration_s": 3600}},
+    )
+    session_id = "renewal-session"
+    issued_by = "operator-1"
+    original_opened = datetime(2026, 9, 29, 9, 0, tzinfo=UTC)
+    original_expires = datetime(2026, 9, 29, 10, 0, tzinfo=UTC)
+    renewal_opened = datetime(2026, 9, 29, 10, 30, tzinfo=UTC)
+    renewal_expires = renewal_opened + timedelta(seconds=3600)
+    original_fields = {
+        "session_id": session_id,
+        "issued_by": issued_by,
+        "opened_at": original_opened.isoformat(),
+        "expires_at": original_expires.isoformat(),
+    }
+    original = human_authority.append(
+        sub,
+        attest_path,
+        human_authority.OPERATOR_SESSION,
+        original_fields,
+        gate_bundle_hash=GATE_HASH,
+    )
+    original_mirror = dict(
+        sub.conn.execute(
+            f"SELECT kind, canonical, record_digest, file_offset, producer_identity FROM {human_authority.TABLE} WHERE record_digest = ?",
+            (original["record_digest"],),
+        ).fetchone()
+    )
+
+    assert human_authority.operator_session_open(
+        sub, gate, attest_path, at=datetime(2026, 9, 29, 9, 30, tzinfo=UTC).isoformat()
+    )
+    assert not human_authority.operator_session_open(sub, gate, attest_path, at=renewal_opened.isoformat())
+    with pytest.raises(sqlite3.IntegrityError, match="append-only"):
+        sub.conn.execute(
+            f"UPDATE {human_authority.TABLE} SET producer_identity = 'forged' WHERE record_digest = ?",
+            (original["record_digest"],),
+        )
+
+    renewal_fields = {
+        "session_id": session_id,
+        "issued_by": issued_by,
+        "opened_at": renewal_opened.isoformat(),
+        "expires_at": renewal_expires.isoformat(),
+    }
+    unattested = human_authority.write(
+        sub,
+        human_authority.OPERATOR_SESSION,
+        renewal_fields,
+        gate_bundle_hash=GATE_HASH,
+        file_offset=1_000_000,
+    )
+    assert human_authority.visible_records(sub, human_authority.OPERATOR_SESSION, attest_path) == [original]
+    assert not human_authority.operator_session_open(sub, gate, attest_path, at=renewal_opened.isoformat())
+
+    renewed = human_authority.append(
+        sub,
+        attest_path,
+        human_authority.OPERATOR_SESSION,
+        renewal_fields,
+        gate_bundle_hash=GATE_HASH,
+    )
+    visible = human_authority.visible_records(sub, human_authority.OPERATOR_SESSION, attest_path)
+    assert visible == [original, renewed]
+    assert renewed["session_id"] == original["session_id"]
+    assert (renewed["record_digest"], renewed["file_offset"]) != (
+        original["record_digest"],
+        original["file_offset"],
+    )
+    assert (unattested["record_digest"], unattested["file_offset"]) == (
+        renewed["record_digest"],
+        1_000_000,
+    )
+    assert datetime.fromisoformat(renewed["expires_at"]) - datetime.fromisoformat(renewed["opened_at"]) == timedelta(
+        seconds=3600
+    )
+    assert human_authority.operator_session_open(sub, gate, attest_path, at=renewal_opened.isoformat())
+    assert not human_authority.operator_session_open(sub, gate, attest_path, at=renewed["expires_at"])
+    assert visible[0] == original
+    assert (
+        dict(
+            sub.conn.execute(
+                f"SELECT kind, canonical, record_digest, file_offset, producer_identity FROM {human_authority.TABLE} WHERE record_digest = ? AND file_offset = ?",
+                (original["record_digest"], original["file_offset"]),
+            ).fetchone()
+        )
+        == original_mirror
+    )
 
 
 def test_mirror_rows_without_the_exact_attestation_are_absent(authority_store, tmp_path):
