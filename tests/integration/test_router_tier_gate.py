@@ -181,7 +181,7 @@ def test_a_theorem_at_top_class_needs_the_formalization_gate_and_the_statement_r
 
 
 def gate_row(**kw):
-    fields = {"gate": "challenge_render", "result": "pass", "arm": "dev-macos-fake-landrun"}
+    fields = {"gate": "challenge_render", "result": "pass", "arm": "gold-linux-container"}
     fields.update(kw)
     return factories.gate_run(seed=4, **fields)
 
@@ -192,6 +192,11 @@ NOT_A_SUMMARY = {
     "a bound render pass": {"formal_statement_hash": "f0" * 32},
     "a failing summary": {"plan_step": "solution_plan", "formal_statement_hash": "f0" * 32, "result": "fail"},
     "a summary pass without a formal hash": {"plan_step": "solution_plan"},
+    "a dev-arm summary pass": {
+        "plan_step": "solution_plan",
+        "formal_statement_hash": "f0" * 32,
+        "arm": "dev-macos-fake-landrun",
+    },
 }
 
 

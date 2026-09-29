@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import _substrate_helpers as helpers
 import factories
 
-ARM = container.DEV_ARM
+ARM = container.GOLD_ARM
 FORMAL = "f0" * 32
 RENDERER = "e1" * 32
 PRELUDE = "d2" * 32
@@ -91,6 +91,15 @@ def test_an_all_pass_plan_persists_six_step_rows_and_one_passing_summary(writer,
     assert summary["run_id"] == summary_hash
     assert (summary["plan_step"], summary["result"], summary["arm"]) == (solutionplan.SUMMARY_STEP, "pass", ARM)
     assert summary["formal_statement_hash"] == FORMAL
+    assert scrutiny._formalization_passed(writer, statement.hash) is True
+
+
+def test_an_all_pass_dev_arm_plan_persists_a_passing_summary_that_meets_no_obligation(writer, statement):
+    persist(writer, PlanResult(plan_result().steps, container.DEV_ARM), statement)
+    (summary,) = rows(writer, solutionplan.SUMMARY_GATE)
+    assert (summary["result"], summary["arm"]) == ("pass", container.DEV_ARM)
+    assert scrutiny._formalization_passed(writer, statement.hash) is False
+    persist(writer, plan_result(), statement)
     assert scrutiny._formalization_passed(writer, statement.hash) is True
 
 

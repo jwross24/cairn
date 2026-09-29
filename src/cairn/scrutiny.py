@@ -16,7 +16,7 @@ import json
 from dataclasses import dataclass, field
 from fractions import Fraction
 
-from cairn import attest, canon, claims, keys, log
+from cairn import attest, canon, claims, container, keys, log
 from cairn.canon import NON_EMPTY_STR, Field, Struct
 from cairn.substrate import SubstrateError, _now, blob_hash
 
@@ -66,6 +66,9 @@ SIGNOFF = Struct(
 COST_MODEL_KIND = "cost_model"
 FORMALIZATION_GATE_NAME = "challenge_render"
 FORMALIZATION_SUMMARY_STEP = "solution_plan"
+# The dev arm runs unsandboxed on macOS and is development-only (PLAN §7), so only a gold-arm
+# summary meets the formalization obligation.
+FORMALIZATION_ARM = container.GOLD_ARM
 LADDER_TABLE = "ladder_table"
 KEEP = "KEEP"
 APPROVE = "approve"
@@ -244,8 +247,8 @@ def _ladder_keep(sub, statement_hash):
 def _formalization_passed(sub, statement_hash):
     row = sub.conn.execute(
         "SELECT 1 FROM gate_runs WHERE gate = ? AND plan_step = ? AND formal_statement_hash IS NOT NULL "
-        "AND statement_hash = ? AND result = 'pass' LIMIT 1",
-        (FORMALIZATION_GATE_NAME, FORMALIZATION_SUMMARY_STEP, statement_hash),
+        "AND arm = ? AND statement_hash = ? AND result = 'pass' LIMIT 1",
+        (FORMALIZATION_GATE_NAME, FORMALIZATION_SUMMARY_STEP, FORMALIZATION_ARM, statement_hash),
     ).fetchone()
     return row is not None
 
