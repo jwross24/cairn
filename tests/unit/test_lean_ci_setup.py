@@ -44,6 +44,7 @@ CONTAINER_LANES = (
 MODULE = "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
 LEAN_SETUP_CONDITION = (
     "matrix.lane != 'python'"
+    " && matrix.lane != 'python-integration'"
     " && matrix.lane != 'm0-lineage'"
     " && matrix.lane != 'm0-replay'"
     " && matrix.lane != 'm0-transcript'"
@@ -63,7 +64,7 @@ LEAN_SETUP_STEPS = (
     COMPARATOR_BUILD,
 )
 MACOS_LANES = (
-    "lane: [python, m0-lineage, m0-replay, m0-transcript, m0-boundaries, gateplan, lean-core, lean-replay, "
+    "lane: [python, python-integration, m0-lineage, m0-replay, m0-transcript, m0-boundaries, gateplan, lean-core, lean-replay, "
     "solution, solution-library-dlp, solution-library-finite-point, solution-library-binding, "
     "solution-plan-exact, solution-plan-refusals]"
 )
@@ -132,7 +133,7 @@ def test_python_m0_and_gateplan_lanes_skip_lean_and_comparator_provisioning():
 
 
 @pytest.mark.parametrize("step", LEAN_SETUP_STEPS)
-@pytest.mark.parametrize("lane", ["python", *M0_LANES, "gateplan"])
+@pytest.mark.parametrize("lane", ["python", "python-integration", *M0_LANES, "gateplan"])
 def test_non_lean_lane_setup_contract_refuses_accidental_provisioning(step, lane):
     text = WORKFLOW.read_text()
     body = _step(text, step)
@@ -153,7 +154,10 @@ def test_lean_and_library_leaves_keep_all_lean_and_comparator_prerequisites():
         "solution-library-finite-point",
         "solution-library-binding",
     }
-    assert all(f"matrix.lane != '{lane}'" in LEAN_SETUP_CONDITION for lane in ("python", *M0_LANES, "gateplan"))
+    assert all(
+        f"matrix.lane != '{lane}'" in LEAN_SETUP_CONDITION
+        for lane in ("python", "python-integration", *M0_LANES, "gateplan")
+    )
     assert all(lane not in LEAN_SETUP_CONDITION for lane in (*LEAN_LANES, *SOLUTION_LIBRARY_LANES))
     _assert_non_lean_lanes_skip_prerequisites(WORKFLOW.read_text())
 

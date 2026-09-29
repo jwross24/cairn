@@ -553,6 +553,158 @@
       "archive_path": "afternoon-m0-source-map.md.gz",
       "archive_bytes": 3515,
       "archive_sha256": "13ecb81b4d13ff51290d9bb27ab9b2c2211603d0a0ef589c3b6ce17dd354eba7"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/second-terminal.json",
+      "source_bytes": 92864,
+      "source_sha256": "e65f72a20f1d92f534f9673ba67d3289a546fda65c666fa12ee6153fd48d22f5",
+      "archive_path": "second-terminal.json.gz",
+      "archive_bytes": 5034,
+      "archive_sha256": "c6a2bb6270b4bba579c86990038a01ce0618166110af811070f250397568bebf"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/second-terminal.log",
+      "source_bytes": 3195491,
+      "source_sha256": "034ebfe5829eb9fa6a7bb7aa2da7f234a459834d60b8c02b9e582b1a3b09fff6",
+      "archive_path": "second-terminal.log.gz",
+      "archive_bytes": 441128,
+      "archive_sha256": "5569d672937f323df4c7ea77a3f68bfcd6eab91fd8a06415a19226b34a085f9a"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/second-python-failure.log",
+      "source_bytes": 616013,
+      "source_sha256": "661ddee9ba875a4801ac14cab1896cd546a5157d4a995cdbc7a14f60ba34a779",
+      "archive_path": "second-python-failure.log.gz",
+      "archive_bytes": 96009,
+      "archive_sha256": "9c30db1a9e3a75eec761dedd1c2a43d40bc399d0356dd979535617efb4bed1c7"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/second-gateplan-failure.log",
+      "source_bytes": 136213,
+      "source_sha256": "706408c36a9690150ea03495826c502695ec2b8c8594e336647c60c6ae96c815",
+      "archive_path": "second-gateplan-failure.log.gz",
+      "archive_bytes": 23438,
+      "archive_sha256": "bb2faccdca62a47798ecd6e81bed66556133a62ef2e534c7fef3b525b48d06ce"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/python-baseline-collection.log",
+      "source_bytes": 481223,
+      "source_sha256": "38a87e0643454eafd6d668b5e885820a40c08323dd6f9e9ae86cc86cced82df5",
+      "archive_path": "python-baseline-collection.log.gz",
+      "archive_bytes": 69607,
+      "archive_sha256": "264a982779ccc2ecd8d759ce9501c1611d6d07d3773fd46b2099d671ebacc287"
+    },
+    {
+      "source_path": "/tmp/cairn-lane2-day.HCyLdO/ladder-adapter-committed.log",
+      "source_bytes": 99,
+      "source_sha256": "bd4b868c1420d547a936e2c7f44a6862b1bf18c6aa342115cf0fbeb10fbf4b12",
+      "archive_path": "ladder-adapter-committed.log.gz",
+      "archive_bytes": 51,
+      "archive_sha256": "6d306a5d57e1bc99a74a9da744a05811900b305a5cf05cd56a324c9656621658"
+    },
+    {
+      "source_path": "/tmp/cairn-lane2-day.HCyLdO/ladder-adapter-committed-evidence.md",
+      "source_bytes": 1444,
+      "source_sha256": "af1ae77e658056529c7046f78d8108a5c2b781043f7bd3bce37150e78db40863",
+      "archive_path": "ladder-adapter-committed-evidence.md.gz",
+      "archive_bytes": 852,
+      "archive_sha256": "d4c86312abad8abe6f789cf9eb9707f686fdba173f191790f4ff951799948568"
+    },
+    {
+      "source_path": "/tmp/cairn-lane4-afternoon.5MnXI1/h4-wrapper-independent.log",
+      "source_bytes": 152,
+      "source_sha256": "9e68daae830419fce367fc377a3ee900fc75ea45839746fface9e77adecc02fe",
+      "archive_path": "h4-wrapper-independent.log.gz",
+      "archive_bytes": 102,
+      "archive_sha256": "2bb357d6ec00d9fa82c4a140696ddf0122ee5705ab43370c8ce0f9fb3dc2ee0d"
+    },
+    {
+      "source_path": "/tmp/cairn-ci-36618973095.3VV5he/completed-lanes-36624207935.tsv",
+      "source_bytes": 10389,
+      "source_sha256": "87d3620238423cba84899bc34c1f71ee8d35643aec45fdeb48b09494f26760ec",
+      "archive_path": "completed-lanes-36624207935.tsv.gz",
+      "archive_bytes": 2784,
+      "archive_sha256": "ee6d124bf46afb0d33acbc4519dab0f199c9a6acf97e0989530a2e353e592edb"
+    },
+    {
+      "source_path": "/tmp/cairn-ci-36618973095.3VV5he/completed-lanes-36624207935.json",
+      "source_bytes": 25202,
+      "source_sha256": "c2905137fd1213b908c76316e5b7a075f1ce42b192e7a9975e41c8b34efc4927",
+      "archive_path": "completed-lanes-36624207935.json.gz",
+      "archive_bytes": 3624,
+      "archive_sha256": "5ae0d72c4c92c749b3593863bc4d067c94ad59571334383414c1d22d27875685"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/python-split-contracts.log",
+      "source_bytes": 1250533,
+      "source_sha256": "dbab1cf93afdd01304d19f7d71ea7ab40c2ab770c328f19cb5cf6755b37d1e01",
+      "archive_path": "python-split-contracts.log.gz",
+      "archive_bytes": 29599,
+      "archive_sha256": "56e464d32f321151830eb9ceaab7aece94c1804ef2b35a7be9c0832bdcc2274f"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/python-split-fast-final.log",
+      "source_bytes": 377,
+      "source_sha256": "6e77858eeb655711a30316a9b67dcaaa524d835c9895ffe12852bc7781388c43",
+      "archive_path": "python-split-fast-final.log.gz",
+      "archive_bytes": 189,
+      "archive_sha256": "d465ad6470f305cb33873b01d983b33d855e0f0b232936d1d98ef405e6411504"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/python-split-final-set-contract.log",
+      "source_bytes": 1250040,
+      "source_sha256": "7590217e931d3ee8b1aff9bac0d50e81a6d8c49b71cfcd2bdead6022731b055c",
+      "archive_path": "python-split-final-set-contract.log.gz",
+      "archive_bytes": 29582,
+      "archive_sha256": "88f8679265b13241808f3d621faa9b34173ec9b7ceef093c99ec193f2f6564ad"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/python-split-parent-negative.log",
+      "source_bytes": 2035,
+      "source_sha256": "466a2133c0b671f714e5338b2991abc6cb52a0e1ca1924d5b527b791d9a6cc05",
+      "archive_path": "python-split-parent-negative.log.gz",
+      "archive_bytes": 714,
+      "archive_sha256": "0b6bbf36dd4d1418290fcf04108fd0e489a24d8ed13448e6222d4e9a2ed50e3c"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/python-split-parent-population.log",
+      "source_bytes": 510196,
+      "source_sha256": "72381ca69b3454aee968b2892584b642253ad0e5b901f49ffca5856c3cbb6d41",
+      "archive_path": "python-split-parent-population.log.gz",
+      "archive_bytes": 74024,
+      "archive_sha256": "a51012ace0b7faddb8e5104ac4bd706ee8b06b854f40ac88ed0a3cba51002d49"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/partition-independent-result.json",
+      "source_bytes": 10767,
+      "source_sha256": "e5e7e36a33bf49f7f3547a5a74461d19d26abaecffb665300b3d72ecce0df2c2",
+      "archive_path": "partition-independent-result.json.gz",
+      "archive_bytes": 1487,
+      "archive_sha256": "023073fed659182027cee6683f1f4683df8df1a429fcee33f60ce4e2c2d0a275"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/python-integration-local.log",
+      "source_bytes": 1480167,
+      "source_sha256": "4e58f0135489ac4312be24e3fd84a840376151a273f4a07b545d39d9d02bf5e7",
+      "archive_path": "python-integration-local.log.gz",
+      "archive_bytes": 49241,
+      "archive_sha256": "1ab7903a8a694ef932d421f45b888ad84a2c54cea556b1d010f48f6aede9c59e"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/python-baseline-external-drift.log",
+      "source_bytes": 1337943,
+      "source_sha256": "0c1c0cfe084ef89e9e3d9c5c2e43d02ecfe17be5a38557a3388f9b999803bfc9",
+      "archive_path": "python-baseline-external-drift.log.gz",
+      "archive_bytes": 30508,
+      "archive_sha256": "29e4fcdf0c214363b51ddbc2914204f08bdafb42dbd36d50c0e45ace3c043a9b"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/python-split-ubs.log",
+      "source_bytes": 185715,
+      "source_sha256": "dd1a3b42ee914f8e437c1969d6e4960acaebdaa20eba9a2168bec24e5b86a424",
+      "archive_path": "python-split-ubs.log.gz",
+      "archive_bytes": 13966,
+      "archive_sha256": "3901c26de0666a549044282e92b8d3cc6d62bba4c384e97ed272ca2bf5492f20"
     }
   ]
 }

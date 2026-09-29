@@ -45,9 +45,10 @@ Shared fixture and collection changes require their contract tests and all affec
 Record the tested revision, scope, and exclusions. An interrupted run is incomplete; skipped
 tests are not passed. These development checks do not replace Cairn's mathematical gates.
 
-CI partitions the test population into nineteen disjoint lanes:
+CI partitions the test population into twenty disjoint lanes:
 
-- `python`: tests outside the M0, GatePlan, Lean, Solution, solution-library, and container manifests.
+- `python`: fallback tests outside `tests/integration/` and the explicit lane manifests.
+- `python-integration`: tests in `tests/integration/` outside the explicit lane manifests.
 - `m0-lineage`: the four operator sequence, derivation lineage, and human rendering cases.
 - `m0-replay`: the two same-seed and different-seed replay cases.
 - `m0-transcript`: the three cache-bypass, step-log, and golden transcript cases.
@@ -70,9 +71,9 @@ CI partitions the test population into nineteen disjoint lanes:
 - `container-plan-refusals`: the gold-arm ordered-plan `sorry`, weaker-statement and stale-hash
   cases.
 
-The `python`, four M0, and `gateplan` lanes do not provision Lean, mathlib, comparator, or exporter
-prerequisites. The M0 and `gateplan` suites use PARI/GP. Both Lean leaves and all three solution-library
-leaves keep the Lean and comparator prerequisites required by their tests.
+The `python`, `python-integration`, four M0, and `gateplan` lanes do not provision Lean, mathlib,
+comparator, or exporter prerequisites. The M0 and `gateplan` suites use PARI/GP. Both Lean leaves and
+all three solution-library leaves keep the Lean and comparator prerequisites required by their tests.
 
 Each CI lane has a 1,080-second session deadline and a 20-minute job ceiling. The local
 `--ci-lane m0`, `--ci-lane lean`, `--ci-lane solution-library`, `--ci-lane solution-plan`,

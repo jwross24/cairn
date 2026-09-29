@@ -94,6 +94,7 @@ CONTAINER_PLAN_TESTS = ("test_linux_ordered_plan_runs_each_step_in_order",)
 CONTAINER_PLAN_CASES = ("exact", "sorry", "weaker", "stale-hash")
 CI_LANES = (
     "python",
+    "python-integration",
     *M0_LANES,
     "gateplan",
     *LEAN_LANES,
@@ -225,6 +226,8 @@ def pytest_collection_modifyitems(config, items):
                 )
             else:
                 item_lane = "container"
+        elif path.startswith("tests/integration/"):
+            item_lane = "python-integration"
         else:
             item_lane = "python"
         matches = (

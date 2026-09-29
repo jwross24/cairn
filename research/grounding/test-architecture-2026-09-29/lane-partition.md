@@ -2,6 +2,24 @@
 
 The 19-lane layout passes all jobs in [CI run 36618973095](https://github.com/jwross24/cairn/actions/runs/36618973095) at `9f68240ae5bf7f3c060d2560e6df7f86a06721ed`. The aggregate result is 4,706 passed, two external-skill skips, and one corpus-completeness xfail, with no failed tests or errors. Skips and xfails are exclusions, not passes. Every affected heavy leaf has zero skips. This establishes completion under the fixed job/session ceilings, not a causal speedup or completion of the broader test audit.
 
+## Descendant verification at `135f020`
+
+[Run 36624207935](https://github.com/jwross24/cairn/actions/runs/36624207935) is a terminal failure at `135f0200d2ca1577b6dcac0262bad0ed324a34ba`: 17 jobs passed, GatePlan failed, and Python recorded ten failed nodes before exhausting its 1,080-second session budget. This does not invalidate the source-specific receipt at `9f68240`, and it does not establish green for descendant code.
+
+GatePlan reported `1 failed, 27 passed, 4727 deselected in 607.20s`. The method-identity mutation wrapper rejected the keyword-only `attest_path` argument before reaching its intended assertion. Commit `ec76ff7794eb7fbee6329d9f0c0584f7a03addc5` accepts and forwards that argument, with the mutation and refusal assertions preserved. The committed module passed both tests in 40.10 seconds; the independent refusal case passed in 0.64 seconds. These local receipts cover the wrapper repair, not the full workflow.
+
+Python selected 4,519 of 4,755 collected cases and emitted `Timeout (0:18:00)!` at 82% completion. The active node was `test_the_status_is_always_one_of_the_five`; its position at the deadline is not evidence that this test caused the overrun. Completed integration-result timestamps span 20:30:41.754753 to 20:38:29.585771 UTC. That approximately 468-second interval includes work between result lines; it is not a pytest phase-duration measurement. The [raw failure log](lane-partition/raw/second-python-failure.log.gz) and [terminal metadata](lane-partition/raw/second-terminal.json.gz) retain the deadline and incomplete population explicitly.
+
+The ten explicit `FAILED` lines name two tier-two maker cases, seven bound-production justification cases, and the bound-evidence wrong-answer ledger case. An affected-leaf local run at `c2e406b` with the routing edit reproduces these as two `operator-session-absent` and eight `ticket-absent` refusals. It reports 11 failed, 1,277 passed, and one skipped in 280.92 seconds. The additional failure is the external compliance gatherer drift, independently reproduced on an unchanged `c2e406b` archive. These admission failures require their own repairs; partitioning cannot resolve them. Local pytest also emitted 2,101 cleanup warnings for protected scratch from earlier runs. The skipped framework-interpreter parameter remains an exclusion.
+
+## Python integration partition
+
+The `python-integration` leaf owns integration files outside the explicit heavy-lane manifests. `python` owns the remaining fallback tests. Explicit M0, GatePlan, Lean, Solution, library, and container routing takes precedence. Both Python leaves use macOS without Lean or comparator provisioning; the workflow has 20 leaves with the same 1,080-second session and 20-minute job ceilings.
+
+Collection against the `c2e406b` baseline preserves all 4,522 original Python cases: 1,289 integration cases and 3,233 other cases. The routing contracts add 20 cases, giving 3,253 Python and 1,289 Python-integration cases in the reviewed tree. Thirty-one contract IDs contain incremented expected fixture counts; the receipt maps each old ID to its corresponding count-adjusted ID. All 18 other lane selections are byte-equal node sets when both routers receive the same collected items. The 20 sets are disjoint and cover all 4,778 collected items.
+
+The parent ran the three lane contract modules: 477 passed in 95.12 seconds. A focused final union-contract check passed in 3.65 seconds. Scoped format, lint, spelling, types, and theater gates passed. The physical scratch mutation routing integration items back to `python` failed the real collection contract: `python-integration` collected zero tests, returned exit 5, and caused the outer test to fail with exit 1. The parent reproduced this refusal in 3.46 seconds. Cleanup warnings remain distinct from test outcomes. These checks establish routing and failure propagation, not completion of either lane under CI timing.
+
 ## Terminal 19-lane receipt
 
 All macOS jobs collected 4,709 items; the five Linux jobs collected their scoped 45 items. The selected populations below sum to 4,709, with disjoint ownership checked separately by the lane contracts. Pytest seconds include setup, calls, and teardown. Job seconds include Actions setup and post-job work. Queue seconds are run creation to job start; this timestamp difference does not identify why a runner waited.

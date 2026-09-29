@@ -50,7 +50,7 @@ while [ $# -gt 0 ]; do
     *)
       say "DENY usage: unknown argument $1"
       echo "[check] unknown argument: $1" >&2
-      echo "        usage: scripts/check.sh [--fast|--unit|--ci-lane python|m0|m0-{lineage,replay,transcript,boundaries}|gateplan|lean|lean-{core,replay}|solution|solution-library[-{dlp,finite-point,binding}]|solution-plan[-exact|-refusals]|container[-replay[-exact|-refusals]|-plan[-exact|-refusals]]] [--paths <path> ...]" >&2
+      echo "        usage: scripts/check.sh [--fast|--unit|--ci-lane python[-integration]|m0|m0-{lineage,replay,transcript,boundaries}|gateplan|lean|lean-{core,replay}|solution|solution-library[-{dlp,finite-point,binding}]|solution-plan[-exact|-refusals]|container[-replay[-exact|-refusals]|-plan[-exact|-refusals]]] [--paths <path> ...]" >&2
       exit 3
       ;;
   esac
@@ -58,7 +58,7 @@ done
 
 case "$CI_LANE:$FAST:$UNIT:$SCOPED" in
   all:*) ;;
-  python:0:0:0|m0:0:0:0|m0-lineage:0:0:0|m0-replay:0:0:0|m0-transcript:0:0:0|m0-boundaries:0:0:0|gateplan:0:0:0|lean:0:0:0|lean-core:0:0:0|lean-replay:0:0:0|solution:0:0:0|solution-library:0:0:0|solution-library-dlp:0:0:0|solution-library-finite-point:0:0:0|solution-library-binding:0:0:0|solution-plan:0:0:0|solution-plan-exact:0:0:0|solution-plan-refusals:0:0:0|container:0:0:0|container-replay:0:0:0|container-replay-exact:0:0:0|container-replay-refusals:0:0:0|container-plan:0:0:0|container-plan-exact:0:0:0|container-plan-refusals:0:0:0) ;;
+  python:0:0:0|python-integration:0:0:0|m0:0:0:0|m0-lineage:0:0:0|m0-replay:0:0:0|m0-transcript:0:0:0|m0-boundaries:0:0:0|gateplan:0:0:0|lean:0:0:0|lean-core:0:0:0|lean-replay:0:0:0|solution:0:0:0|solution-library:0:0:0|solution-library-dlp:0:0:0|solution-library-finite-point:0:0:0|solution-library-binding:0:0:0|solution-plan:0:0:0|solution-plan-exact:0:0:0|solution-plan-refusals:0:0:0|container:0:0:0|container-replay:0:0:0|container-replay-exact:0:0:0|container-replay-refusals:0:0:0|container-plan:0:0:0|container-plan-exact:0:0:0|container-plan-refusals:0:0:0) ;;
   *)
     say "DENY usage: --ci-lane requires a declared CI lane or aggregate and cannot combine with --fast, --unit, or --paths"
     echo "[check] invalid CI lane or incompatible selection flags" >&2

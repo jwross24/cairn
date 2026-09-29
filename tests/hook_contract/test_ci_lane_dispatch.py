@@ -11,6 +11,7 @@ import pytest
 from _ci_lanes import (
     CI_LANES,
     CONTAINER_PLAN_CASES,
+    CONTAINER_TEST_PATHS,
     GATEPLAN_TEST_PATHS,
     LEAN_LANES,
     LEAN_REPLAY_TEST,
@@ -26,6 +27,7 @@ from _ci_lanes import (
     SOLUTION_LIBRARY_LANES,
     SOLUTION_LIBRARY_TEST_PATHS,
     SOLUTION_PLAN_LANES,
+    SOLUTION_TEST_PATHS,
 )
 
 CONTAINER_PLAN_LANES = ("container-plan-exact", "container-plan-refusals")
@@ -35,6 +37,21 @@ CONTAINER_AUTHORITY_NODES = (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def _collect_nodes(lane):
+    env = dict(os.environ)
+    env.pop("PYTEST_ADDOPTS", None)
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", "--collect-only", f"--cairn-ci-lane={lane}"],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=90,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    return {line for line in result.stdout.splitlines() if line.startswith("tests/") and "::" in line}
 
 
 @pytest.fixture
@@ -116,6 +133,9 @@ def test_a_failed_lane_refuses_the_gate(dispatch, lane):
         ["--ci-lane", "container-plan-weaker"],
         ["--ci-lane", "container-plans"],
         ["--ci-lane", "python", "--fast"],
+        ["--ci-lane", "python-integration", "--fast"],
+        ["--ci-lane", "python-integration", "--unit"],
+        ["--ci-lane", "python-integration", "--paths", "src/cairn/lean.py"],
         ["--ci-lane", "m0", "--fast"],
         ["--ci-lane", "gateplan", "--fast"],
         ["--ci-lane", "solution-library", "--fast"],
@@ -154,6 +174,8 @@ def test_invalid_lane_selection_runs_no_gates(dispatch, args):
 @pytest.mark.parametrize(
     ("lane", "test_file"),
     [
+        ("python", "tests/unit/test_ci_lanes.py"),
+        ("python-integration", "tests/integration/test_grounding_subprocess.py"),
         *((lane, M0_TEST_PATHS[0]) for lane in ("m0", *M0_LANES)),
         ("gateplan", GATEPLAN_TEST_PATHS[0]),
         *((lane, "tests/integration/test_lean_toolchain.py") for lane in ("lean", "lean-core")),
@@ -244,6 +266,27 @@ def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
             f"test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks[{case}]"
             for case in cases
         ]
+
+
+def test_python_lanes_partition_the_previous_fallback_population():
+    all_nodes = _collect_nodes("all")
+    unit_nodes = _collect_nodes("python")
+    integration_nodes = _collect_nodes("python-integration")
+    explicit_paths = {
+        *LEAN_TEST_PATHS,
+        *M0_TEST_PATHS,
+        *GATEPLAN_TEST_PATHS,
+        *SOLUTION_TEST_PATHS,
+        *SOLUTION_LIBRARY_TEST_PATHS,
+        *CONTAINER_TEST_PATHS,
+    }
+    previous_python_nodes = {node for node in all_nodes if node.split("::", 1)[0] not in explicit_paths}
+    assert unit_nodes
+    assert integration_nodes
+    assert unit_nodes.isdisjoint(integration_nodes)
+    assert unit_nodes | integration_nodes == previous_python_nodes
+    assert all(not node.split("::", 1)[0].startswith("tests/integration/") for node in unit_nodes)
+    assert all(node.split("::", 1)[0].startswith("tests/integration/") for node in integration_nodes)
 
 
 @pytest.mark.parametrize(
