@@ -249,11 +249,13 @@ committed (`.gitignore` re-includes it against the global ignore). `br` never ru
   the vault, binds to whatever store sits on that path. An empty schema-10 store is parked at
   `~/.beads.stale-2026-09-02`; a `br` error naming schema 17 against 10 means such a store is on the
   walk-up path again.
-- `br` is 0.5.7, and `ci.yml` carries the matching `BR_VERSION`. The 0.5 line publishes its release
-  asset as `beads_rust-<version>-darwin_<arch>.tar.gz`; the 0.2 line published `br-`, so a version
-  bump that leaves the asset name alone 404s. beads_rust#457 is fixed as of 0.5.6.
-  `scripts/beads_doctor_gate.py`'s benign-value allowlist was established on 0.2.22 and accepts
-  0.5.7's output unchanged: 55 `ok`, 1 `warn`, `workspace_health: healthy`, verdict advisory.
+- `br` is 0.6.0 with tracker schema 19, and `ci.yml` carries the matching `BR_VERSION`. The asset
+  name has changed across release lines: 0.2 and 0.6 publish `br-<version>-<os>_<arch>.tar.gz` with
+  `arm64`, 0.5 published `beads_rust-` with `aarch64` on Linux, so a version bump that leaves the
+  asset name alone 404s. `br show --json` is identical in shape and value between 0.5.7 and 0.6.0.
+  A schema-17 store is migrated with `br doctor migrate-schema plan`, then `apply --plan-token`;
+  ordinary commands refuse it with `SCHEMA_MISMATCH`. `scripts/beads_doctor_gate.py`'s benign-value
+  allowlist accepts 0.6.0's output: 59 `ok`, 2 `warn`, `workspace_health: healthy`, verdict advisory.
 
 ## Tool Etiquette
 

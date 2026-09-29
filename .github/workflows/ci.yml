@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 20
     env:
       CAIRN_SESSION_DEADLINE: "1080"
-      BR_VERSION: "0.5.7"
+      BR_VERSION: "0.6.0"
       PYTEST_ADDOPTS: "-vv"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -47,7 +47,7 @@ jobs:
       - name: Install Linux br
         run: |
           set -euo pipefail
-          asset="beads_rust-$BR_VERSION-linux_aarch64.tar.gz"
+          asset="br-$BR_VERSION-linux_arm64.tar.gz"
           base="https://github.com/Dicklesworthstone/beads_rust/releases/download/v$BR_VERSION"
           work="$(mktemp -d)"
           curl -fsSL -o "$work/$asset" "$base/$asset"
@@ -120,11 +120,9 @@ jobs:
       # the cache key below, which is what fetches the binary again.
       #
       # Matches the binary the machines that write this repo carry, so a gate reads the
-      # same br in both places. beads_rust#457, where 0.5.3 malformed a migrated database
-      # on a single serial write, is fixed in 0.5.6 and confirmed by two independent A/B
-      # runs on 0.5.7. The release asset for the 0.5 line is named `beads_rust-`; the 0.2
-      # line published `br-`.
-      BR_VERSION: "0.5.7"
+      # same br in both places. The 0.6 line names its release asset `br-` with `arm64`;
+      # the 0.5 line used `beads_rust-` with `aarch64` on Linux.
+      BR_VERSION: "0.6.0"
       # The elan release that resolves the Lean toolchain `lean/lean-toolchain` names; the
       # release publishes no checksum beside its archive, so the pin is the tag alone.
       ELAN_VERSION: "4.2.3"
@@ -213,7 +211,7 @@ jobs:
         # carry. Either failure would be a red run about Rust, not about cairn.
         run: |
           set -euo pipefail
-          asset="beads_rust-$BR_VERSION-darwin_$(uname -m).tar.gz"
+          asset="br-$BR_VERSION-darwin_$(uname -m).tar.gz"
           base="https://github.com/Dicklesworthstone/beads_rust/releases/download/v$BR_VERSION"
           work="$(mktemp -d)"
           curl -fsSL -o "$work/$asset" "$base/$asset"
