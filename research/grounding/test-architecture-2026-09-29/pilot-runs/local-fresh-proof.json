@@ -1,0 +1,124 @@
+{
+  "projection": "selected-fields",
+  "source_path": "/tmp/cairn-lane3.2ARmLN/transport-fresh-proof-result.json",
+  "raw_sha256": "ac0d917b53b67192c52fb9b93075ad965f02b1977bc449c9203bc8ad37fa8a50",
+  "status": "passed",
+  "scope": "two explicit pytest nodes, restored prerequisite cache, already-populated shared Docker daemon; no fresh-daemon or speedup claim",
+  "source_commit": "09a8a03852ca3473abaae0ce87c907b6aafdee82",
+  "helper_sha256": "905f21d4914cd4ce59c76dfc86b60c4d14bd2b8a40875900e284c519c8a2d36f",
+  "source_artifacts": {
+    "initial_source_manifest": {
+      "path": "/tmp/cairn-lane3.2ARmLN/transport-proof-source-sha256.txt",
+      "sha256": "b0076a44c7a1ef2ad1c2c2c427e231177425e9f689edd63eef15cdd8a79d3b1a"
+    },
+    "reviewed_concurrent_source_diff": {
+      "path": "/tmp/cairn-lane3.2ARmLN/proof-concurrent-source-review.diff",
+      "sha256": "77401d1b6c8e9ac05f690f41f23b9056d3d97d069dc23e7d3ffeafdfc4a6d4c3",
+      "review_status": "reviewed"
+    },
+    "initial_setup_error": {
+      "path": "/tmp/cairn-lane3.2ARmLN/transport-parent-fresh-proof.log",
+      "sha256": "143d5ee08ccac65c898b08667d881e7ab9e3daad2c5b953257ae6c12201f6705",
+      "retained_path": "research/grounding/test-architecture-2026-09-29/pilot-runs/local-fresh-proof-initial-setup-error.log",
+      "observation": "dependency-checkout-unreadable:mathlib",
+      "pytest_result": "2 errors in 48.18s"
+    },
+    "successful_retry_pytest_output": {
+      "path": "/tmp/cairn-lane3.2ARmLN/transport-parent-fresh-proof-retry.log",
+      "sha256": "1d0a4ea7fca8833098131006c0eb5b5f2c6f8c7eff4cbebb61bb38c543dfdfb0",
+      "retained_path": "research/grounding/test-architecture-2026-09-29/pilot-runs/local-fresh-proof-pytest.log",
+      "output_summary": "2 passed in 2079.81s (0:34:39)"
+    }
+  },
+  "cases": [
+    {
+      "proof": "forged",
+      "observed": "refused",
+      "reasons": [
+        "kernel-rejected",
+        "rc:1",
+        "uncaught exception: while replaying declaration 'forged':"
+      ],
+      "observer_wall_ms": 587633,
+      "checker_result": {
+        "argv": [
+          "/usr/local/bin/docker",
+          "run",
+          "--rm",
+          "--name",
+          "cairn-run-b3ed770f43414fa5aa6691c9fee60709",
+          "--network",
+          "none",
+          "--user",
+          "501:20",
+          "--mount",
+          "type=bind,source=/private/tmp/cairn-lane3-proof-retry.w7gUNG/pytest-of-jwross/pytest-0/test_linux_candidate_fresh_rep0/candidate,target=/project,readonly=false",
+          "--workdir",
+          "/project",
+          "--env",
+          "HOME=/project",
+          "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+          "lake",
+          "+leanprover/lean4:v4.34.0-rc1",
+          "env",
+          "leanchecker",
+          "--fresh",
+          "-v",
+          "Solution.S_f4cd161738602628"
+        ],
+        "rc": 1,
+        "stdout": "replaying Solution.S_f4cd161738602628 with --fresh\n",
+        "stderr": "uncaught exception: while replaying declaration 'forged':\n(kernel) declaration type mismatch, 'forged' has type\n  True\nbut it is expected to have type\n  False\n",
+        "wall_ms": 529020.876
+      },
+      "image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+      "raw_log_path": "/tmp/cairn-lane3-proof-retry.w7gUNG/pytest-of-jwross/cairn-test-logs/pytest-0-7lj4_qv_/test_linux_candidate_fresh_rep0-nwcxtohw/test.log.jsonl",
+      "raw_log_sha256": "d8f90555c140eb88565d8d947c6c294198410b6e2975e85694292104245ef4e6"
+    },
+    {
+      "proof": "rfl",
+      "observed": "replayed",
+      "reasons": [],
+      "observer_wall_ms": 602350,
+      "checker_result": {
+        "argv": [
+          "/usr/local/bin/docker",
+          "run",
+          "--rm",
+          "--name",
+          "cairn-run-27dff368de7b41d48c536d2b542c01d3",
+          "--network",
+          "none",
+          "--user",
+          "501:20",
+          "--mount",
+          "type=bind,source=/private/tmp/cairn-lane3-proof-retry.w7gUNG/pytest-of-jwross/pytest-0/test_linux_candidate_fresh_rep0/candidate,target=/project,readonly=false",
+          "--workdir",
+          "/project",
+          "--env",
+          "HOME=/project",
+          "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+          "lake",
+          "+leanprover/lean4:v4.34.0-rc1",
+          "env",
+          "leanchecker",
+          "--fresh",
+          "-v",
+          "Solution.S_f4cd161738602628"
+        ],
+        "rc": 0,
+        "stdout": "replaying Solution.S_f4cd161738602628 with --fresh\n",
+        "stderr": "",
+        "wall_ms": 509018.544
+      },
+      "image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+      "raw_log_path": "/tmp/cairn-lane3-proof-retry.w7gUNG/pytest-of-jwross/cairn-test-logs/pytest-0-7lj4_qv_/test_linux_candidate_fresh_rep0-cdfeixwb/test.log.jsonl",
+      "raw_log_sha256": "301f2195b457a8f5513ed2d7d2ee2cb794d7253bff4115455000f3304fce3d83"
+    }
+  ],
+  "claims_not_supported": [
+    "CI speedup",
+    "fresh-daemon behavior",
+    "future pilot results"
+  ]
+}

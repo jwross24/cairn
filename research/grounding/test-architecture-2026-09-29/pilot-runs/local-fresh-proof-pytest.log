@@ -1,0 +1,9 @@
+..                                                                       [100%]
+============================= slowest 10 durations =============================
+1164.64s call     tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[forged]
+751.99s call     tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[rfl]
+141.93s setup    tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[rfl]
+4.47s teardown tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[forged]
+3.81s teardown tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[rfl]
+0.11s setup    tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[forged]
+2 passed in 2079.81s (0:34:39)

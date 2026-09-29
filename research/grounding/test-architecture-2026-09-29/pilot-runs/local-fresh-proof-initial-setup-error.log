@@ -1,0 +1,144 @@
+EE                                                                       [100%]
+==================================== ERRORS ====================================
+___________ ERROR at setup of test_linux_candidate_fresh_replay[rfl] ___________
+
+linux_bundle = <cairn.bundle.GateBundle object at 0x107ed4050>
+linux_image = Image(identity='b7a0f1bcf5e5d33c106266ed09534ccac29baa0732294b6e054b1ffed002e375', tag='cairn-gate:b7a0f1bcf5e5d33c', image_id='sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb', context=None)
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x107d989d0>, _basetemp=PosixPath('/private/tmp/cairn-lane3-proof.i57225/pytest-of-jwross/pytest-0'), _retention_count=3, _retention_policy='failed')
+
+    @pytest.fixture(scope="module")
+    def linux_dependencies(linux_bundle, linux_image, tmp_path_factory):
+        configured = os.environ.get(dependencies.CACHE_ENV)
+        if configured:
+            cache = Path(configured)
+>           dependencies.validate(linux_bundle, linux_image, cache / dependencies.cache_key(linux_bundle, linux_image))
+
+tests/integration/test_container_statement_hash.py:707: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/_linux_dependencies.py:105: in validate
+    solutionbuild._dependency_packages(root, gate.lake_manifest, gate.lean)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+project = PosixPath('/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-lane3-zstd-payload-l1yc3ztl/restored/cold-cache/c113c4b0433ed44ee31d0b0e792fcb9a84ca1ef2d15d03ff2a4c9c0a463fbb4b/project')
+manifest = {'name': 'cairn_lean', 'lakeDir': '.lake', 'version': '1.2.0', 'packages': [{'rev': '1f29011071772620f612bf5a06433775f...2a31d8fd4726', 'url': 'https://github.com/leanprover-community/aesop', 'name': 'aesop', 'type': 'git', ...}, ...], ...}
+pins = {'checker': {'build': ['lake', 'build', '{module}'], 'axioms': ['lake', 'env', '{executable}', '{module}'], 'replay': ...an_commit': '3447a668783dbce1a8fdb97101dd067687b2b418', 'mathlib_rev': '1f29011071772620f612bf5a06433775f06067b8', ...}
+
+    def _dependency_packages(project, manifest, pins):
+        project = Path(project)
+        try:
+            actual = json.loads((project / MANIFEST_NAME).read_text())
+        except OSError, ValueError:
+            raise SolutionRefused("dependency-manifest-unavailable") from None
+        if actual != manifest or lean.manifest_rev(manifest) != pins["mathlib_rev"]:
+            raise SolutionRefused("dependency-manifest-mismatch")
+        if manifest.get("packagesDir") != ".lake/packages":
+            raise SolutionRefused("dependency-packages-directory-unsupported")
+        packages = []
+        for entry in manifest["packages"]:
+            name = entry["name"]
+            if not isinstance(name, str) or not name or Path(name).name != name or name in (".", ".."):
+                raise SolutionRefused("dependency-package-name-invalid")
+            if entry["type"] != "git" or entry.get("subDir") is not None:
+                raise SolutionRefused(f"dependency-checkout-unsupported:{name}")
+            package = project / ".lake" / "packages" / name
+            git_dir = package / ".git"
+            if not git_dir.is_dir() or git_dir.is_symlink() or (git_dir / "objects/info/alternates").exists():
+                raise SolutionRefused(f"dependency-checkout-unavailable:{name}")
+            for path in package.rglob("*"):
+                if path.is_symlink():
+                    try:
+                        target = path.resolve(strict=True)
+                    except OSError:
+                        raise SolutionRefused(f"dependency-symlink-invalid:{name}") from None
+                    if path.readlink().is_absolute() or not target.is_relative_to(package.resolve()):
+                        raise SolutionRefused(f"dependency-symlink-escapes:{name}")
+            for query, expected in zip(DEPENDENCY_QUERIES, (entry["rev"], entry["url"], ""), strict=True):
+                try:
+                    result = subprocess.run(
+                        [GIT, "-C", str(package), *query],
+                        capture_output=True,
+                        text=True,
+                        timeout=10,
+                        check=False,
+                        env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"},
+                    )
+                except OSError, subprocess.TimeoutExpired:
+>                   raise SolutionRefused(f"dependency-checkout-unreadable:{name}") from None
+E                   cairn.solutionbuild.SolutionRefused: dependency-checkout-unreadable:mathlib
+
+.venv/lib/python3.14/site-packages/cairn/solutionbuild.py:175: SolutionRefused
+_________ ERROR at setup of test_linux_candidate_fresh_replay[forged] __________
+
+linux_bundle = <cairn.bundle.GateBundle object at 0x107ed4050>
+linux_image = Image(identity='b7a0f1bcf5e5d33c106266ed09534ccac29baa0732294b6e054b1ffed002e375', tag='cairn-gate:b7a0f1bcf5e5d33c', image_id='sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb', context=None)
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x107d989d0>, _basetemp=PosixPath('/private/tmp/cairn-lane3-proof.i57225/pytest-of-jwross/pytest-0'), _retention_count=3, _retention_policy='failed')
+
+    @pytest.fixture(scope="module")
+    def linux_dependencies(linux_bundle, linux_image, tmp_path_factory):
+        configured = os.environ.get(dependencies.CACHE_ENV)
+        if configured:
+            cache = Path(configured)
+>           dependencies.validate(linux_bundle, linux_image, cache / dependencies.cache_key(linux_bundle, linux_image))
+
+tests/integration/test_container_statement_hash.py:707: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/_linux_dependencies.py:105: in validate
+    solutionbuild._dependency_packages(root, gate.lake_manifest, gate.lean)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+project = PosixPath('/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-lane3-zstd-payload-l1yc3ztl/restored/cold-cache/c113c4b0433ed44ee31d0b0e792fcb9a84ca1ef2d15d03ff2a4c9c0a463fbb4b/project')
+manifest = {'name': 'cairn_lean', 'lakeDir': '.lake', 'version': '1.2.0', 'packages': [{'rev': '1f29011071772620f612bf5a06433775f...2a31d8fd4726', 'url': 'https://github.com/leanprover-community/aesop', 'name': 'aesop', 'type': 'git', ...}, ...], ...}
+pins = {'checker': {'build': ['lake', 'build', '{module}'], 'axioms': ['lake', 'env', '{executable}', '{module}'], 'replay': ...an_commit': '3447a668783dbce1a8fdb97101dd067687b2b418', 'mathlib_rev': '1f29011071772620f612bf5a06433775f06067b8', ...}
+
+    def _dependency_packages(project, manifest, pins):
+        project = Path(project)
+        try:
+            actual = json.loads((project / MANIFEST_NAME).read_text())
+        except OSError, ValueError:
+            raise SolutionRefused("dependency-manifest-unavailable") from None
+        if actual != manifest or lean.manifest_rev(manifest) != pins["mathlib_rev"]:
+            raise SolutionRefused("dependency-manifest-mismatch")
+        if manifest.get("packagesDir") != ".lake/packages":
+            raise SolutionRefused("dependency-packages-directory-unsupported")
+        packages = []
+        for entry in manifest["packages"]:
+            name = entry["name"]
+            if not isinstance(name, str) or not name or Path(name).name != name or name in (".", ".."):
+                raise SolutionRefused("dependency-package-name-invalid")
+            if entry["type"] != "git" or entry.get("subDir") is not None:
+                raise SolutionRefused(f"dependency-checkout-unsupported:{name}")
+            package = project / ".lake" / "packages" / name
+            git_dir = package / ".git"
+            if not git_dir.is_dir() or git_dir.is_symlink() or (git_dir / "objects/info/alternates").exists():
+                raise SolutionRefused(f"dependency-checkout-unavailable:{name}")
+            for path in package.rglob("*"):
+                if path.is_symlink():
+                    try:
+                        target = path.resolve(strict=True)
+                    except OSError:
+                        raise SolutionRefused(f"dependency-symlink-invalid:{name}") from None
+                    if path.readlink().is_absolute() or not target.is_relative_to(package.resolve()):
+                        raise SolutionRefused(f"dependency-symlink-escapes:{name}")
+            for query, expected in zip(DEPENDENCY_QUERIES, (entry["rev"], entry["url"], ""), strict=True):
+                try:
+                    result = subprocess.run(
+                        [GIT, "-C", str(package), *query],
+                        capture_output=True,
+                        text=True,
+                        timeout=10,
+                        check=False,
+                        env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"},
+                    )
+                except OSError, subprocess.TimeoutExpired:
+>                   raise SolutionRefused(f"dependency-checkout-unreadable:{name}") from None
+E                   cairn.solutionbuild.SolutionRefused: dependency-checkout-unreadable:mathlib
+
+.venv/lib/python3.14/site-packages/cairn/solutionbuild.py:175: SolutionRefused
+============================= slowest 10 durations =============================
+47.78s setup    tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[rfl]
+
+(3 durations < 0.005s hidden.  Use -vv to show these durations.)
+=========================== short test summary info ============================
+ERROR tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[rfl]
+ERROR tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[forged]
+2 errors in 48.18s

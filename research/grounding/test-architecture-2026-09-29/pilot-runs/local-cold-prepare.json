@@ -1,0 +1,29 @@
+{
+  "projection": "selected-fields",
+  "source_path": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-pilot-cold-local-nskowwh3/result.json",
+  "raw_sha256": "259d00071317a61dfc30c845bd6d73424a9aa5bffc52b248fc0120dc3daf0e5b",
+  "status": "PASS",
+  "returncode": 0,
+  "command": [
+    "/Users/jwross/Documents/cairn/.venv/bin/python3",
+    "tests/_linux_dependencies.py",
+    "--cache",
+    "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-pilot-cold-local-nskowwh3/dependencies"
+  ],
+  "source_sha256": "905f21d4914cd4ce59c76dfc86b60c4d14bd2b8a40875900e284c519c8a2d36f",
+  "source_unchanged": true,
+  "cold_cache_absent_at_start": true,
+  "wall_seconds": 451.6,
+  "scope": "fresh dependency cache on shared host and populated Docker daemon; no quiet-host or clean-daemon claim",
+  "load_average_after": [
+    29.67822265625,
+    37.47802734375,
+    38.7294921875
+  ],
+  "claims_not_supported": [
+    "CI speedup",
+    "quiet-host cold preparation time",
+    "clean-daemon cold preparation time",
+    "future pilot run results"
+  ]
+}

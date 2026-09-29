@@ -1,0 +1,51 @@
+{
+  "projection": "selected-fields",
+  "source_path": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-transport-review-zoucuy2f/result.json",
+  "raw_sha256": "75c33ca66a0571575fc7a49a21482219a9cef75fbc0e5a12b0bc4fea63b4eff2",
+  "source_sha256": "905f21d4914cd4ce59c76dfc86b60c4d14bd2b8a40875900e284c519c8a2d36f",
+  "metadata": {
+    "archive_sha256": "4f948c0d78f10c28e8115b568098de27dea97f54f02cf44332737956df080dcd",
+    "archive_size": 1057248256,
+    "container_identity": "b7a0f1bcf5e5d33c106266ed09534ccac29baa0732294b6e054b1ffed002e375",
+    "image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+    "layout": "docker-save-image-id-v1",
+    "schema": 1
+  },
+  "stages": [
+    {
+      "name": "exact_image_and_pins",
+      "seconds": 4.202282542013563
+    },
+    {
+      "name": "export",
+      "seconds": 72.96115333295893
+    },
+    {
+      "name": "import",
+      "seconds": 21.192433707998134
+    },
+    {
+      "name": "existing_export_validation",
+      "seconds": 7.67042183293961
+    }
+  ],
+  "status": "PASS",
+  "planted_archive_refusal": "dependency-cache-archive-size-mismatch",
+  "scope": "real save/load on an already populated shared daemon; no fresh-daemon or CI speedup claim",
+  "tag_inventory": {
+    "before_count": 20,
+    "after_count": 20,
+    "canonical_encoding": "UTF-8 compact JSON object with sorted keys and separators (comma, colon), followed by one LF",
+    "before_canonical_sorted_map_sha256": "c3ddeeab2e249ab98cdcb99284bce0ee8a95fdf78c60ebb412d9a2ef5aa1f552",
+    "after_canonical_sorted_map_sha256": "c3ddeeab2e249ab98cdcb99284bce0ee8a95fdf78c60ebb412d9a2ef5aa1f552",
+    "maps_equal": true,
+    "mutable_cairn_tag": {
+      "name": "cairn-gate:b7a0f1bcf5e5d33c",
+      "before_image_id": "sha256:4da4f81fbd21454d61f1113d03b36232916b257e8af95f3264589f6169ff3bb5",
+      "after_image_id": "sha256:4da4f81fbd21454d61f1113d03b36232916b257e8af95f3264589f6169ff3bb5",
+      "unchanged": true,
+      "validated_image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+      "matches_validated_image": false
+    }
+  }
+}

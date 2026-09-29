@@ -1,0 +1,2365 @@
+{
+  "source_scope": {
+    "source_sha": "bf8662704e1414e0d4f3a82200d660dacc231290",
+    "extractor_path": "/Users/jwross/Documents/cairn/research/grounding/test-architecture-2026-09-29/pilot_profile.py",
+    "extractor_sha256": "270b2a13676a7081e83a797f1d2b01fde4edc8d1887969c5cd55be5bcbbe3cdb",
+    "run_id": 36536577420,
+    "run_url": "https://github.com/jwross24/cairn/actions/runs/36536577420",
+    "lane_set": [
+      "python",
+      "lean",
+      "solution",
+      "solution-plan-exact",
+      "solution-plan-refusals",
+      "container",
+      "container-replay-exact",
+      "container-replay-refusals",
+      "container-plan-exact",
+      "container-plan-refusals"
+    ],
+    "lane_count": 10,
+    "test_counts_scope": "pytest summaries from the selected CI lane invocations; deselected, skipped, xfailed, and xpassed counts remain separate",
+    "claims_not_supported": [
+      "CI speedup",
+      "full audit coverage",
+      "skip-free execution",
+      "isolated function cost from pytest phase timings",
+      "results for any future pilot run"
+    ]
+  },
+  "run": {
+    "status": "completed",
+    "conclusion": "success",
+    "event": "push",
+    "workflow_name": "ci",
+    "started_at": "2026-09-29T07:25:52Z",
+    "updated_at": "2026-09-29T07:41:07Z",
+    "json_input": {
+      "path": "research/grounding/test-architecture-2026-09-29/pilot-runs/run-36536577420/run.json.gz",
+      "compressed_sha256": "f6c8b81b7ded17571a32aeefc3d5b807dcfd7c2b7fe345f20f3b9b6a33d47d41",
+      "content_sha256": "2a2c0286cbd0260ab4ae5b460406dbae7e60f91d5862be26d6e2bcdc184c68cf"
+    },
+    "log_input": {
+      "path": "research/grounding/test-architecture-2026-09-29/pilot-runs/run-36536577420/run.log.gz",
+      "compressed_sha256": "8de7881495fdb6cb9a3571da56b4c08468352eaf910b1d12a665d3943da36351",
+      "content_sha256": "39c62cc03333f3b8f1c0249ef563c5f721f7fc0bd4868b1111549222f7410015"
+    }
+  },
+  "linux_prerequisite_transport": {
+    "dependency_archive_cache": {
+      "status": "not-configured",
+      "evidence": {
+        "workflow": ".github/workflows/ci.yml@bf8662704e1414e0d4f3a82200d660dacc231290",
+        "workflow_sha256": "3e316b4ce070855aa2605d2f7951ed9706046d670cf36a142fbd2cb9eadbdda3f",
+        "checked_for_steps": [
+          "restore linux prerequisite cache",
+          "import cached linux prerequisites",
+          "prepare linux prerequisites",
+          "export linux prerequisites",
+          "save linux prerequisite cache"
+        ],
+        "observation": "the pinned baseline workflow contains no Linux prerequisite archive transport steps"
+      }
+    },
+    "publication": {
+      "status": "not-configured",
+      "export": {
+        "status": "absent",
+        "event_lines": []
+      },
+      "save": {
+        "status": "absent",
+        "save_evidence": []
+      }
+    },
+    "per_lane": {
+      "python": {
+        "cache_key_evidence": [],
+        "restore": {
+          "status": "absent",
+          "key_evidence": []
+        },
+        "import": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "prepare": {
+          "status": "absent",
+          "step_conclusion": null,
+          "event_lines": []
+        },
+        "export": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "save": {
+          "status": "absent",
+          "save_evidence": []
+        }
+      },
+      "lean": {
+        "cache_key_evidence": [],
+        "restore": {
+          "status": "absent",
+          "key_evidence": []
+        },
+        "import": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "prepare": {
+          "status": "absent",
+          "step_conclusion": null,
+          "event_lines": []
+        },
+        "export": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "save": {
+          "status": "absent",
+          "save_evidence": []
+        }
+      },
+      "solution": {
+        "cache_key_evidence": [],
+        "restore": {
+          "status": "absent",
+          "key_evidence": []
+        },
+        "import": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "prepare": {
+          "status": "absent",
+          "step_conclusion": null,
+          "event_lines": []
+        },
+        "export": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "save": {
+          "status": "absent",
+          "save_evidence": []
+        }
+      },
+      "solution-plan-exact": {
+        "cache_key_evidence": [],
+        "restore": {
+          "status": "absent",
+          "key_evidence": []
+        },
+        "import": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "prepare": {
+          "status": "absent",
+          "step_conclusion": null,
+          "event_lines": []
+        },
+        "export": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "save": {
+          "status": "absent",
+          "save_evidence": []
+        }
+      },
+      "solution-plan-refusals": {
+        "cache_key_evidence": [],
+        "restore": {
+          "status": "absent",
+          "key_evidence": []
+        },
+        "import": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "prepare": {
+          "status": "absent",
+          "step_conclusion": null,
+          "event_lines": []
+        },
+        "export": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "save": {
+          "status": "absent",
+          "save_evidence": []
+        }
+      },
+      "container": {
+        "cache_key_evidence": [],
+        "restore": {
+          "status": "absent",
+          "key_evidence": []
+        },
+        "import": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "prepare": {
+          "status": "absent",
+          "step_conclusion": null,
+          "event_lines": []
+        },
+        "export": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "save": {
+          "status": "absent",
+          "save_evidence": []
+        }
+      },
+      "container-replay-exact": {
+        "cache_key_evidence": [],
+        "restore": {
+          "status": "absent",
+          "key_evidence": []
+        },
+        "import": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "prepare": {
+          "status": "absent",
+          "step_conclusion": null,
+          "event_lines": []
+        },
+        "export": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "save": {
+          "status": "absent",
+          "save_evidence": []
+        }
+      },
+      "container-replay-refusals": {
+        "cache_key_evidence": [],
+        "restore": {
+          "status": "absent",
+          "key_evidence": []
+        },
+        "import": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "prepare": {
+          "status": "absent",
+          "step_conclusion": null,
+          "event_lines": []
+        },
+        "export": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "save": {
+          "status": "absent",
+          "save_evidence": []
+        }
+      },
+      "container-plan-exact": {
+        "cache_key_evidence": [],
+        "restore": {
+          "status": "absent",
+          "key_evidence": []
+        },
+        "import": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "prepare": {
+          "status": "absent",
+          "step_conclusion": null,
+          "event_lines": []
+        },
+        "export": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "save": {
+          "status": "absent",
+          "save_evidence": []
+        }
+      },
+      "container-plan-refusals": {
+        "cache_key_evidence": [],
+        "restore": {
+          "status": "absent",
+          "key_evidence": []
+        },
+        "import": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "prepare": {
+          "status": "absent",
+          "step_conclusion": null,
+          "event_lines": []
+        },
+        "export": {
+          "status": "absent",
+          "event_lines": []
+        },
+        "save": {
+          "status": "absent",
+          "save_evidence": []
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "lane": "python",
+      "job_conclusion": "success",
+      "job_seconds": 904.0,
+      "counts": {
+        "passed": 4185,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 2,
+        "deselected": 172,
+        "xfailed": 1,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "reported_count_fields": [
+        "passed",
+        "skipped",
+        "deselected",
+        "xfailed"
+      ],
+      "collected_count": 4360,
+      "collection_status": "reported",
+      "collection_source_line": "check (python)\tGates\t2026-09-29T07:26:35.2477410Z collecting ... collected 4360 items / 172 deselected / 4188 selected",
+      "pytest_seconds": 866.17,
+      "summary": "==== 4185 passed, 2 skipped, 172 deselected, 1 xfailed in 866.17s (0:14:26) ====",
+      "summary_source_line": "check (python)\tGates\t2026-09-29T07:40:53.7432910Z ==== 4185 passed, 2 skipped, 172 deselected, 1 xfailed in 866.17s (0:14:26) ====",
+      "gate_setup_cache_step_durations": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 5.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install PARI/GP",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 4.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore the Lean toolchain",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install the Lean toolchain",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "The Lean toolchain the gate resolves",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore the pinned mathlib cache",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Provision the pinned mathlib prerequisite",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore br",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install br",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "The br the gates read",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "The bead store the gates resolve ids against",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 3.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 6.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Sync the locked environment",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Read comparator pins",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Provision comparator source",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Provision exporter source",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore the pinned comparator build",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Build pinned comparator and exporter",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Gates",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "gate"
+          ],
+          "duration_seconds": 871.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore br",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        }
+      ]
+    },
+    {
+      "lane": "lean",
+      "job_conclusion": "success",
+      "job_seconds": 571.0,
+      "counts": {
+        "passed": 118,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 2,
+        "deselected": 4240,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "reported_count_fields": [
+        "passed",
+        "skipped",
+        "deselected"
+      ],
+      "collected_count": 4360,
+      "collection_status": "reported",
+      "collection_source_line": "check (lean)\tGates\t2026-09-29T07:27:05.6939450Z collecting ... collected 4360 items / 4240 deselected / 120 selected",
+      "pytest_seconds": 503.35,
+      "summary": "========= 118 passed, 2 skipped, 4240 deselected in 503.35s (0:08:23) ==========",
+      "summary_source_line": "check (lean)\tGates\t2026-09-29T07:35:24.7594260Z ========= 118 passed, 2 skipped, 4240 deselected in 503.35s (0:08:23) ==========",
+      "gate_setup_cache_step_durations": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 4.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install PARI/GP",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 4.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore the Lean toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 12.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install the Lean toolchain",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "The Lean toolchain the gate resolves",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore the pinned mathlib cache",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 16.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Provision the pinned mathlib prerequisite",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 11.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore br",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install br",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "The br the gates read",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "The bead store the gates resolve ids against",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 3.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Sync the locked environment",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Read comparator pins",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Provision comparator source",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Provision exporter source",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore the pinned comparator build",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Build pinned comparator and exporter",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Gates",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "gate"
+          ],
+          "duration_seconds": 507.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore the pinned comparator build",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore br",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore the pinned mathlib cache",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore the Lean toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        }
+      ]
+    },
+    {
+      "lane": "solution",
+      "job_conclusion": "success",
+      "job_seconds": 498.0,
+      "counts": {
+        "passed": 18,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 4342,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "reported_count_fields": [
+        "passed",
+        "deselected"
+      ],
+      "collected_count": 4360,
+      "collection_status": "reported",
+      "collection_source_line": "check (solution)\tGates\t2026-09-29T07:28:12.2477500Z collecting ... collected 4360 items / 4342 deselected / 18 selected",
+      "pytest_seconds": 363.8,
+      "summary": "=============== 18 passed, 4342 deselected in 363.80s (0:06:03) ================",
+      "summary_source_line": "check (solution)\tGates\t2026-09-29T07:34:09.5879970Z =============== 18 passed, 4342 deselected in 363.80s (0:06:03) ================",
+      "gate_setup_cache_step_durations": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 4.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install PARI/GP",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 5.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore the Lean toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 21.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install the Lean toolchain",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "The Lean toolchain the gate resolves",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore the pinned mathlib cache",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 45.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Provision the pinned mathlib prerequisite",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 22.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore br",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install br",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "The br the gates read",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "The bead store the gates resolve ids against",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 4.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 5.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Sync the locked environment",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Read comparator pins",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Provision comparator source",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Provision exporter source",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore the pinned comparator build",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 3.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Build pinned comparator and exporter",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Gates",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "gate"
+          ],
+          "duration_seconds": 370.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore the pinned comparator build",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore br",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore the pinned mathlib cache",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore the Lean toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        }
+      ]
+    },
+    {
+      "lane": "solution-plan-exact",
+      "job_conclusion": "success",
+      "job_seconds": 687.0,
+      "counts": {
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 4359,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "reported_count_fields": [
+        "passed",
+        "deselected"
+      ],
+      "collected_count": 4360,
+      "collection_status": "reported",
+      "collection_source_line": "check (solution-plan-exact)\tGates\t2026-09-29T07:28:22.1558590Z collecting ... collected 4360 items / 4359 deselected / 1 selected",
+      "pytest_seconds": 544.62,
+      "summary": "================ 1 passed, 4359 deselected in 544.62s (0:09:04) ================",
+      "summary_source_line": "check (solution-plan-exact)\tGates\t2026-09-29T07:37:20.9282890Z ================ 1 passed, 4359 deselected in 544.62s (0:09:04) ================",
+      "gate_setup_cache_step_durations": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 4.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install PARI/GP",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 4.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore the Lean toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 24.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install the Lean toolchain",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "The Lean toolchain the gate resolves",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore the pinned mathlib cache",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 48.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Provision the pinned mathlib prerequisite",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 19.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore br",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 3.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install br",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "The br the gates read",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "The bead store the gates resolve ids against",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 4.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 7.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Sync the locked environment",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Read comparator pins",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Provision comparator source",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Provision exporter source",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore the pinned comparator build",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 4.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Build pinned comparator and exporter",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 5.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Gates",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "gate"
+          ],
+          "duration_seconds": 549.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore the pinned comparator build",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore br",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore the pinned mathlib cache",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore the Lean toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        }
+      ]
+    },
+    {
+      "lane": "solution-plan-refusals",
+      "job_conclusion": "success",
+      "job_seconds": 533.0,
+      "counts": {
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 4358,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "reported_count_fields": [
+        "passed",
+        "deselected"
+      ],
+      "collected_count": 4360,
+      "collection_status": "reported",
+      "collection_source_line": "check (solution-plan-refusals)\tGates\t2026-09-29T07:27:29.9453790Z collecting ... collected 4360 items / 4358 deselected / 2 selected",
+      "pytest_seconds": 440.54,
+      "summary": "================ 2 passed, 4358 deselected in 440.54s (0:07:20) ================",
+      "summary_source_line": "check (solution-plan-refusals)\tGates\t2026-09-29T07:34:44.9988090Z ================ 2 passed, 4358 deselected in 440.54s (0:07:20) ================",
+      "gate_setup_cache_step_durations": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 4.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install PARI/GP",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 3.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore the Lean toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 11.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install the Lean toolchain",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "The Lean toolchain the gate resolves",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore the pinned mathlib cache",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 27.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Provision the pinned mathlib prerequisite",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 20.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore br",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install br",
+          "status": "completed",
+          "conclusion": "skipped",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "The br the gates read",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "The bead store the gates resolve ids against",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 4.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 3.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Sync the locked environment",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Read comparator pins",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Provision comparator source",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Provision exporter source",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Restore the pinned comparator build",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Build pinned comparator and exporter",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Gates",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "gate"
+          ],
+          "duration_seconds": 445.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore the pinned comparator build",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore br",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore the pinned mathlib cache",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Post Restore the Lean toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        }
+      ]
+    },
+    {
+      "lane": "container",
+      "job_conclusion": "success",
+      "job_seconds": 803.0,
+      "counts": {
+        "passed": 21,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 10,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "reported_count_fields": [
+        "passed",
+        "deselected"
+      ],
+      "collected_count": 31,
+      "collection_status": "reported",
+      "collection_source_line": "check (container)\tLinux container gates\t2026-09-29T07:27:03.1517778Z collecting ... collected 31 items / 10 deselected / 21 selected",
+      "pytest_seconds": 733.41,
+      "summary": "================ 21 passed, 10 deselected in 733.41s (0:12:13) =================",
+      "summary_source_line": "check (container)\tLinux container gates\t2026-09-29T07:39:16.2338093Z ================ 21 passed, 10 deselected in 733.41s (0:12:13) =================",
+      "gate_setup_cache_step_durations": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 3.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install Linux Python build prerequisites",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 49.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 3.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Sync Linux locked environment",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install Linux br",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Import Linux bead store",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 3.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Linux container gates",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "gate"
+          ],
+          "duration_seconds": 737.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Linux adapter types",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "gate"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        }
+      ]
+    },
+    {
+      "lane": "container-replay-exact",
+      "job_conclusion": "success",
+      "job_seconds": 679.0,
+      "counts": {
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 29,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "reported_count_fields": [
+        "passed",
+        "deselected"
+      ],
+      "collected_count": 31,
+      "collection_status": "reported",
+      "collection_source_line": "check (container-replay-exact)\tLinux container gates\t2026-09-29T07:26:38.8962951Z collecting ... collected 31 items / 29 deselected / 2 selected",
+      "pytest_seconds": 634.15,
+      "summary": "================= 2 passed, 29 deselected in 634.15s (0:10:34) =================",
+      "summary_source_line": "check (container-replay-exact)\tLinux container gates\t2026-09-29T07:37:12.7111039Z ================= 2 passed, 29 deselected in 634.15s (0:10:34) =================",
+      "gate_setup_cache_step_durations": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install Linux Python build prerequisites",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 27.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Sync Linux locked environment",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install Linux br",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Import Linux bead store",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Linux container gates",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "gate"
+          ],
+          "duration_seconds": 638.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Linux adapter types",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "gate"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        }
+      ]
+    },
+    {
+      "lane": "container-replay-refusals",
+      "job_conclusion": "success",
+      "job_seconds": 778.0,
+      "counts": {
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 27,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "reported_count_fields": [
+        "passed",
+        "deselected"
+      ],
+      "collected_count": 31,
+      "collection_status": "reported",
+      "collection_source_line": "check (container-replay-refusals)\tLinux container gates\t2026-09-29T07:27:13.7110715Z collecting ... collected 31 items / 27 deselected / 4 selected",
+      "pytest_seconds": 697.27,
+      "summary": "================= 4 passed, 27 deselected in 697.27s (0:11:37) =================",
+      "summary_source_line": "check (container-replay-refusals)\tLinux container gates\t2026-09-29T07:38:50.6449672Z ================= 4 passed, 27 deselected in 697.27s (0:11:37) =================",
+      "gate_setup_cache_step_durations": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 4.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install Linux Python build prerequisites",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 52.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 4.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Sync Linux locked environment",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 5.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install Linux br",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Import Linux bead store",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Linux container gates",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "gate"
+          ],
+          "duration_seconds": 701.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Linux adapter types",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "gate"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        }
+      ]
+    },
+    {
+      "lane": "container-plan-exact",
+      "job_conclusion": "success",
+      "job_seconds": 623.0,
+      "counts": {
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 30,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "reported_count_fields": [
+        "passed",
+        "deselected"
+      ],
+      "collected_count": 31,
+      "collection_status": "reported",
+      "collection_source_line": "check (container-plan-exact)\tLinux container gates\t2026-09-29T07:26:48.2849773Z collecting ... collected 31 items / 30 deselected / 1 selected",
+      "pytest_seconds": 568.68,
+      "summary": "================= 1 passed, 30 deselected in 568.68s (0:09:28) =================",
+      "summary_source_line": "check (container-plan-exact)\tLinux container gates\t2026-09-29T07:36:16.6479902Z ================= 1 passed, 30 deselected in 568.68s (0:09:28) =================",
+      "gate_setup_cache_step_durations": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install Linux Python build prerequisites",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 36.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 3.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Sync Linux locked environment",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install Linux br",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Import Linux bead store",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 3.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Linux container gates",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "gate"
+          ],
+          "duration_seconds": 572.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Linux adapter types",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "gate"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        }
+      ]
+    },
+    {
+      "lane": "container-plan-refusals",
+      "job_conclusion": "success",
+      "job_seconds": 814.0,
+      "counts": {
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 28,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "reported_count_fields": [
+        "passed",
+        "deselected"
+      ],
+      "collected_count": 31,
+      "collection_status": "reported",
+      "collection_source_line": "check (container-plan-refusals)\tLinux container gates\t2026-09-29T07:26:59.0966398Z collecting ... collected 31 items / 28 deselected / 3 selected",
+      "pytest_seconds": 748.94,
+      "summary": "================= 3 passed, 28 deselected in 748.94s (0:12:28) =================",
+      "summary_source_line": "check (container-plan-refusals)\tLinux container gates\t2026-09-29T07:39:27.7036378Z ================= 3 passed, 28 deselected in 748.94s (0:12:28) =================",
+      "gate_setup_cache_step_durations": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 1.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 3.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install Linux Python build prerequisites",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 45.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Run astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "cache",
+            "setup"
+          ],
+          "duration_seconds": 3.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Sync Linux locked environment",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 2.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Install Linux br",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Import Linux bead store",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "setup"
+          ],
+          "duration_seconds": 3.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Linux container gates",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "gate"
+          ],
+          "duration_seconds": 752.0,
+          "timing_status": "measured"
+        },
+        {
+          "name": "Linux adapter types",
+          "status": "completed",
+          "conclusion": "success",
+          "categories": [
+            "gate"
+          ],
+          "duration_seconds": 0.0,
+          "timing_status": "measured"
+        }
+      ]
+    }
+  ],
+  "top_test_phase_timings": [
+    {
+      "lane": "solution-plan-exact",
+      "phase": "call",
+      "seconds": 419.38,
+      "node": "tests/integration/test_solution_build_compile.py::test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks[exact]",
+      "source_line": "check (solution-plan-exact)\tGates\t2026-09-29T07:37:20.9274170Z 419.38s call     tests/integration/test_solution_build_compile.py::test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks[exact]"
+    },
+    {
+      "lane": "container-plan-refusals",
+      "phase": "call",
+      "seconds": 399.52,
+      "node": "tests/integration/test_container_statement_hash.py::test_linux_ordered_plan_runs_each_step_in_order[weaker]",
+      "source_line": "check (container-plan-refusals)\tLinux container gates\t2026-09-29T07:39:27.7030029Z 399.52s call     tests/integration/test_container_statement_hash.py::test_linux_ordered_plan_runs_each_step_in_order[weaker]"
+    },
+    {
+      "lane": "container-replay-exact",
+      "phase": "call",
+      "seconds": 398.47,
+      "node": "tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[rfl]",
+      "source_line": "check (container-replay-exact)\tLinux container gates\t2026-09-29T07:37:12.7103884Z 398.47s call     tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[rfl]"
+    },
+    {
+      "lane": "container-plan-exact",
+      "phase": "call",
+      "seconds": 377.7,
+      "node": "tests/integration/test_container_statement_hash.py::test_linux_ordered_plan_runs_each_step_in_order[exact]",
+      "source_line": "check (container-plan-exact)\tLinux container gates\t2026-09-29T07:36:16.6477720Z 377.70s call     tests/integration/test_container_statement_hash.py::test_linux_ordered_plan_runs_each_step_in_order[exact]"
+    },
+    {
+      "lane": "container-replay-refusals",
+      "phase": "call",
+      "seconds": 284.29,
+      "node": "tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[forged]",
+      "source_line": "check (container-replay-refusals)\tLinux container gates\t2026-09-29T07:38:50.6441918Z 284.29s call     tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[forged]"
+    },
+    {
+      "lane": "lean",
+      "phase": "call",
+      "seconds": 243.49,
+      "node": "tests/integration/test_solution_build_compile.py::test_real_prelude_forgery_passes_axioms_but_fails_fresh_replay",
+      "source_line": "check (lean)\tGates\t2026-09-29T07:35:24.7571790Z 243.49s call     tests/integration/test_solution_build_compile.py::test_real_prelude_forgery_passes_axioms_but_fails_fresh_replay"
+    },
+    {
+      "lane": "container-plan-refusals",
+      "phase": "setup",
+      "seconds": 217.21,
+      "node": "tests/integration/test_container_statement_hash.py::test_linux_ordered_plan_runs_each_step_in_order[sorry]",
+      "source_line": "check (container-plan-refusals)\tLinux container gates\t2026-09-29T07:39:27.7030949Z 217.21s setup    tests/integration/test_container_statement_hash.py::test_linux_ordered_plan_runs_each_step_in_order[sorry]"
+    },
+    {
+      "lane": "container-replay-refusals",
+      "phase": "setup",
+      "seconds": 200.27,
+      "node": "tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[sorry]",
+      "source_line": "check (container-replay-refusals)\tLinux container gates\t2026-09-29T07:38:50.6442624Z 200.27s setup    tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[sorry]"
+    },
+    {
+      "lane": "container-replay-exact",
+      "phase": "setup",
+      "seconds": 196.9,
+      "node": "tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[rfl]",
+      "source_line": "check (container-replay-exact)\tLinux container gates\t2026-09-29T07:37:12.7104614Z 196.90s setup    tests/integration/test_container_statement_hash.py::test_linux_candidate_fresh_replay[rfl]"
+    },
+    {
+      "lane": "container-plan-exact",
+      "phase": "setup",
+      "seconds": 182.65,
+      "node": "tests/integration/test_container_statement_hash.py::test_linux_ordered_plan_runs_each_step_in_order[exact]",
+      "source_line": "check (container-plan-exact)\tLinux container gates\t2026-09-29T07:36:16.6478504Z 182.65s setup    tests/integration/test_container_statement_hash.py::test_linux_ordered_plan_runs_each_step_in_order[exact]"
+    }
+  ],
+  "planted_refusals": {
+    "status": "passed",
+    "retained_scratch_root": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-pilot-profile-self-test-slkx67tz",
+    "missing_lane": {
+      "status": "refused",
+      "reason": "lane set mismatch; missing=['container'], extra=[]",
+      "json_copy": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-pilot-profile-self-test-slkx67tz/missing-lane/run.json",
+      "log_copy": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-pilot-profile-self-test-slkx67tz/missing-lane/run.log"
+    },
+    "malformed_summary": {
+      "status": "refused",
+      "reason": "malformed pytest summary for lane: container",
+      "json_copy": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-pilot-profile-self-test-slkx67tz/malformed-summary/run.json",
+      "log_copy": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-pilot-profile-self-test-slkx67tz/malformed-summary/run.log"
+    },
+    "step_category_contract": {
+      "status": "passed",
+      "gate_categories": [
+        "gate"
+      ],
+      "planted_gate_as_setup": {
+        "status": "refused",
+        "reason": "step category mismatch for 'Linux container gates': observed=['gate', 'setup'], expected=['gate']"
+      },
+      "toolchain_setup_categories": [
+        "setup"
+      ],
+      "planted_toolchain_as_gate": {
+        "status": "refused",
+        "reason": "step category mismatch for 'The Lean toolchain the gate resolves': observed=['gate'], expected=['setup']"
+      },
+      "post_gate_export_categories": [
+        "cache"
+      ],
+      "planted_export_as_setup": {
+        "status": "refused",
+        "reason": "step category mismatch for 'Export Linux prerequisites': observed=['cache', 'setup'], expected=['cache']"
+      }
+    },
+    "run_state_refusals": {
+      "nonterminal": {
+        "status": "refused",
+        "reason": "run is not terminal: status='in_progress'"
+      },
+      "failed": {
+        "status": "refused",
+        "reason": "run failed: conclusion='failure'"
+      }
+    }
+  }
+}
