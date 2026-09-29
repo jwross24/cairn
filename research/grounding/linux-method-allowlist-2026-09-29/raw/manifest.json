@@ -1,0 +1,74 @@
+[
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/probe-build-receipt.json",
+    "artifact": "probe-build-receipt.json.gz",
+    "bytes": 532,
+    "sha256": "dbb713cd8dccf4d5ce3b9831783824ea5a552fa9a11c7b8dfa9f37956a1f4eb2"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/probe-run-1.log",
+    "artifact": "probe-run-1.log.gz",
+    "bytes": 203,
+    "sha256": "0a6c886dab783a9cbab242196502c5476e97aa9902894c055917515060d25774"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/probe-negative.log",
+    "artifact": "probe-negative.log.gz",
+    "bytes": 206,
+    "sha256": "7a016365d8bc1fbb0588545e920b5ed9332ec8c3696e235d795ae8ee3e2c9b03"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/driver-tag-refusal.log",
+    "artifact": "driver-tag-refusal.log.gz",
+    "bytes": 216,
+    "sha256": "138775d750ed3ccda0174fad5564561f969ea43bf6a8ccd9014f58808ca91a3d"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/probe-run-1/result.json",
+    "artifact": "probe-run-1--result.json.gz",
+    "bytes": 82629,
+    "sha256": "7e9d633b8907ba74fdcfd5238a32d811798ea7871e098b4ea58de034e2c59a6c"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/probe-run-1/receipt.json",
+    "artifact": "probe-run-1--receipt.json.gz",
+    "bytes": 71173,
+    "sha256": "0d1fa8b89cc31e78c1cd5b480a6d7f08138e1e262eb028338df68822a85fa16f"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/probe-run-1/probe.stdout",
+    "artifact": "probe-run-1--probe.stdout.gz",
+    "bytes": 58819,
+    "sha256": "75fbb2e15fbbd85651975af4799c938b8fe15bdcc943f533d181620081e51d86"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/probe-run-1/probe.stderr",
+    "artifact": "probe-run-1--probe.stderr.gz",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/probe-negative/result.json",
+    "artifact": "probe-negative--result.json.gz",
+    "bytes": 81878,
+    "sha256": "07da95161b7e94103958199c238621f62c0184428e28967175c78864d4c8b3c5"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/probe-negative/receipt.json",
+    "artifact": "probe-negative--receipt.json.gz",
+    "bytes": 70190,
+    "sha256": "1d74b6c9a0056f50f94fd60d95940f6308c7a98d9068ee000dc573b3e0e7591c"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/probe-negative/probe.stdout",
+    "artifact": "probe-negative--probe.stdout.gz",
+    "bytes": 58278,
+    "sha256": "c623ca28f3a06bcd85e09b37ca71b49a5d751d5fd6715d557160d2c554eef7bb"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/probe-negative/probe.stderr",
+    "artifact": "probe-negative--probe.stderr.gz",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]
