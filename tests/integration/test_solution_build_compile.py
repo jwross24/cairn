@@ -437,6 +437,7 @@ def test_real_prelude_solution_and_challenge_build_with_private_pinned_dependenc
     )
 
 
+@pytest.mark.timeout(900)
 def test_a_compiling_weaker_statement_fails_real_prelude_closure_comparison(pinned_bundle, tmp_path, comparator):
     gate = bundle.GateBundle.open(*pinned_bundle())
     formal = "theorem challenge_curve {R : Type} [CommRing R] (W : WeierstrassCurve R) : W.Δ = W.Δ := by\n  sorry\n"
