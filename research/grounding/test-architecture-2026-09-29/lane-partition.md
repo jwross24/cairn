@@ -1,6 +1,6 @@
 # Owner-directed test-lane partition evidence
 
-This record inventories the three dedicated lanes `m0`, `gateplan`, and `solution-library` within the 13-lane layout. Local ownership checks and planted refusals pass; pushed CI verification remains pending.
+This record inventories the three dedicated lanes `m0`, `gateplan`, and `solution-library` within the 13-lane layout. Local ownership checks pass. Pushed CI is incomplete: M0 and Python are red, GatePlan passed, and `solution-library` timed out at its 1080-second session deadline; terminal states for the other jobs are not established here.
 
 ## Ownership and measured runs
 
@@ -32,11 +32,30 @@ cd /Users/jwross/Documents/cairn
 PYTHONPATH=/tmp/cairn-day-lane3.uMzz8z/partition-verify/src:/tmp/cairn-day-lane3.uMzz8z/partition-verify/tests PYTEST_DEBUG_TEMPROOT=/tmp/cairn-day-lane3.uMzz8z/partition-setup-tmp uv run --no-project /Users/jwross/Documents/cairn/.venv/bin/python -m pytest -q /tmp/cairn-day-lane3.uMzz8z/partition-verify/tests/unit/test_lean_ci_setup.py
 ```
 
-The planted wrong-owner run moved `m0` to `python`. Its collection command returned pytest exit 5 with no tests collected, and the lane ownership contract failed as expected. A planted `solution-library` exclusion also exited 1 at the exact-condition assertion. The final local fast check passed on the recorded final tree. An AST-equivalence check passed for the earlier formatting-only edits to three test files; the later assertion strengthening has its separate focused test receipt. The final tree receipt is headed at `822498a3beca1eefcba55c3a25fd45eb68bd4f78`. CI remains pending, so this report does not claim CI green.
+The planted wrong-owner run moved `m0` to `python`. Its collection command returned pytest exit 5 with no tests collected, and the lane ownership contract failed as expected. A planted `solution-library` exclusion also exited 1 at the exact-condition assertion. The final local fast check passed on the recorded final tree. An AST-equivalence check passed for the earlier formatting-only edits to three test files; the later assertion strengthening has its separate focused test receipt. The final tree receipt is headed at `822498a3beca1eefcba55c3a25fd45eb68bd4f78`. The pushed CI result is incomplete; the M0 failure and passing GatePlan job are recorded below.
 
 The listed counts come from the full 48-node baseline collection; this partition report does not establish that tests elsewhere were never deleted, skipped, or sampled. The 1080-second session limit and 20-minute job limit are unchanged. Historical ten-lane profiles remain historical evidence. The separate Lean runtime observation is recorded in [timeout-evidence.md](timeout-evidence.md).
 
 The verified 82.857811-second Lean receipt is CI run `36596493998` at `2de797830071146bc4433983e8ff8e5d3f90bebe`. The attribution to `90401ee` in the body of commit `822498a` does not identify that receipt. The corresponding 177.537110-second receipt is run `36598858989` at `0e9b47018c788df4904b836865deab755b814429`.
+
+## Pushed CI evidence
+
+CI run `36604519180` tested `6953d46a33b70fd66f0ac404168f5fcd88e8bb3d`, which contains lane commit `8c23c7d65205e6f2cfb30af67c77613eb54d2826`. Their diff across the eight owned paths is empty. The M0 job collected 17 selected tests; the first three passed, and the fourth reached pytest's 180 s per-test timeout. Its stack was in `cairn.runner.spawn_and_wait`, not at the 1080 s session deadline.
+
+| M0 test | CI phase-start to result | Peer JUnit time |
+|---|---:|---:|
+| `test_the_operator_sequence_produces_four_nodes_two_negatives_and_one_refusal` | 120.914 s, passed | 43.598 s |
+| `test_the_slice_records_its_hypothesis_object_and_the_derivation_lineage` | 122.276 s, passed | 50.198 s |
+| `test_the_derivation_commits_to_the_x_the_generator_output_determines` | 98.081 s, passed | 49.523 s |
+| `test_the_same_seed_replays_from_cache_without_another_toy_curve_attempt` | 180.090 s, timed out | 89.027 s |
+
+The intervals use each CI JSONL `phase=start` timestamp and the matching job outcome line; the peer values come from `ladder-m0.xml`. In the timed-out test log, `step=runner,event=exit` has 784 records totaling 150.456756 s, with a maximum of 2.722107 s. `step=gp,event=exit` has 693 records totaling 16.327351 s, with a maximum of 0.157757 s. The logger records 2,353 total `runner`-step events. Its tail writes a `RUNNING` attempt and then an escrow insert, with no completion record for that attempt. This identifies the outstanding wait at timeout but does not establish its cause.
+
+The peer M0 run passed all 17 tests in 826.21 s with 0.21 GiB peak footprint. The separate GatePlan CI job passed 28 tests in 658.07 s. CI job `109530013940` tested commit `6953d46a33b70fd66f0ac404168f5fcd88e8bb3d` and selected all three `solution-library` cases. The DLP case passed in 759,148.608 ms overall; its recorded steps were statement binding 0 ms, import allowlist 1 ms, build 41,833.014 ms, axiom computation 75,264 ms, kernel replay 375,606 ms, and closure comparison 66,344 ms. The `finite_point` case completed statement binding (0 ms), import allowlist (0 ms), build (41,147.468 ms), and axiom computation (56,347 ms). Its last JSONL event spawned `lake ... env leanchecker --fresh -v Solution.S_c8d4bddcdf9af0c1`; no exit event for that process, kernel-replay step result, or test phase-end was recorded before the 1080-second session watchdog fired at 17:43:13 UTC. The stale-hash case was unrun. The recorded failure is the session-deadline timeout. DLP development-gate passage does not establish a gold result or `PROVEN` claim. The remaining CI jobs' terminal states are not established here, so there is no whole-workflow green result. These separate runs establish neither a speedup nor a cause or flake.
+
+Python job `109530013989` tested the same commit and selected 4,310 tests; its result was 1 failed, 4,306 passed, 2 skipped, and 1 xfailed, with 236 deselected, in 974.46 s. Its only failure was `tests/unit/test_gateplan_fuzz.py::test_a_ten_thousand_step_plan_is_refused_on_the_first_duplicate_not_by_running_out_of_memory` at line 114: the assertion expected `duplicate-step-name:7.` while the raised message was `duplicate-step-name:9.canon_kat`, the first duplicate in the committed nine-step plan. The job records the mismatch; this report does not infer a broader cause. Skips and xfails remain separate outcomes, not passes.
+
+The raw M0 job log, four per-test JSONLs, GatePlan job log, peer M0 XML/log, Python [job log](lane-partition/raw/ci-109530013989-python-job.log.gz), and `solution-library` [job log](lane-partition/raw/ci-109530013940-solution-library-job.log.gz), [DLP JSONL](lane-partition/raw/ci-109530013940-solution-library-dlp.jsonl.gz), and [interrupted `finite_point` JSONL](lane-partition/raw/ci-109530013940-solution-library-finite-point.jsonl.gz) are preserved under [`lane-partition/raw/`](lane-partition/raw/). The manifest records original source paths and hashes.
 
 ## Raw evidence
 

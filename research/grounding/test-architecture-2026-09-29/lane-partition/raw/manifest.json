@@ -169,6 +169,86 @@
       "archive_path": "partition-fast-final-v2.log.gz",
       "archive_bytes": 189,
       "archive_sha256": "31e8cf38fd2f8c2cdb32577b989dc5d9f214f49e074cce43e9bf60bc408247cf"
+    },
+    {
+      "source_path": "/private/tmp/cairn-day-lane3.uMzz8z/partition-m0-job.log",
+      "source_bytes": 49353,
+      "source_sha256": "775db614526701f6a041e01fabc59aa19a1671511f41cf89b26dfce6edc6e7ba",
+      "archive_path": "ci-36604519180-m0-job.log.gz",
+      "archive_bytes": 11797,
+      "archive_sha256": "7afedfbf13dcff1ba38ef085211bd345d4b2e125d4362adb8ed21c1295c389c3"
+    },
+    {
+      "source_path": "/private/tmp/cairn-day-lane3.uMzz8z/partition-ci-m0-diagnostics/_temp/pytest-of-runner/cairn-test-logs/pytest-0-zemxcuj5/test_the_operator_sequence_pro0-y8yaywxn/test.log.jsonl",
+      "source_bytes": 2046928,
+      "source_sha256": "18ce3af02cfacdffffb2a50340370df145c726893844e10fc8a267eb08036009",
+      "archive_path": "ci-36604519180-m0-operator-sequence.jsonl.gz",
+      "archive_bytes": 213772,
+      "archive_sha256": "3c4d2433b1c01af949a30dc725023b35542e752031d6156e7ee6d865eb32f082"
+    },
+    {
+      "source_path": "/private/tmp/cairn-day-lane3.uMzz8z/partition-ci-m0-diagnostics/_temp/pytest-of-runner/cairn-test-logs/pytest-0-zemxcuj5/test_the_slice_records_its_hyp0-dqss5jhk/test.log.jsonl",
+      "source_bytes": 2034426,
+      "source_sha256": "c324b94738a3da38c3b2db8959938c2f2a7fc83659ff707be8feff9f74e142d9",
+      "archive_path": "ci-36604519180-m0-slice-lineage.jsonl.gz",
+      "archive_bytes": 213298,
+      "archive_sha256": "a5a1254b1614f0df2fb93b33fc59cd7a28f192e5966d554c5ebebd004f5b61ac"
+    },
+    {
+      "source_path": "/private/tmp/cairn-day-lane3.uMzz8z/partition-ci-m0-diagnostics/_temp/pytest-of-runner/cairn-test-logs/pytest-0-zemxcuj5/test_the_derivation_commits_to0-p_hq4rw3/test.log.jsonl",
+      "source_bytes": 2019963,
+      "source_sha256": "604aefdf46c1418efa5a48eaff21856dcb18e61d0d5700151d82f2f098ea0631",
+      "archive_path": "ci-36604519180-m0-derivation-commit.jsonl.gz",
+      "archive_bytes": 210826,
+      "archive_sha256": "3079b1a90665f6a8ca6edbeab8a6dfc201ec14fcaceb709814098ff0fb4ac2bd"
+    },
+    {
+      "source_path": "/private/tmp/cairn-day-lane3.uMzz8z/partition-ci-m0-diagnostics/_temp/pytest-of-runner/cairn-test-logs/pytest-0-zemxcuj5/test_the_same_seed_replays_fro0-npdxzibd/test.log.jsonl",
+      "source_bytes": 3864953,
+      "source_sha256": "2a8408ce8bb4975c64f24cd8d25495db2cf8fe69a7596945a85633d1a72a23be",
+      "archive_path": "ci-36604519180-m0-same-seed-replay.jsonl.gz",
+      "archive_bytes": 400168,
+      "archive_sha256": "6f94a68cc79a1daaa49ac493bfbfb17a5bef265cd7d1c91f345a3cfd073bc791"
+    },
+    {
+      "source_path": "/private/tmp/cairn-day-lane3.uMzz8z/partition-gateplan-job.log",
+      "source_bytes": 43540,
+      "source_sha256": "00c1e753a368b0c7ca76d6dafa50684808617dee645b0668c83bb82910436680",
+      "archive_path": "ci-36604519180-gateplan-job.log.gz",
+      "archive_bytes": 10726,
+      "archive_sha256": "812130d717a96a331db59a56dbcde22f86552066dd63b8560f998516821b5816"
+    },
+    {
+      "source_path": "/private/tmp/cairn-day-lane3.uMzz8z/partition-library-job.log",
+      "source_bytes": 85411,
+      "source_sha256": "ee4e58d6227db2fac6eab13e98c905d819bfaa8dc491a3e873128f8c82800635",
+      "archive_path": "ci-109530013940-solution-library-job.log.gz",
+      "archive_bytes": 15814,
+      "archive_sha256": "c9efe124cd5658160ecd5651b66bfcf3008dc85c8e89b7bd583d7990275f665f"
+    },
+    {
+      "source_path": "/private/tmp/cairn-day-lane3.uMzz8z/partition-ci-library-diagnostics/_temp/pytest-of-runner/cairn-test-logs/pytest-0-9juw1zay/test_library_items_pass_gate_d0-cvpm7b3g/test.log.jsonl",
+      "source_bytes": 9990249,
+      "source_sha256": "c3278403c25858383346531baa29b4ff8f40ca07297168a4fbd7e84a5460b213",
+      "archive_path": "ci-109530013940-solution-library-dlp.jsonl.gz",
+      "archive_bytes": 428781,
+      "archive_sha256": "eff505ec65e930d6fc972838bde657a36d81d18baada326fe27c79efad461bab"
+    },
+    {
+      "source_path": "/private/tmp/cairn-day-lane3.uMzz8z/partition-ci-library-diagnostics/_temp/pytest-of-runner/cairn-test-logs/pytest-0-9juw1zay/test_library_items_pass_gate_f0-f5qhfol3/test.log.jsonl",
+      "source_bytes": 8523430,
+      "source_sha256": "d018387d5934b2b957ab059418090326a467e4940de4fff7c11d3d8f9b2e4577",
+      "archive_path": "ci-109530013940-solution-library-finite-point.jsonl.gz",
+      "archive_bytes": 361926,
+      "archive_sha256": "fdda0bdf6c859bf078df9f9353a4345d82ba1f619d70166e8b23b69dafad4042"
+    },
+    {
+      "source_path": "/private/tmp/cairn-day-lane3.uMzz8z/partition-python-job.log",
+      "source_bytes": 692270,
+      "source_sha256": "c9d359025b5a423a14704d842417dbf77ed67681362769b53c020c4d5bd4cea9",
+      "archive_path": "ci-109530013989-python-job.log.gz",
+      "archive_bytes": 112631,
+      "archive_sha256": "9652d59630dba5ec0da3d6025d076a8d692f9dd6ca6e739da7c8c7c87ef8971a"
     }
   ]
 }
