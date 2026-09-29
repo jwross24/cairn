@@ -100,8 +100,14 @@ image without rebuilding it. A cache-specific Docker tag retains that image inde
 of the build tag. A removed image requires provisioning into a fresh cache directory;
 changing bundle identity selects a separate image record.
 
-CI provisions temporary Linux dependencies. Cross-run seed reuse requires persistence of
-the exact Docker image and dependency cache; a matching tag does not establish image identity.
+Linux CI caches the dependency seed, the exact Docker image archive, and its metadata under
+`runner.temp`. The key includes the runner OS and architecture, the Docker server version and
+storage backend, and the files that bind the image and seed. A hit imports the saved image ID
+and validates the complete seed before any gate runs; an invalid hit fails without rebuilding.
+Each lane prepares its own seed on a miss. The `container` lane publishes the cache only after
+its gates and Linux type check pass on a push to `main`; pull requests and manual runs do not
+publish it. Submitted candidates, proof executions, replay results, and verification verdicts
+remain uncached. CI transfer cost and speedup remain unmeasured.
 
 ## Formalization adapters
 

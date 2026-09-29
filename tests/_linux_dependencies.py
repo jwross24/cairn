@@ -2,6 +2,7 @@ import argparse
 import fcntl
 import hashlib
 import json
+import os
 import shutil
 import stat
 import tempfile
@@ -13,6 +14,7 @@ from cairn import bundle, container, lean, log, solutionbuild
 
 MODULES = ("Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point",)
 CACHE_ENV = "CAIRN_LINUX_DEPENDENCY_CACHE"
+ARCHIVE_LAYOUT = "docker-save-image-id-v1"
 lg = log.get("linux_dependencies")
 
 
@@ -185,9 +187,13 @@ def image_record(gate, cache):
     return Path(cache) / f"image-{gate.container_identity}.json"
 
 
-def cached_image(gate, cache):
+def recorded_image(gate, cache):
+    record_path = image_record(gate, cache)
     try:
-        record = json.loads(image_record(gate, cache).read_text())
+        record_info = record_path.lstat()
+        if not stat.S_ISREG(record_info.st_mode):
+            raise CacheRefused("dependency-cache-image-unavailable")
+        record = json.loads(record_path.read_text())
     except OSError, ValueError:
         raise CacheRefused("dependency-cache-image-unavailable") from None
     if (
@@ -198,10 +204,14 @@ def cached_image(gate, cache):
     ):
         raise CacheRefused("dependency-cache-image-mismatch")
     ctx = container.context()
-    image = container.Image(
+    return container.Image(
         gate.container_identity, container.image_tag(gate.container_identity), record["image_id"], ctx
     )
-    if container.image_id(ctx, image.image_id) != image.image_id:
+
+
+def cached_image(gate, cache):
+    image = recorded_image(gate, cache)
+    if container.image_id(image.context, image.image_id) != image.image_id:
         raise CacheRefused("dependency-cache-image-mismatch")
     container.assert_pinned(gate, image)
     return image
@@ -220,9 +230,192 @@ def remember_image(gate, image, cache):
     Path(stream.name).rename(record)
 
 
+def archive_metadata_path(archive):
+    archive = Path(archive)
+    return archive.with_name(archive.name + ".metadata.json")
+
+
+def archive_info(path):
+    path = Path(path)
+    try:
+        details = path.lstat()
+        if not stat.S_ISREG(details.st_mode):
+            raise CacheRefused("dependency-cache-archive-invalid")
+        with path.open("rb") as stream:
+            checksum = hashlib.file_digest(stream, "sha256").hexdigest()
+    except OSError:
+        raise CacheRefused("dependency-cache-archive-unavailable") from None
+    return {"archive_sha256": checksum, "archive_size": details.st_size}
+
+
+def _archive_metadata(gate, image, info):
+    return {
+        "archive_sha256": info["archive_sha256"],
+        "archive_size": info["archive_size"],
+        "container_identity": gate.container_identity,
+        "image_id": image.image_id,
+        "layout": ARCHIVE_LAYOUT,
+        "schema": 1,
+    }
+
+
+def _read_archive_metadata(path):
+    path = Path(path)
+    try:
+        details = path.lstat()
+        if not stat.S_ISREG(details.st_mode):
+            raise CacheRefused("dependency-cache-archive-metadata-invalid")
+        text = path.read_text()
+        metadata = json.loads(text)
+    except OSError, ValueError:
+        raise CacheRefused("dependency-cache-archive-metadata-unavailable") from None
+    fields = {
+        "archive_sha256",
+        "archive_size",
+        "container_identity",
+        "image_id",
+        "layout",
+        "schema",
+    }
+    if not isinstance(metadata, dict) or set(metadata) != fields:
+        raise CacheRefused("dependency-cache-archive-metadata-invalid")
+    if json.dumps(metadata, sort_keys=True) + "\n" != text:
+        raise CacheRefused("dependency-cache-archive-metadata-invalid")
+    if (
+        type(metadata["schema"]) is not int
+        or metadata["schema"] != 1
+        or not isinstance(metadata["archive_size"], int)
+        or isinstance(metadata["archive_size"], bool)
+        or metadata["archive_size"] < 1
+        or not isinstance(metadata["archive_sha256"], str)
+        or len(metadata["archive_sha256"]) != 64
+        or any(character not in "0123456789abcdef" for character in metadata["archive_sha256"])
+        or not isinstance(metadata["container_identity"], str)
+        or not isinstance(metadata["image_id"], str)
+    ):
+        raise CacheRefused("dependency-cache-archive-metadata-invalid")
+    return metadata
+
+
+def _validate_archive(gate, image, archive, metadata_path):
+    metadata = _read_archive_metadata(metadata_path)
+    if metadata["container_identity"] != gate.container_identity or metadata["image_id"] != image.image_id:
+        raise CacheRefused("dependency-cache-archive-identity-mismatch")
+    if metadata["layout"] != ARCHIVE_LAYOUT:
+        raise CacheRefused("dependency-cache-archive-layout-mismatch")
+    info = archive_info(archive)
+    if metadata["archive_size"] != info["archive_size"]:
+        raise CacheRefused("dependency-cache-archive-size-mismatch")
+    if metadata["archive_sha256"] != info["archive_sha256"]:
+        raise CacheRefused("dependency-cache-archive-digest-mismatch")
+    return metadata
+
+
+def _archive_pair_exists(archive, metadata_path):
+    archive_exists = archive.exists() or archive.is_symlink()
+    metadata_exists = metadata_path.exists() or metadata_path.is_symlink()
+    return archive_exists, metadata_exists
+
+
+def _archive_staging_directory(cache, archive):
+    cache_root = cache.resolve()
+    archive_parent = archive.parent.resolve()
+    for parent in (archive_parent, *archive_parent.parents):
+        if not parent.is_relative_to(cache_root):
+            return Path(tempfile.mkdtemp(prefix="cairn-linux-dependency-archive-", dir=parent))
+    raise CacheRefused("dependency-cache-archive-staging-unavailable")
+
+
+def export_archive(gate, image, cache, archive):
+    cache = Path(cache)
+    archive = Path(archive)
+    metadata_path = archive_metadata_path(archive)
+    cache.mkdir(parents=True, exist_ok=True)
+    archive.parent.mkdir(parents=True, exist_ok=True)
+    with population_lock(cache, f"image-{gate.container_identity}"):
+        current = cached_image(gate, cache)
+        if image.identity != gate.container_identity or image.image_id != current.image_id:
+            raise CacheRefused("dependency-cache-image-mismatch")
+        entry = cache / cache_key(gate, current)
+        validate(gate, current, entry)
+        archive_exists, metadata_exists = _archive_pair_exists(archive, metadata_path)
+        if archive_exists or metadata_exists:
+            if not archive_exists or not metadata_exists:
+                raise CacheRefused("dependency-cache-archive-conflict")
+            _validate_archive(gate, current, archive, metadata_path)
+            lg.info("archive_hit", image_id=current.image_id, archive=str(archive))
+            return archive
+        staging_directory = _archive_staging_directory(cache, archive)
+        temporary_archive = staging_directory / "image.tar"
+        temporary_metadata = staging_directory / "metadata.json"
+        try:
+            result = container.run_docker(
+                current.context, "image", "save", "--output", str(temporary_archive), current.image_id
+            )
+        except (lean.LeanMissing, lean.LeanTimeout, OSError) as exc:
+            raise CacheRefused(f"dependency-cache-archive-save-failed:{type(exc).__name__}") from None
+        if result.rc != 0:
+            raise CacheRefused(f"dependency-cache-archive-save-failed:rc={result.rc}")
+        metadata = _archive_metadata(gate, current, archive_info(temporary_archive))
+        try:
+            with temporary_metadata.open("x") as stream:
+                stream.write(json.dumps(metadata, sort_keys=True) + "\n")
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.link(temporary_archive, archive)
+            os.link(temporary_metadata, metadata_path)
+        except FileExistsError:
+            raise CacheRefused("dependency-cache-archive-conflict") from None
+        except OSError as exc:
+            raise CacheRefused(f"dependency-cache-archive-publish-failed:{type(exc).__name__}") from None
+        lg.info("archive_published", image_id=current.image_id, archive=str(archive))
+        return archive
+
+
+def import_archive(gate, cache, archive):
+    cache = Path(cache)
+    archive = Path(archive)
+    metadata_path = archive_metadata_path(archive)
+    if cache.is_symlink() or not cache.is_dir():
+        raise CacheRefused("dependency-cache-image-unavailable")
+    with population_lock(cache, f"image-{gate.container_identity}"):
+        expected = recorded_image(gate, cache)
+        _validate_archive(gate, expected, archive, metadata_path)
+        try:
+            result = container.run_docker(expected.context, "load", "--input", str(archive))
+        except (lean.LeanMissing, lean.LeanTimeout, OSError) as exc:
+            raise CacheRefused(f"dependency-cache-archive-load-failed:{type(exc).__name__}") from None
+        if result.rc != 0:
+            raise CacheRefused(f"dependency-cache-archive-load-failed:rc={result.rc}")
+        try:
+            image = cached_image(gate, cache)
+        except (
+            CacheRefused,
+            container.ContainerError,
+            lean.LeanMissing,
+            lean.LeanPinMismatch,
+            lean.LeanRejected,
+            lean.LeanTimeout,
+            OSError,
+        ):
+            raise CacheRefused("dependency-cache-import-image-validation-failed") from None
+        if image.image_id != expected.image_id:
+            raise CacheRefused("dependency-cache-import-image-validation-failed")
+        try:
+            entry = cache / cache_key(gate, image)
+            validate(gate, image, entry)
+        except CacheRefused, OSError, ValueError:
+            raise CacheRefused("dependency-cache-import-entry-invalid") from None
+        lg.info("archive_imported", image_id=image.image_id, archive=str(archive))
+        return image
+
+
 def main():
     parser = argparse.ArgumentParser(description="Provision dependency-only Linux test artifacts; never proof verdicts")
     parser.add_argument("--cache", required=True, type=Path)
+    transport = parser.add_mutually_exclusive_group()
+    transport.add_argument("--export-archive", type=Path)
+    transport.add_argument("--import-archive", type=Path)
     args = parser.parse_args()
     log.configure()
     root = Path(tempfile.mkdtemp(prefix="cairn-linux-dependency-bundle-"))
@@ -230,20 +423,31 @@ def main():
     bundle.build(lean.REPO_ROOT / "bundle", database)
     bundle.write_pin(database, pin)
     gate = bundle.GateBundle.open(database, pin)
-    args.cache.mkdir(parents=True, exist_ok=True)
-    with population_lock(args.cache, f"image-{gate.container_identity}"):
-        image = (
-            cached_image(gate, args.cache)
-            if image_record(gate, args.cache).exists()
-            else container.build(container.context(), gate.container_identity)
-        )
+    if args.import_archive:
+        image = import_archive(gate, args.cache, args.import_archive)
+        entry = args.cache / cache_key(gate, image)
         lean.require_success(
             container.run_docker(
                 image.context, "tag", image.image_id, f"cairn-linux-dependencies:{cache_key(gate, image)}"
             )
         )
-        entry = prepare(gate, image, args.cache)
-        remember_image(gate, image, args.cache)
+    else:
+        args.cache.mkdir(parents=True, exist_ok=True)
+        with population_lock(args.cache, f"image-{gate.container_identity}"):
+            image = (
+                cached_image(gate, args.cache)
+                if image_record(gate, args.cache).exists()
+                else container.build(container.context(), gate.container_identity)
+            )
+            lean.require_success(
+                container.run_docker(
+                    image.context, "tag", image.image_id, f"cairn-linux-dependencies:{cache_key(gate, image)}"
+                )
+            )
+            entry = prepare(gate, image, args.cache)
+            remember_image(gate, image, args.cache)
+        if args.export_archive:
+            export_archive(gate, image, args.cache, args.export_archive)
     print(json.dumps({"cache": str(args.cache.resolve()), "entry": str(entry.resolve()), "image_id": image.image_id}))
 
 
