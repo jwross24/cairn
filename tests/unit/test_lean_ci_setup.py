@@ -41,6 +41,22 @@ CONTAINER_LANES = (
     "container-plan-exact, container-plan-refusals]"
 )
 MODULE = "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
+LEAN_SETUP_CONDITION = "matrix.lane != 'python' && matrix.lane != 'm0' && matrix.lane != 'gateplan'"
+LEAN_SETUP_STEPS = (
+    LEAN_CACHE,
+    LEAN_INSTALL,
+    LEAN_RESOLVE,
+    MATHLIB_CACHE,
+    MATHLIB_SETUP,
+    "Read comparator pins",
+    "Provision comparator source",
+    "Provision exporter source",
+    COMPARATOR_CACHE,
+    COMPARATOR_BUILD,
+)
+MACOS_LANES = (
+    "lane: [python, m0, gateplan, lean, solution, solution-library, solution-plan-exact, solution-plan-refusals]"
+)
 
 
 def _steps(text: str) -> dict[str, int]:
@@ -92,25 +108,38 @@ def test_ci_contract_refuses_a_missing_mathlib_prerequisite():
         _assert_mathlib_prerequisite(broken)
 
 
-def _assert_python_lane_skips_lean_prerequisites(text: str) -> None:
-    for name in (LEAN_CACHE, LEAN_RESOLVE, MATHLIB_CACHE, MATHLIB_SETUP):
-        assert "if: matrix.lane != 'python'" in _step(text, name)
-    install = _step(text, LEAN_INSTALL)
-    assert "matrix.lane != 'python'" in install
-    assert "steps.elan-cache.outputs.cache-hit != 'true'" in install
+def _assert_non_lean_lanes_skip_prerequisites(text: str) -> None:
+    for name in LEAN_SETUP_STEPS:
+        step = _step(text, name)
+        condition = f"if: {LEAN_SETUP_CONDITION}"
+        if name == LEAN_INSTALL:
+            condition += " && steps.elan-cache.outputs.cache-hit != 'true'"
+        assert [line.strip() for line in step.splitlines() if line.strip().startswith("if:")] == [condition]
 
 
-def test_python_lane_skips_lean_and_mathlib_provisioning():
-    _assert_python_lane_skips_lean_prerequisites(WORKFLOW.read_text())
+def test_python_m0_and_gateplan_lanes_skip_lean_and_comparator_provisioning():
+    _assert_non_lean_lanes_skip_prerequisites(WORKFLOW.read_text())
 
 
-@pytest.mark.parametrize("step", [LEAN_CACHE, LEAN_INSTALL, LEAN_RESOLVE, MATHLIB_CACHE, MATHLIB_SETUP])
-def test_python_lane_setup_contract_refuses_an_unconditional_lean_step(step):
+@pytest.mark.parametrize("step", LEAN_SETUP_STEPS)
+@pytest.mark.parametrize("lane", ["python", "m0", "gateplan", "solution-library"])
+def test_non_lean_lane_setup_contract_refuses_accidental_provisioning(step, lane):
     text = WORKFLOW.read_text()
     body = _step(text, step)
     conditional = next(line for line in body.splitlines() if "if:" in line)
+    if lane == "python":
+        replacement = conditional.replace("matrix.lane != 'python' && ", "", 1)
+    elif lane == "solution-library":
+        replacement = conditional.replace(
+            LEAN_SETUP_CONDITION,
+            f"{LEAN_SETUP_CONDITION} && matrix.lane != 'solution-library'",
+            1,
+        )
+    else:
+        replacement = conditional.replace(f" && matrix.lane != '{lane}'", "", 1)
+    assert replacement != conditional
     with pytest.raises(AssertionError):
-        _assert_python_lane_skips_lean_prerequisites(text.replace(conditional + "\n", "", 1))
+        _assert_non_lean_lanes_skip_prerequisites(text.replace(conditional, replacement, 1))
 
 
 def _assert_comparator_cache(text: str) -> None:
@@ -119,7 +148,7 @@ def _assert_comparator_cache(text: str) -> None:
     assert steps["Provision exporter source"] < steps[COMPARATOR_CACHE] < steps[COMPARATOR_BUILD] < steps[GATES]
 
     cache = _step(text, COMPARATOR_CACHE)
-    assert "if: matrix.lane != 'python'" in cache
+    assert f"if: {LEAN_SETUP_CONDITION}" in cache
     assert "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" in cache
     assert ".doctor/comparator/.lake/build" in cache
     assert ".doctor/comparator/.lake/packages/lean4export/.lake/build" in cache
@@ -134,7 +163,7 @@ def _assert_comparator_cache(text: str) -> None:
         assert identity in cache
 
     build = _step(text, COMPARATOR_BUILD)
-    assert "if: matrix.lane != 'python'" in build
+    assert f"if: {LEAN_SETUP_CONDITION}" in build
     assert "cache-hit" not in build
     assert "build lean4export comparator" in build
 
@@ -172,7 +201,7 @@ def test_comparator_cache_contract_refuses_skipping_build_validation_on_a_hit():
 def _assert_ci_lanes(text):
     assert CONTAINER_LANES in text
     assert 'run: scripts/check.sh --ci-lane "${{ matrix.lane }}"' in _step(text, "Linux container gates")
-    assert "lane: [python, lean, solution, solution-plan-exact, solution-plan-refusals]" in text
+    assert MACOS_LANES in text
     assert "fail-fast: false" in text
     assert "continue-on-error:" not in text
     assert 'CAIRN_SESSION_DEADLINE: "1080"' in text
@@ -185,7 +214,7 @@ def _assert_ci_lanes(text):
         "Provision exporter source",
         "Build pinned comparator and exporter",
     ):
-        assert "if: matrix.lane != 'python'" in _step(text, name)
+        assert f"if: {LEAN_SETUP_CONDITION}" in _step(text, name)
         assert _steps(text)[name] < _steps(text)[GATES]
 
 

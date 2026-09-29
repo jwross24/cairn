@@ -10,9 +10,13 @@ from _ci_lanes import (
     CONTAINER_PLAN_TESTS,
     CONTAINER_REPLAY_TESTS,
     CONTAINER_TEST_PATHS,
+    GATEPLAN_TEST_PATHS,
     LEAN_PREREQUISITE_TEST_PATHS,
     LEAN_SOLUTION_TESTS,
     LEAN_TEST_PATHS,
+    M0_TEST_PATHS,
+    SOLUTION_LIBRARY_TEST_PATHS,
+    SOLUTION_PLAN_TESTS,
     SOLUTION_TEST_PATHS,
     validate_manifest,
 )
@@ -25,6 +29,9 @@ SOLUTION_CASES = (
 )
 PLAN_CASE = "test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks"
 PLAN_VARIANTS = ("exact", "sorry", "timeout")
+LIBRARY_GATE_PATH = SOLUTION_LIBRARY_TEST_PATHS[0]
+LIBRARY_GATE_CASE = "test_library_items_pass_gate"
+LIBRARY_GATE_ITEMS = ("dlp", "finite_point")
 
 
 def _suite(pytester):
@@ -38,6 +45,14 @@ def _suite(pytester):
         path = pytester.path / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("def test_pass():\n    assert True\n")
+    for relative in (*M0_TEST_PATHS, *GATEPLAN_TEST_PATHS):
+        path = pytester.path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("def test_pass():\n    assert True\n")
+    (pytester.path / LIBRARY_GATE_PATH).write_text(
+        f'import pytest\n@pytest.mark.parametrize("item", {LIBRARY_GATE_ITEMS!r})\n'
+        f"def {LIBRARY_GATE_CASE}(item):\n    assert True\n"
+    )
     path = pytester.path / SOLUTION_TEST_PATHS[0]
     with path.open("a") as stream:
         stream.write("import pytest\n")
@@ -60,13 +75,16 @@ def _suite(pytester):
 @pytest.mark.parametrize(
     ("lane", "passed", "deselected"),
     [
-        ("all", 21, 0),
-        ("python", 1, 20),
-        ("lean", 5, 16),
-        ("solution", 3, 18),
-        ("solution-plan", 3, 18),
-        ("solution-plan-exact", 1, 20),
-        ("solution-plan-refusals", 2, 19),
+        ("all", 27, 0),
+        ("python", 1, 26),
+        ("m0", 1, 26),
+        ("gateplan", 3, 24),
+        ("lean", 5, 22),
+        ("solution", 3, 24),
+        ("solution-library", 2, 25),
+        ("solution-plan", 3, 24),
+        ("solution-plan-exact", 1, 26),
+        ("solution-plan-refusals", 2, 25),
         ("container", 1, 8),
         ("container-replay", 4, 5),
         ("container-replay-exact", 2, 7),
@@ -85,7 +103,7 @@ def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
 def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytester):
     _suite(pytester)
     default = pytester.runpytest("-q", "--import-mode=importlib")
-    default.assert_outcomes(passed=21)
+    default.assert_outcomes(passed=27)
     populations = {}
     for lane in ("all", "solution-plan", "container-replay", "container-plan", *CI_LANES):
         result = pytester.runpytest("-q", "--collect-only", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
@@ -95,8 +113,13 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
         f"{SOLUTION_TEST_PATHS[0]}::{name}[{case}]" for name in LEAN_SOLUTION_TESTS for case in (0, 1)
     }
     assert populations["python"] == {"tests/unit/test_unlisted.py::test_pass"}
+    assert populations["m0"] == {f"{M0_TEST_PATHS[0]}::test_pass"}
+    assert populations["gateplan"] == {f"{path}::test_pass" for path in GATEPLAN_TEST_PATHS}
     assert populations["solution"] == {"tests/integration/test_solution_build_compile.py::test_pass"} | {
         f"{SOLUTION_TEST_PATHS[0]}::{SOLUTION_CASES[0]}[{case}]" for case in (0, 1)
+    }
+    assert populations["solution-library"] == {
+        f"{LIBRARY_GATE_PATH}::{LIBRARY_GATE_CASE}[{item}]" for item in LIBRARY_GATE_ITEMS
     }
     assert populations["container"] == {"tests/integration/test_container_statement_hash.py::test_pass"}
     assert populations["container-replay"] == {
@@ -137,7 +160,10 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
     assert populations["all"] == (
         populations["lean"]
         | populations["python"]
+        | populations["m0"]
+        | populations["gateplan"]
         | populations["solution"]
+        | populations["solution-library"]
         | populations["solution-plan"]
         | populations["container"]
         | populations["container-replay"]
@@ -145,16 +171,37 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
     )
 
 
+def test_new_lane_manifests_name_only_the_measured_test_modules():
+    assert M0_TEST_PATHS == ("tests/e2e/test_m0_slice.py",)
+    assert GATEPLAN_TEST_PATHS == (
+        "tests/integration/test_gateplan.py",
+        "tests/integration/test_gateplan_cli.py",
+        "tests/integration/test_ladder_gate_selftest.py",
+    )
+    assert SOLUTION_LIBRARY_TEST_PATHS == ("tests/integration/test_challenge_gate.py",)
+
+
 @pytest.mark.parametrize(
     ("lane", "passed", "deselected"),
-    [("python", 0, 20), ("lean", 4, 16), ("solution", 0, 11), ("container", 0, 0)],
+    [
+        ("python", 0, 26),
+        ("m0", 0, 26),
+        ("gateplan", 2, 24),
+        ("lean", 4, 22),
+        ("solution", 0, 17),
+        ("solution-library", 0, 25),
+        ("container", 0, 0),
+    ],
 )
 def test_a_selected_failure_keeps_the_lane_red(pytester, lane, passed, deselected):
     _suite(pytester)
     relative = {
         "lean": "tests/integration/test_lean_toolchain.py",
         "solution": "tests/integration/test_solution_build_compile.py",
+        "solution-library": LIBRARY_GATE_PATH,
         "python": "tests/unit/test_unlisted.py",
+        "m0": M0_TEST_PATHS[0],
+        "gateplan": GATEPLAN_TEST_PATHS[0],
         "container": "tests/integration/test_container_statement_hash.py",
     }[lane]
     (pytester.path / relative).write_text("def test_planted_failure():\n    assert False\n")
@@ -210,7 +257,7 @@ def test_container_lane_refuses_an_import_error_in_its_own_module(pytester, lane
 
 @pytest.mark.parametrize(
     ("name", "lane", "passed", "deselected"),
-    [(SOLUTION_CASES[0], "solution", 0, 11), *((name, "lean", 1, 10) for name in SOLUTION_CASES[1:])],
+    [(SOLUTION_CASES[0], "solution", 0, 17), *((name, "lean", 1, 16) for name in SOLUTION_CASES[1:])],
 )
 def test_a_reassigned_solution_failure_keeps_its_lane_red(pytester, name, lane, passed, deselected):
     _suite(pytester)
@@ -218,6 +265,33 @@ def test_a_reassigned_solution_failure_keeps_its_lane_red(pytester, name, lane, 
     result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
     result.assert_outcomes(failed=1, passed=passed, deselected=deselected)
     assert result.ret == pytest.ExitCode.TESTS_FAILED
+
+
+def test_the_library_gate_test_is_declared_in_the_solution_library_lane_and_defined_in_its_file():
+    assert SOLUTION_LIBRARY_TEST_PATHS == (LIBRARY_GATE_PATH,)
+    assert LIBRARY_GATE_PATH not in SOLUTION_TEST_PATHS
+    assert LIBRARY_GATE_PATH not in LEAN_TEST_PATHS
+    definitions = {
+        node.name
+        for node in ast.walk(ast.parse((ROOT / LIBRARY_GATE_PATH).read_text()))
+        if isinstance(node, ast.FunctionDef)
+    }
+    assert LIBRARY_GATE_CASE in definitions
+    assert LIBRARY_GATE_CASE not in LEAN_SOLUTION_TESTS
+    assert LIBRARY_GATE_CASE not in SOLUTION_PLAN_TESTS
+
+
+def test_a_library_gate_failure_keeps_the_solution_library_lane_red(pytester):
+    _suite(pytester)
+    (pytester.path / LIBRARY_GATE_PATH).write_text(
+        f'import pytest\n@pytest.mark.parametrize("item", {LIBRARY_GATE_ITEMS!r})\n'
+        f"def {LIBRARY_GATE_CASE}(item):\n    assert item != {LIBRARY_GATE_ITEMS[1]!r}\n"
+    )
+    result = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=solution-library")
+    result.assert_outcomes(failed=1, passed=1, deselected=25)
+    assert result.ret == pytest.ExitCode.TESTS_FAILED
+    other = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=solution")
+    other.assert_outcomes(passed=3, deselected=24)
 
 
 def test_reassigned_solution_cases_exist_in_the_declared_file():
@@ -319,7 +393,7 @@ def test_each_ordered_plan_failure_keeps_its_lane_red(pytester, failed_case):
         f"def {PLAN_CASE}(case):\n    assert case != {failed_case!r}\n"
     )
     result = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=solution-plan")
-    result.assert_outcomes(failed=1, passed=2, deselected=11)
+    result.assert_outcomes(failed=1, passed=2, deselected=17)
     assert result.ret == pytest.ExitCode.TESTS_FAILED
 
 
@@ -332,11 +406,23 @@ def test_plan_shards_route_by_parameter_value_and_propagate_failure(pytester, ca
     )
     lane = "solution-plan-exact" if case == "exact" else "solution-plan-refusals"
     result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
-    result.assert_outcomes(failed=1, passed=0 if case == "exact" else 1, deselected=13 if case == "exact" else 12)
+    result.assert_outcomes(failed=1, passed=0 if case == "exact" else 1, deselected=19 if case == "exact" else 18)
     assert result.ret == pytest.ExitCode.TESTS_FAILED
 
 
-@pytest.mark.parametrize("lane", ["all", "solution-plan", "solution-plan-exact", "solution-plan-refusals", "python"])
+@pytest.mark.parametrize(
+    "lane",
+    [
+        "all",
+        "solution-plan",
+        "solution-plan-exact",
+        "solution-plan-refusals",
+        "python",
+        "m0",
+        "gateplan",
+        "solution-library",
+    ],
+)
 @pytest.mark.parametrize("case", ["unknown", None, 1])
 def test_unknown_plan_parameters_refuse_collection(pytester, lane, case):
     _suite(pytester)
@@ -427,8 +513,22 @@ def test_every_direct_lean_import_has_one_explicit_lane_classification():
     }
     indirect_lean = {"tests/integration/test_prefilters_in_gate.py"}
     assert not set(LEAN_TEST_PATHS) & set(SOLUTION_TEST_PATHS)
-    lean = set(LEAN_TEST_PATHS) | set(SOLUTION_TEST_PATHS) | set(CONTAINER_TEST_PATHS)
-    validate_manifest(ROOT, (*LEAN_TEST_PATHS, *SOLUTION_TEST_PATHS, *CONTAINER_TEST_PATHS))
+    assert not set(LEAN_TEST_PATHS) & set(SOLUTION_LIBRARY_TEST_PATHS)
+    assert not set(M0_TEST_PATHS) & set(GATEPLAN_TEST_PATHS)
+    lean = (
+        set(LEAN_TEST_PATHS) | set(SOLUTION_TEST_PATHS) | set(SOLUTION_LIBRARY_TEST_PATHS) | set(CONTAINER_TEST_PATHS)
+    )
+    validate_manifest(
+        ROOT,
+        (
+            *LEAN_TEST_PATHS,
+            *M0_TEST_PATHS,
+            *GATEPLAN_TEST_PATHS,
+            *SOLUTION_TEST_PATHS,
+            *SOLUTION_LIBRARY_TEST_PATHS,
+            *CONTAINER_TEST_PATHS,
+        ),
+    )
     assert not python_only & lean
     assert imports == (lean - indirect_lean) | python_only
     assert indirect_lean <= lean

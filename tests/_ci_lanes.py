@@ -17,7 +17,14 @@ LEAN_TEST_PATHS = (
     "tests/unit/test_formal_statement_hasher.py",
     *LEAN_PREREQUISITE_TEST_PATHS,
 )
+M0_TEST_PATHS = ("tests/e2e/test_m0_slice.py",)
+GATEPLAN_TEST_PATHS = (
+    "tests/integration/test_gateplan.py",
+    "tests/integration/test_gateplan_cli.py",
+    "tests/integration/test_ladder_gate_selftest.py",
+)
 SOLUTION_TEST_PATHS = ("tests/integration/test_solution_build_compile.py",)
+SOLUTION_LIBRARY_TEST_PATHS = ("tests/integration/test_challenge_gate.py",)
 CONTAINER_TEST_PATHS = (
     "tests/integration/test_container_statement_hash.py",
     "tests/integration/test_lean_container.py",
@@ -41,8 +48,11 @@ CONTAINER_PLAN_TESTS = ("test_linux_ordered_plan_runs_each_step_in_order",)
 CONTAINER_PLAN_CASES = ("exact", "sorry", "weaker", "stale-hash")
 CI_LANES = (
     "python",
+    "m0",
+    "gateplan",
     "lean",
     "solution",
+    "solution-library",
     *SOLUTION_PLAN_LANES,
     "container",
     "container-replay-exact",
@@ -88,9 +98,22 @@ def pytest_ignore_collect(collection_path, config):
 
 def pytest_collection_modifyitems(config, items):
     validate_manifest(ROOT, LEAN_TEST_PATHS)
+    validate_manifest(ROOT, M0_TEST_PATHS)
+    validate_manifest(ROOT, GATEPLAN_TEST_PATHS)
     validate_manifest(ROOT, SOLUTION_TEST_PATHS)
+    validate_manifest(ROOT, SOLUTION_LIBRARY_TEST_PATHS)
     validate_manifest(ROOT, CONTAINER_TEST_PATHS)
-    validate_manifest(ROOT, (*LEAN_TEST_PATHS, *SOLUTION_TEST_PATHS, *CONTAINER_TEST_PATHS))
+    validate_manifest(
+        ROOT,
+        (
+            *LEAN_TEST_PATHS,
+            *M0_TEST_PATHS,
+            *GATEPLAN_TEST_PATHS,
+            *SOLUTION_TEST_PATHS,
+            *SOLUTION_LIBRARY_TEST_PATHS,
+            *CONTAINER_TEST_PATHS,
+        ),
+    )
     lane = config.getoption("--cairn-ci-lane")
     selected = []
     deselected = []
@@ -105,6 +128,12 @@ def pytest_collection_modifyitems(config, items):
                 item_lane = "solution-plan-exact" if case == "exact" else "solution-plan-refusals"
             else:
                 item_lane = "lean" if item.originalname in LEAN_SOLUTION_TESTS else "solution"
+        elif path in M0_TEST_PATHS:
+            item_lane = "m0"
+        elif path in GATEPLAN_TEST_PATHS:
+            item_lane = "gateplan"
+        elif path in SOLUTION_LIBRARY_TEST_PATHS:
+            item_lane = "solution-library"
         elif path in LEAN_TEST_PATHS:
             item_lane = "lean"
         elif path in CONTAINER_TEST_PATHS:
