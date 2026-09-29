@@ -448,13 +448,10 @@ class Substrate:
             certificate_hash(identity_bundle_hash, row["transcript_hash"], row["env_manifest_hash"]) == row["cert_hash"]
         )
 
-    def yanked(self, identity_bundle_hash):
-        return (
-            self.conn.execute(
-                "SELECT 1 FROM yank_records WHERE skill_identity_hash = ? LIMIT 1", (identity_bundle_hash,)
-            ).fetchone()
-            is not None
-        )
+    def yanked(self, identity_bundle_hash, *, attest_path=None):
+        from cairn import yank
+
+        return bool(yank.records_for(self, identity_bundle_hash, attest_path=attest_path))
 
     def manifest_blobs_present(self, manifest_hash):
         row = self.conn.execute(
@@ -665,6 +662,7 @@ class Substrate:
         certificate_hash=None,
         ended_at=None,
         honor_yank=False,
+        attest_path=None,
     ):
         if status not in TERMINAL_STATUSES:
             raise ValueError(f"status must be one of {TERMINAL_STATUSES}, got {status!r}")
@@ -675,7 +673,7 @@ class Substrate:
                 attempt = self.get_attempt(attempt_id)
                 if attempt is None:
                     raise UnknownAttempt(f"no attempt {attempt_id}")
-                if yank.covers_recipe(self, attempt["recipe_key"]):
+                if yank.covers_recipe(self, attempt["recipe_key"], attest_path=attest_path):
                     status = "SKILL_YANKED"
             cur = self.conn.execute(
                 "UPDATE attempts SET status = ?, ended_at = ?, output_manifest_hash = ?, receipt_hash = ?, verifier_result_hash = ?, certificate_hash = ? WHERE attempt_id = ?",

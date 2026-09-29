@@ -457,6 +457,7 @@ def launch(
     budget_remaining=None,
     env_extra=None,
     stdin_document=None,
+    attest_path=None,
 ):
     lg = log.get(LOG_STEP)
     startup_scan(sub)
@@ -504,7 +505,7 @@ def launch(
             wall_cap_s=wall_cap_s,
             env=child_env(env_extra),
             stdin_bytes=stdin_bytes,
-            is_yanked=lambda: yank.covers_recipe(sub, recipe_key),
+            is_yanked=lambda: yank.covers_recipe(sub, recipe_key, attest_path=attest_path),
         )
         scratch_written = max(0, allocated_bytes(scratch_dir) - before)
         stdout_bytes, stderr_bytes = out_path.read_bytes(), err_path.read_bytes()
@@ -544,7 +545,12 @@ def launch(
             }
         )
         status = sub.close_attempt(
-            attempt_id, status, output_manifest_hash=manifest, receipt_hash=receipt, honor_yank=True
+            attempt_id,
+            status,
+            output_manifest_hash=manifest,
+            receipt_hash=receipt,
+            honor_yank=True,
+            attest_path=attest_path,
         )
         if status != STATUS_SKILL_YANKED:
             escrow.settle_on_close(sub, attempt_id, status)
@@ -574,7 +580,7 @@ def launch(
         )
     except Exception:
         if sub.get_attempt(attempt_id)["ended_at"] is None:
-            status = sub.close_attempt(attempt_id, STATUS_FAIL, honor_yank=True)
+            status = sub.close_attempt(attempt_id, STATUS_FAIL, honor_yank=True, attest_path=attest_path)
             if status != STATUS_SKILL_YANKED:
                 escrow.settle_on_close(sub, attempt_id, status)
             lg.warning("launch_aborted", attempt_id=attempt_id, recipe_key=recipe_key)

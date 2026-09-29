@@ -9,12 +9,13 @@ from pathlib import Path
 import _substrate_helpers as helpers
 import pytest
 
-from cairn import escrow, runner, yank
+from cairn import escrow, human_authority, runner, yank
 from cairn.profile import Evaluation
 from cairn.substrate import Substrate
 
 FIXTURES = str(Path(__file__).resolve().parents[1] / "fixtures")
 REVISION = "aa" * 32
+GATE_HASH = "ee" * 32
 
 
 @pytest.fixture
@@ -29,19 +30,39 @@ def writer(tmp_path):
         yield sub
 
 
-def _record(sub, *, outside=False):
+def _authorize(sub, attest_path, *, outside=False):
+    reach = {"skill_identity_hash": REVISION, "seed": 2} if outside else yank.default_reach(REVISION)
+    Path(attest_path).touch(exist_ok=True)
+    record = human_authority.append(
+        sub,
+        attest_path,
+        human_authority.YANK_RULING,
+        {
+            "ruling_ref": "test-ruling",
+            "yank_id": "test-yank",
+            "skill_identity_hash": REVISION,
+            "reach_predicate": yank.reach_json(reach),
+            "issued_by": "test-operator",
+            "at": "2026-09-05T00:00:00.000000+00:00",
+        },
+        gate_bundle_hash=GATE_HASH,
+    )
+    return yank.Ruling("test-ruling", record["record_digest"], record["file_offset"])
+
+
+def _record(sub, attest_path, ruling, *, outside=False):
     return yank.record(
         sub,
         yank_id="test-yank",
         skill_identity_hash=REVISION,
         kind=yank.HUMAN_PATH,
-        attest_path="unused-attestation",
+        attest_path=attest_path,
         reach={"skill_identity_hash": REVISION, "seed": 2} if outside else None,
-        ruling=yank.Ruling("test-ruling", "bb" * 32, 0),
+        ruling=ruling,
     )
 
 
-def _yank_after_ready(db_path, runs, outside, closed, fail_salt=False):
+def _yank_after_ready(db_path, runs, attest_path, ruling, outside, closed, fail_salt=False):
     deadline = time.monotonic() + 15
     ready = None
     while ready is None:
@@ -59,20 +80,20 @@ def _yank_after_ready(db_path, runs, outside, closed, fail_salt=False):
                 "CREATE TRIGGER reject_salt BEFORE INSERT ON salts BEGIN SELECT RAISE(ABORT, 'salt rejected'); END;"
             )
             try:
-                _record(sub, outside=outside)
+                _record(sub, attest_path, ruling, outside=outside)
             except sqlite3.IntegrityError as exc:
                 assert "salt rejected" in str(exc)
             else:
                 raise AssertionError("the salt write was expected to abort")
             sub.conn.executescript("DROP TRIGGER reject_salt")
         else:
-            outcome = _record(sub, outside=outside)
+            outcome = _record(sub, attest_path, ruling, outside=outside)
             assert (rows[0]["attempt_id"] in outcome.disowned) is not outside
     if outside or fail_salt:
         (ready.parent / "finish").write_text("finish")
 
 
-def _launch(sub, tmp_path, **document):
+def _launch(sub, tmp_path, *, attest_path=None, **document):
     return runner.launch(
         sub,
         "skills.yank_target",
@@ -86,19 +107,24 @@ def _launch(sub, tmp_path, **document):
         wall_cap_floor_s=0,
         env_extra={"PYTHONPATH": FIXTURES},
         stdin_document=document,
+        attest_path=attest_path,
     )
 
 
 def _inflight(sub, tmp_path, *, outside=False, ignore_term=False, fail_salt=False):
+    attest_path = str(tmp_path / "attest.log")
+    ruling = _authorize(sub, attest_path, outside=outside)
+    sub._attest_path = attest_path
     context = multiprocessing.get_context("spawn")
     closed = context.Event()
     controller = context.Process(
-        target=_yank_after_ready, args=(str(sub.path), str(tmp_path / "runs"), outside, closed, fail_salt)
+        target=_yank_after_ready,
+        args=(str(sub.path), str(tmp_path / "runs"), attest_path, ruling, outside, closed, fail_salt),
     )
     controller.start()
     try:
         try:
-            return _launch(sub, tmp_path, ignore_term=ignore_term)
+            return _launch(sub, tmp_path, attest_path=attest_path, ignore_term=ignore_term)
         finally:
             closed.set()
             controller.join(15)
@@ -151,17 +177,17 @@ def test_the_runner_close_observes_the_whole_propagation_or_none_of_it(writer, t
     assert [tuple(row) for row in updates] == [(attempt.attempt_id, "yank-controller")]
     assert escrow.reservation(writer, attempt.attempt_id)["released_by"] == "disowned"
     assert writer.get_attempt(attempt.attempt_id)["disowned_at"] is not None
-    assert yank.current_salt(writer, REVISION) == "test-yank"
-    assert len(yank.records_for(writer, REVISION)) == 1
+    assert yank.current_salt(writer, REVISION, attest_path=writer._attest_path) == "test-yank"
+    assert len(yank.records_for(writer, REVISION, attest_path=writer._attest_path)) == 1
 
 
 def test_a_propagation_that_fails_partway_leaves_the_running_attempt_untouched(writer, tmp_path):
     attempt = _inflight(writer, tmp_path, fail_salt=True)
     assert attempt.status == "OK"
     assert not attempt.launch.skill_yanked
-    assert yank.records_for(writer, REVISION) == []
-    assert yank.current_salt(writer, REVISION) is None
-    assert writer.yanked(REVISION) is False
+    assert yank.records_for(writer, REVISION, attest_path=writer._attest_path) == []
+    assert yank.current_salt(writer, REVISION, attest_path=writer._attest_path) is None
+    assert writer.yanked(REVISION, attest_path=writer._attest_path) is False
     assert writer.get_attempt(attempt.attempt_id)["disowned_at"] is None
     assert writer.conn.execute("SELECT COUNT(*) FROM settlement_updates").fetchone()[0] == 0
     assert escrow.standing(writer, attempt.attempt_id)
@@ -179,8 +205,8 @@ def test_a_receipt_write_failure_honors_the_yank_and_its_settlement_owner(writer
     updates = writer.conn.execute("SELECT attempt_id, settler FROM settlement_updates").fetchall()
     assert [tuple(update) for update in updates] == [(row["attempt_id"], "yank-controller")]
     assert escrow.reservation(writer, row["attempt_id"])["released_by"] == "disowned"
-    assert yank.current_salt(writer, REVISION) == "test-yank"
-    assert len(yank.records_for(writer, REVISION)) == 1
+    assert yank.current_salt(writer, REVISION, attest_path=writer._attest_path) == "test-yank"
+    assert len(yank.records_for(writer, REVISION, attest_path=writer._attest_path)) == 1
 
 
 def test_a_skill_yanked_status_alone_is_neither_cacheable_nor_a_ticket(writer):
@@ -196,8 +222,10 @@ def test_a_skill_yanked_status_alone_is_neither_cacheable_nor_a_ticket(writer):
 def test_the_final_close_honors_a_yank_committed_after_the_wait_loop(writer, candidate):
     key = writer.put_recipe(helpers.recipe())
     attempt_id = writer.start_attempt(key)
-    _record(writer)
-    status = writer.close_attempt(attempt_id, candidate, honor_yank=True)
+    attest_path = str(writer.path.parent / "attest.log")
+    ruling = _authorize(writer, attest_path)
+    _record(writer, attest_path, ruling)
+    status = writer.close_attempt(attempt_id, candidate, honor_yank=True, attest_path=attest_path)
     assert status == writer.get_attempt(attempt_id)["status"] == "SKILL_YANKED"
 
 
@@ -216,7 +244,9 @@ def test_a_yank_after_completion_disowns_without_rewriting_the_finished_status(w
     assert attempt.status == "OK"
     before = writer.get_attempt(attempt.attempt_id)
     assert writer.serve(attempt.recipe_key).attempt_id == attempt.attempt_id
-    _record(writer)
+    attest_path = str(tmp_path / "attest.log")
+    ruling = _authorize(writer, attest_path)
+    _record(writer, attest_path, ruling)
     after = writer.get_attempt(attempt.attempt_id)
     assert after["disowned_at"] is not None
     assert {k: v for k, v in after.items() if k != "disowned_at"} == {

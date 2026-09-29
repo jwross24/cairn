@@ -9,7 +9,7 @@ import _substrate_helpers as helpers
 import factories
 from _corpus import MUST_FAIL, Entry
 
-from cairn import bundle, claims, escrow, justify, repro, tiergate, yank
+from cairn import bundle, claims, escrow, human_authority, justify, repro, tiergate, yank
 from cairn.profile import CostProfile, Evaluation, Production, SizeCost, Verification
 from cairn.substrate import Substrate
 
@@ -224,21 +224,41 @@ def yanked_evidence_refused(cold):
     attempts = _yank_attempts(cold, revision)
     first_statement, first_node = _yank_evidence(cold, attempts[1].attempt_id, 31)
     second_statement, second_node = _yank_evidence(cold, attempts[2].attempt_id, 32)
+    attest_path = cold.scratch_root / "attest.log"
+    attest_path.touch()
+    reach = {"skill_identity_hash": revision, "seed": [1, 2]}
+    authority = human_authority.append(
+        cold.sub,
+        attest_path,
+        human_authority.YANK_RULING,
+        {
+            "ruling_ref": "ruling-family-yank",
+            "yank_id": "family-yank",
+            "skill_identity_hash": revision,
+            "reach_predicate": yank.reach_json(reach),
+            "issued_by": "test-operator",
+            "at": AT,
+        },
+        gate_bundle_hash="ee" * 32,
+    )
     yank_outcome = yank.record(
         cold.sub,
         yank_id="family-yank",
         skill_identity_hash=revision,
         kind=yank.HUMAN_PATH,
-        attest_path="unused-attestation-file",
-        reach={"skill_identity_hash": revision, "seed": [1, 2]},
-        ruling=yank.Ruling("ruling-family-yank", "ab" * 32, 128),
+        attest_path=attest_path,
+        reach=reach,
+        ruling=yank.Ruling("ruling-family-yank", authority["record_digest"], authority["file_offset"]),
         at=AT,
     )
     inside = (attempts[1].attempt_id, attempts[2].attempt_id)
     outside = attempts[3].attempt_id
     if set(yank_outcome.disowned) != set(inside) or yank_outcome.standing != (outside,):
         raise AssertionError(yank_outcome)
-    if set(yank_outcome.released) != set(inside) or yank.current_salt(cold.sub, revision) != "family-yank":
+    if (
+        set(yank_outcome.released) != set(inside)
+        or yank.current_salt(cold.sub, revision, attest_path=attest_path) != "family-yank"
+    ):
         raise AssertionError(yank_outcome)
 
     ticket_refused = all(
@@ -262,7 +282,7 @@ def yanked_evidence_refused(cold):
     outside_control = (
         escrow.standing(cold.sub, outside)
         and outside_ticket["attempt_id"] == outside
-        and not yank.covers_recipe(cold.sub, cold.sub.get_attempt(outside)["recipe_key"])
+        and not yank.covers_recipe(cold.sub, cold.sub.get_attempt(outside)["recipe_key"], attest_path=attest_path)
     )
     return REJECT if ticket_refused and justify_refused and cache_refused and outside_control else ACCEPT
 

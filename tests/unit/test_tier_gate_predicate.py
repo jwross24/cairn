@@ -9,6 +9,7 @@ from cairn.tiergate import (
     BUDGET,
     NOGO_UNDECLARED,
     NOGO_UNREVIEWED,
+    OPERATOR_SESSION_ABSENT,
     PROFILE_UNDECLARED,
     REASON_ORDER,
     TICKET_ABSENT,
@@ -33,6 +34,7 @@ CLEAN = {
     "budget_ok": True,
     "ticket_bundle_matches": True,
     "profile_declared": True,
+    "operator_session_ok": True,
 }
 
 
@@ -60,6 +62,10 @@ def test_a_clean_launch_names_no_reason():
         ({"yanked": True}, (YANKED,)),
         ({"budget_ok": False}, (BUDGET,)),
         ({"ticket_bundle_matches": False}, (TICKET_BUNDLE_MISMATCH,)),
+        (
+            {"declared_tier": 2, "ticket_tier": 2, "cost_tier": 1, "operator_session_ok": False},
+            (OPERATOR_SESSION_ABSENT,),
+        ),
         *(({"scrutiny_unmet": (reason,)}, (reason,)) for reason in scrutiny.REASONS),
     ],
     ids=list(REASON_ORDER),
@@ -91,6 +97,7 @@ def test_reasons_accumulate_without_short_circuiting():
         "budget_ok": False,
         "ticket_bundle_matches": False,
         "cost_tier": 3,
+        "operator_session_ok": False,
         "target_attack": True,
         "scrutiny_unmet": scrutiny.REASONS,
     }
@@ -120,12 +127,13 @@ def test_the_two_nogo_reasons_are_exclusive_and_read_only_a_target_attack_above_
 TRUTH_TABLE_AXES = {
     "declared_tier": (0, 1, 2),
     "ticket_tier": (None, 0),
-    "cost_tier": (0, 1),
+    "cost_tier": (0, 1, 2, 3),
     "certified": (True, False),
     "yanked": (False, True),
     "budget_ok": (True, False),
     "ticket_bundle_matches": (True, False),
     "profile_declared": (True, False),
+    "operator_session_ok": (True, False),
     "target_attack": (False, True),
     "nogo_declared": (False, True),
     "nogo_accepted": (False, True),
@@ -134,14 +142,22 @@ TRUTH_TABLE_AXES = {
 
 
 COUPLING = {
-    "declared_tier": {TICKET_ABSENT, TIER_TWO_ABOVE, BOUNDARY_TABLE, NOGO_UNDECLARED, NOGO_UNREVIEWED},
+    "declared_tier": {
+        TICKET_ABSENT,
+        TIER_TWO_ABOVE,
+        BOUNDARY_TABLE,
+        NOGO_UNDECLARED,
+        NOGO_UNREVIEWED,
+        OPERATOR_SESSION_ABSENT,
+    },
     "ticket_tier": {TICKET_ABSENT, TIER_TWO_ABOVE},
-    "cost_tier": {BOUNDARY_TABLE},
+    "cost_tier": {BOUNDARY_TABLE, OPERATOR_SESSION_ABSENT},
     "certified": {UNCERTIFIED},
     "yanked": {YANKED},
     "budget_ok": {BUDGET},
     "ticket_bundle_matches": {TICKET_BUNDLE_MISMATCH},
     "profile_declared": {PROFILE_UNDECLARED, BOUNDARY_TABLE, BUDGET},
+    "operator_session_ok": {OPERATOR_SESSION_ABSENT},
     "target_attack": {NOGO_UNDECLARED, NOGO_UNREVIEWED},
     "nogo_declared": {NOGO_UNDECLARED, NOGO_UNREVIEWED},
     "nogo_accepted": {NOGO_UNREVIEWED},
@@ -245,6 +261,7 @@ def test_admitted_is_exactly_the_empty_reason_tuple():
             and row["profile_declared"]
         )
         assert row["declared_tier"] >= row["cost_tier"]
+        assert row["operator_session_ok"] or (row["declared_tier"] < 2 and row["cost_tier"] < 2), row
 
 
 def test_every_reason_is_reachable_and_every_reachable_reason_is_named():

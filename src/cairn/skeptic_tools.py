@@ -62,7 +62,7 @@ class ScopedTools:
         )
 
 
-def rerun_options(sub, gate_bundle, request):
+def rerun_options(sub, gate_bundle, request, *, attest_path=None):
     if not isinstance(request, dict) or set(request) != {
         "statement_hash",
         "evidence_hash",
@@ -77,6 +77,6 @@ def rerun_options(sub, gate_bundle, request):
     attempt = sub.get_attempt(expected.attempt_id)
     if attempt is None or attempt["disowned_at"] is not None or attempt["inadmissible"]:
         raise skeptic.ScopedReadRefused("rerun source attempt is not standing")
-    if yank.covers_recipe(sub, expected.recipe_key):
+    if yank.covers_recipe(sub, expected.recipe_key, attest_path=attest_path):
         raise skeptic.ScopedReadRefused("rerun recipe is yanked")
     return {"recipe": yank.recipe_fields(sub, expected.recipe_key), **repro.rerun_launch_kwargs()}

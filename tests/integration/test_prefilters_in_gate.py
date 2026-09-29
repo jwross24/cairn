@@ -2,11 +2,12 @@ import json
 import os
 import shutil
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 
-from cairn import bundle, claims, log, prefilter, tiergate
+from cairn import attest, bundle, claims, human_authority, log, prefilter, tiergate
 from cairn import statement_prefilters as battery
 from cairn.profile import CostProfile, Production, SizeCost, Verification
 
@@ -50,8 +51,22 @@ QUIET_ON_ALL_FOUR = dict.fromkeys(battery.PRODUCED_FILTERS, prefilter.QUIET)
 def gate(tmp_path, pinned_bundle):
     bundle_path, pin_path = pinned_bundle()
     sub = helpers.open_writer(tmp_path)
-    yield sub, bundle.GateBundle.open(bundle_path, pin_path)
+    gate_bundle = bundle.GateBundle.open(bundle_path, pin_path)
+    attest_path = tmp_path / "attest.bin"
+    attest.init(str(attest_path), gate_bundle.waiver_target())
+    sub._test_attest_path = str(attest_path)
+    yield sub, gate_bundle
     sub.close()
+
+
+def ratify_statement(sub, gate_bundle, statement_hash):
+    human_authority.append(
+        sub,
+        sub._test_attest_path,
+        human_authority.STATEMENT_RATIFICATION,
+        {"statement_hash": statement_hash, "issued_by": "test-operator", "at": datetime.now(UTC).isoformat()},
+        gate_bundle_hash=gate_bundle.hash,
+    )
 
 
 @pytest.fixture(scope="module")
@@ -207,13 +222,14 @@ def test_a_produced_record_is_refused_by_the_tier_one_predicate_and_the_round_tr
     assert not prefilter.admits_tier_one(sub, gate_bundle, produced_battery.statement_hash)
 
     launch = theorem_launch(sub, produced_battery.statement_hash)
-    decision = tiergate.TierGate(sub, gate_bundle).admit(launch)
+    ratify_statement(sub, gate_bundle, produced_battery.statement_hash)
+    decision = tiergate.TierGate(sub, gate_bundle, attest_path=sub._test_attest_path).admit(launch)
     assert isinstance(decision, tiergate.TierRefused)
     assert tiergate.TICKET_ABSENT in decision.reasons
 
     supplied = {**produced_battery.verdicts, prefilter.ROUNDTRIP_DIVERGENCE: prefilter.QUIET}
     prefilter.record(sub, gate_bundle, statement_hash=produced_battery.statement_hash, verdicts=supplied, at=AT)
-    admitted = tiergate.TierGate(sub, gate_bundle).admit(launch)
+    admitted = tiergate.TierGate(sub, gate_bundle, attest_path=sub._test_attest_path).admit(launch)
     assert isinstance(admitted, tiergate.Admitted), admitted.reasons
     assert admitted.ticket_tier == tiergate.HYPOTHESIS_TICKET_TIER
 

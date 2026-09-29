@@ -7,6 +7,7 @@ from cairn import ladderplan
 from cairn.tiergate import (
     BOUNDARY_TABLE,
     LADDER_EXEMPT_CEILING_TIER,
+    OPERATOR_SESSION_ABSENT,
     UNCERTIFIED,
     YANKED,
     predicate_reasons,
@@ -27,6 +28,7 @@ def reasons(**kw):
         "budget_ok": True,
         "ticket_bundle_matches": True,
         "profile_declared": True,
+        "operator_session_ok": True,
     }
     return predicate_reasons(**{**fields, **kw})
 
@@ -111,3 +113,29 @@ def test_the_ceiling_is_the_last_tier_the_pinned_table_bounds():
 
 def test_the_exemption_is_the_tier_one_ticket_s_and_does_not_reach_a_tier_zero_declaration():
     assert BOUNDARY_TABLE in reasons(declared_tier=0, cost_tier=1, ticket_tier=None, boundary_exempt=True)
+
+
+@pytest.mark.parametrize(
+    ("declared_tier", "cost_tier", "boundary_exempt"),
+    [(2, 1, False), (1, 2, True), (3, 3, True)],
+    ids=["declared-tier-two", "fit-cost-tier-two", "tier-three"],
+)
+def test_the_operator_session_applies_to_declared_or_derived_tier_two_even_for_fit_exemptions(
+    declared_tier, cost_tier, boundary_exempt
+):
+    assert OPERATOR_SESSION_ABSENT in reasons(
+        declared_tier=declared_tier,
+        ticket_tier=3,
+        cost_tier=cost_tier,
+        boundary_exempt=boundary_exempt,
+        operator_session_ok=False,
+    )
+
+
+def test_the_operator_session_does_not_apply_below_tier_two():
+    assert OPERATOR_SESSION_ABSENT not in reasons(
+        declared_tier=1,
+        ticket_tier=1,
+        cost_tier=1,
+        operator_session_ok=False,
+    )

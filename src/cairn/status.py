@@ -3,7 +3,7 @@ import json
 import sqlite3
 from pathlib import Path
 
-from cairn import bundle, canon, claims, cli, exits, human_queue, keys, substrate
+from cairn import bundle, canon, claims, cli, exits, human_queue, keys, substrate, yank
 
 CALIBRATIONS = claims.TAGS
 CLAIM_STATUSES = ("open", "refuted", "promoted", "withdrawn")
@@ -102,7 +102,7 @@ def _claim_summary(sub):
     }
 
 
-def _skill_revisions(sub):
+def _skill_revisions(sub, attest_path):
     rows = sub.conn.execute(
         "SELECT nodes.hash, nodes.canonical, certificates.cert_hash "
         "FROM nodes LEFT JOIN skill_certificates certificates "
@@ -113,11 +113,7 @@ def _skill_revisions(sub):
     for row in rows:
         identity = row["hash"]
         data = canon.decode(keys.IDENTITY_BUNDLE, row["canonical"])
-        yanks = sub.conn.execute(
-            "SELECT yank_id, reach_predicate, kind, verdict_ref, ruling_ref, record_digest, file_offset, created_at "
-            "FROM yank_records WHERE skill_identity_hash = ? ORDER BY rowid",
-            (identity,),
-        ).fetchall()
+        yanks = yank.records_for(sub, identity, attest_path=attest_path)
         reach = [
             {
                 "yank_id": yank["yank_id"],
@@ -132,7 +128,7 @@ def _skill_revisions(sub):
             for yank in yanks
         ]
         certified = sub.certified(identity)
-        is_yanked = sub.yanked(identity)
+        is_yanked = sub.yanked(identity, attest_path=attest_path)
         revisions.append(
             {
                 "identity_bundle_hash": identity,
@@ -219,7 +215,7 @@ def _database_snapshot(db_path, attest_path, limit, gate_steps, bundle_hash, pin
         with substrate.Substrate.open(db_path, role="reader") as sub:
             sub.conn.execute("BEGIN")
             try:
-                skills = _skill_revisions(sub)
+                skills = _skill_revisions(sub, attest_path)
                 claim_summary = _claim_summary(sub)
                 run_history = _gate_runs(sub, limit)
                 plan = (

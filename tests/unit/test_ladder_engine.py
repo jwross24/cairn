@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import allowlist, bundle, claims, instances, keys, ladder, ladderplan, laddertable, runner
+from cairn import allowlist, bundle, claims, instances, keys, ladder, ladderplan, laddertable, runner, yank
 from cairn.skills import bsgs, rho_dp
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -138,14 +138,22 @@ def _refuse_uncertified(writer, seeded, shipped):
 
 def _refuse_yanked(writer, seeded, shipped):
     value = _dispatch(seeded)
-    writer.add_yank_record(
-        "yank-1",
-        value.identity_bundle_hash,
-        "recipe",
-        kind="human_path",
-        ruling_ref="ruling-1",
-        record_digest="ab" * 32,
-        file_offset=0,
+    verdict = claims.GateRun(
+        gate="self_test",
+        bundle_hash=shipped.hash,
+        pin_hash=shipped.pin_hash,
+        result="refused",
+        reasons=("test-yank-source",),
+        at="2026-09-08T00:00:00Z",
+    )
+    verdict_ref = claims.write_gate_run(writer, verdict)
+    yank.record(
+        writer,
+        yank_id="yank-1",
+        skill_identity_hash=value.identity_bundle_hash,
+        kind=yank.GATE_VERDICT,
+        verdict_ref=verdict_ref,
+        attest_path=None,
     )
     return value
 

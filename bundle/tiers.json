@@ -1,4 +1,8 @@
 {
+  "operator_session": {
+    "required": true,
+    "max_duration_s": 3600
+  },
   "boundary_table": [
     {"tier": 0, "max_core_s": 1},
     {"tier": 1, "max_core_s": 3600},

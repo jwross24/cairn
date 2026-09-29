@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from datetime import UTC, datetime
 
-from cairn import canon, claims, cli, keys, ladderplan, log, nogo, prefilter, scrutiny, ticketlattice
+from cairn import canon, claims, cli, human_authority, keys, ladderplan, log, nogo, prefilter, scrutiny, ticketlattice
 from cairn.profile import ProfileUndeclared
 
 lg = log.get("tiergate")
@@ -15,6 +16,7 @@ UNCERTIFIED = "uncertified"
 YANKED = "yanked"
 BUDGET = "budget"
 TICKET_BUNDLE_MISMATCH = "ticket-bundle-mismatch"
+OPERATOR_SESSION_ABSENT = "operator-session-absent"
 
 REASON_ORDER = (
     PROFILE_UNDECLARED,
@@ -27,6 +29,7 @@ REASON_ORDER = (
     YANKED,
     BUDGET,
     TICKET_BUNDLE_MISMATCH,
+    OPERATOR_SESSION_ABSENT,
     *scrutiny.REASONS,
 )
 COST_DEPENDENT = (BOUNDARY_TABLE, BUDGET)
@@ -102,6 +105,7 @@ def predicate_reasons(
     budget_ok,
     ticket_bundle_matches,
     profile_declared,
+    operator_session_ok=True,
     boundary_exempt=False,
     target_attack=False,
     nogo_declared=False,
@@ -116,6 +120,8 @@ def predicate_reasons(
         reasons.add(TICKET_ABSENT)
     if ticket_tier is not None and declared_tier > ticket_tier + 1:
         reasons.add(TIER_TWO_ABOVE)
+    if (declared_tier >= 2 or (cost_tier is not None and cost_tier >= 2)) and not operator_session_ok:
+        reasons.add(OPERATOR_SESSION_ABSENT)
     if target_attack and declared_tier >= 1:
         if not nogo_declared:
             reasons.add(NOGO_UNDECLARED)
@@ -145,6 +151,13 @@ class TierGate:
     @property
     def boundary_table(self):
         return self.bundle.tiers["boundary_table"]
+
+    def _operator_session_ok(self, session_scope):
+        if not session_scope:
+            return True
+        return human_authority.operator_session_open(
+            self.sub, self.bundle, self.attest_path, at=datetime.now(UTC).isoformat()
+        )
 
     def _fit_rung(self, launch):
         """Whether the pinned ladder plan holds a distribution rung for the size the launch declares (PLAN §5).
@@ -215,6 +228,10 @@ class TierGate:
             kinds = ticketlattice.claim_kinds(self.sub, launch.hypothesis_key, statement_hash)
         except StatementDisagreement, StatementUnrecorded, ticketlattice.ClaimKindMalformed:
             return None
+        if statement_hash is not None and not human_authority.statement_ratified(
+            self.sub, statement_hash, self.bundle.hash, self.attest_path
+        ):
+            return None
         one = self._tier_one_ticket(launch, kinds, statement_hash)
         if one is None or launch.declared_tier == 1:
             return one
@@ -271,17 +288,19 @@ class TierGate:
         )
 
         cost_tier = None if evaluation is None else tier_for_cost(self.boundary_table, evaluation.expected_core_s)
+        operator_session_required = launch.declared_tier >= 2 or (cost_tier is not None and cost_tier >= 2)
 
         reasons = predicate_reasons(
             declared_tier=launch.declared_tier,
             ticket_tier=ticket_tier,
             cost_tier=cost_tier,
             certified=self.sub.certified(launch.skill_identity_hash),
-            yanked=self.sub.yanked(launch.skill_identity_hash),
+            yanked=self.sub.yanked(launch.skill_identity_hash, attest_path=self.attest_path),
             budget_ok=evaluation is None
             or evaluation.expected_core_s + evaluation.expected_verification_core_s <= launch.budget_remaining,
             ticket_bundle_matches=not stale,
             profile_declared=evaluation is not None,
+            operator_session_ok=self._operator_session_ok(operator_session_required),
             boundary_exempt=cost_tier is not None and self._fit_rung(launch),
             target_attack=launch.target_attack,
             nogo_declared=nogo_flag is not None and nogo_flag.declared,

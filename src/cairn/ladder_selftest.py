@@ -160,7 +160,7 @@ def _hypothesis(plan, config):
     )
 
 
-def _run_context(gate_bundle, sub, plan, plan_hash, hypothesis, run_id, scratch_root, arms):
+def _run_context(gate_bundle, sub, plan, plan_hash, hypothesis, run_id, scratch_root, arms, *, attest_path=None):
     claims.write_hypothesis_object(sub, hypothesis)
     _, nonce = ladder.commit_entropy(sub, hypothesis_hash=hypothesis.hash, run_id=run_id)
     allow_scratch = scratch_root / f"allow-{run_id}"
@@ -191,6 +191,7 @@ def _run_context(gate_bundle, sub, plan, plan_hash, hypothesis, run_id, scratch_
             arm=arm,
             skill=rho_dp.__name__,
             allow_list=allow,
+            attest_path=attest_path,
         )
     return hypothesis, nonce, allow, values
 
@@ -213,7 +214,7 @@ def _fixture_failure(exc):
     return f"SelftestRefused({reason})", (reason,), (None, None)
 
 
-def method_identity_refusal(gate_bundle, sub, fixtures, runtime):
+def method_identity_refusal(gate_bundle, sub, attest_path, fixtures, runtime):
     try:
         plan, _, plan_hash, config = _fixture_plan(gate_bundle, sub, fixtures, runtime)
         certifications = _certify(sub, gate_bundle, runtime)
@@ -230,6 +231,7 @@ def method_identity_refusal(gate_bundle, sub, fixtures, runtime):
                 run_id,
                 scratch_root,
                 (ladder.CLAIMANT,),
+                attest_path=attest_path,
             )
         except ladder.RunRefused as refusal:
             return f"SelftestRefused(dispatch-{refusal.reason})", (f"dispatch-refusal:{refusal.reason}",), (None, None)
@@ -244,7 +246,7 @@ def method_identity_refusal(gate_bundle, sub, fixtures, runtime):
             *_reasons_for_certificates(certifications),
         )
         try:
-            ladder.check_dispatch(sub, gate_bundle, candidate, plan)
+            ladder.check_dispatch(sub, gate_bundle, candidate, plan, attest_path=attest_path)
         except ladder.RunRefused as refusal:
             observed = f"LadderRefused({refusal.reason})"
             return observed, (*reasons, f"refusal:{refusal.reason}"), (None, None)
@@ -327,6 +329,7 @@ def baseline_run(gate_bundle, sub, attest_path, fixtures, runtime):
             run_id,
             scratch_root,
             ladderplan.ARMS,
+            attest_path=attest_path,
         )
         table, arm_trials = ladder.run(
             sub,

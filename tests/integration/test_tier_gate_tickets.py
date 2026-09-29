@@ -2,6 +2,7 @@ import dataclasses
 import json
 import shutil
 import sys
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -10,6 +11,7 @@ from cairn import (
     attest,
     bundle,
     claims,
+    human_authority,
     hunt,
     ladderplan,
     laddertable,
@@ -43,8 +45,39 @@ def with_verdict(name, verdict):
 def gate(tmp_path, pinned_bundle):
     bundle_path, pin_path = pinned_bundle()
     sub = helpers.open_writer(tmp_path)
-    yield sub, bundle.GateBundle.open(bundle_path, pin_path)
+    gate_bundle = bundle.GateBundle.open(bundle_path, pin_path)
+    attest_path = tmp_path / "attest.bin"
+    attest.init(str(attest_path), gate_bundle.waiver_target())
+    _append_operator_session(sub, gate_bundle, str(attest_path))
+    sub._test_attest_path = str(attest_path)
+    yield sub, gate_bundle
     sub.close()
+
+
+def _append_operator_session(sub, gate_bundle, attest_path):
+    opened = datetime.now(UTC)
+    human_authority.append(
+        sub,
+        attest_path,
+        human_authority.OPERATOR_SESSION,
+        {
+            "session_id": "ticket-test-session",
+            "issued_by": "test-operator",
+            "opened_at": opened.isoformat(),
+            "expires_at": (opened + timedelta(seconds=3600)).isoformat(),
+        },
+        gate_bundle_hash=gate_bundle.hash,
+    )
+
+
+def _append_statement_ratification(sub, gate_bundle, attest_path, statement_hash):
+    human_authority.append(
+        sub,
+        attest_path,
+        human_authority.STATEMENT_RATIFICATION,
+        {"statement_hash": statement_hash, "issued_by": "test-operator", "at": datetime.now(UTC).isoformat()},
+        gate_bundle_hash=gate_bundle.hash,
+    )
 
 
 def nodes_of_kind(sub, kind):
@@ -502,7 +535,10 @@ def theorem_statement(sub):
 
 
 def admit(sub, gate_bundle, launch):
-    return tiergate.TierGate(sub, gate_bundle).admit(launch)
+    hypothesis = claims.get_hypothesis_object(sub, launch.hypothesis_key)
+    if hypothesis is not None and hypothesis["claim_statement_hash"] is not None:
+        _append_statement_ratification(sub, gate_bundle, sub._test_attest_path, hypothesis["claim_statement_hash"])
+    return tiergate.TierGate(sub, gate_bundle, attest_path=sub._test_attest_path).admit(launch)
 
 
 def test_a_theorem_statement_admits_tier_one_on_a_passed_prefilter_battery(gate):
@@ -677,7 +713,7 @@ EVASIONS = (
 
 
 def attested_gate(sub, gate_bundle, tmp_path):
-    attest_path = tmp_path / "attest.bin"
+    attest_path = tmp_path / "nogo-attest.bin"
     attest.init(str(attest_path), gate_bundle.waiver_target())
     return tiergate.TierGate(sub, gate_bundle, attest_path=str(attest_path)), str(attest_path)
 
@@ -695,6 +731,7 @@ def test_the_tier_one_predicate_composes_the_prefilter_battery_with_the_section_
     stmt = theorem_statement(sub)
     obj = record_hypothesis(sub, claim_statement_hash=stmt.hash)
     prefilter.record(sub, gate_bundle, statement_hash=stmt.hash, verdicts=ALL_QUIET, at=AT)
+    _append_statement_ratification(sub, gate_bundle, attest_path, stmt.hash)
     launch = target_attack_launch(obj.hash, stmt.hash, skill)
 
     undeclared = tier_gate.admit(launch)
@@ -718,6 +755,7 @@ def test_a_declared_target_attack_still_needs_the_prefilter_battery_for_its_theo
     skill = certify(sub)
     stmt = theorem_statement(sub)
     obj = record_hypothesis(sub, claim_statement_hash=stmt.hash)
+    _append_statement_ratification(sub, gate_bundle, attest_path, stmt.hash)
     nogo.write_declaration(
         sub,
         nogo.Declaration(hypothesis_key=obj.hash, evasions=EVASIONS, declared_by="worker", at=AT),

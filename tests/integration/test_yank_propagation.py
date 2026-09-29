@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import claims, escrow, justify, ledger, yank
+from cairn import claims, escrow, human_authority, justify, ledger, status, yank
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import _substrate_helpers as helpers
@@ -12,6 +12,7 @@ from test_repro_gate import ladder_evidence, ticket_at
 
 ATTEST = "unused-attestation-file"
 AT = "2026-09-05T00:00:00.000000+00:00"
+GATE_HASH = "ee" * 32
 PAYLOAD = {"out.json": b'{"x": 1}'}
 BAD_REACH_SEEDS = [1, 2]
 
@@ -63,6 +64,25 @@ def recorded_verdict(writer):
 
 def ruling(seed=1):
     return yank.Ruling(ruling_ref=f"ruling-{seed}", record_digest=f"{seed:02x}" * 32, file_offset=seed * 64)
+
+
+def authorize_yank(sub, attest_path, *, yank_id, revision, reach, ruling_ref="ruling-1"):
+    Path(attest_path).touch(exist_ok=True)
+    record = human_authority.append(
+        sub,
+        attest_path,
+        human_authority.YANK_RULING,
+        {
+            "ruling_ref": ruling_ref,
+            "yank_id": yank_id,
+            "skill_identity_hash": revision,
+            "reach_predicate": yank.reach_json(reach),
+            "issued_by": "test-operator",
+            "at": AT,
+        },
+        gate_bundle_hash=GATE_HASH,
+    )
+    return yank.Ruling(ruling_ref, record["record_digest"], record["file_offset"])
 
 
 def test_a_gate_verdict_yank_disowns_the_whole_revision_and_bumps_the_salt(writer, revision, db_snapshot):
@@ -119,17 +139,20 @@ def test_a_failed_attempt_is_no_ticket_either(writer, revision):
         yank.offer_as_ticket(writer, failed)
 
 
-def test_a_human_path_yank_with_a_seed_range_leaves_the_seeds_outside_it_standing(writer, revision):
+def test_a_human_path_yank_with_a_seed_range_leaves_the_seeds_outside_it_standing(writer, revision, tmp_path):
     attempts = attempts_by_seed(writer, revision)
     kept = statement_on(writer, attempts[3], seed=12)
+    attest_path = str(tmp_path / "attest.log")
+    reach = {"skill_identity_hash": revision, "seed": BAD_REACH_SEEDS}
+    authority = authorize_yank(writer, attest_path, yank_id="yank-narrow", revision=revision, reach=reach)
     outcome = yank.record(
         writer,
         yank_id="yank-narrow",
         skill_identity_hash=revision,
         kind=yank.HUMAN_PATH,
-        attest_path=ATTEST,
-        reach={"skill_identity_hash": revision, "seed": BAD_REACH_SEEDS},
-        ruling=ruling(1),
+        attest_path=attest_path,
+        reach=reach,
+        ruling=authority,
         at=AT,
     )
     assert set(outcome.disowned) == {attempts[1], attempts[2]}
@@ -141,33 +164,53 @@ def test_a_human_path_yank_with_a_seed_range_leaves_the_seeds_outside_it_standin
     served = {seed: writer.serve(writer.get_attempt(a)["recipe_key"]) for seed, a in attempts.items()}
     assert served[1] is None and served[2] is None
     assert served[3] is not None and served[3].attempt_id == attempts[3]
-    assert writer.yanked(revision) is True
-    record = yank.records_for(writer, revision)[0]
+    assert writer.yanked(revision, attest_path=attest_path) is True
+    record = yank.records_for(writer, revision, attest_path=attest_path)[0]
+    status_row = next(
+        item
+        for item in status._skill_revisions(writer, attest_path)["revisions"]
+        if item["identity_bundle_hash"] == revision
+    )
+    assert status_row["status"] == "yanked" and status_row["yank_reach"] == [
+        {
+            "yank_id": "yank-narrow",
+            "predicate": reach,
+            "kind": yank.HUMAN_PATH,
+            "verdict_ref": None,
+            "ruling_ref": authority.ruling_ref,
+            "record_digest": authority.record_digest,
+            "file_offset": authority.file_offset,
+            "created_at": AT,
+        }
+    ]
     assert (record["kind"], record["ruling_ref"], record["record_digest"], record["file_offset"]) == (
         yank.HUMAN_PATH,
-        "ruling-1",
-        "01" * 32,
-        64,
+        authority.ruling_ref,
+        authority.record_digest,
+        authority.file_offset,
     )
     salt = writer.conn.execute("SELECT * FROM salts WHERE class_key = ?", (revision,)).fetchone()
     assert (salt["kind"], salt["verdict_ref"], salt["record_digest"], salt["file_offset"]) == (
         yank.HUMAN_PATH,
         None,
-        "01" * 32,
-        64,
+        authority.record_digest,
+        authority.file_offset,
     )
 
 
-def test_a_second_yank_advances_the_salt_and_disowns_nothing_twice(writer, revision):
+def test_a_second_yank_advances_the_salt_and_disowns_nothing_twice(writer, revision, tmp_path):
     attempts = attempts_by_seed(writer, revision)
+    attest_path = str(tmp_path / "attest.log")
+    reach = {"skill_identity_hash": revision, "seed": 1}
+    authority = authorize_yank(writer, attest_path, yank_id="yank-a", revision=revision, reach=reach)
     first = yank.record(
         writer,
         yank_id="yank-a",
         skill_identity_hash=revision,
         kind=yank.HUMAN_PATH,
-        attest_path=ATTEST,
-        reach={"skill_identity_hash": revision, "seed": 1},
-        ruling=ruling(1),
+        attest_path=attest_path,
+        reach=reach,
+        ruling=authority,
         at=AT,
     )
     second = yank.record(
@@ -180,10 +223,131 @@ def test_a_second_yank_advances_the_salt_and_disowns_nothing_twice(writer, revis
     )
     assert first.disowned == (attempts[1],) and set(second.disowned) == {attempts[2], attempts[3]}
     assert second.released == second.disowned
-    assert yank.current_salt(writer, revision) == "yank-b"
+    assert yank.current_salt(writer, revision, attest_path=attest_path) == "yank-b"
     history = writer.conn.execute("SELECT seq, salt FROM salts WHERE class_key = ? ORDER BY seq", (revision,))
     assert [tuple(r) for r in history] == [(1, "yank-a"), (2, "yank-b")]
     assert escrow.reservation(writer, attempts[1])["released_at"] == AT
+
+
+@pytest.mark.parametrize("mismatch", ["yank_id", "revision", "reach", "digest", "offset"])
+def test_a_ruling_for_another_yank_action_refuses_before_mutation(writer, revision, tmp_path, mismatch):
+    attempts = attempts_by_seed(writer, revision, seeds=(1,))
+    attest_path = str(tmp_path / "attest.log")
+    reach = yank.default_reach(revision)
+    authority = authorize_yank(writer, attest_path, yank_id="authorized-yank", revision=revision, reach=reach)
+    yank_id = "authorized-yank"
+    target_revision = revision
+    target_reach = reach
+    target_ruling = authority
+    if mismatch == "yank_id":
+        yank_id = "copied-yank"
+    elif mismatch == "revision":
+        target_revision = writer.put_identity_bundle(helpers.IDENTITY_B)
+        target_reach = yank.default_reach(target_revision)
+    elif mismatch == "reach":
+        target_reach = {"skill_identity_hash": revision, "seed": 1}
+    elif mismatch == "digest":
+        target_ruling = yank.Ruling(authority.ruling_ref, "ff" * 32, authority.file_offset)
+    else:
+        target_ruling = yank.Ruling(authority.ruling_ref, authority.record_digest, authority.file_offset + 1)
+    with pytest.raises(yank.RulingRequired, match="no ruling for this yank action"):
+        yank.record(
+            writer,
+            yank_id=yank_id,
+            skill_identity_hash=target_revision,
+            kind=yank.HUMAN_PATH,
+            attest_path=attest_path,
+            reach=target_reach,
+            ruling=target_ruling,
+            at=AT,
+        )
+    assert writer.conn.execute("SELECT COUNT(*) FROM yank_records").fetchone()[0] == 0
+    assert writer.conn.execute("SELECT COUNT(*) FROM salts").fetchone()[0] == 0
+    assert writer.get_attempt(attempts[1])["disowned_at"] is None
+    assert escrow.standing(writer, attempts[1])
+
+
+def test_a_fake_human_ruling_writes_nothing(writer, revision, tmp_path):
+    attempts = attempts_by_seed(writer, revision, seeds=(1,))
+    attest_path = tmp_path / "attest.log"
+    attest_path.touch()
+    with pytest.raises(yank.RulingRequired, match="no ruling for this yank action"):
+        yank.record(
+            writer,
+            yank_id="planted-human-yank",
+            skill_identity_hash=revision,
+            kind=yank.HUMAN_PATH,
+            attest_path=attest_path,
+            ruling=yank.Ruling("planted-ruling", "bb" * 32, 0),
+            at=AT,
+        )
+    assert writer.yanked(revision, attest_path=attest_path) is False
+    assert yank.current_salt(writer, revision, attest_path=attest_path) is None
+    assert writer.get_attempt(attempts[1])["disowned_at"] is None
+    assert escrow.standing(writer, attempts[1])
+
+
+def test_standalone_salt_requires_and_exposes_its_own_authority(writer, revision, tmp_path):
+    attest_path = str(tmp_path / "attest.log")
+    record = human_authority.append(
+        writer,
+        attest_path,
+        human_authority.SALT_ISSUANCE,
+        {"class_key": revision, "salt": "issued-salt", "issued_by": "test-operator", "at": AT},
+        gate_bundle_hash=GATE_HASH,
+    )
+    assert (
+        yank.issue_salt(
+            writer,
+            class_key=revision,
+            salt="issued-salt",
+            record_digest=record["record_digest"],
+            file_offset=record["file_offset"],
+            attest_path=attest_path,
+        )
+        == "issued-salt"
+    )
+    assert yank.current_salt(writer, revision, attest_path=attest_path) == "issued-salt"
+    with pytest.raises(yank.RulingRequired, match="no issuance for this salt"):
+        yank.issue_salt(
+            writer,
+            class_key=revision,
+            salt="forged-salt",
+            record_digest=record["record_digest"],
+            file_offset=record["file_offset"],
+            attest_path=attest_path,
+        )
+
+
+def test_planted_human_rows_are_absent_from_yank_readers(writer, revision, tmp_path):
+    key = writer.put_recipe(helpers.recipe(seed=1, skill_identity_hash=revision))
+    writer.conn.execute(
+        "INSERT INTO yank_records VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            "planted",
+            revision,
+            yank.reach_json(yank.default_reach(revision)),
+            yank.HUMAN_PATH,
+            None,
+            "planted-ruling",
+            "dd" * 32,
+            0,
+            AT,
+        ),
+    )
+    writer.conn.execute(
+        "INSERT INTO salts (class_key, salt, kind, verdict_ref, record_digest, file_offset) VALUES (?, ?, ?, ?, ?, ?)",
+        (revision, "planted", yank.HUMAN_PATH, None, "dd" * 32, 0),
+    )
+    attest_path = tmp_path / "attest.log"
+    attest_path.touch()
+    assert yank.records_for(writer, revision, attest_path=attest_path) == []
+    assert writer.yanked(revision, attest_path=attest_path) is False
+    assert yank.current_salt(writer, revision, attest_path=attest_path) is None
+    assert yank.covers_recipe(writer, key, attest_path=attest_path) is False
+    rows = status._skill_revisions(writer, attest_path)
+    row = next(item for item in rows["revisions"] if item["identity_bundle_hash"] == revision)
+    assert row["status"] != "yanked" and row["yank_reach"] == []
 
 
 def test_a_yank_on_another_revision_touches_nothing_here(writer, revision):

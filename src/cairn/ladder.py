@@ -229,7 +229,7 @@ def _allow_list(dispatch):
     )
 
 
-def check_dispatch(sub, gate_bundle, dispatch, plan):
+def check_dispatch(sub, gate_bundle, dispatch, plan, *, attest_path=None):
     """Every refusal this dispatch can earn, before a trial spawns anything."""
     hypothesis = _hypothesis(sub, dispatch.hypothesis_hash)
     check_order(sub, hypothesis_hash=dispatch.hypothesis_hash, nonce=dispatch.nonce)
@@ -253,7 +253,7 @@ def check_dispatch(sub, gate_bundle, dispatch, plan):
         raise RunRefused(
             UNCERTIFIED_REVISION, f"skill identity {dispatch.identity_bundle_hash[:12]} carries no certificate"
         )
-    if sub.yanked(dispatch.identity_bundle_hash):
+    if sub.yanked(dispatch.identity_bundle_hash, attest_path=attest_path):
         raise RunRefused(YANKED_REVISION, f"skill identity {dispatch.identity_bundle_hash[:12]} is yanked")
     if dispatch.allow_list.get("bundle_hash") != gate_bundle.hash:
         raise RunRefused(ALLOW_LIST_UNBOUND, "the instantiated allow-list names another gate bundle")
@@ -262,7 +262,21 @@ def check_dispatch(sub, gate_bundle, dispatch, plan):
     return dispatch
 
 
-def dispatch(sub, gate_bundle, *, plan, plan_hash, hypothesis_hash, nonce, run_id, arm, skill, allow_list, at=None):
+def dispatch(
+    sub,
+    gate_bundle,
+    *,
+    plan,
+    plan_hash,
+    hypothesis_hash,
+    nonce,
+    run_id,
+    arm,
+    skill,
+    allow_list,
+    at=None,
+    attest_path=None,
+):
     if arm not in ladderplan.ARMS:
         raise RunRefused(ARM_UNKNOWN, f"{arm!r} is no arm of {tuple(ladderplan.ARMS)}")
     module = importlib.import_module(skill)
@@ -284,7 +298,7 @@ def dispatch(sub, gate_bundle, *, plan, plan_hash, hypothesis_hash, nonce, run_i
         plan_hash=plan_hash,
         at=cli.now_iso() if at is None else at,
     )
-    check_dispatch(sub, gate_bundle, value, plan)
+    check_dispatch(sub, gate_bundle, value, plan, attest_path=attest_path)
     return write_dispatch(sub, value)
 
 
@@ -365,7 +379,7 @@ def _receipt_scratch(sub, attempt):
     return 0 if row is None else int(row["scratch_bytes_written"])
 
 
-def _admit(sub, gate_bundle, value, *, bits, seed, budget_remaining):
+def _admit(sub, gate_bundle, value, *, bits, seed, budget_remaining, attest_path):
     launch = tiergate.Launch(
         cost_profile=value.module.COST_PROFILE,
         inputs={"bits": bits, "seed": seed},
@@ -375,16 +389,37 @@ def _admit(sub, gate_bundle, value, *, bits, seed, budget_remaining):
         skill_identity_hash=value.identity_bundle_hash,
         declared_tier=RUNG_TIER,
     )
-    decision = tiergate.TierGate(sub, gate_bundle).admit(launch)
+    decision = tiergate.TierGate(sub, gate_bundle, attest_path=attest_path).admit(launch)
     if isinstance(decision, tiergate.TierRefused):
         raise RunRefused(TIER_REFUSED, f"arm {value.arm} at {bits} bits: {', '.join(decision.reasons)}")
     return decision
 
 
-def run_arm(sub, gate_bundle, value, *, plan, instance, instance_hash, bits, trial, scratch_root, budget_remaining):
+def run_arm(
+    sub,
+    gate_bundle,
+    value,
+    *,
+    plan,
+    instance,
+    instance_hash,
+    bits,
+    trial,
+    scratch_root,
+    budget_remaining,
+    attest_path=None,
+):
     module = value.module
     seed = method_seed(value.nonce, value.hypothesis_hash, value.arm, bits, trial)
-    _admit(sub, gate_bundle, value, bits=bits, seed=seed, budget_remaining=budget_remaining)
+    _admit(
+        sub,
+        gate_bundle,
+        value,
+        bits=bits,
+        seed=seed,
+        budget_remaining=budget_remaining,
+        attest_path=attest_path,
+    )
     fields = instance.as_dict()
     document = {"bits": bits, "seed": seed, **{name: str(fields[name]) for name in ("p", "a", "b", "n")}}
     document["P"] = [str(c) for c in fields["P"]]
@@ -407,6 +442,7 @@ def run_arm(sub, gate_bundle, value, *, plan, instance, instance_hash, bits, tri
         skip_cache_lookup=True,
         do_not_cache=True,
         stdin_document=document,
+        attest_path=attest_path,
     )
     launch = attempt.launch
     parsed = attempt.parsed.document if attempt.parsed is not None else {}
@@ -544,7 +580,7 @@ def run(
     if missing:
         raise RunRefused(ARMS_MISSING, f"run {run_id} holds no dispatch for {', '.join(missing)}")
     for value in records.values():
-        check_dispatch(sub, gate_bundle, value, plan)
+        check_dispatch(sub, gate_bundle, value, plan, attest_path=attest_path)
     claimant = records[CLAIMANT]
 
     arm_trials = []
@@ -561,6 +597,7 @@ def run(
                 method_identity=claimant.method_identity,
                 budget_remaining=budget_remaining,
                 ceiling_multiplier=ceiling_multiplier,
+                attest_path=attest_path,
             )
             if out is None:
                 raise RunRefused(
@@ -579,6 +616,7 @@ def run(
                         trial=trial,
                         scratch_root=scratch_root,
                         budget_remaining=budget_remaining,
+                        attest_path=attest_path,
                     )
                 )
         for values in by_arm.values():

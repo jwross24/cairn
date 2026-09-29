@@ -250,7 +250,7 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
         skill_identity_hash=identity,
         declared_tier=0,
     )
-    decision = tiergate.TierGate(sub, gate_bundle).admit(launch)
+    decision = tiergate.TierGate(sub, gate_bundle, attest_path=attest_path).admit(launch)
     lg.info(
         "step",
         step=3,
@@ -288,6 +288,7 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
         scratch_root=scratch_root,
         budget_remaining=BUDGET_CORE_S,
         skip_cache_lookup=skip_cache_lookup,
+        attest_path=attest_path,
     )
     lg.info(
         "step",

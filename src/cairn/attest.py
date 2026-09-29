@@ -136,6 +136,8 @@ def _set_append_only(path):
 
 
 def _configure(parser):
+    from cairn import human_authority
+
     subs = parser.add_subparsers(dest="sub", metavar="SUBCOMMAND", required=True)
     parents = [cli.globals_parent(suppress=True), bundle.sub_parent()]
     subs.add_parser(
@@ -146,7 +148,7 @@ def _configure(parser):
     append = subs.add_parser(
         "append", parents=parents, help="append one operator record and mirror its digest and offset into the substrate"
     )
-    append.add_argument("--kind", required=True, choices=list(KINDS))
+    append.add_argument("--kind", required=True, choices=list(KINDS + human_authority.KINDS))
     append.add_argument("--record", required=True, metavar="PATH", help="JSON file holding the record's fields")
 
 
@@ -303,7 +305,7 @@ def _append_acknowledgment(ns, fields):
 
 
 def _run_append(ns):
-    from cairn import claims, substrate
+    from cairn import claims, human_authority, substrate
 
     if not Path(ns.attest).exists():
         raise CliError(
@@ -324,6 +326,20 @@ def _run_append(ns):
         canonical, offset, row = _append_nogo_review(ns, fields, gate)
     elif ns.kind == "expert_signoff":
         canonical, offset, row = _append_signoff(ns, fields, gate)
+    elif ns.kind in human_authority.KINDS:
+        try:
+            canonical = human_authority.canonical(ns.kind, fields, gate_bundle_hash=gate.hash)
+        except human_authority.HumanAuthorityError as exc:
+            raise CliError(
+                exits.USER_INPUT,
+                str(exc),
+                where=", ".join(sorted(map(str, fields))) if isinstance(fields, dict) else None,
+                next_command=f"a {ns.kind} record carries {', '.join(human_authority.FIELD_NAMES[ns.kind])}",
+            ) from None
+        with substrate.Substrate.open(ns.db) as sub:
+            row = human_authority.append(sub, ns.attest, ns.kind, fields, gate_bundle_hash=gate.hash)
+        offset = row["file_offset"]
+        row = None
     else:
         canonical = claims.review_verdict_canonical(_verdict_from(fields, gate.hash, 0))
         offset = append_record(ns.attest, canonical)

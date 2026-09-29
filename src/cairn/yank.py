@@ -1,17 +1,3 @@
-"""Yank reach, disowned propagation and the salt bump (PLAN §2, §3; decision 5).
-
-A yank names the fault's reach as a predicate over recipe-key fields, by default the whole
-implementation revision. Two kinds of row are told apart on the row itself: a `gate_verdict` yank
-names the gate run or ledger entry whose verdict produced it and carries no attestation record; a
-`human_path` yank names an attributed ruling by its record digest and file offset. A reach narrower
-than the revision is a human ruling, whatever wrote the yank. Every attempt inside the reach gains the
-append-only disowned mark and releases its unspent escrow; the class's salt advances; every claim
-resting on a disowned attempt re-derives; attempts outside the reach keep their standing and serve
-from cache. The ruling's coordinates are stored as given: reading the attested ruling back is the
-human path's (PLAN §7 decision 5), and the tier gate refuses a new launch on any yanked revision,
-whatever the reach, because its yanked read is row existence.
-"""
-
 import json
 from dataclasses import dataclass
 
@@ -231,6 +217,22 @@ def record(
 ):
     reach = validate_reach(default_reach(skill_identity_hash) if reach is None else reach, skill_identity_hash)
     _check_authority(sub, kind, reach, verdict_ref, ruling)
+    if kind == HUMAN_PATH:
+        if ruling is None:
+            raise RulingRequired("a human-path yank names an attributed ruling by record digest and file offset")
+        from cairn import human_authority
+
+        if attest_path is None or not human_authority.yank_ruling_matches(
+            sub,
+            yank_id=yank_id,
+            skill_identity_hash=skill_identity_hash,
+            reach=reach,
+            ruling_ref=ruling.ruling_ref,
+            record_digest=ruling.record_digest,
+            file_offset=ruling.file_offset,
+            attest_path=attest_path,
+        ):
+            raise RulingRequired("the attestation file holds no ruling for this yank action")
     at = at or _now()
     settlement = {
         "kind": kind,
@@ -276,29 +278,121 @@ def record(
     return outcome
 
 
-def current_salt(sub, class_key):
-    row = sub.conn.execute(
-        f"SELECT salt FROM {SALTS} WHERE class_key = ? ORDER BY seq DESC LIMIT 1", (class_key,)
-    ).fetchone()
-    return None if row is None else row["salt"]
+def _visible_record(sub, row, attest_path):
+    try:
+        reach = reach_from_json(row["reach_predicate"])
+        if not isinstance(reach, dict) or reach_json(reach) != row["reach_predicate"]:
+            return False
+        validate_reach(reach, row[REVISION])
+    except KeyError, MalformedReach, TypeError, ValueError:
+        return False
+    if row["kind"] == GATE_VERDICT:
+        return (
+            row["verdict_ref"] is not None
+            and row["ruling_ref"] is None
+            and row["record_digest"] is None
+            and row["file_offset"] is None
+            and not narrower(reach)
+            and verdict_recorded(sub, row["verdict_ref"])
+        )
+    if row["kind"] != HUMAN_PATH or row["verdict_ref"] is not None or attest_path is None:
+        return False
+    if row["ruling_ref"] is None or row["record_digest"] is None or row["file_offset"] is None:
+        return False
+    from cairn import human_authority
+
+    return human_authority.yank_ruling_matches(
+        sub,
+        yank_id=row["yank_id"],
+        skill_identity_hash=row[REVISION],
+        reach=reach,
+        ruling_ref=row["ruling_ref"],
+        record_digest=row["record_digest"],
+        file_offset=row["file_offset"],
+        attest_path=attest_path,
+    )
 
 
-def records_for(sub, skill_identity_hash):
+def _visible_rows(sub, skill_identity_hash, attest_path):
     rows = sub.conn.execute(
         f"SELECT * FROM {TABLE} WHERE {REVISION} = ? ORDER BY rowid", (skill_identity_hash,)
     ).fetchall()
-    return [dict(r) for r in rows]
+    visible = []
+    for source in rows:
+        row = dict(source)
+        if _visible_record(sub, row, attest_path):
+            visible.append(row)
+    return visible
 
 
-def covers_recipe(sub, recipe_key):
+def _same_yank_salt(salt_row, record_row):
+    return (
+        salt_row["class_key"] == record_row[REVISION]
+        and salt_row["salt"] == record_row["yank_id"]
+        and salt_row["kind"] == record_row["kind"]
+        and salt_row["verdict_ref"] == record_row["verdict_ref"]
+        and salt_row["record_digest"] == record_row["record_digest"]
+        and salt_row["file_offset"] == record_row["file_offset"]
+    )
+
+
+def current_salt(sub, class_key, *, attest_path=None):
+    records = records_for(sub, class_key, attest_path=attest_path)
+    rows = sub.conn.execute(f"SELECT * FROM {SALTS} WHERE class_key = ? ORDER BY seq DESC", (class_key,)).fetchall()
+    for row in rows:
+        salt = dict(row)
+        if any(_same_yank_salt(salt, record) for record in records):
+            return salt["salt"]
+        if (
+            salt["kind"] == HUMAN_PATH
+            and attest_path is not None
+            and salt["verdict_ref"] is None
+            and salt["record_digest"] is not None
+            and salt["file_offset"] is not None
+        ):
+            from cairn import human_authority
+
+            if human_authority.salt_issuance_matches(
+                sub,
+                class_key=class_key,
+                salt=salt["salt"],
+                record_digest=salt["record_digest"],
+                file_offset=salt["file_offset"],
+                attest_path=attest_path,
+            ):
+                return salt["salt"]
+    return None
+
+
+def records_for(sub, skill_identity_hash, *, attest_path=None):
+    return _visible_rows(sub, skill_identity_hash, attest_path)
+
+
+def covers_recipe(sub, recipe_key, *, attest_path=None):
     row = sub.conn.execute("SELECT * FROM recipes WHERE recipe_key = ?", (recipe_key,)).fetchone()
     if row is None:
         raise YankError(f"no recipe {recipe_key}")
-    records = records_for(sub, row[REVISION])
+    records = records_for(sub, row[REVISION], attest_path=attest_path)
     if not records:
         return False
     fields = recipe_fields(sub, recipe_key)
     return any(covers(reach_from_json(record["reach_predicate"]), row, fields) for record in records)
+
+
+def issue_salt(sub, *, class_key, salt, record_digest, file_offset, attest_path):
+    from cairn import human_authority
+
+    if attest_path is None or not human_authority.salt_issuance_matches(
+        sub,
+        class_key=class_key,
+        salt=salt,
+        record_digest=record_digest,
+        file_offset=file_offset,
+        attest_path=attest_path,
+    ):
+        raise RulingRequired("the attestation file holds no issuance for this salt")
+    sub.add_salt(class_key, salt, kind=HUMAN_PATH, record_digest=record_digest, file_offset=file_offset)
+    return salt
 
 
 def offer_as_ticket(sub, attempt_id):

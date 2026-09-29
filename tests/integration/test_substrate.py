@@ -187,7 +187,7 @@ def test_certificate_for_identity_without_node_is_refused(writer, db_snapshot):
     assert writer.conn.execute("SELECT count(*) FROM nodes WHERE kind = 'skill_certificate'").fetchone()[0] == 0
 
 
-def test_yanked_true_after_yank_record(writer, db_snapshot):
+def test_unattested_human_yank_record_is_not_visible(writer, db_snapshot):
     identity = writer.put_identity_bundle(IDENTITY_A)
     assert writer.yanked(identity) is False
     writer.add_yank_record(
@@ -199,8 +199,8 @@ def test_yanked_true_after_yank_record(writer, db_snapshot):
         record_digest="dd" * 32,
         file_offset=0,
     )
-    db_snapshot(writer.conn, "yanked")
-    assert writer.yanked(identity) is True
+    db_snapshot(writer.conn, "unattested-yank")
+    assert writer.yanked(identity) is False
 
 
 def test_recipe_insert_writes_node_and_root(writer, db_snapshot):

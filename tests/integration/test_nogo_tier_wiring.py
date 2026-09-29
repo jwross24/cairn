@@ -1,11 +1,12 @@
 import dataclasses
 import json
 import sys
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
 
-from cairn import attest, bundle, claims, cli, human_queue, justify, nogo
+from cairn import attest, bundle, claims, cli, human_authority, human_queue, justify, nogo
 from cairn.tiergate import NOGO_UNDECLARED, NOGO_UNREVIEWED, TIER_TWO_ABOVE, Admitted, Launch, TierGate, TierRefused
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -28,6 +29,19 @@ def arena(tmp_path, pinned_bundle):
     attest_path = tmp_path / "attest.bin"
     attest.init(str(attest_path), gate_bundle.waiver_target())
     sub = helpers.open_writer(tmp_path)
+    opened = datetime.now(UTC)
+    human_authority.append(
+        sub,
+        str(attest_path),
+        human_authority.OPERATOR_SESSION,
+        {
+            "session_id": "nogo-test-session",
+            "issued_by": "test-operator",
+            "opened_at": opened.isoformat(),
+            "expires_at": (opened + timedelta(seconds=3600)).isoformat(),
+        },
+        gate_bundle_hash=gate_bundle.hash,
+    )
     identity = certify(sub)
     hypothesis = record_hypothesis(sub)
     arena = {

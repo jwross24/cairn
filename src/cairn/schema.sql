@@ -693,3 +693,15 @@ CREATE TABLE IF NOT EXISTS ladder_dispatches (
 );
 CREATE TRIGGER IF NOT EXISTS ladder_dispatches_no_update BEFORE UPDATE ON ladder_dispatches BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER IF NOT EXISTS ladder_dispatches_no_delete BEFORE DELETE ON ladder_dispatches BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+
+CREATE TABLE IF NOT EXISTS human_authority_records (
+    kind TEXT NOT NULL CHECK (kind IN ('operator_session', 'statement_ratification', 'yank_ruling', 'salt_issuance')),
+    canonical BLOB NOT NULL,
+    record_digest TEXT NOT NULL,
+    file_offset INTEGER NOT NULL CHECK (file_offset >= 0),
+    producer_identity TEXT NOT NULL,
+    PRIMARY KEY (record_digest, file_offset)
+);
+
+CREATE TRIGGER IF NOT EXISTS human_authority_records_no_update BEFORE UPDATE ON human_authority_records BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER IF NOT EXISTS human_authority_records_no_delete BEFORE DELETE ON human_authority_records BEGIN SELECT RAISE(ABORT, 'append-only'); END;

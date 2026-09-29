@@ -1,9 +1,10 @@
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 
-from cairn import bundle, claims, prefilter, tiergate
+from cairn import attest, bundle, claims, human_authority, prefilter, tiergate
 from cairn.profile import CostProfile, Production, SizeCost, Verification
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -20,8 +21,22 @@ BUDGET_PLENTY = 10_000_000.0
 def gate(tmp_path, pinned_bundle):
     bundle_path, pin_path = pinned_bundle()
     sub = helpers.open_writer(tmp_path)
-    yield sub, bundle.GateBundle.open(bundle_path, pin_path)
+    gate_bundle = bundle.GateBundle.open(bundle_path, pin_path)
+    attest_path = tmp_path / "attest.bin"
+    attest.init(str(attest_path), gate_bundle.waiver_target())
+    sub._test_attest_path = str(attest_path)
+    yield sub, gate_bundle
     sub.close()
+
+
+def ratify_statement(sub, gate_bundle, statement_hash):
+    human_authority.append(
+        sub,
+        sub._test_attest_path,
+        human_authority.STATEMENT_RATIFICATION,
+        {"statement_hash": statement_hash, "issued_by": "test-operator", "at": datetime.now(UTC).isoformat()},
+        gate_bundle_hash=gate_bundle.hash,
+    )
 
 
 def tiny_profile():
@@ -77,7 +92,11 @@ def test_the_same_statement_bound_by_the_hypothesis_is_admitted(gate):
     sub, gate_bundle = gate
     stmt = passing_theorem_statement(sub, gate_bundle)
     launch = launch_against(sub, stmt.hash, stmt.hash)
-    decision = tiergate.TierGate(sub, gate_bundle).admit(launch)
+    decision = tiergate.TierGate(sub, gate_bundle, attest_path=sub._test_attest_path).admit(launch)
+    assert isinstance(decision, tiergate.TierRefused)
+    assert tiergate.TICKET_ABSENT in decision.reasons
+    ratify_statement(sub, gate_bundle, stmt.hash)
+    decision = tiergate.TierGate(sub, gate_bundle, attest_path=sub._test_attest_path).admit(launch)
     assert isinstance(decision, tiergate.Admitted), decision.reasons
     assert decision.ticket_tier == tiergate.HYPOTHESIS_TICKET_TIER
 

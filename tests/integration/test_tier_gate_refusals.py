@@ -1,11 +1,13 @@
 import dataclasses
 import json
 import sys
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
 
-from cairn import bundle, claims, ladderplan, laddertable, runner, tiergate
+from cairn import attest, bundle, claims, human_authority, ladderplan, laddertable, runner, tiergate
+from cairn import yank as yank_ops
 from cairn.profile import CostProfile, Production, SizeCost, Verification
 from cairn.tiergate import (
     BOUNDARY_TABLE,
@@ -124,7 +126,22 @@ def gate(tmp_path, pinned_bundle):
     bundle_path, pin_path = pinned_bundle()
     sub = helpers.open_writer(tmp_path)
     gate_bundle = bundle.GateBundle.open(bundle_path, pin_path)
-    yield TierGate(sub, gate_bundle), sub, gate_bundle
+    attest_path = tmp_path / "attest.bin"
+    attest.init(str(attest_path), gate_bundle.waiver_target())
+    opened = datetime.now(UTC)
+    human_authority.append(
+        sub,
+        str(attest_path),
+        human_authority.OPERATOR_SESSION,
+        {
+            "session_id": "refusal-test-session",
+            "issued_by": "test-operator",
+            "opened_at": opened.isoformat(),
+            "expires_at": (opened + timedelta(seconds=3600)).isoformat(),
+        },
+        gate_bundle_hash=gate_bundle.hash,
+    )
+    yield TierGate(sub, gate_bundle, attest_path=str(attest_path)), sub, gate_bundle
     sub.close()
 
 
@@ -169,14 +186,22 @@ def seeded(gate, *, bits, core_s, certified=True, yank=False, declared_tier=1):
     tier_gate, sub, _ = gate
     identity_hash = certify(sub) if certified else uncertified(sub)
     if yank:
-        sub.add_yank_record(
-            "yank-1",
-            identity_hash,
-            "all",
-            kind="human_path",
-            ruling_ref="ruling-1",
-            record_digest="a" * 64,
-            file_offset=0,
+        verdict = claims.GateRun(
+            gate="tier_gate",
+            bundle_hash=tier_gate.bundle.hash,
+            pin_hash=tier_gate.bundle.pin_hash,
+            result="refused",
+            reasons=("test-yank-source",),
+            at=datetime.now(UTC).isoformat(),
+        )
+        verdict_ref = claims.write_gate_run(sub, verdict)
+        yank_ops.record(
+            sub,
+            yank_id="yank-1",
+            skill_identity_hash=identity_hash,
+            kind=yank_ops.GATE_VERDICT,
+            attest_path=tier_gate.attest_path,
+            verdict_ref=verdict_ref,
         )
     obj = record_hypothesis(sub)
     return tier_gate.admit(

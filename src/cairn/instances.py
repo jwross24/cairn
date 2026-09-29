@@ -192,7 +192,16 @@ def maker_recipe(seed, salt):
 
 
 def admit(
-    sub, gate_bundle, *, hypothesis_key, method_identity, bits, seed, budget_remaining, declared_tier=DECLARED_TIER
+    sub,
+    gate_bundle,
+    *,
+    hypothesis_key,
+    method_identity,
+    bits,
+    seed,
+    budget_remaining,
+    declared_tier=DECLARED_TIER,
+    attest_path=None,
 ):
     launch = tiergate.Launch(
         cost_profile=instance_maker.COST_PROFILE,
@@ -203,7 +212,7 @@ def admit(
         skill_identity_hash=instance_maker.skill_identity_hash(),
         declared_tier=declared_tier,
     )
-    decision = tiergate.TierGate(sub, gate_bundle).admit(launch)
+    decision = tiergate.TierGate(sub, gate_bundle, attest_path=attest_path).admit(launch)
     if isinstance(decision, tiergate.TierRefused):
         raise TrialRefused(decision.reasons)
     return decision
@@ -221,6 +230,7 @@ def launch_trial(
     budget_remaining,
     ceiling_multiplier=None,
     declared_tier=DECLARED_TIER,
+    attest_path=None,
 ):
     record = get_nonce(sub, nonce)
     if record is None:
@@ -235,6 +245,7 @@ def launch_trial(
         seed=seed,
         budget_remaining=budget_remaining,
         declared_tier=declared_tier,
+        attest_path=attest_path,
     )
     tiers = gate_bundle.tiers
     attempt = runner.launch(
@@ -252,6 +263,7 @@ def launch_trial(
         replay=instance_maker.REPLAY_GRADE,
         skip_cache_lookup=True,
         do_not_cache=instance_maker.DO_NOT_CACHE,
+        attest_path=attest_path,
     )
     bind_admission(sub, gate_bundle, admission, attempt.attempt_id, record.hypothesis_key, method_identity)
     if attempt.status != runner.STATUS_OK or attempt.parsed is None or attempt.parsed.document is None:

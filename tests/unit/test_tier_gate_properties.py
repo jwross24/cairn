@@ -6,7 +6,14 @@ from hypothesis import example, given
 from hypothesis import strategies as st
 
 from cairn import tiergate
-from cairn.tiergate import BUDGET, REASON_ORDER, TICKET_BUNDLE_MISMATCH, UNCERTIFIED, YANKED
+from cairn.tiergate import (
+    BUDGET,
+    OPERATOR_SESSION_ABSENT,
+    REASON_ORDER,
+    TICKET_BUNDLE_MISMATCH,
+    UNCERTIFIED,
+    YANKED,
+)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from mutants import tiergate_mutants
@@ -23,6 +30,7 @@ facts = st.fixed_dictionaries(
         "budget_ok": st.booleans(),
         "ticket_bundle_matches": st.booleans(),
         "profile_declared": st.booleans(),
+        "operator_session_ok": st.booleans(),
     }
 )
 
@@ -40,6 +48,7 @@ def _is_subsequence(reasons, order=REASON_ORDER):
         "ticket_tier": None,
         "cost_tier": 0,
         "yanked": False,
+        "operator_session_ok": True,
     }
 )
 def test_reasons_are_a_subsequence_of_the_fixed_order(row):
@@ -48,8 +57,14 @@ def test_reasons_are_a_subsequence_of_the_fixed_order(row):
     assert len(set(reasons)) == len(reasons)
 
 
-STANDING = {UNCERTIFIED, YANKED, BUDGET, TICKET_BUNDLE_MISMATCH}
-STANDING_REPAIR = {"certified": True, "yanked": False, "budget_ok": True, "ticket_bundle_matches": True}
+STANDING = {UNCERTIFIED, YANKED, BUDGET, TICKET_BUNDLE_MISMATCH, OPERATOR_SESSION_ABSENT}
+STANDING_REPAIR = {
+    "certified": True,
+    "yanked": False,
+    "budget_ok": True,
+    "ticket_bundle_matches": True,
+    "operator_session_ok": True,
+}
 
 
 @given(facts)
@@ -63,8 +78,8 @@ def test_repairing_the_standing_facts_removes_exactly_their_reasons_and_admits_i
 
 @pytest.mark.parametrize(
     ("weakened", "value"),
-    [("certified", False), ("yanked", True), ("budget_ok", False)],
-    ids=["uncertified", "yanked", "no-budget"],
+    [("certified", False), ("yanked", True), ("budget_ok", False), ("operator_session_ok", False)],
+    ids=["uncertified", "yanked", "no-budget", "operator-session-absent"],
 )
 @given(row=facts)
 def test_adding_a_failing_standing_yank_or_budget_predicate_never_removes_a_reason(row, weakened, value):

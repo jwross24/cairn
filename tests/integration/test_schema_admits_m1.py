@@ -72,9 +72,9 @@ def test_every_m1_column_round_trips_byte_equal(m1_rows, db_snapshot, table):
     assert {k: type(v) for k, v in row.items()} == {k: type(v) for k, v in expected.items()}
 
 
-def test_yank_record_makes_its_identity_yanked(m1_rows):
+def test_unattested_human_yank_row_is_not_visible(m1_rows):
     writer, _ = m1_rows
-    assert writer.yanked("aa" * 32) is True
+    assert writer.yanked("aa" * 32) is False
     assert writer.yanked("bb" * 32) is False
 
 

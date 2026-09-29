@@ -389,9 +389,9 @@ def _execute(step, gate_bundle, sub, attest_path, fixtures, runtime):
     if step.kind == KIND_WAIVER:
         return _run_waiver(gate_bundle, sub, attest_path, fixtures)
     if step.kind == KIND_TIER_GATE:
-        return _run_tier_gate(gate_bundle, sub, fixtures)
+        return _run_tier_gate(gate_bundle, sub, attest_path, fixtures)
     if step.kind == KIND_LADDER_METHOD_IDENTITY:
-        return ladder_selftest.method_identity_refusal(gate_bundle, sub, fixtures, runtime)
+        return ladder_selftest.method_identity_refusal(gate_bundle, sub, attest_path, fixtures, runtime)
     return ladder_selftest.baseline_run(gate_bundle, sub, attest_path, fixtures, runtime)
 
 
@@ -435,7 +435,9 @@ def _run_waiver(gate_bundle, sub, attest_path, fixtures):
         return "waiver-record-absent", (f"attest:{attest_path}",), (digest, None)
     if gate_bundle.waivable_checks != []:
         return "waivable-checks-nonempty", ("waivable-checks",), (digest, None)
-    decision = tiergate.TierGate(sub, gate_bundle).admit(_launch(fixtures, hypothesis, declared_tier=1))
+    decision = tiergate.TierGate(sub, gate_bundle, attest_path=attest_path).admit(
+        _launch(fixtures, hypothesis, declared_tier=1)
+    )
     if not isinstance(decision, tiergate.TierRefused) or tiergate.TICKET_ABSENT not in decision.reasons:
         return "admitted", tuple(getattr(decision, "reasons", ())), (digest, None)
     if _tickets_for(sub, target):
@@ -443,12 +445,14 @@ def _run_waiver(gate_bundle, sub, attest_path, fixtures):
     return EXPECT_NO_TICKET, tuple(decision.reasons), (digest, None)
 
 
-def _run_tier_gate(gate_bundle, sub, fixtures):
+def _run_tier_gate(gate_bundle, sub, attest_path, fixtures):
     hypothesis = _hypothesis(fixtures, "admitted_hypothesis")
     target = keys.hypothesis_key(hypothesis)
     if claims.get_hypothesis_object(sub, target) is None:
         claims.write_hypothesis_object(sub, claims.HypothesisObject(**hypothesis))
-    decision = tiergate.TierGate(sub, gate_bundle).admit(_launch(fixtures, hypothesis, declared_tier=2))
+    decision = tiergate.TierGate(sub, gate_bundle, attest_path=attest_path).admit(
+        _launch(fixtures, hypothesis, declared_tier=2)
+    )
     if not isinstance(decision, tiergate.TierRefused):
         return "admitted", (), (None, None)
     if tiergate.TIER_TWO_ABOVE not in decision.reasons:
