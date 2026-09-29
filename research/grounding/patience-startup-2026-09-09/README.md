@@ -1,4 +1,4 @@
-# The startup floor is a harness constant, and it is not what busts the patience ceiling
+# Subprocess startup is a harness cost, and the 77 ms allowance is not its measured floor
 
 `uv run python research/grounding/patience-startup-2026-09-09/probe_startup_floor.py`
 (2026-09-09, build machine, load average 11.9 on 10 cores).
@@ -8,21 +8,21 @@ argv shape `runner.skill_argv` builds, and reads `ru_utime + ru_stime` from `os.
 the way `runner.spawn_and_wait` does. It measures the CPU a skill subprocess spends
 before any declared work begins.
 
-## The floor is one number, not three
+## The loaded-host measurements show a shared import cost
 
-15 spawns per module, minimum reported: the minimum is the least load-contaminated
-estimator, and under this load average every sample is an upper bound on the quiet
-floor.
+The 2026-09-09 probe made 15 imports per skill on a build machine with load average
+11.9. Its minimum was the least load-contaminated observation from that run, not a
+measurement on a quiet machine.
 
     module                                min   median      max  max/min
     cairn.skills.instance_maker        0.0627   0.0752   0.1286     2.05
     cairn.skills.bsgs                  0.0613   0.0676   0.0808     1.32
     cairn.skills.rho_dp                0.0603   0.0697   0.0899     1.49
 
-The three minima span 0.0024 s, 4 percent. The cost is the interpreter start plus the
-`cypari2` and libpari import, which every skill pays identically; it is a property of the
-harness's spawn rather than of any skill's algorithm. A decomposition of the import
-itself, 5 spawns each, median:
+The three minima span 0.0024 s, 4 percent. The cost is interpreter startup plus the
+`cypari2` and libpari import, which each skill pays; it is a property of the harness's
+spawn rather than any skill's algorithm. A decomposition of the import itself, 5 spawns
+each, median:
 
     sys                        0.0194
     cypari2                    0.0302
@@ -31,7 +31,7 @@ itself, 5 spawns each, median:
     cairn.skills.bsgs          0.0782
     cairn.skills.instance_maker 0.0899
 
-## The floor sits under the ceiling, in every declared case measured
+## The historical import minima sit below the ceiling in every declared case measured
 
     skill            startup(min)   declared_wall_s   ceiling@4   startup/ceiling
     instance_maker        0.0627            0.0491      0.1964              32%
@@ -39,10 +39,9 @@ itself, 5 spawns each, median:
     rho_dp                0.0603            0.0331      0.1324              46%
 
 `ladder-patience-ceiling.md` states that "at every declared size below 40 bits the
-ceiling sits under the startup cost alone". On these measurements it does not: the
-ceiling is above the startup floor by a factor of two or more in all three cases, and a
-lower quiet-machine floor widens the margin. That record's arithmetic on the declared
-walls and ceilings is reproduced here unchanged; the reading placed on it is what differs.
+ceiling sits under the startup cost alone". On these historical observations it does not:
+the ceiling is above the observed minimum by a factor of two or more in all three cases.
+That record's arithmetic on the declared walls and ceilings is reproduced here unchanged.
 
 ## The ceiling is busted, and by which term
 
@@ -130,10 +129,31 @@ term there would give that skill a new revision for a change that says nothing a
 computes anything. `tests/unit/test_runner_status.py` asserts the gate value and the module
 default are equal, so they cannot drift apart without a red test.
 
-The value 77 is **provisional, measured at load average 18.7 to 18.9**. It is the `wait4`
-median of the import floor, and every measurement behind it is an upper bound rather than a
-floor. A quiet-box re-measure, one-minute load under 10 with five cold spawns per skill, is
-what settles it.
+The 77 ms value traces to a `wait4` import median recorded at load average 18.7 to 18.9.
+The owner decision recorded by MagentaSparrow on 2026-09-29 (message 316) retains it as a
+cross-host allowance, not as a measured quiet-Mac floor. The owner's CI rationale is that
+CI bills 2–3x more CPU for the same work than this Mac; that factor is not measured by
+this startup record. The gate's `subprocess_startup_ms` remains 77; the Mac observation
+supplies no replacement timing value or skill-identity change.
+
+## Quiet-Mac import measurement
+
+The 2026-09-29 14:45 EDT run used five fresh child processes per target on a 10-core Mac. The
+one-minute load average was 5.44 before and after each target's five spawns. Driver:
+`/Users/jwross/.local/share/cairn-agent-mail/orders/w6k_quiet.py`. The driver launches
+`sys.executable -c "import <module>"` and records `ru_utime + ru_stime` from `wait4`, the
+same child shape and CPU accounting used by `probe_startup_floor.py`. Each value below is
+the median of the five recorded CPU samples; the exact per-spawn samples are in the
+[byte-preserved raw record](w6k-quiet-2026-09-29.json).
+
+    target                 samples   median CPU
+    bare python                  5      7.812 ms
+    instance_maker               5     42.157 ms
+    bsgs                         5     42.004 ms
+    rho_dp                       5     41.775 ms
+
+The max/min ratio across the three skill medians is 1.009144, within the 1.5x
+agreement criterion. Bare Python is excluded from that ratio.
 
 Two alternatives were measured and rejected. Raising `ceiling_multiplier` scales the declared
 part, which is not where the gap sits: covering the fixed cost at 30 bits needs roughly 6.5x,
@@ -143,13 +163,14 @@ into three identity bundles and moves three skill revisions to fix one harness f
 `second_opinion` is the opposite case: it is genuinely the skill's own work and belongs in
 that skill's profile.
 
-## Calibration
+## Calibration scope
 
-No constant in this record is fit to pin as a shipped value: every number was taken under
-load average 11.9 to 18.9 on 10 cores, so each is an upper bound on a quiet floor and none
-is a floor. A `subprocess_startup_s` that ships needs a re-measure on a quiet machine.
-
-Measured here and load-independent in the sense that matters: that the three skills' startup
-floors agree within 4 percent, that the declared wall covers `toy_curve.run` alone, and that
-the trial's undeclared work is startup plus the cross-check. `bsgs` and `rho_dp` were
-measured only for their import floors, not end to end.
+The older tables remain observations from loaded 10-core runs at load averages 11.9 to
+18.9. The 2026-09-29 record supplies five import-only CPU samples per target on a Mac at
+load average 5.44. The three skill medians agree within 1% in that run; the earlier
+loaded-host minima span 4%. Those observations support a shared startup-cost model for
+the measured runs, not a load-independent or universal timing bound. The 77 ms gate
+value is an owner-set cross-host allowance, not a universal startup upper bound. The CI
+2–3x factor is the owner's rationale. The quiet-Mac JSON contains no Linux or CI
+calibration and no end-to-end skill measurement. `bsgs` and `rho_dp` were measured only
+for imports.

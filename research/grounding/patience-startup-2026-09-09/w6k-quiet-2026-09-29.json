@@ -1,0 +1,59 @@
+{
+  "interpreter": "/Users/jwross/Documents/cairn/.venv/bin/python3",
+  "cpu_count": 10,
+  "repeats": 5,
+  "started": "2026-09-29T14:45:36-0400",
+  "skills": {
+    "bare python": {
+      "samples_s": [
+        0.009122,
+        0.0084,
+        0.0078119999999999995,
+        0.007639,
+        0.007585999999999999
+      ],
+      "median_s": 0.0078119999999999995,
+      "load1_before": 5.44,
+      "load1_after": 5.44
+    },
+    "instance_maker": {
+      "samples_s": [
+        0.050633,
+        0.042146,
+        0.042455999999999994,
+        0.04215699999999999,
+        0.04132
+      ],
+      "median_s": 0.04215699999999999,
+      "load1_before": 5.44,
+      "load1_after": 5.44
+    },
+    "bsgs": {
+      "samples_s": [
+        0.042082999999999995,
+        0.04142,
+        0.041318,
+        0.042004,
+        0.043143999999999995
+      ],
+      "median_s": 0.042004,
+      "load1_before": 5.44,
+      "load1_after": 5.44
+    },
+    "rho_dp": {
+      "samples_s": [
+        0.041951,
+        0.04177499999999999,
+        0.041162000000000004,
+        0.04189,
+        0.04135
+      ],
+      "median_s": 0.04177499999999999,
+      "load1_before": 5.44,
+      "load1_after": 5.44
+    }
+  },
+  "max_over_min_median_ratio": 1.0091442250149611,
+  "within_1_5x": true,
+  "max_median_ms": 42.157
+}

@@ -37,6 +37,26 @@ A scratch copy with the increment removed from `counted_double` compiled success
 
 The probe records the source path and SHA-256 for its own compiler invocation. For an externally supplied binary, it reports source provenance as unknown unless `--source` names an artifact; that supplied source remains explicitly unverified against the binary.
 
-The 06:43 UTC host observation was a 1-minute load average of 34.91 against the bead's threshold of 8, with 4,479 free 16-KiB pages against the 1-GiB minimum. Timing is held. The binary and probe were built with Apple clang 21.0.0; the historical `c_reference` measurement used Apple clang 17.0.0, so those toolchain readings remain distinct. No Linux arm was measured, and no Docker daemon was accessed.
+The 06:43 UTC host observation had a 1-minute load average of 34.91 against the bead's threshold of 8 and 4,479 free 16-KiB pages against the 65,536-page minimum. Timing was held for that observation.
 
-`clock.rate_ratio` remains at its seeded provenance. No timing sample supports replacing it. This prototype does not establish production admission, sandbox safety, counting of arbitrary claimant code, quiet-host costs, or Linux costs.
+A quiet-host run was recorded around 14:2x EDT on 2026-09-29 with OrbStack paused. The owner reported 539,282 free 16-KiB pages and `kern.num_files` 25,557. The JSON records a 1-minute load average of 5.45458984375, which is also below the bead's threshold of 8. The quiet-host prerequisites are load at or below 8, `kern.num_files` at or below 60,000, and at least 65,536 free 16-KiB pages; each reported value meets its threshold. The timestamp, OrbStack state, free pages, and file count came from MagentaSparrow's assignment (agent-mail message 316); the JSON itself contains only the load value among those prerequisite readings.
+
+The raw run record is [mns5-quiet-2026-09-29.json](mns5-quiet-2026-09-29.json). It contains 28 timed samples: seven repetitions in each of `raw`, `counted`, `count-only`, and `zero-work`, with one process call and 10,000 requested operations per repetition. Every row records its mode, repetition, process-call count, requested operation count, child CPU nanoseconds, parent wall nanoseconds, and reported count. The JSON retains `timing_status: PROVISIONAL`.
+
+The medians, ranges, and sample standard deviations below are independently recomputable from those rows. Parent wall time covers process launch through completion before output parsing; therefore its per-operation and per-increment values include the amortized process-call cost. The count-only row is a counter control, not a standalone estimate of counting cost.
+
+| Mode and component | Median | Min–max | Sample SD |
+|---|---:|---:|---:|
+| Raw child CPU | 150.100 ns/group op | 145.100–160.100 ns/group op | 6.721 ns/group op |
+| Raw parent wall | 301.446 ns/group op | 288.021–314.667 ns/group op | 9.982 ns/group op |
+| Counted child CPU | 140.300 ns/group op | 138.900–146.500 ns/group op | 2.617 ns/group op |
+| Counted parent wall | 281.171 ns/group op | 276.725–304.442 ns/group op | 10.492 ns/group op |
+| Count-only child CPU | 0.400 ns/increment | 0.300–1.000 ns/increment | 0.346 ns/increment |
+| Count-only parent wall | 138.825 ns/increment | 130.467–142.225 ns/increment | 4.895 ns/increment |
+| Zero-work child CPU | 1.000 µs/process call | 0–2.000 µs/process call | 0.690 µs/process call |
+| Zero-work parent wall | 1.333042 ms/process call | 1.245083–1.492583 ms/process call | 0.092573 ms/process call |
+| Zero-work parent wall, amortized | 133.304 ns/requested operation slot | 124.508–149.258 ns/requested operation slot | 9.257 ns/requested operation slot |
+
+The JSON records Apple clang 21.0.0 with `-O2 -std=c11 -Wall`, Python 3.14.7, macOS 26.6 arm64, source SHA-256 `acaaa26e24b4acabc683871483d88e784a2d0993fa30d36798de1fc84e4f2a51`, and binary SHA-256 `6076929c04bc516f1856a7fb543e3a1ae1de23acf67417600169e0355bda69dd`. The historical `c_reference` used Apple clang 17.0.0 and measures an in-process chain, so it is not a calibrated comparison for this clang 21 process measurement. The evidence does not justify a derived `rate_ratio`; `clock.rate_ratio` retains its seeded provenance.
+
+No Linux arm was measured, and no Docker daemon was accessed. This prototype does not establish production admission, sandbox safety, counting of arbitrary claimant code, a production rate, or Linux costs.

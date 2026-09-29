@@ -1,0 +1,621 @@
+{
+  "correctness_checks": [
+    {
+      "mode": "raw",
+      "ops_per_process_call": 0,
+      "result": {
+        "child_cpu_ns": null,
+        "count": null,
+        "mode": "raw",
+        "point": [
+          258236120896152398,
+          475063108841005863
+        ],
+        "requested_ops": 0
+      }
+    },
+    {
+      "mode": "counted",
+      "ops_per_process_call": 0,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 0,
+        "mode": "counted",
+        "point": [
+          258236120896152398,
+          475063108841005863
+        ],
+        "requested_ops": 0
+      }
+    },
+    {
+      "mode": "count-only",
+      "ops_per_process_call": 0,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 0,
+        "mode": "count-only",
+        "point": null,
+        "requested_ops": 0
+      }
+    },
+    {
+      "mode": "zero-work",
+      "ops_per_process_call": 0,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 0,
+        "mode": "zero-work",
+        "point": null,
+        "requested_ops": 0
+      }
+    },
+    {
+      "mode": "raw",
+      "ops_per_process_call": 1,
+      "result": {
+        "child_cpu_ns": null,
+        "count": null,
+        "mode": "raw",
+        "point": [
+          854410513911781858,
+          27848132763119188
+        ],
+        "requested_ops": 1
+      }
+    },
+    {
+      "mode": "counted",
+      "ops_per_process_call": 1,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 1,
+        "mode": "counted",
+        "point": [
+          854410513911781858,
+          27848132763119188
+        ],
+        "requested_ops": 1
+      }
+    },
+    {
+      "mode": "count-only",
+      "ops_per_process_call": 1,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 1,
+        "mode": "count-only",
+        "point": null,
+        "requested_ops": 1
+      }
+    },
+    {
+      "mode": "zero-work",
+      "ops_per_process_call": 1,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 0,
+        "mode": "zero-work",
+        "point": null,
+        "requested_ops": 1
+      }
+    },
+    {
+      "mode": "raw",
+      "ops_per_process_call": 2,
+      "result": {
+        "child_cpu_ns": null,
+        "count": null,
+        "mode": "raw",
+        "point": [
+          688880949010793000,
+          790090237295869340
+        ],
+        "requested_ops": 2
+      }
+    },
+    {
+      "mode": "counted",
+      "ops_per_process_call": 2,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 2,
+        "mode": "counted",
+        "point": [
+          688880949010793000,
+          790090237295869340
+        ],
+        "requested_ops": 2
+      }
+    },
+    {
+      "mode": "count-only",
+      "ops_per_process_call": 2,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 2,
+        "mode": "count-only",
+        "point": null,
+        "requested_ops": 2
+      }
+    },
+    {
+      "mode": "zero-work",
+      "ops_per_process_call": 2,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 0,
+        "mode": "zero-work",
+        "point": null,
+        "requested_ops": 2
+      }
+    },
+    {
+      "mode": "raw",
+      "ops_per_process_call": 3,
+      "result": {
+        "child_cpu_ns": null,
+        "count": null,
+        "mode": "raw",
+        "point": [
+          396771410188466083,
+          850837664584714677
+        ],
+        "requested_ops": 3
+      }
+    },
+    {
+      "mode": "counted",
+      "ops_per_process_call": 3,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 3,
+        "mode": "counted",
+        "point": [
+          396771410188466083,
+          850837664584714677
+        ],
+        "requested_ops": 3
+      }
+    },
+    {
+      "mode": "count-only",
+      "ops_per_process_call": 3,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 3,
+        "mode": "count-only",
+        "point": null,
+        "requested_ops": 3
+      }
+    },
+    {
+      "mode": "zero-work",
+      "ops_per_process_call": 3,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 0,
+        "mode": "zero-work",
+        "point": null,
+        "requested_ops": 3
+      }
+    },
+    {
+      "mode": "raw",
+      "ops_per_process_call": 10000,
+      "result": {
+        "child_cpu_ns": null,
+        "count": null,
+        "mode": "raw",
+        "point": [
+          476377072802646283,
+          562446501424608226
+        ],
+        "requested_ops": 10000
+      }
+    },
+    {
+      "mode": "counted",
+      "ops_per_process_call": 10000,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 10000,
+        "mode": "counted",
+        "point": [
+          476377072802646283,
+          562446501424608226
+        ],
+        "requested_ops": 10000
+      }
+    },
+    {
+      "mode": "count-only",
+      "ops_per_process_call": 10000,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 10000,
+        "mode": "count-only",
+        "point": null,
+        "requested_ops": 10000
+      }
+    },
+    {
+      "mode": "zero-work",
+      "ops_per_process_call": 10000,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 0,
+        "mode": "zero-work",
+        "point": null,
+        "requested_ops": 10000
+      }
+    }
+  ],
+  "count_semantic": "one requested primitive group-operation wrapper call; no field-operation count",
+  "counting_cost_inference": "not derived by subtracting raw and counted timings",
+  "kind": "timing",
+  "malformed_inputs_refused": [
+    "-1",
+    "3junk",
+    "1000001",
+    "18446744073709551616"
+  ],
+  "metadata": {
+    "binary": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-counted-process-o6faoyox/counted_process",
+    "binary_sha256": "6076929c04bc516f1856a7fb543e3a1ae1de23acf67417600169e0355bda69dd",
+    "cflags": [
+      "-O2",
+      "-std=c11",
+      "-Wall"
+    ],
+    "compiler": "/usr/bin/clang",
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.3.34.2)",
+    "curve": {
+      "a": "645824996691681933",
+      "b": "382308953708622014",
+      "bits": 60,
+      "n": "866004982950395713",
+      "p": "866004983247663323"
+    },
+    "host_1m_load_average": 5.45458984375,
+    "machine": "arm64",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "python": "3.14.7 (main, Sep  1 2026, 14:05:28) [Clang 22.1.3 ]",
+    "scratch": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-counted-process-o6faoyox",
+    "source": "/Users/jwross/Documents/cairn/research/grounding/counted_process.c",
+    "source_provenance": "probe_build_input",
+    "source_sha256": "acaaa26e24b4acabc683871483d88e784a2d0993fa30d36798de1fc84e4f2a51"
+  },
+  "timing": {
+    "ops_per_process_call": 10000,
+    "reps": 7,
+    "samples": [
+      {
+        "child_cpu_ns": 1599000,
+        "count": null,
+        "mode": "raw",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 3014458,
+        "process_calls": 1,
+        "rep": 1
+      },
+      {
+        "child_cpu_ns": 1601000,
+        "count": null,
+        "mode": "raw",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 3077042,
+        "process_calls": 1,
+        "rep": 2
+      },
+      {
+        "child_cpu_ns": 1580000,
+        "count": null,
+        "mode": "raw",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 3146667,
+        "process_calls": 1,
+        "rep": 3
+      },
+      {
+        "child_cpu_ns": 1487000,
+        "count": null,
+        "mode": "raw",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 2880209,
+        "process_calls": 1,
+        "rep": 4
+      },
+      {
+        "child_cpu_ns": 1452000,
+        "count": null,
+        "mode": "raw",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 3039125,
+        "process_calls": 1,
+        "rep": 5
+      },
+      {
+        "child_cpu_ns": 1451000,
+        "count": null,
+        "mode": "raw",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 2903500,
+        "process_calls": 1,
+        "rep": 6
+      },
+      {
+        "child_cpu_ns": 1501000,
+        "count": null,
+        "mode": "raw",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 2916292,
+        "process_calls": 1,
+        "rep": 7
+      },
+      {
+        "child_cpu_ns": 1465000,
+        "count": 10000,
+        "mode": "counted",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 3044417,
+        "process_calls": 1,
+        "rep": 1
+      },
+      {
+        "child_cpu_ns": 1412000,
+        "count": 10000,
+        "mode": "counted",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 2865500,
+        "process_calls": 1,
+        "rep": 2
+      },
+      {
+        "child_cpu_ns": 1403000,
+        "count": 10000,
+        "mode": "counted",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 2981375,
+        "process_calls": 1,
+        "rep": 3
+      },
+      {
+        "child_cpu_ns": 1394000,
+        "count": 10000,
+        "mode": "counted",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 2811708,
+        "process_calls": 1,
+        "rep": 4
+      },
+      {
+        "child_cpu_ns": 1392000,
+        "count": 10000,
+        "mode": "counted",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 2798459,
+        "process_calls": 1,
+        "rep": 5
+      },
+      {
+        "child_cpu_ns": 1405000,
+        "count": 10000,
+        "mode": "counted",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 2767250,
+        "process_calls": 1,
+        "rep": 6
+      },
+      {
+        "child_cpu_ns": 1389000,
+        "count": 10000,
+        "mode": "counted",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 2805416,
+        "process_calls": 1,
+        "rep": 7
+      },
+      {
+        "child_cpu_ns": 3000,
+        "count": 10000,
+        "mode": "count-only",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 1422250,
+        "process_calls": 1,
+        "rep": 1
+      },
+      {
+        "child_cpu_ns": 3000,
+        "count": 10000,
+        "mode": "count-only",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 1308542,
+        "process_calls": 1,
+        "rep": 2
+      },
+      {
+        "child_cpu_ns": 9000,
+        "count": 10000,
+        "mode": "count-only",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 1388250,
+        "process_calls": 1,
+        "rep": 3
+      },
+      {
+        "child_cpu_ns": 3000,
+        "count": 10000,
+        "mode": "count-only",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 1403125,
+        "process_calls": 1,
+        "rep": 4
+      },
+      {
+        "child_cpu_ns": 4000,
+        "count": 10000,
+        "mode": "count-only",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 1390667,
+        "process_calls": 1,
+        "rep": 5
+      },
+      {
+        "child_cpu_ns": 10000,
+        "count": 10000,
+        "mode": "count-only",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 1324458,
+        "process_calls": 1,
+        "rep": 6
+      },
+      {
+        "child_cpu_ns": 10000,
+        "count": 10000,
+        "mode": "count-only",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 1304667,
+        "process_calls": 1,
+        "rep": 7
+      },
+      {
+        "child_cpu_ns": 2000,
+        "count": 0,
+        "mode": "zero-work",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 1305250,
+        "process_calls": 1,
+        "rep": 1
+      },
+      {
+        "child_cpu_ns": 0,
+        "count": 0,
+        "mode": "zero-work",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 1245083,
+        "process_calls": 1,
+        "rep": 2
+      },
+      {
+        "child_cpu_ns": 1000,
+        "count": 0,
+        "mode": "zero-work",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 1333042,
+        "process_calls": 1,
+        "rep": 3
+      },
+      {
+        "child_cpu_ns": 1000,
+        "count": 0,
+        "mode": "zero-work",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 1486791,
+        "process_calls": 1,
+        "rep": 4
+      },
+      {
+        "child_cpu_ns": 1000,
+        "count": 0,
+        "mode": "zero-work",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 1492583,
+        "process_calls": 1,
+        "rep": 5
+      },
+      {
+        "child_cpu_ns": 1000,
+        "count": 0,
+        "mode": "zero-work",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 1348917,
+        "process_calls": 1,
+        "rep": 6
+      },
+      {
+        "child_cpu_ns": 0,
+        "count": 0,
+        "mode": "zero-work",
+        "ops_per_process_call": 10000,
+        "parent_wall_ns": 1331875,
+        "process_calls": 1,
+        "rep": 7
+      }
+    ],
+    "summaries": {
+      "count-only": {
+        "child_cpu_per_counter_increment": {
+          "max": "0.000000001000",
+          "median": "0.000000000400",
+          "min": "0.000000000300",
+          "sd": "0.000000000346",
+          "unit": "s/increment"
+        },
+        "parent_wall_per_counter_increment": {
+          "max": "0.000000142225",
+          "median": "0.000000138825",
+          "min": "0.000000130467",
+          "sd": "0.000000004895",
+          "unit": "s/increment"
+        }
+      },
+      "counted": {
+        "child_cpu_per_group_op": {
+          "max": "0.000000146500",
+          "median": "0.000000140300",
+          "min": "0.000000138900",
+          "sd": "0.000000002617",
+          "unit": "s/group_op"
+        },
+        "parent_wall_per_group_op": {
+          "max": "0.000000304442",
+          "median": "0.000000281171",
+          "min": "0.000000276725",
+          "sd": "0.000000010492",
+          "unit": "s/group_op"
+        }
+      },
+      "raw": {
+        "child_cpu_per_group_op": {
+          "max": "0.000000160100",
+          "median": "0.000000150100",
+          "min": "0.000000145100",
+          "sd": "0.000000006721",
+          "unit": "s/group_op"
+        },
+        "parent_wall_per_group_op": {
+          "max": "0.000000314667",
+          "median": "0.000000301446",
+          "min": "0.000000288021",
+          "sd": "0.000000009982",
+          "unit": "s/group_op"
+        }
+      },
+      "zero-work": {
+        "child_cpu_per_process_call": {
+          "max": "0.000002000000",
+          "median": "0.000001000000",
+          "min": "0.000000000000",
+          "sd": "0.000000690066",
+          "unit": "s/call"
+        },
+        "parent_wall_amortized_per_requested_op_slot": {
+          "max": "0.000000149258",
+          "median": "0.000000133304",
+          "min": "0.000000124508",
+          "sd": "0.000000009257",
+          "unit": "s/requested_op_slot"
+        },
+        "parent_wall_per_process_call": {
+          "max": "0.001492583000",
+          "median": "0.001333042000",
+          "min": "0.001245083000",
+          "sd": "0.000092573487",
+          "unit": "s/call"
+        }
+      }
+    }
+  },
+  "timing_status": "PROVISIONAL"
+}
