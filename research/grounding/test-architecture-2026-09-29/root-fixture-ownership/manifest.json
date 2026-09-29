@@ -1,0 +1,68 @@
+[
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/db-snapshot-repro.log",
+    "artifact": "db-snapshot-repro.log.gz",
+    "bytes": 228,
+    "sha256": "788f40b20161c48d0439445f70fe4bf34f6e7abf76629b6f1b851c7b211910ff"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/db-snapshot-caller.log",
+    "artifact": "db-snapshot-caller.log.gz",
+    "bytes": 1116,
+    "sha256": "d615129e12e5b87e20a471b5f96da159470ecfca6ee235722caae1730c5b8388"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/db-parent-positive.log",
+    "artifact": "db-parent-positive.log.gz",
+    "bytes": 260,
+    "sha256": "8d2bd62206ede1347a31166b8aed6308ed3a424624f8b5ea89429881cc9baf2d"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/db-parent-mutant-original.log",
+    "artifact": "db-parent-mutant-original.log.gz",
+    "bytes": 5739,
+    "sha256": "22982230674929357c05c9700d8cd8a8e430d8a7a12217889476058d6161b674"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/db-parent-mutant-borrowed.log",
+    "artifact": "db-parent-mutant-borrowed.log.gz",
+    "bytes": 4041,
+    "sha256": "5eed482a25b5bb5a3ad0ca2d458c5bdcb3c95e6ae233c180553557860147009c"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/db-parent-repro-inverted.log",
+    "artifact": "db-parent-repro-inverted.log.gz",
+    "bytes": 300,
+    "sha256": "ea6a87f32e2b7e85a7a58038dae5758b610d422e31b0579136c2f5f76a91cdde"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/db-parent-fast.log",
+    "artifact": "db-parent-fast.log.gz",
+    "bytes": 377,
+    "sha256": "054af22f459bf3f221294014708985eb12066471f64f9932c9670781cbf19380"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/db-parent-caller-warning-check.log",
+    "artifact": "db-parent-caller-warning-check.log.gz",
+    "bytes": 98,
+    "sha256": "66b15ac8b2074b04e440cd4b1aeaf16d5f787d37e14fe5eb48ce1ba7d2011c38"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/root-harness-contracts.log",
+    "artifact": "root-harness-contracts.log.gz",
+    "bytes": 99,
+    "sha256": "668dd7d11f30eea581b6725b7487a5077593728067b50a632d4eb96476fc700c"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/db_snapshot_repro.py",
+    "artifact": "db_snapshot_repro.py",
+    "bytes": 964,
+    "sha256": "26a1beaf1a4092c17c4d6b00cf222736e00b6f00613b8cb842a6c9f66b8b3ef3"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/db-parent-ubs.log",
+    "artifact": "db-parent-ubs.log.gz",
+    "bytes": 24410,
+    "sha256": "e4759fc287140993047a259b11fdfc4ae0166a97e2facfe787a75a6a1212b8eb"
+  }
+]

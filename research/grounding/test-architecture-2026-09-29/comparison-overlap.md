@@ -13,6 +13,17 @@
 
 **Execution evidence:** At the pinned revision, `uv run pytest -q tests/unit/test_solution_comparison.py tests/unit/test_solution_plan.py` exited 0: 61 passed in 2.87s. Raw output: `/tmp/cairn-lane3.2ARmLN/comparison-contracts.log`. This is unit adapter/plan evidence only; it does not establish a fresh Lean/Docker proof run or upgrade the historical real-CI results in [the checklist](checklist.md).
 
+## Unit seam inventory
+
+This source-only inventory uses `90401ee50700e119331e9c05727c15a9d3693cfb`. The comparison and plan unit-test blobs match the overlap map's pinned revision. It records what the doubles replace, not a fresh execution result.
+
+- `test_solution_build.py` uses real temporary files for assembly, fingerprint, and dependency contracts. Its timeout test replaces `lean.run_argv`. The command-construction test checks argv only; the integration test `test_an_honest_solution_builds_in_the_assembled_project_and_the_inputs_are_unchanged` supplies the real build boundary with rc 0, an existing `.olean`, and unchanged inputs.
+- `test_solution_comparison.py` supplies a zero-byte comparator path and replaces `lean.run_argv` for host outcome mapping. `test_the_comparator_runs_in_the_assembled_root_on_the_config_the_gate_wrote` checks cwd/argv and discards the returned observer result. Other named matching, missing-comparator, nonzero, mutation, and timeout cases assert outcomes or refusal reasons. The direct gold exact/weaker integration cases supply real comparator execution.
+- The two container comparison timeout tests replace two callable seams, `container.assert_pinned` and `container.run`, and supply synthetic prior compilation/image state through `container_compilation`. Counting represented authority states yields three boundaries; counting patched callables yields two. Their assertions prove timeout attribution and mutation refusal, not comparison correctness. The gold exact integration also exercises actual timeout attribution and cleanup.
+- `test_solution_plan.py` injects one synthetic observer callback and checks the pure plan reducer's pass, failure, timeout, blocking, and reason semantics. Real ordered-plan integration owns actual observers, process ordering, and persisted outcomes.
+
+The command-shape tests have narrower assertions than their named integration counterparts. That is not, by itself, a duplicate or a defective test. No reduction or refactor follows from these source observations, and a suite-wide mock-seam claim remains unproven.
+
 The swapped-checker probe can be reproduced without Lean or Docker:
 
 ```bash

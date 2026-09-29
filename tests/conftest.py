@@ -175,17 +175,18 @@ def run_gp_spy(monkeypatch):
 @pytest.fixture
 def db_snapshot():
     def snap(conn_or_path, label):
-        conn = (
-            conn_or_path
-            if isinstance(conn_or_path, sqlite3.Connection)
-            else sqlite3.connect(f"file:{conn_or_path}?mode=ro", uri=True)
-        )
-        tables = [r[0] for r in conn.execute("select name from sqlite_master where type='table'")]
-        counts = {t: conn.execute(f'select count(*) from "{t}"').fetchone()[0] for t in tables}
-        logging.getLogger("cairn").info(
-            "db_snapshot", extra={"step": "test", "fields": {"label": label, "counts": counts}}
-        )
-        return counts
+        owned = not isinstance(conn_or_path, sqlite3.Connection)
+        conn = sqlite3.connect(f"file:{conn_or_path}?mode=ro", uri=True) if owned else conn_or_path
+        try:
+            tables = [r[0] for r in conn.execute("select name from sqlite_master where type='table'")]
+            counts = {t: conn.execute(f'select count(*) from "{t}"').fetchone()[0] for t in tables}
+            logging.getLogger("cairn").info(
+                "db_snapshot", extra={"step": "test", "fields": {"label": label, "counts": counts}}
+            )
+            return counts
+        finally:
+            if owned:
+                conn.close()
 
     return snap
 

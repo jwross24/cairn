@@ -8,6 +8,10 @@ The recorded CI run includes a real gold-container positive (`rfl`) and planted 
 
 The Python syntax inventory is a separate source snapshot: [the analyzer](pytest_syntax_inventory.py) reads tracked test blobs from `da48ef2c9796aa5ea72bb3e9aa870c7dfb2eed31`, not the measured or source-mapped revision above. Its [lossless compressed result](pytest-syntax-inventory.json.gz) contains hashes for all 272 parsed Python test files; manifest digest `3a9fbdab2612daf93f7e962131eedf149e4110e5ff552cd428c78bbc6a6f2801`. The scan counts literal syntax and runs detector probes in memory; it does not execute repository tests or establish behavioral coverage.
 
+Additional bounded evidence lives in separate reports. The [cache pilot](pilot-comparison.md) includes all ten lanes at baseline run `36536577420` and green warm run `36545011828`, with source identities, counts, timings, and retained raw inputs. The eight-lane profile above remains historical; its missing rows are not missing measurements in the ten-lane pilot. The [Docker authority report](docker-authority-routing.md) records both real authority nodes passing Linux calls and teardown at `133f23a`; the overall run fails unrelated command-map contracts and is not green closure evidence.
+
+The [root fixture ownership audit](root-fixture-ownership.md) maps root harness branches and records a real `db_snapshot` connection leak, a bounded repair, and both owned-connection and borrowed-connection planted negatives. Its focused runs do not certify every fixture or every test layer. Broad checklist holds below remain holds unless the named evidence covers their full scope.
+
 ## Phase 0: shape decision
 
 | Checklist item | Status | Evidence and limit |
@@ -28,7 +32,7 @@ The Python syntax inventory is a separate source snapshot: [the analyzer](pytest
 | Error assertions specify expected message/type | HOLD | Sampled assertions commonly check typed exceptions or reason codes; a whole-suite assertion audit is absent. The Python-specific `match=` requirement has a concrete failure below. |
 | No section-comment headers in tests | HOLD | No whole-suite comment-header audit was performed. |
 | Share setup used in three or more test files | HOLD | The map traces module-scoped Linux fixtures and the root `popen_spy`; setup reuse across all test files and whether each helper belongs at that scope remain unreviewed. |
-| Fixture/setup teardown is symmetric | HOLD | The root autouse `isolation_guard` uses `yield` and checks its before/after snapshot ([conftest.py:108–140](../../../tests/conftest.py#L108)); this does not establish symmetric cleanup for every fixture. |
+| Fixture/setup teardown is symmetric | HOLD globally; FIXED, owned SQLite handle | The [root fixture audit](root-fixture-ownership.md) demonstrates `db_snapshot` owned-handle closure on success, query failure, and logging failure while preserving borrowed transactions. The original fixture and an unconditional-close mutant both fail the corresponding contracts. Root `isolation_guard` checks its before/after snapshot; neither result establishes symmetric cleanup for every fixture. |
 | Clear class-level shared state before and after each test | HOLD | No suite-wide class-state inventory was performed. |
 | Place mocks at the I/O seam | HOLD | The mapped `popen_spy` wraps and delegates to real `Popen` ([conftest.py:143–154](../../../tests/conftest.py#L143)); other mock seams were not audited globally. |
 | Assert the return value as well as each mock call | HOLD | No complete mock-assertion audit was performed. The real replay integration checks both subprocess evidence and result reasons ([test_container_statement_hash.py:254–279](../../../tests/integration/test_container_statement_hash.py#L254)). |
@@ -42,7 +46,7 @@ The Python syntax inventory is a separate source snapshot: [the analyzer](pytest
 | Checklist item | Status | Evidence and limit |
 |---|---|---|
 | No identical-shape unit/integration duplicate | HOLD | The bounded comparison map separates mock-backed unit outcome/plan contracts from direct gold comparison and ordered-plan integration ([comparison-overlap.md](comparison-overlap.md)); exact/weaker closure outcomes still overlap partially. This is not a complete duplicate audit. |
-| No unit test mocks three or more external boundaries | HOLD | Unit mock-boundary counts were not inventoried. |
+| No unit test mocks three or more external boundaries | HOLD globally; bounded inventory recorded | The [unit seam inventory](comparison-overlap.md#unit-seam-inventory) distinguishes two patched callables from three represented authority states in container timeout unit cases, and names their real integration backing. This is not a suite-wide count or a reason to remove adapter contracts. |
 | No parametrized failure tests converge on one output through different patch targets | HOLD | No complete failure-test/patch-target inventory was performed. |
 | No framework-only assertions | HOLD | No suite-wide framework-contract audit was performed. |
 | Trophy-shaped components have unit count ≤ integration count | HOLD | No complete test counts by component or shape were collected. Counts alone would not justify reducing authority coverage. |

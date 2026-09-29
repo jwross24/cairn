@@ -4,6 +4,8 @@
 
 ## Fixture resolution for the mapped phases
 
+The separate [root fixture ownership report](root-fixture-ownership.md) pins the shared harness branch map, a reproduced path-owned SQLite handle leak, and focused positive/refusal runs. The [Docker authority report](docker-authority-routing.md) pins Linux execution and fixture teardown at `133f23a`. Those execution receipts have their own source identities; they do not convert this report's source-only inspection into runtime coverage.
+
 | Authority-map row(s) | Recorded phase | Fixture and state path |
 |---|---|---|
 | 1, 3, 5, 6, 7, 9 | Gold Linux replay/axiom calls and replay-lane setup | The module fixture chain is `linux_bundle → linux_image → linux_dependencies → linux_project → linux_prepared` ([definitions](../../../tests/integration/test_container_statement_hash.py#L676), [prepared fixture](../../../tests/integration/test_container_statement_hash.py#L79)). Setup rows 5–6 are separate CI jobs and therefore separate pytest processes; module scope does not share their fixture objects. Their elapsed setup is not a replay verdict. Call rows 1 and 3 include compilation, axiom checking, and replay; rows 7 and 9 include compilation and axiom checking ([axiom test](../../../tests/integration/test_container_statement_hash.py#L141), [fresh replay test](../../../tests/integration/test_container_statement_hash.py#L221)). |

@@ -46,6 +46,22 @@ scripts/check.sh --fast --paths tests/conftest.py tests/unit/test_clear_flags.py
 
 Each isolated run sets `PYTHONPATH` to its own `src` and `tests`, uses the repository environment through `uv run --no-project`, and places pytest scratch under its own `PYTEST_DEBUG_TEMPROOT`. The initial run without a private temp root passed 46 tests but emitted warnings while pytest attempted cleanup of unrelated retained temp directories; that output is not the clean-scratch result above.
 
-Restoring only the unguarded committed fixture in a separate snapshot makes the missing-API contract fail: the child reports one passed call and one teardown error, `AttributeError: module 'os' has no attribute 'chflags'`; the outer contract exits 1. Raw: `fixture-parent-mutant-isolated.log.gz`. The fixed run is `fixture-parent-isolated.log.gz`; the scoped fast check is `fixture-fast.log.gz`. Linux CI for the fixture repair remains required.
+Restoring only the unguarded committed fixture in a separate snapshot makes the missing-API contract fail: the child reports one passed call and one teardown error, `AttributeError: module 'os' has no attribute 'chflags'`; the outer contract exits 1. Raw: `fixture-parent-mutant-isolated.log.gz`. The fixed run is `fixture-parent-isolated.log.gz`; the scoped fast check is `fixture-fast.log.gz`.
 
-**No-Claim:** local routing contracts do not prove Linux execution; passing test calls do not cancel teardown errors; this report does not claim terminal green CI, bead completion, a speedup, or a mathematical result.
+## Pushed fixture verification
+
+[Run 36589470775](https://github.com/jwross24/cairn/actions/runs/36589470775) tests fixture revision `133f23aa647f42eb00e9aa1063b798ad3ac606b3`. Its Linux `container` job passes: `35 passed, 10 deselected in 580.68s`, with both authority nodes and their teardown completing. The Linux adapter type check also passes. Raw: `133-container-ci.log.gz`, `133-gold-positive.jsonl.gz`, and `133-chattr-positive.jsonl.gz`.
+
+The gold receipt records comparator match exit 0 and mismatch exit 1. Strict Landrun reports kernel ABI 7 against required ABI 9; the measured filesystem cases use the test's explicit best-effort mode. The append-only receipt records refusal without the capability and retained `first\nsecond\n` content with `LINUX_IMMUTABLE`; its trace includes denied truncation and deletion. These are the named probe observations, not proof of complete sandbox confinement.
+
+The overall run fails in Python: 17 command-map contracts report that `MAP.md` omits `status`. The other nine lanes pass. Raw: `133-python-ci.log.gz` and `133-ci-run.json.gz`. A passing Linux authority job does not make that overall run green.
+
+## Green descendant
+
+[Run 36591546497](https://github.com/jwross24/cairn/actions/runs/36591546497) is terminal success on pushed `90401ee50700e119331e9c05727c15a9d3693cfb`: all ten jobs pass. The Linux `container` lane reports 45 collected, 35 passed, 10 deselected, zero skipped/errors, in 669.68 pytest seconds and 799 job seconds. Both named authority nodes appear as `PASSED` in that lane. The seven owned workflow, routing, authority, dispatch, Linux type-scope, and fixture files have an empty diff from `133f23aa647f42eb00e9aa1063b798ad3ac606b3` to this descendant.
+
+Lossless `904-ci-run.json.gz` and `904-ci-run.log.gz` retain all jobs and test output. `904-ci-profile.json.gz` records each lane's counts, provisioning/gate times, and top test phases. The profiler's planted missing-lane, malformed-summary, nonterminal, and failed-run inputs all refuse. Its classifier also refuses treating gate execution as setup time.
+
+The Python lane reports 4,264 passed, two external compliance-skill drift checks skipped, and one corpus-completeness xfail. Those three outcomes are not passes. They are outside this bead's Docker authority population; the broader `cairn-llta` audit remains open. No job deadline or authority assertion is relaxed.
+
+**No-Claim:** local routing contracts alone do not prove Linux execution; passing test calls do not cancel teardown errors. This report establishes the named routing and Linux authority checks, not suite-wide completeness, a speedup, complete sandbox confinement, or a mathematical result.
