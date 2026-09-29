@@ -5,10 +5,22 @@ from dataclasses import replace
 from pathlib import Path
 
 import _linux_dependencies as dependencies
+import _substrate_helpers as substrate_helpers
 import factories
 import pytest
 
-from cairn import bundle, challenge, container, lean, log, solutionbuild, solutionchecks, solutionplan
+from cairn import (
+    bundle,
+    challenge,
+    claims,
+    container,
+    lean,
+    log,
+    scrutiny,
+    solutionbuild,
+    solutionchecks,
+    solutionplan,
+)
 
 lg = log.get("test")
 FORMAL = "theorem challenge_curve {R : Type} [CommRing R] (W : WeierstrassCurve R) : W.Δ = W.Δ := by\n  sorry\n"
@@ -358,6 +370,132 @@ def test_linux_candidate_closure_comparison_refuses_weaker_statement(
     assert comparison[0][comparison[0].index("--user") + 1] == container.host_user()
     solutionbuild.assert_unchanged(compilation.project)
     solutionbuild.assert_dependencies(linux_bundle, compilation.project)
+
+
+@pytest.mark.timeout(1800)
+@pytest.mark.parametrize("case", ["exact", "sorry", "weaker", "stale-hash"])
+def test_linux_ordered_plan_runs_each_step_in_order(
+    linux_bundle, linux_image, linux_prepared, tmp_path, monkeypatch, popen_spy, case
+):
+    statement, prepared = linux_prepared
+    monkeypatch.setenv("ELAN_HOME", str(tmp_path / "absent-elan"))
+    assert not lean.tool_path("lean").exists()
+    if case == "weaker":
+        source = linux_bundle.challenge_prelude + b"theorem challenge_curve : True := by trivial\n"
+    else:
+        source = (
+            linux_bundle.challenge_prelude + FORMAL.replace("sorry", "sorry" if case == "sorry" else "rfl").encode()
+        )
+    submission = challenge.Submission(
+        solution_module=source,
+        formal_statement_hash="0" * 64 if case == "stale-hash" else prepared.formal_statement_hash,
+    )
+    rows = [
+        {
+            "step": kind,
+            "kind": kind,
+            "expect": solutionplan.KIND_EXPECTATION[kind],
+            "blocking": True,
+            "timeout_s": container.RUN_TIMEOUT_S
+            if kind in (solutionplan.KIND_BUILD, solutionplan.KIND_AXIOMS)
+            else lean.DEFAULT_TIMEOUT_S,
+        }
+        for kind in solutionplan.STEP_KINDS
+    ]
+    root, work_dir = tmp_path / "candidate", tmp_path / "axioms"
+    popen_spy.clear()
+    result = solutionchecks.run_container(
+        linux_bundle,
+        linux_image,
+        statement,
+        submission,
+        ("challenge_curve",),
+        rows,
+        root=root,
+        work_dir=work_dir,
+        prepared=prepared,
+    )
+    lg.info("candidate_ordered_plan", case=case, steps=[step.__dict__ for step in result.steps])
+    steps = result.steps
+    sub = substrate_helpers.open_writer(tmp_path)
+    try:
+        claims.write_claim_statement(sub, statement)
+        solutionplan.persist(
+            sub,
+            result,
+            bundle_hash=linux_bundle.hash,
+            pin_hash=linux_bundle.pin_hash,
+            statement_hash=statement.hash,
+            formal_statement_hash=prepared.formal_statement_hash,
+            renderer_hash=prepared.renderer_hash,
+            prelude_hash=prepared.prelude_hash,
+            at=factories.CREATED_AT,
+        )
+        persisted = sub.conn.execute(
+            "SELECT plan_step, result, arm FROM gate_runs WHERE gate = ? ORDER BY rowid", (solutionplan.STEP_GATE,)
+        ).fetchall()
+        assert [tuple(row) for row in persisted] == [
+            (step.step, "fail" if step.result == solutionplan.RESULT_TIMEOUT else step.result, container.GOLD_ARM)
+            for step in steps
+        ]
+        assert scrutiny._formalization_passed(sub, statement.hash) is (case == "exact")
+    finally:
+        sub.close()
+    assert result.arm == container.GOLD_ARM
+    assert [step.kind for step in steps] == list(solutionplan.STEP_KINDS)
+    results = [step.result for step in steps]
+    replay = [argv for argv in popen_spy if "leanchecker" in argv]
+    comparison = [argv for argv in popen_spy if solutionchecks.CONTAINER_COMPARATOR_BINARY in argv]
+    axioms = [argv for argv in popen_spy if "/axiom-tool/.lake/build/bin/axioms" in argv]
+    docker = [argv for argv in popen_spy if "--network" in argv]
+    if case == "stale-hash":
+        assert results == [solutionplan.RESULT_FAIL] + [solutionplan.RESULT_BLOCKED] * 5
+        assert result.first_failure == steps[0]
+        assert steps[0].reasons[-1].startswith(f"{solutionbuild.STATEMENT_HASH_MISMATCH}:")
+        for step in steps[1:]:
+            assert step.reasons == (f"blocked-by:{solutionplan.KIND_STATEMENT_BINDING}",)
+        assert popen_spy == []
+        assert not root.exists()
+        assert not work_dir.exists()
+        return
+    assert docker
+    assert all(argv[argv.index("--network") + 1] == "none" for argv in docker)
+    assert all(linux_image.image_id in argv for argv in docker)
+    assert all(argv[argv.index("--user") + 1] == container.host_user() for argv in docker)
+    solutionbuild.assert_unchanged(prepared.project)
+    solutionbuild.assert_dependencies(linux_bundle, prepared.project)
+    if case == "sorry":
+        assert (
+            results == [solutionplan.RESULT_PASS] * 3 + [solutionplan.RESULT_FAIL] + [solutionplan.RESULT_BLOCKED] * 2
+        )
+        assert result.first_failure == steps[3]
+        assert "offending-axiom:sorryAx" in steps[3].reasons
+        for step in steps[4:]:
+            assert step.reasons == (f"blocked-by:{solutionplan.KIND_AXIOMS}",)
+        assert replay == []
+        assert comparison == []
+        assert len(axioms) == 1
+        return
+    assert len(axioms) == len(replay) == len(comparison) == 1
+    assert "--fresh" in replay[0]
+    assert replay[0][-7:] == [
+        "lake",
+        f"+{linux_bundle.lean['toolchain']}",
+        "env",
+        "leanchecker",
+        "--fresh",
+        "-v",
+        solutionbuild.module_name(prepared.formal_statement_hash),
+    ]
+    assert popen_spy.index(axioms[0]) < popen_spy.index(replay[0]) < popen_spy.index(comparison[0])
+    if case == "exact":
+        assert result.ok is True
+        assert result.first_failure is None
+        assert results == [solutionplan.RESULT_PASS] * 6
+    else:
+        assert results == [solutionplan.RESULT_PASS] * 5 + [solutionplan.RESULT_FAIL]
+        assert result.first_failure == steps[5]
+        assert solutionchecks.CLOSURE_MISMATCH in steps[5].reasons
 
 
 @pytest.mark.timeout(1800)

@@ -35,6 +35,8 @@ CONTAINER_COMPARISON_TESTS = (
     "test_linux_candidate_closure_comparison_matches_exact_statement",
     "test_linux_candidate_closure_comparison_refuses_weaker_statement",
 )
+CONTAINER_PLAN_TESTS = ("test_linux_ordered_plan_runs_each_step_in_order",)
+CONTAINER_PLAN_CASES = ("exact", "sorry", "weaker", "stale-hash")
 CI_LANES = (
     "python",
     "lean",
@@ -43,6 +45,8 @@ CI_LANES = (
     "container",
     "container-replay-exact",
     "container-replay-refusals",
+    "container-plan-exact",
+    "container-plan-refusals",
 )
 
 
@@ -63,7 +67,11 @@ def validate_manifest(root, paths):
 
 
 def pytest_addoption(parser):
-    parser.addoption("--cairn-ci-lane", choices=("all", "solution-plan", "container-replay", *CI_LANES), default="all")
+    parser.addoption(
+        "--cairn-ci-lane",
+        choices=("all", "solution-plan", "container-replay", "container-plan", *CI_LANES),
+        default="all",
+    )
 
 
 def pytest_ignore_collect(collection_path, config):
@@ -102,6 +110,12 @@ def pytest_collection_modifyitems(config, items):
                 case = getattr(item, "callspec", None)
                 proof = case.params.get("proof") if case is not None else None
                 item_lane = "container-replay-exact" if proof == "rfl" else "container-replay-refusals"
+            elif item.originalname in CONTAINER_PLAN_TESTS:
+                case = getattr(item, "callspec", None)
+                case = case.params.get("case") if case is not None else None
+                if case not in CONTAINER_PLAN_CASES:
+                    raise pytest.UsageError(f"invalid container plan case: {item.nodeid}: {case!r}")
+                item_lane = "container-plan-exact" if case == "exact" else "container-plan-refusals"
             elif item.originalname in CONTAINER_COMPARISON_TESTS:
                 item_lane = (
                     "container-replay-exact"
@@ -115,7 +129,7 @@ def pytest_collection_modifyitems(config, items):
         matches = (
             lane == "all"
             or item_lane == lane
-            or (lane in ("solution-plan", "container-replay") and item_lane.startswith(f"{lane}-"))
+            or (lane in ("solution-plan", "container-replay", "container-plan") and item_lane.startswith(f"{lane}-"))
         )
         (selected if matches else deselected).append(item)
     items[:] = selected

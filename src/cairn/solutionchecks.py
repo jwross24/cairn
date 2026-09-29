@@ -62,23 +62,41 @@ def check_container_axioms(gate, compilation, *, work_dir, timeout_s=container.R
     return record
 
 
-def observe_container_replay(
-    gate, compilation, *, work_dir, timeout_s=lean.DEFAULT_TIMEOUT_S, axiom_timeout_s=container.RUN_TIMEOUT_S
-):
-    start = time.monotonic()
+def _build_command(gate):
+    tool, *arguments = gate.lean["checker"]["build"]
+    if tool not in lean.TOOLS:
+        raise container.ContainerError(f"candidate-build-tool-unknown:{tool}")
+    return tool, arguments
+
+
+def _replay_command(gate):
     tool, *arguments = gate.lean["checker"][REPLAY_FRESH]
     if tool not in lean.TOOLS or "--fresh" not in arguments:
         raise container.ContainerError("candidate-replay-command-not-fresh")
+    return tool, arguments
+
+
+def assert_checker_commands(gate):
+    _build_command(gate)
+    _replay_command(gate)
+
+
+def _observe_axiom_step(gate, compilation, *, work_dir, timeout_s, start):
     try:
-        axioms = check_container_axioms(gate, compilation, work_dir=work_dir, timeout_s=axiom_timeout_s)
+        axioms = check_container_axioms(gate, compilation, work_dir=work_dir, timeout_s=timeout_s)
     except lean.LeanTimeout as exc:
         raise solutionplan.StepTimeout(solutionplan.KIND_AXIOMS, exc.timeout_s) from None
     except lean.LeanRejected as exc:
         return solutionplan.OBSERVED_REFUSED, (f"{AXIOM_STEP_ERROR_PREFIX}{exc}",), _elapsed_ms(start)
-    if not axioms["passed"]:
-        reasons = tuple(f"{OFFENDING_AXIOM_PREFIX}{name}" for name in axioms["offending_axioms"])
-        lg.info("container_replay_blocked", reasons=reasons, image_id=compilation.image.image_id)
-        return solutionplan.OBSERVED_REFUSED, reasons, _elapsed_ms(start)
+    if axioms["passed"]:
+        return solutionplan.EXPECT_NO_OFFENDING_AXIOM, (), _elapsed_ms(start)
+    reasons = tuple(f"{OFFENDING_AXIOM_PREFIX}{name}" for name in axioms["offending_axioms"])
+    lg.info("container_replay_blocked", reasons=reasons, image_id=compilation.image.image_id)
+    return solutionplan.OBSERVED_REFUSED, reasons, _elapsed_ms(start)
+
+
+def _observe_fresh_replay(gate, compilation, command, *, timeout_s, start):
+    tool, arguments = command
     project, image = compilation.project, compilation.image
     argv = [tool, f"+{gate.lean['toolchain']}", *(part.format(module=project.solution_module) for part in arguments)]
     try:
@@ -104,6 +122,17 @@ def observe_container_replay(
         return solutionplan.EXPECT_REPLAYED, (), wall_ms
     reasons = (KERNEL_REJECTED, f"rc:{result.rc}", _head(result.stderr) or _head(result.stdout))
     return solutionplan.OBSERVED_REFUSED, reasons, wall_ms
+
+
+def observe_container_replay(
+    gate, compilation, *, work_dir, timeout_s=lean.DEFAULT_TIMEOUT_S, axiom_timeout_s=container.RUN_TIMEOUT_S
+):
+    start = time.monotonic()
+    command = _replay_command(gate)
+    axioms = _observe_axiom_step(gate, compilation, work_dir=work_dir, timeout_s=axiom_timeout_s, start=start)
+    if axioms[0] != solutionplan.EXPECT_NO_OFFENDING_AXIOM:
+        return axioms
+    return _observe_fresh_replay(gate, compilation, command, timeout_s=timeout_s, start=start)
 
 
 def observe_container_comparison(gate, compilation, *, timeout_s=lean.DEFAULT_TIMEOUT_S):
@@ -161,9 +190,7 @@ def compile_container(
         dependency_project=(prepared.project.root if solutionbuild.MANIFEST_NAME in prepared.project.inputs else None),
         timeout_s=timeout_s,
     )
-    tool, *arguments = gate.lean["checker"]["build"]
-    if tool not in lean.TOOLS:
-        raise container.ContainerError(f"candidate-build-tool-unknown:{tool}")
+    tool, arguments = _build_command(gate)
     argv = [tool, f"+{gate.lean['toolchain']}", *(part.format(module=project.solution_module) for part in arguments)]
     solutionbuild.assert_unchanged(project)
     solutionbuild.assert_dependencies(gate, project)
@@ -326,6 +353,64 @@ def run_dev(
                 result = observe_closure_comparison(gate, assembled, comparator=comparator, timeout_s=step.timeout_s)
             solutionbuild.assert_unchanged(assembled)
             return result
+        except solutionbuild.SolutionRefused as exc:
+            return solutionplan.OBSERVED_REFUSED, (exc.reason,), _elapsed_ms(start)
+
+    return plan.run(observe)
+
+
+def run_container(gate, image, statement, submission, theorem_names, plan_rows, *, root, work_dir, prepared):
+    plan = solutionplan.SolutionPlan.load(plan_rows, arm=container.GOLD_ARM)
+    if tuple(step.kind for step in plan.steps) != solutionplan.STEP_KINDS:
+        raise solutionplan.PlanInvalid("gold-plan-requires-axioms-before-replay")
+    resolved_root, resolved_work = Path(root).resolve(), Path(work_dir).resolve()
+    if resolved_work == resolved_root or resolved_work.is_relative_to(resolved_root):
+        raise ValueError("work-dir-inside-project-root")
+    assert_checker_commands(gate)
+    compilation = None
+
+    def observe(step):
+        nonlocal compilation
+        start = time.monotonic()
+        if step.kind == solutionplan.KIND_STATEMENT_BINDING:
+            try:
+                assert_prepared(gate, statement, theorem_names, prepared, image=image)
+            except solutionbuild.SolutionRefused as exc:
+                return solutionplan.OBSERVED_REFUSED, (exc.reason,), _elapsed_ms(start)
+            return solutionbuild.observe_binding(submission, prepared.formal_statement_hash)
+        if step.kind == solutionplan.KIND_IMPORT_ALLOWLIST:
+            return (*solutionplan.check_imports(submission.solution_module), _elapsed_ms(start))
+        try:
+            if step.kind == solutionplan.KIND_BUILD:
+                try:
+                    compilation = compile_container(
+                        gate,
+                        image,
+                        statement,
+                        submission,
+                        theorem_names,
+                        root=root,
+                        prepared=prepared,
+                        timeout_s=step.timeout_s,
+                    )
+                except lean.LeanTimeout as exc:
+                    raise solutionplan.StepTimeout(solutionplan.KIND_BUILD, exc.timeout_s) from None
+                rc = compilation.result.rc
+                if rc != 0:
+                    return (
+                        solutionbuild.BUILD_FAILED,
+                        (f"rc:{rc}", _head(compilation.result.stdout)),
+                        _elapsed_ms(start),
+                    )
+                return solutionplan.EXPECT_BUILT, (), _elapsed_ms(start)
+            assert compilation is not None
+            if step.kind == solutionplan.KIND_AXIOMS:
+                return _observe_axiom_step(gate, compilation, work_dir=work_dir, timeout_s=step.timeout_s, start=start)
+            if step.kind == solutionplan.KIND_KERNEL_REPLAY:
+                return _observe_fresh_replay(
+                    gate, compilation, _replay_command(gate), timeout_s=step.timeout_s, start=start
+                )
+            return observe_container_comparison(gate, compilation, timeout_s=step.timeout_s)
         except solutionbuild.SolutionRefused as exc:
             return solutionplan.OBSERVED_REFUSED, (exc.reason,), _elapsed_ms(start)
 

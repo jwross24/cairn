@@ -13,6 +13,10 @@ LEAN_RESOLVE = "The Lean toolchain the gate resolves"
 COMPARATOR_CACHE = "Restore the pinned comparator build"
 COMPARATOR_BUILD = "Build pinned comparator and exporter"
 GATES = "Gates"
+CONTAINER_LANES = (
+    "lane: [container, container-replay-exact, container-replay-refusals, "
+    "container-plan-exact, container-plan-refusals]"
+)
 MODULE = "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
 
 
@@ -143,7 +147,7 @@ def test_comparator_cache_contract_refuses_skipping_build_validation_on_a_hit():
 
 
 def _assert_ci_lanes(text):
-    assert "lane: [container, container-replay-exact, container-replay-refusals]" in text
+    assert CONTAINER_LANES in text
     assert 'run: scripts/check.sh --ci-lane "${{ matrix.lane }}"' in _step(text, "Linux container gates")
     assert "lane: [python, lean, solution, solution-plan-exact, solution-plan-refusals]" in text
     assert "fail-fast: false" in text
@@ -175,7 +179,7 @@ def _assert_container_lane(text):
     assert "uv sync --locked --all-groups" in job
     assert "pari-gp libpari-dev" in job
     assert "br sync --import-only" in job
-    assert "lane: [container, container-replay-exact, container-replay-refusals]" in job
+    assert CONTAINER_LANES in job
     assert "fail-fast: false" in job
     assert "name: cairn-failure-diagnostics-${{ matrix.lane }}" in job
     step = _step(job, "Linux container gates")
@@ -251,7 +255,7 @@ def test_diagnostics_contract_refuses_lost_test_evidence(removed):
     [
         ("runs-on: ubuntu-24.04-arm", "runs-on: macos-latest"),
         ('--ci-lane "${{ matrix.lane }}"', "--fast"),
-        ("lane: [container, container-replay-exact, container-replay-refusals]", "lane: [container]"),
+        (CONTAINER_LANES, "lane: [container]"),
         ("fail-fast: false", "fail-fast: true"),
         ("name: cairn-failure-diagnostics-${{ matrix.lane }}", "name: cairn-failure-diagnostics"),
         ("ty check --python-platform linux", "ty check --python-platform darwin"),

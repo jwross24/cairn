@@ -42,7 +42,7 @@ Record the tested revision, scope, and exclusions. An interrupted run is incompl
 tests are not passed. These development checks do not replace Cairn's mathematical gates.
 
 CI partitions the test
-population into eight disjoint lanes:
+population into ten disjoint lanes:
 
 - `python`: tests outside the explicit Lean, Solution, and container manifests.
 - `lean`: toolchain tests plus real-prelude closure-comparison and fresh-replay forgery cases.
@@ -50,12 +50,17 @@ population into eight disjoint lanes:
 - `solution-plan-exact`: the successful ordered-plan case.
 - `solution-plan-refusals`: the `sorry` and replay-timeout ordered-plan cases with shared setup.
 - `container`: Linux hashing, preparation, compilation, axiom, dependency-cache, and lifecycle tests.
-- `container-replay-exact`: successful Linux fresh replay.
-- `container-replay-refusals`: axiom refusal, forged-proof rejection, and stage-specific timeouts.
+- `container-replay-exact`: successful Linux fresh replay and exact closure comparison.
+- `container-replay-refusals`: axiom refusal, forged-proof rejection, weaker-statement closure
+  mismatch, and stage-specific timeouts.
+- `container-plan-exact`: the successful gold-arm ordered-plan case.
+- `container-plan-refusals`: the gold-arm ordered-plan `sorry`, weaker-statement and stale-hash
+  cases.
 
 Each CI lane has a 1,080-second session deadline and a 20-minute job ceiling. The local
-`--ci-lane solution-plan` and `--ci-lane container-replay` forms aggregate their respective
-cases. Lane membership is defined in `tests/_ci_lanes.py` and tested as a disjoint union.
+`--ci-lane solution-plan`, `--ci-lane container-replay` and `--ci-lane container-plan` forms
+aggregate their respective cases. Lane membership is defined in `tests/_ci_lanes.py` and tested
+as a disjoint union.
 The real-prelude ordered-plan test has a 900-second watchdog including setup and teardown;
 the replay subprocess retains its 600-second bound.
 

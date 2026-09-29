@@ -6,6 +6,8 @@ import pytest
 from _ci_lanes import (
     CI_LANES,
     CONTAINER_COMPARISON_TESTS,
+    CONTAINER_PLAN_CASES,
+    CONTAINER_PLAN_TESTS,
     CONTAINER_REPLAY_TESTS,
     CONTAINER_TEST_PATHS,
     LEAN_PREREQUISITE_TEST_PATHS,
@@ -50,22 +52,28 @@ def _suite(pytester):
         stream.write(f"def {CONTAINER_REPLAY_TESTS[1]}():\n    assert True\n")
         for name in CONTAINER_COMPARISON_TESTS:
             stream.write(f"def {name}():\n    assert True\n")
+        stream.write(
+            f'@pytest.mark.parametrize("case", {CONTAINER_PLAN_CASES!r})\ndef {CONTAINER_PLAN_TESTS[0]}(case):\n    assert True\n'
+        )
 
 
 @pytest.mark.parametrize(
     ("lane", "passed", "deselected"),
     [
-        ("all", 17, 0),
-        ("python", 1, 16),
-        ("lean", 5, 12),
-        ("solution", 3, 14),
-        ("solution-plan", 3, 14),
-        ("solution-plan-exact", 1, 16),
-        ("solution-plan-refusals", 2, 15),
-        ("container", 1, 4),
-        ("container-replay", 4, 1),
-        ("container-replay-exact", 2, 3),
-        ("container-replay-refusals", 2, 3),
+        ("all", 21, 0),
+        ("python", 1, 20),
+        ("lean", 5, 16),
+        ("solution", 3, 18),
+        ("solution-plan", 3, 18),
+        ("solution-plan-exact", 1, 20),
+        ("solution-plan-refusals", 2, 19),
+        ("container", 1, 8),
+        ("container-replay", 4, 5),
+        ("container-replay-exact", 2, 7),
+        ("container-replay-refusals", 2, 7),
+        ("container-plan", 4, 5),
+        ("container-plan-exact", 1, 8),
+        ("container-plan-refusals", 3, 6),
     ],
 )
 def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
@@ -77,9 +85,9 @@ def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
 def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytester):
     _suite(pytester)
     default = pytester.runpytest("-q", "--import-mode=importlib")
-    default.assert_outcomes(passed=17)
+    default.assert_outcomes(passed=21)
     populations = {}
-    for lane in ("all", "solution-plan", "container-replay", *CI_LANES):
+    for lane in ("all", "solution-plan", "container-replay", "container-plan", *CI_LANES):
         result = pytester.runpytest("-q", "--collect-only", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
         assert result.ret == pytest.ExitCode.OK
         populations[lane] = {line for line in result.outlines if line.startswith("tests/") and "::" in line}
@@ -105,6 +113,10 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
         f"{CONTAINER_TEST_PATHS[0]}::{CONTAINER_COMPARISON_TESTS[1]}",
     }
     assert populations["solution-plan"] == {f"{SOLUTION_TEST_PATHS[0]}::{PLAN_CASE}[{case}]" for case in PLAN_VARIANTS}
+    plan = f"{CONTAINER_TEST_PATHS[0]}::{CONTAINER_PLAN_TESTS[0]}"
+    assert populations["container-plan"] == {f"{plan}[{case}]" for case in CONTAINER_PLAN_CASES}
+    assert populations["container-plan-exact"] == {f"{plan}[exact]"}
+    assert populations["container-plan-refusals"] == {f"{plan}[{case}]" for case in CONTAINER_PLAN_CASES[1:]}
     combined = set()
     for lane in CI_LANES:
         assert populations[lane]
@@ -129,12 +141,13 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
         | populations["solution-plan"]
         | populations["container"]
         | populations["container-replay"]
+        | populations["container-plan"]
     )
 
 
 @pytest.mark.parametrize(
     ("lane", "passed", "deselected"),
-    [("python", 0, 16), ("lean", 4, 12), ("solution", 0, 7), ("container", 0, 0)],
+    [("python", 0, 20), ("lean", 4, 16), ("solution", 0, 11), ("container", 0, 0)],
 )
 def test_a_selected_failure_keeps_the_lane_red(pytester, lane, passed, deselected):
     _suite(pytester)
@@ -153,10 +166,13 @@ def test_a_selected_failure_keeps_the_lane_red(pytester, lane, passed, deselecte
 @pytest.mark.parametrize(
     ("lane", "passed", "deselected"),
     [
-        ("container", 1, 4),
-        ("container-replay", 4, 1),
-        ("container-replay-exact", 2, 3),
-        ("container-replay-refusals", 2, 3),
+        ("container", 1, 8),
+        ("container-replay", 4, 5),
+        ("container-replay-exact", 2, 7),
+        ("container-replay-refusals", 2, 7),
+        ("container-plan", 4, 5),
+        ("container-plan-exact", 1, 8),
+        ("container-plan-refusals", 3, 6),
     ],
 )
 def test_container_lane_does_not_import_modules_owned_by_other_lanes(pytester, lane, passed, deselected):
@@ -172,7 +188,16 @@ def test_container_lane_does_not_import_modules_owned_by_other_lanes(pytester, l
 
 
 @pytest.mark.parametrize(
-    "lane", ["container", "container-replay", "container-replay-exact", "container-replay-refusals"]
+    "lane",
+    [
+        "container",
+        "container-replay",
+        "container-replay-exact",
+        "container-replay-refusals",
+        "container-plan",
+        "container-plan-exact",
+        "container-plan-refusals",
+    ],
 )
 def test_container_lane_refuses_an_import_error_in_its_own_module(pytester, lane):
     _suite(pytester)
@@ -185,7 +210,7 @@ def test_container_lane_refuses_an_import_error_in_its_own_module(pytester, lane
 
 @pytest.mark.parametrize(
     ("name", "lane", "passed", "deselected"),
-    [(SOLUTION_CASES[0], "solution", 0, 7), *((name, "lean", 1, 6) for name in SOLUTION_CASES[1:])],
+    [(SOLUTION_CASES[0], "solution", 0, 11), *((name, "lean", 1, 10) for name in SOLUTION_CASES[1:])],
 )
 def test_a_reassigned_solution_failure_keeps_its_lane_red(pytester, name, lane, passed, deselected):
     _suite(pytester)
@@ -245,6 +270,47 @@ def test_container_replay_shards_route_proof_parameters_and_propagate_failure(py
     assert result.ret == pytest.ExitCode.TESTS_FAILED
 
 
+def test_container_plan_cases_exist_in_the_declared_file():
+    definitions = {
+        node.name
+        for node in ast.walk(ast.parse((ROOT / CONTAINER_TEST_PATHS[0]).read_text()))
+        if isinstance(node, ast.FunctionDef)
+    }
+    assert set(CONTAINER_PLAN_TESTS) <= definitions
+    assert CONTAINER_PLAN_CASES[0] == "exact"
+    assert len(set(CONTAINER_PLAN_CASES)) == len(CONTAINER_PLAN_CASES)
+
+
+@pytest.mark.parametrize("case", CONTAINER_PLAN_CASES)
+def test_container_plan_shards_route_by_case_and_propagate_failure(pytester, case):
+    _suite(pytester)
+    (pytester.path / CONTAINER_TEST_PATHS[0]).write_text(
+        f'import pytest\n@pytest.mark.parametrize("case", {CONTAINER_PLAN_CASES!r})\n'
+        f"def {CONTAINER_PLAN_TESTS[0]}(case):\n    assert case != {case!r}\n"
+    )
+    exact = case == "exact"
+    lane = "container-plan-exact" if exact else "container-plan-refusals"
+    result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
+    result.assert_outcomes(failed=1, passed=0 if exact else 2, deselected=3 if exact else 1)
+    assert result.ret == pytest.ExitCode.TESTS_FAILED
+    aggregate = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=container-plan")
+    aggregate.assert_outcomes(failed=1, passed=3)
+    assert aggregate.ret == pytest.ExitCode.TESTS_FAILED
+
+
+@pytest.mark.parametrize("lane", ["all", "container-plan", "container-plan-exact", "container-plan-refusals"])
+@pytest.mark.parametrize("case", ["unknown", None, 1])
+def test_unknown_container_plan_parameters_refuse_collection(pytester, lane, case):
+    _suite(pytester)
+    (pytester.path / CONTAINER_TEST_PATHS[0]).write_text(
+        f'import pytest\n@pytest.mark.parametrize("case", [{case!r}])\n'
+        f"def {CONTAINER_PLAN_TESTS[0]}(case):\n    assert True\n"
+    )
+    result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
+    assert result.ret == pytest.ExitCode.USAGE_ERROR
+    assert "invalid container plan case" in result.stderr.str()
+
+
 @pytest.mark.parametrize("failed_case", PLAN_VARIANTS)
 def test_each_ordered_plan_failure_keeps_its_lane_red(pytester, failed_case):
     _suite(pytester)
@@ -253,7 +319,7 @@ def test_each_ordered_plan_failure_keeps_its_lane_red(pytester, failed_case):
         f"def {PLAN_CASE}(case):\n    assert case != {failed_case!r}\n"
     )
     result = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=solution-plan")
-    result.assert_outcomes(failed=1, passed=2, deselected=7)
+    result.assert_outcomes(failed=1, passed=2, deselected=11)
     assert result.ret == pytest.ExitCode.TESTS_FAILED
 
 
@@ -266,7 +332,7 @@ def test_plan_shards_route_by_parameter_value_and_propagate_failure(pytester, ca
     )
     lane = "solution-plan-exact" if case == "exact" else "solution-plan-refusals"
     result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
-    result.assert_outcomes(failed=1, passed=0 if case == "exact" else 1, deselected=9 if case == "exact" else 8)
+    result.assert_outcomes(failed=1, passed=0 if case == "exact" else 1, deselected=13 if case == "exact" else 12)
     assert result.ret == pytest.ExitCode.TESTS_FAILED
 
 

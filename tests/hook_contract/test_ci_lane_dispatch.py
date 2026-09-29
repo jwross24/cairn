@@ -7,7 +7,9 @@ import sys
 from pathlib import Path
 
 import pytest
-from _ci_lanes import CI_LANES, SOLUTION_PLAN_LANES
+from _ci_lanes import CI_LANES, CONTAINER_PLAN_CASES, SOLUTION_PLAN_LANES
+
+CONTAINER_PLAN_LANES = ("container-plan-exact", "container-plan-refusals")
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -48,7 +50,7 @@ def dispatch(tmp_path: Path):
     return run
 
 
-@pytest.mark.parametrize("lane", [*CI_LANES, "solution-plan", "container-replay", "all"])
+@pytest.mark.parametrize("lane", [*CI_LANES, "solution-plan", "container-replay", "container-plan", "all"])
 def test_lane_dispatch_preserves_pytest_arguments(dispatch, lane):
     args = [] if lane == "all" else ["--ci-lane", lane]
     result, calls = dispatch(*args)
@@ -58,7 +60,7 @@ def test_lane_dispatch_preserves_pytest_arguments(dispatch, lane):
     ]
 
 
-@pytest.mark.parametrize("lane", [*CI_LANES, "solution-plan", "container-replay"])
+@pytest.mark.parametrize("lane", [*CI_LANES, "solution-plan", "container-replay", "container-plan"])
 def test_a_failed_lane_refuses_the_gate(dispatch, lane):
     result, calls = dispatch("--ci-lane", lane, pytest_exit=1)
     assert result.returncode == 1
@@ -73,6 +75,8 @@ def test_a_failed_lane_refuses_the_gate(dispatch, lane):
         ["--ci-lane", "typo"],
         ["--ci-lane", "solution-plan-sorry"],
         ["--ci-lane", "solution-plan-timeout"],
+        ["--ci-lane", "container-plan-weaker"],
+        ["--ci-lane", "container-plans"],
         ["--ci-lane", "python", "--fast"],
         ["--ci-lane", "lean", "--unit"],
         ["--ci-lane", "python", "--paths", "src/cairn/lean.py"],
@@ -84,7 +88,7 @@ def test_a_failed_lane_refuses_the_gate(dispatch, lane):
         ["--ci-lane", "solution-plan", "--paths", "src/cairn/lean.py"],
         *(
             ["--ci-lane", lane, *flags]
-            for lane in SOLUTION_PLAN_LANES
+            for lane in (*SOLUTION_PLAN_LANES, "container-plan", *CONTAINER_PLAN_LANES)
             for flags in (["--fast"], ["--unit"], ["--paths", "src/cairn/lean.py"])
         ),
     ],
@@ -103,6 +107,7 @@ def test_invalid_lane_selection_runs_no_gates(dispatch, args):
         ("solution", "test_solution_build_compile.py"),
         ("solution-plan", "test_solution_build_compile.py"),
         *((lane, "test_solution_build_compile.py") for lane in SOLUTION_PLAN_LANES),
+        *((lane, "test_container_statement_hash.py") for lane in ("container-plan", *CONTAINER_PLAN_LANES)),
     ],
 )
 def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
@@ -124,6 +129,17 @@ def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert f"tests/integration/{test_file}::" in result.stdout
+    if lane.startswith("container-plan"):
+        selected = [line for line in result.stdout.splitlines() if line.startswith("tests/") and "::" in line]
+        cases = {
+            "container-plan": CONTAINER_PLAN_CASES,
+            "container-plan-exact": CONTAINER_PLAN_CASES[:1],
+            "container-plan-refusals": CONTAINER_PLAN_CASES[1:],
+        }[lane]
+        assert selected == [
+            f"tests/integration/test_container_statement_hash.py::test_linux_ordered_plan_runs_each_step_in_order[{case}]"
+            for case in cases
+        ]
     if lane.startswith("solution-plan-"):
         selected = [line for line in result.stdout.splitlines() if line.startswith("tests/") and "::" in line]
         cases = ("exact",) if lane == "solution-plan-exact" else ("sorry", "timeout")

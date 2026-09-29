@@ -1,3 +1,5 @@
+import json
+import shutil
 import sys
 from dataclasses import replace
 from pathlib import Path
@@ -158,3 +160,80 @@ def test_a_container_comparison_refuses_unbound_compilation_before_running(
     candidate = replace(container_compilation, **{field: "0" * 64})
     with pytest.raises(solutionbuild.SolutionRefused, match=f"container-compilation-mismatch:{field}"):
         solutionchecks.observe_container_comparison(gate, candidate)
+
+
+def _gold_rows(kinds=solutionplan.STEP_KINDS):
+    return [
+        {
+            "step": kind,
+            "kind": kind,
+            "expect": solutionplan.KIND_EXPECTATION[kind],
+            "blocking": True,
+            "timeout_s": 60.0,
+        }
+        for kind in kinds
+    ]
+
+
+def _run_container(gate, tmp_path, rows=None, work_dir=None):
+    statement = factories.claim_statement(seed=5, formal_source=FORMAL)
+    image = container.Image(gate.container_identity, "unused", "sha256:" + "1" * 64, None)
+    return solutionchecks.run_container(
+        gate,
+        image,
+        statement,
+        challenge.Submission(solution_module=SOLUTION, formal_statement_hash=FSH),
+        THEOREMS,
+        _gold_rows() if rows is None else rows,
+        root=tmp_path / "root",
+        work_dir=tmp_path / "work" if work_dir is None else work_dir,
+        prepared=None,
+    )
+
+
+def _edited_gate(pinned_bundle, tmp_path, edit):
+    pins = lean.source_pins()
+    edit(pins["checker"])
+    source = tmp_path / "bundle-source"
+    shutil.copytree(bundle.REPO_ROOT / "bundle", source)
+    (source / "lean.json").write_text(json.dumps(pins))
+    return bundle.GateBundle.open(*pinned_bundle(src=source))
+
+
+@pytest.mark.parametrize(
+    ("edit", "reason"),
+    [
+        (
+            lambda checker: checker.update(replay_fresh=["lake", "env", "leanchecker", "-v", "{module}"]),
+            "candidate-replay-command-not-fresh",
+        ),
+        (lambda checker: checker.update(build=["bash", "-c", "{module}"]), "candidate-build-tool-unknown:bash"),
+    ],
+    ids=["replay-loses-fresh", "build-tool-replaced"],
+)
+def test_an_edited_checker_command_refuses_the_gold_plan_before_any_file_or_subprocess(
+    pinned_bundle, tmp_path, popen_spy, edit, reason
+):
+    gate = _edited_gate(pinned_bundle, tmp_path, edit)
+    with pytest.raises(container.ContainerError, match=reason):
+        _run_container(gate, tmp_path)
+    assert popen_spy == []
+    assert not (tmp_path / "root").exists()
+    assert not (tmp_path / "work").exists()
+
+
+def test_the_gold_plan_refuses_a_plan_that_orders_replay_before_axioms(gate, tmp_path, popen_spy):
+    kinds = list(solutionplan.STEP_KINDS)
+    kinds[3], kinds[4] = kinds[4], kinds[3]
+    with pytest.raises(solutionplan.PlanInvalid):
+        _run_container(gate, tmp_path, rows=_gold_rows(kinds))
+    assert popen_spy == []
+    assert not (tmp_path / "root").exists()
+
+
+@pytest.mark.parametrize("inside", ["root", "root/axioms"])
+def test_the_gold_plan_refuses_a_work_dir_at_or_inside_the_project_root(gate, tmp_path, popen_spy, inside):
+    with pytest.raises(ValueError, match="work-dir-inside-project-root"):
+        _run_container(gate, tmp_path, work_dir=tmp_path / inside)
+    assert popen_spy == []
+    assert not (tmp_path / "root").exists()
