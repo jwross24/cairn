@@ -11,7 +11,7 @@ from pathlib import Path
 import _doctor_fixtures as doctor_fixtures
 import pytest
 
-from cairn import attest, bundle, cli, exits, pari, substrate
+from cairn import attest, bundle, cli, exits, kat, pari, substrate
 from cairn.doctor import artifacts, detectors, fixers, mutate
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -26,6 +26,7 @@ class Shape:
     bundle: Path
     pin: Path
     attest: Path
+    vectors: Path
 
     def argv(self, *rest, only=None):
         head = [
@@ -71,7 +72,7 @@ def _build_shape(root):
     )
     (root / "pyproject.toml").write_text(UV_INDEX)
     (root / ".gitignore").write_text(GITIGNORE)
-    return Shape(root, db_path, bundle_path, pin_path, attest_path)
+    return Shape(root, db_path, bundle_path, pin_path, attest_path, root / "doctor-vectors.json")
 
 
 @pytest.fixture(scope="session")
@@ -92,9 +93,16 @@ def shape(master_shape, tmp_path):
         root / "deploy" / "gate-bundle.sqlite",
         root / "deploy" / "gate-bundle.pin",
         root / "deploy" / "attestations.log",
+        root / "doctor-vectors.json",
     )
     yield made
     _unlock(root)
+
+
+CONTEXT_FIXTURES = [
+    name for name in doctor_fixtures.names() if getattr(doctor_fixtures.load(name), "CONTEXT_ONLY", False)
+]
+FIXTURE_NAMES = [name for name in doctor_fixtures.names() if name not in CONTEXT_FIXTURES]
 
 
 def run(argv, capsys):
@@ -212,7 +220,7 @@ def test_every_declared_detector_id_resolves_to_a_callable_in_code(shape, capsys
         assert declared["subsystem"] == by_id[declared["id"]].subsystem
 
 
-@pytest.mark.parametrize("name", doctor_fixtures.names())
+@pytest.mark.parametrize("name", FIXTURE_NAMES)
 def test_every_emitted_finding_names_a_declared_detector_and_a_declared_fixer(name, shape, capsys):
     doctor_fixtures.load(name).corrupt(shape)
     doc = json.loads(run(shape.argv("capabilities", "--json"), capsys)[1])
@@ -368,6 +376,30 @@ def test_without_quick_the_kat_detector_runs_and_says_so(shape, capsys):
     assert "D-kat" in {r.get("detector") for r in records if r["event"] == "detector"}
 
 
+def test_kat_detector_uses_context_vectors_with_a_real_corrupt_vector_file(shape):
+    canonical = kat.DEFAULT_VECTORS.read_bytes()
+    canonical_fingerprint = (len(canonical), hashlib.sha256(canonical).hexdigest())
+    fixture = doctor_fixtures.load("kat_mismatch")
+    fixture.write_clean(shape)
+    ctx = detectors.Context(
+        root=shape.root,
+        db=shape.db,
+        bundle=shape.bundle,
+        pin=shape.pin,
+        attest=shape.attest,
+        vectors=shape.vectors,
+    )
+    assert detectors.d_kat(ctx) == []
+
+    fixture.corrupt(shape)
+    findings = detectors.d_kat(ctx)
+    assert [finding.id for finding in findings] == list(fixture.FINDINGS)
+    assert findings[0].id.split("/", 1)[0] in {detector.id for detector in detectors.DETECTORS}
+    assert str(shape.vectors) in findings[0].evidence
+    canonical_after = kat.DEFAULT_VECTORS.read_bytes()
+    assert (len(canonical_after), hashlib.sha256(canonical_after).hexdigest()) == canonical_fingerprint
+
+
 def test_only_scopes_the_run_to_one_subsystem(shape, capsys):
     doctor_fixtures.load("pin_flag").corrupt(shape)
     assert run(shape.argv("--json", only="gp"), capsys)[0] == exits.DOCTOR_HEALTHY
@@ -429,8 +461,8 @@ def test_json_output_is_one_document_with_logs_on_stderr_only(shape, capsys):
 
 # ---------------------------------------------------------------- round trips
 
-FIXABLE_FIXTURES = [n for n in doctor_fixtures.names() if doctor_fixtures.load(n).FIXABLE]
-UNFIXABLE_FIXTURES = [n for n in doctor_fixtures.names() if not doctor_fixtures.load(n).FIXABLE]
+FIXABLE_FIXTURES = [n for n in FIXTURE_NAMES if doctor_fixtures.load(n).FIXABLE]
+UNFIXABLE_FIXTURES = [n for n in FIXTURE_NAMES if not doctor_fixtures.load(n).FIXABLE]
 
 
 @pytest.mark.parametrize("name", FIXABLE_FIXTURES)

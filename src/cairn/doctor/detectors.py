@@ -60,6 +60,7 @@ class Context:
     pin: Path
     attest: Path
     quick: bool = False
+    vectors: Path = kat.DEFAULT_VECTORS
 
 
 def selftest_command(ctx):
@@ -465,8 +466,8 @@ def d_substrate(ctx):
     return findings
 
 
-def d_kat(_ctx):
-    failures = kat.run()
+def d_kat(ctx):
+    failures = kat.run(ctx.vectors)
     if not failures:
         return []
     return [
@@ -475,7 +476,7 @@ def d_kat(_ctx):
             "gates",
             ERROR,
             "the canonicalizer known-answer vectors do not reproduce; every hash downstream is suspect",
-            f"{kat.DEFAULT_VECTORS}: {'; '.join(failures)}",
+            f"{ctx.vectors}: {'; '.join(failures)}",
             False,
             "cairn kat canon --json",
         )
