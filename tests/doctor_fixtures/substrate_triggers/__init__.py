@@ -2,7 +2,7 @@ import sqlite3
 
 FIXABLE = False
 ONLY = None
-FINDINGS = ("D-substrate/triggers",)
+FINDINGS = ("D-substrate/schema",)
 
 
 def corrupt(shape):

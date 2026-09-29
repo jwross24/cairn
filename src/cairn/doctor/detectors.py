@@ -1,5 +1,4 @@
 import os
-import re
 import sqlite3
 import stat
 from collections.abc import Callable
@@ -18,8 +17,6 @@ GP_MAJOR_MINOR = "2.17"
 GP_STACK_BYTES = 64_000_000
 GITIGNORE_ENTRIES = (".doctor/", "var/")
 UV_INDEX_LINES = '[[tool.uv.index]]\nname = "pypi"\nurl = "https://pypi.org/simple"\ndefault = true'
-TRIGGER_RE = re.compile(r"CREATE TRIGGER IF NOT EXISTS (\w+)")
-
 ERROR = "error"
 WARN = "warn"
 INFO = "info"
@@ -362,10 +359,6 @@ def d_attest_mode(ctx):
     return findings + _waiver_finding(ctx, parsed[0][1])
 
 
-def _expected_triggers():
-    return set(TRIGGER_RE.findall(substrate.SCHEMA_PATH.read_text()))
-
-
 def d_substrate(ctx):
     if not Path(ctx.db).exists():
         return [
@@ -438,16 +431,15 @@ def d_substrate(ctx):
                     selftest_command(ctx),
                 )
             )
-        present = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='trigger'")}
-        missing = sorted(_expected_triggers() - present)
-        if missing:
+        schema_reasons = substrate.schema_mismatches(conn)
+        if schema_reasons:
             findings.append(
                 Finding(
-                    "D-substrate/triggers",
+                    "D-substrate/schema",
                     "substrate",
                     ERROR,
-                    "append-only triggers are missing; rows the schema forbids updating could be updated",
-                    f"{ctx.db}: missing {', '.join(missing)}",
+                    "the substrate does not match the shipped schema",
+                    f"{ctx.db}: {'; '.join(schema_reasons)}",
                     False,
                     selftest_command(ctx),
                 )
@@ -630,7 +622,7 @@ DETECTORS = (
     Detector("D-bundle", "deploy", d_bundle, "the gate bundle opens and its recomputed hash equals the pin"),
     Detector("D-pin-mode", "deploy", d_pin_mode, "the pin is 0444 and carries uappnd"),
     Detector("D-attest-mode", "deploy", d_attest_mode, "the attestation file is 0644+uappnd and frames its records"),
-    Detector("D-substrate", "substrate", d_substrate, "wal, integrity_check, append-only triggers, RUNNING attempts"),
+    Detector("D-substrate", "substrate", d_substrate, "wal, integrity_check, shipped schema, RUNNING attempts"),
     Detector("D-kat", "gates", d_kat, "the canonicalizer known-answer vectors reproduce"),
     Detector("D-certificate", "gates", d_certificate, "the toy_curve identity in this checkout is certified"),
     Detector("D-dirs", "dirs", d_dirs, "deploy/ and var/ exist and are writable; .doctor/ and var/ are gitignored"),

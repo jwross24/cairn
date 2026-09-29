@@ -11,7 +11,7 @@ from pathlib import Path
 import _doctor_fixtures as doctor_fixtures
 import pytest
 
-from cairn import attest, bundle, cli, exits, pari
+from cairn import attest, bundle, cli, exits, pari, substrate
 from cairn.doctor import artifacts, detectors, fixers, mutate
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -560,6 +560,42 @@ def test_running_attempts_name_the_startup_scan(shape, capsys):
     assert code == exits.DOCTOR_FINDINGS
     finding = next(f for f in json.loads(out)["findings"] if f["id"] == "D-substrate/running-attempts")
     assert finding["recommended_command"] == f"cairn startup-scan --db {shape.db}"
+
+
+def test_a_healthy_substrate_has_no_schema_finding(shape, capsys):
+    code, out, err = run(shape.argv("--json", only="substrate"), capsys)
+    assert code == exits.DOCTOR_HEALTHY, out + err
+    assert json.loads(out)["findings"] == []
+
+
+@pytest.mark.parametrize(
+    ("fixture", "reason"),
+    [
+        ("substrate_schema_column", "table attempts: unknown planted_extra"),
+        ("substrate_schema_index", "index attempts_by_recipe: absent from the store"),
+        (
+            "substrate_schema_trigger_body",
+            "trigger nodes_no_update: definition differs from the shipped schema",
+        ),
+        ("substrate_triggers", "trigger "),
+    ],
+)
+def test_schema_mismatches_name_one_read_only_doctor_finding(fixture, reason, shape, capsys):
+    doctor_fixtures.load(fixture).corrupt(shape)
+    before_bytes = shape.db.read_bytes()
+    before_mtime = shape.db.stat().st_mtime_ns
+
+    code, out, err = run(shape.argv("--json", only="substrate"), capsys)
+
+    assert code == exits.DOCTOR_FINDINGS, out + err
+    findings = json.loads(out)["findings"]
+    assert [finding["id"] for finding in findings] == ["D-substrate/schema"]
+    assert reason in findings[0]["evidence"]
+    assert shape.db.read_bytes() == before_bytes
+    assert shape.db.stat().st_mtime_ns == before_mtime
+    with pytest.raises(substrate.SchemaMismatch) as refusal:
+        substrate.Substrate.open(shape.db, role="reader")
+    assert reason in str(refusal.value)
 
 
 def test_an_uncertified_skill_names_the_selftest(shape, capsys):

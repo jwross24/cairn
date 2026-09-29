@@ -258,9 +258,13 @@ def _schema_mismatches(expected, actual):
     return reasons
 
 
-def _require_shipped_schema(conn, path):
+def schema_mismatches(conn):
     actual = _schema_objects(conn)
-    reasons = ["the store holds no schema at all"] if not actual else _schema_mismatches(_shipped_schema(), actual)
+    return ["the store holds no schema at all"] if not actual else _schema_mismatches(_shipped_schema(), actual)
+
+
+def _require_shipped_schema(conn, path):
+    reasons = schema_mismatches(conn)
     if reasons:
         shown = "; ".join(reasons[:8])
         if len(reasons) > 8:
