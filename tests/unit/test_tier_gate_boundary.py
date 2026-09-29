@@ -1,18 +1,27 @@
 import json
+import sys
 from pathlib import Path
 
 import pytest
 
-from cairn import ladderplan
+from cairn import attest, bundle, claims, ladderplan
+from cairn.profile import CostProfile, Production, SizeCost, Verification
 from cairn.tiergate import (
     BOUNDARY_TABLE,
     LADDER_EXEMPT_CEILING_TIER,
     OPERATOR_SESSION_ABSENT,
     UNCERTIFIED,
     YANKED,
+    Admitted,
+    Launch,
+    TierGate,
     predicate_reasons,
     tier_for_cost,
 )
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import _substrate_helpers as helpers
+import factories
 
 TIERS = json.loads((Path(__file__).resolve().parents[2] / "bundle" / "tiers.json").read_text())
 TABLE = TIERS["boundary_table"]
@@ -139,3 +148,48 @@ def test_the_operator_session_does_not_apply_below_tier_two():
         cost_tier=1,
         operator_session_ok=False,
     )
+
+
+def test_admitted_cost_tier_comes_from_the_real_boundary_table_across_tiers(tmp_path, pinned_bundle):
+    method_identity = {"interface_version": "toy_curve/1", "params": {"r": "20"}}
+    bundle_path, pin_path = pinned_bundle()
+    gate_bundle = bundle.GateBundle.open(bundle_path, pin_path)
+    sub = helpers.open_writer(tmp_path)
+    try:
+        attest_path = tmp_path / "attest.bin"
+        attest.init(str(attest_path), gate_bundle.waiver_target())
+        identity_hash = sub.put_identity_bundle(helpers.IDENTITY_A)
+        sub.put_certificate(identity_hash, helpers.TRANSCRIPT_HASH, helpers.ENV_MANIFEST_HASH, helpers.SELFTEST_SUMMARY)
+        obj = factories.hypothesis_object(method_identity=method_identity)
+        claims.write_hypothesis_object(sub, obj)
+        gate = TierGate(sub, gate_bundle, attest_path=str(attest_path))
+        observed = []
+        for declared_tier, core_s, hypothesis_key in ((0, 0.1, "f" * 64), (1, 10.0, obj.hash)):
+            cost_profile = CostProfile(
+                tier=0,
+                production=Production(
+                    model="synthetic",
+                    per_size={40: SizeCost(mean_tries=1.0, sd_tries=0.0, per_try_s=core_s, mean_wall_s=core_s)},
+                ),
+                verification=Verification(grade="Verifiable", cost_model="same_as_production"),
+                source="tests/unit/test_tier_gate_boundary.py",
+            )
+            launch = Launch(
+                cost_profile=cost_profile,
+                inputs=40,
+                budget_remaining=10_000.0,
+                hypothesis_key=hypothesis_key,
+                method_identity=method_identity,
+                skill_identity_hash=identity_hash,
+                declared_tier=declared_tier,
+            )
+            decision = gate.admit(launch)
+            assert isinstance(decision, Admitted)
+            expected = tier_for_cost(gate_bundle.tiers["boundary_table"], cost_profile.evaluate(40).expected_core_s)
+            assert decision.cost_tier == expected
+            recorded = claims.get_gate_run(sub, decision.gate_run_hash)
+            assert recorded["gate"] == "tier_gate" and recorded["result"] == "admitted"
+            observed.append(decision.cost_tier)
+        assert observed == [0, 1]
+    finally:
+        sub.close()

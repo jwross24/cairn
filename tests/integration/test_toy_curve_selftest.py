@@ -380,6 +380,7 @@ def _result(accepted, reason):
         stderr_digest="00" * 32,
         rc=0 if accepted else 1,
         wall_s=0.0,
+        spawned=True,
     )
 
 

@@ -229,6 +229,7 @@ class VerifierResult:
     stderr_digest: str | None
     rc: int | None
     wall_s: float
+    spawned: bool
 
     @property
     def gate_result(self):
@@ -247,6 +248,7 @@ class VerifierResult:
             "stdout_digest": self.stdout_digest,
             "stderr_digest": self.stderr_digest,
             "rc": self.rc,
+            "spawned": self.spawned,
             "wall_s": self.wall_s,
         }
 
@@ -351,7 +353,16 @@ class Verifier:
 
     def _refuse(self, instance_hash, x, reason, start):
         result = VerifierResult(
-            instance_hash, x if _is_int(x) else None, False, reason, (reason,), None, None, None, self._wall(start)
+            instance_hash,
+            x if _is_int(x) else None,
+            False,
+            reason,
+            (reason,),
+            None,
+            None,
+            None,
+            self._wall(start),
+            False,
         )
         self._verdict(result)
         return result
@@ -364,7 +375,7 @@ class Verifier:
             rc, out, err = pari.run_gp([path], line, timeout_s=config.timeout_s, stack=config.stack_ceiling)
         except pari.GpTimeout:
             result = VerifierResult(
-                instance_hash, x, False, "timeout", ("timeout",), None, None, None, self._wall(start)
+                instance_hash, x, False, "timeout", ("timeout",), None, None, None, self._wall(start), True
             )
             self._log.debug(
                 "gp",
@@ -373,12 +384,13 @@ class Verifier:
                 stdout_digest=None,
                 stderr_digest=None,
                 timeout_s=config.timeout_s,
+                spawned=True,
             )
             self._verdict(result)
             return result
         accepted, reason, reasons = classify(rc, out, err, config.accept)
         result = VerifierResult(
-            instance_hash, x, accepted, reason, reasons, _digest(out), _digest(err), rc, self._wall(start)
+            instance_hash, x, accepted, reason, reasons, _digest(out), _digest(err), rc, self._wall(start), True
         )
         self._log.debug(
             "gp",
@@ -386,6 +398,7 @@ class Verifier:
             stdin_digest=_digest(line),
             stdout_digest=result.stdout_digest,
             stderr_digest=result.stderr_digest,
+            spawned=True,
         )
         self._verdict(result)
         return result
@@ -401,6 +414,7 @@ class Verifier:
             accepted=result.accepted,
             reason=result.reason,
             rc=result.rc,
+            spawned=result.spawned,
             wall_ms=round(result.wall_s * 1000, 3),
             gate_result=result.gate_result,
         )

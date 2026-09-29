@@ -13,10 +13,10 @@ step 3 tier_gate
 step 4 generator
 step 5 derivation
 step 6 verify
-verifier_arm slice_positive accepted=True reason=None gate_result=pass node=[HASH] gate_run=[HASH]
+verifier_arm slice_positive accepted=True reason=None gate_result=pass spawned=True node=[HASH] gate_run=[HASH]
 step 7 gate_run
-verifier_arm negative_coordinate accepted=False reason=Q-off-curve gate_result=fail node=[HASH] gate_run=[HASH]
-verifier_arm negative_scalar accepted=False reason=xP-ne-Q gate_result=fail node=[HASH] gate_run=[HASH]
+verifier_arm negative_coordinate accepted=False reason=Q-off-curve gate_result=fail spawned=True node=[HASH] gate_run=[HASH]
+verifier_arm negative_scalar accepted=False reason=xP-ne-Q gate_result=fail spawned=True node=[HASH] gate_run=[HASH]
 verifier_refused submitter_named reasons=['submitter-named-instance'] spawned=False gate_run=[HASH]
 step 8 negatives
 step 9 summary

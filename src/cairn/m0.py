@@ -55,6 +55,7 @@ VERIFIER_RESULT_NODE = Struct(
         Field("stdout_digest", Optional(STR)),
         Field("stderr_digest", Optional(STR)),
         Field("rc", Optional(INT)),
+        Field("spawned", BOOL),
         Field("arm", NON_EMPTY_STR),
     ],
 )
@@ -87,6 +88,13 @@ class Arm:
 
 
 @dataclass(frozen=True)
+class AdmissionSummary:
+    gate_run_hash: str
+    declared_tier: int
+    cost_tier: int
+
+
+@dataclass(frozen=True)
 class SliceResult:
     nodes: tuple
     arms: tuple
@@ -98,6 +106,7 @@ class SliceResult:
     receipt_hash: str | None
     statement_hash: str
     instance_hash: str
+    admission: AdmissionSummary
 
 
 NEXT_CERTIFY = "certify"
@@ -179,6 +188,7 @@ def _record_verifier_run(sub, gate_bundle, result, *, arm):
                 "stdout_digest": result.stdout_digest,
                 "stderr_digest": result.stderr_digest,
                 "rc": result.rc,
+                "spawned": result.spawned,
                 "arm": arm,
             },
         ),
@@ -201,6 +211,7 @@ def _record_verifier_run(sub, gate_bundle, result, *, arm):
         accepted=result.accepted,
         reason=result.reason,
         gate_result=result.gate_result,
+        spawned=result.spawned,
         node=node_hash,
         gate_run=run.hash,
     )
@@ -219,7 +230,7 @@ def _refuse_verifier_run(sub, gate_bundle, result, *, arm):
         at=cli.now_iso(),
     )
     claims.write_gate_run(sub, run)
-    lg.info("verifier_refused", arm=arm, reasons=list(result.reasons), gate_run=run.hash, spawned=result.rc is not None)
+    lg.info("verifier_refused", arm=arm, reasons=list(result.reasons), gate_run=run.hash, spawned=result.spawned)
     return run.hash
 
 
@@ -261,6 +272,8 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
     )
     if isinstance(decision, tiergate.TierRefused):
         raise SliceRefused(f"tier-refused:{','.join(decision.reasons)}", NEXT_CERTIFY)
+    admission = AdmissionSummary(decision.gate_run_hash, launch.declared_tier, decision.cost_tier)
+    cost_tag = f"tier{admission.cost_tier}"
 
     bundle_identity = toy_curve.identity_bundle()
     stdin_document = {"bits": bits, "seed": seed}
@@ -313,7 +326,7 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
                 "skill_identity_hash": identity,
                 "output_manifest_hash": attempt.output_manifest_hash,
                 "certificate_hash": certificate["cert_hash"],
-                "cost_tag": "tier0",
+                "cost_tag": cost_tag,
                 "bits": bits,
                 "seed": seed,
             },
@@ -387,7 +400,7 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
         arms.append(_arm(arm, result, node, run_hash))
 
     named = engine.run(gate_read, verifier.Submission(x, P=gate_read.P, Q=gate_read.Q))
-    if named.reason != "submitter-named-instance" or named.rc is not None:
+    if named.reason != "submitter-named-instance" or named.spawned:
         raise SliceRefused("submitter-named-not-refused", NEXT_DEBUG)
     refused_run = _refuse_verifier_run(sub, gate_bundle, named, arm="submitter_named")
     arms.append(_arm("submitter_named", named, None, refused_run))
@@ -395,10 +408,10 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
 
     certificate_ref = certificate["cert_hash"]
     nodes = (
-        SliceNode("A", KIND_GENERATOR, node_a, _grade_of(sub, node_a), "tier0", certificate_ref),
-        SliceNode("B", KIND_DERIVATION, node_b, _grade_of(sub, node_b), "tier0", certificate_ref),
-        SliceNode("C", KIND_VERIFIER_RESULT, node_c, _grade_of(sub, node_c), "tier0", certificate_ref),
-        SliceNode("D", "gate_run", node_d, GRADE_REPLAYABLE, "tier0", certificate_ref),
+        SliceNode("A", KIND_GENERATOR, node_a, _grade_of(sub, node_a), cost_tag, certificate_ref),
+        SliceNode("B", KIND_DERIVATION, node_b, _grade_of(sub, node_b), cost_tag, certificate_ref),
+        SliceNode("C", KIND_VERIFIER_RESULT, node_c, _grade_of(sub, node_c), cost_tag, certificate_ref),
+        SliceNode("D", "gate_run", node_d, GRADE_REPLAYABLE, cost_tag, certificate_ref),
     )
     lg.info("step", step=9, name="summary", nodes=[n.hash for n in nodes], attempt=attempt.attempt_id)
     return SliceResult(
@@ -412,6 +425,7 @@ def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_c
         attempt.receipt_hash,
         statement.hash,
         instance.instance_hash,
+        admission,
     )
 
 
@@ -424,7 +438,7 @@ def _arm(name, result, node, gate_run):
         result.gate_result,
         node,
         gate_run,
-        result.rc is not None,
+        result.spawned,
         result.instance_hash,
         result.stdout_digest,
         result.stderr_digest,
@@ -573,11 +587,20 @@ def _run(ns):
         "served_from_cache": result.served_from_cache,
         "receipt_hash": result.receipt_hash,
         "bundle_hash": result.bundle_hash,
+        "admission": {
+            "gate_run_hash": result.admission.gate_run_hash,
+            "declared_tier": result.admission.declared_tier,
+            "cost_tier": result.admission.cost_tier,
+        },
         "exit_code": exits.OK,
     }
     if getattr(ns, "json", False):
         cli.emit_json("m0-run", payload)
     else:
+        print(
+            f"admission {result.admission.gate_run_hash} declared_tier={result.admission.declared_tier} "
+            f"cost_tier={result.admission.cost_tier}"
+        )
         for node in result.nodes:
             print(f"{node.label} {node.kind} {node.hash} {node.replay_grade} {node.cost_tag}")
         for arm in result.arms:

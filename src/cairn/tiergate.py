@@ -69,6 +69,7 @@ class Admitted:
     launch: object
     ticket_hash: str | None
     ticket_tier: int | None
+    cost_tier: int
     gate_run_hash: str
     reasons: tuple = ()
 
@@ -339,12 +340,14 @@ class TierGate:
             reminted = self._mint(launch, selected) if stale else None
             return TierRefused(launch, reasons, ticket_tier, run.hash, refusal_ids, reminted)
 
+        if cost_tier is None:
+            raise RuntimeError("admitted launch has no derived cost tier")
         minted = (
             self._mint(launch, selected)
             if selected is not None and recorded is None
             else (recorded["ticket_hash"] if recorded else None)
         )
-        return Admitted(launch, minted, ticket_tier, run.hash)
+        return Admitted(launch, minted, ticket_tier, cost_tier, run.hash)
 
     def _mint(self, launch, selected):
         tier, kind, node_hash = selected

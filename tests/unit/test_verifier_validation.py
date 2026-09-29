@@ -96,6 +96,7 @@ def test_pre_spawn_refusal_table(popen_spy, run_gp_spy, label, build, expected):
         "refused",
     )
     assert result.stdout_digest is None and result.stderr_digest is None
+    assert result.spawned is False
     assert popen_spy == [] and run_gp_spy == []
 
 
@@ -242,7 +243,7 @@ def test_reason_vocabulary_is_the_bead_list():
 
 
 def test_result_node_and_gate_result_shape():
-    result = VerifierResult("ab" * 32, 3, True, None, (), "cd" * 32, "ef" * 32, 0, 0.017)
+    result = VerifierResult("ab" * 32, 3, True, None, (), "cd" * 32, "ef" * 32, 0, 0.017, True)
     assert result.node() == {
         "instance_hash": "ab" * 32,
         "x": 3,
@@ -251,12 +252,16 @@ def test_result_node_and_gate_result_shape():
         "stdout_digest": "cd" * 32,
         "stderr_digest": "ef" * 32,
         "rc": 0,
+        "spawned": True,
         "wall_s": 0.017,
     }
     assert result.gate_result == "pass"
-    assert VerifierResult(None, 3, False, "bad-field", ("bad-field",), None, None, None, 0.0).gate_result == "refused"
-    assert VerifierResult(None, 3, False, "backend-crash", ("backend-crash",), "x", "y", 0, 0.0).gate_result == "fail"
-    assert VerifierResult(None, 3, False, "timeout", ("timeout",), None, None, None, 0.0).gate_result == "fail"
+    refused = VerifierResult(None, 3, False, "bad-field", ("bad-field",), None, None, None, 0.0, False)
+    crashed = VerifierResult(None, 3, False, "backend-crash", ("backend-crash",), "x", "y", 0, 0.0, True)
+    timed_out = VerifierResult(None, 3, False, "timeout", ("timeout",), None, None, None, 0.0, True)
+    assert refused.gate_result == "refused" and refused.spawned is False
+    assert crashed.gate_result == "fail" and crashed.spawned is True
+    assert timed_out.gate_result == "fail" and timed_out.spawned is True
 
 
 def test_config_defaults_and_bundle_form():

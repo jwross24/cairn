@@ -8,11 +8,12 @@ from pathlib import Path
 
 import pytest
 
-from cairn import log, pari, verifier
+from cairn import bundle, claims, log, m0, pari, verifier
 from cairn.verifier import Instance, Submission, Verifier, default_config
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import _ec
+import _substrate_helpers as helpers
 
 CURVE60 = _ec.curve60()
 X60 = 123456789
@@ -23,6 +24,7 @@ STARTUP_OVERFLOW_STACK = "2M"
 STARTUP_FAIL_STDOUT = "### Errors on startup, exiting..."
 OVERFLOW_FRAGMENT = "ellcard: the PARI stack overflows !"
 RANDOM_DRAWS = 20
+TIMEOUT_SCRIPT = b"verify(p,a,b,n,Px,Py,Qx,Qy,x)={while(1,);};\n"
 
 
 def _inst60():
@@ -186,9 +188,48 @@ def test_killed_child_rc_minus_9_is_backend_crash(monkeypatch):
 
 def test_timeout_on_a_good_instance_is_timeout():
     inst, x = _inst60()
-    result = Verifier(default_config(timeout_s=0.001)).run(inst, x)
+    result = Verifier(default_config(script=TIMEOUT_SCRIPT, timeout_s=0.05)).run(inst, x)
     assert (result.accepted, result.reason, result.rc, result.gate_result) == (False, "timeout", None, "fail")
+    assert result.spawned is True and result.node()["spawned"] is True
     assert result.stdout_digest is None and result.stderr_digest is None
+
+
+def test_real_timeout_is_spawned_in_its_node_and_correlated_gate_logs(tmp_path, pinned_bundle, caplog):
+    caplog.set_level(logging.DEBUG, logger=log.LOGGER_NAME)
+    bundle_path, pin_path = pinned_bundle()
+    gate_bundle = bundle.GateBundle.open(bundle_path, pin_path)
+    sub = helpers.open_writer(tmp_path)
+    try:
+        inst, x = _inst60()
+        result = Verifier(default_config(script=TIMEOUT_SCRIPT, timeout_s=0.05)).run(inst, x)
+        node_hash, gate_run_hash = m0._record_verifier_run(sub, gate_bundle, result, arm="real_timeout")
+        refusal_run_hash = m0._refuse_verifier_run(sub, gate_bundle, result, arm="real_timeout_reporting")
+        arm = m0._arm("real_timeout", result, node_hash, gate_run_hash)
+
+        assert result.reason == "timeout" and result.rc is None and result.spawned is True
+        assert arm.spawned is True and arm.rc is None
+        node = sub.get_node(node_hash)
+        decoded = m0.canon.decode(m0.VERIFIER_RESULT_NODE, bytes(node["canonical"]))
+        assert decoded["spawned"] is True and decoded["rc"] is None
+        recorded = claims.get_gate_run(sub, gate_run_hash)
+        assert recorded["result"] == "fail" and recorded["plan_step"] == "real_timeout"
+        arm_log = next(
+            record
+            for record in caplog.records
+            if record.name == log.LOGGER_NAME and record.step == "m0" and record.getMessage() == "verifier_arm"
+        )
+        assert arm_log.fields["spawned"] is True
+        assert arm_log.fields["node"] == node_hash and arm_log.fields["gate_run"] == gate_run_hash
+
+        refused_log = next(
+            record
+            for record in caplog.records
+            if record.name == log.LOGGER_NAME and record.step == "m0" and record.getMessage() == "verifier_refused"
+        )
+        assert refused_log.fields["spawned"] is True and refused_log.fields["gate_run"] == refusal_run_hash
+        assert claims.get_gate_run(sub, refusal_run_hash)["result"] == "fail"
+    finally:
+        sub.close()
 
 
 def test_submission_with_bare_x_is_verified(run_gp_spy):
@@ -235,6 +276,7 @@ def test_every_run_logs_one_info_verdict_and_every_spawn_one_debug_gp_record(cap
     verdicts = [r for r in ours if r.getMessage() == "verdict"]
     assert len(verdicts) == len(runs)
     assert [r.fields["reason"] for r in verdicts] == [None, "xP-ne-Q", "bad-field", "submitter-named-instance"]
+    assert [r.fields["spawned"] for r in verdicts] == [True, True, False, False]
     assert all({"instance_hash", "accepted", "reason", "rc", "wall_ms"} <= set(r.fields) for r in verdicts)
     assert all(r.levelno == logging.INFO for r in verdicts)
     spawns = [r for r in ours if r.getMessage() == "gp"]
@@ -243,4 +285,5 @@ def test_every_run_logs_one_info_verdict_and_every_spawn_one_debug_gp_record(cap
         r.levelno == logging.DEBUG and {"argv", "stdin_digest", "stdout_digest", "stderr_digest"} <= set(r.fields)
         for r in spawns
     )
+    assert all(r.fields["spawned"] is True for r in spawns)
     assert all(r.fields["argv"][:7] == pari.gp_argv("64M") for r in spawns)

@@ -9,7 +9,7 @@ from pathlib import Path
 import blake3
 import pytest
 
-from cairn import cli, exits, log, m0
+from cairn import bundle, cli, exits, log, m0, tiergate
 from cairn.skills import toy_curve
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -122,6 +122,14 @@ def test_the_operator_sequence_produces_four_nodes_two_negatives_and_one_refusal
 
     assert document["schema_version"] == cli.SCHEMA_VERSION and document["command"] == "m0-run"
     assert document["exit_code"] == exits.OK
+    admission = document["admission"]
+    assert set(admission) == {"gate_run_hash", "declared_tier", "cost_tier"}
+    assert admission["declared_tier"] == 0
+    gate_bundle = bundle.GateBundle.open(deploy["paths"]["bundle"], deploy["paths"]["pin"])
+    evaluation = toy_curve.COST_PROFILE.evaluate(40)
+    expected_cost_tier = tiergate.tier_for_cost(gate_bundle.tiers["boundary_table"], evaluation.expected_core_s)
+    assert admission["cost_tier"] == expected_cost_tier
+    cost_tag = f"tier{admission['cost_tier']}"
     assert [node["label"] for node in document["nodes"]] == ["A", "B", "C", "D"]
     assert [node["kind"] for node in document["nodes"]] == [
         "m0_generator",
@@ -135,7 +143,7 @@ def test_the_operator_sequence_produces_four_nodes_two_negatives_and_one_refusal
         "Verifiable",
         "Replayable",
     ]
-    assert all(node["cost_tag"] == "tier0" and node["selftest_ref"] for node in document["nodes"])
+    assert all(node["cost_tag"] == cost_tag and node["selftest_ref"] for node in document["nodes"])
     assert len({node["hash"] for node in document["nodes"]}) == 4
     assert document["served_from_cache"] is False
 
@@ -160,6 +168,7 @@ def test_the_operator_sequence_produces_four_nodes_two_negatives_and_one_refusal
                 "stdout_digest": arm["stdout_digest"],
                 "stderr_digest": arm["stderr_digest"],
                 "rc": arm["rc"],
+                "spawned": arm["spawned"],
                 "arm": arm["arm"],
             },
         )
@@ -171,8 +180,18 @@ def test_the_operator_sequence_produces_four_nodes_two_negatives_and_one_refusal
             node["hash"]: conn.execute("SELECT replay_grade FROM nodes WHERE hash = ?", (node["hash"],)).fetchone()[0]
             for node in document["nodes"][:3]
         }
+        admission_run = conn.execute(
+            "SELECT * FROM gate_runs WHERE run_id = ?", (admission["gate_run_hash"],)
+        ).fetchone()
+        generator = conn.execute(
+            "SELECT canonical FROM nodes WHERE hash = ?", (document["nodes"][0]["hash"],)
+        ).fetchone()
     finally:
         conn.close()
+    assert admission_run["gate"] == "tier_gate"
+    assert admission_run["result"] == "admitted" and json.loads(admission_run["reasons"]) == []
+    assert admission_run["bundle_hash"] == document["bundle_hash"]
+    assert m0.canon.decode(m0.GENERATOR_NODE, bytes(generator["canonical"]))["cost_tag"] == cost_tag
     assert [persisted[node["hash"]] for node in document["nodes"][:3]] == ["Replayable", "Verifiable", "Verifiable"]
 
     counts = _counts(deploy["paths"]["db"])
@@ -280,12 +299,13 @@ def test_the_human_rendering_names_every_node_negative_and_refusal(deploy, capsy
     code, out, err = deploy["m0_run"]("--bits", "40", "--seed", "1")
     assert code == exits.OK, err
     lines = out.strip().splitlines()
-    assert len(lines) == 7
-    assert [line.split()[0] for line in lines[:4]] == ["A", "B", "C", "D"]
-    assert [line.split()[1] for line in lines[:4]] == ["m0_generator", "m0_derivation", "verifier_result", "gate_run"]
-    assert lines[4].startswith("- FAIL Q-off-curve negative_coordinate ")
-    assert lines[5].startswith("- FAIL xP-ne-Q negative_scalar ")
-    assert lines[6].startswith("- refused submitter_named ")
+    assert len(lines) == 8
+    assert lines[0].startswith("admission ") and "declared_tier=0 cost_tier=0" in lines[0]
+    assert [line.split()[0] for line in lines[1:5]] == ["A", "B", "C", "D"]
+    assert [line.split()[1] for line in lines[1:5]] == ["m0_generator", "m0_derivation", "verifier_result", "gate_run"]
+    assert lines[5].startswith("- FAIL Q-off-curve negative_coordinate ")
+    assert lines[6].startswith("- FAIL xP-ne-Q negative_scalar ")
+    assert lines[7].startswith("- refused submitter_named ")
 
 
 @pytest.mark.timeout(600)
@@ -428,7 +448,7 @@ def _transcript(records):
             lines.append(f"step {fields['step']} {fields['name']}")
         elif event == "verifier_arm":
             lines.append(
-                f"verifier_arm {fields['arm']} accepted={fields['accepted']} reason={fields['reason']} gate_result={fields['gate_result']} node={fields['node']} gate_run={fields['gate_run']}"
+                f"verifier_arm {fields['arm']} accepted={fields['accepted']} reason={fields['reason']} gate_result={fields['gate_result']} spawned={fields['spawned']} node={fields['node']} gate_run={fields['gate_run']}"
             )
         else:
             lines.append(
