@@ -10,6 +10,7 @@ DISCOVERY = ("--json", "capabilities", "robot-docs")
 BOUNDED_ARGV = {"measure": ("toy-curve-tries", "--sizes", "30", "--seeds", "2")}
 DEPLOY_ARGV = (
     "doctor",
+    "status",
     "bundle",
     "attest",
     "selftest",
@@ -99,6 +100,14 @@ def _deploy_argv(name, tmp_path, pinned_bundle, clear_flags, capsys):
         return ("--db", str(db))
     bundle_path, pin_path = pinned_bundle()
     paths = ("--bundle", str(bundle_path), "--pin", str(pin_path))
+    if name == "status":
+        from cairn import substrate
+
+        db = tmp_path / "substrate.sqlite"
+        with substrate.Substrate.open(db):
+            pass
+        attest_path = tmp_path / "missing-attestations.log"
+        return ("--db", str(db), "--attest", str(attest_path), *paths)
     if name == "justify":
         from cairn import attest, claims, substrate
 

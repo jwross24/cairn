@@ -40,6 +40,8 @@ positional arguments:
                         its certificate; exit 2 on any failure
     startup-scan        move every attempt left RUNNING by a dead harness to
                         INTERRUPTED before any new launch
+    status              observe bundle, substrate and command preconditions in
+                        one read-only document
 
 options:
   -h, --help            show this help message and exit

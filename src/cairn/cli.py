@@ -46,6 +46,7 @@ COMMAND_MODULES = [
     "cairn.justify",
     "cairn.m0",
     "cairn.doctor",
+    "cairn.status",
 ]
 _SUBCOMMANDS = {}
 
