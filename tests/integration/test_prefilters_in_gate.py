@@ -6,13 +6,15 @@ from pathlib import Path
 
 import pytest
 
-from cairn import bundle, claims, prefilter, tiergate
+from cairn import bundle, claims, log, prefilter, tiergate
 from cairn import statement_prefilters as battery
 from cairn.profile import CostProfile, Production, SizeCost, Verification
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import _substrate_helpers as helpers
 import factories
+
+lg = log.get("test_prefilters_in_gate")
 
 AT = "2026-09-08T00:00:00.000000+00:00"
 METHOD = {"interface_version": "toy/1", "params": {}}
@@ -25,6 +27,20 @@ PLAIN_TRAP = battery.Statement(name="trap", conclusion="∃ n : Nat, n ≠ 0 →
 BINDER_TRAP = battery.Statement(name="silent", conclusion="∃ n : Nat, n > 0 ∧ (n ≠ 1 → False)")
 NESTED_TRAP = battery.Statement(name="nested", conclusion="∃ n : Nat, (n ≠ 0 → False) ∧ True")
 AXIOMATIZED = battery.Statement(name="axiomatized", conclusion="1 = 1", kind=battery.AXIOM)
+ELLIPTIC_CURVE_IMPORT = "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
+CURVE_BINDERS = "{F : Type} [Field F] [DecidableEq F] {W : WeierstrassCurve.Affine F}"
+SCOPED_DLP = battery.Statement(
+    name="scoped_dlp",
+    binders=f"{CURVE_BINDERS} (P Q : W.Point)",
+    conclusion="(∃ k : Int, k • P = Q) ↔ Q ∈ AddSubgroup.zmultiples P",
+    imports=(ELLIPTIC_CURVE_IMPORT,),
+)
+DEGENERATE_DLP = battery.Statement(
+    name="degenerate_dlp",
+    binders=f"{CURVE_BINDERS} (P : W.Point)",
+    conclusion="∃ k : Int, k • P = 0",
+    imports=(ELLIPTIC_CURVE_IMPORT,),
+)
 STUBBED = battery.Statement(name="stubbed", conclusion="Nat", kind=battery.OPAQUE)
 
 QUIET_ON_ALL_FOUR = dict.fromkeys(battery.PRODUCED_FILTERS, prefilter.QUIET)
@@ -119,6 +135,20 @@ def test_hypotheses_that_derive_False_are_rejected(battery_project):
     _, result = produced(battery_project, VACUOUS, "02" * 32)
     assert result.verdicts[prefilter.VACUITY] == prefilter.REJECT
     assert prefilter.VACUITY not in result.flags
+
+
+@pytest.mark.slow
+def test_dlp_definition_not_vacuous(battery_project):
+    gate_bundle, _ = battery_project
+    scoped = battery.run(gate_bundle, SCOPED_DLP, statement_hash="0b" * 32)
+    lg.info("battery", statement="scoped_dlp", verdicts=scoped.verdicts, detail=scoped.detail)
+    degenerate = battery.run(gate_bundle, DEGENERATE_DLP, statement_hash="0c" * 32)
+    lg.info("battery", statement="degenerate_dlp", verdicts=degenerate.verdicts, detail=degenerate.detail)
+
+    assert scoped.verdicts[prefilter.VACUITY] == prefilter.QUIET
+    assert battery.EXISTS_TRAP not in scoped.detail["vacuity"]
+    assert degenerate.verdicts[prefilter.VACUITY] == prefilter.REJECT
+    assert battery.EXISTS_TRAP in degenerate.detail["vacuity"]
 
 
 @pytest.mark.slow

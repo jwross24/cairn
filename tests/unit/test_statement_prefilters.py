@@ -109,7 +109,7 @@ def test_the_rendered_module_imports_the_linters_and_anchors_every_probe():
     for name in battery.LINTER_IMPORTS:
         assert f"import {name}" in source
     assert "set_option linter.style.stubs true" in source
-    assert set(anchors) == {"statement", "vacuity", "provable", "refutable"}
+    assert set(anchors) == {"statement", "vacuity", "provable", "refutable", "exists_trap"}
     lines = source.split("\n")
     for anchor, at in anchors.items():
         assert lines[at - 1].startswith(("theorem", "axiom", "opaque", "def")), anchor
@@ -128,6 +128,50 @@ def test_a_premise_that_derives_False_rejects():
     verdicts, flags, _ = _classify(VACUOUS, [], ("provable", "refutable"))
     assert verdicts[prefilter.VACUITY] == prefilter.REJECT
     assert prefilter.VACUITY not in flags
+
+
+def test_a_premise_that_derives_False_names_the_premise_in_the_detail():
+    _, _, detail = _classify(VACUOUS, [], ("provable", "refutable"))
+    assert detail["vacuity"] == [battery.PREMISE_FALSE] == ["vacuity:premise-false"]
+
+
+def test_an_existential_conclusion_carries_the_witness_probe_and_no_other_conclusion_does():
+    _, anchors = battery.render(battery.Statement(name="t", conclusion="∃ k : Int, k = 0"))
+    assert "exists_trap" in anchors
+    _, anchors = battery.render(battery.Statement(name="t", conclusion="1 = 1"))
+    assert "exists_trap" not in anchors
+    _, anchors = battery.render(battery.Statement(name="t", conclusion="  ∃ k : Int, k = 0", kind=battery.OPAQUE))
+    assert "exists_trap" not in anchors
+
+
+def test_the_witness_probe_supplies_zero_and_falls_back_to_sorry():
+    source, anchors = battery.render(battery.Statement(name="t", conclusion="∃ k : Int, k = 0"))
+    line = source.split("\n")[anchors["exists_trap"]]
+    assert line.startswith("  by intros; first | ((repeat' refine ⟨0, ?_⟩); first | ")
+    assert line.endswith(") | sorry")
+    for tactic in battery.BOUNDED_TACTICS:
+        assert f"({tactic}; done)" in line
+
+
+def test_a_witness_probe_that_closes_without_sorry_rejects_and_names_the_trap():
+    statement = battery.Statement(name="t", conclusion="∃ k : Int, k = 0")
+    verdicts, flags, detail = _classify(statement, [], ("vacuity", "provable", "refutable"))
+    assert verdicts[prefilter.VACUITY] == prefilter.REJECT
+    assert detail["vacuity"] == [battery.EXISTS_TRAP] == ["vacuity:exists-trap"]
+    assert prefilter.VACUITY not in flags
+
+
+def test_a_witness_probe_that_falls_back_to_sorry_stays_quiet():
+    statement = battery.Statement(name="t", conclusion="∃ k : Int, k = 0")
+    verdicts, _, detail = _classify(statement, [], _all_unproved(statement))
+    assert verdicts[prefilter.VACUITY] == prefilter.QUIET
+    assert detail["vacuity"] == []
+
+
+def test_a_false_premise_and_a_trivial_witness_are_both_named():
+    statement = battery.Statement(name="t", hypotheses=("False",), conclusion="∃ k : Int, k = 0")
+    _, _, detail = _classify(statement, [], ())
+    assert detail["vacuity"] == [battery.PREMISE_FALSE, battery.EXISTS_TRAP]
 
 
 def test_a_premise_that_stands_stays_quiet():
@@ -161,10 +205,10 @@ def test_stub_and_new_axiom_share_one_verdict_and_are_separated_in_the_detail(wa
 
 
 def test_a_statement_the_bounded_prover_closes_flags_and_names_which_side_closed():
-    verdicts, _, detail = _classify(CLEAN, [], ("vacuity", "refutable"))
+    verdicts, _, detail = _classify(CLEAN, [], ("vacuity", "refutable", "exists_trap"))
     assert verdicts[prefilter.BOUNDED_PROVER] == prefilter.FLAG
     assert detail["bounded_prover"] == [battery.PROVABLE]
-    verdicts, _, detail = _classify(CLEAN, [], ("vacuity", "provable"))
+    verdicts, _, detail = _classify(CLEAN, [], ("vacuity", "provable", "exists_trap"))
     assert detail["bounded_prover"] == [battery.REFUTABLE]
 
 

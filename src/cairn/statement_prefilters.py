@@ -7,6 +7,10 @@ Four filters run. `roundtrip_divergence` is deliberately not among them: it is c
 `cairn-ii6`, and a filter that did not run is absent from the verdicts rather than QUIET, so
 `PrefilterResult.passed` is False and Tier-1 theorem admission stays shut until that bead lands.
 
+`vacuity` rejects on two grounds, named in `detail["vacuity"]`: hypotheses that derive `False`
+(`vacuity:premise-false`), and an existential conclusion the bounded tactics close at the witness
+`0` (`vacuity:exists-trap`), as in `∃ k : Int, k • P = 0`.
+
 The `exists_implication` and `stub_or_axiom` filters are formal-conjectures' `ExistsImplicationLinter`
 and `StubLinter`, vendored under `lean/vendor/formal_conjectures/` and carried in the gate bundle as
 raw objects, so the pinned revision is what runs whatever upstream does later. Their measured
@@ -81,6 +85,9 @@ STUB = "stub"
 NEW_AXIOM = "new_axiom"
 PROVABLE = "provable"
 REFUTABLE = "refutable"
+
+PREMISE_FALSE = "vacuity:premise-false"
+EXISTS_TRAP = "vacuity:exists-trap"
 
 
 class PrefilterBatteryError(Exception):
@@ -177,6 +184,11 @@ def _tactic_block():
     return f"  by intros; first | {attempts} | sorry"
 
 
+def _witness_block():
+    attempts = " | ".join(f"({tactic}; done)" for tactic in BOUNDED_TACTICS)
+    return f"  by intros; first | ((repeat' refine ⟨0, ?_⟩); first | {attempts}) | sorry"
+
+
 def render(statement):
     lines = [f"import {name}" for name in (*LINTER_IMPORTS, *statement.imports)]
     lines += ["", "set_option linter.style.stubs true", ""]
@@ -194,6 +206,8 @@ def render(statement):
     if statement.proposition_valued:
         declare("provable", f"theorem cairn_provable : {statement.proposition}", _tactic_block())
         declare("refutable", f"theorem cairn_refutable : ¬ ({statement.proposition})", _tactic_block())
+        if statement.conclusion.lstrip().startswith("∃"):
+            declare("exists_trap", f"theorem cairn_exists_trap : {statement.proposition}", _witness_block())
     return "\n".join(lines), anchors
 
 
@@ -222,14 +236,18 @@ def classify(found, anchors):
     if any(AXIOM_WARNING in text for text in on_statement):
         detail["stub_or_axiom"].append(NEW_AXIOM)
 
-    vacuous = _proved(found, anchors, "vacuity")
+    detail["vacuity"] = []
+    if _proved(found, anchors, "vacuity"):
+        detail["vacuity"].append(PREMISE_FALSE)
+    if "exists_trap" in anchors and _proved(found, anchors, "exists_trap"):
+        detail["vacuity"].append(EXISTS_TRAP)
     if "provable" in anchors and _proved(found, anchors, "provable"):
         detail["bounded_prover"].append(PROVABLE)
     if "refutable" in anchors and _proved(found, anchors, "refutable"):
         detail["bounded_prover"].append(REFUTABLE)
 
     verdicts = {
-        prefilter.VACUITY: prefilter.REJECT if vacuous else prefilter.QUIET,
+        prefilter.VACUITY: prefilter.REJECT if detail["vacuity"] else prefilter.QUIET,
         prefilter.EXISTS_IMPLICATION: prefilter.FLAG if trapped else prefilter.QUIET,
         prefilter.STUB_OR_AXIOM: prefilter.FLAG if detail["stub_or_axiom"] else prefilter.QUIET,
     }
