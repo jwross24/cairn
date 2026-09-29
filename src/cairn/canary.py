@@ -31,7 +31,7 @@ FAIL = "fail"
 
 CONFIG_DIR_ENV = "CLAUDE_CONFIG_DIR"
 HOME_ENV = "HOME"
-CONTROL_SETTING_SOURCES = ["project", "local"]
+CONTROL_SETTING_SOURCES = ["user", "project", "local"]
 
 
 class CanaryRefused(ValueError):
@@ -48,12 +48,13 @@ def control_token(seed):
     return "CAIRN-CANARY-CONTROL-" + canon.digest(keys.TAG_DISPATCH_CANARY, f"control\x00{seed}".encode())[:32]
 
 
-def path_for(root, source, value):
+def path_for(root, home, source, value):
     root = Path(root)
+    home = Path(home)
     if source == PROJECT_INSTRUCTIONS:
         return root / "CLAUDE.md"
     if source == USER_INSTRUCTIONS:
-        return root / ".claude" / "CLAUDE.md"
+        return home / ".claude" / "CLAUDE.md"
     if source == SKILL_FILE:
         return root / ".claude" / "skills" / f"canary-{value}" / "SKILL.md"
     return root / f"uncommitted-{value}.md"
@@ -69,11 +70,11 @@ def _body(source, value):
     return f"{_instruction(value)}\n"
 
 
-def plant(root, *, seed):
+def plant(root, *, home, seed):
     planted = []
     for source in SOURCES:
         value = token(source, seed)
-        path = path_for(root, source, value)
+        path = path_for(root, home, source, value)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(_body(source, value))
         planted.append({"source": source, "token": value})
@@ -123,6 +124,8 @@ def options_for(prepared, cwd, *, settings_enabled):
         return options
     return replace(
         options,
+        system_prompt={"type": "preset", "preset": "claude_code", "append": prepared.template},
+        tools=["Skill"],
         setting_sources=list(CONTROL_SETTING_SOURCES),
         skills=None,
         allowed_tools=[*options.allowed_tools, "Skill"],

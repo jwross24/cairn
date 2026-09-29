@@ -1,8 +1,11 @@
 import asyncio
+import http.client
+import json
 import os
 import re
 import sqlite3
 import sys
+import threading
 from pathlib import Path
 
 import pytest
@@ -11,6 +14,7 @@ from claude_agent_sdk import CLIConnectionError
 from cairn import canary, dispatch, worker
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from research.grounding import probe_dispatch_canary
 from tests.fixtures.worker_dispatch import arena
 
 __all__ = ["arena"]
@@ -34,16 +38,17 @@ def _pass_record(sub, **overrides):
     return canary.record(sub, **{**fields, **overrides})
 
 
-def test_planting_writes_one_distinct_token_into_each_settings_source(tmp_path):
-    plantings = canary.plant(tmp_path, seed=SEED)
+def test_planting_writes_each_source_under_its_own_root(tmp_path):
+    home = tmp_path / "home"
+    plantings = canary.plant(tmp_path, home=home, seed=SEED)
     assert tuple(p["source"] for p in plantings) == canary.SOURCES
     assert len({p["token"] for p in plantings}) == len(canary.SOURCES)
     for planted in plantings:
-        path = canary.path_for(tmp_path, planted["source"], planted["token"])
+        path = canary.path_for(tmp_path, home, planted["source"], planted["token"])
         assert path.is_file()
         assert planted["token"] in path.read_text() or planted["token"] in path.name
     assert (tmp_path / "CLAUDE.md").is_file()
-    assert (tmp_path / ".claude" / "CLAUDE.md").is_file()
+    assert (home / ".claude" / "CLAUDE.md").is_file()
     skill_token = canary.token(canary.SKILL_FILE, SEED)
     assert (tmp_path / ".claude" / "skills" / f"canary-{skill_token}" / "SKILL.md").is_file()
     status_token = canary.token(canary.WORKING_TREE_STATUS, SEED)
@@ -113,6 +118,85 @@ def test_a_recorded_canary_is_content_addressed_append_only_and_read_back(arena)
             sub.conn.execute(statement)
 
 
+@pytest.mark.parametrize(
+    ("no_errors", "missing_source"),
+    [(False, None), (True, canary.USER_INSTRUCTIONS)],
+)
+def test_incomplete_request_capture_writes_no_grounding_record(arena, no_errors, missing_source):
+    sub, _, _ = arena
+    required_source_checks = {source: source != missing_source for source in canary.SOURCES}
+    written = probe_dispatch_canary._record_if_complete(
+        sub,
+        no_errors=no_errors,
+        required_source_checks=required_source_checks,
+        plantings=_plantings(),
+        observed=canary.control_token(SEED),
+        control_observed=" ".join(p["token"] for p in _plantings()),
+        handed_control_detected=True,
+        sdk_version=worker.SDK_VERSION,
+        cli_version=worker.CLI_VERSION,
+    )
+    assert written is None
+    assert sub.conn.execute(f"SELECT COUNT(*) FROM {canary.TABLE}").fetchone()[0] == 0
+    with pytest.raises(canary.CanaryRefused, match="holds no canary record"):
+        canary.require_grounded(sub)
+
+
+def test_local_capture_endpoint_persists_only_the_posted_request_body(arena, tmp_path):
+    sub, _, _ = arena
+    server = probe_dispatch_canary.CaptureServer(("127.0.0.1", 0))
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    body = b'{"model":"local-test","messages":[],"stream":false}'
+    connection = http.client.HTTPConnection("127.0.0.1", server.server_port)
+    try:
+        connection.request(
+            "POST",
+            "/v1/messages",
+            body=body,
+            headers={"Authorization": "Bearer local-test-secret"},
+        )
+        response = connection.getresponse()
+        assert response.status == 200
+        assert json.loads(response.read())["content"][0]["text"] == "LOCAL_CAPTURE_ONLY"
+        with server.requests_lock:
+            captured = tuple(server.requests)
+    finally:
+        connection.close()
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+    entries = probe_dispatch_canary._persist_bodies(sub, tmp_path, "test", captured)
+    assert captured == (body,)
+    assert "local-test-secret" not in captured[0].decode()
+    assert sub.get_blob(entries[0]["blob_hash"]) == body
+    assert (tmp_path / entries[0]["file"]).read_bytes() == body
+
+
+def test_local_capture_endpoint_retains_a_malformed_body_for_refusal():
+    server = probe_dispatch_canary.CaptureServer(("127.0.0.1", 0))
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    body = b'{"messages":'
+    connection = http.client.HTTPConnection("127.0.0.1", server.server_port)
+    try:
+        connection.request("POST", "/v1/messages", body=body)
+        response = connection.getresponse()
+        assert response.status == 400
+        response.read()
+        with server.requests_lock:
+            captured = tuple(server.requests)
+    finally:
+        connection.close()
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+    observation = probe_dispatch_canary._classify_arm(captured, _plantings(), canary.control_token(SEED))
+    assert captured == (body,)
+    assert observation["request_count"] == 1
+    assert observation["valid_json"] is False
+
+
 def test_an_ungrounded_path_refuses_and_a_passing_canary_grounds_it(arena):
     sub, _, _ = arena
     with pytest.raises(canary.CanaryRefused, match="holds no canary record"):
@@ -162,8 +246,15 @@ def test_a_grounded_canary_lets_the_dispatch_reach_the_sdk(arena):
 def test_the_control_run_options_enable_the_settings_sources_the_dispatch_suppresses(arena, tmp_path):
     sub, gate_bundle, node = arena
     prepared = dispatch._prepare(sub, gate_bundle, role="echo", node_ids=(node,))
-    assert canary.options_for(prepared, tmp_path, settings_enabled=False).setting_sources == []
-    assert canary.options_for(prepared, tmp_path, settings_enabled=True).setting_sources == ["project", "local"]
+    dispatch_options = canary.options_for(prepared, tmp_path, settings_enabled=False)
+    assert dispatch_options == worker._options(prepared, tmp_path)
+    control_options = canary.options_for(prepared, tmp_path, settings_enabled=True)
+    assert control_options.setting_sources == ["user", "project", "local"]
+    assert control_options.system_prompt == {"type": "preset", "preset": "claude_code", "append": prepared.template}
+    assert control_options.tools == ["Skill"]
+    assert control_options.allowed_tools == ["Skill"]
+    assert control_options.skills is None
+    assert control_options.extra_args == {"no-session-persistence": None}
 
 
 def test_the_settings_home_the_canary_plants_into_is_scoped_and_restored(tmp_path, monkeypatch):
