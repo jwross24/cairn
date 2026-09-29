@@ -423,6 +423,7 @@ def test_every_direct_lean_import_has_one_explicit_lane_classification():
         "tests/unit/test_container.py",
         "tests/unit/test_identity_sources.py",
         "tests/unit/test_lean_pins.py",
+        "tests/unit/test_linux_dependency_cache.py",
     }
     indirect_lean = {"tests/integration/test_prefilters_in_gate.py"}
     assert not set(LEAN_TEST_PATHS) & set(SOLUTION_TEST_PATHS)
