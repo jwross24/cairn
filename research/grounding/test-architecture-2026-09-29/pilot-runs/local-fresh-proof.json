@@ -4,17 +4,49 @@
   "raw_sha256": "ac0d917b53b67192c52fb9b93075ad965f02b1977bc449c9203bc8ad37fa8a50",
   "status": "passed",
   "scope": "two explicit pytest nodes, restored prerequisite cache, already-populated shared Docker daemon; no fresh-daemon or speedup claim",
-  "source_commit": "09a8a03852ca3473abaae0ce87c907b6aafdee82",
   "helper_sha256": "905f21d4914cd4ce59c76dfc86b60c4d14bd2b8a40875900e284c519c8a2d36f",
   "source_artifacts": {
     "initial_source_manifest": {
       "path": "/tmp/cairn-lane3.2ARmLN/transport-proof-source-sha256.txt",
-      "sha256": "b0076a44c7a1ef2ad1c2c2c427e231177425e9f689edd63eef15cdd8a79d3b1a"
+      "sha256": "b0076a44c7a1ef2ad1c2c2c427e231177425e9f689edd63eef15cdd8a79d3b1a",
+      "text": "905f21d4914cd4ce59c76dfc86b60c4d14bd2b8a40875900e284c519c8a2d36f  tests/_linux_dependencies.py\n25b56742f46db8b481037d6ddcdc50e074fee8db9dbf38891d85ec780aa7c3d3  tests/unit/test_linux_dependency_cache.py\na15a17c809af272c63d95c02791b6abdbd36155e64528f282f46779ef22252f2  tests/integration/test_container_statement_hash.py\n591e3a7ca43910c9632b263edf4f531df735d1f8cf69559cd7aba7d2e4a05c83  src/cairn/container.py\nd99aae751a70aa8fb2c27ad1faa3fa691460d58bbc4fcd9974bf9ff4c05770b0  src/cairn/solutionchecks.py\na58c8fcc778486f3399067ae89977d841b1a0b196adc9d0ceb840f06c3ac945f  src/cairn/solutionbuild.py\n",
+      "entries": [
+        {
+          "path": "tests/_linux_dependencies.py",
+          "sha256": "905f21d4914cd4ce59c76dfc86b60c4d14bd2b8a40875900e284c519c8a2d36f"
+        },
+        {
+          "path": "tests/unit/test_linux_dependency_cache.py",
+          "sha256": "25b56742f46db8b481037d6ddcdc50e074fee8db9dbf38891d85ec780aa7c3d3"
+        },
+        {
+          "path": "tests/integration/test_container_statement_hash.py",
+          "sha256": "a15a17c809af272c63d95c02791b6abdbd36155e64528f282f46779ef22252f2"
+        },
+        {
+          "path": "src/cairn/container.py",
+          "sha256": "591e3a7ca43910c9632b263edf4f531df735d1f8cf69559cd7aba7d2e4a05c83"
+        },
+        {
+          "path": "src/cairn/solutionchecks.py",
+          "sha256": "d99aae751a70aa8fb2c27ad1faa3fa691460d58bbc4fcd9974bf9ff4c05770b0"
+        },
+        {
+          "path": "src/cairn/solutionbuild.py",
+          "sha256": "a58c8fcc778486f3399067ae89977d841b1a0b196adc9d0ceb840f06c3ac945f"
+        }
+      ]
     },
     "reviewed_concurrent_source_diff": {
       "path": "/tmp/cairn-lane3.2ARmLN/proof-concurrent-source-review.diff",
       "sha256": "77401d1b6c8e9ac05f690f41f23b9056d3d97d069dc23e7d3ffeafdfc4a6d4c3",
-      "review_status": "reviewed"
+      "review_status": "reviewed",
+      "text": "diff --git a/src/cairn/solutionchecks.py b/src/cairn/solutionchecks.py\nindex 2c34fa1..75d31f1 100644\n--- a/src/cairn/solutionchecks.py\n+++ b/src/cairn/solutionchecks.py\n@@ -17,6 +17,14 @@ COMPARATOR_ABSENT_PREFIX = \"comparator-binary-absent:\"\n CLOSURE_MISMATCH = \"closure-mismatch\"\n COMPARATOR_RELATIVE_BINARY = Path(\".lake\") / \"build\" / \"bin\" / \"comparator\"\n CONTAINER_COMPARATOR_BINARY = \"/home/cairn/comparator/.lake/build/bin/comparator\"\n+BUILD = \"build\"\n+# The bundle is content-addressed under the operator pin, so an edited lean.json is refused at open;\n+# these forms keep a re-pinned bundle from swapping the kernel replay or the build for another command.\n+PINNED_CHECKER_COMMANDS = {\n+    BUILD: (\"lake\", \"build\", \"{module}\"),\n+    REPLAY_FRESH: (\"lake\", \"env\", \"leanchecker\", \"--fresh\", \"-v\", \"{module}\"),\n+}\n+CHECKER_COMMAND_NOT_PINNED_PREFIX = \"checker-command-not-pinned:\"\n \n \n @dataclass(frozen=True)\n@@ -62,18 +70,27 @@ def check_container_axioms(gate, compilation, *, work_dir, timeout_s=container.R\n     return record\n \n \n-def _build_command(gate):\n-    tool, *arguments = gate.lean[\"checker\"][\"build\"]\n-    if tool not in lean.TOOLS:\n-        raise container.ContainerError(f\"candidate-build-tool-unknown:{tool}\")\n+class CheckerCommandRefused(ValueError):\n+    def __init__(self, reason):\n+        super().__init__(reason)\n+        self.reason = reason\n+\n+\n+def _pinned_command(gate, key):\n+    command = gate.lean[\"checker\"][key]\n+    if not isinstance(command, list) or tuple(command) != PINNED_CHECKER_COMMANDS[key]:\n+        lg.info(\"checker_command_refused\", key=key, command=command)\n+        raise CheckerCommandRefused(f\"{CHECKER_COMMAND_NOT_PINNED_PREFIX}{key}\")\n+    tool, *arguments = command\n     return tool, arguments\n \n \n+def _build_command(gate):\n+    return _pinned_command(gate, BUILD)\n+\n+\n def _replay_command(gate):\n-    tool, *arguments = gate.lean[\"checker\"][REPLAY_FRESH]\n-    if tool not in lean.TOOLS or \"--fresh\" not in arguments:\n-        raise container.ContainerError(\"candidate-replay-command-not-fresh\")\n-    return tool, arguments\n+    return _pinned_command(gate, REPLAY_FRESH)\n \n \n def assert_checker_commands(gate):\n@@ -304,6 +321,7 @@ def run_dev(\n     plan = solutionplan.SolutionPlan.load(plan_rows, arm=container.DEV_ARM)\n     if tuple(step.kind for step in plan.steps) != solutionplan.STEP_KINDS:\n         raise solutionplan.PlanInvalid(\"dev-plan-requires-axioms-before-replay\")\n+    assert_checker_commands(gate)\n     assembled = None\n \n     def observe(step):\ndiff --git a/tests/integration/test_container_statement_hash.py b/tests/integration/test_container_statement_hash.py\nindex f1a1595..ee07c35 100644\n--- a/tests/integration/test_container_statement_hash.py\n+++ b/tests/integration/test_container_statement_hash.py\n@@ -434,10 +434,7 @@ def test_linux_ordered_plan_runs_each_step_in_order(\n         persisted = sub.conn.execute(\n             \"SELECT plan_step, result, arm FROM gate_runs WHERE gate = ? ORDER BY rowid\", (solutionplan.STEP_GATE,)\n         ).fetchall()\n-        assert [tuple(row) for row in persisted] == [\n-            (step.step, \"fail\" if step.result == solutionplan.RESULT_TIMEOUT else step.result, container.GOLD_ARM)\n-            for step in steps\n-        ]\n+        assert [tuple(row) for row in persisted] == [(step.step, step.result, container.GOLD_ARM) for step in steps]\n         assert scrutiny._formalization_passed(sub, statement.hash) is (case == \"exact\")\n     finally:\n         sub.close()\n",
+      "reviewed_paths": [
+        "src/cairn/solutionchecks.py",
+        "tests/integration/test_container_statement_hash.py"
+      ],
+      "review_scope": "exact checker argv guard and unrelated timeout-test delta were reviewed; canonical commands remain unchanged"
     },
     "initial_setup_error": {
       "path": "/tmp/cairn-lane3.2ARmLN/transport-parent-fresh-proof.log",
@@ -120,5 +152,19 @@
     "CI speedup",
     "fresh-daemon behavior",
     "future pilot results"
-  ]
+  ],
+  "pilot_commit": "09a8a03852ca3473abaae0ce87c907b6aafdee82",
+  "source_scope": {
+    "pilot_commit": "09a8a03852ca3473abaae0ce87c907b6aafdee82",
+    "linux_dependency_helper_sha256": "905f21d4914cd4ce59c76dfc86b60c4d14bd2b8a40875900e284c519c8a2d36f",
+    "helper_matches_committed_pilot_source": true,
+    "initial_runtime_source_fingerprints_retained": true,
+    "reviewed_concurrent_changes": [
+      "exact checker argv guard in src/cairn/solutionchecks.py",
+      "unrelated timeout-test delta in tests/integration/test_container_statement_hash.py"
+    ],
+    "canonical_checker_commands_changed": false,
+    "whole_pilot_commit_runtime_claimed_as_loaded_by_local_run": false,
+    "local_test_started_before_concurrent_edits": true
+  }
 }

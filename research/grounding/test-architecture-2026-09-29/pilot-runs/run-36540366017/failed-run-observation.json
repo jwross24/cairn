@@ -1,0 +1,408 @@
+{
+  "record_kind": "failed_run_observation",
+  "status": "failed",
+  "run": {
+    "id": 36540366017,
+    "status": "completed",
+    "conclusion": "failure",
+    "event": "push",
+    "workflow_name": "ci",
+    "source_sha": "09a8a03852ca3473abaae0ce87c907b6aafdee82",
+    "started_at": "2026-09-29T08:03:41Z",
+    "updated_at": "2026-09-29T08:20:13Z",
+    "url": "https://github.com/jwross24/cairn/actions/runs/36540366017"
+  },
+  "source_scope": {
+    "baseline_source_sha": "bf8662704e1414e0d4f3a82200d660dacc231290",
+    "pilot_source_sha": "09a8a03852ca3473abaae0ce87c907b6aafdee82",
+    "linux_dependency_helper_sha256": "905f21d4914cd4ce59c76dfc86b60c4d14bd2b8a40875900e284c519c8a2d36f",
+    "profile_parser_sha256": "270b2a13676a7081e83a797f1d2b01fde4edc8d1887969c5cd55be5bcbbe3cdb",
+    "baseline_run_id": 36536577420,
+    "baseline_profile": "research/grounding/test-architecture-2026-09-29/pilot-runs/run-36536577420/profile.json"
+  },
+  "raw_inputs": {
+    "json": {
+      "path": "research/grounding/test-architecture-2026-09-29/pilot-runs/run-36540366017/run.json.gz",
+      "compressed_sha256": "fb450f25a0ee1086259f675449ff3725745b82fb17d3c06b00ffe8f166c29f8c",
+      "content_sha256": "af4eb21c7b582952e3a0ba154ac85baba1bc22c6df21d148c3744d8211ac402e",
+      "compressed_bytes": 3118,
+      "content_bytes": 45778
+    },
+    "log": {
+      "path": "research/grounding/test-architecture-2026-09-29/pilot-runs/run-36540366017/run.log.gz",
+      "compressed_sha256": "0d9c287633d8ff1a55f76860ef19cfce8adf9eb740dc44a8da0bbcf2f43a4d38",
+      "content_sha256": "813b62e1208e679ba9570f4ce164f4c0f08d093d2a0f39e153e2d02e001d6841",
+      "compressed_bytes": 338968,
+      "content_bytes": 2319127
+    }
+  },
+  "python_failure": {
+    "job_conclusion": "failure",
+    "job_seconds": 982.0,
+    "counts": {
+      "passed": 4220,
+      "failed": 1,
+      "errors": 0,
+      "skipped": 2,
+      "deselected": 181,
+      "xfailed": 1,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "reported_count_fields": [
+      "failed",
+      "passed",
+      "skipped",
+      "deselected",
+      "xfailed"
+    ],
+    "collected_count": 4405,
+    "pytest_seconds": 943.6,
+    "failing_node": "tests/unit/test_ci_lanes.py::test_every_direct_lean_import_has_one_explicit_lane_classification",
+    "reason": "The import-set equality assertion saw tests/unit/test_linux_dependency_cache.py as an extra direct Lean import; the expected classified set omitted that path.",
+    "assertion_location": "tests/unit/test_ci_lanes.py:432",
+    "source_lines": [
+      "check (python)\tGates\t2026-09-29T08:18:12.9504570Z tests/unit/test_ci_lanes.py::test_every_direct_lean_import_has_one_explicit_lane_classification FAILED [ 47%]",
+      "check (python)\tGates\t2026-09-29T08:20:00.7230630Z >       assert imports == (lean - indirect_lean) | python_only",
+      "check (python)\tGates\t2026-09-29T08:20:00.7231780Z E         Extra items in the left set:",
+      "check (python)\tGates\t2026-09-29T08:20:00.7232100Z E         'tests/unit/test_linux_dependency_cache.py'",
+      "check (python)\tGates\t2026-09-29T08:20:00.7238720Z tests/unit/test_ci_lanes.py:432: AssertionError",
+      "check (python)\tGates\t2026-09-29T08:20:00.7282610Z = 1 failed, 4220 passed, 2 skipped, 181 deselected, 1 xfailed in 943.60s (0:15:43) ="
+    ]
+  },
+  "linux_lanes": [
+    {
+      "lane": "container",
+      "job_conclusion": "success",
+      "job_seconds": 867.0,
+      "counts": {
+        "passed": 21,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 10,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "reported_count_fields": [
+        "passed",
+        "deselected"
+      ],
+      "collected_count": 31,
+      "pytest_seconds": 572.49,
+      "pytest_summary_source_line": "check (container)\tLinux container gates\t2026-09-29T08:16:53.5305607Z ================ 21 passed, 10 deselected in 572.49s (0:09:32) =================",
+      "cache_restore": {
+        "status": "miss",
+        "key": "cairn-linux-prerequisites-v1-Linux-ARM64-0fffe786376acbe9835c5694e81da4da419e88a7f45ed32e2ea0c54766943983-06b1b8e798d4c367a6ac2f86c947706001b499bbe38421acb9b8ca49104463e9",
+        "source_line": "check (container)\tRestore Linux prerequisite cache\t2026-09-29T08:04:35.3574692Z Cache not found for input keys: cairn-linux-prerequisites-v1-Linux-ARM64-0fffe786376acbe9835c5694e81da4da419e88a7f45ed32e2ea0c54766943983-06b1b8e798d4c367a6ac2f86c947706001b499bbe38421acb9b8ca49104463e9"
+      },
+      "stages": {
+        "Identify Linux prerequisite cache": {
+          "conclusion": "success",
+          "seconds": 1.0
+        },
+        "Restore Linux prerequisite cache": {
+          "conclusion": "success",
+          "seconds": 0.0
+        },
+        "Import cached Linux prerequisites": {
+          "conclusion": "skipped",
+          "seconds": 0.0
+        },
+        "Prepare Linux prerequisites": {
+          "conclusion": "success",
+          "seconds": 159.0
+        },
+        "Linux container gates": {
+          "conclusion": "success",
+          "seconds": 576.0
+        },
+        "Export Linux prerequisites": {
+          "conclusion": "success",
+          "seconds": 59.0
+        },
+        "Save Linux prerequisite cache": {
+          "conclusion": "success",
+          "seconds": 17.0
+        }
+      }
+    },
+    {
+      "lane": "container-replay-exact",
+      "job_conclusion": "success",
+      "job_seconds": 661.0,
+      "counts": {
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 29,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "reported_count_fields": [
+        "passed",
+        "deselected"
+      ],
+      "collected_count": 31,
+      "pytest_seconds": 451.34,
+      "pytest_summary_source_line": "check (container-replay-exact)\tLinux container gates\t2026-09-29T08:14:43.5701443Z ================= 2 passed, 29 deselected in 451.34s (0:07:31) =================",
+      "cache_restore": {
+        "status": "miss",
+        "key": "cairn-linux-prerequisites-v1-Linux-ARM64-0fffe786376acbe9835c5694e81da4da419e88a7f45ed32e2ea0c54766943983-06b1b8e798d4c367a6ac2f86c947706001b499bbe38421acb9b8ca49104463e9",
+        "source_line": "check (container-replay-exact)\tRestore Linux prerequisite cache\t2026-09-29T08:04:37.8336388Z Cache not found for input keys: cairn-linux-prerequisites-v1-Linux-ARM64-0fffe786376acbe9835c5694e81da4da419e88a7f45ed32e2ea0c54766943983-06b1b8e798d4c367a6ac2f86c947706001b499bbe38421acb9b8ca49104463e9"
+      },
+      "stages": {
+        "Identify Linux prerequisite cache": {
+          "conclusion": "success",
+          "seconds": 0.0
+        },
+        "Restore Linux prerequisite cache": {
+          "conclusion": "success",
+          "seconds": 0.0
+        },
+        "Import cached Linux prerequisites": {
+          "conclusion": "skipped",
+          "seconds": 0.0
+        },
+        "Prepare Linux prerequisites": {
+          "conclusion": "success",
+          "seconds": 149.0
+        },
+        "Linux container gates": {
+          "conclusion": "success",
+          "seconds": 454.0
+        },
+        "Export Linux prerequisites": {
+          "conclusion": "skipped",
+          "seconds": 0.0
+        },
+        "Save Linux prerequisite cache": {
+          "conclusion": "skipped",
+          "seconds": 0.0
+        }
+      }
+    },
+    {
+      "lane": "container-replay-refusals",
+      "job_conclusion": "success",
+      "job_seconds": 764.0,
+      "counts": {
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 27,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "reported_count_fields": [
+        "passed",
+        "deselected"
+      ],
+      "collected_count": 31,
+      "pytest_seconds": 562.42,
+      "pytest_summary_source_line": "check (container-replay-refusals)\tLinux container gates\t2026-09-29T08:16:26.1314638Z ================= 4 passed, 27 deselected in 562.42s (0:09:22) =================",
+      "cache_restore": {
+        "status": "miss",
+        "key": "cairn-linux-prerequisites-v1-Linux-ARM64-0fffe786376acbe9835c5694e81da4da419e88a7f45ed32e2ea0c54766943983-06b1b8e798d4c367a6ac2f86c947706001b499bbe38421acb9b8ca49104463e9",
+        "source_line": "check (container-replay-refusals)\tRestore Linux prerequisite cache\t2026-09-29T08:04:26.9372539Z Cache not found for input keys: cairn-linux-prerequisites-v1-Linux-ARM64-0fffe786376acbe9835c5694e81da4da419e88a7f45ed32e2ea0c54766943983-06b1b8e798d4c367a6ac2f86c947706001b499bbe38421acb9b8ca49104463e9"
+      },
+      "stages": {
+        "Identify Linux prerequisite cache": {
+          "conclusion": "success",
+          "seconds": 1.0
+        },
+        "Restore Linux prerequisite cache": {
+          "conclusion": "success",
+          "seconds": 0.0
+        },
+        "Import cached Linux prerequisites": {
+          "conclusion": "skipped",
+          "seconds": 0.0
+        },
+        "Prepare Linux prerequisites": {
+          "conclusion": "success",
+          "seconds": 150.0
+        },
+        "Linux container gates": {
+          "conclusion": "success",
+          "seconds": 566.0
+        },
+        "Export Linux prerequisites": {
+          "conclusion": "skipped",
+          "seconds": 0.0
+        },
+        "Save Linux prerequisite cache": {
+          "conclusion": "skipped",
+          "seconds": 0.0
+        }
+      }
+    },
+    {
+      "lane": "container-plan-exact",
+      "job_conclusion": "success",
+      "job_seconds": 681.0,
+      "counts": {
+        "passed": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 30,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "reported_count_fields": [
+        "passed",
+        "deselected"
+      ],
+      "collected_count": 31,
+      "pytest_seconds": 456.21,
+      "pytest_summary_source_line": "check (container-plan-exact)\tLinux container gates\t2026-09-29T08:15:02.3389136Z ================= 1 passed, 30 deselected in 456.21s (0:07:36) =================",
+      "cache_restore": {
+        "status": "miss",
+        "key": "cairn-linux-prerequisites-v1-Linux-ARM64-0fffe786376acbe9835c5694e81da4da419e88a7f45ed32e2ea0c54766943983-06b1b8e798d4c367a6ac2f86c947706001b499bbe38421acb9b8ca49104463e9",
+        "source_line": "check (container-plan-exact)\tRestore Linux prerequisite cache\t2026-09-29T08:04:41.9815509Z Cache not found for input keys: cairn-linux-prerequisites-v1-Linux-ARM64-0fffe786376acbe9835c5694e81da4da419e88a7f45ed32e2ea0c54766943983-06b1b8e798d4c367a6ac2f86c947706001b499bbe38421acb9b8ca49104463e9"
+      },
+      "stages": {
+        "Identify Linux prerequisite cache": {
+          "conclusion": "success",
+          "seconds": 0.0
+        },
+        "Restore Linux prerequisite cache": {
+          "conclusion": "success",
+          "seconds": 0.0
+        },
+        "Import cached Linux prerequisites": {
+          "conclusion": "skipped",
+          "seconds": 0.0
+        },
+        "Prepare Linux prerequisites": {
+          "conclusion": "success",
+          "seconds": 158.0
+        },
+        "Linux container gates": {
+          "conclusion": "success",
+          "seconds": 459.0
+        },
+        "Export Linux prerequisites": {
+          "conclusion": "skipped",
+          "seconds": 0.0
+        },
+        "Save Linux prerequisite cache": {
+          "conclusion": "skipped",
+          "seconds": 0.0
+        }
+      }
+    },
+    {
+      "lane": "container-plan-refusals",
+      "job_conclusion": "success",
+      "job_seconds": 742.0,
+      "counts": {
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "deselected": 28,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "reported_count_fields": [
+        "passed",
+        "deselected"
+      ],
+      "collected_count": 31,
+      "pytest_seconds": 515.41,
+      "pytest_summary_source_line": "check (container-plan-refusals)\tLinux container gates\t2026-09-29T08:16:03.9475963Z ================= 3 passed, 28 deselected in 515.41s (0:08:35) =================",
+      "cache_restore": {
+        "status": "miss",
+        "key": "cairn-linux-prerequisites-v1-Linux-ARM64-0fffe786376acbe9835c5694e81da4da419e88a7f45ed32e2ea0c54766943983-06b1b8e798d4c367a6ac2f86c947706001b499bbe38421acb9b8ca49104463e9",
+        "source_line": "check (container-plan-refusals)\tRestore Linux prerequisite cache\t2026-09-29T08:04:43.8970364Z Cache not found for input keys: cairn-linux-prerequisites-v1-Linux-ARM64-0fffe786376acbe9835c5694e81da4da419e88a7f45ed32e2ea0c54766943983-06b1b8e798d4c367a6ac2f86c947706001b499bbe38421acb9b8ca49104463e9"
+      },
+      "stages": {
+        "Identify Linux prerequisite cache": {
+          "conclusion": "success",
+          "seconds": 0.0
+        },
+        "Restore Linux prerequisite cache": {
+          "conclusion": "success",
+          "seconds": 0.0
+        },
+        "Import cached Linux prerequisites": {
+          "conclusion": "skipped",
+          "seconds": 0.0
+        },
+        "Prepare Linux prerequisites": {
+          "conclusion": "success",
+          "seconds": 158.0
+        },
+        "Linux container gates": {
+          "conclusion": "success",
+          "seconds": 519.0
+        },
+        "Export Linux prerequisites": {
+          "conclusion": "skipped",
+          "seconds": 0.0
+        },
+        "Save Linux prerequisite cache": {
+          "conclusion": "skipped",
+          "seconds": 0.0
+        }
+      }
+    }
+  ],
+  "cache_observation": {
+    "linux_prerequisite_cache": "miss",
+    "same_key_across_five_lanes": "cairn-linux-prerequisites-v1-Linux-ARM64-0fffe786376acbe9835c5694e81da4da419e88a7f45ed32e2ea0c54766943983-06b1b8e798d4c367a6ac2f86c947706001b499bbe38421acb9b8ca49104463e9",
+    "action_cache_miss_evidence_count": 5,
+    "archive_imported": false,
+    "archive_import_steps": {
+      "container": {
+        "status": "skipped",
+        "step_conclusion": "skipped"
+      },
+      "container-replay-exact": {
+        "status": "skipped",
+        "step_conclusion": "skipped"
+      },
+      "container-replay-refusals": {
+        "status": "skipped",
+        "step_conclusion": "skipped"
+      },
+      "container-plan-exact": {
+        "status": "skipped",
+        "step_conclusion": "skipped"
+      },
+      "container-plan-refusals": {
+        "status": "skipped",
+        "step_conclusion": "skipped"
+      }
+    }
+  },
+  "publication": {
+    "status": "published by the container lane",
+    "image_id": "sha256:6d0f762647a8e2be1ff5c72927c8c3ff723592fde40ad7c5e3d52a610ba9bd18",
+    "archive_published_source_line": "check (container)\tExport Linux prerequisites\t2026-09-29T08:17:52.0146351Z {\"archive\": \"/home/runner/work/_temp/cairn-linux-prerequisites/image.tar\", \"event\": \"archive_published\", \"image_id\": \"sha256:6d0f762647a8e2be1ff5c72927c8c3ff723592fde40ad7c5e3d52a610ba9bd18\", \"level\": \"INFO\", \"step\": \"linux_dependencies\", \"ts\": 1790669872.014324}",
+    "cache_save_status": "saved",
+    "cache_save_source_line": "check (container)\tSave Linux prerequisite cache\t2026-09-29T08:18:09.4507942Z Cache saved with key: cairn-linux-prerequisites-v1-Linux-ARM64-0fffe786376acbe9835c5694e81da4da419e88a7f45ed32e2ea0c54766943983-06b1b8e798d4c367a6ac2f86c947706001b499bbe38421acb9b8ca49104463e9",
+    "saved_key_matches_five_restore_keys": true
+  },
+  "profile_cli_negative": {
+    "command": "uv run python research/grounding/test-architecture-2026-09-29/pilot_profile.py --run-json research/grounding/test-architecture-2026-09-29/pilot-runs/run-36540366017/run.json.gz --run-log research/grounding/test-architecture-2026-09-29/pilot-runs/run-36540366017/run.log.gz",
+    "exit_code": 2,
+    "refusal": "run failed: conclusion='failure'"
+  },
+  "claims_not_supported": [
+    "CI speedup",
+    "overall CI success",
+    "full audit coverage",
+    "skip-free non-Linux execution",
+    "warm-cache performance"
+  ]
+}
