@@ -3,7 +3,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from cairn import attest, bundle, claims, cli, exits, kat, keys, log, tiergate, verifier
+from cairn import attest, bundle, claims, cli, exits, kat, keys, ladder_selftest, log, tiergate, verifier
 from cairn.errors import CliError
 from cairn.profile import CostProfile, Production, SizeCost, Verification
 from cairn.substrate import blob_hash
@@ -16,7 +16,16 @@ KIND_CANON_KAT = "canon_kat"
 KIND_VERIFIER = "verifier"
 KIND_WAIVER = "waiver_cannot_advance"
 KIND_TIER_GATE = "tier_gate"
-STEP_KINDS = (KIND_CANON_KAT, KIND_VERIFIER, KIND_WAIVER, KIND_TIER_GATE)
+KIND_LADDER_METHOD_IDENTITY = "ladder_method_identity"
+KIND_LADDER_BASELINE = "ladder_baseline"
+STEP_KINDS = (
+    KIND_CANON_KAT,
+    KIND_VERIFIER,
+    KIND_WAIVER,
+    KIND_TIER_GATE,
+    KIND_LADDER_METHOD_IDENTITY,
+    KIND_LADDER_BASELINE,
+)
 
 REQUIRED_STEPS = (
     "canon_kat",
@@ -24,6 +33,8 @@ REQUIRED_STEPS = (
     "verifier_selftest_fail_xP_ne_Q",
     "verifier_selftest_crash",
     "verifier_selftest_crash_control",
+    "ladder_selftest_method_identity",
+    "ladder_selftest_baseline",
 )
 
 EXPECT_PASS = "pass"
@@ -32,6 +43,8 @@ EXPECT_FAIL_XP_NE_Q = "FAIL xP-ne-Q"
 EXPECT_FAIL_BACKEND_CRASH = "FAIL backend-crash"
 EXPECT_NO_TICKET = "no-ticket"
 EXPECT_TIER_TWO_ABOVE = "TierRefused(tier-two-above)"
+EXPECT_LADDER_METHOD_IDENTITY = ladder_selftest.EXPECT_METHOD_IDENTITY_REFUSAL
+EXPECT_LADDER_BASELINE = ladder_selftest.EXPECT_BASELINE_VERDICT
 EXPECTATIONS = (
     EXPECT_PASS,
     EXPECT_OK,
@@ -39,7 +52,14 @@ EXPECTATIONS = (
     EXPECT_FAIL_BACKEND_CRASH,
     EXPECT_NO_TICKET,
     EXPECT_TIER_TWO_ABOVE,
+    EXPECT_LADDER_METHOD_IDENTITY,
+    EXPECT_LADDER_BASELINE,
 )
+
+REQUIRED_STEP_SHAPES = {
+    "ladder_selftest_method_identity": (KIND_LADDER_METHOD_IDENTITY, EXPECT_LADDER_METHOD_IDENTITY),
+    "ladder_selftest_baseline": (KIND_LADDER_BASELINE, EXPECT_LADDER_BASELINE),
+}
 
 ENTRY_VERIFY = "verify"
 ENTRY_CRASH_SELFTEST = "crash_selftest"
@@ -160,6 +180,13 @@ class GatePlan:
         for name in REQUIRED_STEPS:
             if name not in seen:
                 raise PlanInvalid(f"missing-required-selftest:{name}")
+        by_name = {step.step: (index, step) for index, step in enumerate(steps)}
+        for name, (kind, expect) in REQUIRED_STEP_SHAPES.items():
+            index, step = by_name[name]
+            if step.kind != kind or step.expect != expect:
+                raise PlanInvalid(f"required-selftest-shape-mismatch:{index}.{name}")
+        if tuple(step.step for step in steps[-2:]) != tuple(REQUIRED_STEP_SHAPES):
+            raise PlanInvalid("required-ladder-selftests-not-last")
         return cls(steps)
 
     @classmethod
@@ -172,11 +199,12 @@ class GatePlan:
     def run(self, gate_bundle, sub, attest_path):
         fixtures = _fixtures(gate_bundle)
         elapsed = {}
+        runtime = {}
 
         def observe(step):
             start = time.monotonic()
             try:
-                return _execute(step, gate_bundle, sub, attest_path, fixtures)
+                return _execute(step, gate_bundle, sub, attest_path, fixtures, runtime)
             finally:
                 elapsed[step.step] = int((time.monotonic() - start) * 1000)
 
@@ -353,14 +381,18 @@ def _hypothesis(fixtures, name):
     return value
 
 
-def _execute(step, gate_bundle, sub, attest_path, fixtures):
+def _execute(step, gate_bundle, sub, attest_path, fixtures, runtime):
     if step.kind == KIND_CANON_KAT:
         return _run_canon_kat()
     if step.kind == KIND_VERIFIER:
         return _run_verifier(step, gate_bundle, fixtures)
     if step.kind == KIND_WAIVER:
         return _run_waiver(gate_bundle, sub, attest_path, fixtures)
-    return _run_tier_gate(gate_bundle, sub, fixtures)
+    if step.kind == KIND_TIER_GATE:
+        return _run_tier_gate(gate_bundle, sub, fixtures)
+    if step.kind == KIND_LADDER_METHOD_IDENTITY:
+        return ladder_selftest.method_identity_refusal(gate_bundle, sub, fixtures, runtime)
+    return ladder_selftest.baseline_run(gate_bundle, sub, attest_path, fixtures, runtime)
 
 
 def _run_canon_kat():

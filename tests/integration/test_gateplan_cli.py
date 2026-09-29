@@ -61,6 +61,8 @@ def test_a_green_plan_exits_zero_and_names_every_step_with_its_gate_runs_row_id(
         "verifier_selftest_crash_control",
         "waiver_cannot_advance",
         "tier_gate_selftest_two_above",
+        "ladder_selftest_method_identity",
+        "ladder_selftest_baseline",
     ]
     assert all(step["result"] == "pass" for step in document["steps"])
     run_ids = [step["run_id"] for step in document["steps"]]
@@ -71,7 +73,7 @@ def test_the_human_rendering_names_each_step_with_its_expectation(selftest_argv,
     code, out, err = _run(selftest_argv(), capsys)
     assert code == exits.OK, err
     lines = out.strip().splitlines()
-    assert len(lines) == 7
+    assert len(lines) == 9
     assert lines[0].startswith("pass canon_kat expected=pass observed=pass run=")
     assert "expected=FAIL backend-crash observed=FAIL backend-crash" in lines[3]
 
@@ -109,6 +111,8 @@ def test_a_failing_step_exits_gate_refused_and_names_a_debug_next_command(tmp_pa
         "pass",
         "pass",
         "fail",
+        "blocked",
+        "blocked",
         "blocked",
         "blocked",
         "blocked",

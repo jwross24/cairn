@@ -55,7 +55,10 @@ The original hasher source SHA-256 is
 `c2840ef56a0a32d015571041a74617dd415ed7c76f411dabe9515f5442b744a0`.
 The toolchain is Lean `v4.34.0-rc1`, with mathlib
 `1f29011071772620f612bf5a06433775f06067b8`.
-The DLP statement is `cairn_dlp_iff` in `lean/Library/Dlp/Statement.lean`.
+The DLP measurement input is the tracked inline `statement_input("dlp")` fixture in
+[`measure.py`](../grounding/statement-hash-proof-exclusion-2026-09-29/measure.py#L89-L101).
+Its formal source is 189 UTF-8 bytes with SHA-256
+`8d4c42f28c48e80311634dcae88d5027ee096dd8c10bdfc2bbcabe9991d0b296`.
 Raw baseline logs are retained at
 `/tmp/cairn-lane2-day.HCyLdO/baseline-dlp-tree.log`,
 `/tmp/cairn-lane2-day.HCyLdO/dlp-size.log` and

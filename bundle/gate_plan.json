@@ -6,7 +6,9 @@
     {"step": "verifier_selftest_crash", "kind": "verifier", "fixture": "curve60_seed1", "entry": "crash_selftest", "stack": "8M", "expect": "FAIL backend-crash"},
     {"step": "verifier_selftest_crash_control", "kind": "verifier", "fixture": "curve60_seed1", "entry": "crash_selftest", "stack": "64M", "expect": "OK"},
     {"step": "waiver_cannot_advance", "kind": "waiver_cannot_advance", "expect": "no-ticket"},
-    {"step": "tier_gate_selftest_two_above", "kind": "tier_gate", "expect": "TierRefused(tier-two-above)"}
+    {"step": "tier_gate_selftest_two_above", "kind": "tier_gate", "expect": "TierRefused(tier-two-above)"},
+    {"step": "ladder_selftest_method_identity", "kind": "ladder_method_identity", "expect": "LadderRefused(method-identity-mismatch)"},
+    {"step": "ladder_selftest_baseline", "kind": "ladder_baseline", "expect": "INCONCLUSIVE/uncounted_backend"}
   ],
   "fixtures": {
     "corpus_1": {
@@ -51,6 +53,15 @@
       "source": "bundle/gate_plan.json"
     },
     "budget_remaining": 1000000,
-    "skill_identity_hash": "d9ff5a899e822eb6f73aa5d0bf134611d4a89e7267b3fb1c0cee44ca7ba2dd41"
+    "skill_identity_hash": "d9ff5a899e822eb6f73aa5d0bf134611d4a89e7267b3fb1c0cee44ca7ba2dd41",
+    "ladder_selftest": {
+      "fit_bits": 30,
+      "fit_trials": 100,
+      "hold_out_bits": 40,
+      "hold_out_trials": 1,
+      "hold_out_m": 1,
+      "budget_remaining": 10000,
+      "instance_maker_ceiling_multiplier": 60
+    }
   }
 }

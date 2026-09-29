@@ -37,6 +37,11 @@ REFUSALS = [
     (_mutate(0, kind="not-a-kind"), r"unknown-step-kind:0\."),
     (_duplicated(), r"duplicate-step-name:2\."),
     (_mutate(1, expect="not-in-the-vocabulary"), r"expect-outside-vocabulary:1\."),
+    (
+        _mutate(-2, kind=gateplan.KIND_LADDER_BASELINE),
+        "required-selftest-shape-mismatch:7.ladder_selftest_method_identity",
+    ),
+    (_mutate(-1, expect=gateplan.EXPECT_PASS), "required-selftest-shape-mismatch:8.ladder_selftest_baseline"),
     ([], "plan-empty"),
 ]
 
@@ -52,6 +57,14 @@ def test_the_committed_plan_loads_and_carries_every_required_step():
     names = [step.step for step in plan.steps]
     assert set(gateplan.REQUIRED_STEPS) <= set(names)
     assert len(names) == len(set(names))
+    assert names[-2:] == ["ladder_selftest_method_identity", "ladder_selftest_baseline"]
+
+
+def test_the_ladder_selftests_have_fixed_kinds_expectations_and_order():
+    rows = copy.deepcopy(COMMITTED)
+    rows[-2:] = reversed(rows[-2:])
+    with pytest.raises(gateplan.PlanInvalid, match="required-ladder-selftests-not-last"):
+        gateplan.GatePlan.load(rows)
 
 
 def _synthetic(count):

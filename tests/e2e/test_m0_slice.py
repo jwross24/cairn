@@ -10,6 +10,7 @@ import blake3
 import pytest
 
 from cairn import cli, exits, log, m0
+from cairn.skills import toy_curve
 
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "bundle"
@@ -38,6 +39,18 @@ def _curve(db, statement_hash):
         conn.close()
     units = json.loads(row["quantities"])["units"]
     return tuple(units[field] for field in ("p", "a", "b", "n", "Px", "Py"))
+
+
+def _toy_curve_attempt_count(db):
+    conn = _reader(db)
+    try:
+        return conn.execute(
+            "SELECT count(*) FROM attempts a JOIN recipes r ON r.recipe_key = a.recipe_key "
+            "WHERE r.skill_identity_hash = ?",
+            (toy_curve.skill_identity_hash(),),
+        ).fetchone()[0]
+    finally:
+        conn.close()
 
 
 def _counts(db):
@@ -163,7 +176,7 @@ def test_the_operator_sequence_produces_four_nodes_two_negatives_and_one_refusal
 
     counts = _counts(deploy["paths"]["db"])
     db_snapshot(str(deploy["paths"]["db"]), "m0-slice-green")
-    assert counts["attempts"] == 1
+    assert _toy_curve_attempt_count(deploy["paths"]["db"]) == 1
     assert counts["nodes_by_kind"]["verifier_result"] == 3
     assert counts["nodes_by_kind"]["m0_generator"] == 1 and counts["nodes_by_kind"]["m0_derivation"] == 1
     assert counts["nodes_by_kind"]["claim_statement"] == 1
@@ -218,17 +231,22 @@ def test_the_derivation_commits_to_the_x_the_generator_output_determines(deploy,
     assert m0.keys.node_hash(m0.KIND_DERIVATION, rebuilt) == document["nodes"][1]["hash"]
 
 
-def test_the_same_seed_replays_from_cache_and_a_different_seed_derives_a_different_instance(deploy, capsys):
+def test_the_same_seed_replays_from_cache_without_another_toy_curve_attempt(deploy, capsys):
     deploy["ready"]()
     first = json.loads(deploy["m0_run"]("--seed", "1", "--json")[1])
     replay = json.loads(deploy["m0_run"]("--seed", "1", "--json")[1])
-    other = json.loads(deploy["m0_run"]("--seed", "2", "--json")[1])
-    fresh = json.loads(deploy["m0_run"]("--seed", "1", "--skip-cache-lookup", "--json")[1])
 
     assert replay["nodes"][0]["hash"] == first["nodes"][0]["hash"]
     assert replay["served_from_cache"] is True and replay["attempt_id"] == first["attempt_id"]
     assert replay["instance_hash"] == first["instance_hash"]
     assert replay["nodes"][1]["hash"] == first["nodes"][1]["hash"]
+    assert _toy_curve_attempt_count(deploy["paths"]["db"]) == 1
+
+
+def test_a_different_seed_derives_a_different_instance(deploy, capsys):
+    deploy["ready"]()
+    first = json.loads(deploy["m0_run"]("--seed", "1", "--json")[1])
+    other = json.loads(deploy["m0_run"]("--seed", "2", "--json")[1])
 
     assert other["nodes"][0]["hash"] != first["nodes"][0]["hash"]
     assert other["instance_hash"] != first["instance_hash"]
@@ -236,16 +254,18 @@ def test_the_same_seed_replays_from_cache_and_a_different_seed_derives_a_differe
     assert _curve(deploy["paths"]["db"], other["statement_hash"]) != _curve(
         deploy["paths"]["db"], first["statement_hash"]
     )
+    assert _toy_curve_attempt_count(deploy["paths"]["db"]) == 2
+
+
+def test_skip_cache_lookup_runs_toy_curve_again_for_the_same_content(deploy, capsys):
+    deploy["ready"]()
+    first = json.loads(deploy["m0_run"]("--seed", "1", "--json")[1])
+    fresh = json.loads(deploy["m0_run"]("--seed", "1", "--skip-cache-lookup", "--json")[1])
 
     assert fresh["served_from_cache"] is False and fresh["attempt_id"] != first["attempt_id"]
     assert fresh["nodes"][0]["hash"] == first["nodes"][0]["hash"]
     assert fresh["instance_hash"] == first["instance_hash"]
-
-    conn = _reader(deploy["paths"]["db"])
-    try:
-        assert conn.execute("SELECT count(*) FROM attempts").fetchone()[0] == 3
-    finally:
-        conn.close()
+    assert _toy_curve_attempt_count(deploy["paths"]["db"]) == 2
 
 
 def test_the_human_rendering_names_every_node_negative_and_refusal(deploy, capsys):
@@ -293,15 +313,15 @@ def _empty_attestation(deploy):
 
 ABORTS = [
     ("pin_mismatch", _corrupt_pin, "differs from the pin", 0),
-    ("uncertified_skill", _skip_certify, "uncertified-revision", 7),
-    ("gate_plan_failure", _empty_attestation, "gate-plan-failed:waiver_cannot_advance", 7),
+    ("uncertified_skill", _skip_certify, "uncertified-revision", 9),
+    ("gate_plan_failure", _empty_attestation, "gate-plan-failed:waiver_cannot_advance", 9),
 ]
 
 
 @pytest.mark.parametrize(
     ("name", "setup_delta", "expected_reason", "gate_plan_rows"), ABORTS, ids=[a[0] for a in ABORTS]
 )
-def test_each_abort_path_exits_gate_refused_before_any_skill_launch(
+def test_each_abort_path_exits_gate_refused_before_m0_launch(
     deploy, capsys, name, setup_delta, expected_reason, gate_plan_rows
 ):
     deploy["ready"]()
@@ -314,10 +334,12 @@ def test_each_abort_path_exits_gate_refused_before_any_skill_launch(
     assert db.exists()
     conn = _reader(db)
     try:
-        assert conn.execute("SELECT count(*) FROM attempts").fetchone()[0] == 0
+        if name in {"pin_mismatch", "gate_plan_failure"}:
+            assert conn.execute("SELECT count(*) FROM attempts").fetchone()[0] == 0
         assert conn.execute("SELECT count(*) FROM gate_runs WHERE gate='gate_plan'").fetchone()[0] == gate_plan_rows
     finally:
         conn.close()
+    assert _toy_curve_attempt_count(db) == 0
 
 
 def test_a_refusal_names_a_next_command_that_actually_resolves_it(deploy, capsys):
@@ -404,9 +426,9 @@ def test_the_step_transcript_matches_its_golden_after_scrubbing(deploy, capsys, 
     assert code == exits.OK, err
     document = json.loads(out)
     raw = _transcript(caplog.records)
-    assert document["nodes"][2]["hash"] in raw and raw.count("wall_ms=") == 7
+    assert document["nodes"][2]["hash"] in raw and raw.count("wall_ms=") == 9
     transcript = scrub(raw, bundle_hash=document["bundle_hash"])
-    assert transcript.count("[HASH]") >= 10 and transcript.count("[MS]") == 7
+    assert transcript.count("[HASH]") >= 10 and transcript.count("[MS]") == 9
     assert not any(token in transcript for token in (document["nodes"][2]["hash"], document["bundle_hash"]))
     assert_golden("m0_run_transcript", transcript)
 

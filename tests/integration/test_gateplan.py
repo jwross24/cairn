@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import attest, bundle, claims, gateplan, kat, keys, log
+from cairn import attest, bundle, claims, gateplan, kat, keys, laddertable, log
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import _substrate_helpers as helpers
@@ -55,6 +55,8 @@ def test_the_committed_plan_runs_every_step_green_against_the_built_bundle(plan_
         "verifier_selftest_crash_control",
         "waiver_cannot_advance",
         "tier_gate_selftest_two_above",
+        "ladder_selftest_method_identity",
+        "ladder_selftest_baseline",
     ]
     assert [s.observed for s in result.steps] == [
         "pass",
@@ -64,9 +66,23 @@ def test_the_committed_plan_runs_every_step_green_against_the_built_bundle(plan_
         "OK",
         "no-ticket",
         "TierRefused(tier-two-above)",
+        "LadderRefused(method-identity-mismatch)",
+        "INCONCLUSIVE/uncounted_backend",
     ]
     assert all(s.result == "pass" for s in result.steps)
     assert len({s.run_id for s in result.steps}) == len(result.steps)
+    method_step = result.steps[-2]
+    baseline_step = result.steps[-1]
+    assert "refusal:method-identity-mismatch" in method_step.reasons
+    table_hash = next(reason.removeprefix("table:") for reason in baseline_step.reasons if reason.startswith("table:"))
+    plan_hash = next(
+        reason.removeprefix("fixture-plan:") for reason in baseline_step.reasons if reason.startswith("fixture-plan:")
+    )
+    table = laddertable.read(sub, table_hash)
+    verdict = laddertable.recorded_verdict(sub, table_hash)
+    assert table is not None and table.plan_hash == plan_hash and len(table.trials) == 301
+    assert (verdict.kind, verdict.predicate) == (laddertable.INCONCLUSIVE, laddertable.UNCOUNTED_BACKEND)
+    assert sub.get_blob(plan_hash) is not None
     for step in result.steps:
         row = claims.get_gate_run(sub, step.run_id)
         assert row["gate"] == "gate_plan" and row["plan_step"] == step.step and row["result"] == "pass"
@@ -92,6 +108,8 @@ def test_a_weakened_accept_predicate_fails_the_crash_step_and_blocks_the_rest(tm
         "verifier_selftest_crash_control",
         "waiver_cannot_advance",
         "tier_gate_selftest_two_above",
+        "ladder_selftest_method_identity",
+        "ladder_selftest_baseline",
     ]
     for step in result.steps:
         if step.result == "blocked":
@@ -117,6 +135,8 @@ def test_a_verifier_script_without_the_xP_eq_Q_check_fails_that_step_and_blocks_
         "verifier_selftest_crash_control",
         "waiver_cannot_advance",
         "tier_gate_selftest_two_above",
+        "ladder_selftest_method_identity",
+        "ladder_selftest_baseline",
     ]
     sub.close()
 
@@ -180,7 +200,11 @@ def test_the_waiver_step_fails_when_record_zero_does_not_name_the_fixture_waiver
     db_snapshot(sub.conn, "wrong-waiver")
     failed = result.first_failure
     assert failed.step == "waiver_cannot_advance" and failed.observed == "waiver-record-absent"
-    assert [s.step for s in result.steps if s.result == "blocked"] == ["tier_gate_selftest_two_above"]
+    assert [s.step for s in result.steps if s.result == "blocked"] == [
+        "tier_gate_selftest_two_above",
+        "ladder_selftest_method_identity",
+        "ladder_selftest_baseline",
+    ]
     sub.close()
 
 
@@ -229,6 +253,8 @@ def test_the_crash_control_half_fails_the_plan_when_it_is_starved_of_stack(tmp_p
     assert [s.step for s in result.steps if s.result == "blocked"] == [
         "waiver_cannot_advance",
         "tier_gate_selftest_two_above",
+        "ladder_selftest_method_identity",
+        "ladder_selftest_baseline",
     ]
     sub.close()
 
@@ -313,6 +339,8 @@ def test_failed_and_blocked_steps_each_persist_their_gate_runs_row_with_reasons(
         "pass",
         "pass",
         "fail",
+        "blocked",
+        "blocked",
         "blocked",
         "blocked",
         "blocked",

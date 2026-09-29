@@ -6,6 +6,8 @@ gate_step verifier_selftest_crash expected=FAIL backend-crash observed=FAIL back
 gate_step verifier_selftest_crash_control expected=OK observed=OK result=pass reasons=[] run=[HASH] wall_ms=[MS]
 gate_step waiver_cannot_advance expected=no-ticket observed=no-ticket result=pass reasons=['ticket-absent', 'uncertified'] run=[HASH] wall_ms=[MS]
 gate_step tier_gate_selftest_two_above expected=TierRefused(tier-two-above) observed=TierRefused(tier-two-above) result=pass reasons=['tier-two-above', 'uncertified'] run=[HASH] wall_ms=[MS]
+gate_step ladder_selftest_method_identity expected=LadderRefused(method-identity-mismatch) observed=LadderRefused(method-identity-mismatch) result=pass reasons=['fixture-plan:[HASH]', 'dispatch:[HASH]', 'candidate:[HASH]', 'certificate:instance-maker:[HASH]:[HASH]', 'certificate:rho-dp:[HASH]:[HASH]', 'refusal:method-identity-mismatch'] run=[HASH] wall_ms=[MS]
+gate_step ladder_selftest_baseline expected=INCONCLUSIVE/uncounted_backend observed=INCONCLUSIVE/uncounted_backend result=pass reasons=['table:[HASH]', 'predicate:uncounted_backend', 'fixture-plan:[HASH]', 'trials:301', 'certificate:instance-maker:[HASH]:[HASH]', 'certificate:rho-dp:[HASH]:[HASH]'] run=[HASH] wall_ms=[MS]
 step 2 certified
 step 3 tier_gate
 step 4 generator
