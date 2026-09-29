@@ -207,7 +207,7 @@ def statement_digest(result):
     if not isinstance(value, dict) or set(value) != {"canonical_hex"}:
         raise LeanRejected("invalid-statement-hasher-output")
     encoded = value["canonical_hex"]
-    if not isinstance(encoded, str) or not re.fullmatch(r"(?:[0-9a-f]{2})+", encoded):
+    if not isinstance(encoded, str) or len(encoded) % 2 or not re.fullmatch(r"[0-9a-f]+", encoded):
         raise LeanRejected("invalid-statement-canonical-hex")
     return canon.digest(STATEMENT_DOMAIN, bytes.fromhex(encoded))
 
