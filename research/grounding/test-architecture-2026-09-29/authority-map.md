@@ -49,3 +49,35 @@ This profile records run [36545011828](https://github.com/jwross24/cairn/actions
 Rows 2 and 4 are the gold-container ordered-plan exact and refusal nodes; the earlier eight-lane profile has no rows for either. The pinned lane router sends `[exact]` to `container-plan-exact` and the other ordered-plan cases to `container-plan-refusals` ([tests/_ci_lanes.py](https://github.com/jwross24/cairn/blob/6452dbbeb7140cae1afc3318487f88d27ea46774/tests/_ci_lanes.py#L113-L118)). All ten rows passed in this run; that observation does not establish global branch coverage or completion of the broader audit, and it supports no test reduction.
 
 **No-Claim:** These top-ten timings do not measure isolated checker costs, establish speedup, or prove exhaustive coverage. Setup timings are fixture costs; call timings may include compilation, checks, replay, comparison, and assertions.
+
+## M0 branches at 9f68240
+
+This bounded map reads commit `9f68240ae5bf7f3c060d2560e6df7f86a06721ed`, independently of concurrent working-tree edits. [The 17 M0 items](https://github.com/jwross24/cairn/blob/9f68240ae5bf7f3c060d2560e6df7f86a06721ed/tests/e2e/test_m0_slice.py) have 14 single functions and three abort parameters. Their fixture supplies private SQLite, bundle, pin, and attestation paths. Its helpers invoke the actual CLI; setup and successful full-slice execution exercise certification, the gate plan, skill runner, PARI, and verifier. The module-entry case also crosses the Python process boundary. The two lexical-path observers wrap and delegate their real callees.
+
+The best layer for these assertions is the real CLI/integration boundary: persistence, subprocess execution, text/JSON output, and lexical filesystem paths are the observables. Pure recipe, derivation, and formatting decisions can have separate unit contracts, but no replacement proof or test removal follows from this map.
+
+| Test suffix in `test_m0_slice.py` | Distinct observable and production branch |
+|---|---|
+| `operator_sequence_produces_four_nodes_two_negatives_and_one_refusal` | JSON shape; A–D node identities and grades; four verifier arms; persisted positive, two negative, and submitter-named refusal records. `m0.run_slice` constructs and stores the records, and `_run` serializes them. |
+| `slice_records_its_hypothesis_object_and_the_derivation_lineage` | Exactly one matching hypothesis key and the A→B `derives` edge. `run_slice` checks/writes the hypothesis and calls `add_lineage`. |
+| `derivation_commits_to_the_x_the_generator_output_determines` | Rebuilt derivation payload matches node B's hash. `run_slice` commits the scalar drawn from A; the test checks the commitment relationship, using the same `_draw` primitive, rather than independently validating that primitive. |
+| `same_seed_replays_from_cache_without_another_toy_curve_attempt` | Equal attempt/node/instance identities and one toy-curve attempt. `runner.launch` serves the existing recipe when cache lookup is enabled. |
+| `a_different_seed_derives_a_different_instance` | Different instance, curve, statement, and node identities plus two attempts. Seed participates in the recipe and fresh launch path. |
+| `skip_cache_lookup_runs_toy_curve_again_for_the_same_content` | Distinct attempts with equal content identity. CLI forwarding reaches `runner.launch`'s explicit cache bypass. |
+| `human_rendering_names_every_node_negative_and_refusal` | Seven text lines with the node labels and refusal reasons. This owns `_run`'s non-JSON output branch. |
+| `green_run_logs_one_record_per_step_in_order` | Integer-valued M0 steps 1–9 and named plan/verify/summary positions. GatePlan's string-valued step events are distinct. |
+| `each_abort_path...[pin_mismatch]` | Pin mismatch, empty stdout, zero plan rows and no generator attempt. Bundle opening refuses before substrate/plan execution. |
+| `each_abort_path...[uncertified_skill]` | Uncertified-revision refusal, nine plan rows and no toy-curve attempt. The plan runs before the certificate guard. |
+| `each_abort_path...[gate_plan_failure]` | Empty attestations cause `gate-plan-failed:waiver_cannot_advance`, nine plan rows and no M0 launch. The waiver observer refuses its missing record and later plan outcomes remain blocked. |
+| `a_refusal_names_a_next_command_that_actually_resolves_it` | The suggested certification command targets the correct DB, executes successfully, and permits a subsequent real M0 run. This owns the refusal-to-remediation interaction. |
+| `a_missing_attestation_file_exits_environment` | Environment exit, actionable error, empty stdout. `_run` refuses before bundle opening. |
+| `module_entry_point_runs_the_slice_with_globals_before_the_subcommand` | Real `python -m cairn` accepts global paths before `m0-run`, emits one JSON line and structured stderr, and returns the four arm outcomes. |
+| `step_transcript_matches_its_golden_after_scrubbing` | Real node/time values exist before normalization; the complete normalized transcript matches its golden. This checks the emitted transcript and scrubbed representation, not just numbered step order. |
+| `scratch_root_sits_beside_the_db_path_as_written` | A delegating observer sees the symlink alias's `m0-runs` directory, not its resolved target. `_run` derives the lexical DB parent. |
+| `selftest_parent_is_the_db_path_as_written` | Delegating `Path.mkdir` observation retains the aliased certification parent. `selftest._run` creates that parent before substrate opening. |
+
+The corresponding production paths are [M0](https://github.com/jwross24/cairn/blob/9f68240ae5bf7f3c060d2560e6df7f86a06721ed/src/cairn/m0.py), [runner cache/fresh launch](https://github.com/jwross24/cairn/blob/9f68240ae5bf7f3c060d2560e6df7f86a06721ed/src/cairn/runner.py#L441), [waiver observation](https://github.com/jwross24/cairn/blob/9f68240ae5bf7f3c060d2560e6df7f86a06721ed/src/cairn/gateplan.py#L429), and [certification entry point](https://github.com/jwross24/cairn/blob/9f68240ae5bf7f3c060d2560e6df7f86a06721ed/src/cairn/selftest.py#L478). The parent read each mapped assertion and the corresponding branches.
+
+Twelve functions execute a successful full M0 path; the same-seed, different-seed, and bypass tests each execute it twice. Remediation also executes an intentional uncertified refusal. These repetitions retain distinct assertions. This map establishes no exact duplicate or counterfactual that authorizes removing a case.
+
+Within this module, the tier refusal, runner FAIL/other non-OK statuses, unexpectedly rejected positive, unexpectedly accepted negative, and broken submitter-named control are not forced. Other test modules may own them; no suite-wide coverage absence is claimed. The map also does not establish timing causes, complete fixture safety, or independent mathematical correctness of the shared canonicalization/derivation primitives. Runtime outcomes belong to the pinned CI receipts in [lane-partition.md](lane-partition.md).

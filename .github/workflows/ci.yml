@@ -8,9 +8,8 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  # A macOS runner bills at ten times wall clock against a 2000-minute monthly
-  # tier, so a run is a rationed resource. Superseding collapses a burst of
-  # bead-closing pushes onto the tip, which contains every commit under it.
+  # Standard hosted runner minutes are free for this public repo; canceling superseded
+  # runs frees concurrent runner slots. https://docs.github.com/en/billing/concepts/product-billing/github-actions
   cancel-in-progress: true
 
 permissions:
@@ -185,17 +184,8 @@ jobs:
     # with os.chflags and stat.UF_APPEND, which exist on macOS and BSD and not on
     # Linux; cairn-hcl owns the Linux arm. An ubuntu run fails before it starts.
     runs-on: macos-latest
-    # Three deadlines, innermost first: 180 s per test (pyproject.toml), then
-    # CAIRN_SESSION_DEADLINE for the whole pytest session, then this ceiling for a
-    # wedge outside pytest. Every successful run measured 4.4 to 8.7 minutes at 2298
-    # tests, 2534 tests need past ten minutes on a slow runner, and two wedges that ran
-    # to 33 and 45 cost 577 billable minutes between them, so the ceiling sits above
-    # the slowest full run and far below a wedge. The Lean step below adds setup time
-    # outside pytest: a ~/.elan cache restore on a hit, and on a miss a 561 MB toolchain
-    # download plus a 2.7 GB unpack, measured on the build machine at 0.6 s for the
-    # version probe and unmeasured on a runner until the first miss; inside pytest the
-    # Lean integration test costs a lake build (8.5 s) plus a leanchecker --fresh replay
-    # (50.6 s at load average 7 on the build machine).
+    # Tests default to 180 s with per-test marker overrides; the session deadline is
+    # 1080 s. The 20-minute job cap leaves room for setup and teardown outside pytest.
     timeout-minutes: 20
     env:
       PYTEST_ADDOPTS: "-vv"

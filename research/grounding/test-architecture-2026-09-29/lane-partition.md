@@ -1,8 +1,42 @@
 # Owner-directed test-lane partition evidence
 
-This record inventories the three dedicated lanes `m0`, `gateplan`, and `solution-library` within the 13-lane layout. Local ownership checks pass. Pushed CI run `36604519180` is a terminal failure: nine jobs passed, M0 and Python failed, and solution-library and Lean were canceled. The partial observations below describe the evidence gathered while that run was active.
+The 19-lane layout passes all jobs in [CI run 36618973095](https://github.com/jwross24/cairn/actions/runs/36618973095) at `9f68240ae5bf7f3c060d2560e6df7f86a06721ed`. The aggregate result is 4,706 passed, two external-skill skips, and one corpus-completeness xfail, with no failed tests or errors. Skips and xfails are exclusions, not passes. Every affected heavy leaf has zero skips. This establishes completion under the fixed job/session ceilings, not a causal speedup or completion of the broader test audit.
+
+## Terminal 19-lane receipt
+
+All macOS jobs collected 4,709 items; the five Linux jobs collected their scoped 45 items. The selected populations below sum to 4,709, with disjoint ownership checked separately by the lane contracts. Pytest seconds include setup, calls, and teardown. Job seconds include Actions setup and post-job work. Queue seconds are run creation to job start; this timestamp difference does not identify why a runner waited.
+
+| Lane | Passed / skipped / xfailed | Pytest seconds | Job seconds | Queue seconds |
+|---|---:|---:|---:|---:|
+| python | 4470 / 2 / 1 | 936.76 | 980 | 8 |
+| m0-lineage | 4 / 0 / 0 | 437.98 | 471 | 8 |
+| m0-replay | 2 / 0 / 0 | 386.30 | 413 | 8 |
+| m0-transcript | 3 / 0 / 0 | 453.43 | 496 | 431 |
+| m0-boundaries | 8 / 0 / 0 | 545.17 | 575 | 996 |
+| gateplan | 28 / 0 / 0 | 638.03 | 680 | 936 |
+| lean-core | 121 / 0 / 0 | 552.51 | 668 | 1624 |
+| lean-replay | 1 / 0 / 0 | 640.15 | 822 | 11 |
+| solution | 18 / 0 / 0 | 397.08 | 543 | 1252 |
+| solution-library-dlp | 1 / 0 / 0 | 814.91 | 932 | 10 |
+| solution-library-finite-point | 1 / 0 / 0 | 648.65 | 765 | 950 |
+| solution-library-binding | 1 / 0 / 0 | 136.97 | 281 | 1581 |
+| solution-plan-exact | 1 / 0 / 0 | 833.83 | 976 | 842 |
+| solution-plan-refusals | 2 / 0 / 0 | 635.54 | 756 | 488 |
+| container | 35 / 0 / 0 | 693.74 | 834 | 6 |
+| container-replay-exact | 2 / 0 / 0 | 462.27 | 595 | 6 |
+| container-replay-refusals | 4 / 0 / 0 | 551.08 | 688 | 8 |
+| container-plan-exact | 1 / 0 / 0 | 447.45 | 585 | 7 |
+| container-plan-refusals | 3 / 0 / 0 | 509.25 | 644 | 6 |
+
+Run creation was 19:24:06 UTC and the final job completed at 20:02:18 UTC, an elapsed 38 minutes 12 seconds. Each individual job remained below 20 minutes. The 27-minute-4-second Lean-core queue interval is distinct from its 11-minute-8-second execution. More leaves permit bounded jobs but consume runner slots; these observations do not establish that further partitioning improves whole-workflow latency.
+
+The two skipped nodes are the live gatherer and renderer checks in `test_audit_missing_items_drift.py`; their external compliance skill is absent from CI. The xfailed node is `test_the_corpus_bars_are_met`. The largest M0 call phases were 235.54 seconds for cache bypass, 227.31 for different seeds, and 218.99 for refusal remediation. These completed real-work calls exceed the 180-second default while remaining within their 600-second markers. The DLP and finite-point development-arm passes establish no `PROVEN` claim.
+
+The parent independently extracted all summaries, durations, and step metadata from the [complete job log](lane-partition/raw/afternoon-terminal.log.gz) and [terminal metadata](lane-partition/raw/afternoon-terminal.json.gz). The [profile](lane-partition/raw/afternoon-profile.json.gz) retains collected/deselected counts, top durations, provisioning/cache step times, and source lines. The [adapter](lane-partition/raw/afternoon-profile_nineteen.py.gz) uses the pinned historical extractor with the exact 19-leaf manifest from `9f68240`; it refuses a nonterminal run, failed run, missing lane, and failed job. [The refusal receipt](lane-partition/raw/afternoon-profile-result.log.gz) records all four expected diagnostics. Independent per-job extraction agrees with the parent summaries. This is evidence for the pushed source SHA, not for queued descendant code.
 
 ## Ownership and measured runs
+
+The 13-lane source measurements below inventory `m0`, `gateplan`, and `solution-library`. Run `36604519180` is a terminal failure: nine jobs passed, M0 and Python failed, and solution-library and Lean were canceled. Partial observations remain bounded to that run and are not green evidence.
 
 | Lane | Collected cases | Run evidence |
 |---|---:|---|
@@ -69,9 +103,11 @@ Solution-library job `109543708066` selected all three cases. DLP passed in 615.
 
 The new leaves use macOS. M0's refusal setup directly calls `os.chflags`; bundle and attestation pinning log a weaker mode-bits-only boundary on platforms without that API. The library fixture also uses bundle pinning. Linux installer availability alone does not establish equivalent runtime boundaries. The five existing container leaves retain their Linux runners.
 
-The passing Lean job contains 122 tests in 919.79 seconds. Fresh-replay forgery alone accounts for 343.61 seconds of call time, 97.40 seconds of setup, and 5.07 seconds of teardown. The `lean-replay` leaf owns that one case; `lean-core` owns the other 121, including the weaker-statement comparison. The local `lean` aggregate preserves their union. The 446.08-second replay portion and approximately 473.71-second remainder support an expected 90–130 billed macOS minutes per leaf, allowing approximately two minutes for job setup and additional timing variation. This partition addresses the earlier 20-minute cancellation; the estimates do not prove independent-job durations or savings. The complete layout has 19 leaf jobs and six local aggregate selections.
+The passing Lean job contains 122 tests in 919.79 seconds. Fresh-replay forgery alone accounts for 343.61 seconds of call time, 97.40 seconds of setup, and 5.07 seconds of teardown. The `lean-replay` leaf owns that one case; `lean-core` owns the other 121, including the weaker-statement comparison. The local `lean` aggregate preserves their union. The 446.08-second replay portion and approximately 473.71-second remainder support an expected 9–13 wall minutes per leaf, allowing approximately two minutes for job setup and additional timing variation. This partition addresses the earlier 20-minute cancellation; the estimates do not prove independent-job durations or savings. The complete layout has 19 leaf jobs and six local aggregate selections.
 
-At the owner's ten-times macOS billing multiplier, expected planning ranges per run are 70–110 billed minutes each for `m0-lineage`, `m0-replay`, and `m0-transcript`, and 90–130 for `m0-boundaries`. These include approximately one minute of setup on top of the projected test durations. Expected library ranges are 120–160 billed minutes for `solution-library-dlp`, 100–160 for `solution-library-finite-point`, and 40–60 for `solution-library-binding`. DLP uses the two observed 615/759-second case durations plus approximately two minutes of setup. The [peer library log](lane-partition/raw/lib-gate.log.gz) records call times of 269.24 seconds for DLP, 243.38 for finite-point, and 35.16 for binding. Finite-point's planning range applies the approximate two-to-three-times CI/local factor plus setup; its complete CI duration remains unmeasured. Binding uses its peer duration and the conservative measured DLP preparation interval of approximately 118 seconds plus setup; its own complete CI duration is unmeasured. Every leaf retains the 200-billed-minute job ceiling. These ranges are estimates for capacity and cost, not demonstrated savings.
+Expected planning ranges per run are 7–11 wall minutes each for `m0-lineage`, `m0-replay`, and `m0-transcript`, and 9–13 for `m0-boundaries`. These include approximately one minute of setup on top of the projected test durations. Expected library ranges are 12–16 wall minutes for `solution-library-dlp`, 10–16 for `solution-library-finite-point`, and 4–6 for `solution-library-binding`. DLP uses the two observed 615/759-second case durations plus approximately two minutes of setup. The [peer library log](lane-partition/raw/lib-gate.log.gz) records call times of 269.24 seconds for DLP, 243.38 for finite-point, and 35.16 for binding. Finite-point's planning range applies the approximate two-to-three-times CI/local factor plus setup; its complete CI duration remains unmeasured. Binding uses its peer duration and the conservative measured DLP preparation interval of approximately 118 seconds plus setup; its own complete CI duration is unmeasured. Every leaf retains the 20-minute job ceiling. These ranges estimate runner occupancy, not cost or demonstrated savings.
+
+`gh repo view --json visibility,nameWithOwner` reports `jwross24/cairn` as `PUBLIC`. [GitHub's billing policy](https://docs.github.com/en/billing/concepts/product-billing/github-actions) makes standard hosted runner usage free for public repositories. The ten-times billed-minute projections in commit `9f68240` therefore do not represent this repository's runner cost. Nineteen leaves consume concurrent runner slots and can increase queue time even when each job completes within its ceiling. The policy and repository visibility were checked on 2026-09-29; this observation makes no claim about separately metered storage.
 
 The [run metadata](lane-partition/raw/ci-36608535105-terminal.json.gz), [M0 log](lane-partition/raw/ci-109543708095-m0.log.gz), [library log](lane-partition/raw/ci-109543708066-library.log.gz), [DLP trace](lane-partition/raw/ci-109543708066-dlp.jsonl.gz), [finite-point trace](lane-partition/raw/ci-109543708066-finite-point.jsonl.gz), and [Lean log](lane-partition/raw/ci-109543708027-lean.log.gz) retain the observations. The [baseline collection](lane-partition/raw/afternoon-baseline-collection.log.gz) records the 20 M0/library IDs at `6bd16aa` before the partition.
 

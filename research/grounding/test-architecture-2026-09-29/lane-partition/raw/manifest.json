@@ -457,6 +457,102 @@
       "archive_path": "afternoon-marker_receipt.py.gz",
       "archive_bytes": 276,
       "archive_sha256": "fb06a6e0481c78b9e969828ce9bc5bf24a8624567e359f24fbf0556f6f14ff86"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/terminal.json",
+      "source_bytes": 92959,
+      "source_sha256": "79e2479b024e1e0a01e492820b859cb0e9cdfff134f0866d3d9a488e45841d2c",
+      "archive_path": "afternoon-terminal.json.gz",
+      "archive_bytes": 5180,
+      "archive_sha256": "09f211e5e77571380372427e3e5fe645e268a7381fc9685dbd4332252f14384c"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/terminal.log",
+      "source_bytes": 3207488,
+      "source_sha256": "5ad6d792a566a43d70f5495c3fe2522959179776e62e5f659ddda1ad8f96c54d",
+      "archive_path": "afternoon-terminal.log.gz",
+      "archive_bytes": 443061,
+      "archive_sha256": "eb88195576f94c2a17c547c46bac6bc1efb94c6a0f1f30994046eb3352e14fd2"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/profile.json",
+      "source_bytes": 159243,
+      "source_sha256": "545864fcef5e0fa6604b01dd5acb58fb730968492b21ca38f739f60c77706678",
+      "archive_path": "afternoon-profile.json.gz",
+      "archive_bytes": 6869,
+      "archive_sha256": "0ff26b9bd248aae4006e1f157daa5588b1b027576ba662542f87c6aae8c36352"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/profile_nineteen.py",
+      "source_bytes": 2077,
+      "source_sha256": "262e7254d9bde48e7335d275b67e49f0f9cb066863f9e7f4edde3bf06139887c",
+      "archive_path": "afternoon-profile_nineteen.py.gz",
+      "archive_bytes": 984,
+      "archive_sha256": "5a2f31b056706c74ee204d5a926ad746d0eb1319c473a08f1d86ff12a65b9d71"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/profile-result.log",
+      "source_bytes": 2913,
+      "source_sha256": "8b36f1ba9ad6bfc8f40bb6f62d23d9f76da29e8c555a9959ef8963634fab24f3",
+      "archive_path": "afternoon-profile-result.log.gz",
+      "archive_bytes": 575,
+      "archive_sha256": "0f107290ff1f00c363f66c4621bbcaebaf04d3da2fb6cc7f0312958b76791011"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/pinned_pilot_profile.py",
+      "source_bytes": 28556,
+      "source_sha256": "270b2a13676a7081e83a797f1d2b01fde4edc8d1887969c5cd55be5bcbbe3cdb",
+      "archive_path": "afternoon-pinned_pilot_profile.py.gz",
+      "archive_bytes": 7188,
+      "archive_sha256": "6eb6e5f8dc142c408546e3f8b87b3ba17efcc77cae8f5ff9b0fd9c915782a6b4"
+    },
+    {
+      "source_path": "/tmp/cairn-ci-36618973095.3VV5he/completed-lanes-19.tsv",
+      "source_bytes": 6806,
+      "source_sha256": "551128609d56af4225e8a60dce8a1e515001aab39e64f0b6fcb47ceff2697f2c",
+      "archive_path": "afternoon-independent-completed-lanes-19.tsv.gz",
+      "archive_bytes": 2039,
+      "archive_sha256": "b396925f1f58b335f26db177de14dbad21b5f09e4ec9d301ffdb5e43204855dc"
+    },
+    {
+      "source_path": "/tmp/cairn-ci-36618973095.3VV5he/completed-lanes-19.json",
+      "source_bytes": 13445,
+      "source_sha256": "878e6d8cdd6ba646f44d959bbb05aa9088cee89b8bccbf844769f05a77924f21",
+      "archive_path": "afternoon-independent-completed-lanes-19.json.gz",
+      "archive_bytes": 2614,
+      "archive_sha256": "c1d988f1e3a6946d2eb9f14c166ff1f5b08fa1aabb38fb203970619f13e1bb04"
+    },
+    {
+      "source_path": "/tmp/cairn-ci-36618973095.3VV5he/python-skip-reasons.json",
+      "source_bytes": 554,
+      "source_sha256": "6f03a936829c74b50334ce4062d8175271073bf2c49e077f461565f13bf23ffd",
+      "archive_path": "afternoon-independent-python-skip-reasons.json.gz",
+      "archive_bytes": 291,
+      "archive_sha256": "d621d42645e591a1a9d4e191af6baca02a829649d0186f31a834887225870a8b"
+    },
+    {
+      "source_path": "/tmp/cairn-ci-36618973095.3VV5he/run-snapshot-final.json",
+      "source_bytes": 14584,
+      "source_sha256": "6a00f206ea3599c6a66df3062f923921b04bf81f0786f35472e2ec6c0c23f8f9",
+      "archive_path": "afternoon-independent-run-snapshot-final.json.gz",
+      "archive_bytes": 2987,
+      "archive_sha256": "72981e286dc5f2cd8814f95fe905d65665155851965686a9b408794a3827cb68"
+    },
+    {
+      "source_path": "/tmp/cairn-ci-36618973095.3VV5he/jobs-snapshot-final.json",
+      "source_bytes": 105073,
+      "source_sha256": "0fb968094071f4914a3600c7e80c7db52b7360c7b286c6550d38e45021334f49",
+      "archive_path": "afternoon-independent-jobs-snapshot-final.json.gz",
+      "archive_bytes": 5714,
+      "archive_sha256": "993f8eb3236151836e3805eeb11868e94c77948b796b09f0a85af399c2b01414"
+    },
+    {
+      "source_path": "/tmp/cairn-llta-m0-map-9f68240.md",
+      "source_bytes": 8021,
+      "source_sha256": "b42a69c8ce37a415d019db4fbbb798ccd002937ebe43fb78e074265b3300a1d5",
+      "archive_path": "afternoon-m0-source-map.md.gz",
+      "archive_bytes": 3515,
+      "archive_sha256": "13ecb81b4d13ff51290d9bb27ab9b2c2211603d0a0ef589c3b6ce17dd354eba7"
     }
   ]
 }
