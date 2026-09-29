@@ -2,14 +2,17 @@ import dataclasses
 import hashlib
 import json
 import sys
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
 
 from cairn import (
+    attest,
     bundle,
     canon,
     claims,
+    human_authority,
     instances,
     ladderplan,
     laddertable,
@@ -45,7 +48,17 @@ def harness(tmp_path, pinned_bundle):
         yield sub, gate, tmp_path / "runs"
 
 
-def _launch(sub, gate, scratch, *, bits=28, trial=0, nonce=NONCE, declared_tier=instances.DECLARED_TIER):
+def _launch(
+    sub,
+    gate,
+    scratch,
+    *,
+    bits=28,
+    trial=0,
+    nonce=NONCE,
+    declared_tier=instances.DECLARED_TIER,
+    attest_path=None,
+):
     return instances.launch_trial(
         sub,
         gate,
@@ -57,7 +70,27 @@ def _launch(sub, gate, scratch, *, bits=28, trial=0, nonce=NONCE, declared_tier=
         budget_remaining=BUDGET,
         ceiling_multiplier=CEILING,
         declared_tier=declared_tier,
+        attest_path=attest_path,
     )
+
+
+def _operator_session(sub, gate, scratch):
+    attest_path = scratch.parent / "attest.bin"
+    attest.init(str(attest_path), gate.waiver_target())
+    opened = datetime.now(UTC)
+    human_authority.append(
+        sub,
+        str(attest_path),
+        human_authority.OPERATOR_SESSION,
+        {
+            "session_id": "instance-maker-test-session",
+            "issued_by": "test-operator",
+            "opened_at": opened.isoformat(),
+            "expires_at": (opened + timedelta(seconds=3600)).isoformat(),
+        },
+        gate_bundle_hash=gate.hash,
+    )
+    return str(attest_path)
 
 
 def test_an_uncertified_maker_revision_is_refused_by_the_tier_gate_and_nothing_launches(harness):
@@ -289,7 +322,8 @@ def test_a_tier_two_launch_binds_its_attempt_to_the_ticket_the_gate_selected(har
     obj = seeded_keep(sub, gate)
     table = keep_table(obj.hash, gate)
     laddertable.write(sub, table, plan)
-    attempt, out = _launch(sub, gate, scratch, declared_tier=2)
+    attest_path = _operator_session(sub, gate, scratch)
+    attempt, out = _launch(sub, gate, scratch, declared_tier=2, attest_path=attest_path)
     assert attempt.status == runner.STATUS_OK and out is not None
     bound = bindings(sub)
     assert [(b["attempt_id"], b["hypothesis_key"], b["tier"], b["bundle_hash"]) for b in bound] == [
@@ -323,7 +357,8 @@ def test_a_bound_tier_two_attempt_is_the_record_a_tier_three_launch_reads(harnes
     selftest_skills.certify(sub, gate.verifier_config(), selftest_skills.INSTANCE_MAKER)
     obj = seeded_keep(sub, gate)
     laddertable.write(sub, keep_table(obj.hash, gate), plan)
-    attempt, _ = _launch(sub, gate, scratch, declared_tier=2)
+    attest_path = _operator_session(sub, gate, scratch)
+    attempt, _ = _launch(sub, gate, scratch, declared_tier=2, attest_path=attest_path)
     candidate = ticketlattice.tier_three_candidate(sub, gate, obj.hash, METHOD_IDENTITY)
     assert candidate is None, "an unverified witness is not a Tier-3 candidate"
     claims.write_repro_record(
