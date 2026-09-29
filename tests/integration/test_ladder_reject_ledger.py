@@ -2,11 +2,12 @@ import dataclasses
 import json
 import sqlite3
 import sys
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
 
-from cairn import claims, ladder, ladderplan, laddertable, ledger
+from cairn import claims, ladder, ladderplan, laddertable, ledger, runner
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import factories
@@ -21,7 +22,7 @@ from test_ladder_run import plan as plan
 from test_ladder_run import shipped as shipped
 from test_ladder_run import writer as writer
 
-from tests.fixtures.skills import ladder_wrong_answer
+from tests.fixtures.skills import ladder_model_miss, ladder_wrong_answer
 
 
 def run_wrong_answer(writer, shipped, tmp_path, plan, hypothesis_object, attest_path):
@@ -57,6 +58,41 @@ def run_measured_floor(writer, shipped, tmp_path, plan, hypothesis_object, attes
         writer,
         shipped,
         plan=measured_plan,
+        plan_hash=ladderplan.plan_digest(shipped),
+        run_id=RUN_ID,
+        hypothesis_hash=hypothesis_object.hash,
+        nonce=nonce,
+        scratch_root=scratch,
+        budget_remaining=10_000.0,
+        ceiling_multiplier=MAKER_CEILING,
+        ops_counter=observe,
+        attest_path=attest_path,
+    )
+
+
+def run_model_miss(writer, shipped, tmp_path, plan, hypothesis_object, attest_path, bits):
+    nonce = _dispatch_run(
+        writer,
+        shipped,
+        tmp_path,
+        plan,
+        hypothesis_object,
+        RUN_ID,
+        claimant=ladder_model_miss,
+    )
+    scratch = tmp_path / f"model-miss-{bits}"
+    scratch.mkdir()
+
+    def observe(trial):
+        if trial.arm == ladder.CLAIMANT and trial.bits == bits:
+            assert trial.reported_ops is not None
+            return laddertable.OpsObservation(laddertable.OPS_EXACT, trial.reported_ops)
+        return laddertable.OpsObservation(laddertable.OPS_UNKNOWN, None)
+
+    return ladder.run(
+        writer,
+        shipped,
+        plan=plan,
         plan_hash=ladderplan.plan_digest(shipped),
         run_id=RUN_ID,
         hypothesis_hash=hypothesis_object.hash,
@@ -250,6 +286,86 @@ def test_refutation_floor_persists_gate_owned_measured_result(
     claimant = ladder.dispatches_for(writer, RUN_ID)[ladder.CLAIMANT]
     assert not writer.yanked(claimant.identity_bundle_hash)
     print(json.dumps({"entry": entry, "table": table.hash}, sort_keys=True))
+
+
+@pytest.mark.parametrize(
+    ("bits", "role", "predicate"),
+    [
+        (28, ladderplan.ROLE_FIT, laddertable.IN_SAMPLE_MISS),
+        (30, ladderplan.ROLE_HOLD_OUT, laddertable.OUT_OF_SAMPLE_MISS),
+    ],
+)
+def test_model_miss_persists_gate_owned_finite_sample_result(
+    writer, shipped, tmp_path, plan, hypothesis_object, attest_path, bits, role, predicate
+):
+    table, _ = run_model_miss(writer, shipped, tmp_path, plan, hypothesis_object, attest_path, bits)
+    stored = laddertable.read(writer, table.hash)
+    recorded = laddertable.recorded_verdict(writer, table.hash)
+    assert (recorded.kind, recorded.predicate, recorded.refutation_kind, recorded.rung_bits) == (
+        laddertable.REJECT,
+        predicate,
+        ledger.MEASURED,
+        bits,
+    )
+    row = next(rung for rung in stored.rungs if rung.bits == bits)
+    assert row.role == role
+    assert row.model_prediction == "1.000000"
+    assert row.model_band == str(plan.design_radius)
+    assert Decimal(row.mean_ops) > Decimal(row.model_prediction) * (1 + Decimal(row.model_band))
+    target_trials = [trial for trial in stored.trials if trial.arm == ladder.CLAIMANT and trial.bits == bits]
+    assert len(target_trials) == row.trials
+    assert all(
+        trial.gate_ops.kind == laddertable.OPS_EXACT
+        and trial.gate_ops.value == trial.reported_ops
+        and trial.status == runner.STATUS_OK
+        and trial.output_complete
+        and trial.recovered
+        for trial in target_trials
+    )
+    expected_mean = format(
+        (sum(Decimal(trial.gate_ops.value) for trial in target_trials) / Decimal(len(target_trials))).quantize(
+            Decimal("0.000001")
+        ),
+        "f",
+    )
+    assert row.mean_ops == expected_mean
+
+    entries = ledger.entries_for(writer, hypothesis_object.hash)
+    assert len(entries) == 1
+    entry = entries[0]
+    assert entry["evidence_node"] == stored.hash
+    assert (entry["decision"], entry["refutation_kind"], entry["faulting_revision"]) == (
+        ledger.REFUTED,
+        ledger.MEASURED,
+        None,
+    )
+    assert entry["caught_by"] == f"ladder:{predicate}"
+    assert json.loads(entry["measured_points"]) == [
+        {
+            "numeric": {"bits": bits},
+            "categorical": {
+                "predicate": predicate,
+                "mean_ops": expected_mean,
+                "model_prediction": row.model_prediction,
+                "model_band": row.model_band,
+            },
+        }
+    ]
+    assert json.loads(entry["result"]) == {
+        "kind": ledger.EXACT,
+        "quantity": "mean_group_operations",
+        "summary": f"finite-sample mean of gate operation counts at {bits} bits",
+        "value": expected_mean,
+        "ci": None,
+        "ci_method": None,
+        "coverage": None,
+    }
+    assert json.loads(entry["retry_predicate"]) == {
+        "kind": ledger.RETRY_GATE_OWNED_REMEASUREMENT,
+        "target": hypothesis_object.hash,
+    }
+    claimant = ladder.dispatches_for(writer, RUN_ID)[ladder.CLAIMANT]
+    assert not writer.yanked(claimant.identity_bundle_hash)
 
 
 def test_measured_table_entry_refuses_forged_subject_points_result_and_predicate(
