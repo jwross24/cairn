@@ -1,0 +1,342 @@
+{
+  "data_filter_extract": {
+    "all_member_paths_types_sizes_and_symlink_targets_validated": true,
+    "difference_count": 18,
+    "differences": {
+      ".lake/packages/Cli/.git/objects/pack/pack-80a82cee2e14bc1690e3a9ad3e245fcc21f67f5a.idx": {
+        "actual": [
+          "file",
+          420,
+          18180,
+          "0793e6183b7b145326506a48b1b7c9aa2a060444f668d9e676e10034d24d3959"
+        ],
+        "expected": [
+          "file",
+          292,
+          18180,
+          "0793e6183b7b145326506a48b1b7c9aa2a060444f668d9e676e10034d24d3959"
+        ]
+      },
+      ".lake/packages/Cli/.git/objects/pack/pack-80a82cee2e14bc1690e3a9ad3e245fcc21f67f5a.pack": {
+        "actual": [
+          "file",
+          420,
+          168179,
+          "197f5c1f2793f167c98acc90d65cc1d30dfe25b17b7c2b4370849810b85eb4fd"
+        ],
+        "expected": [
+          "file",
+          292,
+          168179,
+          "197f5c1f2793f167c98acc90d65cc1d30dfe25b17b7c2b4370849810b85eb4fd"
+        ]
+      },
+      ".lake/packages/LeanSearchClient/.git/objects/pack/pack-dbbe2bd83a11c3c1cc08df5a34107c569009f596.idx": {
+        "actual": [
+          "file",
+          420,
+          12580,
+          "cc9dce80730245365cf73cd01b638800e8437e67db2baf17aa03eade4e3c22de"
+        ],
+        "expected": [
+          "file",
+          292,
+          12580,
+          "cc9dce80730245365cf73cd01b638800e8437e67db2baf17aa03eade4e3c22de"
+        ]
+      },
+      ".lake/packages/LeanSearchClient/.git/objects/pack/pack-dbbe2bd83a11c3c1cc08df5a34107c569009f596.pack": {
+        "actual": [
+          "file",
+          420,
+          93448,
+          "f1c45ad880e3a81a2f938912cb7b673aab60759886904951b15926dc51ca59ac"
+        ],
+        "expected": [
+          "file",
+          292,
+          93448,
+          "f1c45ad880e3a81a2f938912cb7b673aab60759886904951b15926dc51ca59ac"
+        ]
+      },
+      ".lake/packages/Qq/.git/objects/pack/pack-f7c9654d37e2e49ccecf591aa7b989dff2b70b60.idx": {
+        "actual": [
+          "file",
+          420,
+          49288,
+          "dc00391142a0017b923eb8fcf439d0303ff4bd9f523bb0a463e5c131cf644e68"
+        ],
+        "expected": [
+          "file",
+          292,
+          49288,
+          "dc00391142a0017b923eb8fcf439d0303ff4bd9f523bb0a463e5c131cf644e68"
+        ]
+      },
+      ".lake/packages/Qq/.git/objects/pack/pack-f7c9654d37e2e49ccecf591aa7b989dff2b70b60.pack": {
+        "actual": [
+          "file",
+          420,
+          334065,
+          "482f2f66eceb6a5d2ed64dd94336f279cfd3e5c0cb1b7f500f1b09e10863ad11"
+        ],
+        "expected": [
+          "file",
+          292,
+          334065,
+          "482f2f66eceb6a5d2ed64dd94336f279cfd3e5c0cb1b7f500f1b09e10863ad11"
+        ]
+      },
+      ".lake/packages/aesop/.git/objects/pack/pack-7467136b2b62279ff607c0da8924842e606d6370.idx": {
+        "actual": [
+          "file",
+          420,
+          384644,
+          "f04264ba1d761acc2deecf2dc2badeb208125b967a8d14d97708ca6bc3f36faa"
+        ],
+        "expected": [
+          "file",
+          292,
+          384644,
+          "f04264ba1d761acc2deecf2dc2badeb208125b967a8d14d97708ca6bc3f36faa"
+        ]
+      },
+      ".lake/packages/aesop/.git/objects/pack/pack-7467136b2b62279ff607c0da8924842e606d6370.pack": {
+        "actual": [
+          "file",
+          420,
+          5096795,
+          "b020ac9bb5452c172b934767151ca9bd9f0d79b3a793e530515745e039d1e514"
+        ],
+        "expected": [
+          "file",
+          292,
+          5096795,
+          "b020ac9bb5452c172b934767151ca9bd9f0d79b3a793e530515745e039d1e514"
+        ]
+      },
+      ".lake/packages/batteries/.git/objects/pack/pack-a537637075de1032862c2a2cf35ce1a5c24bccd9.idx": {
+        "actual": [
+          "file",
+          420,
+          1501732,
+          "284a34da164891c4ad458e1431e8d963cb8ff22a7529bde84a4028438e4c7465"
+        ],
+        "expected": [
+          "file",
+          292,
+          1501732,
+          "284a34da164891c4ad458e1431e8d963cb8ff22a7529bde84a4028438e4c7465"
+        ]
+      },
+      ".lake/packages/batteries/.git/objects/pack/pack-a537637075de1032862c2a2cf35ce1a5c24bccd9.pack": {
+        "actual": [
+          "file",
+          420,
+          28569916,
+          "09d952f087b37bc6ab576e62ecb6e3bb381f7b6c51801c5b78f461c5934d1fc8"
+        ],
+        "expected": [
+          "file",
+          292,
+          28569916,
+          "09d952f087b37bc6ab576e62ecb6e3bb381f7b6c51801c5b78f461c5934d1fc8"
+        ]
+      },
+      ".lake/packages/importGraph/.git/objects/pack/pack-716d8a54e59060a1d25887f025b79bf3fb9dec14.idx": {
+        "actual": [
+          "file",
+          420,
+          52620,
+          "90518aaaa1f09d0688fbfe80cc5972115aaa6e4bff53a5af7554e0e70ab47b9f"
+        ],
+        "expected": [
+          "file",
+          292,
+          52620,
+          "90518aaaa1f09d0688fbfe80cc5972115aaa6e4bff53a5af7554e0e70ab47b9f"
+        ]
+      },
+      ".lake/packages/importGraph/.git/objects/pack/pack-716d8a54e59060a1d25887f025b79bf3fb9dec14.pack": {
+        "actual": [
+          "file",
+          420,
+          589843,
+          "ae62f4116b22e94a7d8019af133ac0426063dd7dd3bb7320b3bdc34bbc875d1a"
+        ],
+        "expected": [
+          "file",
+          292,
+          589843,
+          "ae62f4116b22e94a7d8019af133ac0426063dd7dd3bb7320b3bdc34bbc875d1a"
+        ]
+      },
+      ".lake/packages/mathlib/.git/objects/pack/pack-1d50ab1ce556067403160964f40cc563810a0fea.idx": {
+        "actual": [
+          "file",
+          420,
+          22377188,
+          "b3b5153d72cc0911ff37fb4965716de12afd45c7311063a1bd86feee44804769"
+        ],
+        "expected": [
+          "file",
+          292,
+          22377188,
+          "b3b5153d72cc0911ff37fb4965716de12afd45c7311063a1bd86feee44804769"
+        ]
+      },
+      ".lake/packages/mathlib/.git/objects/pack/pack-1d50ab1ce556067403160964f40cc563810a0fea.pack": {
+        "actual": [
+          "file",
+          420,
+          511680760,
+          "f6b366207c5f4bf792e91b47234c7215f304eef649180d38d4683bf067d013f7"
+        ],
+        "expected": [
+          "file",
+          292,
+          511680760,
+          "f6b366207c5f4bf792e91b47234c7215f304eef649180d38d4683bf067d013f7"
+        ]
+      },
+      ".lake/packages/plausible/.git/objects/pack/pack-0a96333360310f2326895ead1f41e1b4129ea868.idx": {
+        "actual": [
+          "file",
+          420,
+          20812,
+          "e0d659d31c3ed9dd2a10643b37c9be7c18976d37f7bc458ab21c475cb803ee38"
+        ],
+        "expected": [
+          "file",
+          292,
+          20812,
+          "e0d659d31c3ed9dd2a10643b37c9be7c18976d37f7bc458ab21c475cb803ee38"
+        ]
+      },
+      ".lake/packages/plausible/.git/objects/pack/pack-0a96333360310f2326895ead1f41e1b4129ea868.pack": {
+        "actual": [
+          "file",
+          420,
+          203912,
+          "7a7443a80f5531b403cfdbe11ba572d3ef79ae7aa9f81fc206bab72ab93647d4"
+        ],
+        "expected": [
+          "file",
+          292,
+          203912,
+          "7a7443a80f5531b403cfdbe11ba572d3ef79ae7aa9f81fc206bab72ab93647d4"
+        ]
+      },
+      ".lake/packages/proofwidgets/.git/objects/pack/pack-d5b2017108a9932838cc1ee300beecf01f03c7b4.idx": {
+        "actual": [
+          "file",
+          420,
+          88376,
+          "0f90a2ded7ab856c63ce6a58247aca77a85b448bc2eb5075881002ea70ffadff"
+        ],
+        "expected": [
+          "file",
+          292,
+          88376,
+          "0f90a2ded7ab856c63ce6a58247aca77a85b448bc2eb5075881002ea70ffadff"
+        ]
+      },
+      ".lake/packages/proofwidgets/.git/objects/pack/pack-d5b2017108a9932838cc1ee300beecf01f03c7b4.pack": {
+        "actual": [
+          "file",
+          420,
+          3936788,
+          "1c246bf8501ae3d79fce6aa198828417dfa71a5dbdb5ec58a13202d6ddf067fe"
+        ],
+        "expected": [
+          "file",
+          292,
+          3936788,
+          "1c246bf8501ae3d79fce6aa198828417dfa71a5dbdb5ec58a13202d6ddf067fe"
+        ]
+      }
+    },
+    "elapsed_seconds": 17.024718333035707,
+    "inventory_matches_source": false
+  },
+  "error": {
+    "message": "",
+    "type": "KeyboardInterrupt"
+  },
+  "load_evidence": {
+    "attempted_in_previous_followup": true,
+    "claim": "load timing and tag snapshots were not retained by the previous follow-up",
+    "elapsed_seconds": null,
+    "named_tag_mappings_before_after": null
+  },
+  "permission_metadata_restore": {
+    "difference_count": 0,
+    "differences": {},
+    "entry_count": 44480,
+    "inventory_matches_source": true
+  },
+  "previous_followup_path": "/Users/jwross/Documents/cairn/research/grounding/container-prerequisites-2026-09-29/runs/20260929T055912Z-49461/archive-followup-20260929T061809Z-25211.json",
+  "previous_followup_sha256": "81ea9ac84dad883f7d2a05f63d283b248bc97ab5d042dff4e61c95fe8c68a57d",
+  "previous_payload": {
+    "compressed_bytes": 2353003610,
+    "compression_ratio": 0.5782603818746718,
+    "compression_seconds": 356.8491111249896,
+    "member_count": 44488,
+    "path": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisites-20260929-a7mtzfaf/prerequisites-20260929T061809Z-25211.tar.gz",
+    "sha256": "724f55ae471720164dc39c5c77fe16436354f0f165662aee4ad930631d619b62",
+    "top_level_members": [
+      "dependency-cache",
+      "image.tar"
+    ],
+    "uncompressed_input_bytes": 4069107419
+  },
+  "probe_sha256": "b999aba9f4de9e0926a6f3f13d79d02fc3bd88a362f6dda58afdc14041b4ec8d",
+  "raw_result_path": "/Users/jwross/Documents/cairn/research/grounding/container-prerequisites-2026-09-29/runs/20260929T055912Z-49461/archive-refinement-20260929T063759Z-89399.json",
+  "schema": "cairn-prerequisite-reuse-refinement/v1",
+  "scratch_root": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisites-20260929-a7mtzfaf",
+  "source_commit": "0f6192c2699b5058f080ea2a75e185eeb14391b3",
+  "source_identity": {
+    "cache_key": "c113c4b0433ed44ee31d0b0e792fcb9a84ca1ef2d15d03ff2a4c9c0a463fbb4b",
+    "container_identity": "b7a0f1bcf5e5d33c106266ed09534ccac29baa0732294b6e054b1ffed002e375",
+    "container_spec_sha256": "fbbe1e24be14108d7bfbbfef10e09019a2dbbafaee4feee2ab0ff0f75972ce5d",
+    "container_tag": "cairn-gate:b7a0f1bcf5e5d33c",
+    "containerfile_sha256": "90001aa93a5d8827bf499f2a1413bb3fdaba045420b517823b071f5349015b22",
+    "dependency_pins": {
+      "lean_commit": "3447a668783dbce1a8fdb97101dd067687b2b418",
+      "mathlib_rev": "1f29011071772620f612bf5a06433775f06067b8",
+      "modules": [
+        "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
+      ],
+      "toolchain": "leanprover/lean4:v4.34.0-rc1"
+    },
+    "docker_daemon": "29.4.0 7.0.14-orbstack-00380-ga7e0a2dc9535 OrbStack",
+    "image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+    "literal_image_inspect": {
+      "elapsed_seconds": 0.07912999999999999,
+      "image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+      "platform": "linux/arm64",
+      "repo_tags": [
+        "cairn-gate:b7a0f1bcf5e5d33c"
+      ],
+      "size_bytes": 1057229931,
+      "stderr": "",
+      "stdout": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb|linux/arm64|1057229931|[\"cairn-gate:b7a0f1bcf5e5d33c\"]"
+    },
+    "pin_validation_seconds": 4.905694250017405,
+    "source_tag_inspect": {
+      "elapsed_seconds": 0.664471,
+      "image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+      "platform": "linux/arm64",
+      "repo_tags": [
+        "cairn-gate:b7a0f1bcf5e5d33c"
+      ],
+      "size_bytes": 1057229931,
+      "stderr": "",
+      "stdout": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb|linux/arm64|1057229931|[\"cairn-gate:b7a0f1bcf5e5d33c\"]"
+    }
+  },
+  "source_measurement_path": "/Users/jwross/Documents/cairn/research/grounding/container-prerequisites-2026-09-29/runs/20260929T055912Z-49461/measurement.json",
+  "source_measurement_sha256": "6b5026df00785b21e4b6e64d6c56e03ee3eedf376aee2e1a4d26ae92183d2117",
+  "started_at_utc": "2026-09-29T06:37:59.671123+00:00",
+  "status": "failed"
+}

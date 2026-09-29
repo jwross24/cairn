@@ -1,0 +1,199 @@
+{
+  "cold_dependency_prepare": {
+    "elapsed_seconds": 295.46400495793205,
+    "entry_bytes_including_inventory": 3011858996,
+    "inventory_sha256": "dded153fd25ec2425ad949ce1bbb9ab646b217ff0f7d6e07ba972bf267a73fb7"
+  },
+  "error": {
+    "message": "dependency-cache-content-mismatch",
+    "type": "CacheRefused"
+  },
+  "image_archive": {
+    "attestation_descriptors": [
+      {
+        "annotations": {
+          "vnd.docker.reference.digest": "sha256:4688d961d05ab67f62a75fb4a7fe98cf86b379229a513bf19647707456fb280c",
+          "vnd.docker.reference.type": "attestation-manifest"
+        },
+        "digest": "sha256:80c3bce860db33b64542a16bda59adbc757919339c4f92d803e7c618d984a13b",
+        "mediaType": "application/vnd.oci.image.manifest.v1+json",
+        "platform": {
+          "architecture": "unknown",
+          "os": "unknown"
+        },
+        "size": 564
+      }
+    ],
+    "config_digest": "sha256:e77e93ed12905f5b6e1629a6ad333f1e4234751f440ee226c3c7b15258b1c99e",
+    "config_size_bytes": 13340,
+    "index_target_digest": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+    "index_target_size_bytes": 856,
+    "layer_count": 8,
+    "layout_version": "1.0.0",
+    "legacy_layer_paths_match_oci": true,
+    "path": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisites-20260929-a7mtzfaf/image.tar",
+    "platform": "linux/arm64",
+    "platform_manifest_digest": "sha256:4688d961d05ab67f62a75fb4a7fe98cf86b379229a513bf19647707456fb280c",
+    "platform_manifest_size_bytes": 1824,
+    "repo_tags": [],
+    "sha256": "4f948c0d78f10c28e8115b568098de27dea97f54f02cf44332737956df080dcd",
+    "size_bytes": 1057248256,
+    "tagless": true,
+    "verified_blob_bytes": 1057231979,
+    "verified_blob_count": 14,
+    "verified_blobs": {
+      "blobs/sha256/1465af89a5ca280a2c7907368c549c0023a846b1630ea27f83b2d4f3cd1baf89": {
+        "digest": "sha256:1465af89a5ca280a2c7907368c549c0023a846b1630ea27f83b2d4f3cd1baf89",
+        "size_bytes": 1317
+      },
+      "blobs/sha256/1ae1e23a298c7f4444268703980278d3913396249c2e9e18b4b9df14eabcca0e": {
+        "digest": "sha256:1ae1e23a298c7f4444268703980278d3913396249c2e9e18b4b9df14eabcca0e",
+        "size_bytes": 3334
+      },
+      "blobs/sha256/3b7abe4a4b3f37927bac5775eb524106b13fed9c5f1f4b5f165592e58f3d8758": {
+        "digest": "sha256:3b7abe4a4b3f37927bac5775eb524106b13fed9c5f1f4b5f165592e58f3d8758",
+        "size_bytes": 5295078
+      },
+      "blobs/sha256/417d5f9c90fae43f8d0a13c49ff6020e4758759fd40f4d658333425f1ab9062d": {
+        "digest": "sha256:417d5f9c90fae43f8d0a13c49ff6020e4758759fd40f4d658333425f1ab9062d",
+        "size_bytes": 167
+      },
+      "blobs/sha256/4688d961d05ab67f62a75fb4a7fe98cf86b379229a513bf19647707456fb280c": {
+        "digest": "sha256:4688d961d05ab67f62a75fb4a7fe98cf86b379229a513bf19647707456fb280c",
+        "size_bytes": 1824
+      },
+      "blobs/sha256/4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1": {
+        "digest": "sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1",
+        "size_bytes": 32
+      },
+      "blobs/sha256/509d6d9eab41625c0227b735bf23a5c82dbef0a618e65e74cc7a5169871ed80a": {
+        "digest": "sha256:509d6d9eab41625c0227b735bf23a5c82dbef0a618e65e74cc7a5169871ed80a",
+        "size_bytes": 819321539
+      },
+      "blobs/sha256/75782e20ea1f4a9d9259bc20a5ecbbea8d5943bf5370bf0f5727900728f1cc9a": {
+        "digest": "sha256:75782e20ea1f4a9d9259bc20a5ecbbea8d5943bf5370bf0f5727900728f1cc9a",
+        "size_bytes": 28117289
+      },
+      "blobs/sha256/80c3bce860db33b64542a16bda59adbc757919339c4f92d803e7c618d984a13b": {
+        "digest": "sha256:80c3bce860db33b64542a16bda59adbc757919339c4f92d803e7c618d984a13b",
+        "size_bytes": 564
+      },
+      "blobs/sha256/9ed852d657c63a7d7fdeb29164aa74ec36b549e9646edec2493e0fc664d031ff": {
+        "digest": "sha256:9ed852d657c63a7d7fdeb29164aa74ec36b549e9646edec2493e0fc664d031ff",
+        "size_bytes": 35031022
+      },
+      "blobs/sha256/a4ae6506a6e5864f967468d031963728cb8645b0e98bc8d7ffb1fa6f52d369d5": {
+        "digest": "sha256:a4ae6506a6e5864f967468d031963728cb8645b0e98bc8d7ffb1fa6f52d369d5",
+        "size_bytes": 1607111
+      },
+      "blobs/sha256/e77e93ed12905f5b6e1629a6ad333f1e4234751f440ee226c3c7b15258b1c99e": {
+        "digest": "sha256:e77e93ed12905f5b6e1629a6ad333f1e4234751f440ee226c3c7b15258b1c99e",
+        "size_bytes": 13340
+      },
+      "blobs/sha256/f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb": {
+        "digest": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+        "size_bytes": 856
+      },
+      "blobs/sha256/f5bf936972b0609c02d8f30d1bcc9ac692b2addbecf9f205d3d14d8b959db5c4": {
+        "digest": "sha256:f5bf936972b0609c02d8f30d1bcc9ac692b2addbecf9f205d3d14d8b959db5c4",
+        "size_bytes": 167838506
+      }
+    }
+  },
+  "payload": {
+    "compressed_bytes": 2353003610,
+    "compression_ratio": 0.5782603818746718,
+    "compression_seconds": 356.8491111249896,
+    "member_count": 44488,
+    "path": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisites-20260929-a7mtzfaf/prerequisites-20260929T061809Z-25211.tar.gz",
+    "sha256": "724f55ae471720164dc39c5c77fe16436354f0f165662aee4ad930631d619b62",
+    "top_level_members": [
+      "dependency-cache",
+      "image.tar"
+    ],
+    "uncompressed_input_bytes": 4069107419
+  },
+  "probe_sha256": "18d0364c3596e42d17ae6af5d8f141ef2599dc51e2743ea2d77ddc835dd0101c",
+  "raw_result_path": "/Users/jwross/Documents/cairn/research/grounding/container-prerequisites-2026-09-29/runs/20260929T055912Z-49461/archive-followup-20260929T061809Z-25211.json",
+  "schema": "cairn-prerequisite-reuse-followup/v1",
+  "scope": {
+    "claim_boundary": "same-daemon warm load only; no fresh-daemon or CI transfer claim",
+    "docker_state": "shared daemon with the exact image already present; no build or prune"
+  },
+  "scratch_root": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisites-20260929-a7mtzfaf",
+  "source_commit": "0f6192c2699b5058f080ea2a75e185eeb14391b3",
+  "source_dependency_shape": {
+    "compiled_lean_file_bytes": 549135537,
+    "compiled_lean_file_count": 4214,
+    "lake_paths": [
+      "packages"
+    ],
+    "package_build_file_bytes": 2212791609,
+    "package_build_file_count": 31833,
+    "package_names": [
+      "Cli",
+      "LeanSearchClient",
+      "Qq",
+      "aesop",
+      "batteries",
+      "importGraph",
+      "mathlib",
+      "plausible",
+      "proofwidgets"
+    ],
+    "top_level_paths": [
+      ".lake",
+      "lake-manifest.json",
+      "lakefile.toml",
+      "lean-toolchain"
+    ]
+  },
+  "source_identity": {
+    "cache_key": "c113c4b0433ed44ee31d0b0e792fcb9a84ca1ef2d15d03ff2a4c9c0a463fbb4b",
+    "container_identity": "b7a0f1bcf5e5d33c106266ed09534ccac29baa0732294b6e054b1ffed002e375",
+    "container_spec_sha256": "fbbe1e24be14108d7bfbbfef10e09019a2dbbafaee4feee2ab0ff0f75972ce5d",
+    "container_tag": "cairn-gate:b7a0f1bcf5e5d33c",
+    "containerfile_sha256": "90001aa93a5d8827bf499f2a1413bb3fdaba045420b517823b071f5349015b22",
+    "dependency_pins": {
+      "lean_commit": "3447a668783dbce1a8fdb97101dd067687b2b418",
+      "mathlib_rev": "1f29011071772620f612bf5a06433775f06067b8",
+      "modules": [
+        "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
+      ],
+      "toolchain": "leanprover/lean4:v4.34.0-rc1"
+    },
+    "docker_daemon": "29.4.0 7.0.14-orbstack-00380-ga7e0a2dc9535 OrbStack",
+    "image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+    "literal_image_inspect": {
+      "elapsed_seconds": 0.07912999999999999,
+      "image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+      "platform": "linux/arm64",
+      "repo_tags": [
+        "cairn-gate:b7a0f1bcf5e5d33c"
+      ],
+      "size_bytes": 1057229931,
+      "stderr": "",
+      "stdout": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb|linux/arm64|1057229931|[\"cairn-gate:b7a0f1bcf5e5d33c\"]"
+    },
+    "pin_validation_seconds": 4.905694250017405,
+    "source_tag_inspect": {
+      "elapsed_seconds": 0.664471,
+      "image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+      "platform": "linux/arm64",
+      "repo_tags": [
+        "cairn-gate:b7a0f1bcf5e5d33c"
+      ],
+      "size_bytes": 1057229931,
+      "stderr": "",
+      "stdout": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb|linux/arm64|1057229931|[\"cairn-gate:b7a0f1bcf5e5d33c\"]"
+    }
+  },
+  "source_measurement_path": "/Users/jwross/Documents/cairn/research/grounding/container-prerequisites-2026-09-29/runs/20260929T055912Z-49461/measurement.json",
+  "source_measurement_sha256": "6b5026df00785b21e4b6e64d6c56e03ee3eedf376aee2e1a4d26ae92183d2117",
+  "started_at_utc": "2026-09-29T06:18:09.830541+00:00",
+  "status": "failed",
+  "storage_preflight": {
+    "available_bytes_before_payload": 480645398528,
+    "required_estimate_bytes": 5142849076
+  }
+}

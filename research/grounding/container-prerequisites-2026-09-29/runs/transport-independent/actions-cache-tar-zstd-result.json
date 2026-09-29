@@ -1,0 +1,49 @@
+{
+  "scope": "local shared macOS host, BSD tar, zstd -T2; archive serialization only; no Docker load, network transfer or CI speedup claim",
+  "source_measurement": "/Users/jwross/Documents/cairn/research/grounding/container-prerequisites-2026-09-29/runs/20260929T055912Z-49461/measurement.json",
+  "source_image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+  "scratch": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-lane3-zstd-payload-l1yc3ztl",
+  "commands": [
+    {
+      "command": [
+        "/usr/bin/tar",
+        "--posix",
+        "-cf",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-lane3-zstd-payload-l1yc3ztl/prerequisites.tar.zst",
+        "-C",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisites-20260929-a7mtzfaf",
+        "--files-from",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-lane3-zstd-payload-l1yc3ztl/manifest.txt",
+        "--use-compress-program",
+        "zstd -T2"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "seconds": 59.267092749942094
+    },
+    {
+      "command": [
+        "/usr/bin/tar",
+        "-xf",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-lane3-zstd-payload-l1yc3ztl/prerequisites.tar.zst",
+        "-C",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-lane3-zstd-payload-l1yc3ztl/restored",
+        "--use-compress-program",
+        "unzstd"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "seconds": 109.25112241704483
+    }
+  ],
+  "status": "PASS",
+  "archive_bytes": 2321739519,
+  "inventory_difference_count": 0,
+  "inventory_differences": {},
+  "restored_digests": {
+    "image.tar": "4f948c0d78f10c28e8115b568098de27dea97f54f02cf44332737956df080dcd",
+    "cold-cache/image-b7a0f1bcf5e5d33c106266ed09534ccac29baa0732294b6e054b1ffed002e375.json": "be5537bbcc68cd9e44e54924e178e63358d50ef99a1ffe85dca5b06303813f3b"
+  }
+}

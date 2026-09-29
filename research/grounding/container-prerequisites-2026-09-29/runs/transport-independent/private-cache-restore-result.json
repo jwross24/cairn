@@ -1,0 +1,12 @@
+{
+  "dependency_source_sha256": "a81f4f111e9667511027e2b8389acf3d319743ecc5f41e32cbaf99bd8dc89d9c",
+  "source_image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+  "cache": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-lane3-zstd-payload-l1yc3ztl/restored/cold-cache",
+  "destination": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-lane3-private-cache-review-h01fz7q0/private",
+  "status": "PASS",
+  "scope": "real exact-image lookup, pinned Lean validation, dependency validation and private copy; no fresh proof or cold-daemon claim",
+  "image_validated": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+  "restore_completed_seconds": 157.19199333305005,
+  "inventory_entries": 44483,
+  "total_seconds": 165.57783620804548
+}

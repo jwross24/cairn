@@ -1,0 +1,256 @@
+{
+  "cold_dependency_prepare": {
+    "captured_container_commands": [
+      {
+        "argv": [
+          "/usr/local/bin/docker",
+          "run",
+          "--rm",
+          "--name",
+          "cairn-run-ff594d59435144c7a17faf41760b4237",
+          "--network",
+          "none",
+          "--user",
+          "501:20",
+          "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+          "lean",
+          "+leanprover/lean4:v4.34.0-rc1",
+          "--version"
+        ],
+        "phase": "cold_dependency_prepare",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "Lean (version 4.34.0-rc1, aarch64-unknown-linux-gnu, commit 3447a668783dbce1a8fdb97101dd067687b2b418, Release)\n",
+        "wall_seconds": 2.493833
+      },
+      {
+        "argv": [
+          "/usr/local/bin/docker",
+          "run",
+          "--rm",
+          "--name",
+          "cairn-run-a8c71bad892945c09b4a170cadc2538b",
+          "--network",
+          "bridge",
+          "--user",
+          "501:20",
+          "--mount",
+          "type=bind,source=/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/linux-mathlib-wgsqdhrw,target=/project,readonly=false",
+          "--workdir",
+          "/project",
+          "--env",
+          "HOME=/project",
+          "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+          "lake",
+          "+leanprover/lean4:v4.34.0-rc1",
+          "exe",
+          "cache",
+          "get",
+          "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
+        ],
+        "phase": "cold_dependency_prepare",
+        "returncode": 0,
+        "stderr_tail": "ompressed: 936\nDownloaded: 1662 file(s) [attempted 1662/1978 = 84%, 74 KB/s], Decompressed: 936\nDownloaded: 1692 file(s) [attempted 1692/1978 = 85%, 181 KB/s], Decompressed: 936\nDownloaded: 1718 file(s) [attempted 1718/1978 = 86%, 65 KB/s], Decompressed: 1299\nDownloaded: 1740 file(s) [attempted 1740/1978 = 87%, 213 KB/s], Decompressed: 1299\nDownloaded: 1753 file(s) [attempted 1753/1978 = 88%, 344 KB/s], Decompressed: 1299\nDownloaded: 1760 file(s) [attempted 1760/1978 = 88%, 20 KB/s], Decompressed: 1299\nDownloaded: 1777 file(s) [attempted 1777/1978 = 89%, 752 KB/s], Decompressed: 1299\nDownloaded: 1790 file(s) [attempted 1790/1978 = 90%, 9 KB/s], Decompressed: 1299\nDownloaded: 1803 file(s) [attempted 1803/1978 = 91%, 67 KB/s], Decompressed: 1299\nDownloaded: 1840 file(s) [attempted 1840/1978 = 93%, 78 KB/s], Decompressed: 1299\nDownloaded: 1874 file(s) [attempted 1874/1978 = 94%, 221 KB/s], Decompressed: 1299\nDownloaded: 1901 file(s) [attempted 1901/1978 = 96%, 122 KB/s], Decompressed: 1299\nDownloaded: 1924 file(s) [attempted 1924/1978 = 97%, 42 KB/s], Decompressed: 1299\nDownloaded: 1955 file(s) [attempted 1955/1978 = 98%, 158 KB/s], Decompressed: 1299\nDownloaded: 1965 file(s) [attempted 1965/1978 = 99%, 315 KB/s], Decompressed: 1299\nDownloaded: 1971 file(s) [attempted 1971/1978 = 99%, 203 KB/s], Decompressed: 1299\nDownloaded: 1975 file(s) [attempted 1975/1978 = 99%, 451 KB/s], Decompressed: 1299\nDownloaded: 1978 file(s) [attempted 1978/1978 = 100%, 451 KB/s], Decompressed: 1299\n",
+        "stdout_tail": "Current branch: HEAD\nUsing cache from origin: (some leanprover-community/mathlib4)\nAttempting to download 1978 file(s) from leanprover-community/mathlib4 cache at https://lakecache.blob.core.windows.net/mathlib4-master\nDecompressed 1978 file(s)\nAlready decompressed 1978 file(s)\n",
+        "wall_seconds": 233.044521
+      },
+      {
+        "argv": [
+          "/usr/local/bin/docker",
+          "run",
+          "--rm",
+          "--name",
+          "cairn-run-4bd6f39824c944b1a57d47c04f12ebc6",
+          "--network",
+          "none",
+          "--user",
+          "501:20",
+          "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+          "lean",
+          "+leanprover/lean4:v4.34.0-rc1",
+          "--version"
+        ],
+        "phase": "cold_dependency_prepare",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "Lean (version 4.34.0-rc1, aarch64-unknown-linux-gnu, commit 3447a668783dbce1a8fdb97101dd067687b2b418, Release)\n",
+        "wall_seconds": 0.8567380000000001
+      }
+    ],
+    "dependency_file_bytes": 3004447210,
+    "directory_count": 2491,
+    "elapsed_seconds": 295.46400495793205,
+    "entry_bytes_including_inventory": 3011858996,
+    "entry_path": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisites-20260929-a7mtzfaf/cold-cache/c113c4b0433ed44ee31d0b0e792fcb9a84ca1ef2d15d03ff2a4c9c0a463fbb4b",
+    "file_count": 41989,
+    "inventory_sha256": "dded153fd25ec2425ad949ce1bbb9ab646b217ff0f7d6e07ba972bf267a73fb7",
+    "shape": {
+      "compiled_lean_file_bytes": 549135537,
+      "compiled_lean_file_count": 4214,
+      "lake_paths": [
+        "packages"
+      ],
+      "package_build_file_bytes": 2212791609,
+      "package_build_file_count": 31833,
+      "package_names": [
+        "Cli",
+        "LeanSearchClient",
+        "Qq",
+        "aesop",
+        "batteries",
+        "importGraph",
+        "mathlib",
+        "plausible",
+        "proofwidgets"
+      ],
+      "top_level_paths": [
+        ".lake",
+        "lake-manifest.json",
+        "lakefile.toml",
+        "lean-toolchain"
+      ]
+    },
+    "symlink_count": 3
+  },
+  "error": {
+    "message": "saved image config digest differs: sha256:e77e93ed12905f5b6e1629a6ad333f1e4234751f440ee226c3c7b15258b1c99e",
+    "type": "RuntimeError"
+  },
+  "host": {
+    "machine": "arm64",
+    "python": "3.14.7",
+    "system": "Darwin"
+  },
+  "planted_refusals": {
+    "corrupt_dependency_file": {
+      "command": [
+        "/Users/jwross/Documents/cairn/.venv/bin/python3",
+        "/Users/jwross/Documents/cairn/research/grounding/container-prerequisites-2026-09-29/probe.py",
+        "--reject",
+        "corrupt-entry",
+        "--cache",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisites-20260929-a7mtzfaf/negative-corrupt-entry",
+        "--image-id",
+        "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+        "--destination",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisites-20260929-a7mtzfaf/refused-destination"
+      ],
+      "expected_returncode": 42,
+      "refusal": {
+        "refusal": "dependency-cache-content-mismatch",
+        "refusal_type": "CacheRefused",
+        "scratch_root": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisite-refusal-qdn5zqh4",
+        "status": "refused"
+      },
+      "returncode": 42,
+      "stderr": "",
+      "stdout": "{\"refusal\": \"dependency-cache-content-mismatch\", \"refusal_type\": \"CacheRefused\", \"scratch_root\": \"/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisite-refusal-qdn5zqh4\", \"status\": \"refused\"}"
+    },
+    "missing_image_record": {
+      "command": [
+        "/Users/jwross/Documents/cairn/.venv/bin/python3",
+        "/Users/jwross/Documents/cairn/research/grounding/container-prerequisites-2026-09-29/probe.py",
+        "--reject",
+        "missing-image-record",
+        "--cache",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisites-20260929-a7mtzfaf/negative-missing-image",
+        "--image-id",
+        "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+        "--destination",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisites-20260929-a7mtzfaf/unused-destination"
+      ],
+      "expected_returncode": 42,
+      "refusal": {
+        "refusal": "dependency-cache-image-unavailable",
+        "refusal_type": "CacheRefused",
+        "scratch_root": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisite-refusal-q9r4htxb",
+        "status": "refused"
+      },
+      "returncode": 42,
+      "stderr": "",
+      "stdout": "{\"refusal\": \"dependency-cache-image-unavailable\", \"refusal_type\": \"CacheRefused\", \"scratch_root\": \"/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisite-refusal-q9r4htxb\", \"status\": \"refused\"}"
+    },
+    "wrong_image_id": {
+      "command": [
+        "/Users/jwross/Documents/cairn/.venv/bin/python3",
+        "/Users/jwross/Documents/cairn/research/grounding/container-prerequisites-2026-09-29/probe.py",
+        "--reject",
+        "wrong-image-id",
+        "--cache",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisites-20260929-a7mtzfaf/negative-wrong-image",
+        "--image-id",
+        "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "--destination",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisites-20260929-a7mtzfaf/unused-wrong-image-destination"
+      ],
+      "expected_returncode": 42,
+      "refusal": {
+        "refusal": "image sha256:0000000000000000000000000000000000000000000000000000000000000000 has no inspectable id: rc=1 stdout='\\n'",
+        "refusal_type": "ContainerError",
+        "scratch_root": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisite-refusal-uu4tgpoo",
+        "status": "refused"
+      },
+      "returncode": 42,
+      "stderr": "",
+      "stdout": "{\"refusal\": \"image sha256:0000000000000000000000000000000000000000000000000000000000000000 has no inspectable id: rc=1 stdout='\\\\n'\", \"refusal_type\": \"ContainerError\", \"scratch_root\": \"/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisite-refusal-uu4tgpoo\", \"status\": \"refused\"}"
+    }
+  },
+  "probe_sha256": "dcabc70bb19b763e566d471b9f3ba4983b5b6d10574d542f8967780953429f1f",
+  "raw_result_path": "/Users/jwross/Documents/cairn/research/grounding/container-prerequisites-2026-09-29/runs/20260929T055912Z-49461/measurement.json",
+  "schema": "cairn-prerequisite-reuse-probe/v1",
+  "scope": {
+    "cache_state": "fresh empty Cairn dependency-cache directory",
+    "claim_boundary": "local timings only; artifact transfer and CI critical path are not measured",
+    "docker_state": "shared daemon with the exact image already present; no build or prune"
+  },
+  "scratch_root": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisites-20260929-a7mtzfaf",
+  "source": {
+    "cache_key": "c113c4b0433ed44ee31d0b0e792fcb9a84ca1ef2d15d03ff2a4c9c0a463fbb4b",
+    "container_identity": "b7a0f1bcf5e5d33c106266ed09534ccac29baa0732294b6e054b1ffed002e375",
+    "container_spec_sha256": "fbbe1e24be14108d7bfbbfef10e09019a2dbbafaee4feee2ab0ff0f75972ce5d",
+    "container_tag": "cairn-gate:b7a0f1bcf5e5d33c",
+    "containerfile_sha256": "90001aa93a5d8827bf499f2a1413bb3fdaba045420b517823b071f5349015b22",
+    "dependency_pins": {
+      "lean_commit": "3447a668783dbce1a8fdb97101dd067687b2b418",
+      "mathlib_rev": "1f29011071772620f612bf5a06433775f06067b8",
+      "modules": [
+        "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
+      ],
+      "toolchain": "leanprover/lean4:v4.34.0-rc1"
+    },
+    "docker_daemon": "29.4.0 7.0.14-orbstack-00380-ga7e0a2dc9535 OrbStack",
+    "image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+    "literal_image_inspect": {
+      "elapsed_seconds": 0.07912999999999999,
+      "image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+      "platform": "linux/arm64",
+      "repo_tags": [
+        "cairn-gate:b7a0f1bcf5e5d33c"
+      ],
+      "size_bytes": 1057229931,
+      "stderr": "",
+      "stdout": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb|linux/arm64|1057229931|[\"cairn-gate:b7a0f1bcf5e5d33c\"]"
+    },
+    "pin_validation_seconds": 4.905694250017405,
+    "source_tag_inspect": {
+      "elapsed_seconds": 0.664471,
+      "image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+      "platform": "linux/arm64",
+      "repo_tags": [
+        "cairn-gate:b7a0f1bcf5e5d33c"
+      ],
+      "size_bytes": 1057229931,
+      "stderr": "",
+      "stdout": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb|linux/arm64|1057229931|[\"cairn-gate:b7a0f1bcf5e5d33c\"]"
+    }
+  },
+  "source_commit": "0f6192c2699b5058f080ea2a75e185eeb14391b3",
+  "started_at_utc": "2026-09-29T05:59:12.646803+00:00",
+  "status": "failed",
+  "storage_preflight": {
+    "available_bytes_before_archive_creation": 493142593536,
+    "dependency_entry_bytes": 3011858996,
+    "image_virtual_size_bytes": 1057229931,
+    "required_estimate_bytes": 6200060682
+  }
+}

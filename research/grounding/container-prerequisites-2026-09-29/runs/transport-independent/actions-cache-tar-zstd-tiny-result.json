@@ -1,0 +1,40 @@
+{
+  "result": "PASS",
+  "scratch": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-lane3-zstd-tiny-ch3_x99v",
+  "commands": [
+    {
+      "command": [
+        "/usr/bin/tar",
+        "--posix",
+        "-cf",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-lane3-zstd-tiny-ch3_x99v/tiny.tar.zst",
+        "-C",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-lane3-zstd-tiny-ch3_x99v/source",
+        "--files-from",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-lane3-zstd-tiny-ch3_x99v/manifest.txt",
+        "--use-compress-program",
+        "zstd -T2"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "seconds": 0.011145374970510602
+    },
+    {
+      "command": [
+        "/usr/bin/tar",
+        "-xf",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-lane3-zstd-tiny-ch3_x99v/tiny.tar.zst",
+        "-C",
+        "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-lane3-zstd-tiny-ch3_x99v/restored",
+        "--use-compress-program",
+        "unzstd"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "seconds": 0.0073680420173332095
+    }
+  ],
+  "scope": "host BSD tar, zstd 1.5.7 with two compression workers; not Linux Actions transport"
+}

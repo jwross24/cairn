@@ -1,0 +1,69 @@
+{
+  "active_phase": "cold_dependency_prepare",
+  "error": {
+    "message": "dependency entry contains compiled Lean output: ['.lake/packages/LeanSearchClient/.lake/build/lib/lean/LeanSearchClient.ilean', '.lake/packages/LeanSearchClient/.lake/build/lib/lean/LeanSearchClient.olean', '.lake/packages/LeanSearchClient/.lake/build/lib/lean/LeanSearchClient/Basic.ilean', '.lake/packages/LeanSearchClient/.lake/build/lib/lean/LeanSearchClient/Basic.olean', '.lake/packages/LeanSearchClient/.lake/build/lib/lean/LeanSearchClient/LoogleSyntax.ilean', '.lake/packages/LeanSearchClient/.lake/build/lib/lean/LeanSearchClient/LoogleSyntax.olean', '.lake/packages/LeanSearchClient/.lake/build/lib/lean/LeanSearchClient/Syntax.ilean', '.lake/packages/LeanSearchClient/.lake/build/lib/lean/LeanSearchClient/Syntax.olean', '.lake/packages/Qq/.lake/build/lib/lean/Qq.ilean', '.lake/packages/Qq/.lake/build/lib/lean/Qq.olean']",
+    "type": "RuntimeError"
+  },
+  "host": {
+    "machine": "arm64",
+    "python": "3.14.7",
+    "system": "Darwin"
+  },
+  "probe_sha256": "208108cdd703dbba7640ef21d172ef592f901eb4f39835e35924619e5080f178",
+  "raw_result_path": "/Users/jwross/Documents/cairn/research/grounding/container-prerequisites-2026-09-29/runs/20260929T054548Z-66577/measurement.json",
+  "schema": "cairn-prerequisite-reuse-probe/v1",
+  "scope": {
+    "cache_state": "fresh empty Cairn dependency-cache directory",
+    "claim_boundary": "local timings only; artifact transfer and CI critical path are not measured",
+    "docker_state": "shared daemon with the exact image already present; no build or prune"
+  },
+  "scratch_root": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-prerequisites-20260929-nfmvap51",
+  "source": {
+    "cache_key": "c113c4b0433ed44ee31d0b0e792fcb9a84ca1ef2d15d03ff2a4c9c0a463fbb4b",
+    "container_identity": "b7a0f1bcf5e5d33c106266ed09534ccac29baa0732294b6e054b1ffed002e375",
+    "container_spec_sha256": "fbbe1e24be14108d7bfbbfef10e09019a2dbbafaee4feee2ab0ff0f75972ce5d",
+    "container_tag": "cairn-gate:b7a0f1bcf5e5d33c",
+    "containerfile_sha256": "90001aa93a5d8827bf499f2a1413bb3fdaba045420b517823b071f5349015b22",
+    "dependency_pins": {
+      "lean_commit": "3447a668783dbce1a8fdb97101dd067687b2b418",
+      "mathlib_rev": "1f29011071772620f612bf5a06433775f06067b8",
+      "modules": [
+        "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
+      ],
+      "toolchain": "leanprover/lean4:v4.34.0-rc1"
+    },
+    "docker_daemon": "29.4.0 7.0.14-orbstack-00380-ga7e0a2dc9535 OrbStack",
+    "image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+    "literal_image_inspect": {
+      "elapsed_seconds": 0.23883500000000002,
+      "image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+      "platform": "linux/arm64",
+      "repo_tags": [
+        "cairn-gate:b7a0f1bcf5e5d33c"
+      ],
+      "size_bytes": 1057229931,
+      "stderr": "",
+      "stdout": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb|linux/arm64|1057229931|[\"cairn-gate:b7a0f1bcf5e5d33c\"]"
+    },
+    "pin_validation_seconds": 3.327120457892306,
+    "source_tag_inspect": {
+      "elapsed_seconds": 0.792553,
+      "image_id": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb",
+      "platform": "linux/arm64",
+      "repo_tags": [
+        "cairn-gate:b7a0f1bcf5e5d33c"
+      ],
+      "size_bytes": 1057229931,
+      "stderr": "",
+      "stdout": "sha256:f27f1c1845ec768cb0f64afd6fe2d30edddfae042414a91b7574fae6169f79bb|linux/arm64|1057229931|[\"cairn-gate:b7a0f1bcf5e5d33c\"]"
+    }
+  },
+  "source_commit": "0f6192c2699b5058f080ea2a75e185eeb14391b3",
+  "started_at_utc": "2026-09-29T05:45:48.426332+00:00",
+  "status": "failed",
+  "storage_preflight": {
+    "available_bytes_before_cache_creation": 515991552000,
+    "image_virtual_size_bytes": 1057229931,
+    "minimum_estimate_bytes": 3188201686
+  }
+}
