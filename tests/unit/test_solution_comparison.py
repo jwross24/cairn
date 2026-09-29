@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from cairn import bundle, challenge, container, lean, solutionbuild, solutionchecks, solutionplan
+from cairn.substrate import Substrate
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import factories
@@ -178,17 +179,19 @@ def _gold_rows(kinds=solutionplan.STEP_KINDS):
 def _run_container(gate, tmp_path, rows=None, work_dir=None):
     statement = factories.claim_statement(seed=5, formal_source=FORMAL)
     image = container.Image(gate.container_identity, "unused", "sha256:" + "1" * 64, None)
-    return solutionchecks.run_container(
-        gate,
-        image,
-        statement,
-        challenge.Submission(solution_module=SOLUTION, formal_statement_hash=FSH),
-        THEOREMS,
-        _gold_rows() if rows is None else rows,
-        root=tmp_path / "root",
-        work_dir=tmp_path / "work" if work_dir is None else work_dir,
-        prepared=None,
-    )
+    with Substrate.open(tmp_path / "container-substrate.sqlite", role="writer") as sub:
+        return solutionchecks.run_container(
+            gate,
+            image,
+            statement,
+            challenge.Submission(solution_module=SOLUTION, formal_statement_hash=FSH),
+            THEOREMS,
+            _gold_rows() if rows is None else rows,
+            sub=sub,
+            root=tmp_path / "root",
+            work_dir=tmp_path / "work" if work_dir is None else work_dir,
+            prepared=None,
+        )
 
 
 def _edited_gate(pinned_bundle, tmp_path, edit):
@@ -201,16 +204,18 @@ def _edited_gate(pinned_bundle, tmp_path, edit):
 
 
 def _run_dev(gate, tmp_path):
-    return solutionchecks.run_dev(
-        gate,
-        factories.claim_statement(seed=5, formal_source=FORMAL),
-        challenge.Submission(solution_module=SOLUTION, formal_statement_hash=FSH),
-        THEOREMS,
-        _gold_rows(),
-        root=tmp_path / "root",
-        prepared=None,
-        comparator=tmp_path / "comparator",
-    )
+    with Substrate.open(tmp_path / "dev-substrate.sqlite", role="writer") as sub:
+        return solutionchecks.run_dev(
+            gate,
+            factories.claim_statement(seed=5, formal_source=FORMAL),
+            challenge.Submission(solution_module=SOLUTION, formal_statement_hash=FSH),
+            THEOREMS,
+            _gold_rows(),
+            sub=sub,
+            root=tmp_path / "root",
+            prepared=None,
+            comparator=tmp_path / "comparator",
+        )
 
 
 EDITED_CHECKER_COMMANDS = {

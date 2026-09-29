@@ -411,37 +411,33 @@ def test_linux_ordered_plan_runs_each_step_in_order(
     ]
     root, work_dir = tmp_path / "candidate", tmp_path / "axioms"
     popen_spy.clear()
-    result = solutionchecks.run_container(
-        linux_bundle,
-        linux_image,
-        statement,
-        submission,
-        ("challenge_curve",),
-        rows,
-        root=root,
-        work_dir=work_dir,
-        prepared=prepared,
-    )
-    lg.info("candidate_ordered_plan", case=case, steps=[step.__dict__ for step in result.steps])
-    steps = result.steps
     sub = substrate_helpers.open_writer(tmp_path)
     try:
         claims.write_claim_statement(sub, statement)
-        solutionplan.persist(
-            sub,
-            result,
-            bundle_hash=linux_bundle.hash,
-            pin_hash=linux_bundle.pin_hash,
-            statement_hash=statement.hash,
-            formal_statement_hash=prepared.formal_statement_hash,
-            renderer_hash=prepared.renderer_hash,
-            prelude_hash=prepared.prelude_hash,
-            at=factories.CREATED_AT,
+        result = solutionchecks.run_container(
+            linux_bundle,
+            linux_image,
+            statement,
+            submission,
+            ("challenge_curve",),
+            rows,
+            sub=sub,
+            root=root,
+            work_dir=work_dir,
+            prepared=prepared,
         )
+        lg.info("candidate_ordered_plan", case=case, steps=[step.__dict__ for step in result.steps])
+        steps = result.steps
         persisted = sub.conn.execute(
             "SELECT plan_step, result, arm FROM gate_runs WHERE gate = ? ORDER BY rowid", (solutionplan.STEP_GATE,)
         ).fetchall()
         assert [tuple(row) for row in persisted] == [(step.step, step.result, container.GOLD_ARM) for step in steps]
+        assert (
+            sub.conn.execute("SELECT COUNT(*) FROM gate_runs WHERE gate = ?", (solutionplan.SUMMARY_GATE,)).fetchone()[
+                0
+            ]
+            == 1
+        )
         assert scrutiny._formalization_passed(sub, statement.hash) is (case == "exact")
     finally:
         sub.close()
@@ -858,25 +854,31 @@ def test_container_preparation_binds_the_claim_without_host_lean(
             image=replace(linux_image, image_id="sha256:" + "0" * 64),
         )
     candidate = tmp_path / "candidate"
-    result = solutionchecks.run_dev(
-        linux_bundle,
-        statement,
-        challenge.Submission(solution_module=b"", formal_statement_hash=prepared.formal_statement_hash),
-        ("challenge_curve",),
-        [
-            {
-                "step": kind,
-                "kind": kind,
-                "expect": solutionplan.KIND_EXPECTATION[kind],
-                "blocking": True,
-                "timeout_s": 120,
-            }
-            for kind in solutionplan.STEP_KINDS
-        ],
-        root=candidate,
-        prepared=prepared,
-        comparator=tmp_path / "absent-comparator",
-    )
+    sub = substrate_helpers.open_writer(tmp_path, "dev-run-substrate.sqlite")
+    try:
+        claims.write_claim_statement(sub, statement)
+        result = solutionchecks.run_dev(
+            linux_bundle,
+            statement,
+            challenge.Submission(solution_module=b"", formal_statement_hash=prepared.formal_statement_hash),
+            ("challenge_curve",),
+            [
+                {
+                    "step": kind,
+                    "kind": kind,
+                    "expect": solutionplan.KIND_EXPECTATION[kind],
+                    "blocking": True,
+                    "timeout_s": 120,
+                }
+                for kind in solutionplan.STEP_KINDS
+            ],
+            sub=sub,
+            root=candidate,
+            prepared=prepared,
+            comparator=tmp_path / "absent-comparator",
+        )
+    finally:
+        sub.close()
     assert not result.ok
     assert "prepared-challenge-mismatch:image" in result.first_failure.reasons
     assert all(step.result == solutionplan.RESULT_BLOCKED for step in result.steps[1:])

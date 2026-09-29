@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from cairn import bundle, challenge, container, lean, log, solutionbuild, solutionchecks, solutionplan
+from cairn.substrate import Substrate
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import factories
@@ -47,6 +48,12 @@ PROOF = "theorem challenge_hello (n : Nat) : n + 0 = n := by\n  simp\n"
 
 def _honest():
     return PROOF.encode()
+
+
+def _run_dev(*args, **kwargs):
+    root = Path(kwargs["root"])
+    with Substrate.open(root.parent / "plan-substrate.sqlite", role="writer") as sub:
+        return solutionchecks.run_dev(*args, sub=sub, **kwargs)
 
 
 def _rewrites_the_challenge(challenge_relative):
@@ -183,7 +190,7 @@ def test_the_dev_runner_refuses_mismatched_preparation_before_candidate_work(
     if field != "theorem_names":
         prepared = replace(prepared, **{field: "0" * 64})
     root = tmp_path / "unassembled"
-    result = solutionchecks.run_dev(
+    result = _run_dev(
         mathlib_free_bundle,
         statement,
         challenge.Submission(solution_module=_honest(), formal_statement_hash=prepared.formal_statement_hash),
@@ -207,7 +214,7 @@ def test_altered_prepared_challenge_refuses_before_candidate_work(mathlib_free_b
     changed.write_bytes(b"theorem challenge_hello : True := by trivial\n")
     popen_spy.clear()
     root = tmp_path / "unassembled"
-    result = solutionchecks.run_dev(
+    result = _run_dev(
         mathlib_free_bundle,
         statement,
         challenge.Submission(solution_module=_honest(), formal_statement_hash=prepared.formal_statement_hash),
@@ -242,7 +249,7 @@ def test_a_solution_that_rewrites_the_challenge_during_its_build_is_named_by_the
     relative = str(Path("Challenge") / f"C_{statement.hash[:16]}.lean")
     root = tmp_path / "tamper"
     before = challenge.render(statement, TEST_PRELUDE)
-    result = solutionchecks.run_dev(
+    result = _run_dev(
         mathlib_free_bundle,
         statement,
         challenge.Submission(
@@ -269,7 +276,7 @@ def test_the_dev_runner_rejects_a_compiling_weaker_solution(
         solution_module=b"theorem challenge_hello : True := by trivial\n",
         formal_statement_hash=prepared_free.formal_statement_hash,
     )
-    result = solutionchecks.run_dev(
+    result = _run_dev(
         mathlib_free_bundle,
         statement,
         submission,
@@ -301,7 +308,7 @@ def test_the_dev_runner_refuses_bad_submissions_before_any_files_or_subprocesses
         solution_module=source,
         formal_statement_hash="0" * 64 if case == "stale-hash" else prepared_free.formal_statement_hash,
     )
-    result = solutionchecks.run_dev(
+    result = _run_dev(
         mathlib_free_bundle,
         statement,
         submission,
@@ -330,7 +337,7 @@ def test_the_dev_runner_refuses_replay_before_axioms_without_work(
     rows[3], rows[4] = rows[4], rows[3]
     root = tmp_path / "unassembled"
     with pytest.raises(solutionplan.PlanInvalid, match="dev-plan-requires-axioms-before-replay"):
-        solutionchecks.run_dev(
+        _run_dev(
             mathlib_free_bundle,
             statement,
             challenge.Submission(solution_module=_honest(), formal_statement_hash=FSH),
@@ -348,7 +355,7 @@ def test_the_dev_runner_records_an_empty_solution_as_build_refusal(
     mathlib_free_bundle, statement, prepared_free, tmp_path
 ):
     root = tmp_path / "unassembled"
-    result = solutionchecks.run_dev(
+    result = _run_dev(
         mathlib_free_bundle,
         statement,
         challenge.Submission(solution_module=b"", formal_statement_hash=prepared_free.formal_statement_hash),
@@ -476,7 +483,7 @@ def test_real_prelude_forgery_passes_axioms_but_fails_fresh_replay(prepared_real
     rows = _plan_rows()
     rows[4]["timeout_s"] = lean.DEFAULT_TIMEOUT_S
     root = tmp_path / "forged-real-prelude"
-    result = solutionchecks.run_dev(
+    result = _run_dev(
         gate,
         statement,
         submission,
@@ -523,7 +530,7 @@ def test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks(
         if row["kind"] == solutionplan.KIND_KERNEL_REPLAY:
             row["timeout_s"] = 0.001 if case == "timeout" else lean.DEFAULT_TIMEOUT_S
     root = tmp_path / "ordered-real-prelude"
-    result = solutionchecks.run_dev(
+    result = _run_dev(
         gate,
         statement,
         submission,

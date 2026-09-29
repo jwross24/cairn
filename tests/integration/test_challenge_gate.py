@@ -76,38 +76,40 @@ def test_library_items_pass_gate(gate, tmp_path, comparator, popen_spy, item):  
         solution_module=gate.challenge_prelude + solution, formal_statement_hash=prepared.formal_statement_hash
     )
     popen_spy.clear()
-    result = solutionchecks.run_dev(
-        gate,
-        statement,
-        submission,
-        (spec.theorem,),
-        _rows(),
-        root=tmp_path / "solution",
-        prepared=prepared,
-        comparator=comparator,
-    )
-    lg.info("library_plan", item=item, steps=[step.__dict__ for step in result.steps])
-    assert result.arm == container.DEV_ARM
-    assert [step.kind for step in result.steps] == list(solutionplan.STEP_KINDS)
-    assert [step.result for step in result.steps] == [solutionplan.RESULT_PASS] * len(solutionplan.STEP_KINDS)
-    assert result.ok is True
-    assert result.first_failure is None
-    replay = [command for command in popen_spy if "--fresh" in command]
-    assert len(replay) == 1
-    assert "leanchecker" in replay[0]
     sub = substrate_helpers.open_writer(tmp_path)
     try:
         claims.write_claim_statement(sub, statement)
-        solutionplan.persist(
-            sub,
-            result,
-            bundle_hash=gate.hash,
-            pin_hash=gate.pin_hash,
-            statement_hash=statement.hash,
-            formal_statement_hash=prepared.formal_statement_hash,
-            renderer_hash=prepared.renderer_hash,
-            prelude_hash=prepared.prelude_hash,
-            at=factories.CREATED_AT,
+        result = solutionchecks.run_dev(
+            gate,
+            statement,
+            submission,
+            (spec.theorem,),
+            _rows(),
+            sub=sub,
+            root=tmp_path / "solution",
+            prepared=prepared,
+            comparator=comparator,
+        )
+        lg.info("library_plan", item=item, steps=[step.__dict__ for step in result.steps])
+        assert result.arm == container.DEV_ARM
+        assert [step.kind for step in result.steps] == list(solutionplan.STEP_KINDS)
+        assert [step.result for step in result.steps] == [solutionplan.RESULT_PASS] * len(solutionplan.STEP_KINDS)
+        assert result.ok is True
+        assert result.first_failure is None
+        replay = [command for command in popen_spy if "--fresh" in command]
+        assert len(replay) == 1
+        assert "leanchecker" in replay[0]
+        persisted = sub.conn.execute(
+            "SELECT plan_step, result, arm FROM gate_runs WHERE gate = ? ORDER BY rowid", (solutionplan.STEP_GATE,)
+        ).fetchall()
+        assert [tuple(row) for row in persisted] == [
+            (step.step, step.result, container.DEV_ARM) for step in result.steps
+        ]
+        assert (
+            sub.conn.execute("SELECT COUNT(*) FROM gate_runs WHERE gate = ?", (solutionplan.SUMMARY_GATE,)).fetchone()[
+                0
+            ]
+            == 1
         )
         assert scrutiny._formalization_passed(sub, statement.hash) is False
     finally:
@@ -123,22 +125,38 @@ def test_a_stale_formal_statement_hash_stops_at_statement_binding_without_a_subp
     submission = challenge.Submission(solution_module=gate.challenge_prelude + solution, formal_statement_hash="0" * 64)
     popen_spy.clear()
     root = tmp_path / "solution"
-    result = solutionchecks.run_dev(
-        gate,
-        statement,
-        submission,
-        (spec.theorem,),
-        _rows(),
-        root=root,
-        prepared=prepared,
-        comparator=None,
-    )
-    steps = result.steps
-    assert result.ok is False
-    assert result.first_failure == steps[0]
-    assert [step.result for step in steps] == [solutionplan.RESULT_FAIL] + [solutionplan.RESULT_BLOCKED] * 5
-    assert steps[0].reasons[-1].startswith(f"{solutionbuild.STATEMENT_HASH_MISMATCH}:")
-    for step in steps[1:]:
-        assert step.reasons == (f"blocked-by:{solutionplan.KIND_STATEMENT_BINDING}",)
-    assert popen_spy == []
-    assert not root.exists()
+    sub = substrate_helpers.open_writer(tmp_path)
+    try:
+        claims.write_claim_statement(sub, statement)
+        result = solutionchecks.run_dev(
+            gate,
+            statement,
+            submission,
+            (spec.theorem,),
+            _rows(),
+            sub=sub,
+            root=root,
+            prepared=prepared,
+            comparator=None,
+        )
+        steps = result.steps
+        assert result.ok is False
+        assert result.first_failure == steps[0]
+        assert [step.result for step in steps] == [solutionplan.RESULT_FAIL] + [solutionplan.RESULT_BLOCKED] * 5
+        assert steps[0].reasons[-1].startswith(f"{solutionbuild.STATEMENT_HASH_MISMATCH}:")
+        for step in steps[1:]:
+            assert step.reasons == (f"blocked-by:{solutionplan.KIND_STATEMENT_BINDING}",)
+        persisted = sub.conn.execute(
+            "SELECT plan_step, result, arm FROM gate_runs WHERE gate = ? ORDER BY rowid", (solutionplan.STEP_GATE,)
+        ).fetchall()
+        assert [tuple(row) for row in persisted] == [(step.step, step.result, container.DEV_ARM) for step in steps]
+        assert (
+            sub.conn.execute("SELECT COUNT(*) FROM gate_runs WHERE gate = ?", (solutionplan.SUMMARY_GATE,)).fetchone()[
+                0
+            ]
+            == 1
+        )
+        assert popen_spy == []
+        assert not root.exists()
+    finally:
+        sub.close()

@@ -142,17 +142,18 @@ def test_the_closure_comparison_may_not_sit_before_either_checker(checker):
 
 def test_the_closure_comparison_passes_when_the_observation_matches_its_expectation():
     verdicts = {**_all_expected(), KIND_CLOSURE_COMPARISON: solutionplan.EXPECT_CLOSURE_MATCHED}
-    result = SolutionPlan.load(_plan_rows(*COMPLETE), arm=ARM).run(_observer(verdicts))
-    assert result.ok is True
-    assert result.steps[-1].kind == KIND_CLOSURE_COMPARISON
+    plan = SolutionPlan.load(_plan_rows(*COMPLETE), arm=ARM)
+    outcomes = tuple(solutionplan.plan_outcomes(plan.steps, _observer(verdicts)))
+    assert all(outcome[2] == solutionplan.RESULT_PASS for outcome in outcomes)
+    assert outcomes[-1][0].kind == KIND_CLOSURE_COMPARISON
 
 
 def test_a_closure_mismatch_fails_the_plan_even_when_every_earlier_step_passed():
     verdicts = {**_all_expected(), KIND_CLOSURE_COMPARISON: solutionplan.OBSERVED_REFUSED}
-    result = SolutionPlan.load(_plan_rows(*COMPLETE), arm=ARM).run(_observer(verdicts))
-    assert result.ok is False
-    assert result.first_failure.step == KIND_CLOSURE_COMPARISON
-    assert [step.result for step in result.steps] == [solutionplan.RESULT_PASS] * 5 + [solutionplan.RESULT_FAIL]
+    plan = SolutionPlan.load(_plan_rows(*COMPLETE), arm=ARM)
+    outcomes = tuple(solutionplan.plan_outcomes(plan.steps, _observer(verdicts)))
+    assert outcomes[-1][0].step == KIND_CLOSURE_COMPARISON
+    assert [outcome[2] for outcome in outcomes] == [solutionplan.RESULT_PASS] * 5 + [solutionplan.RESULT_FAIL]
 
 
 def test_a_checker_step_before_the_build_is_refused():
@@ -220,35 +221,31 @@ def test_an_arm_outside_the_container_arms_is_refused():
 
 def test_every_step_passes_when_each_observation_matches_its_expectation():
     plan = SolutionPlan.load(_plan_rows(*COMPLETE), arm=ARM)
-    result = plan.run(_observer(_all_expected()))
-    assert result.ok is True
-    assert result.first_failure is None
-    assert [step.result for step in result.steps] == [solutionplan.RESULT_PASS] * len(COMPLETE)
+    outcomes = tuple(solutionplan.plan_outcomes(plan.steps, _observer(_all_expected())))
+    assert [outcome[2] for outcome in outcomes] == [solutionplan.RESULT_PASS] * len(COMPLETE)
 
 
 def test_a_failed_step_blocks_every_step_below_it_and_the_checkers_never_run():
     verdicts = {**_all_expected(), KIND_IMPORT_ALLOWLIST: "refused:Lean"}
     plan = SolutionPlan.load(_plan_rows(*COMPLETE), arm=ARM)
-    result = plan.run(_observer(verdicts))
-    assert result.ok is False
-    assert result.first_failure.step == KIND_IMPORT_ALLOWLIST
-    assert [step.result for step in result.steps] == [
+    outcomes = tuple(solutionplan.plan_outcomes(plan.steps, _observer(verdicts)))
+    assert outcomes[1][0].step == KIND_IMPORT_ALLOWLIST
+    assert [outcome[2] for outcome in outcomes] == [
         solutionplan.RESULT_PASS,
         solutionplan.RESULT_FAIL,
         *[solutionplan.RESULT_BLOCKED] * 4,
     ]
-    assert result.steps[1].reasons == (solutionplan.MISMATCH_REASON, "observed:refused:Lean")
-    assert result.steps[2].reasons == (f"{solutionplan.BLOCKED_PREFIX}{KIND_IMPORT_ALLOWLIST}",)
+    assert outcomes[1][3] == (solutionplan.MISMATCH_REASON, "observed:refused:Lean")
+    assert outcomes[2][3] == (f"{solutionplan.BLOCKED_PREFIX}{KIND_IMPORT_ALLOWLIST}",)
 
 
 def test_a_timeout_is_its_own_result_and_is_not_a_failed_verdict():
     verdicts = {**_all_expected(), KIND_KERNEL_REPLAY: StepTimeout(KIND_KERNEL_REPLAY, 600.0)}
     plan = SolutionPlan.load(_plan_rows(*COMPLETE), arm=ARM)
-    result = plan.run(_observer(verdicts))
-    replay = result.steps[COMPLETE.index(KIND_KERNEL_REPLAY)]
-    assert replay.result == solutionplan.RESULT_TIMEOUT
-    assert replay.result != solutionplan.RESULT_FAIL
-    assert replay.reasons == (solutionplan.TIMEOUT_REASON, "timeout_s:600.0")
-    assert result.ok is False
-    assert result.first_failure.step == KIND_KERNEL_REPLAY
-    assert result.steps[-1].result == solutionplan.RESULT_BLOCKED
+    outcomes = tuple(solutionplan.plan_outcomes(plan.steps, _observer(verdicts)))
+    replay = outcomes[COMPLETE.index(KIND_KERNEL_REPLAY)]
+    assert replay[2] == solutionplan.RESULT_TIMEOUT
+    assert replay[2] != solutionplan.RESULT_FAIL
+    assert replay[3] == (solutionplan.TIMEOUT_REASON, "timeout_s:600.0")
+    assert outcomes[COMPLETE.index(KIND_KERNEL_REPLAY)][0].step == KIND_KERNEL_REPLAY
+    assert outcomes[-1][2] == solutionplan.RESULT_BLOCKED

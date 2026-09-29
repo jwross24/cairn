@@ -2,7 +2,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from cairn import challenge, container, lean, log, solutionbuild, solutionplan
+from cairn import challenge, cli, container, lean, log, solutionbuild, solutionplan
 
 lg = log.get("solutionchecks")
 
@@ -314,6 +314,7 @@ def run_dev(
     theorem_names,
     plan_rows,
     *,
+    sub,
     root,
     prepared,
     comparator,
@@ -374,10 +375,20 @@ def run_dev(
         except solutionbuild.SolutionRefused as exc:
             return solutionplan.OBSERVED_REFUSED, (exc.reason,), _elapsed_ms(start)
 
-    return plan.run(observe)
+    return plan.run(
+        observe,
+        sub,
+        bundle_hash=gate.hash,
+        pin_hash=gate.pin_hash,
+        statement_hash=statement.hash,
+        formal_statement_hash=prepared.formal_statement_hash,
+        renderer_hash=gate.digest_of(challenge.RENDERER_KIND),
+        prelude_hash=gate.digest_of(challenge.PRELUDE_KIND),
+        at=cli.now_iso(),
+    )
 
 
-def run_container(gate, image, statement, submission, theorem_names, plan_rows, *, root, work_dir, prepared):
+def run_container(gate, image, statement, submission, theorem_names, plan_rows, *, sub, root, work_dir, prepared):
     plan = solutionplan.SolutionPlan.load(plan_rows, arm=container.GOLD_ARM)
     if tuple(step.kind for step in plan.steps) != solutionplan.STEP_KINDS:
         raise solutionplan.PlanInvalid("gold-plan-requires-axioms-before-replay")
@@ -432,7 +443,17 @@ def run_container(gate, image, statement, submission, theorem_names, plan_rows, 
         except solutionbuild.SolutionRefused as exc:
             return solutionplan.OBSERVED_REFUSED, (exc.reason,), _elapsed_ms(start)
 
-    return plan.run(observe)
+    return plan.run(
+        observe,
+        sub,
+        bundle_hash=gate.hash,
+        pin_hash=gate.pin_hash,
+        statement_hash=statement.hash,
+        formal_statement_hash=prepared.formal_statement_hash,
+        renderer_hash=gate.digest_of(challenge.RENDERER_KIND),
+        prelude_hash=gate.digest_of(challenge.PRELUDE_KIND),
+        at=cli.now_iso(),
+    )
 
 
 def _elapsed_ms(start):

@@ -67,12 +67,12 @@ def test_the_refused_solution_never_reaches_the_build_or_the_checkers():
             return (*check_imports(FORGED), 2)
         return step.expect, (), 2
 
-    result = SolutionPlan.load(_rows(), arm=container.DEV_ARM).run(observe)
+    plan = SolutionPlan.load(_rows(), arm=container.DEV_ARM)
+    outcomes = tuple(solutionplan.plan_outcomes(plan.steps, observe))
     assert ran == [KIND_STATEMENT_BINDING, KIND_IMPORT_ALLOWLIST]
-    assert result.ok is False
-    assert result.steps[1].result == solutionplan.RESULT_FAIL
-    assert f"{solutionplan.IMPORT_REFUSED_PREFIX}Lean" in result.steps[1].reasons
-    assert [step.result for step in result.steps[2:]] == [solutionplan.RESULT_BLOCKED] * 4
+    assert outcomes[1][2] == solutionplan.RESULT_FAIL
+    assert f"{solutionplan.IMPORT_REFUSED_PREFIX}Lean" in outcomes[1][3]
+    assert [outcome[2] for outcome in outcomes[2:]] == [solutionplan.RESULT_BLOCKED] * 4
 
 
 @pytest.mark.parametrize(

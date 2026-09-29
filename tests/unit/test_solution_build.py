@@ -243,10 +243,11 @@ def test_a_submission_naming_another_hash_blocks_every_later_step_including_the_
             return solutionbuild.observe_binding(_submission(hash_hex=OTHER_FSH), FSH)
         return step.expect, (), 1
 
-    result = solutionplan.SolutionPlan.load(rows, arm=container.DEV_ARM).run(observe)
+    plan = solutionplan.SolutionPlan.load(rows, arm=container.DEV_ARM)
+    outcomes = tuple(solutionplan.plan_outcomes(plan.steps, observe))
     assert ran == [solutionplan.KIND_STATEMENT_BINDING]
-    assert result.steps[0].result == solutionplan.RESULT_FAIL
-    assert [step.result for step in result.steps[1:]] == [solutionplan.RESULT_BLOCKED] * 5
+    assert outcomes[0][2] == solutionplan.RESULT_FAIL
+    assert [outcome[2] for outcome in outcomes[1:]] == [solutionplan.RESULT_BLOCKED] * 5
 
 
 def test_a_build_that_exceeds_its_timeout_is_a_step_timeout_and_never_a_failed_verdict(gate, statement, tmp_path):

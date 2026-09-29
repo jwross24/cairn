@@ -129,7 +129,19 @@ class SolutionPlan:
         _assert_canonical_order(steps)
         return cls(steps, arm)
 
-    def run(self, observe):
+    def run(
+        self,
+        observe,
+        sub,
+        *,
+        bundle_hash,
+        pin_hash,
+        statement_hash,
+        formal_statement_hash,
+        renderer_hash,
+        prelude_hash,
+        at,
+    ):
         results = []
         for step, observed, result, reasons, wall_ms in plan_outcomes(self.steps, observe):
             lg.info(
@@ -144,7 +156,19 @@ class SolutionPlan:
                 arm=self.arm,
             )
             results.append(StepResult(step.step, step.kind, step.expect, observed, result, reasons, wall_ms))
-        return PlanResult(tuple(results), self.arm)
+        plan_result = PlanResult(tuple(results), self.arm)
+        persist(
+            sub,
+            plan_result,
+            bundle_hash=bundle_hash,
+            pin_hash=pin_hash,
+            statement_hash=statement_hash,
+            formal_statement_hash=formal_statement_hash,
+            renderer_hash=renderer_hash,
+            prelude_hash=prelude_hash,
+            at=at,
+        )
+        return plan_result
 
 
 def persist(

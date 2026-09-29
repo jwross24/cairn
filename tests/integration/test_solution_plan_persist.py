@@ -1,10 +1,11 @@
+import json
 import sys
 from pathlib import Path
 
 import pytest
 
-from cairn import claims, container, scrutiny, solutionplan
-from cairn.solutionplan import PlanInvalid, PlanResult, StepResult
+from cairn import bundle, challenge, claims, container, scrutiny, solutionbuild, solutionchecks, solutionplan
+from cairn.solutionplan import PlanInvalid, PlanResult, StepResult, StepTimeout
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import _substrate_helpers as helpers
@@ -23,6 +24,11 @@ def writer(tmp_path):
     sub.close()
 
 
+@pytest.fixture
+def gate(pinned_bundle):
+    return bundle.GateBundle.open(*pinned_bundle())
+
+
 def step_result(kind, result="pass", reasons=()):
     return StepResult(
         step=kind,
@@ -38,6 +44,19 @@ def step_result(kind, result="pass", reasons=()):
 def plan_result(**overrides):
     steps = tuple(step_result(kind, **overrides.get(kind, {})) for kind in solutionplan.STEP_KINDS)
     return PlanResult(steps, ARM)
+
+
+def _plan_rows():
+    return [
+        {
+            "step": kind,
+            "kind": kind,
+            "expect": solutionplan.KIND_EXPECTATION[kind],
+            "blocking": True,
+            "timeout_s": 31.0,
+        }
+        for kind in solutionplan.STEP_KINDS
+    ]
 
 
 def persist(sub, result, statement, **overrides):
@@ -66,6 +85,126 @@ def rows(sub, gate):
         dict(r)
         for r in sub.conn.execute("SELECT * FROM gate_runs WHERE gate = ? ORDER BY plan_step", (gate,)).fetchall()
     ]
+
+
+@pytest.mark.parametrize(
+    ("mode", "summary_result", "failed_step"),
+    [
+        ("pass", "pass", None),
+        ("fail", "fail", solutionplan.KIND_IMPORT_ALLOWLIST),
+        ("timeout", "fail", solutionplan.KIND_BUILD),
+    ],
+)
+def test_run_persists_every_step_and_summary_with_the_execution_bindings(
+    writer, statement, mode, summary_result, failed_step
+):
+    plan = solutionplan.SolutionPlan.load(_plan_rows(), arm=ARM)
+
+    def observe(step):
+        if mode == "fail" and step.kind == solutionplan.KIND_IMPORT_ALLOWLIST:
+            return solutionplan.OBSERVED_REFUSED, ("import-refused:Lean",), 12
+        if mode == "timeout" and step.kind == solutionplan.KIND_BUILD:
+            raise StepTimeout(step.step, step.timeout_s)
+        return step.expect, (), 9
+
+    binding = {
+        "bundle_hash": "b3" * 32,
+        "pin_hash": "a4" * 32,
+        "statement_hash": statement.hash,
+        "formal_statement_hash": FORMAL,
+        "renderer_hash": RENDERER,
+        "prelude_hash": PRELUDE,
+        "at": factories.CREATED_AT,
+    }
+    result = plan.run(observe, writer, **binding)
+    persisted_steps = rows(writer, solutionplan.STEP_GATE)
+    by_step = {row["plan_step"]: row for row in persisted_steps}
+    assert len(persisted_steps) == len(solutionplan.STEP_KINDS)
+    assert len(by_step) == len(solutionplan.STEP_KINDS)
+    for step in result.steps:
+        row = by_step[step.step]
+        assert row["gate"] == solutionplan.STEP_GATE
+        assert row["result"] == step.result
+        assert tuple(json.loads(row["reasons"])) == step.reasons
+        for field, value in binding.items():
+            assert row[field] == value
+        assert row["arm"] == result.arm
+    (summary,) = rows(writer, solutionplan.SUMMARY_GATE)
+    assert summary["gate"] == solutionplan.SUMMARY_GATE
+    assert summary["plan_step"] == solutionplan.SUMMARY_STEP
+    assert summary["result"] == summary_result
+    assert tuple(json.loads(summary["reasons"])) == (
+        () if failed_step is None else (f"{solutionplan.FIRST_FAILURE_PREFIX}{failed_step}",)
+    )
+    for field, value in binding.items():
+        assert summary[field] == value
+    assert summary["arm"] == result.arm
+    assert writer.conn.execute("SELECT COUNT(*) FROM gate_runs").fetchone()[0] == len(solutionplan.STEP_KINDS) + 1
+    if mode == "timeout":
+        build = by_step[solutionplan.KIND_BUILD]
+        assert build["result"] == solutionplan.RESULT_TIMEOUT
+        assert tuple(json.loads(build["reasons"])) == (solutionplan.TIMEOUT_REASON, "timeout_s:31.0")
+        assert [step.result for step in result.steps[3:]] == [solutionplan.RESULT_BLOCKED] * 3
+
+
+def test_run_dev_persists_a_stale_submission_refusal_automatically(gate, writer, statement, tmp_path, monkeypatch):
+    theorem_names = ("answer",)
+    project = solutionbuild.prepare_challenge(gate, statement, theorem_names, root=tmp_path / "prepared")
+    prepared = solutionchecks.PreparedChallenge(
+        project=project,
+        statement_hash=statement.hash,
+        bundle_hash=gate.hash,
+        pin_hash=gate.pin_hash,
+        renderer_hash=gate.digest_of(challenge.RENDERER_KIND),
+        prelude_hash=gate.digest_of(challenge.PRELUDE_KIND),
+        formal_statement_hash=FORMAL,
+        image=None,
+    )
+    monkeypatch.setattr(solutionchecks.cli, "now_iso", lambda: factories.CREATED_AT)
+    result = solutionchecks.run_dev(
+        gate,
+        statement,
+        challenge.Submission(solution_module=b"", formal_statement_hash="0" * 64),
+        theorem_names,
+        _plan_rows(),
+        sub=writer,
+        root=tmp_path / "candidate",
+        prepared=prepared,
+        comparator=None,
+    )
+    assert result.ok is False
+    assert result.first_failure == result.steps[0]
+    assert [step.result for step in result.steps] == [solutionplan.RESULT_FAIL] + [solutionplan.RESULT_BLOCKED] * 5
+    step_rows = rows(writer, solutionplan.STEP_GATE)
+    by_step = {row["plan_step"]: row for row in step_rows}
+    assert len(step_rows) == len(solutionplan.STEP_KINDS)
+    assert set(by_step) == set(solutionplan.STEP_KINDS)
+    binding = {
+        "bundle_hash": gate.hash,
+        "pin_hash": gate.pin_hash,
+        "statement_hash": statement.hash,
+        "formal_statement_hash": prepared.formal_statement_hash,
+        "renderer_hash": gate.digest_of(challenge.RENDERER_KIND),
+        "prelude_hash": gate.digest_of(challenge.PRELUDE_KIND),
+        "arm": container.DEV_ARM,
+        "at": factories.CREATED_AT,
+    }
+    for step in result.steps:
+        row = by_step[step.step]
+        assert row["gate"] == solutionplan.STEP_GATE
+        assert row["result"] == step.result
+        assert tuple(json.loads(row["reasons"])) == step.reasons
+        for field, value in binding.items():
+            assert row[field] == value
+    (summary,) = rows(writer, solutionplan.SUMMARY_GATE)
+    assert summary["plan_step"] == solutionplan.SUMMARY_STEP
+    assert summary["result"] == "fail"
+    assert tuple(json.loads(summary["reasons"])) == (
+        f"{solutionplan.FIRST_FAILURE_PREFIX}{solutionplan.KIND_STATEMENT_BINDING}",
+    )
+    for field, value in binding.items():
+        assert summary[field] == value
+    assert writer.conn.execute("SELECT COUNT(*) FROM gate_runs").fetchone()[0] == len(solutionplan.STEP_KINDS) + 1
 
 
 def test_the_scrutiny_constants_equal_the_plan_constants():
