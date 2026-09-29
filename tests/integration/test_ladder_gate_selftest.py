@@ -68,12 +68,12 @@ def test_removing_the_method_identity_guard_fails_and_blocks_the_baseline(gate_e
     gate_bundle, sub, attest_path = gate_env
     original = ladder.check_dispatch
 
-    def without_method_identity(sub, gate_bundle, dispatch, plan):
+    def without_method_identity(sub, gate_bundle, dispatch, plan, *, attest_path=None):
         hypothesis = ladder._hypothesis(sub, dispatch.hypothesis_hash)
         expected = ladder.expected_identity(plan, dispatch.arm, hypothesis)
         if dispatch.method_identity != expected:
             dispatch = dataclasses.replace(dispatch, method_identity=expected)
-        return original(sub, gate_bundle, dispatch, plan)
+        return original(sub, gate_bundle, dispatch, plan, attest_path=attest_path)
 
     monkeypatch.setattr(ladder, "check_dispatch", without_method_identity)
     result = gateplan.GatePlan.from_bundle(gate_bundle).run(gate_bundle, sub, attest_path)
