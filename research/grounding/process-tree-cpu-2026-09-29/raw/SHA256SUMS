@@ -1,0 +1,10 @@
+9ec6ee0ac0e148221001e0c4462b45e63ec40baef9cf311f503f07da22f6ab52  research/grounding/process-tree-cpu-2026-09-29/raw/all-cases-final.json
+910610a58f355e1002a35becc5ece9e6d8a066cc86479e1f97a597e5231ba2d5  research/grounding/process-tree-cpu-2026-09-29/raw/all-cases-final.stderr
+41189833163987ecab8f759b5cc3d18335614e68617c34297fa93f002b4fa67d  research/grounding/process-tree-cpu-2026-09-29/raw/calibration-clock-final.json
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  research/grounding/process-tree-cpu-2026-09-29/raw/calibration-clock-final.stderr
+238965989f8c4e53d0f7377c2fdc98e33098c7c63fcf66ee36cb23dad1ab98c0  research/grounding/process-tree-cpu-2026-09-29/raw/calibration-wrong-clock-final.json
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  research/grounding/process-tree-cpu-2026-09-29/raw/calibration-wrong-clock-final.stderr
+2a114f22397e04351c5238f46a662951d045f5f538e59b2b0997bb3b0c757669  research/grounding/process-tree-cpu-2026-09-29/raw/live-disabled-final.json
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  research/grounding/process-tree-cpu-2026-09-29/raw/live-disabled-final.stderr
+8570318f63cd02259fd63bfe417253024c8cf4de8e5a07543ddffd76b92c3c8b  research/grounding/process-tree-cpu-2026-09-29/raw/pid-query-error-final.json
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  research/grounding/process-tree-cpu-2026-09-29/raw/pid-query-error-final.stderr
