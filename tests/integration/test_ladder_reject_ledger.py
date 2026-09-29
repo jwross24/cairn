@@ -43,6 +43,40 @@ def run_wrong_answer(writer, shipped, tmp_path, plan, hypothesis_object, attest_
     )
 
 
+def run_measured_floor(writer, shipped, tmp_path, plan, hypothesis_object, attest_path, ops_kind):
+    measured_plan = _measured_floor_plan(plan)
+    nonce = _dispatch_run(writer, shipped, tmp_path, measured_plan, hypothesis_object, RUN_ID)
+    scratch = tmp_path / "measured-runs"
+    scratch.mkdir()
+
+    def observe(trial):
+        assert trial.reported_ops is not None
+        return laddertable.OpsObservation(ops_kind, trial.reported_ops)
+
+    return ladder.run(
+        writer,
+        shipped,
+        plan=measured_plan,
+        plan_hash=ladderplan.plan_digest(shipped),
+        run_id=RUN_ID,
+        hypothesis_hash=hypothesis_object.hash,
+        nonce=nonce,
+        scratch_root=scratch,
+        budget_remaining=10_000.0,
+        ceiling_multiplier=MAKER_CEILING,
+        ops_counter=observe,
+        attest_path=attest_path,
+    )
+
+
+def _measured_floor_plan(plan):
+    floor = dataclasses.replace(plan.rungs[0].refutation_floor, group_ops=1)
+    floor_rung = dataclasses.replace(
+        plan.rungs[0], floor_binds=True, memory_cap_bytes=floor.memory_bytes, refutation_floor=floor
+    )
+    return dataclasses.replace(plan, rungs=(floor_rung, *plan.rungs[1:]))
+
+
 def test_wrong_answer_yanks_the_dispatched_bundle_without_measured_refutation(
     writer, shipped, tmp_path, plan, hypothesis_object, attest_path
 ):
@@ -174,3 +208,123 @@ def test_unsettled_measured_rejection_refuses_without_minting_a_ledger_entry(
     assert ledger.entries_for(writer, hypothesis_object.hash) == []
     claimant = ladder.dispatches_for(writer, RUN_ID)[ladder.CLAIMANT]
     assert not writer.yanked(claimant.identity_bundle_hash)
+
+
+@pytest.mark.parametrize("ops_kind", [laddertable.OPS_EXACT, laddertable.OPS_LOWER_BOUND])
+def test_refutation_floor_persists_gate_owned_measured_result(
+    writer, shipped, tmp_path, plan, hypothesis_object, attest_path, ops_kind
+):
+    table, _ = run_measured_floor(writer, shipped, tmp_path, plan, hypothesis_object, attest_path, ops_kind)
+    recorded = laddertable.recorded_verdict(writer, table.hash)
+    assert (recorded.kind, recorded.predicate, recorded.refutation_kind) == (
+        laddertable.REJECT,
+        laddertable.REFUTATION_FLOOR,
+        ledger.MEASURED,
+    )
+    stored = laddertable.read(writer, table.hash)
+    row = next(rung for rung in stored.rungs if rung.bits == recorded.rung_bits)
+    measured = laddertable.measured_entry_fields(stored, recorded)
+    entries = ledger.entries_for(writer, hypothesis_object.hash)
+    assert len(entries) == 1
+    entry = entries[0]
+    result = json.loads(entry["result"])
+    assert entry["evidence_node"] == table.hash
+    assert (entry["decision"], entry["refutation_kind"], entry["faulting_revision"]) == (
+        ledger.REFUTED,
+        ledger.MEASURED,
+        None,
+    )
+    assert entry["caught_by"] == f"ladder:{laddertable.REFUTATION_FLOOR}"
+    assert json.loads(entry["measured_points"]) == list(measured["measured_points"])
+    assert result == measured["result"]
+    assert result["kind"] == (ledger.EXACT if ops_kind == laddertable.OPS_EXACT else ledger.LOWER_BOUND)
+    assert result["quantity"] == "mean_group_operations"
+    assert result["value"] == row.mean_ops
+    assert result["ci"] is result["ci_method"] is result["coverage"] is None
+    if ops_kind == laddertable.OPS_LOWER_BOUND:
+        assert "lower bound" in result["summary"]
+    assert json.loads(entry["retry_predicate"]) == {
+        "kind": ledger.RETRY_GATE_OWNED_REMEASUREMENT,
+        "target": hypothesis_object.hash,
+    }
+    claimant = ladder.dispatches_for(writer, RUN_ID)[ladder.CLAIMANT]
+    assert not writer.yanked(claimant.identity_bundle_hash)
+    print(json.dumps({"entry": entry, "table": table.hash}, sort_keys=True))
+
+
+def test_measured_table_entry_refuses_forged_subject_points_result_and_predicate(
+    writer, shipped, tmp_path, plan, hypothesis_object, attest_path
+):
+    table, _ = run_measured_floor(
+        writer, shipped, tmp_path, plan, hypothesis_object, attest_path, laddertable.OPS_EXACT
+    )
+    recorded = laddertable.recorded_verdict(writer, table.hash)
+    measured = laddertable.measured_entry_fields(table, recorded)
+    fields = {
+        "hypothesis_key": table.hypothesis_hash,
+        "decision": ledger.REFUTED,
+        "refutation_kind": ledger.MEASURED,
+        "evidence_node": table.hash,
+        "method": table.method_identity,
+        "measured_points": measured["measured_points"],
+        "result": measured["result"],
+        "caught_by": f"ladder:{recorded.predicate}",
+        "at": table.created_at,
+    }
+    altered_points = ({"numeric": {"bits": recorded.rung_bits}, "categorical": {"predicate": "forged"}},)
+    altered_result = dict(measured["result"], value="0")
+    for name, value in (
+        ("hypothesis_key", "ff" * 32),
+        ("method", {"interface_version": "foreign/1", "params": {}}),
+        ("caught_by", "ladder:in_sample_model_miss"),
+        ("measured_points", altered_points),
+        ("result", altered_result),
+    ):
+        with pytest.raises(ledger.LedgerError):
+            ledger.write(writer, **{**fields, name: value})
+    with pytest.raises(ledger.RetryPredicateNotYours):
+        ledger.write(
+            writer,
+            **fields,
+            retry_predicate={"kind": ledger.RETRY_GATE_OWNED_REMEASUREMENT, "target": table.hypothesis_hash},
+        )
+    assert len(ledger.entries_for(writer, hypothesis_object.hash)) == 1
+
+
+def test_measured_entry_refuses_a_table_not_bound_to_its_claimant_dispatch(
+    writer, shipped, tmp_path, plan, hypothesis_object, attest_path
+):
+    table, _ = run_measured_floor(
+        writer, shipped, tmp_path, plan, hypothesis_object, attest_path, laddertable.OPS_EXACT
+    )
+    members = laddertable.membership_for_table(writer, table.hash)
+    measured_plan = _measured_floor_plan(plan)
+    forged_run_id = "run-forged-measured-source"
+    nonce = _dispatch_run(writer, shipped, tmp_path, measured_plan, hypothesis_object, forged_run_id)
+    forged = dataclasses.replace(
+        table,
+        run_id=forged_run_id,
+        nonce=nonce,
+        method_identity={"interface_version": "foreign/1", "params": {}},
+    )
+    laddertable.write(writer, forged, measured_plan)
+    laddertable._store_membership(writer, forged, members)
+
+    with pytest.raises(ledger.LedgerError, match=r"claimant dispatch .* disagrees with the table identity"):
+        ledger.write_ladder_measured_refutation(writer, forged.hash)
+    assert len(ledger.entries_for(writer, hypothesis_object.hash)) == 1
+
+
+def test_measured_entry_failure_rolls_back_table_and_entry_but_preserves_trial_receipts(
+    writer, shipped, tmp_path, plan, hypothesis_object, attest_path
+):
+    writer.conn.execute(
+        "CREATE TEMP TRIGGER refuse_measured_entry BEFORE INSERT ON ledger_entries "
+        "WHEN NEW.refutation_kind = 'measured' BEGIN SELECT RAISE(ABORT, 'planted measured entry failure'); END"
+    )
+    with pytest.raises(sqlite3.IntegrityError, match="planted measured entry failure"):
+        run_measured_floor(writer, shipped, tmp_path, plan, hypothesis_object, attest_path, laddertable.OPS_EXACT)
+    assert writer.conn.execute("SELECT count(*) FROM ladder_tables").fetchone()[0] == 0
+    assert ledger.entries_for(writer, hypothesis_object.hash) == []
+    attempts = writer.conn.execute("SELECT receipt_hash FROM attempts").fetchall()
+    assert attempts and all(row["receipt_hash"] for row in attempts)

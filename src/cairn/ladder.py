@@ -621,32 +621,39 @@ def run(
     }
     evidence_nodes = _table_evidence_nodes(sub, table, plan, claimant_attempts, claimant)
     verdict = laddertable.verdict(table, plan)
-    if verdict.kind == laddertable.REJECT and verdict.refutation_kind == ledger.MEASURED:
+    if (
+        verdict.kind == laddertable.REJECT
+        and verdict.refutation_kind == ledger.MEASURED
+        and verdict.predicate not in laddertable.MEASURED_SETTLEMENT_PREDICATES
+    ):
         raise RunRefused(
-            "measured-settlement-unavailable", "measured REJECT settlement requires measured-result intervals"
+            "measured-settlement-unavailable", f"measured REJECT settlement has no producer for {verdict.predicate}"
         )
     with sub.transaction():
         laddertable.write(sub, table, plan, trial_attempts=trial_attempts, evidence_nodes=evidence_nodes)
         if verdict.kind == laddertable.REJECT:
-            entry = ledger.write(
-                sub,
-                hypothesis_key=table.hypothesis_hash,
-                decision=ledger.REFUTED,
-                refutation_kind=ledger.IMPLEMENTATION,
-                evidence_node=table.hash,
-                method=table.method_identity,
-                faulting_revision=claimant.identity_bundle_hash,
-                caught_by=f"ladder:{verdict.predicate}",
-                at=table.created_at,
-            )
-            yank.record(
-                sub,
-                yank_id=f"ladder:{entry}",
-                skill_identity_hash=claimant.identity_bundle_hash,
-                kind=yank.GATE_VERDICT,
-                attest_path=attest_path,
-                verdict_ref=entry,
-                at=table.created_at,
-            )
+            if verdict.refutation_kind == ledger.MEASURED:
+                ledger.write_ladder_measured_refutation(sub, table.hash)
+            elif verdict.refutation_kind == ledger.IMPLEMENTATION:
+                entry = ledger.write(
+                    sub,
+                    hypothesis_key=table.hypothesis_hash,
+                    decision=ledger.REFUTED,
+                    refutation_kind=ledger.IMPLEMENTATION,
+                    evidence_node=table.hash,
+                    method=table.method_identity,
+                    faulting_revision=claimant.identity_bundle_hash,
+                    caught_by=f"ladder:{verdict.predicate}",
+                    at=table.created_at,
+                )
+                yank.record(
+                    sub,
+                    yank_id=f"ladder:{entry}",
+                    skill_identity_hash=claimant.identity_bundle_hash,
+                    kind=yank.GATE_VERDICT,
+                    attest_path=attest_path,
+                    verdict_ref=entry,
+                    at=table.created_at,
+                )
     lg.info("run", run_id=run_id, table=table.hash, rungs=len(rungs), trials=len(canonical_trials))
     return table, tuple(arm_trials)

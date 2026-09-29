@@ -259,10 +259,32 @@ def write(sub, **fields):
     return write_entry(sub, entry)
 
 
+def write_ladder_measured_refutation(sub, table_hash):
+    source = _measured_table_source(sub, table_hash)
+    if source is None:
+        raise LedgerError(f"ladder table {table_hash} is not in the substrate")
+    table, verdict, measured = source
+    return write(
+        sub,
+        hypothesis_key=table.hypothesis_hash,
+        decision=REFUTED,
+        refutation_kind=MEASURED,
+        evidence_node=table.hash,
+        method=table.method_identity,
+        measured_points=measured["measured_points"],
+        result=measured["result"],
+        caught_by=f"{LADDER}:{verdict.predicate}",
+        at=table.created_at,
+    )
+
+
 def write_entry(sub, entry):
     node = claims.get_evidence_node(sub, entry.evidence_node)
-    if node is None and entry.writer == LADDER and entry.refutation_kind == IMPLEMENTATION:
-        node = _implementation_table_evidence(sub, entry)
+    if node is None and entry.writer == LADDER:
+        if entry.refutation_kind == MEASURED:
+            node = _measured_table_evidence(sub, entry)
+        elif entry.refutation_kind == IMPLEMENTATION:
+            node = _implementation_table_evidence(sub, entry)
     if node is None:
         raise LedgerError(f"evidence node {entry.evidence_node} is not in the substrate")
     _check_evidence(entry, node)
@@ -324,6 +346,48 @@ def _implementation_table_evidence(sub, entry):
         raise LedgerError("implementation entry names another dispatched identity")
     if not laddertable.membership_for_table(sub, table.hash):
         raise LedgerError("implementation table has no trial membership")
+    return {"kind": laddertable.NODE_KIND, "verdict": verdict.kind}
+
+
+def _measured_table_source(sub, table_hash):
+    from cairn import laddertable
+
+    table = laddertable.read(sub, table_hash)
+    if table is None:
+        return None
+    verdict = laddertable.recorded_verdict(sub, table.hash)
+    if verdict is None or verdict.kind != laddertable.REJECT or verdict.refutation_kind != MEASURED:
+        raise LedgerError("measured entry requires a recorded measured ladder REJECT")
+    try:
+        laddertable._claimant_dispatch(sub, table)
+    except laddertable.LadderTableError as exc:
+        raise LedgerError(str(exc)) from None
+    if not laddertable.membership_for_table(sub, table.hash):
+        raise LedgerError("measured table has no trial membership")
+    try:
+        measured = laddertable.measured_entry_fields(table, verdict)
+    except laddertable.LadderTableError as exc:
+        raise LedgerError(str(exc)) from None
+    return table, verdict, measured
+
+
+def _measured_table_evidence(sub, entry):
+    from cairn import laddertable
+
+    source = _measured_table_source(sub, entry.evidence_node)
+    if source is None:
+        return None
+    table, verdict, measured = source
+    if entry.caught_by != f"{LADDER}:{verdict.predicate}":
+        raise LedgerError("measured entry disagrees with its ladder predicate")
+    if entry.hypothesis_key != table.hypothesis_hash:
+        raise LedgerError("measured entry disagrees with its ladder hypothesis")
+    if entry.method != table.method_identity:
+        raise LedgerError("measured entry disagrees with its ladder method")
+    if entry.measured_points != measured["measured_points"]:
+        raise LedgerError("measured entry points disagree with its ladder table")
+    if entry.result != measured["result"]:
+        raise LedgerError("measured entry result disagrees with its ladder table")
     return {"kind": laddertable.NODE_KIND, "verdict": verdict.kind}
 
 

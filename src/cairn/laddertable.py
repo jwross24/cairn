@@ -68,6 +68,7 @@ REFUTATION_KIND = {
     IN_SAMPLE_MISS: ledger.MEASURED,
     OUT_OF_SAMPLE_MISS: ledger.MEASURED,
 }
+MEASURED_SETTLEMENT_PREDICATES = (REFUTATION_FLOOR, IN_SAMPLE_MISS, OUT_OF_SAMPLE_MISS)
 
 TRIAL = Struct(
     "ladder_trial",
@@ -1176,6 +1177,57 @@ def recorded_verdict(sub, table_hash):
         refutation_kind=row["refutation_kind"],
         rung_bits=row["verdict_rung"],
     )
+
+
+def measured_entry_fields(table, recorded):
+    if recorded.kind != REJECT or recorded.refutation_kind != ledger.MEASURED:
+        raise LadderTableError("measured settlement requires a recorded measured REJECT")
+    if recorded.predicate not in MEASURED_SETTLEMENT_PREDICATES:
+        raise LadderTableError(f"measured settlement is unavailable for predicate {recorded.predicate!r}")
+    if recorded.rung_bits is None:
+        raise LadderTableError("measured settlement requires a recorded rung")
+    rows = [row for row in table.rungs if row.bits == recorded.rung_bits]
+    if len(rows) != 1:
+        raise LadderTableError(f"measured settlement requires one rung at {recorded.rung_bits} bits")
+    row = rows[0]
+    if recorded.predicate == REFUTATION_FLOOR:
+        if row.ops_kind not in (OPS_EXACT, OPS_LOWER_BOUND) or row.mean_ops is None:
+            raise LadderTableError("a refutation-floor entry requires an exact or lower-bound operation mean")
+        result_kind = ledger.EXACT if row.ops_kind == OPS_EXACT else ledger.LOWER_BOUND
+        categorical = {
+            "predicate": recorded.predicate,
+            "ops_kind": row.ops_kind,
+            "mean_ops": row.mean_ops,
+        }
+    else:
+        expected_role = ladderplan.ROLE_FIT if recorded.predicate == IN_SAMPLE_MISS else ladderplan.ROLE_HOLD_OUT
+        if row.role != expected_role:
+            raise LadderTableError(f"{recorded.predicate} requires a {expected_role} rung")
+        if row.ops_kind != OPS_EXACT or row.mean_ops is None:
+            raise LadderTableError(f"{recorded.predicate} requires an exact operation mean")
+        result_kind = ledger.EXACT
+        categorical = {
+            "predicate": recorded.predicate,
+            "mean_ops": row.mean_ops,
+            "model_prediction": row.model_prediction,
+            "model_band": row.model_band,
+        }
+    return {
+        "measured_points": ({"numeric": {"bits": row.bits}, "categorical": categorical},),
+        "result": {
+            "kind": result_kind,
+            "quantity": "mean_group_operations",
+            "summary": (
+                f"lower bound on mean gate operation count at {row.bits} bits"
+                if result_kind == ledger.LOWER_BOUND
+                else f"finite-sample mean of gate operation counts at {row.bits} bits"
+            ),
+            "value": row.mean_ops,
+            "ci": None,
+            "ci_method": None,
+            "coverage": None,
+        },
+    }
 
 
 def recompute(table, plan, verified):
