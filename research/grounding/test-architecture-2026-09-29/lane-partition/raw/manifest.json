@@ -273,6 +273,190 @@
       "archive_path": "partition-lean-annotations.json.gz",
       "archive_bytes": 345,
       "archive_sha256": "b24007449dc6e19bcb8a0aa1d19127808ed0bc731c6a1b64b20cc24f03881a2f"
+    },
+    {
+      "source_path": "/tmp/cairn-day-lane3.uMzz8z/afternoon-initial-ci.json",
+      "source_bytes": 60987,
+      "source_sha256": "b62288984c2f1dbf9f1140c75fe97b0a537e0a513b86f1c5f2686b47aa6fe849",
+      "archive_path": "ci-36608535105-terminal.json.gz",
+      "archive_bytes": 3474,
+      "archive_sha256": "cf203f1cde1a1ae525775d26078086212aaf4fc76e67e6e05d239f7fc4f52dbb"
+    },
+    {
+      "source_path": "/tmp/cairn-llta-36608535105.61vlf5/m0.zip",
+      "source_bytes": 49223,
+      "source_sha256": "4134075a02eaa19d26741816afbfb6be8ad90d379a0259b75275a7ec1804a6e0",
+      "archive_path": "ci-109543708095-m0.log.gz",
+      "archive_bytes": 11518,
+      "archive_sha256": "ba86532cedb8bf5b032bdda18390cd6f8f638fe6ff7e6bba955f5e93c11cbc20"
+    },
+    {
+      "source_path": "/tmp/cairn-llta-36608535105.61vlf5/solution-library.log",
+      "source_bytes": 85586,
+      "source_sha256": "b924486197f20fb183cc847ac134b2a9219ed75e8f0df8bee8d93d40f6421d55",
+      "archive_path": "ci-109543708066-library.log.gz",
+      "archive_bytes": 15537,
+      "archive_sha256": "82deb28d5f154cda16e555a78401754b2512db75828bd5b7063e485cb22ae1c3"
+    },
+    {
+      "source_path": "/tmp/cairn-llta-36608535105.61vlf5/lean.log",
+      "source_bytes": 99050,
+      "source_sha256": "fc1c179d2bdd8f445075f21e2c3e351bfaf456f1fc0516c37f26be807b12caae",
+      "archive_path": "ci-109543708027-lean.log.gz",
+      "archive_bytes": 18486,
+      "archive_sha256": "2c14cf03bc5047d6f74ac35653cf51b5489f9007ebc12151a0cdaf05f7d71184"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/baseline-collection.log",
+      "source_bytes": 1894,
+      "source_sha256": "42b3a075d63690a2dcbd66e9fd2cd617929a0f9a6f7d9ceb703b5060389b721d",
+      "archive_path": "afternoon-baseline-collection.log.gz",
+      "archive_bytes": 640,
+      "archive_sha256": "8a3b7bf2f652ac6966f4c67c09a237d7ef704f43653b32ba2c4533709a535bed"
+    },
+    {
+      "source_path": "/tmp/cairn-llta-36608535105.61vlf5/libdiag/_temp/pytest-of-runner/cairn-test-logs/pytest-0-6mz4myj_/test_library_items_pass_gate_d0-qjygvw_1/test.log.jsonl",
+      "source_bytes": 9990243,
+      "source_sha256": "cdcebd209970d43d0fb56f1c52c4f373917ab4817c2cfb62971246e944a874df",
+      "archive_path": "ci-109543708066-dlp.jsonl.gz",
+      "archive_bytes": 395291,
+      "archive_sha256": "84d4b188d03924c3d1f378c14a35d96fabc3bce9b940b5f8b17de5fb086c746b"
+    },
+    {
+      "source_path": "/tmp/cairn-llta-36608535105.61vlf5/libdiag/_temp/pytest-of-runner/cairn-test-logs/pytest-0-6mz4myj_/test_library_items_pass_gate_f0-oekjh18j/test.log.jsonl",
+      "source_bytes": 8523439,
+      "source_sha256": "dcb7f6d773a40b53fa488cdd269a8e56e40d0cedef80dcfd912204e7fdc4cd7b",
+      "archive_path": "ci-109543708066-finite-point.jsonl.gz",
+      "archive_bytes": 333743,
+      "archive_sha256": "edd1eb9bfaeaf1aeb52ec82970e4ecfe2ff9b34bbbdc7323aa74b434298e02f9"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/m0-effective-markers.json",
+      "source_bytes": 2355,
+      "source_sha256": "a611ebe1686f5f87807e4ef1e657a2b68c32b355ca18d285874d2556fe1c094b",
+      "archive_path": "afternoon-m0-effective-markers.json.gz",
+      "archive_bytes": 601,
+      "archive_sha256": "cd622daa98290e8eba10973cceafd121fa3896e3068cd6c66e2121c549825960"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/m0-marker-collection.log",
+      "source_bytes": 1608,
+      "source_sha256": "558ab7a6e97375ddb344e0dbf6f87ffa8563ac5a2700069caac73497db51b34d",
+      "archive_path": "afternoon-m0-marker-collection.log.gz",
+      "archive_bytes": 557,
+      "archive_sha256": "a98d2e4036788541b55afc5b0967774ddaebecb146a456d2c21bb54374fd86aa"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/m0-parent-real.log",
+      "source_bytes": 1336546,
+      "source_sha256": "ed6789f0a20a427a275f67498f4870b670b775b9ecbf0f9ac4eea4f5ac2b03c4",
+      "archive_path": "afternoon-m0-parent-real.log.gz",
+      "archive_bytes": 29720,
+      "archive_sha256": "e643134cd78cff5dec50b79a5c7bcc3219fca3e6eb821370c9b32625ae5a02e1"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/m0-parent-marker-negative.log",
+      "source_bytes": 2505,
+      "source_sha256": "7347a54f01c845c47d03f3f27cafb60487e1efed68465c85a6c404e52085d75b",
+      "archive_path": "afternoon-m0-parent-marker-negative.log.gz",
+      "archive_bytes": 719,
+      "archive_sha256": "dfa9e712bbeac9191ad698d02ac5d8591e362e4cfee04b4aca32cde0260d318c"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/parent-contracts-final.log",
+      "source_bytes": 591,
+      "source_sha256": "d48d1871cf49c6d76dfe31d9001dcfd0f63d3f9731edf86068f26a912d8a9ae6",
+      "archive_path": "afternoon-parent-contracts-final.log.gz",
+      "archive_bytes": 97,
+      "archive_sha256": "63ca7abf257694c63582b4a3ce408528f8429820537c7307b37992a1bf8e3170"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/parent-alias-refusals.log",
+      "source_bytes": 114,
+      "source_sha256": "4c3014d094b362fb1c8895a5a16b0523136ca2590b191ffe416d4ed4b10613f1",
+      "archive_path": "afternoon-parent-alias-refusals.log.gz",
+      "archive_bytes": 67,
+      "archive_sha256": "8c3185f203e7f0175a56475f3fe1806893abc9efabd35a736be8adbfa24c5555"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/parent-partition.json",
+      "source_bytes": 17126,
+      "source_sha256": "c2703fa87585982556a4a85481593b11ec8e7427f6f4e518a0602301919675d3",
+      "archive_path": "afternoon-parent-partition.json.gz",
+      "archive_bytes": 3034,
+      "archive_sha256": "d4fce9de0ee48dcf2ee3d9868788dedacd7cd7f81ec0c887b22382318d4fe265"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/parent-partition.log",
+      "source_bytes": 267,
+      "source_sha256": "be30c39bd6a160951c075c54de33d2a6ed65f012463ca13e6ce19e5fc96666f0",
+      "archive_path": "afternoon-parent-partition.log.gz",
+      "archive_bytes": 184,
+      "archive_sha256": "97c454f72402c3100874ed6c5ddab1809b6a33cbf69a1873cb88f7c0e9833234"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/parent-wrong-owner-final.log",
+      "source_bytes": 1489,
+      "source_sha256": "d833039279e11af602abcd54a729888f6578ed80ac289c026a9989e1b200a243",
+      "archive_path": "afternoon-parent-wrong-owner-final.log.gz",
+      "archive_bytes": 603,
+      "archive_sha256": "140569dcb30797d9ca0fea28059c62ec3fb2d91c3a07f689a4b39b64a150ba10"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/parent-unknown-item.log",
+      "source_bytes": 785,
+      "source_sha256": "827a875cb0023107c7aabc8a7d436d3c27d3edb286e11661ae015799e83671e4",
+      "archive_path": "afternoon-parent-unknown-item.log.gz",
+      "archive_bytes": 171,
+      "archive_sha256": "bad869c2faca0d262f696281261e57c46f7727970b8cbd8e83828d047b98e89a"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/parent-fast.log",
+      "source_bytes": 1345,
+      "source_sha256": "c2cdb4542e97eb542fc490bbadeaca33785e0a0534fc09f3d5453524a7a1da4a",
+      "archive_path": "afternoon-parent-fast.log.gz",
+      "archive_bytes": 672,
+      "archive_sha256": "c9a081ae1e5e4983b68881f253e896c36953d6c2184f4957f52bc1917701c340"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/verified-source.json",
+      "source_bytes": 974,
+      "source_sha256": "4a7609f7a0e92d86e905e37940eda8d1a6df9b47f5b5896fea871f54dd053168",
+      "archive_path": "afternoon-verified-source.json.gz",
+      "archive_bytes": 592,
+      "archive_sha256": "aa20f3c9a232359a2b686e23e266d99f21ada5e38965c7545e96c37be84a3052"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/baseline-lean-collection.log",
+      "source_bytes": 14042,
+      "source_sha256": "798811557776a028b0ef27800b0798b7b041a94621ad4256d0ad360818b23a77",
+      "archive_path": "afternoon-baseline-lean-collection.log.gz",
+      "archive_bytes": 2474,
+      "archive_sha256": "8ff579bb83753e576cfd02d0e00d2e0c26b34bad2768857e88168c29fcd847e9"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/verify_partition.py",
+      "source_bytes": 1776,
+      "source_sha256": "ceac04a7f37c6f03a750876580d0d48f478bcc47fd53a714c49757a06bc29801",
+      "archive_path": "afternoon-verify_partition.py.gz",
+      "archive_bytes": 859,
+      "archive_sha256": "29adfa1f6b3b1cdbc861c7b17c617bdc82f29c46d6ff0220952e6a64bb148eba"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/wrong_owner.py",
+      "source_bytes": 139,
+      "source_sha256": "3a1db334a099623005c5cdc81c6f7fbeb6e0538a7fb3b7abaaf5dc09ebc6ec14",
+      "archive_path": "afternoon-wrong_owner.py.gz",
+      "archive_bytes": 107,
+      "archive_sha256": "e3b912026f87374015646ff8208f1de3dd6374844d93a0eb7f176a5f360f7f19"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/marker_receipt.py",
+      "source_bytes": 397,
+      "source_sha256": "aa4434e38cbe82dc1157c4643ff972662d95ebe40f77db1e91f6127f2bff6e39",
+      "archive_path": "afternoon-marker_receipt.py.gz",
+      "archive_bytes": 276,
+      "archive_sha256": "fb06a6e0481c78b9e969828ce9bc5bf24a8624567e359f24fbf0556f6f14ff86"
     }
   ]
 }

@@ -113,6 +113,7 @@ def deploy(tmp_path, clear_flags, capsys):
     }
 
 
+@pytest.mark.timeout(600)
 def test_the_operator_sequence_produces_four_nodes_two_negatives_and_one_refusal(deploy, capsys, db_snapshot):
     deploy["ready"]()
     code, out, err = deploy["m0_run"]("--bits", "40", "--seed", "1", "--json")
@@ -189,6 +190,7 @@ def test_the_operator_sequence_produces_four_nodes_two_negatives_and_one_refusal
     ]
 
 
+@pytest.mark.timeout(600)
 def test_the_slice_records_its_hypothesis_object_and_the_derivation_lineage(deploy, capsys):
     deploy["ready"]()
     document = json.loads(deploy["m0_run"]("--bits", "40", "--json")[1])
@@ -206,6 +208,7 @@ def test_the_slice_records_its_hypothesis_object_and_the_derivation_lineage(depl
         conn.close()
 
 
+@pytest.mark.timeout(600)
 def test_the_derivation_commits_to_the_x_the_generator_output_determines(deploy, capsys):
     deploy["ready"]()
     document = json.loads(deploy["m0_run"]("--bits", "40", "--seed", "1", "--json")[1])
@@ -231,6 +234,7 @@ def test_the_derivation_commits_to_the_x_the_generator_output_determines(deploy,
     assert m0.keys.node_hash(m0.KIND_DERIVATION, rebuilt) == document["nodes"][1]["hash"]
 
 
+@pytest.mark.timeout(600)
 def test_the_same_seed_replays_from_cache_without_another_toy_curve_attempt(deploy, capsys):
     deploy["ready"]()
     first = json.loads(deploy["m0_run"]("--seed", "1", "--json")[1])
@@ -243,6 +247,7 @@ def test_the_same_seed_replays_from_cache_without_another_toy_curve_attempt(depl
     assert _toy_curve_attempt_count(deploy["paths"]["db"]) == 1
 
 
+@pytest.mark.timeout(600)
 def test_a_different_seed_derives_a_different_instance(deploy, capsys):
     deploy["ready"]()
     first = json.loads(deploy["m0_run"]("--seed", "1", "--json")[1])
@@ -257,6 +262,7 @@ def test_a_different_seed_derives_a_different_instance(deploy, capsys):
     assert _toy_curve_attempt_count(deploy["paths"]["db"]) == 2
 
 
+@pytest.mark.timeout(600)
 def test_skip_cache_lookup_runs_toy_curve_again_for_the_same_content(deploy, capsys):
     deploy["ready"]()
     first = json.loads(deploy["m0_run"]("--seed", "1", "--json")[1])
@@ -268,6 +274,7 @@ def test_skip_cache_lookup_runs_toy_curve_again_for_the_same_content(deploy, cap
     assert _toy_curve_attempt_count(deploy["paths"]["db"]) == 2
 
 
+@pytest.mark.timeout(600)
 def test_the_human_rendering_names_every_node_negative_and_refusal(deploy, capsys):
     deploy["ready"]()
     code, out, err = deploy["m0_run"]("--bits", "40", "--seed", "1")
@@ -281,6 +288,7 @@ def test_the_human_rendering_names_every_node_negative_and_refusal(deploy, capsy
     assert lines[6].startswith("- refused submitter_named ")
 
 
+@pytest.mark.timeout(600)
 def test_the_green_run_logs_one_record_per_step_in_order(deploy, capsys, caplog):
     deploy["ready"]()
     caplog.set_level(logging.INFO, logger=log.LOGGER_NAME)
@@ -313,13 +321,21 @@ def _empty_attestation(deploy):
 
 ABORTS = [
     ("pin_mismatch", _corrupt_pin, "differs from the pin", 0),
-    ("uncertified_skill", _skip_certify, "uncertified-revision", 9),
+    pytest.param(
+        "uncertified_skill",
+        _skip_certify,
+        "uncertified-revision",
+        9,
+        marks=pytest.mark.timeout(600),
+    ),
     ("gate_plan_failure", _empty_attestation, "gate-plan-failed:waiver_cannot_advance", 9),
 ]
 
 
 @pytest.mark.parametrize(
-    ("name", "setup_delta", "expected_reason", "gate_plan_rows"), ABORTS, ids=[a[0] for a in ABORTS]
+    ("name", "setup_delta", "expected_reason", "gate_plan_rows"),
+    ABORTS,
+    ids=["pin_mismatch", "uncertified_skill", "gate_plan_failure"],
 )
 def test_each_abort_path_exits_gate_refused_before_m0_launch(
     deploy, capsys, name, setup_delta, expected_reason, gate_plan_rows
@@ -342,6 +358,7 @@ def test_each_abort_path_exits_gate_refused_before_m0_launch(
     assert _toy_curve_attempt_count(db) == 0
 
 
+@pytest.mark.timeout(600)
 def test_a_refusal_names_a_next_command_that_actually_resolves_it(deploy, capsys):
     deploy["build_and_pin"]()
     deploy["attest_init"]()
@@ -364,6 +381,7 @@ def test_a_missing_attestation_file_exits_environment(deploy, capsys):
     assert out == ""
 
 
+@pytest.mark.timeout(600)
 def test_the_module_entry_point_runs_the_slice_with_globals_before_the_subcommand(deploy):
     deploy["ready"]()
     paths = deploy["paths"]
@@ -419,6 +437,7 @@ def _transcript(records):
     return "\n".join(lines) + "\n"
 
 
+@pytest.mark.timeout(600)
 def test_the_step_transcript_matches_its_golden_after_scrubbing(deploy, capsys, caplog, assert_golden, scrub):
     deploy["ready"]()
     caplog.set_level(logging.INFO, logger=log.LOGGER_NAME)
@@ -441,6 +460,7 @@ def _aliased(directory):
     return alias, real
 
 
+@pytest.mark.timeout(600)
 def test_the_scratch_root_sits_beside_the_db_path_as_written(deploy, capsys, monkeypatch):
     alias, real = _aliased(deploy["paths"]["db"].parent)
     deploy["paths"]["db"] = alias / "substrate.sqlite"

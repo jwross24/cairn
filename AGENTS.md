@@ -65,8 +65,11 @@ so the protocol holds on its own. A guard's refusal is a safety mechanism, never
 - `.githooks/pre-commit` runs `scripts/check.sh --fast --paths <the commit's staged paths>`,
   `scripts/bead-test-plan.sh` for each bead the commit closes, then the compliance audit. The gates
   see the index, not the working tree, so a file the commit does not stage cannot refuse it; the
-  tree-wide run belongs to CI, which calls `scripts/check.sh --ci-lane python`, `--ci-lane m0`,
-  `--ci-lane gateplan`, `--ci-lane lean`, `--ci-lane solution`, `--ci-lane solution-library`,
+  tree-wide run belongs to CI, which calls `scripts/check.sh --ci-lane python`, `--ci-lane m0-lineage`,
+  `--ci-lane m0-replay`, `--ci-lane m0-transcript`, `--ci-lane m0-boundaries`,
+  `--ci-lane gateplan`, `--ci-lane lean-core`, `--ci-lane lean-replay`, `--ci-lane solution`,
+  `--ci-lane solution-library-dlp`, `--ci-lane solution-library-finite-point`,
+  `--ci-lane solution-library-binding`,
   `--ci-lane solution-plan-exact`, `--ci-lane solution-plan-refusals`,
   `--ci-lane container`, `--ci-lane container-replay-exact`,
   `--ci-lane container-replay-refusals`, `--ci-lane container-plan-exact`,
@@ -134,13 +137,18 @@ We use **uv** for everything. Never `pip`, `poetry`, `conda` or an ad-hoc `pytho
 
 `scripts/check.sh` is the one place that says what green means; the pre-commit hook and CI both call it.
 `--paths <path> ...` scopes every gate to that list and is the form the hook uses; with no `--paths`
-each gate has the scope it always had. CI runs `--ci-lane python`, `--ci-lane m0`,
-`--ci-lane gateplan`, `--ci-lane lean`, `--ci-lane solution`, `--ci-lane solution-library`,
+each gate has the scope it always had. CI runs `--ci-lane python`, `--ci-lane m0-lineage`,
+`--ci-lane m0-replay`, `--ci-lane m0-transcript`, `--ci-lane m0-boundaries`,
+`--ci-lane gateplan`, `--ci-lane lean-core`, `--ci-lane lean-replay`, `--ci-lane solution`,
+`--ci-lane solution-library-dlp`, `--ci-lane solution-library-finite-point`,
+`--ci-lane solution-library-binding`,
 `--ci-lane solution-plan-exact`, `--ci-lane solution-plan-refusals`,
 `--ci-lane container`, `--ci-lane container-replay-exact`,
 `--ci-lane container-replay-refusals`, `--ci-lane container-plan-exact`,
 and `--ci-lane container-plan-refusals`; their test sets are disjoint and exhaustive.
-With no lane argument, the local check runs all thirteen sets and requires Docker for the container tests.
+With no lane argument, the local check runs all nineteen sets and requires Docker for the container tests.
+The local aggregate `--ci-lane m0` runs the four M0 lanes; `--ci-lane lean` combines the core
+and fresh-replay cases; and `--ci-lane solution-library` runs all three library cases.
 The local aggregate `--ci-lane solution-plan` runs all three ordered-plan cases in sequence.
 The local aggregate `--ci-lane container-replay` runs both container replay lanes.
 The local aggregate `--ci-lane container-plan` runs both container ordered-plan lanes.

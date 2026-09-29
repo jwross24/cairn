@@ -12,7 +12,18 @@ from _ci_lanes import (
     CI_LANES,
     CONTAINER_PLAN_CASES,
     GATEPLAN_TEST_PATHS,
+    LEAN_LANES,
+    LEAN_REPLAY_TEST,
+    LEAN_TEST_PATHS,
+    M0_ABORT_CASES,
+    M0_ABORT_TEST,
+    M0_LANES,
+    M0_TEST_CASES,
     M0_TEST_PATHS,
+    SOLUTION_LIBRARY_BINDING_TEST,
+    SOLUTION_LIBRARY_CASE_TEST,
+    SOLUTION_LIBRARY_ITEMS,
+    SOLUTION_LIBRARY_LANES,
     SOLUTION_LIBRARY_TEST_PATHS,
     SOLUTION_PLAN_LANES,
 )
@@ -62,7 +73,19 @@ def dispatch(tmp_path: Path):
     return run
 
 
-@pytest.mark.parametrize("lane", [*CI_LANES, "solution-plan", "container-replay", "container-plan", "all"])
+@pytest.mark.parametrize(
+    "lane",
+    [
+        *CI_LANES,
+        "m0",
+        "lean",
+        "solution-library",
+        "solution-plan",
+        "container-replay",
+        "container-plan",
+        "all",
+    ],
+)
 def test_lane_dispatch_preserves_pytest_arguments(dispatch, lane):
     args = [] if lane == "all" else ["--ci-lane", lane]
     result, calls = dispatch(*args)
@@ -72,7 +95,10 @@ def test_lane_dispatch_preserves_pytest_arguments(dispatch, lane):
     ]
 
 
-@pytest.mark.parametrize("lane", [*CI_LANES, "solution-plan", "container-replay", "container-plan"])
+@pytest.mark.parametrize(
+    "lane",
+    [*CI_LANES, "m0", "lean", "solution-library", "solution-plan", "container-replay", "container-plan"],
+)
 def test_a_failed_lane_refuses_the_gate(dispatch, lane):
     result, calls = dispatch("--ci-lane", lane, pytest_exit=1)
     assert result.returncode == 1
@@ -108,7 +134,12 @@ def test_a_failed_lane_refuses_the_gate(dispatch, lane):
         ),
         *(
             ["--ci-lane", lane, *flags]
-            for lane in ("m0", "gateplan", "solution-library")
+            for lane in (*M0_LANES, "gateplan", *LEAN_LANES, *SOLUTION_LIBRARY_LANES)
+            for flags in (["--fast"], ["--unit"], ["--paths", "src/cairn/lean.py"])
+        ),
+        *(
+            ["--ci-lane", lane, *flags]
+            for lane in ("m0", "lean", "solution-library")
             for flags in (["--unit"], ["--paths", "src/cairn/lean.py"])
         ),
     ],
@@ -123,11 +154,12 @@ def test_invalid_lane_selection_runs_no_gates(dispatch, args):
 @pytest.mark.parametrize(
     ("lane", "test_file"),
     [
-        ("m0", M0_TEST_PATHS[0]),
+        *((lane, M0_TEST_PATHS[0]) for lane in ("m0", *M0_LANES)),
         ("gateplan", GATEPLAN_TEST_PATHS[0]),
-        ("lean", "tests/integration/test_lean_toolchain.py"),
+        *((lane, "tests/integration/test_lean_toolchain.py") for lane in ("lean", "lean-core")),
+        ("lean-replay", "tests/integration/test_solution_build_compile.py"),
         ("solution", "tests/integration/test_solution_build_compile.py"),
-        ("solution-library", SOLUTION_LIBRARY_TEST_PATHS[0]),
+        *((lane, SOLUTION_LIBRARY_TEST_PATHS[0]) for lane in ("solution-library", *SOLUTION_LIBRARY_LANES)),
         ("solution-plan", "tests/integration/test_solution_build_compile.py"),
         *((lane, "tests/integration/test_solution_build_compile.py") for lane in SOLUTION_PLAN_LANES),
         *(
@@ -155,6 +187,44 @@ def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert f"{test_file}::" in result.stdout
+    if lane.startswith("solution-library"):
+        selected = [line for line in result.stdout.splitlines() if line.startswith("tests/") and "::" in line]
+        case_node = f"{SOLUTION_LIBRARY_TEST_PATHS[0]}::{SOLUTION_LIBRARY_CASE_TEST}"
+        binding_node = f"{SOLUTION_LIBRARY_TEST_PATHS[0]}::{SOLUTION_LIBRARY_BINDING_TEST}"
+        expected = {
+            "solution-library": {f"{case_node}[{item}]" for item in SOLUTION_LIBRARY_ITEMS} | {binding_node},
+            "solution-library-dlp": {f"{case_node}[dlp]"},
+            "solution-library-finite-point": {f"{case_node}[finite_point]"},
+            "solution-library-binding": {binding_node},
+        }[lane]
+        assert set(selected) == expected
+    if lane.startswith("m0-") or lane == "m0":
+        selected = [line for line in result.stdout.splitlines() if line.startswith("tests/") and "::" in line]
+        path = M0_TEST_PATHS[0]
+        m0_nodes = {f"{path}::{name}" for names in M0_TEST_CASES.values() for name in names if name != M0_ABORT_TEST}
+        m0_nodes.update(f"{path}::{M0_ABORT_TEST}[{case}]" for case in M0_ABORT_CASES)
+        expected = {
+            "m0": m0_nodes,
+            **{
+                group: (
+                    {f"{path}::{M0_ABORT_TEST}[{case}]" for case in M0_ABORT_CASES}
+                    if group == "m0-boundaries"
+                    else set()
+                )
+                | {f"{path}::{name}" for name in names if name != M0_ABORT_TEST}
+                for group, names in M0_TEST_CASES.items()
+            },
+        }[lane]
+        assert set(selected) == expected
+    if lane in ("lean", *LEAN_LANES):
+        selected = [line for line in result.stdout.splitlines() if line.startswith("tests/") and "::" in line]
+        replay_node = f"tests/integration/test_solution_build_compile.py::{LEAN_REPLAY_TEST}"
+        if lane == "lean-replay":
+            assert selected == [replay_node]
+        elif lane == "lean":
+            assert replay_node in selected
+        else:
+            assert replay_node not in selected
     if lane.startswith("container-plan"):
         selected = [line for line in result.stdout.splitlines() if line.startswith("tests/") and "::" in line]
         cases = {
@@ -180,8 +250,13 @@ def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
     ("lane", "paths", "count"),
     [
         ("m0", M0_TEST_PATHS, 17),
+        *((lane, M0_TEST_PATHS, len(M0_TEST_CASES[lane]) + (2 if lane == "m0-boundaries" else 0)) for lane in M0_LANES),
+        ("lean", LEAN_TEST_PATHS, 122),
+        ("lean-core", LEAN_TEST_PATHS, 121),
+        ("lean-replay", ("tests/integration/test_solution_build_compile.py",), 1),
         ("gateplan", GATEPLAN_TEST_PATHS, 28),
         ("solution-library", SOLUTION_LIBRARY_TEST_PATHS, 3),
+        *((lane, SOLUTION_LIBRARY_TEST_PATHS, 1) for lane in SOLUTION_LIBRARY_LANES),
     ],
 )
 def test_new_lane_population_and_ownership_are_exact(lane, paths, count):
@@ -198,7 +273,10 @@ def test_new_lane_population_and_ownership_are_exact(lane, paths, count):
     assert result.returncode == 0, result.stdout + result.stderr
     selected = [line for line in result.stdout.splitlines() if line.startswith("tests/") and "::" in line]
     assert len(selected) == count
-    assert {node.split("::", 1)[0] for node in selected} == set(paths)
+    expected_paths = set(paths)
+    if lane in ("lean", "lean-core"):
+        expected_paths.add("tests/integration/test_solution_build_compile.py")
+    assert {node.split("::", 1)[0] for node in selected} == expected_paths
 
 
 def test_lean_container_authority_nodes_have_one_linux_owner():

@@ -45,15 +45,21 @@ Shared fixture and collection changes require their contract tests and all affec
 Record the tested revision, scope, and exclusions. An interrupted run is incomplete; skipped
 tests are not passed. These development checks do not replace Cairn's mathematical gates.
 
-CI partitions the test population into thirteen disjoint lanes:
+CI partitions the test population into nineteen disjoint lanes:
 
 - `python`: tests outside the M0, GatePlan, Lean, Solution, solution-library, and container manifests.
-- `m0`: the 17 cases in `tests/e2e/test_m0_slice.py`.
+- `m0-lineage`: the four operator sequence, derivation lineage, and human rendering cases.
+- `m0-replay`: the two same-seed and different-seed replay cases.
+- `m0-transcript`: the three cache-bypass, step-log, and golden transcript cases.
+- `m0-boundaries`: the eight abort, refusal, attestation, entry-point, and path-boundary cases.
 - `gateplan`: the 28 cases in `tests/integration/test_gateplan.py`, `test_gateplan_cli.py`, and
   `test_ladder_gate_selftest.py`.
-- `lean`: toolchain tests plus real-prelude closure-comparison and fresh-replay forgery cases.
+- `lean-core`: Lean toolchain tests plus the weaker-statement closure-comparison case.
+- `lean-replay`: the fresh-replay forgery case.
 - `solution`: remaining candidate preparation and build tests.
-- `solution-library`: the 3 library challenge-gate cases.
+- `solution-library-dlp`: the DLP library challenge-gate case.
+- `solution-library-finite-point`: the finite-point library challenge-gate case.
+- `solution-library-binding`: the stale formal statement binding refusal case.
 - `solution-plan-exact`: the successful ordered-plan case.
 - `solution-plan-refusals`: the `sorry` and replay-timeout ordered-plan cases with shared setup.
 - `container`: Linux hashing, preparation, compilation, axiom, dependency-cache, and lifecycle tests.
@@ -64,14 +70,14 @@ CI partitions the test population into thirteen disjoint lanes:
 - `container-plan-refusals`: the gold-arm ordered-plan `sorry`, weaker-statement and stale-hash
   cases.
 
-The `python`, `m0`, and `gateplan` lanes do not provision Lean, mathlib, comparator, or exporter
-prerequisites. The `m0` and `gateplan` suites use PARI/GP. The `solution-library` lane keeps the Lean
-and comparator prerequisites required by its challenge-gate tests.
+The `python`, four M0, and `gateplan` lanes do not provision Lean, mathlib, comparator, or exporter
+prerequisites. The M0 and `gateplan` suites use PARI/GP. Both Lean leaves and all three solution-library
+leaves keep the Lean and comparator prerequisites required by their tests.
 
 Each CI lane has a 1,080-second session deadline and a 20-minute job ceiling. The local
-`--ci-lane solution-plan`, `--ci-lane container-replay` and `--ci-lane container-plan` forms
-aggregate their respective cases. Lane membership is defined in `tests/_ci_lanes.py` and tested
-as a disjoint union.
+`--ci-lane m0`, `--ci-lane lean`, `--ci-lane solution-library`, `--ci-lane solution-plan`,
+`--ci-lane container-replay` and `--ci-lane container-plan` forms aggregate their respective cases.
+Lane membership is defined in `tests/_ci_lanes.py` and tested as a disjoint union.
 The real-prelude ordered-plan test has a 900-second watchdog including setup and teardown;
 the replay subprocess retains its 600-second bound.
 

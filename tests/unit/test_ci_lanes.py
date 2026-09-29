@@ -11,10 +11,20 @@ from _ci_lanes import (
     CONTAINER_REPLAY_TESTS,
     CONTAINER_TEST_PATHS,
     GATEPLAN_TEST_PATHS,
+    LEAN_LANES,
     LEAN_PREREQUISITE_TEST_PATHS,
+    LEAN_REPLAY_TEST,
     LEAN_SOLUTION_TESTS,
     LEAN_TEST_PATHS,
+    M0_ABORT_CASES,
+    M0_ABORT_TEST,
+    M0_LANES,
+    M0_TEST_CASES,
     M0_TEST_PATHS,
+    SOLUTION_LIBRARY_BINDING_TEST,
+    SOLUTION_LIBRARY_CASE_TEST,
+    SOLUTION_LIBRARY_ITEMS,
+    SOLUTION_LIBRARY_LANES,
     SOLUTION_LIBRARY_TEST_PATHS,
     SOLUTION_PLAN_TESTS,
     SOLUTION_TEST_PATHS,
@@ -30,8 +40,30 @@ SOLUTION_CASES = (
 PLAN_CASE = "test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks"
 PLAN_VARIANTS = ("exact", "sorry", "timeout")
 LIBRARY_GATE_PATH = SOLUTION_LIBRARY_TEST_PATHS[0]
-LIBRARY_GATE_CASE = "test_library_items_pass_gate"
-LIBRARY_GATE_ITEMS = ("dlp", "finite_point")
+LIBRARY_GATE_CASE = SOLUTION_LIBRARY_CASE_TEST
+LIBRARY_GATE_BINDING_CASE = SOLUTION_LIBRARY_BINDING_TEST
+LIBRARY_GATE_ITEMS = SOLUTION_LIBRARY_ITEMS
+LIBRARY_GATE_IDS = ("display-dlp", "display-finite-point")
+M0_GATE_PATH = M0_TEST_PATHS[0]
+
+
+def _m0_source(failing_test=None):
+    lines = ["import pytest"]
+    for names in M0_TEST_CASES.values():
+        for name in names:
+            if name == M0_ABORT_TEST:
+                expected = "pin_mismatch" if failing_test == name else "never"
+                lines.extend(
+                    (
+                        f"@pytest.mark.parametrize('name', {M0_ABORT_CASES!r})",
+                        f"def {name}(name):",
+                        f"    assert name != {expected!r}",
+                    )
+                )
+            else:
+                assertion = "assert False" if name == failing_test else "assert True"
+                lines.extend((f"def {name}():", f"    {assertion}"))
+    return "\n".join(lines) + "\n"
 
 
 def _suite(pytester):
@@ -45,13 +77,17 @@ def _suite(pytester):
         path = pytester.path / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("def test_pass():\n    assert True\n")
-    for relative in (*M0_TEST_PATHS, *GATEPLAN_TEST_PATHS):
+    m0_path = pytester.path / M0_GATE_PATH
+    m0_path.parent.mkdir(parents=True, exist_ok=True)
+    m0_path.write_text(_m0_source())
+    for relative in GATEPLAN_TEST_PATHS:
         path = pytester.path / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("def test_pass():\n    assert True\n")
     (pytester.path / LIBRARY_GATE_PATH).write_text(
-        f'import pytest\n@pytest.mark.parametrize("item", {LIBRARY_GATE_ITEMS!r})\n'
+        f'import pytest\n@pytest.mark.parametrize("item", {LIBRARY_GATE_ITEMS!r}, ids={LIBRARY_GATE_IDS!r})\n'
         f"def {LIBRARY_GATE_CASE}(item):\n    assert True\n"
+        f"def {LIBRARY_GATE_BINDING_CASE}():\n    assert True\n"
     )
     path = pytester.path / SOLUTION_TEST_PATHS[0]
     with path.open("a") as stream:
@@ -75,16 +111,25 @@ def _suite(pytester):
 @pytest.mark.parametrize(
     ("lane", "passed", "deselected"),
     [
-        ("all", 27, 0),
-        ("python", 1, 26),
-        ("m0", 1, 26),
-        ("gateplan", 3, 24),
-        ("lean", 5, 22),
-        ("solution", 3, 24),
-        ("solution-library", 2, 25),
-        ("solution-plan", 3, 24),
-        ("solution-plan-exact", 1, 26),
-        ("solution-plan-refusals", 2, 25),
+        ("all", 44, 0),
+        ("python", 1, 43),
+        ("m0", 17, 27),
+        ("m0-lineage", 4, 40),
+        ("m0-replay", 2, 42),
+        ("m0-transcript", 3, 41),
+        ("m0-boundaries", 8, 36),
+        ("gateplan", 3, 41),
+        ("lean", 5, 39),
+        ("lean-core", 3, 41),
+        ("lean-replay", 2, 42),
+        ("solution", 3, 41),
+        ("solution-library", 3, 41),
+        ("solution-library-dlp", 1, 43),
+        ("solution-library-finite-point", 1, 43),
+        ("solution-library-binding", 1, 43),
+        ("solution-plan", 3, 41),
+        ("solution-plan-exact", 1, 43),
+        ("solution-plan-refusals", 2, 42),
         ("container", 1, 8),
         ("container-replay", 4, 5),
         ("container-replay-exact", 2, 7),
@@ -103,24 +148,50 @@ def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
 def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytester):
     _suite(pytester)
     default = pytester.runpytest("-q", "--import-mode=importlib")
-    default.assert_outcomes(passed=27)
+    default.assert_outcomes(passed=44)
     populations = {}
-    for lane in ("all", "solution-plan", "container-replay", "container-plan", *CI_LANES):
+    for lane in (
+        "all",
+        "m0",
+        "lean",
+        "solution-library",
+        "solution-plan",
+        "container-replay",
+        "container-plan",
+        *CI_LANES,
+    ):
         result = pytester.runpytest("-q", "--collect-only", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
         assert result.ret == pytest.ExitCode.OK
         populations[lane] = {line for line in result.outlines if line.startswith("tests/") and "::" in line}
-    assert populations["lean"] == {"tests/integration/test_lean_toolchain.py::test_pass"} | {
-        f"{SOLUTION_TEST_PATHS[0]}::{name}[{case}]" for name in LEAN_SOLUTION_TESTS for case in (0, 1)
+    assert populations["lean-core"] == {"tests/integration/test_lean_toolchain.py::test_pass"} | {
+        f"{SOLUTION_TEST_PATHS[0]}::{name}[{case}]"
+        for name in LEAN_SOLUTION_TESTS
+        if name != LEAN_REPLAY_TEST
+        for case in (0, 1)
     }
+    assert populations["lean-replay"] == {f"{SOLUTION_TEST_PATHS[0]}::{LEAN_REPLAY_TEST}[{case}]" for case in (0, 1)}
+    assert populations["lean"] == set().union(*(populations[lane] for lane in LEAN_LANES))
     assert populations["python"] == {"tests/unit/test_unlisted.py::test_pass"}
-    assert populations["m0"] == {f"{M0_TEST_PATHS[0]}::test_pass"}
+    assert populations["m0"] == set().union(*(populations[lane] for lane in M0_LANES))
+    assert populations["m0-lineage"] == {f"{M0_GATE_PATH}::{name}" for name in M0_TEST_CASES["m0-lineage"]}
+    assert populations["m0-replay"] == {f"{M0_GATE_PATH}::{name}" for name in M0_TEST_CASES["m0-replay"]}
+    assert populations["m0-transcript"] == {f"{M0_GATE_PATH}::{name}" for name in M0_TEST_CASES["m0-transcript"]}
+    assert populations["m0-boundaries"] == {f"{M0_GATE_PATH}::{M0_ABORT_TEST}[{case}]" for case in M0_ABORT_CASES} | {
+        f"{M0_GATE_PATH}::{name}" for name in M0_TEST_CASES["m0-boundaries"] if name != M0_ABORT_TEST
+    }
     assert populations["gateplan"] == {f"{path}::test_pass" for path in GATEPLAN_TEST_PATHS}
     assert populations["solution"] == {"tests/integration/test_solution_build_compile.py::test_pass"} | {
         f"{SOLUTION_TEST_PATHS[0]}::{SOLUTION_CASES[0]}[{case}]" for case in (0, 1)
     }
     assert populations["solution-library"] == {
-        f"{LIBRARY_GATE_PATH}::{LIBRARY_GATE_CASE}[{item}]" for item in LIBRARY_GATE_ITEMS
+        f"{LIBRARY_GATE_PATH}::{LIBRARY_GATE_CASE}[{test_id}]" for test_id in LIBRARY_GATE_IDS
+    } | {f"{LIBRARY_GATE_PATH}::{LIBRARY_GATE_BINDING_CASE}"}
+    assert populations["solution-library-dlp"] == {f"{LIBRARY_GATE_PATH}::{LIBRARY_GATE_CASE}[{LIBRARY_GATE_IDS[0]}]"}
+    assert populations["solution-library-finite-point"] == {
+        f"{LIBRARY_GATE_PATH}::{LIBRARY_GATE_CASE}[{LIBRARY_GATE_IDS[1]}]"
     }
+    assert populations["solution-library-binding"] == {f"{LIBRARY_GATE_PATH}::{LIBRARY_GATE_BINDING_CASE}"}
+    assert populations["solution-library"] == set().union(*(populations[lane] for lane in SOLUTION_LIBRARY_LANES))
     assert populations["container"] == {"tests/integration/test_container_statement_hash.py::test_pass"}
     assert populations["container-replay"] == {
         f"{CONTAINER_TEST_PATHS[0]}::{CONTAINER_REPLAY_TESTS[0]}[rfl]",
@@ -181,15 +252,28 @@ def test_new_lane_manifests_name_only_the_measured_test_modules():
     assert SOLUTION_LIBRARY_TEST_PATHS == ("tests/integration/test_challenge_gate.py",)
 
 
+def test_m0_case_groups_are_disjoint_and_name_existing_tests():
+    names = [name for tests in M0_TEST_CASES.values() for name in tests]
+    definitions = {
+        node.name
+        for node in ast.walk(ast.parse((ROOT / M0_GATE_PATH).read_text()))
+        if isinstance(node, ast.FunctionDef)
+    }
+    assert len(names) == len(set(names))
+    assert set(names) <= definitions
+    assert len(M0_TEST_CASES["m0-lineage"]) == 4
+    assert len(M0_TEST_CASES["m0-replay"]) == 2
+    assert len(M0_TEST_CASES["m0-transcript"]) == 3
+    assert len(M0_TEST_CASES["m0-boundaries"]) + len(M0_ABORT_CASES) - 1 == 8
+
+
 @pytest.mark.parametrize(
     ("lane", "passed", "deselected"),
     [
-        ("python", 0, 26),
-        ("m0", 0, 26),
-        ("gateplan", 2, 24),
-        ("lean", 4, 22),
-        ("solution", 0, 17),
-        ("solution-library", 0, 25),
+        ("python", 0, 43),
+        ("gateplan", 2, 41),
+        ("lean", 4, 39),
+        ("solution", 0, 34),
         ("container", 0, 0),
     ],
 )
@@ -198,13 +282,29 @@ def test_a_selected_failure_keeps_the_lane_red(pytester, lane, passed, deselecte
     relative = {
         "lean": "tests/integration/test_lean_toolchain.py",
         "solution": "tests/integration/test_solution_build_compile.py",
-        "solution-library": LIBRARY_GATE_PATH,
         "python": "tests/unit/test_unlisted.py",
-        "m0": M0_TEST_PATHS[0],
         "gateplan": GATEPLAN_TEST_PATHS[0],
         "container": "tests/integration/test_container_statement_hash.py",
     }[lane]
     (pytester.path / relative).write_text("def test_planted_failure():\n    assert False\n")
+    result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
+    result.assert_outcomes(failed=1, passed=passed, deselected=deselected)
+    assert result.ret == pytest.ExitCode.TESTS_FAILED
+
+
+@pytest.mark.parametrize(
+    ("lane", "failing_test", "passed", "deselected"),
+    [
+        ("m0", M0_TEST_CASES["m0-lineage"][0], 16, 27),
+        ("m0-lineage", M0_TEST_CASES["m0-lineage"][0], 3, 40),
+        ("m0-replay", M0_TEST_CASES["m0-replay"][0], 1, 42),
+        ("m0-transcript", M0_TEST_CASES["m0-transcript"][0], 2, 41),
+        ("m0-boundaries", M0_ABORT_TEST, 7, 36),
+    ],
+)
+def test_selected_m0_failures_keep_their_leaf_and_aggregate_red(pytester, lane, failing_test, passed, deselected):
+    _suite(pytester)
+    (pytester.path / M0_GATE_PATH).write_text(_m0_source(failing_test))
     result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
     result.assert_outcomes(failed=1, passed=passed, deselected=deselected)
     assert result.ret == pytest.ExitCode.TESTS_FAILED
@@ -257,7 +357,11 @@ def test_container_lane_refuses_an_import_error_in_its_own_module(pytester, lane
 
 @pytest.mark.parametrize(
     ("name", "lane", "passed", "deselected"),
-    [(SOLUTION_CASES[0], "solution", 0, 17), *((name, "lean", 1, 16) for name in SOLUTION_CASES[1:])],
+    [
+        (SOLUTION_CASES[0], "solution", 0, 34),
+        (SOLUTION_CASES[1], "lean-core", 1, 33),
+        (SOLUTION_CASES[2], "lean-replay", 0, 34),
+    ],
 )
 def test_a_reassigned_solution_failure_keeps_its_lane_red(pytester, name, lane, passed, deselected):
     _suite(pytester)
@@ -277,21 +381,45 @@ def test_the_library_gate_test_is_declared_in_the_solution_library_lane_and_defi
         if isinstance(node, ast.FunctionDef)
     }
     assert LIBRARY_GATE_CASE in definitions
+    assert LIBRARY_GATE_BINDING_CASE in definitions
     assert LIBRARY_GATE_CASE not in LEAN_SOLUTION_TESTS
     assert LIBRARY_GATE_CASE not in SOLUTION_PLAN_TESTS
 
 
-def test_a_library_gate_failure_keeps_the_solution_library_lane_red(pytester):
+@pytest.mark.parametrize("lane", ["solution-library", *SOLUTION_LIBRARY_LANES])
+def test_a_library_gate_failure_keeps_its_lane_red(pytester, lane):
     _suite(pytester)
+    failed_item = "finite_point" if lane == "solution-library-finite-point" else "dlp"
+    fail_binding = lane == "solution-library-binding"
     (pytester.path / LIBRARY_GATE_PATH).write_text(
-        f'import pytest\n@pytest.mark.parametrize("item", {LIBRARY_GATE_ITEMS!r})\n'
-        f"def {LIBRARY_GATE_CASE}(item):\n    assert item != {LIBRARY_GATE_ITEMS[1]!r}\n"
+        f'import pytest\n@pytest.mark.parametrize("item", {LIBRARY_GATE_ITEMS!r}, ids={LIBRARY_GATE_IDS!r})\n'
+        f"def {LIBRARY_GATE_CASE}(item):\n    assert item != {failed_item!r}\n"
+        f"def {LIBRARY_GATE_BINDING_CASE}():\n    assert {not fail_binding}\n"
     )
-    result = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=solution-library")
-    result.assert_outcomes(failed=1, passed=1, deselected=25)
+    selected = {
+        "solution-library": (1, 2, 41),
+        "solution-library-dlp": (1, 0, 43),
+        "solution-library-finite-point": (1, 0, 43),
+        "solution-library-binding": (1, 0, 43),
+    }[lane]
+    result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
+    result.assert_outcomes(failed=selected[0], passed=selected[1], deselected=selected[2])
     assert result.ret == pytest.ExitCode.TESTS_FAILED
     other = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=solution")
-    other.assert_outcomes(passed=3, deselected=24)
+    other.assert_outcomes(passed=3, deselected=41)
+
+
+@pytest.mark.parametrize("lane", ["all", "solution-library", *SOLUTION_LIBRARY_LANES])
+def test_unknown_library_item_refuses_collection_even_when_its_display_id_is_valid(pytester, lane):
+    _suite(pytester)
+    (pytester.path / LIBRARY_GATE_PATH).write_text(
+        f'import pytest\n@pytest.mark.parametrize("item", ["unknown"], ids=["dlp"])\n'
+        f"def {LIBRARY_GATE_CASE}(item):\n    assert True\n"
+        f"def {LIBRARY_GATE_BINDING_CASE}():\n    assert True\n"
+    )
+    result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
+    assert result.ret == pytest.ExitCode.USAGE_ERROR
+    assert "invalid solution-library item" in result.stderr.str()
 
 
 def test_reassigned_solution_cases_exist_in_the_declared_file():
@@ -393,7 +521,7 @@ def test_each_ordered_plan_failure_keeps_its_lane_red(pytester, failed_case):
         f"def {PLAN_CASE}(case):\n    assert case != {failed_case!r}\n"
     )
     result = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=solution-plan")
-    result.assert_outcomes(failed=1, passed=2, deselected=17)
+    result.assert_outcomes(failed=1, passed=2, deselected=34)
     assert result.ret == pytest.ExitCode.TESTS_FAILED
 
 
@@ -406,7 +534,7 @@ def test_plan_shards_route_by_parameter_value_and_propagate_failure(pytester, ca
     )
     lane = "solution-plan-exact" if case == "exact" else "solution-plan-refusals"
     result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
-    result.assert_outcomes(failed=1, passed=0 if case == "exact" else 1, deselected=19 if case == "exact" else 18)
+    result.assert_outcomes(failed=1, passed=0 if case == "exact" else 1, deselected=36 if case == "exact" else 35)
     assert result.ret == pytest.ExitCode.TESTS_FAILED
 
 

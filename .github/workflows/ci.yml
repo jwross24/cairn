@@ -180,7 +180,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lane: [python, m0, gateplan, lean, solution, solution-library, solution-plan-exact, solution-plan-refusals]
+        lane: [python, m0-lineage, m0-replay, m0-transcript, m0-boundaries, gateplan, lean-core, lean-replay, solution, solution-library-dlp, solution-library-finite-point, solution-library-binding, solution-plan-exact, solution-plan-refusals]
     # macOS, because that is the platform M0 supports. The write boundary is set
     # with os.chflags and stat.UF_APPEND, which exist on macOS and BSD and not on
     # Linux; cairn-hcl owns the Linux arm. An ubuntu run fails before it starts.
@@ -230,7 +230,7 @@ jobs:
 
       - name: Restore the Lean toolchain
         id: elan-cache
-        if: matrix.lane != 'python' && matrix.lane != 'm0' && matrix.lane != 'gateplan'
+        if: matrix.lane != 'python' && matrix.lane != 'm0-lineage' && matrix.lane != 'm0-replay' && matrix.lane != 'm0-transcript' && matrix.lane != 'm0-boundaries' && matrix.lane != 'gateplan'
         # The pinned toolchain unpacks to 2.7 GB from a 561 MB release archive, so a miss
         # is a download plus an unpack. The key names everything the Lean tests resolve:
         # the elan release and the toolchain file the gate's lake project declares.
@@ -240,7 +240,7 @@ jobs:
           key: elan-${{ env.ELAN_VERSION }}-${{ hashFiles('lean/lean-toolchain') }}-${{ runner.os }}-${{ runner.arch }}
 
       - name: Install the Lean toolchain
-        if: matrix.lane != 'python' && matrix.lane != 'm0' && matrix.lane != 'gateplan' && steps.elan-cache.outputs.cache-hit != 'true'
+        if: matrix.lane != 'python' && matrix.lane != 'm0-lineage' && matrix.lane != 'm0-replay' && matrix.lane != 'm0-transcript' && matrix.lane != 'm0-boundaries' && matrix.lane != 'gateplan' && steps.elan-cache.outputs.cache-hit != 'true'
         # No default toolchain and no PATH edit: every invocation names the toolchain with
         # `+<name>` and reaches the proxies through `$ELAN_HOME/bin`, which is the arm
         # `src/cairn/lean.py` takes, so the runner and the machines that write this repo
@@ -259,14 +259,14 @@ jobs:
           "$HOME/.elan/bin/elan" toolchain install "$(cat lean/lean-toolchain)"
 
       - name: The Lean toolchain the gate resolves
-        if: matrix.lane != 'python' && matrix.lane != 'm0' && matrix.lane != 'gateplan'
+        if: matrix.lane != 'python' && matrix.lane != 'm0-lineage' && matrix.lane != 'm0-replay' && matrix.lane != 'm0-transcript' && matrix.lane != 'm0-boundaries' && matrix.lane != 'gateplan'
         run: |
           set -euo pipefail
           "$HOME/.elan/bin/elan" --version | tee /dev/stderr | grep -F "elan $ELAN_VERSION " > /dev/null
           "$HOME/.elan/bin/lean" "+$(cat lean/lean-toolchain)" --version
 
       - name: Restore the pinned mathlib cache
-        if: matrix.lane != 'python' && matrix.lane != 'm0' && matrix.lane != 'gateplan'
+        if: matrix.lane != 'python' && matrix.lane != 'm0-lineage' && matrix.lane != 'm0-replay' && matrix.lane != 'm0-transcript' && matrix.lane != 'm0-boundaries' && matrix.lane != 'gateplan'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: |
@@ -275,7 +275,7 @@ jobs:
           key: mathlib-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean/lean-toolchain', 'lean/lake-manifest.json', 'lean/lakefile.toml') }}
 
       - name: Provision the pinned mathlib prerequisite
-        if: matrix.lane != 'python' && matrix.lane != 'm0' && matrix.lane != 'gateplan'
+        if: matrix.lane != 'python' && matrix.lane != 'm0-lineage' && matrix.lane != 'm0-replay' && matrix.lane != 'm0-transcript' && matrix.lane != 'm0-boundaries' && matrix.lane != 'gateplan'
         working-directory: lean
         run: |
           set -euo pipefail
@@ -343,13 +343,13 @@ jobs:
         run: uv sync --locked --all-groups
 
       - name: Read comparator pins
-        if: matrix.lane != 'python' && matrix.lane != 'm0' && matrix.lane != 'gateplan'
+        if: matrix.lane != 'python' && matrix.lane != 'm0-lineage' && matrix.lane != 'm0-replay' && matrix.lane != 'm0-transcript' && matrix.lane != 'm0-boundaries' && matrix.lane != 'gateplan'
         id: comparator-pins
         run: |
           uv run python -c 'import json; from pathlib import Path; p=json.loads(Path("bundle/container.json").read_text())["comparator"]; print("repository=" + p["repo"].removeprefix("https://github.com/")); print("revision=" + p["rev"]); print("exporter=" + p["lean4export_rev"])' >> "$GITHUB_OUTPUT"
 
       - name: Provision comparator source
-        if: matrix.lane != 'python' && matrix.lane != 'm0' && matrix.lane != 'gateplan'
+        if: matrix.lane != 'python' && matrix.lane != 'm0-lineage' && matrix.lane != 'm0-replay' && matrix.lane != 'm0-transcript' && matrix.lane != 'm0-boundaries' && matrix.lane != 'gateplan'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: ${{ steps.comparator-pins.outputs.repository }}
@@ -359,7 +359,7 @@ jobs:
           clean: false
 
       - name: Provision exporter source
-        if: matrix.lane != 'python' && matrix.lane != 'm0' && matrix.lane != 'gateplan'
+        if: matrix.lane != 'python' && matrix.lane != 'm0-lineage' && matrix.lane != 'm0-replay' && matrix.lane != 'm0-transcript' && matrix.lane != 'm0-boundaries' && matrix.lane != 'gateplan'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: leanprover/lean4export
@@ -369,7 +369,7 @@ jobs:
           clean: false
 
       - name: Restore the pinned comparator build
-        if: matrix.lane != 'python' && matrix.lane != 'm0' && matrix.lane != 'gateplan'
+        if: matrix.lane != 'python' && matrix.lane != 'm0-lineage' && matrix.lane != 'm0-replay' && matrix.lane != 'm0-transcript' && matrix.lane != 'm0-boundaries' && matrix.lane != 'gateplan'
         id: comparator-build-cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
@@ -379,7 +379,7 @@ jobs:
           key: comparator-build-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.comparator-pins.outputs.revision }}-${{ steps.comparator-pins.outputs.exporter }}-${{ hashFiles('lean/lean-toolchain', '.doctor/comparator/lean-toolchain') }}
 
       - name: Build pinned comparator and exporter
-        if: matrix.lane != 'python' && matrix.lane != 'm0' && matrix.lane != 'gateplan'
+        if: matrix.lane != 'python' && matrix.lane != 'm0-lineage' && matrix.lane != 'm0-replay' && matrix.lane != 'm0-transcript' && matrix.lane != 'm0-boundaries' && matrix.lane != 'gateplan'
         working-directory: .doctor/comparator
         run: |
           set -euo pipefail

@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 
 import pytest
+from _ci_lanes import LEAN_LANES, M0_LANES, SOLUTION_LIBRARY_LANES
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
@@ -41,7 +42,14 @@ CONTAINER_LANES = (
     "container-plan-exact, container-plan-refusals]"
 )
 MODULE = "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
-LEAN_SETUP_CONDITION = "matrix.lane != 'python' && matrix.lane != 'm0' && matrix.lane != 'gateplan'"
+LEAN_SETUP_CONDITION = (
+    "matrix.lane != 'python'"
+    " && matrix.lane != 'm0-lineage'"
+    " && matrix.lane != 'm0-replay'"
+    " && matrix.lane != 'm0-transcript'"
+    " && matrix.lane != 'm0-boundaries'"
+    " && matrix.lane != 'gateplan'"
+)
 LEAN_SETUP_STEPS = (
     LEAN_CACHE,
     LEAN_INSTALL,
@@ -55,7 +63,9 @@ LEAN_SETUP_STEPS = (
     COMPARATOR_BUILD,
 )
 MACOS_LANES = (
-    "lane: [python, m0, gateplan, lean, solution, solution-library, solution-plan-exact, solution-plan-refusals]"
+    "lane: [python, m0-lineage, m0-replay, m0-transcript, m0-boundaries, gateplan, lean-core, lean-replay, "
+    "solution, solution-library-dlp, solution-library-finite-point, solution-library-binding, "
+    "solution-plan-exact, solution-plan-refusals]"
 )
 
 
@@ -122,21 +132,42 @@ def test_python_m0_and_gateplan_lanes_skip_lean_and_comparator_provisioning():
 
 
 @pytest.mark.parametrize("step", LEAN_SETUP_STEPS)
-@pytest.mark.parametrize("lane", ["python", "m0", "gateplan", "solution-library"])
+@pytest.mark.parametrize("lane", ["python", *M0_LANES, "gateplan"])
 def test_non_lean_lane_setup_contract_refuses_accidental_provisioning(step, lane):
     text = WORKFLOW.read_text()
     body = _step(text, step)
     conditional = next(line for line in body.splitlines() if "if:" in line)
     if lane == "python":
         replacement = conditional.replace("matrix.lane != 'python' && ", "", 1)
-    elif lane == "solution-library":
-        replacement = conditional.replace(
-            LEAN_SETUP_CONDITION,
-            f"{LEAN_SETUP_CONDITION} && matrix.lane != 'solution-library'",
-            1,
-        )
     else:
         replacement = conditional.replace(f" && matrix.lane != '{lane}'", "", 1)
+    assert replacement != conditional
+    with pytest.raises(AssertionError):
+        _assert_non_lean_lanes_skip_prerequisites(text.replace(conditional, replacement, 1))
+
+
+def test_lean_and_library_leaves_keep_all_lean_and_comparator_prerequisites():
+    assert set(LEAN_LANES) == {"lean-core", "lean-replay"}
+    assert set(SOLUTION_LIBRARY_LANES) == {
+        "solution-library-dlp",
+        "solution-library-finite-point",
+        "solution-library-binding",
+    }
+    assert all(f"matrix.lane != '{lane}'" in LEAN_SETUP_CONDITION for lane in ("python", *M0_LANES, "gateplan"))
+    assert all(lane not in LEAN_SETUP_CONDITION for lane in (*LEAN_LANES, *SOLUTION_LIBRARY_LANES))
+    _assert_non_lean_lanes_skip_prerequisites(WORKFLOW.read_text())
+
+
+@pytest.mark.parametrize("step", LEAN_SETUP_STEPS)
+@pytest.mark.parametrize("lane", [*LEAN_LANES, *SOLUTION_LIBRARY_LANES])
+def test_lean_dependent_leaf_setup_contract_refuses_accidental_skip(step, lane):
+    text = WORKFLOW.read_text()
+    conditional = next(line for line in _step(text, step).splitlines() if "if:" in line)
+    replacement = conditional.replace(
+        LEAN_SETUP_CONDITION,
+        f"{LEAN_SETUP_CONDITION} && matrix.lane != '{lane}'",
+        1,
+    )
     assert replacement != conditional
     with pytest.raises(AssertionError):
         _assert_non_lean_lanes_skip_prerequisites(text.replace(conditional, replacement, 1))
