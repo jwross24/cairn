@@ -705,6 +705,86 @@
       "archive_path": "python-split-ubs.log.gz",
       "archive_bytes": 13966,
       "archive_sha256": "3901c26de0666a549044282e92b8d3cc6d62bba4c384e97ed272ca2bf5492f20"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/python-remainder-local.log",
+      "source_bytes": 1255829,
+      "source_sha256": "9abcb568e7943a26ee123d70940d12817c8265eb8577727ce17fd6eb94cedc3c",
+      "archive_path": "python-remainder-local.log.gz",
+      "archive_bytes": 30247,
+      "archive_sha256": "853d3397a47e95dd125daacc22e5b59dfc58e373ef9d148253d4b946345f9f38"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/maker-parent-final.log",
+      "source_bytes": 1250041,
+      "source_sha256": "ca29c4c257d4f03ca3c735174b3c964d2aa55a904e3e91b08e8b370a2c154854",
+      "archive_path": "maker-parent-final.log.gz",
+      "archive_bytes": 29570,
+      "archive_sha256": "9b878495e73022e28e9a1d7564d1a8f3c9b4f9f92f21c419ce7a4dffdd286dce"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/python-split-verified-source.json",
+      "source_bytes": 818,
+      "source_sha256": "9798372358ab402ca42dd488e139716ee6f9b10cd54fedd9ce68cd32c2505508",
+      "archive_path": "python-split-verified-source.json.gz",
+      "archive_bytes": 509,
+      "archive_sha256": "9ba683a1a79dc2cea68c2c3b6af66134d3307853f05427f1c38fb42c2fdf5ffd"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/ratification-parent-modules.log",
+      "source_bytes": 1250042,
+      "source_sha256": "613e03b680c556b517c30e3d842e3c8d0fa836277ceb14eca58de1d4e65025c1",
+      "archive_path": "ratification-parent-modules.log.gz",
+      "archive_bytes": 29525,
+      "archive_sha256": "9c3580518b71107c357c679cb84432044fc4141c4545d86f124444e753022e47"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/ratification-committed-modules.log",
+      "source_bytes": 1354125,
+      "source_sha256": "152e9bf5c9731ba81520d98a8d5f74d0868cc5147bb78ec10927fc3217a8fe46",
+      "archive_path": "ratification-committed-modules.log.gz",
+      "archive_bytes": 29899,
+      "archive_sha256": "7f97b2b14a452a04d712c7b969a18d5d5aa094a241b544ebe42b91db3049fd55"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/ratification-parent-negative.log",
+      "source_bytes": 1361021,
+      "source_sha256": "b4c9ee2f7dc8c7152cedf3153dca0b8cbc3a8934f838ba3fc303edbc028e3db0",
+      "archive_path": "ratification-parent-negative.log.gz",
+      "archive_bytes": 30844,
+      "archive_sha256": "8b2cd3ba5af9c01a6feae5898bea567cf4d58bf4e8802055e49835b673c840db"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/ratification-source-binding.json",
+      "source_bytes": 860,
+      "source_sha256": "118dc36975085c608bb4481cd812d8c5ffdccf5eeb67253a7573a81f835a89d2",
+      "archive_path": "ratification-source-binding.json.gz",
+      "archive_bytes": 434,
+      "archive_sha256": "77527b50f7dff99cd59c73a59ab1d8455f0bffed588303fd22498585a5fe7e33"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/ratification-ubs-review.md",
+      "source_bytes": 1502,
+      "source_sha256": "457f6dd3ed6ea77b6018517be77f699bde2743902183f3ac4e985d21b268e109",
+      "archive_path": "ratification-ubs-review.md.gz",
+      "archive_bytes": 829,
+      "archive_sha256": "68064e0732eba958023bb0a923eb5f11448ca92797693e7d3f6ab16a794193d2"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/ratification-ubs.log",
+      "source_bytes": 109429,
+      "source_sha256": "7250c9d71f77eda227151e3ce25f4caaf0075440d75ac7218b72e1b892f3518a",
+      "archive_path": "ratification-ubs.log.gz",
+      "archive_bytes": 9306,
+      "archive_sha256": "9dd1aeb06b29024efcd16e4d2bd6939190117229fece85f5571ad15cec9bdb75"
+    },
+    {
+      "source_path": "/tmp/cairn-afternoon-lane3.ADFVbJ/ratification-fast.log",
+      "source_bytes": 377,
+      "source_sha256": "054af22f459bf3f221294014708985eb12066471f64f9932c9670781cbf19380",
+      "archive_path": "ratification-fast.log.gz",
+      "archive_bytes": 188,
+      "archive_sha256": "068cd007ebfdbf05143109f567ffbc053bf68e5bc60e57bb8eab4c26dbcd9e03"
     }
   ]
 }
