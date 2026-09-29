@@ -1,0 +1,86 @@
+[
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/authority-fixed-positive.log",
+    "artifact": "authority-fixed-positive.log.gz",
+    "bytes": 656,
+    "sha256": "537cf10ad93bb5bde6306ee5ee6b14b71062900c1173dbf3b37aca3564a691be"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/final-contracts.log",
+    "artifact": "final-contracts.log.gz",
+    "bytes": 98,
+    "sha256": "6d7618f781443660afa1e4fbd8b92d25a08bdc5806eea6d6358d540c2b229fe1"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/parent-routing.log",
+    "artifact": "parent-routing.log.gz",
+    "bytes": 341,
+    "sha256": "878382e3c92c08133788471d541389b0245b2b123a654e7a341b07ba486e8c16"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/missing-daemon-after.log",
+    "artifact": "missing-daemon-after.log.gz",
+    "bytes": 4659,
+    "sha256": "0abee79337c1c9b96aa2e87e01b5a17d9c129369dd4b6ea3f3c55e92b7886072"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/wrong-lane-refusal.log",
+    "artifact": "wrong-lane-refusal.log.gz",
+    "bytes": 3124,
+    "sha256": "d4de56c78d9a796c3867d235e419880bae37b417e94703e606ec384a271cf099"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/skip-mutation-refusal.log",
+    "artifact": "skip-mutation-refusal.log.gz",
+    "bytes": 2171,
+    "sha256": "2bb3788ba1b880c8b6818727acdd8e577f7e531c9e43124624f99226fc1ea7d6"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/container-ci-failed.log",
+    "artifact": "container-ci-failed.log.gz",
+    "bytes": 133210,
+    "sha256": "ac97426c5e86df3bec6259683bb58fb0a8130ba5b5b270634e3cf80723daa748"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/fast-final.log",
+    "artifact": "fast-final.log.gz",
+    "bytes": 377,
+    "sha256": "6e77858eeb655711a30316a9b67dcaaa524d835c9895ffe12852bc7781388c43"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/ubs.log",
+    "artifact": "ubs.log.gz",
+    "bytes": 123102,
+    "sha256": "9f8650f799f25d339fff4a65374f53e58217f71e30203ce28a77d5303cc3b4cf"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/pytest-tmp/pytest-of-jwross/cairn-test-logs/pytest-6-3f4taeq4/test_the_gold_image_builds_and0-2ywh5b5r/test.log.jsonl",
+    "artifact": "gold-positive.jsonl.gz",
+    "bytes": 16896,
+    "sha256": "a8bc6eda78edd68683e4fac10eb5937bfc8bb86f1eadcf9d619423456bb20d88"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/pytest-tmp/pytest-of-jwross/cairn-test-logs/pytest-6-3f4taeq4/test_the_chattr_probe_inside_t0-uzyqsxbz/test.log.jsonl",
+    "artifact": "chattr-positive.jsonl.gz",
+    "bytes": 8217,
+    "sha256": "7161fc2de3667df569b1fdea164c4ddd087d0e1f68c4368ca2713b53ecd163e8"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/fixture-parent-isolated.log",
+    "artifact": "fixture-parent-isolated.log.gz",
+    "bytes": 99,
+    "sha256": "99cf41367be7523b299f3c8459dea1044fdbd8389980e1af519070f40f709742"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/fixture-parent-mutant-isolated.log",
+    "artifact": "fixture-parent-mutant-isolated.log.gz",
+    "bytes": 4298,
+    "sha256": "a96105a21fe2ba95427534bad1d557845a8d723afe7771fb00ba1e59ab3a8ecc"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/fixture-fast.log",
+    "artifact": "fixture-fast.log.gz",
+    "bytes": 377,
+    "sha256": "054af22f459bf3f221294014708985eb12066471f64f9932c9670781cbf19380"
+  }
+]

@@ -262,7 +262,8 @@ def clear_flags():
     yield flagged.append
     for path in flagged:
         if os.path.lexists(path):
-            os.chflags(path, 0)
+            if hasattr(os, "chflags"):
+                os.chflags(path, 0)
             Path(path).chmod(0o644)
 
 
