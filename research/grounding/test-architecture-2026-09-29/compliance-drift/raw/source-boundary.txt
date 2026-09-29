@@ -1,0 +1,169 @@
+External installed producer: /Users/jwross/.claude/skills/beads-compliance-and-completion-verification/scripts/extract-spec.py
+    81	def _test_plan_types(text: str) -> tuple[dict[str, list[str]], set[str]]:
+    82	    named: dict[str, list[str]] = {}
+    83	    declined: set[str] = set()
+    84	    m = TEST_PLAN_RE.search(text)
+    85	    if not m:
+    86	        return named, declined
+    87	    for line in m.group(1).splitlines():
+    88	        lm = TEST_PLAN_LINE_RE.match(line)
+    89	        if not lm:
+    90	            continue
+    91	        label = lm.group(1).strip().lower()
+    92	        ttype = TEST_TYPE_ALIASES.get(label, label)
+    93	        if ttype not in TEST_TYPE_KEYWORDS and ttype != "telemetry":
+    94	            continue
+    95	        body = lm.group(2)
+    96	        if NONE_RE.match(body):
+    97	            declined.add(ttype)
+    98	            continue
+    99	        paths = _path_tokens(body.replace("`", " "))
+   100	        if paths:
+   101	            named.setdefault(ttype, []).extend(paths)
+   102	    return named, declined
+   184	def _extract_tests(text: str) -> dict[str, list[dict[str, Any]]]:
+   185	    out: dict[str, list[dict[str, Any]]] = {k: [] for k in TEST_TYPE_KEYWORDS}
+   186	    named, declined = _test_plan_types(text)
+   187	    for ttype, patterns in TEST_TYPE_KEYWORDS.items():
+   188	        if ttype in declined:
+   189	            continue
+   190	        if ttype in named:
+   191	            out[ttype].append({
+   192	                "id": f"tests.{ttype}.primary",
+   193	                "description": f"{ttype} test named in the bead's test plan",
+   194	                "weight": 2 if ttype in ("e2e", "conformance") else 1,
+   195	                "expected_path_hints": sorted(set(named[ttype])),
+   196	            })
+   197	            continue
+   198	        for pat in patterns:
+   199	            if re.search(pat, text, re.I):
+   200	                item: dict[str, Any] = {
+   201	                    "id": f"tests.{ttype}.primary",
+   202	                    "description": f"{ttype} test required by bead body",
+   203	                    "weight": 2 if ttype in ("e2e", "conformance") else 1,
+   204	                }
+   205	                if ttype == "fuzz":
+   206	                    dur = DURATION_RE.search(text)
+   207	                    if dur:
+   208	                        secs = int(dur.group(1))
+   209	                        if dur.group(2).lower().startswith("m"):
+   210	                            secs *= 60
+   211	                        item["duration_seconds"] = secs
+   212	                    item["ci_wired"] = bool(CI_RE.search(text))
+   213	                    item["no_crashes"] = True
+   214	                out[ttype].append(item)
+   215	                break
+   216	    return out
+   321	        "bead_closed_at": show.get("closed_at"),
+   322	        "bead_type": bead_type,
+   323	        "bead_priority": show.get("priority", 2),
+   324	        "checklist": {
+   325	            "code_artifacts": _extract_code_artifacts(text, project_is_rust=project_is_rust),
+   326	            "tests": _extract_tests(text),
+
+Cairn reader/classifier in isolated snapshot: scripts/audit_missing_items.py
+    88	# `expected_path_hints` reaches exactly one reader in gather-evidence.sh: line 105,
+    89	# inside the code_artifacts loop. The tests loop searches by ripgrep on the item id
+    90	# (line 149) and the doc-family loop by existence checks (lines 170 and 175), so a
+    91	# hint list carries no information about whether either of those searched.
+    92	HINT_DRIVEN_CATEGORIES = ("code_artifacts",)
+    93	
+    94	DIMENSION_OF_CATEGORY = {
+    95	    "code_artifacts": "Implementation completeness vs. spec",
+    96	    "documentation": "Docs / migrations / telemetry / flags",
+    97	    "migrations": "Docs / migrations / telemetry / flags",
+    98	    "feature_flags": "Docs / migrations / telemetry / flags",
+    99	    "telemetry": "Docs / migrations / telemetry / flags",
+   100	    "ci_workflows": "Docs / migrations / telemetry / flags",
+   101	}
+   102	TESTS_DIMENSION = "Required tests present and meaningfully passing"
+   103	
+   104	REASON_TESTS_GUARD = (
+   105	    "the tests loop searches only when the item id's last segment differs from "
+   106	    f"{TESTS_GUARD_EXCLUDED_NAME!r}; no ripgrep ran"
+   107	)
+   108	REASON_NO_CASE_ARM = "the gatherer's case statement carries no arm for category {category!r}; no search ran"
+   109	REASON_NO_HINTS = "the code_artifacts loop resolves only expected_path_hints, and spec.json carries none, so the hint loop drove zero iterations"
+   150	def spec_categories(spec: dict) -> dict[str, tuple[str, list]]:
+   151	    """Map each checklist item id to its category and its expected_path_hints."""
+   152	    out: dict[str, tuple[str, list]] = {}
+   153	    checklist = spec.get("checklist")
+   154	    if not isinstance(checklist, dict):
+   155	        return out
+   156	    for category, entries in checklist.items():
+   157	        if category == "tests" and isinstance(entries, dict):
+   158	            for test_type, items in entries.items():
+   159	                for item in items if isinstance(items, list) else []:
+   160	                    if isinstance(item, dict) and "id" in item:
+   161	                        out[item["id"]] = (f"tests.{test_type}", item.get("expected_path_hints") or [])
+   162	            continue
+   163	        for item in entries if isinstance(entries, list) else []:
+   164	            if isinstance(item, dict) and "id" in item:
+   165	                out[item["id"]] = (category, item.get("expected_path_hints") or [])
+   166	    return out
+   167	
+   168	
+   169	def excluded_dimensions(scorecard: str) -> set[str]:
+   170	    out: set[str] = set()
+   171	    for line in scorecard.splitlines():
+   172	        if not line.startswith("|") or EXCLUDED_PHRASE not in line:
+   173	            continue
+   174	        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+   175	        out.add(cells[0].strip("* "))
+   176	    return out
+   177	
+   178	
+   179	def unresolvable_reasons(spec_item_id: str, categories: dict[str, tuple[str, list]], excluded: set[str]) -> list[str]:
+   180	    category, hints = categories.get(spec_item_id, (None, None))
+   181	    if category is None:
+   182	        return []
+   183	    reasons: list[str] = []
+   184	    if category.startswith("tests.") and spec_item_id.rsplit(".", 1)[-1] == TESTS_GUARD_EXCLUDED_NAME:
+   185	        reasons.append(REASON_TESTS_GUARD)
+   186	    bare = category.split(".", 1)[0]
+   187	    if category in GATHERER_CATEGORIES and category not in GATHERER_SEARCHED_CATEGORIES:
+   188	        reasons.append(REASON_NO_CASE_ARM.format(category=category))
+   189	    if category in HINT_DRIVEN_CATEGORIES and not hints:
+   190	        reasons.append(REASON_NO_HINTS)
+   191	    dimension = TESTS_DIMENSION if bare == "tests" else DIMENSION_OF_CATEGORY.get(bare)
+   192	    if dimension and dimension in excluded:
+   193	        reasons.append(REASON_EXCLUDED.format(dimension=dimension, phrase=EXCLUDED_PHRASE))
+   194	    return reasons
+
+Frozen drift test in isolated snapshot: tests/integration/test_audit_missing_items_drift.py
+    21	pytestmark = pytest.mark.skipif(
+    22	    SKILL is None,
+    23	    reason="the vendored compliance skill lives outside the repo; the frozen excerpt carries its structure for CI",
+    24	)
+    25	
+    26	
+    27	def skill_file(leaf):
+    28	    assert SKILL is not None
+    29	    return (SKILL / leaf).read_text()
+    30	
+    31	
+    32	def test_the_live_gatherer_still_matches_the_frozen_excerpt():
+    33	    live = skill_file("scripts/gather-evidence.sh")
+    34	    start = live.index(META["excerpt_first_line"])
+    35	    end = live.index(META["excerpt_stops_before"])
+    36	    cut = live[start:end].rstrip() + "\n"
+    37	    assert hashlib.sha256(cut.encode()).hexdigest() == META["excerpt_sha256"], (
+    38	        f"{META['source']} has drifted from tests/fixtures/compliance_skill/gather-evidence-loops.sh; "
+    39	        "re-read the three loops, update the excerpt and the GATHERER_* constants together"
+    40	    )
+    41	
+    42	
+    43	def test_the_live_renderer_still_emits_the_frozen_heading_line():
+    44	    renderer = skill_file("scripts/score-bead.py")
+    45	    assert META["heading_render_line"] in renderer, (
+    46	        f"{META['heading_renderer']} no longer emits the frozen heading line; "
+    47	        "the corrector splits on it, so update HEADING and the fixture together"
+    48	    )
+
+Pass selection in current hook: .githooks/pre-commit
+   277	# lives in the forked score-bead.py, so an upstream update restores the
+   278	# disagreement; this reads the scorecard back and refuses it.
+   279	NEWEST_PASS="$(ls -1d beads_compliance_audit/passes/*/ 2>/dev/null | sort | tail -1)"
+   280	if [ -n "$NEWEST_PASS" ] && [ -d "${NEWEST_PASS}beads" ]; then
+   281	  if uv run python scripts/scorecard_coherence.py "${NEWEST_PASS}beads" > /tmp/cairn-scorecard-coherence.out 2>&1; then
+   282	    printf '%s SCORECARD-COHERENT %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$NEWEST_PASS" >> .beads_hook.log

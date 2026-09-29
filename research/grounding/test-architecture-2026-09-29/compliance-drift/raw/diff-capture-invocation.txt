@@ -1,0 +1,8 @@
+Working directory: /Users/jwross/Documents/cairn
+
+set +e
+diff -u research/grounding/test-architecture-2026-09-29/compliance-drift/raw/frozen-gather-evidence-excerpt.sh research/grounding/test-architecture-2026-09-29/compliance-drift/raw/installed-gather-evidence-excerpt.sh > research/grounding/test-architecture-2026-09-29/compliance-drift/raw/installed-vs-frozen.diff
+diff_status=$?
+set -e
+test "$diff_status" -eq 1 && test -s research/grounding/test-architecture-2026-09-29/compliance-drift/raw/installed-vs-frozen.diff
+printf 'diff_exit=%s (difference observed)\nassertion_exit=0 (diff nonempty)\n' "$diff_status" > research/grounding/test-architecture-2026-09-29/compliance-drift/raw/diff-capture-status.txt

@@ -1,0 +1,18 @@
+# External compliance skill drift
+
+This observation is limited to the installed compliance skill and its Cairn fixture. It does not establish a Cairn classifier defect.
+
+The installed `/Users/jwross/.claude/skills/beads-compliance-and-completion-verification/scripts/gather-evidence.sh` has an eight-line addition in its test-item loop. It reads `expected_path_hints`, checks each hinted path for file existence, and marks the test item `FOUND` with a one-line citation whose commit is `unknown`; this path does not observe test execution. The frozen excerpt in `tests/fixtures/compliance_skill/gather-evidence-loops.sh` has no hint lookup in that loop; it searches by the test ID and skips IDs ending in `primary`. The live excerpt SHA-256 is `1da867c4719e9da037633cb8ae192a686deb7bf51b360ef264866b223f10a90e`; the frozen excerpt SHA-256 is `064d85e9518a205f57da1da45c482815975e3a2676d74d6a3c9ee81e07beca59`. The captured diff returned the expected difference status and passed a nonempty-diff assertion; the [diff invocation](compliance-drift/raw/diff-capture-invocation.txt) and output are archived. Full source identities and the exact excerpt diff are in [raw evidence](compliance-drift/raw/manifest.json).
+
+The installed extractor's `_test_plan_types` feeds `_extract_tests`: named test-plan rows carry `expected_path_hints`, while ordinary keyword-derived rows do not. Cairn's `scripts/audit_missing_items.py` retains those hints but uses them to identify unresolvable items only for `code_artifacts`; every `tests.*.primary` item is classified as unmeasured based on its ID, independently of hints. The read-only pass scan at 2026-09-29 16:09:38 UTC loaded 212 `spec.json` files and found 426 primary test items, zero with hints. The lexicographically latest pass, `2026-09-29T16-01-44Z`, had one primary test item without hints. The exact [count query](compliance-drift/raw/population-count-query.txt), [output](compliance-drift/raw/production-spec-population-verified.txt), and [exit status](compliance-drift/raw/population-query-exit.txt) are archived. This population does not exercise the installed skill's added test-hint path. It does not prove that the path can never occur.
+
+The local integration check used an isolated source snapshot at `133f23a` plus the `db_snapshot` overlay. Its live-gatherer digest assertion failed on the mismatch above, while the renderer-heading assertion passed: one failed and one passed. This is a positive observation that the drift check detects the installed excerpt mismatch, plus a passing renderer assertion. It is not a CI pass; the external-skill check remains skipped where the skill is unavailable. The raw [test log](compliance-drift/raw/local-test.log) and [invocation](compliance-drift/raw/local-test-invocation.txt) are archived.
+
+```bash
+cd /tmp/cairn-day-lane3.uMzz8z/db-fixed
+PYTEST_DEBUG_TEMPROOT=/tmp/cairn-day-lane3.uMzz8z/db-test-tmp \
+PYTHONPATH=/tmp/cairn-day-lane3.uMzz8z/db-fixed/src:/tmp/cairn-day-lane3.uMzz8z/db-fixed/tests \
+uv run --no-project /Users/jwross/Documents/cairn/.venv/bin/python -m pytest -q tests/integration/test_audit_missing_items_drift.py -rs
+```
+
+The command exited 1 with `1 failed, 1 passed`; its raw output and invocation are archived under [compliance-drift/raw](compliance-drift/raw/manifest.json). No production classifier bug is demonstrated by this mechanism: the scanned primary test items have no hints, and no production audit output was observed misclassifying one. No classifier or frozen contract edit, external skill edit, test skip change, CI pass, or global audit-completion claim follows from this report.

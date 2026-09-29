@@ -1,0 +1,43 @@
+{
+  "captured_utc": "2026-09-29T16:02:59.057890+00:00",
+  "frozen_excerpt_sha256": "064d85e9518a205f57da1da45c482815975e3a2676d74d6a3c9ee81e07beca59",
+  "identities": [
+    {
+      "bytes": 7874,
+      "path": "/Users/jwross/.claude/skills/beads-compliance-and-completion-verification/scripts/gather-evidence.sh",
+      "sha256": "3fdd679e5aad522e6f866d2aa94f1a1d3fc5071ab3d9d27498af08fac8bce498"
+    },
+    {
+      "bytes": 61599,
+      "path": "/Users/jwross/.claude/skills/beads-compliance-and-completion-verification/scripts/score-bead.py",
+      "sha256": "6ed663f1cca9aa5b6bef20d3e62e57c90e57819e7501b57029a6f01f6b33013d"
+    },
+    {
+      "bytes": 19310,
+      "path": "/Users/jwross/.claude/skills/beads-compliance-and-completion-verification/scripts/extract-spec.py",
+      "sha256": "3c27daca2189306170b7e2af3c39d1535b881d458fe7c1f51e802d78e1a9a5ec"
+    },
+    {
+      "bytes": 3563,
+      "path": "/Users/jwross/Documents/cairn/tests/fixtures/compliance_skill/gather-evidence-loops.sh",
+      "sha256": "064d85e9518a205f57da1da45c482815975e3a2676d74d6a3c9ee81e07beca59"
+    },
+    {
+      "bytes": 750,
+      "path": "/Users/jwross/Documents/cairn/tests/fixtures/compliance_skill/gather-evidence-loops.json",
+      "sha256": "48fabd185e5ef3271bb79858fd32a6097b4441186f536cb859397b05f27f7b4b"
+    },
+    {
+      "bytes": 16963,
+      "path": "/tmp/cairn-day-lane3.uMzz8z/db-fixed/scripts/audit_missing_items.py",
+      "sha256": "ee669f3f517bc1485bdb91237b1d129f806f7212ff31e1e81e857f95cc6cef6e"
+    }
+  ],
+  "installed_gatherer_excerpt": {
+    "bytes": 3972,
+    "first_line": "# Walk code_artifacts",
+    "sha256": "1da867c4719e9da037633cb8ae192a686deb7bf51b360ef264866b223f10a90e",
+    "stops_before": "# Print summary to stderr"
+  },
+  "test_source_snapshot": "isolated git archive 133f23a plus db_snapshot overlay"
+}

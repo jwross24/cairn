@@ -1,0 +1,12 @@
+{
+  "source": "beads-compliance-and-completion-verification/scripts/gather-evidence.sh",
+  "source_sha256": "15906862d3f08d7fa7712b54a8e5a3161641a2a486f2e4fed7c8f0d70c491888",
+  "source_bytes": 7465,
+  "excerpt": "the three item loops -- code_artifacts, tests, and the doc family -- verbatim",
+  "excerpt_first_line": "# Walk code_artifacts",
+  "excerpt_stops_before": "# Print summary to stderr",
+  "excerpt_sha256": "064d85e9518a205f57da1da45c482815975e3a2676d74d6a3c9ee81e07beca59",
+  "heading_render_line": "md.append(\"## Missing items (verbatim)\\n\")",
+  "heading_renderer": "beads-compliance-and-completion-verification/scripts/score-bead.py",
+  "heading_renderer_sha256": "65dc072c15d162a4617102eceae15ef43b98f45fe8c13971b1444ddb5e879e80"
+}

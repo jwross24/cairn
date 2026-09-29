@@ -1,0 +1,50 @@
+Working directory: /Users/jwross/Documents/cairn
+Output file: research/grounding/test-architecture-2026-09-29/compliance-drift/raw/production-spec-population-verified.txt
+
+uv run --no-project python - <<'PY' > research/grounding/test-architecture-2026-09-29/compliance-drift/raw/production-spec-population-verified.txt
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+root = Path('/Users/jwross/Documents/cairn/beads_compliance_audit/passes')
+files = sorted(root.glob('*/beads/*/spec.json'))
+if not files:
+    raise SystemExit('no spec.json files matched */beads/*/spec.json')
+
+def primary_test_items(paths):
+    found = []
+    for path in paths:
+        spec = json.loads(path.read_text())
+        tests = spec.get('checklist', {}).get('tests', {})
+        if not isinstance(tests, dict):
+            continue
+        for items in tests.values():
+            if not isinstance(items, list):
+                continue
+            for item in items:
+                if isinstance(item, dict) and str(item.get('id', '')).rsplit('.', 1)[-1] == 'primary':
+                    found.append(bool(item.get('expected_path_hints')))
+    return found
+all_primary = primary_test_items(files)
+passes = sorted(path for path in root.glob('*') if path.is_dir())
+if not passes:
+    raise SystemExit('no pass directories found')
+latest = passes[-1]
+latest_files = sorted(latest.glob('beads/*/spec.json'))
+latest_primary = primary_test_items(latest_files)
+print('observed_at_utc=' + datetime.now(timezone.utc).isoformat())
+print('source_root=' + str(root))
+print('glob=*/beads/*/spec.json')
+print('latest_pass_selection=lexicographically greatest direct child directory')
+print(f'spec_count={len(files)}')
+print(f'primary_test_item_count={len(all_primary)}')
+print(f'primary_test_items_with_expected_path_hints={sum(all_primary)}')
+print(f'primary_test_items_without_expected_path_hints={sum(not value for value in all_primary)}')
+print('latest_pass=' + latest.name)
+print(f'latest_pass_spec_count={len(latest_files)}')
+print(f'latest_pass_primary_test_item_count={len(latest_primary)}')
+print(f'latest_pass_primary_test_items_with_expected_path_hints={sum(latest_primary)}')
+print(f'latest_pass_primary_test_items_without_expected_path_hints={sum(not value for value in latest_primary)}')
+PY
+query_rc=$?
+printf 'query_exit=%s\n' "$query_rc" > research/grounding/test-architecture-2026-09-29/compliance-drift/raw/population-query-exit.txt
+test "$query_rc" -eq 0 && cat research/grounding/test-architecture-2026-09-29/compliance-drift/raw/production-spec-population-verified.txt

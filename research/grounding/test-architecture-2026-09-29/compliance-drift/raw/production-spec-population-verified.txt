@@ -1,0 +1,13 @@
+observed_at_utc=2026-09-29T16:09:38.860962+00:00
+source_root=/Users/jwross/Documents/cairn/beads_compliance_audit/passes
+glob=*/beads/*/spec.json
+latest_pass_selection=lexicographically greatest direct child directory
+spec_count=212
+primary_test_item_count=426
+primary_test_items_with_expected_path_hints=0
+primary_test_items_without_expected_path_hints=426
+latest_pass=2026-09-29T16-01-44Z
+latest_pass_spec_count=1
+latest_pass_primary_test_item_count=1
+latest_pass_primary_test_items_with_expected_path_hints=0
+latest_pass_primary_test_items_without_expected_path_hints=1

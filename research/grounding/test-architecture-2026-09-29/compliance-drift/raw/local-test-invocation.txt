@@ -1,0 +1,6 @@
+cwd=/tmp/cairn-day-lane3.uMzz8z/db-fixed
+PYTEST_DEBUG_TEMPROOT=/tmp/cairn-day-lane3.uMzz8z/db-test-tmp
+PYTHONPATH=/tmp/cairn-day-lane3.uMzz8z/db-fixed/src:/tmp/cairn-day-lane3.uMzz8z/db-fixed/tests
+uv run --no-project /Users/jwross/Documents/cairn/.venv/bin/python -m pytest -q tests/integration/test_audit_missing_items_drift.py -rs
+stdout_stderr=/tmp/cairn-day-lane3.uMzz8z/external-skill-drift-local.log
+exit_code=1; 1 failed, 1 passed

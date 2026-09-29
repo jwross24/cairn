@@ -1,0 +1,25 @@
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+___________ test_the_live_gatherer_still_matches_the_frozen_excerpt ____________
+
+    def test_the_live_gatherer_still_matches_the_frozen_excerpt():
+        live = skill_file("scripts/gather-evidence.sh")
+        start = live.index(META["excerpt_first_line"])
+        end = live.index(META["excerpt_stops_before"])
+        cut = live[start:end].rstrip() + "\n"
+>       assert hashlib.sha256(cut.encode()).hexdigest() == META["excerpt_sha256"], (
+            f"{META['source']} has drifted from tests/fixtures/compliance_skill/gather-evidence-loops.sh; "
+            "re-read the three loops, update the excerpt and the GATHERER_* constants together"
+        )
+E       AssertionError: beads-compliance-and-completion-verification/scripts/gather-evidence.sh has drifted from tests/fixtures/compliance_skill/gather-evidence-loops.sh; re-read the three loops, update the excerpt and the GATHERER_* constants together
+E       assert '1da867c4719e...66b223f10a90e' == '064d85e9518a...ee81e07beca59'
+E         
+E         - 064d85e9518a205f57da1da45c482815975e3a2676d74d6a3c9ee81e07beca59
+E         + 1da867c4719e9da037633cb8ae192a686deb7bf51b360ef264866b223f10a90e
+
+tests/integration/test_audit_missing_items_drift.py:37: AssertionError
+------------------------------ Captured log setup ------------------------------
+DEBUG    cairn:_test_logging.py:78 phase
+---------------------------- Captured log teardown -----------------------------
+DEBUG    cairn:_test_logging.py:80 phase
+1 failed, 1 passed in 0.04s

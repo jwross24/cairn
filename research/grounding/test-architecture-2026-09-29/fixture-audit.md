@@ -6,6 +6,20 @@
 
 The separate [root fixture ownership report](root-fixture-ownership.md) pins the shared harness branch map, a reproduced path-owned SQLite handle leak, and focused positive/refusal runs. The [Docker authority report](docker-authority-routing.md) pins Linux execution and fixture teardown at `133f23a`. Those execution receipts have their own source identities; they do not convert this report's source-only inspection into runtime coverage.
 
+## Non-root shared fixture map
+
+This source inventory uses `2de797830071146bc4433983e8ff8e5d3f90bebe`. Its three non-root conftests are `tests/conformance/conftest.py`, `tests/hook_contract/conftest.py`, and `tests/planted/conftest.py`. The inventory itself runs no tests.
+
+| Shared fixture area | Ownership and cleanup | Named behavioral contracts and limits |
+|---|---|---|
+| Conformance | Module-scoped `harness` in `test_skill_contract.py` opens a real substrate writer through its context manager and creates a temporary pinned bundle. `sweep` restores the logger handler and level in `finally`, and updates the conftest's `RESULTS` map. `GateBundle` materializes rows and holds no open connection. | `test_clause`, `test_stubbing_a_must_check_moves_its_witness_verdict_set`, and `test_every_verdict_is_logged_once_per_subject_and_clause` exercise the harness. Its `CAIRN_DB` teardown unconditionally removes the variable; preservation of a preexisting value has no named assertion. That input premise is unverified, so this is not a reproduced order-dependence defect. |
+| Hook contracts | Function-scoped `scratch` owns pytest temporary repositories, a bare origin, copied hooks/scripts, fake `sysctl`, and isolated `HOME`. The local autouse guard intentionally shadows the root process restriction. Subprocesses are synchronous. UV cache and Python-install directories default to borrowed real-home locations. | FD-ceiling, gate-record, staged-scope, and hook-branch contracts consume `scratch`. Temporary repositories belong to pytest; borrowed UV directories are outside that cleanup ownership. CI-lane dispatch uses its own fixture rather than `scratch`. This map does not prove absence of residual subprocess descendants or global cache writes. |
+| Planted corpus | Session-scoped registry and observation map; a cache miss gives `_corpus.observe` a unique pytest temporary root. That function opens a real writer and closes it in `finally`, including when a planting raises. `fresh=True` requests another observation. | `test_every_planting_runs_cold_and_lands_as_its_family_declares` and the escrow/yank family exercise real recorded outcomes. The in-session observation map keys by `test_id`; inspected shared callers use the same registry entries and the explicit fresh caller has a unique ID. No differing-entry collision or order-dependent failure is established. |
+
+`Substrate.open` closes its connection on initialization failure and `Substrate.close` releases writer ownership at this pin. These source paths and named consumers support the ownership map, not a suite-wide leak-free verdict or permission to remove a fixture.
+
+## Mapped phase fixture resolution
+
 | Authority-map row(s) | Recorded phase | Fixture and state path |
 |---|---|---|
 | 1, 3, 5, 6, 7, 9 | Gold Linux replay/axiom calls and replay-lane setup | The module fixture chain is `linux_bundle → linux_image → linux_dependencies → linux_project → linux_prepared` ([definitions](../../../tests/integration/test_container_statement_hash.py#L676), [prepared fixture](../../../tests/integration/test_container_statement_hash.py#L79)). Setup rows 5–6 are separate CI jobs and therefore separate pytest processes; module scope does not share their fixture objects. Their elapsed setup is not a replay verdict. Call rows 1 and 3 include compilation, axiom checking, and replay; rows 7 and 9 include compilation and axiom checking ([axiom test](../../../tests/integration/test_container_statement_hash.py#L141), [fresh replay test](../../../tests/integration/test_container_statement_hash.py#L221)). |

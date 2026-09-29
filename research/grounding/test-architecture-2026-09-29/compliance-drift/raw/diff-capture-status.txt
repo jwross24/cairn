@@ -1,0 +1,2 @@
+diff_exit=1 (difference observed)
+assertion_exit=0 (diff nonempty)

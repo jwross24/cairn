@@ -1,0 +1,80 @@
+{
+  "files": [
+    {
+      "bytes": 1478,
+      "path": "boundary-source-identities.json",
+      "sha256": "dbced70579d571da2bcab6bdfefca69cfc4c74312141515b81383a55d35a42cb"
+    },
+    {
+      "bytes": 713,
+      "path": "diff-capture-invocation.txt",
+      "sha256": "680f7efad0644f4c79c990ba897eb85ab465bc50701b0b4d136e8cfd207e1d52"
+    },
+    {
+      "bytes": 67,
+      "path": "diff-capture-status.txt",
+      "sha256": "262dd3de30bd0f548ff6ed92f2417d3b4ad7b1b50599ae0f8daeb47e8c92523e"
+    },
+    {
+      "bytes": 3563,
+      "path": "frozen-gather-evidence-excerpt.sh",
+      "sha256": "064d85e9518a205f57da1da45c482815975e3a2676d74d6a3c9ee81e07beca59"
+    },
+    {
+      "bytes": 750,
+      "path": "frozen-gather-evidence-metadata.json",
+      "sha256": "48fabd185e5ef3271bb79858fd32a6097b4441186f536cb859397b05f27f7b4b"
+    },
+    {
+      "bytes": 3972,
+      "path": "installed-gather-evidence-excerpt.sh",
+      "sha256": "1da867c4719e9da037633cb8ae192a686deb7bf51b360ef264866b223f10a90e"
+    },
+    {
+      "bytes": 974,
+      "path": "installed-vs-frozen.diff",
+      "sha256": "4acf6ed86c07cba871e0db70e7050dd69a3e5c339bb8e9098286319511367048"
+    },
+    {
+      "bytes": 439,
+      "path": "local-test-invocation.txt",
+      "sha256": "2d46751ecf351a50acbdac676ac7daf5a624339d15dfc6a6888c178fabcf7fd4"
+    },
+    {
+      "bytes": 1663,
+      "path": "local-test.log",
+      "sha256": "f3613c25f4ab9b4708eb71e17d6a0f39b2413adeb42c3a068c780b81b03c8858"
+    },
+    {
+      "bytes": 2587,
+      "path": "population-count-query.txt",
+      "sha256": "b7c70d0b1e813edc63dec41938c4621e0d36a66b305c879e9f335d983e13a9fd"
+    },
+    {
+      "bytes": 13,
+      "path": "population-query-exit.txt",
+      "sha256": "b92c60ecc0935c75e05ee9584a7b84b26226d4e268a86abaf64d725a69e17cc5"
+    },
+    {
+      "bytes": 573,
+      "path": "production-spec-population-verified.txt",
+      "sha256": "b0d54cfe57437ea3a38d1f0905f0d965304aa2ac971c4bca8b2ea4b61b515660"
+    },
+    {
+      "bytes": 573,
+      "path": "production-spec-population.txt",
+      "sha256": "4ca072d55fe5225dc85f151ae5cf48b71e3701d14e0adfc5478af6f5f7dcf19e"
+    },
+    {
+      "bytes": 9178,
+      "path": "source-boundary.txt",
+      "sha256": "fe147bdfa4401bd95ac20e8c0b1a9b913acf806f3f4ca1a26255bd650316623d"
+    },
+    {
+      "bytes": 1833,
+      "path": "source-identities.json",
+      "sha256": "1226e834f3ad77c52a4dfae90dd6bae9d5b7acaca68172dfb0efbd89976ca15e"
+    }
+  ],
+  "generated_at_utc": "2026-09-29T16:17:01.478906+00:00"
+}
