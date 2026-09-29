@@ -1,6 +1,37 @@
 # cairn-98ab verification handoff
 
-Status: implementation committed and pushed as `d722b72575be49372a8acc3b26d44c332670b6f6`; CI passed. Beads remain in progress because skipped lanes are not established.
+Status: production wiring is committed and pushed; the current scoped integration checks pass, and both planted mutations refuse. The bead remains in progress until the acceptance-test and handoff commit is pushed and CI passes on that commit.
+
+## Current acceptance evidence, 2026-09-29
+
+Production source revision: `0f6192c2699b5058f080ea2a75e185eeb14391b3`. The integration test contains the working-tree acceptance assertion described below.
+
+- Positive production-path run: from the repository root, `TMPDIR=/tmp/cairn-98ab-final2.yVFOQh uv run pytest -q tests/integration/test_justify_live_producers.py` exits 0 with 22 passed in 29.82 seconds. The raw log is `/tmp/cairn-98ab-final2.yVFOQh/live-producer.log`.
+- Planted membership negative: the following command removes production membership and evidence-node wiring only in process memory, then runs the real `ladder.run` integration test. It does not edit source files.
+
+```bash
+tmp_root=$(mktemp -d /tmp/cairn-98ab-negative.XXXXXX)
+TMPDIR="$tmp_root" uv run python -c 'import pytest; from cairn import laddertable; original_write = laddertable.write; laddertable.write = lambda sub, table, plan, **kwargs: original_write(sub, table, plan, **{key: value for key, value in kwargs.items() if key not in {"trial_attempts", "evidence_nodes"}}); raise SystemExit(pytest.main(["-q", "--tb=short", "--disable-warnings", "tests/integration/test_justify_live_producers.py::test_a_bound_production_ladder_run_emits_evidence_for_every_claimant_attempt"]))'
+```
+
+The planted run exits 1 with one failed test in 4.74 seconds. Pytest reports `membership_for_table` returned `None` instead of the complete arm/size/trial-to-attempt tuple at `tests/integration/test_justify_live_producers.py:379`. An independent script run has the same refusal in `/tmp/cairn-lane2.RFMbji/98ab-negative.log`.
+
+The original positive assertion also passed when `_attempt_inputs` was replaced in memory with its declared-population fallback. This command ran before adding the wider-population assertion and exited 0 with one passed test in 3.91 seconds:
+
+```bash
+tmp_root=$(mktemp -d /tmp/cairn-98ab-fallback.XXXXXX)
+TMPDIR="$tmp_root" uv run python -c 'import pytest; from cairn import justify; justify._attempt_inputs = lambda sub, evidence: (justify._load(evidence.get("population")) or {}).get("param_ranges"); raise SystemExit(pytest.main(["-q", "--tb=short", "--disable-warnings", "tests/integration/test_justify_live_producers.py::test_a_bound_production_ladder_run_emits_evidence_for_every_claimant_attempt"]))'
+```
+
+The added check copies each real claimant evidence row, replaces its population with the full statement scope whose declared bits are `[7,77]`, and requires `_attempt_inputs` to return the measured `[28,30]` from that row's actual attempt membership. The full positive module run passes with this assertion.
+
+The fallback-only planted negative uses the same in-memory override and exits 1 with one failed test in 4.56 seconds at `tests/integration/test_justify_live_producers.py:386`, where the widened declared population cannot satisfy the measured-input assertion. The full log is `/tmp/cairn-98ab-fallback2.CVJd80/fallback-negative.log`.
+
+`scripts/check.sh --fast --paths tests/integration/test_justify_live_producers.py research/cairn-98ab-verification-handoff.md` exits 0 with format, lint, spelling, types, and theater gates passing; the fast form skips tests, covered by the separate module run. `ubs tests/integration/test_justify_live_producers.py` exits 1 with one critical and 22 warnings. Its critical is the deterministic `nonce-live` fixture in a `ResultTable`; review found no cryptographic API use. The warnings are duplicated JSON exception-handling findings and `GateBundle.open` calls misclassified as bare `open()` usage; review found no actionable defect. Raw UBS output: `/tmp/cairn-lane2.RFMbji/ubs-98ab.log`.
+
+All-arm lookup is intentional: claimant and baseline trial attempts resolve to the table's measured `[28,30]` range. That lookup does not grant baseline attempts claimant evidence standing. `test_bound_evidence_refuses_wrong_attempt_target_producer_and_table_binding` refuses both a baseline attempt and baseline producer for table evidence; maker, replay, foreign-run, unknown, and conflicting attempts remain excluded from claimant membership.
+
+GitHub Actions run [36527465424](https://github.com/jwross24/cairn/actions/runs/36527465424) passes on production revision `0f6192c2699b5058f080ea2a75e185eeb14391b3`: 4,094 Python tests passed, two skipped, one expected failure; 113 Lean tests passed, two skipped; six other checks passed. This run does not contain the current acceptance-test assertion. CI must pass on the commit containing this handoff and test change before the bead closes.
 
 ## Pushed verification, 2026-09-18
 
@@ -71,11 +102,13 @@ The virtual environment uses an editable installation plus a direct `site-packag
 
 Approved persistent Codex configuration grants workspace-write access to five tool-data directories and command networking. Fresh sandbox probes passed CASS, CM, uv and HTTPS; Codex doctor had zero failed checks. A new session is required to inherit saved permissions. Protected settings and unrelated directories still require approval.
 
-## Acceptance holds and next work
+## Historical acceptance holds, 2026-09-18
 
 1. Repair UBS from a trustworthy, internally consistent distribution; do not accept mismatched downloads by replacing checksums.
 2. Diagnose the real Lean build timeout and the existing `cairn-kjgf` patience failure without weakening gates. Temporary-directory cleanup warnings also remain observable.
 3. Run the unchanged full gate to completion. Do not close on scoped or filtered evidence.
 4. Stage only owned changes, excluding `cairn-xr2e`. Commit, attach exact artifact/source-SHA evidence, close only after acceptance, push and verify CI on the pushed SHA.
+
+These holds preserve the status recorded on 2026-09-18. They are not current findings about the UBS installation, Lean test, or `cairn-kjgf`; current acceptance is governed by the evidence and remaining verification above.
 
 Terra/high implemented the main change; Sol/high completed negative coverage and a separate Sol/high independently reviewed it. Astra owns acceptance and leaves it blocked.

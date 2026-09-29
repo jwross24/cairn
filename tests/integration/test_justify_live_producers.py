@@ -381,6 +381,12 @@ def test_a_bound_production_ladder_run_emits_evidence_for_every_claimant_attempt
     )
     assert {row["attempt_id"] for row in rows} == set(claimant_attempts.values())
     assert all(justify._attempt_inputs(writer, row) == {"bits": [28, 30]} for row in rows)
+    declared_population = claims.to_json(statement.scope)
+    assert json.loads(declared_population)["param_ranges"]["bits"] == [7, 77]
+    assert all(
+        justify._attempt_inputs(writer, {**row, "population": declared_population}) == {"bits": [28, 30]}
+        for row in rows
+    )
     assert all(
         laddertable.inputs_for_attempt(writer, attempt_id) == {"bits": [28, 30]}
         for attempt_id in claimant_attempts.values()
