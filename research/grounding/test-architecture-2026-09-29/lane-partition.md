@@ -1,6 +1,6 @@
 # Owner-directed test-lane partition evidence
 
-This record inventories the three dedicated lanes `m0`, `gateplan`, and `solution-library` within the 13-lane layout. Local ownership checks pass. Pushed CI is incomplete: M0 and Python are red, GatePlan passed, and `solution-library` timed out at its 1080-second session deadline; terminal states for the other jobs are not established here.
+This record inventories the three dedicated lanes `m0`, `gateplan`, and `solution-library` within the 13-lane layout. Local ownership checks pass. Pushed CI run `36604519180` is a terminal failure: nine jobs passed, M0 and Python failed, and solution-library and Lean were canceled. The partial observations below describe the evidence gathered while that run was active.
 
 ## Ownership and measured runs
 
@@ -58,5 +58,7 @@ Python job `109530013989` tested the same commit and selected 4,310 tests; its r
 The raw M0 job log, four per-test JSONLs, GatePlan job log, peer M0 XML/log, Python [job log](lane-partition/raw/ci-109530013989-python-job.log.gz), and `solution-library` [job log](lane-partition/raw/ci-109530013940-solution-library-job.log.gz), [DLP JSONL](lane-partition/raw/ci-109530013940-solution-library-dlp.jsonl.gz), and [interrupted `finite_point` JSONL](lane-partition/raw/ci-109530013940-solution-library-finite-point.jsonl.gz) are preserved under [`lane-partition/raw/`](lane-partition/raw/). The manifest records original source paths and hashes.
 
 ## Raw evidence
+
+The [terminal run metadata](lane-partition/raw/partition-ci-current.json.gz) records all 13 job outcomes at `6953d46`. Lean job `109530014204` started at 17:34:52 UTC and completed at 17:55:25 UTC. Its [annotations](lane-partition/raw/partition-lean-annotations.json.gz) explicitly report that the job exceeded the maximum execution time of 20m0s. The [Lean job log](lane-partition/raw/partition-lean-job.log.gz) records cancellation at 17:55:08 UTC, after gates started at 17:37:11 UTC, without a session-timeout marker. The weaker-statement case passed at 17:45:36 UTC and the fresh-replay forgery case passed at 17:54:31 UTC; the lane reached 44% and has no complete pytest result. These partial passes do not establish a passing lane or a `PROVEN` result. PearlWolf's stale-index test correction is committed at `2e31531`; this run does not verify that correction.
 
 Peer-run stdout, JUnit XML, final-tree metadata, and baseline collection output are preserved losslessly as gzip files under [`lane-partition/raw/`](lane-partition/raw/). [`lane-partition/raw/manifest.json`](lane-partition/raw/manifest.json) records each original and archive byte length and SHA-256 digest. The parent inspected these inputs; the parent did not run the measured heavy tests.

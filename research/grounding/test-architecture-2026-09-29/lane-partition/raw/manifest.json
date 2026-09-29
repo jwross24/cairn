@@ -249,6 +249,30 @@
       "archive_path": "ci-109530013989-python-job.log.gz",
       "archive_bytes": 112631,
       "archive_sha256": "9652d59630dba5ec0da3d6025d076a8d692f9dd6ca6e739da7c8c7c87ef8971a"
+    },
+    {
+      "source_path": "/tmp/cairn-day-lane3.uMzz8z/partition-ci-current.json",
+      "source_bytes": 60993,
+      "source_sha256": "2f6e8cc0041ed12d08234eb75271946ac349b8ef07fa5869b24b20775dcbb7de",
+      "archive_path": "partition-ci-current.json.gz",
+      "archive_bytes": 3506,
+      "archive_sha256": "98e25935ba2ee4d5e461e63c4725086aeac4965d71b15de2eb19561e1ef73523"
+    },
+    {
+      "source_path": "/tmp/cairn-day-lane3.uMzz8z/partition-lean-job.log",
+      "source_bytes": 86535,
+      "source_sha256": "90c30c2d193517479b18a5d829621e1655c57702e1bda922588e08088d05e4ed",
+      "archive_path": "partition-lean-job.log.gz",
+      "archive_bytes": 16330,
+      "archive_sha256": "a88dc7a8fc4b666eb5963df42f3db8135ca3418a0efc42bdcdbfe54de7d6fec8"
+    },
+    {
+      "source_path": "/tmp/cairn-day-lane3.uMzz8z/partition-lean-annotations.json",
+      "source_bytes": 954,
+      "source_sha256": "78b37ee50878532cd900d2c5661dea41ff063c787c9ec63be7f6d47eb7822ca5",
+      "archive_path": "partition-lean-annotations.json.gz",
+      "archive_bytes": 345,
+      "archive_sha256": "b24007449dc6e19bcb8a0aa1d19127808ed0bc731c6a1b64b20cc24f03881a2f"
     }
   ]
 }
