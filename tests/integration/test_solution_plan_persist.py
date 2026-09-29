@@ -94,7 +94,7 @@ def test_an_all_pass_plan_persists_six_step_rows_and_one_passing_summary(writer,
     assert scrutiny._formalization_passed(writer, statement.hash) is True
 
 
-def test_a_timed_out_step_persists_as_fail_with_its_reason_and_the_summary_fails(writer, statement):
+def test_a_timed_out_step_persists_as_timeout_never_fail_and_the_summary_fails(writer, statement):
     result = plan_result(
         build={"result": "timeout", "reasons": (solutionplan.TIMEOUT_REASON, "timeout_s:600.0")},
         axiom_computation={"result": "blocked", "reasons": ("blocked-by:build",)},
@@ -103,8 +103,9 @@ def test_a_timed_out_step_persists_as_fail_with_its_reason_and_the_summary_fails
     )
     summary_hash, _ = persist(writer, result, statement)
     by_step = {r["plan_step"]: r for r in rows(writer, solutionplan.STEP_GATE)}
-    assert by_step["build"]["result"] == "fail"
+    assert by_step["build"]["result"] == solutionplan.RESULT_TIMEOUT
     assert solutionplan.TIMEOUT_REASON in by_step["build"]["reasons"]
+    assert "fail" not in {row["result"] for row in by_step.values()}
     assert by_step["kernel_replay"]["result"] == "blocked"
     (summary,) = rows(writer, solutionplan.SUMMARY_GATE)
     assert summary["run_id"] == summary_hash

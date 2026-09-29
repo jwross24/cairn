@@ -36,7 +36,7 @@ def _submission(hash_hex=FSH, blob=SOLUTION):
 def test_container_replay_refuses_an_unpinned_or_nonfresh_command(gate, tmp_path, popen_spy, command):
     gate.lean["checker"]["replay_fresh"] = command
     popen_spy.clear()
-    with pytest.raises(container.ContainerError, match="candidate-replay-command-not-fresh"):
+    with pytest.raises(solutionchecks.CheckerCommandRefused, match="checker-command-not-pinned:replay_fresh"):
         solutionchecks.observe_container_replay(gate, None, work_dir=tmp_path / "unused")
     assert popen_spy == []
     assert not (tmp_path / "unused").exists()

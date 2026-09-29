@@ -17,6 +17,14 @@ COMPARATOR_ABSENT_PREFIX = "comparator-binary-absent:"
 CLOSURE_MISMATCH = "closure-mismatch"
 COMPARATOR_RELATIVE_BINARY = Path(".lake") / "build" / "bin" / "comparator"
 CONTAINER_COMPARATOR_BINARY = "/home/cairn/comparator/.lake/build/bin/comparator"
+BUILD = "build"
+# The bundle is content-addressed under the operator pin, so an edited lean.json is refused at open;
+# these forms keep a re-pinned bundle from swapping the kernel replay or the build for another command.
+PINNED_CHECKER_COMMANDS = {
+    BUILD: ("lake", "build", "{module}"),
+    REPLAY_FRESH: ("lake", "env", "leanchecker", "--fresh", "-v", "{module}"),
+}
+CHECKER_COMMAND_NOT_PINNED_PREFIX = "checker-command-not-pinned:"
 
 
 @dataclass(frozen=True)
@@ -62,18 +70,27 @@ def check_container_axioms(gate, compilation, *, work_dir, timeout_s=container.R
     return record
 
 
-def _build_command(gate):
-    tool, *arguments = gate.lean["checker"]["build"]
-    if tool not in lean.TOOLS:
-        raise container.ContainerError(f"candidate-build-tool-unknown:{tool}")
+class CheckerCommandRefused(ValueError):
+    def __init__(self, reason):
+        super().__init__(reason)
+        self.reason = reason
+
+
+def _pinned_command(gate, key):
+    command = gate.lean["checker"][key]
+    if not isinstance(command, list) or tuple(command) != PINNED_CHECKER_COMMANDS[key]:
+        lg.info("checker_command_refused", key=key, command=command)
+        raise CheckerCommandRefused(f"{CHECKER_COMMAND_NOT_PINNED_PREFIX}{key}")
+    tool, *arguments = command
     return tool, arguments
+
+
+def _build_command(gate):
+    return _pinned_command(gate, BUILD)
 
 
 def _replay_command(gate):
-    tool, *arguments = gate.lean["checker"][REPLAY_FRESH]
-    if tool not in lean.TOOLS or "--fresh" not in arguments:
-        raise container.ContainerError("candidate-replay-command-not-fresh")
-    return tool, arguments
+    return _pinned_command(gate, REPLAY_FRESH)
 
 
 def assert_checker_commands(gate):
@@ -304,6 +321,7 @@ def run_dev(
     plan = solutionplan.SolutionPlan.load(plan_rows, arm=container.DEV_ARM)
     if tuple(step.kind for step in plan.steps) != solutionplan.STEP_KINDS:
         raise solutionplan.PlanInvalid("dev-plan-requires-axioms-before-replay")
+    assert_checker_commands(gate)
     assembled = None
 
     def observe(step):

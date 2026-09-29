@@ -32,7 +32,7 @@ GATES = (
     "challenge_render",
     "solution_plan_step",
 )
-GATE_RESULTS = ("pass", "fail", "refused", "blocked", "admitted")
+GATE_RESULTS = ("pass", "fail", "refused", "blocked", "admitted", "timeout")
 TIERS = (0, 1, 2, 3)
 
 SCOPE = Struct(

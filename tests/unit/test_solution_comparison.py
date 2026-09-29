@@ -200,26 +200,51 @@ def _edited_gate(pinned_bundle, tmp_path, edit):
     return bundle.GateBundle.open(*pinned_bundle(src=source))
 
 
-@pytest.mark.parametrize(
-    ("edit", "reason"),
-    [
-        (
-            lambda checker: checker.update(replay_fresh=["lake", "env", "leanchecker", "-v", "{module}"]),
-            "candidate-replay-command-not-fresh",
-        ),
-        (lambda checker: checker.update(build=["bash", "-c", "{module}"]), "candidate-build-tool-unknown:bash"),
-    ],
-    ids=["replay-loses-fresh", "build-tool-replaced"],
-)
-def test_an_edited_checker_command_refuses_the_gold_plan_before_any_file_or_subprocess(
-    pinned_bundle, tmp_path, popen_spy, edit, reason
+def _run_dev(gate, tmp_path):
+    return solutionchecks.run_dev(
+        gate,
+        factories.claim_statement(seed=5, formal_source=FORMAL),
+        challenge.Submission(solution_module=SOLUTION, formal_statement_hash=FSH),
+        THEOREMS,
+        _gold_rows(),
+        root=tmp_path / "root",
+        prepared=None,
+        comparator=tmp_path / "comparator",
+    )
+
+
+EDITED_CHECKER_COMMANDS = {
+    "replay-loses-fresh": ("replay_fresh", ["lake", "env", "leanchecker", "-v", "{module}"]),
+    "replay-is-a-no-op-carrying-fresh": ("replay_fresh", ["lake", "env", "/usr/bin/true", "--fresh"]),
+    "replay-trusts-imports-with-fresh-appended": (
+        "replay_fresh",
+        ["lake", "env", "leanchecker", "-v", "{module}", "--fresh"],
+    ),
+    "build-tool-replaced": ("build", ["bash", "-c", "{module}"]),
+    "build-runs-another-target": ("build", ["lake", "build", "Challenge"]),
+}
+
+
+@pytest.mark.parametrize("dispatcher", ["gold", "dev"])
+@pytest.mark.parametrize("edit", sorted(EDITED_CHECKER_COMMANDS))
+def test_an_edited_checker_command_refuses_the_plan_before_any_file_or_subprocess(
+    pinned_bundle, tmp_path, popen_spy, edit, dispatcher
 ):
-    gate = _edited_gate(pinned_bundle, tmp_path, edit)
-    with pytest.raises(container.ContainerError, match=reason):
-        _run_container(gate, tmp_path)
+    key, command = EDITED_CHECKER_COMMANDS[edit]
+    gate = _edited_gate(pinned_bundle, tmp_path, lambda checker: checker.update({key: command}))
+    popen_spy.clear()
+    with pytest.raises(solutionchecks.CheckerCommandRefused) as refused:
+        _run_container(gate, tmp_path) if dispatcher == "gold" else _run_dev(gate, tmp_path)
+    assert refused.value.reason == f"{solutionchecks.CHECKER_COMMAND_NOT_PINNED_PREFIX}{key}"
     assert popen_spy == []
     assert not (tmp_path / "root").exists()
     assert not (tmp_path / "work").exists()
+
+
+def test_the_pinned_checker_commands_are_the_shipped_bundle_commands(gate):
+    for key, command in solutionchecks.PINNED_CHECKER_COMMANDS.items():
+        assert tuple(gate.lean["checker"][key]) == command
+    solutionchecks.assert_checker_commands(gate)
 
 
 def test_the_gold_plan_refuses_a_plan_that_orders_replay_before_axioms(gate, tmp_path, popen_spy):

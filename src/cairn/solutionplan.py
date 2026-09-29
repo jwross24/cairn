@@ -62,12 +62,6 @@ SUMMARY_GATE = "challenge_render"
 SUMMARY_STEP = "solution_plan"
 FIRST_FAILURE_PREFIX = "first-failure:"
 INCOMPLETE_PLAN_REASON = "incomplete-plan"
-PERSISTED_RESULT = {
-    RESULT_PASS: RESULT_PASS,
-    RESULT_FAIL: RESULT_FAIL,
-    RESULT_TIMEOUT: RESULT_FAIL,
-    RESULT_BLOCKED: RESULT_BLOCKED,
-}
 
 
 class PlanInvalid(ValueError):
@@ -159,7 +153,7 @@ def persist(
     if not result.steps:
         raise PlanInvalid("plan-result-empty")
     for step in result.steps:
-        if step.result not in PERSISTED_RESULT:
+        if step.result not in RESULTS:
             raise PlanInvalid(f"unknown-step-result:{step.step}.{step.result!r}")
     binding = {
         "bundle_hash": bundle_hash,
@@ -186,7 +180,7 @@ def persist(
             run = claims.GateRun(
                 gate=STEP_GATE,
                 plan_step=step.step,
-                result=PERSISTED_RESULT[step.result],
+                result=step.result,
                 reasons=tuple(step.reasons),
                 **binding,
             )

@@ -434,10 +434,7 @@ def test_linux_ordered_plan_runs_each_step_in_order(
         persisted = sub.conn.execute(
             "SELECT plan_step, result, arm FROM gate_runs WHERE gate = ? ORDER BY rowid", (solutionplan.STEP_GATE,)
         ).fetchall()
-        assert [tuple(row) for row in persisted] == [
-            (step.step, "fail" if step.result == solutionplan.RESULT_TIMEOUT else step.result, container.GOLD_ARM)
-            for step in steps
-        ]
+        assert [tuple(row) for row in persisted] == [(step.step, step.result, container.GOLD_ARM) for step in steps]
         assert scrutiny._formalization_passed(sub, statement.hash) is (case == "exact")
     finally:
         sub.close()
