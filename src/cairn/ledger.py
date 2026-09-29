@@ -365,7 +365,7 @@ def _measured_table_source(sub, table_hash):
     if not laddertable.membership_for_table(sub, table.hash):
         raise LedgerError("measured table has no trial membership")
     try:
-        measured = laddertable.measured_entry_fields(table, verdict)
+        measured = laddertable._measured_entry_fields(table, verdict)
     except laddertable.LadderTableError as exc:
         raise LedgerError(str(exc)) from None
     return table, verdict, measured

@@ -59,7 +59,7 @@ def test_measured_reject_projection_uses_persisted_rung_values(predicate, ops_ki
         refutation_kind=ledger.MEASURED,
         rung_bits=row.bits,
     )
-    fields = laddertable.measured_entry_fields(table, recorded)
+    fields = laddertable._measured_entry_fields(table, recorded)
     result = fields["result"]
     point = fields["measured_points"][0]
 
@@ -105,4 +105,4 @@ def test_unsettled_measured_predicates_have_no_projection(predicate, ops_kind, r
     )
 
     with pytest.raises(laddertable.LadderTableError):
-        laddertable.measured_entry_fields(_table(row), recorded)
+        laddertable._measured_entry_fields(_table(row), recorded)

@@ -624,7 +624,7 @@ def run(
     if (
         verdict.kind == laddertable.REJECT
         and verdict.refutation_kind == ledger.MEASURED
-        and verdict.predicate not in laddertable.MEASURED_SETTLEMENT_PREDICATES
+        and verdict.predicate not in laddertable._MEASURED_SETTLEMENT_PREDICATES
     ):
         raise RunRefused(
             "measured-settlement-unavailable", f"measured REJECT settlement has no producer for {verdict.predicate}"

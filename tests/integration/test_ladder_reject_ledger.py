@@ -223,7 +223,7 @@ def test_refutation_floor_persists_gate_owned_measured_result(
     )
     stored = laddertable.read(writer, table.hash)
     row = next(rung for rung in stored.rungs if rung.bits == recorded.rung_bits)
-    measured = laddertable.measured_entry_fields(stored, recorded)
+    measured = laddertable._measured_entry_fields(stored, recorded)
     entries = ledger.entries_for(writer, hypothesis_object.hash)
     assert len(entries) == 1
     entry = entries[0]
@@ -259,7 +259,7 @@ def test_measured_table_entry_refuses_forged_subject_points_result_and_predicate
         writer, shipped, tmp_path, plan, hypothesis_object, attest_path, laddertable.OPS_EXACT
     )
     recorded = laddertable.recorded_verdict(writer, table.hash)
-    measured = laddertable.measured_entry_fields(table, recorded)
+    measured = laddertable._measured_entry_fields(table, recorded)
     fields = {
         "hypothesis_key": table.hypothesis_hash,
         "decision": ledger.REFUTED,

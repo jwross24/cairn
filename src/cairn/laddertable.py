@@ -68,7 +68,7 @@ REFUTATION_KIND = {
     IN_SAMPLE_MISS: ledger.MEASURED,
     OUT_OF_SAMPLE_MISS: ledger.MEASURED,
 }
-MEASURED_SETTLEMENT_PREDICATES = (REFUTATION_FLOOR, IN_SAMPLE_MISS, OUT_OF_SAMPLE_MISS)
+_MEASURED_SETTLEMENT_PREDICATES = (REFUTATION_FLOOR, IN_SAMPLE_MISS, OUT_OF_SAMPLE_MISS)
 
 TRIAL = Struct(
     "ladder_trial",
@@ -1179,10 +1179,10 @@ def recorded_verdict(sub, table_hash):
     )
 
 
-def measured_entry_fields(table, recorded):
+def _measured_entry_fields(table, recorded):
     if recorded.kind != REJECT or recorded.refutation_kind != ledger.MEASURED:
         raise LadderTableError("measured settlement requires a recorded measured REJECT")
-    if recorded.predicate not in MEASURED_SETTLEMENT_PREDICATES:
+    if recorded.predicate not in _MEASURED_SETTLEMENT_PREDICATES:
         raise LadderTableError(f"measured settlement is unavailable for predicate {recorded.predicate!r}")
     if recorded.rung_bits is None:
         raise LadderTableError("measured settlement requires a recorded rung")
