@@ -220,7 +220,7 @@ def test_unknown_gate_observation_has_no_operation_statistics_or_refutation(plan
     assert (found.kind, found.predicate) == (laddertable.INCONCLUSIVE, laddertable.UNCOUNTED_BACKEND)
 
 
-def test_lower_bound_can_refute_a_floor_but_not_a_model_miss(plan):
+def test_lower_bound_can_refute_a_floor(plan):
     floor = plan.rung(50).refutation_floor.group_ops
     row = _rung(
         50,
@@ -246,6 +246,104 @@ def test_lower_bound_can_refute_a_floor_but_not_a_model_miss(plan):
     table = _table((row,), (trial,))
     found = laddertable.verdict(table, dataclasses.replace(plan, rungs=(plan.rung(50),)))
     assert (found.kind, found.predicate) == (laddertable.REJECT, laddertable.REFUTATION_FLOOR)
+
+
+def test_a_lower_bound_cannot_refute_a_model_miss_without_sd(plan):
+    row = _rung(
+        30,
+        ladderplan.ROLE_FIT,
+        ops_kind=laddertable.OPS_LOWER_BOUND,
+        mean_ops="2000000",
+        sd_ops=None,
+        shape_statistic=None,
+        model_prediction="1",
+        model_band="0.01",
+        claim_ci_low=None,
+        claim_ci_high=None,
+    )
+    trial = _trial(
+        30,
+        0,
+        gate_ops=laddertable.OpsObservation(laddertable.OPS_LOWER_BOUND, 2000000),
+        reported_ops=2000000,
+    )
+    table = _table((row,), (trial,))
+    found = laddertable.verdict(table, dataclasses.replace(plan, rungs=(plan.rung(30),)))
+    assert (found.kind, found.predicate) == (laddertable.INCONCLUSIVE, laddertable.INSIDE_BAND)
+
+
+@pytest.mark.parametrize(("reported_ops", "diverges"), [(1, True), (1000, False), (2000, False)])
+def test_a_lower_bound_refutes_count_divergence_only_below_the_bound(plan, reported_ops, diverges):
+    trial = _trial(
+        30,
+        0,
+        gate_ops=laddertable.OpsObservation(laddertable.OPS_LOWER_BOUND, 1000),
+        reported_ops=reported_ops,
+    )
+    found = laddertable._count_divergence((trial,), plan)
+    assert (found is not None) == diverges
+    if diverges:
+        assert (found.kind, found.predicate) == (laddertable.REJECT, laddertable.COUNT_DIVERGENCE)
+
+
+@pytest.mark.parametrize(
+    ("failure", "has_ci"),
+    [
+        ("complete", True),
+        ("missing_claimant", False),
+        ("missing_control", False),
+        ("failed_control", False),
+        ("bounded_control", False),
+        ("unknown_control", False),
+        ("different_instance", False),
+    ],
+)
+def test_paired_ci_requires_every_expected_successful_exact_match(plan, failure, has_ci):
+    rung = dataclasses.replace(plan.rung(30), trials=3)
+    trials = []
+    for trial_no in range(3):
+        instance_hash = "aa" * 32
+        claim = _trial(
+            30,
+            trial_no,
+            gate_ops=laddertable.OpsObservation(laddertable.OPS_EXACT, 1000 + trial_no),
+            reported_ops=1000 + trial_no,
+            instance_hash=instance_hash,
+        )
+        if failure != "missing_claimant" or trial_no != 1:
+            trials.append(claim)
+        if failure == "missing_control" and trial_no == 1:
+            continue
+        control = _trial(
+            30,
+            trial_no,
+            arm=ladderplan.ARMS[1],
+            gate_ops=laddertable.OpsObservation(laddertable.OPS_EXACT, 2000 + trial_no),
+            reported_ops=2000 + trial_no,
+            instance_hash="bb" * 32 if failure == "different_instance" and trial_no == 1 else instance_hash,
+        )
+        if failure == "failed_control" and trial_no == 1:
+            control = dataclasses.replace(control, status=runner.STATUS_BUDGET_EXCEEDED)
+        if failure == "bounded_control" and trial_no == 1:
+            control = dataclasses.replace(
+                control,
+                gate_ops=laddertable.OpsObservation(laddertable.OPS_LOWER_BOUND, 2001),
+            )
+        if failure == "unknown_control" and trial_no == 1:
+            control = dataclasses.replace(
+                control,
+                gate_ops=laddertable.OpsObservation(laddertable.OPS_UNKNOWN, None),
+            )
+        trials.append(control)
+    row = laddertable.aggregate_rung(
+        plan,
+        rung,
+        tuple(trials),
+        model_prediction="1000000",
+        reference_rate="1",
+        declared_shape="stable",
+    )
+    assert (row.claim_ci_low is not None, row.claim_ci_high is not None) == (has_ci, has_ci)
 
 
 def test_lower_bound_mean_never_rounds_up(plan):

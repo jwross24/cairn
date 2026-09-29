@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import allowlist, bundle, claims, instances, ladder, ladderplan, laddertable, ledger, runner
+from cairn import allowlist, bundle, claims, instances, ladder, ladderplan, laddertable, ledger, runner, verifier
 from cairn.skills import bsgs, instance_maker, rho_dp
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -131,6 +131,7 @@ def test_a_full_small_run_writes_a_table_with_every_arm_on_one_instance_stream(
     assert len(table.trials) == len(arm_trials)
     assert {trial.gate_ops.kind for trial in table.trials} == {laddertable.OPS_UNKNOWN}
     assert all(trial.gate_ops.value is None for trial in table.trials)
+    assert all(trial.reported_ops is not None for trial in table.trials)
     assert table.method_identity == hypothesis_object.method_identity
     assert table.implementation_revision == bsgs.implementation_revision()
     assert table.uncounted_backend == BACKEND
@@ -158,7 +159,17 @@ def test_a_full_small_run_writes_a_table_with_every_arm_on_one_instance_stream(
         laddertable.verdict(table, plan).kind,
         laddertable.verdict(table, plan).predicate,
     )
-    assert recorded.kind != laddertable.KEEP
+    assert (recorded.kind, recorded.predicate) == (laddertable.INCONCLUSIVE, laddertable.UNCOUNTED_BACKEND)
+
+    claimant_attempt = next(
+        attempt_id
+        for arm, _, _, attempt_id in laddertable.membership_for_table(writer, table.hash)
+        if arm == ladder.CLAIMANT
+    )
+    claimant_trials = {(trial.arm, trial.bits, trial.trial) for trial in table.trials if trial.arm == ladder.CLAIMANT}
+    with pytest.raises(laddertable.LadderTableError, match="must verify every trial"):
+        laddertable.record(writer, table, plan, claimant_trials, attempt_id=claimant_attempt)
+
     published = instances.trials_for(writer, dispatched)
     assert len(published) == 4
 
@@ -205,6 +216,89 @@ def test_an_injected_gate_counter_aggregates_all_arms_before_persistence(
     assert [(entry["refutation_kind"], entry["faulting_revision"], entry["caught_by"]) for entry in entries] == [
         (ledger.IMPLEMENTATION, claimant.identity_bundle_hash, "ladder:count_divergence")
     ]
+
+
+def test_captured_post_exit_overage_keeps_reported_operations_diagnostic(writer, shipped, tmp_path, monkeypatch):
+    plan_data = copy.deepcopy(COMMITTED)
+    plan_data["baseline"]["implementation_revision"] = rho_dp.implementation_revision()
+    full_plan = dataclasses.replace(ladderplan.LadderPlan.load(plan_data), patience_multiplier=1)
+    hypothesis = claims.HypothesisObject(
+        target_family="dlp",
+        claimed={"model": "c_sqrt_n_ops"},
+        method_identity={"interface_version": bsgs.INTERFACE_VERSION, "params": {}},
+        declared_parameter_ranges={"bits": [40, 40]},
+        sampling_distribution=None,
+    )
+    run_id = "run-ladder-post-exit-capture"
+    _dispatch_run(writer, shipped, tmp_path, full_plan, hypothesis, run_id)
+    claimant = ladder.dispatches_for(writer, run_id)[ladder.CLAIMANT]
+    output = (ROOT / "tests" / "fixtures" / "cairn-kjgf-post-exit.stdout.json").read_bytes()
+    captured = json.loads(output)
+    parsed = runner.parse_skill_output(output)
+    instance = verifier.Instance(
+        p=int(captured["p"]),
+        a=int(captured["a"]),
+        b=int(captured["b"]),
+        n=int(captured["n"]),
+        P=tuple(int(value) for value in captured["P"]),
+        Q=tuple(int(value) for value in captured["Q"]),
+    )
+    launch = runner.Launch(
+        exit_status=0,
+        start_mono=112593.354008708,
+        end_mono=112595.388844333,
+        wall_s=2.03483562500332,
+        cpu_user_s=2.014101,
+        cpu_sys_s=0.011,
+        peak_rss_bytes=67_010_560,
+        timed_out=False,
+        skill_yanked=False,
+        argv=(),
+        measurement_scope=runner.SCOPE_TREE,
+    )
+    cpu_seconds = launch.cpu_user_s + launch.cpu_sys_s
+    ceiling = runner.ceiling_for(
+        bsgs.COST_PROFILE.evaluate(captured["bits"]).expected_wall_s,
+        full_plan.patience_multiplier,
+        subprocess_startup_ms=shipped.tiers["subprocess_startup_ms"],
+    )
+    status = runner.status_for(parsed, launch.exit_status, cpu_seconds, ceiling)
+    launched = []
+
+    def replay(*args, **kwargs):
+        launched.append(kwargs["stdin_document"])
+        return runner.Attempt(
+            attempt_id="captured-overage",
+            recipe_key="captured-recipe",
+            status=status,
+            launch=launch,
+            parsed=parsed,
+        )
+
+    monkeypatch.setattr(runner, "launch", replay)
+    trial = ladder.run_arm(
+        writer,
+        shipped,
+        claimant,
+        plan=full_plan,
+        instance=instance,
+        instance_hash=instance.instance_hash,
+        bits=captured["bits"],
+        trial=4,
+        scratch_root=tmp_path / "captured-overage",
+        budget_remaining=10_000.0,
+    )
+
+    assert parsed.well_formed
+    assert cpu_seconds > ceiling
+    assert status == runner.STATUS_BUDGET_EXCEEDED
+    assert launched[0]["bits"] == captured["bits"]
+    assert launched[0]["p"] == captured["p"]
+    assert trial.trial == 4
+    assert trial.status == status
+    assert trial.output_complete and trial.recovered
+    assert trial.reported_ops == 1_654_804
+    assert trial.gate_ops == laddertable.OpsObservation(laddertable.OPS_UNKNOWN, None)
 
 
 def test_a_run_missing_an_arm_refuses_before_any_instance_is_drawn(

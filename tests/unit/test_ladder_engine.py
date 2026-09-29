@@ -309,7 +309,7 @@ def test_a_trial_past_the_patience_ceiling_is_a_success_rate_failure_and_no_rung
             1,
             int(mean),
             output_complete=True,
-            recovered=status == runner.STATUS_OK,
+            recovered=True,
             status=status,
         ),
     ]
@@ -333,7 +333,8 @@ def test_a_trial_past_the_patience_ceiling_is_a_success_rate_failure_and_no_rung
         laddertable.verdict(table, plan)
     single = dataclasses.replace(plan, rungs=(rung, plan.hold_out_rung), comparison=plan.comparison)
     found = laddertable.verdict(table, single)
-    assert (found.kind, found.predicate) != (laddertable.KEEP, laddertable.ALL_RUNGS_PASS)
+    assert found.predicate == laddertable.FAILED_TRIAL
+    assert found.kind not in (laddertable.KEEP, laddertable.KEEP_IN_SAMPLE)
 
 
 def test_an_uncounted_run_names_its_backend_and_cannot_keep(plan):
