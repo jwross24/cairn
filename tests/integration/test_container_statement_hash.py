@@ -292,7 +292,7 @@ def test_linux_candidate_fresh_replay(
 
 @pytest.mark.timeout(1800)
 def test_linux_candidate_closure_comparison_matches_exact_statement(
-    linux_bundle, linux_image, linux_prepared, tmp_path, monkeypatch, popen_spy
+    linux_bundle, linux_image, linux_prepared, tmp_path, monkeypatch, popen_spy, json_test_log
 ):
     statement, prepared = linux_prepared
     monkeypatch.setenv("ELAN_HOME", str(tmp_path / "absent-elan"))
@@ -310,10 +310,17 @@ def test_linux_candidate_closure_comparison_matches_exact_statement(
         root=tmp_path / "candidate",
     )
     lean.require_success(compilation.result)
+    written_config = json.loads((Path(compilation.project.root) / solutionbuild.CONFIG_NAME).read_text())
+    assert written_config["external_kernels"] == linux_bundle.lean["external_kernels"]
+    assert "enable_nanoda" not in written_config
     popen_spy.clear()
     observed, reasons, wall_ms = solutionchecks.observe_container_comparison(linux_bundle, compilation)
     assert (observed, reasons) == (solutionplan.EXPECT_CLOSURE_MATCHED, ())
     assert wall_ms >= 0
+    events = [json.loads(line) for line in json_test_log.read_text().splitlines()]
+    comparisons = [event for event in events if event["event"] == "container_comparison"]
+    assert len(comparisons) == 1
+    assert "nanoda kernel accepts the solution" in comparisons[0]["result"]["stdout"]
     comparison = [argv for argv in popen_spy if "/home/cairn/comparator/.lake/build/bin/comparator" in argv]
     assert len(comparison) == 1
     assert comparison[0][-5:] == [

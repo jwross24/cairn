@@ -13,6 +13,10 @@ ARG GO_ASSET=go1.24.13.linux-arm64.tar.gz
 ARG GO_SHA256=74d97be1cc3a474129590c67ebf748a96e72d9f3a2b6fef3ed3275de591d49b3
 ARG LANDRUN_VERSION=0.1.17
 ARG LANDRUN_COMMIT=62823c05e58ec22c1f91b4c8468318c1f97f2d32
+ARG RUST_VERSION=1.98.1
+ARG RUST_ASSET=rust-1.98.1-aarch64-unknown-linux-gnu.tar.gz
+ARG RUST_SHA256=f00ba576645cef658e1deed96fab8f707958e9d58808b16343448b5d1c4f7407
+ARG NANODA_COMMIT=3a2407216ee84a75f9e1aead6803d0578be06ae7
 ARG COMPARATOR_REV=575674928e239f5bc452aab72d1dd7b0f1326494
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -63,4 +67,26 @@ RUN git clone https://github.com/leanprover/comparator /home/cairn/comparator \
 ENV COMPARATOR_LANDRUN=/usr/local/bin/landrun
 ENV COMPARATOR_LEAN4EXPORT=/home/cairn/comparator/.lake/packages/lean4export/.lake/build/bin/lean4export
 ENV COMPARATOR_BIN=/home/cairn/comparator/.lake/build/bin/comparator
+WORKDIR /work
+
+USER root
+RUN apt-get -o Acquire::Check-Valid-Until=false update \
+ && apt-get install -y --no-install-recommends gcc libc6-dev \
+ && curl -fsSL -o "/tmp/${RUST_ASSET}" "https://static.rust-lang.org/dist/${RUST_ASSET}" \
+ && echo "${RUST_SHA256}  /tmp/${RUST_ASSET}" | sha256sum -c - \
+ && tar -C /tmp -xzf "/tmp/${RUST_ASSET}" \
+ && "/tmp/${RUST_ASSET%.tar.gz}/install.sh" --prefix=/tmp/rust --components=rustc,cargo,rust-std-aarch64-unknown-linux-gnu --disable-ldconfig \
+ && git clone --quiet https://github.com/ammkrn/nanoda_lib /usr/local/src/nanoda \
+ && git -C /usr/local/src/nanoda checkout --quiet "${NANODA_COMMIT}" \
+ && test "$(git -C /usr/local/src/nanoda rev-parse HEAD)" = "${NANODA_COMMIT}" \
+ && cd /usr/local/src/nanoda \
+ && PATH="/tmp/rust/bin:${PATH}" CARGO_HOME=/tmp/cargo cargo build --release --locked \
+ && install -m 755 target/release/nanoda_bin /usr/local/bin/nanoda_bin \
+ && cd / \
+ && rm -r /tmp/rust /tmp/cargo /usr/local/src/nanoda "/tmp/${RUST_ASSET%.tar.gz}" "/tmp/${RUST_ASSET}" \
+ && apt-get purge -y gcc libc6-dev \
+ && apt-get autoremove -y \
+ && rm -rf /var/lib/apt/lists/* \
+ && test -x /usr/local/bin/nanoda_bin
+USER cairn
 WORKDIR /work

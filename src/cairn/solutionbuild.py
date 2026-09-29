@@ -122,14 +122,18 @@ def assert_unchanged(assembled):
         raise InputsChanged(sorted(changed))
 
 
-def config(challenge_module, solution_module, theorem_names, pins):
-    return {
+def config(challenge_module, solution_module, theorem_names, pins, *, external_kernels=None):
+    written = {
         "challenge_module": challenge_module,
         "solution_module": solution_module,
         "theorem_names": list(theorem_names),
         "permitted_axioms": list(pins["permitted_axioms"]),
-        "enable_nanoda": False,
     }
+    if external_kernels is None:
+        written["enable_nanoda"] = False
+    else:
+        written["external_kernels"] = {name: list(argv) for name, argv in external_kernels.items()}
+    return written
 
 
 def _dependency_packages(project, manifest, pins):
@@ -256,10 +260,21 @@ def assemble_container(
         root=root,
         formal_statement_hash=formal_statement_hash,
         dependency_project=dependency_project,
+        external_kernels=gate.lean["external_kernels"],
     )
 
 
-def _assemble(gate, statement, submission, theorem_names, *, root, formal_statement_hash, dependency_project):
+def _assemble(
+    gate,
+    statement,
+    submission,
+    theorem_names,
+    *,
+    root,
+    formal_statement_hash,
+    dependency_project,
+    external_kernels=None,
+):
     pins = gate.lean
     assert_binding(submission, formal_statement_hash)
     if not submission.solution_module:
@@ -277,7 +292,12 @@ def _assemble(gate, statement, submission, theorem_names, *, root, formal_statem
     solution_module = module_name(formal_statement_hash)
     config_path = root / CONFIG_NAME
     config_path.write_text(
-        json.dumps(config(challenge_module, solution_module, theorem_names, pins), sort_keys=True, indent=2) + "\n"
+        json.dumps(
+            config(challenge_module, solution_module, theorem_names, pins, external_kernels=external_kernels),
+            sort_keys=True,
+            indent=2,
+        )
+        + "\n"
     )
     inputs = tuple(
         str(path.relative_to(root))

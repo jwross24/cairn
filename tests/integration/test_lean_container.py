@@ -53,10 +53,10 @@ def test_the_container_pins_agree_with_the_lean_pins():
     assert spec["toolchain"]["name"] == pins["toolchain"]
     assert spec["toolchain"]["lean_commit"] == pins["lean_commit"]
     assert spec["mathlib"]["rev"] == pins["mathlib_rev"]
-    for name in ("elan", "toolchain", "go"):
+    for name in ("elan", "toolchain", "go", "rust"):
         assert len(bytes.fromhex(spec[name]["sha256"])) == 32, name
-    for name in ("landrun", "comparator"):
-        assert len(bytes.fromhex(spec[name]["commit" if name == "landrun" else "rev"])) == 20, name
+    for name in ("landrun", "nanoda", "comparator"):
+        assert len(bytes.fromhex(spec[name]["commit" if name in ("landrun", "nanoda") else "rev"])) == 20, name
 
 
 def test_the_identity_is_a_function_of_the_spec_and_the_containerfile_only(pinned_bundle):

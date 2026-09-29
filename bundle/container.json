@@ -27,6 +27,16 @@
     "version": "0.1.17",
     "commit": "62823c05e58ec22c1f91b4c8468318c1f97f2d32"
   },
+  "rust": {
+    "version": "1.98.1",
+    "asset": "rust-1.98.1-aarch64-unknown-linux-gnu.tar.gz",
+    "sha256": "f00ba576645cef658e1deed96fab8f707958e9d58808b16343448b5d1c4f7407"
+  },
+  "nanoda": {
+    "repo": "https://github.com/ammkrn/nanoda_lib",
+    "version": "0.4.19",
+    "commit": "3a2407216ee84a75f9e1aead6803d0578be06ae7"
+  },
   "comparator": {
     "repo": "https://github.com/leanprover/comparator",
     "rev": "575674928e239f5bc452aab72d1dd7b0f1326494",

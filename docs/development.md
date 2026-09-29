@@ -23,6 +23,10 @@ export CAIRN_COMPARATOR_CHECKOUT="$comparator_work/comparator"
 CI provisions the same pins under `.doctor/comparator`, the default lookup path.
 Missing prerequisites fail the tests. Developer-mode comparator tests use upstream
 `fake-landrun.sh` with reviewed fixtures; they establish comparison behavior, not containment.
+The gold arm's comparator config lists `external_kernels` from `bundle/lean.json`, so the Linux
+image's `nanoda_bin` (nanoda_lib at the `bundle/container.json` `nanoda` commit, built from the
+pinned `rust` toolchain) checks the export in addition to the in-toolchain kernel. The dev arm
+writes `enable_nanoda: false` and checks with the in-toolchain kernel only.
 The pinned toolchain and mathlib prerequisite are described in
 [ADR-002](../research/decisions/adr-002-lean-ci-prerequisites.md).
 

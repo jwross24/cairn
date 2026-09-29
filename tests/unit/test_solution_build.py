@@ -140,6 +140,31 @@ def test_the_config_carries_the_keys_the_comparator_reads_with_the_bundles_permi
     assert written["theorem_names"] == list(THEOREMS)
     assert written["permitted_axioms"] == list(gate.lean["permitted_axioms"])
     assert written["enable_nanoda"] is False
+    assert "external_kernels" not in written
+
+
+def test_the_gold_arm_config_names_the_bundles_external_kernels_and_never_enable_nanoda(gate, statement, tmp_path):
+    root = tmp_path / "run"
+    solutionbuild._assemble(
+        gate,
+        statement,
+        _submission(),
+        THEOREMS,
+        root=root,
+        formal_statement_hash=FSH,
+        dependency_project=None,
+        external_kernels=gate.lean["external_kernels"],
+    )
+    written = json.loads((root / solutionbuild.CONFIG_NAME).read_text())
+    assert set(written) == {
+        "challenge_module",
+        "solution_module",
+        "theorem_names",
+        "permitted_axioms",
+        "external_kernels",
+    }
+    assert written["external_kernels"] == gate.lean["external_kernels"]
+    assert set(written["external_kernels"]) == {"nanoda"}
 
 
 def test_an_untouched_project_passes_the_fingerprint(gate, statement, tmp_path):
