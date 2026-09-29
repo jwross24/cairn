@@ -1,0 +1,9 @@
+{
+  "container_runs": 17,
+  "all_runs_memory_6g": true,
+  "all_runs_memory_swap_6g": true,
+  "image_ids": [
+    "sha256:a4e8183b20d5d024d74cdd2641ab7d1a2fc25b791782807377ca7913af479bc5"
+  ],
+  "argv_log": "/tmp/cairn-lane2-day.HCyLdO/docker-argv.jsonl"
+}

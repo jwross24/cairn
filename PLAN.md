@@ -928,12 +928,14 @@ at 50 bits is not an advance, and the wrong bar because a method costing 4.9×10
     Formalizer never creates or edits Challenge text and submits a Solution module that
     names the Challenge's *formal statement hash* — a Solution naming any other hash fails
     closed before kernel replay. The formal statement hash is computed by the gate when it
-    compiles the Challenge, over what the comparator
-    compares (the theorem's `ConstantVal` and the full `ConstantInfo` of every constant in
-    its transitive closure), never over raw export bytes, which carry position-dependent
-    names (that raw exports are unstable is PROVEN by probe; that this closure is the right
-    hash is CONJECTURE — the hasher is inferred from the comparator's `compareAt` and does
-    not exist yet, so M1 builds and probes it before the gate is trusted). The hash names and
+    compiles the Challenge, over the theorem's `ConstantVal` and a sorted transitive closure
+    of statement dependencies. Every closure constant contributes its type; definitions and
+    opaque constants also contribute their values. A closure theorem contributes its name,
+    level parameters and type, never its proof value, and traversal excludes theorem proof
+    values. Structural declaration metadata remains part of the canonical encoding. Raw
+    export bytes carry position-dependent names and are unsuitable for statement identity.
+    [ADR-011](research/decisions/adr-011-statement-hash-excludes-proof-values.md) defines this
+    closure and records the DLP memory probe and planted contract properties. The hash names and
     binds; it decides nothing — check (iv) below is the comparator's own closure comparison,
     and a hash match with a comparator mismatch fails closed. The gate-run record binds the
     claim statement hash (§4) to the formal statement hash under the bundle hash, and a

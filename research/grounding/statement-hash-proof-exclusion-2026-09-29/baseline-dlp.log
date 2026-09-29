@@ -1,0 +1,2 @@
+{"item": "dlp", "statement": "theorem cairn_dlp_iff {F : Type} [Field F] [DecidableEq F] {W : WeierstrassCurve.Affine F}\n    (P Q : W.Point) : (\u2203 k : \u2124, k \u2022 P = Q) \u2194 Q \u2208 AddSubgroup.zmultiples P := by\n  sorry\n", "hasher_sha256": "c2840ef56a0a32d015571041a74617dd415ed7c76f411dabe9515f5442b744a0"}
+memcap: killed at 6.70 GiB footprint, cap 6 GiB

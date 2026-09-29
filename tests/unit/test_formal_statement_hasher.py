@@ -17,6 +17,11 @@ open Lean Cairn.StatementHash
     throw (IO.userError "export-nondep-normalization")
   let inst := Expr.forallE `instance t (.bvar 0) .instImplicit
   if !(a == inst) || expr a != expr inst then throw (IO.userError "instance-binder-normalization")
+  if expr (.lit (.strVal "λ")) != "6:string4:2:λ" then
+    throw (IO.userError "utf8-string-framing")
+  if expr (.const (.str .anonymous "λ") []) !=
+      "5:const44:28:3:str20:13:9:anonymous0:2:λ10:6:levels0:" then
+    throw (IO.userError "utf8-name-framing")
   let u := Level.param `u
   let v := Level.param `v
   let levels : List Level := [.zero, .succ .zero, .succ (.succ .zero),
@@ -46,7 +51,9 @@ run_elab
     | .ok _ => throwError "accepted invalid targets: {expected}"
   let .ok forward := canonical env #[`firstTarget, `secondTarget] | throwError "valid targets refused"
   let .ok backward := canonical env #[`secondTarget, `firstTarget] | throwError "reversed targets refused"
+  let .ok repeated := canonical env #[`firstTarget, `secondTarget] | throwError "repeated targets refused"
   if forward != backward then throwError "target-order-changes-canonical-bytes"
+  if forward != repeated then throwError "same-input-changes-canonical-bytes"
 """
 
 
@@ -80,6 +87,7 @@ def test_hasher_source_is_a_raw_bundle_object():
         "{}\n",
         '{"canonical_hex":"AA"}\n',
         '{"canonical_hex":"0"}\n',
+        '{"canonical_hex":"000"}\n',
         '{"canonical_hex":""}\n',
         '{"canonical_hex":"00", "other":1}\n',
         "'target' depends on axioms: [sorryAx]\n",

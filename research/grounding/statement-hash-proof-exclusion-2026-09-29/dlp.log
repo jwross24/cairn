@@ -1,0 +1,4 @@
+{"item": "dlp", "statement": "theorem cairn_dlp_iff {F : Type} [Field F] [DecidableEq F] {W : WeierstrassCurve.Affine F}\n    (P Q : W.Point) : (\u2203 k : \u2124, k \u2022 P = Q) \u2194 Q \u2208 AddSubgroup.zmultiples P := by\n  sorry\n", "hasher_sha256": "3e45c126050d8d54e2e7c28f1f7937147d8d24d57fa2b6babbec84568501882f"}
+{"stdout_bytes": 9970861, "stdout_sha256": "ca7b4a1dbba0d4d927e914e0b0654d35d1fb0927d967f03751d2747167f7ce1c"}
+{"digest": "deba336e535bd991820a8790fb7ed0dc4a88f60fd20c44b74e806590bfb789a0", "wall_s": 38.102595041971654}
+memcap: exit 0, peak footprint 0.51 GiB

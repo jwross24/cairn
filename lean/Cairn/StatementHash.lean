@@ -60,7 +60,7 @@ def info (c : ConstantInfo) : String :=
   match c with
   | .axiomInfo v => node "axiom" [base, toString v.isUnsafe]
   | .defnInfo v => node "definition" [base, expr v.value, hints v.hints, safety v.safety, names v.all]
-  | .thmInfo v => node "theorem" [base, expr v.value, names v.all]
+  | .thmInfo _ => node "theorem" [base]
   | .opaqueInfo v => node "opaque" [base, expr v.value, toString v.isUnsafe, names v.all]
   | .inductInfo v => node "inductive" [base, toString v.numParams, toString v.numIndices,
       names v.all, names v.ctors, toString v.numNested, toString v.isRec,
@@ -76,9 +76,9 @@ def info (c : ConstantInfo) : String :=
 
 def dependencies (c : ConstantInfo) : Array Name := Id.run do
   let mut result := c.type.getUsedConstants
-  if let some v := c.value? (allowOpaque := true) then
-    result := result ++ v.getUsedConstants
   match c with
+  | .defnInfo v => result := result ++ v.value.getUsedConstants
+  | .opaqueInfo v => result := result ++ v.value.getUsedConstants
   | .inductInfo v => result := result ++ v.ctors.toArray ++ v.all.toArray
   | .ctorInfo v => result := result.push v.induct
   | .recInfo v =>

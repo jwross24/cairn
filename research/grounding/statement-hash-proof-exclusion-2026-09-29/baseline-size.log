@@ -1,0 +1,20 @@
+{"canonical_bytes":8070948074,"closure_constants":22337,"largest_record_bytes":1265744684,"largest_record_name":"WeierstrassCurve.Affine.addPolynomial_slope","root_count":1}
+       17.32 real         4.94 user         2.40 sys
+          3183607808  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+              208595  page reclaims
+              117332  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+               30531  voluntary context switches
+               91841  involuntary context switches
+          5351759979  instructions retired
+          2445254676  cycles elapsed
+           138683216  peak memory footprint
+memcap: exit 0, peak footprint 1.80 GiB

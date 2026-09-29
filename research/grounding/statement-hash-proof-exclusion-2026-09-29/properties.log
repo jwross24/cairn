@@ -1,0 +1,52 @@
+{"canonical_bytes": 9283, "canonical_sha256": "d78938093f21a7574904e9a98a7faeee291f6d00ada21dd67fd03cff6fc3560f", "formal_statement_hash": "c4454257a9a2e46d4b6d8a69089880243504118e8d08dba80f8bfb746d4a4397", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_fresh_builds_and_single_e0/base"}
+{"canonical_bytes": 9283, "canonical_sha256": "d78938093f21a7574904e9a98a7faeee291f6d00ada21dd67fd03cff6fc3560f", "formal_statement_hash": "c4454257a9a2e46d4b6d8a69089880243504118e8d08dba80f8bfb746d4a4397", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_fresh_builds_and_single_e0/fresh"}
+
+.{"canonical_bytes": 9283, "canonical_sha256": "d78938093f21a7574904e9a98a7faeee291f6d00ada21dd67fd03cff6fc3560f", "formal_statement_hash": "c4454257a9a2e46d4b6d8a69089880243504118e8d08dba80f8bfb746d4a4397", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_fresh_builds_and_single_e0/base"}
+{"canonical_bytes": 9283, "canonical_sha256": "d78938093f21a7574904e9a98a7faeee291f6d00ada21dd67fd03cff6fc3560f", "formal_statement_hash": "c4454257a9a2e46d4b6d8a69089880243504118e8d08dba80f8bfb746d4a4397", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_fresh_builds_and_single_e0/comment"}
+--- base
++++ comment
+@@ -1,2 +1,3 @@
++-- one comment
+ def bound : Nat := 3
+ theorem target (n : Nat) (h : n < bound) : n < bound := by sorry
+
+.{"canonical_bytes": 9283, "canonical_sha256": "d78938093f21a7574904e9a98a7faeee291f6d00ada21dd67fd03cff6fc3560f", "formal_statement_hash": "c4454257a9a2e46d4b6d8a69089880243504118e8d08dba80f8bfb746d4a4397", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_fresh_builds_and_single_e0/base"}
+{"canonical_bytes": 9283, "canonical_sha256": "d78938093f21a7574904e9a98a7faeee291f6d00ada21dd67fd03cff6fc3560f", "formal_statement_hash": "c4454257a9a2e46d4b6d8a69089880243504118e8d08dba80f8bfb746d4a4397", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_fresh_builds_and_single_e0/unused"}
+--- base
++++ unused
+@@ -1,2 +1,3 @@
+ def bound : Nat := 3
+ theorem target (n : Nat) (h : n < bound) : n < bound := by sorry
++def unused : Nat := 17
+
+.{"canonical_bytes": 9283, "canonical_sha256": "d78938093f21a7574904e9a98a7faeee291f6d00ada21dd67fd03cff6fc3560f", "formal_statement_hash": "c4454257a9a2e46d4b6d8a69089880243504118e8d08dba80f8bfb746d4a4397", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_fresh_builds_and_single_e0/base"}
+{"canonical_bytes": 11494, "canonical_sha256": "de73568857f8d9edd20d532e1debb371324d24fbddb5bd588f7e168bbb66db27", "formal_statement_hash": "f95df265cb95e4ae6c7f543ea2ef920165aefc79236a4ef39ae58eb71ee326be", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_fresh_builds_and_single_e0/hypothesis"}
+--- base
++++ hypothesis
+@@ -1,2 +1,2 @@
+ def bound : Nat := 3
+-theorem target (n : Nat) (h : n < bound) : n < bound := by sorry
++theorem target (n : Nat) (h : n ≤ bound) : n < bound := by sorry
+
+.{"canonical_bytes": 9283, "canonical_sha256": "d78938093f21a7574904e9a98a7faeee291f6d00ada21dd67fd03cff6fc3560f", "formal_statement_hash": "c4454257a9a2e46d4b6d8a69089880243504118e8d08dba80f8bfb746d4a4397", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_fresh_builds_and_single_e0/base"}
+{"canonical_bytes": 9283, "canonical_sha256": "d8142baba330c7d2e18a4f670d207a515eb828fbca9337b1487f41c3cce4519f", "formal_statement_hash": "7d22450090b37ef49b5e53f4d01b33494915f987d452b1a50af37e1fc743e8d8", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_fresh_builds_and_single_e0/definition"}
+--- base
++++ definition
+@@ -1,2 +1,2 @@
+-def bound : Nat := 3
++def bound : Nat := 4
+ theorem target (n : Nat) (h : n < bound) : n < bound := by sorry
+
+.{"canonical_bytes": 5507, "canonical_sha256": "385f85f60e56eb84b50c47a037234fb54888b0578d349ca06eb33673e749d60b", "formal_statement_hash": "f66f127c6168d01867b40d60b6cbba05cd873c6bf25f1cfdd5f1744eea131662", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_canonical_closure_bytes_t0/base"}
+{"canonical_bytes": 5507, "canonical_sha256": "049d1846aacb9f4687ec32b66bbf32d5b3737772098e52eab28a750e29a76c36", "formal_statement_hash": "fb04f82545e69b3dcdcb11eae7cdc580b8acef7718ca2b8e27be2f718e96cba8", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_canonical_closure_bytes_t0/changed"}
+.{"canonical_bytes": 5217, "canonical_sha256": "22c7e79602a8719ce0c11fb1b25045755c5358a38dc53cc67de826fcbd21d872", "formal_statement_hash": "8a723ebb92c4d5244d751816c62fd3e56d702e84dc2bb83dc6de2f4f3e4ad7bf", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_canonical_closure_bytes_t0/base"}
+{"canonical_bytes": 5217, "canonical_sha256": "b360d8b07cfdce73ada2e9cf8ebe63defe71fb98d58faa87886919ed54401dd2", "formal_statement_hash": "0ae2f9837b9e20fb80b261dce99a0434f6e48628c769d8c02fbec67e437a90f6", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_canonical_closure_bytes_t0/changed"}
+.{"canonical_bytes": 2432, "canonical_sha256": "0ce07d0029a45040a0b64ecb76f5150ae0dbe95d746c928e3830083d485092fc", "formal_statement_hash": "3f0e55cc28cd09fba50db8772c307325bacb681e8469ecc83a123c7b6909152c", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_canonical_closure_bytes_t0/base"}
+{"canonical_bytes": 2424, "canonical_sha256": "7083daf21e1a8208756f0b95dc6b754ffa5c4bc69116cbf6c4cead718d34ba37", "formal_statement_hash": "62a2f7883c83e26691133128cbc97244414b1fe504cf469f1a27b1bd8b0260ed", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_canonical_closure_bytes_t0/changed"}
+.{"canonical_bytes": 1882, "canonical_sha256": "0b43bc18b4801677c895d8c960feff1907aef8c13c67bf569483be5489ca6c3e", "formal_statement_hash": "7a0cbfd96800430596d40fa0f525bbb9187748dec8422c14d35c72b8d28becdb", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_canonical_closure_bytes_t0/base"}
+{"canonical_bytes": 1882, "canonical_sha256": "0b43bc18b4801677c895d8c960feff1907aef8c13c67bf569483be5489ca6c3e", "formal_statement_hash": "7a0cbfd96800430596d40fa0f525bbb9187748dec8422c14d35c72b8d28becdb", "project": "/private/tmp/cairn-lane2-day.HCyLdO/pytest-tmp/pytest-of-jwross/pytest-0/test_canonical_closure_bytes_t0/changed"}
+.{"arm": "dev-macos-fake-landrun", "bundle_hash": "a240dd21dfd734829cccdbce243c2a7e1708b85c8601e4db679961e31f9f4444", "claim_statement_hash": "239fad417ab39eb4f6e47136fede213e070e566ed54b14d0ebb1dc5e3ff9b249", "formal_statement_hash": "c4454257a9a2e46d4b6d8a69089880243504118e8d08dba80f8bfb746d4a4397", "prelude_hash": "1b4660852605e3274bfab88d5430d0decd9aaaa0201afb7114a7ffa8aeac6db4", "renderer_hash": "83d8e0bc635ec1fcdbdca9a3c9d60c293a0828a8f0163a9f77dbcadb66b56c84"}
+gate run 19a6ee3600116ef842bb8e4ddbe69a92a5d014d1f421c2c5daa3fc7494fcec6e carries no claim-to-formal-statement binding: formal_statement_hash is empty
+.
+10 passed in 55.09s
+memcap: exit 0, peak footprint 0.40 GiB

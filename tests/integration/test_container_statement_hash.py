@@ -52,7 +52,7 @@ def test_linux_dependency_cache_restores_without_provisioning(
     prepared = solutionchecks.prepare_container(
         linux_bundle, linux_image, statement, ("challenge_curve",), root=tmp_path / "prepared", dependency_project=root
     )
-    assert prepared.formal_statement_hash == "f4cd161738602628f5d766379b78605147761457507b9320ef14dcf115aeaa42"
+    assert prepared.formal_statement_hash == "050203449ae9ec911926c65bcbb8786f41e86730ca16b2427bb240662b0b2b4d"
     docker = [argv for argv in popen_spy if "--network" in argv]
     assert docker
     assert all(argv[argv.index("--network") + 1] == "none" for argv in docker)
@@ -752,7 +752,7 @@ def test_linux_hashes_real_challenges_and_rejects_absent_theorems(
         )
         for index, module in enumerate(modules)
     ]
-    assert hashes[0] == "f4cd161738602628f5d766379b78605147761457507b9320ef14dcf115aeaa42"
+    assert hashes[0] == "050203449ae9ec911926c65bcbb8786f41e86730ca16b2427bb240662b0b2b4d"
     assert hashes[0] != hashes[1]
     with pytest.raises(lean.LeanRejected, match="missing-theorem:absent_theorem"):
         container.formal_statement_hash(
@@ -828,7 +828,7 @@ def test_container_preparation_binds_the_claim_without_host_lean(
         root=tmp_path / "prepared",
         dependency_project=dependencies,
     )
-    assert prepared.formal_statement_hash == "556a38bd0fd7f32b31c6f4fefebd92ad7568788e3639a5f2a0b7102f4eaf53ac"
+    assert prepared.formal_statement_hash == "928724caf7b2404b9a79315dc4bb8f65b999726d71a21f212d657ac2d5d490e4"
     assert prepared.statement_hash == statement.hash
     assert prepared.bundle_hash == linux_bundle.hash
     assert prepared.pin_hash == linux_bundle.pin_hash
@@ -924,7 +924,7 @@ def test_container_preparation_rejects_inputs_changed_during_hashing(
 
     def hash_then_change(*args, **kwargs):
         digest = real_hash(*args, **kwargs)
-        assert digest == "f4cd161738602628f5d766379b78605147761457507b9320ef14dcf115aeaa42"
+        assert digest == "050203449ae9ec911926c65bcbb8786f41e86730ca16b2427bb240662b0b2b4d"
         source = challenge.module_path(statement, Path(kwargs["project_dir"]) / "Challenge")
         source.write_bytes(source.read_bytes() + b"\n")
         return digest

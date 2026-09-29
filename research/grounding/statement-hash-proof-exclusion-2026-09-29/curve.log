@@ -1,0 +1,4 @@
+{"item": "curve", "statement": "theorem challenge_curve {R : Type} [CommRing R] (W : WeierstrassCurve R) : W.\u0394 = W.\u0394 := by\n  sorry\n", "hasher_sha256": "3e45c126050d8d54e2e7c28f1f7937147d8d24d57fa2b6babbec84568501882f"}
+{"stdout_bytes": 1867783, "stdout_sha256": "dabad8e6e66667dc6599c0506083ba936e4ec0cba6afa7b497f13376d4c559d9"}
+{"digest": "050203449ae9ec911926c65bcbb8786f41e86730ca16b2427bb240662b0b2b4d", "wall_s": 35.82351625000592}
+memcap: exit 0, peak footprint 0.53 GiB
