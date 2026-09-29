@@ -217,6 +217,7 @@ def _assert_container_lane(text):
         "src/cairn/solutionchecks.py",
         "tests/_linux_dependencies.py",
         "tests/integration/test_container_statement_hash.py",
+        "tests/integration/test_lean_container.py",
     ):
         assert path in types
     assert "if:" not in types

@@ -4,12 +4,17 @@ import shlex
 import shutil
 import subprocess
 import sys
+import uuid
 from pathlib import Path
 
 import pytest
 from _ci_lanes import CI_LANES, CONTAINER_PLAN_CASES, SOLUTION_PLAN_LANES
 
 CONTAINER_PLAN_LANES = ("container-plan-exact", "container-plan-refusals")
+CONTAINER_AUTHORITY_NODES = (
+    "tests/integration/test_lean_container.py::test_the_gold_image_builds_and_the_checker_runs_under_landrun_inside_it",
+    "tests/integration/test_lean_container.py::test_the_chattr_probe_inside_the_container_is_recorded",
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -148,3 +153,66 @@ def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
             f"test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks[{case}]"
             for case in cases
         ]
+
+
+def test_lean_container_authority_nodes_have_one_linux_owner():
+    nodes = CONTAINER_AUTHORITY_NODES
+    owners = {node: [] for node in nodes}
+    env = dict(os.environ)
+    env.pop("PYTEST_ADDOPTS", None)
+    for lane in CI_LANES:
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                "-q",
+                "--collect-only",
+                f"--cairn-ci-lane={lane}",
+                *nodes,
+            ],
+            cwd=ROOT,
+            env=env,
+            text=True,
+            capture_output=True,
+            timeout=60,
+        )
+        nodeids = result.stdout.splitlines()
+        for node in nodes:
+            if lane == "container":
+                assert result.returncode == 0, result.stdout + result.stderr
+                assert nodeids.count(node) == 1
+                owners[node].append(lane)
+            else:
+                assert result.returncode == pytest.ExitCode.NO_TESTS_COLLECTED, result.stdout + result.stderr
+                assert "deselected" in result.stdout
+                assert node not in nodeids
+    assert len(nodes) == 2
+    assert all(lanes == ["container"] for lanes in owners.values())
+
+
+def test_missing_docker_refuses_both_required_authority_nodes():
+    env: dict[str, str] = {**os.environ, "CAIRN_CONTAINER_CONTEXT": f"cairn-unavailable-{uuid.uuid4().hex}"}
+    env.pop("PYTEST_ADDOPTS", None)
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            "--tb=short",
+            "--cairn-ci-lane=container",
+            *CONTAINER_AUTHORITY_NODES,
+        ],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=60,
+    )
+    assert result.returncode == pytest.ExitCode.TESTS_FAILED, result.stdout + result.stderr
+    assert "2 failed" in result.stdout
+    assert "DaemonUnavailable" in result.stdout
+    assert "skipped" not in result.stdout
+    for node in CONTAINER_AUTHORITY_NODES:
+        assert f"FAILED {node}" in result.stdout

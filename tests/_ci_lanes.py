@@ -13,13 +13,15 @@ LEAN_TEST_PATHS = (
     "tests/integration/test_challenge_compile.py",
     "tests/integration/test_hasher_stability.py",
     "tests/integration/test_solution_forgery_steps.py",
-    "tests/integration/test_lean_container.py",
     "tests/integration/test_prefilters_in_gate.py",
     "tests/unit/test_formal_statement_hasher.py",
     *LEAN_PREREQUISITE_TEST_PATHS,
 )
 SOLUTION_TEST_PATHS = ("tests/integration/test_solution_build_compile.py",)
-CONTAINER_TEST_PATHS = ("tests/integration/test_container_statement_hash.py",)
+CONTAINER_TEST_PATHS = (
+    "tests/integration/test_container_statement_hash.py",
+    "tests/integration/test_lean_container.py",
+)
 LEAN_SOLUTION_TESTS = (
     "test_a_compiling_weaker_statement_fails_real_prelude_closure_comparison",
     "test_real_prelude_forgery_passes_axioms_but_fails_fresh_replay",

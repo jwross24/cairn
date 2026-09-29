@@ -22,12 +22,9 @@ CHATTR_SCRIPT = (
 )
 
 
-def _gold_arm_or_skip():
+def _gold_arm():
     ctx = container.context()
-    try:
-        info = container.daemon_info(ctx)
-    except container.DaemonUnavailable as exc:
-        pytest.skip(f"gold arm unavailable on this host: {exc}")
+    info = container.daemon_info(ctx)
     lg.info("daemon", context=ctx, info=info)
     return ctx
 
@@ -95,7 +92,7 @@ def test_the_dev_and_gold_arm_records_are_distinguishable():
 
 @pytest.mark.timeout(3600)
 def test_the_gold_image_builds_and_the_checker_runs_under_landrun_inside_it(pinned_bundle):
-    ctx = _gold_arm_or_skip()
+    ctx = _gold_arm()
     identity = _bundle(pinned_bundle).container_identity
     image = container.build(ctx, identity)
     again = container.build(ctx, identity)
@@ -173,7 +170,7 @@ def test_the_gold_image_builds_and_the_checker_runs_under_landrun_inside_it(pinn
 
 @pytest.mark.timeout(3600)
 def test_the_chattr_probe_inside_the_container_is_recorded(pinned_bundle):
-    ctx = _gold_arm_or_skip()
+    ctx = _gold_arm()
     image = container.build(ctx, _bundle(pinned_bundle).container_identity)
     as_user = _log("chattr_default_caps_as_user", container.run(ctx, image, ["/bin/sh", "-c", CHATTR_SCRIPT]))
     as_root = _log(

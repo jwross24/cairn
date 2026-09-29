@@ -149,7 +149,7 @@ jobs:
           CAIRN_LINUX_DEPENDENCY_CACHE: ${{ runner.temp }}/cairn-linux-prerequisites/dependencies
         run: scripts/check.sh --ci-lane "${{ matrix.lane }}"
       - name: Linux adapter types
-        run: uv run ty check --python-platform linux src/cairn/container.py src/cairn/lean.py src/cairn/solutionbuild.py src/cairn/solutionchecks.py tests/_linux_dependencies.py tests/integration/test_container_statement_hash.py
+        run: uv run ty check --python-platform linux src/cairn/container.py src/cairn/lean.py src/cairn/solutionbuild.py src/cairn/solutionchecks.py tests/_linux_dependencies.py tests/integration/test_container_statement_hash.py tests/integration/test_lean_container.py
       - name: Export Linux prerequisites
         if: success() && matrix.lane == 'container' && github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.linux-prerequisite-cache.outputs.cache-hit != 'true'
         run: uv run python tests/_linux_dependencies.py --cache "$RUNNER_TEMP/cairn-linux-prerequisites/dependencies" --export-archive "$RUNNER_TEMP/cairn-linux-prerequisites/image.tar"
