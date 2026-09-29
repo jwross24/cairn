@@ -1,11 +1,12 @@
 usage: cairn doctor [-h] [--db PATH] [--bundle PATH] [--pin PATH]
                     [--attest PATH] [--log LEVEL] [--json] [--fix]
                     [--root PATH] [--dry-run] [--quick] [--only SUBSYSTEM,...]
-                    [--online] [--explain FINDING-ID] [--robot-triage]
+                    [--online] [--explain FINDING-ID] [--since RUN-ID]
+                    [--robot-triage]
                     SUBCOMMAND ...
 
-diagnose the M0 deploy shape read-only, and repair the two failure modes it
-owns with --fix
+diagnose and repair the M0 deploy shape; undo repairs or explicitly collect
+old doctor artifacts
 
 positional arguments:
   SUBCOMMAND
@@ -15,8 +16,12 @@ positional arguments:
                         codes, artifact layout
     health              one line and an exit code; the cheap detectors only
     robot-docs          print the doctor's agent handbook
-    ls                  list the runs recorded in
-                        .doctor/scorecard_history.jsonl
+    ls                  list recorded runs and show whether their artifacts
+                        are available
+    gc                  list old run artifacts; --yes removes them and
+                        relinquishes their undo backups
+    diff                compare the current planned actions with a retained
+                        run; read-only
 
 options:
   -h, --help            show this help message and exit
@@ -37,6 +42,7 @@ options:
   --online              enable network probes; refused at M0, nothing needs
                         one
   --explain FINDING-ID  expand one finding with its evidence
+  --since RUN-ID        compare findings with a retained run
   --robot-triage        one JSON document: summary, findings, actions_planned,
                         recommended_command
 

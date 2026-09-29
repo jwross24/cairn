@@ -48,9 +48,10 @@ has a name and a commit. Nothing is identified by a label, a path or a build tim
 The `cairn` CLI is the control surface for agents and humans alike: every command registers
 with `--json`/`--robot`, dry-run by default where an act is irreversible and `--force` to
 perform it, the exit-code vocabulary in `exits.py`, and `capabilities --json` as the contract
-an agent reads once per session. MCP is not a control surface for driving `cairn`. One
-read-only status call rendering the whole state and the admissible commands is a child of
-bead `cairn-sm1`.
+an agent reads once per session. MCP is not a control surface for driving `cairn`.
+`status` renders bundle and substrate observations with commands whose preconditions can
+be checked from that state. It performs no logical writes and preserves main database
+bytes; SQLite WAL/SHM sidecar effects are outside its read-only contract.
 
 ## Feedback tiers
 

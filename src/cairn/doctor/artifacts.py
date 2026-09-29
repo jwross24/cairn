@@ -2,6 +2,8 @@ import hashlib
 import json
 import logging
 import os
+import re
+import stat
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -13,6 +15,7 @@ RUNS_DIRNAME = "runs"
 LATEST_NAME = "latest"
 HISTORY_NAME = "scorecard_history.jsonl"
 RUN_ID_STAMP = "%Y-%m-%dT%H-%M-%SZ"
+RUN_ID_RE = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z__[0-9a-f]{6}(?:-[1-9]\d{0,2})?")
 
 lg = log.get("doctor.artifacts")
 
@@ -52,24 +55,119 @@ def history_path(root):
     return Path(root) / DOCTOR_DIRNAME / HISTORY_NAME
 
 
+class UnsafeArtifactPath(ValueError):
+    pass
+
+
+def valid_run_id(run_id):
+    if not isinstance(run_id, str) or RUN_ID_RE.fullmatch(run_id) is None:
+        return False
+    try:
+        time.strptime(run_id[:20], RUN_ID_STAMP)
+    except ValueError:
+        return False
+    return True
+
+
+def _real_directory(path, label):
+    try:
+        st = Path(path).lstat()
+    except FileNotFoundError:
+        return False
+    if stat.S_ISLNK(st.st_mode) or not stat.S_ISDIR(st.st_mode):
+        raise UnsafeArtifactPath(f"unsafe {label}: {path} must be a real directory")
+    return True
+
+
+def _safe_runs_dir(root):
+    doctor = Path(root) / DOCTOR_DIRNAME
+    runs = doctor / RUNS_DIRNAME
+    if not _real_directory(doctor, ".doctor directory"):
+        return runs, False
+    if not _real_directory(runs, ".doctor/runs directory"):
+        return runs, False
+    return runs, True
+
+
 def resolve_run_dir(root, run_id):
     if run_id == LATEST_NAME:
+        runs, present = _safe_runs_dir(root)
         link = Path(root) / DOCTOR_DIRNAME / LATEST_NAME
-        if not os.path.lexists(link):
+        try:
+            st = link.lstat()
+        except FileNotFoundError:
             return None
-        return (Path(root) / DOCTOR_DIRNAME / link.readlink()).resolve()
+        if not stat.S_ISLNK(st.st_mode):
+            raise UnsafeArtifactPath(f"unsafe latest path: {link} must be a symlink to one direct run")
+        target = str(link.readlink())
+        prefix = f"{RUNS_DIRNAME}/"
+        if not target.startswith(prefix) or "/" in target[len(prefix) :] or not valid_run_id(target[len(prefix) :]):
+            raise UnsafeArtifactPath(f"unsafe latest target: {link} -> {target}")
+        if not present:
+            raise UnsafeArtifactPath(f"unsafe latest target: {link} points into a missing runs directory")
+        candidate = runs / target[len(prefix) :]
+        try:
+            candidate_stat = candidate.lstat()
+        except FileNotFoundError:
+            return None
+        if stat.S_ISLNK(candidate_stat.st_mode) or not stat.S_ISDIR(candidate_stat.st_mode):
+            raise UnsafeArtifactPath(f"unsafe latest target: {link} does not point to a direct run directory")
+        return candidate
+    if not valid_run_id(run_id):
+        return None
+    runs, present = _safe_runs_dir(root)
+    if not present:
+        return None
     candidate = runs_dir(root) / run_id
-    return candidate if candidate.is_dir() else None
+    try:
+        candidate_stat = candidate.lstat()
+    except FileNotFoundError:
+        return None
+    if stat.S_ISLNK(candidate_stat.st_mode) or not stat.S_ISDIR(candidate_stat.st_mode):
+        raise UnsafeArtifactPath(f"unsafe run path: {candidate} must be a real directory")
+    return candidate
+
+
+def report(root, run_id):
+    run_dir = resolve_run_dir(root, run_id)
+    if run_dir is None:
+        return None
+    report_path = run_dir / "report.json"
+    try:
+        st = report_path.lstat()
+    except FileNotFoundError:
+        return None
+    if stat.S_ISLNK(st.st_mode) or not stat.S_ISREG(st.st_mode):
+        raise UnsafeArtifactPath(f"unsafe report path: {report_path} must be a regular file")
+    payload = json.loads(report_path.read_text())
+    if not isinstance(payload, dict) or payload.get("run_id") != run_id:
+        raise UnsafeArtifactPath(f"invalid report contents: {report_path}")
+    return payload
+
+
+def report_available(root, run_id):
+    try:
+        return report(root, run_id) is not None
+    except OSError, ValueError:
+        return False
 
 
 def resolve_undo_target(root, run_id):
-    # latest names the newest run that changed something; a detect run is nothing to undo
     if run_id != LATEST_NAME:
         return resolve_run_dir(root, run_id)
     for row in reversed(history(root)):
-        if row["actions"]:
-            return resolve_run_dir(root, row["run_id"])
-    return resolve_run_dir(root, LATEST_NAME)
+        if row.get("actions"):
+            run_dir = resolve_run_dir(root, row.get("run_id"))
+            if run_dir is None:
+                continue
+            actions_path = run_dir / "actions.jsonl"
+            try:
+                st = actions_path.lstat()
+            except FileNotFoundError:
+                continue
+            if stat.S_ISREG(st.st_mode) and not stat.S_ISLNK(st.st_mode):
+                return run_dir
+    return None
 
 
 @dataclass
@@ -194,6 +292,15 @@ def close(run):
 
 def history(root):
     path = history_path(root)
-    if not path.is_file():
+    if not _real_directory(path.parent, ".doctor directory"):
         return []
-    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+    try:
+        st = path.lstat()
+    except FileNotFoundError:
+        return []
+    if stat.S_ISLNK(st.st_mode) or not stat.S_ISREG(st.st_mode):
+        raise UnsafeArtifactPath(f"unsafe history path: {path} must be a regular file")
+    try:
+        return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+    except json.JSONDecodeError as exc:
+        raise UnsafeArtifactPath(f"invalid history contents: {path}: {exc}") from exc

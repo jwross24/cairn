@@ -1,8 +1,9 @@
 import argparse
+import json
 import sys
 from pathlib import Path
 
-from cairn import cli, exits, kat, log
+from cairn import cli, doctor_gc, exits, kat, log
 from cairn.doctor import artifacts, detectors, fixers, mutate
 from cairn.errors import CliError
 
@@ -17,7 +18,9 @@ SUBCOMMANDS = (
     ("capabilities", "print the doctor contract: detectors, fixers, exit codes, artifact layout"),
     ("health", "one line and an exit code; the cheap detectors only"),
     ("robot-docs", "print the doctor's agent handbook"),
-    ("ls", "list the runs recorded in .doctor/scorecard_history.jsonl"),
+    ("ls", "list recorded runs and show whether their artifacts are available"),
+    ("gc", "list old run artifacts; --yes removes them and relinquishes their undo backups"),
+    ("diff", "compare the current planned actions with a retained run; read-only"),
 )
 SEVERITY_ORDER = (detectors.ERROR, detectors.WARN, detectors.INFO)
 FIXERS_DOC = fixers.FIXERS
@@ -52,6 +55,7 @@ def configure(parser):
     )
     parser.add_argument("--online", action="store_true", help="enable network probes; refused at M0, nothing needs one")
     parser.add_argument("--explain", default=None, metavar="FINDING-ID", help="expand one finding with its evidence")
+    parser.add_argument("--since", default=None, metavar="RUN-ID", help="compare findings with a retained run")
     parser.add_argument(
         "--robot-triage",
         action="store_true",
@@ -64,6 +68,13 @@ def configure(parser):
         )
         if name == "undo":
             sub.add_argument("run_id", metavar="RUN-ID", help="a run id under .doctor/runs/, or the word latest")
+        elif name == "gc":
+            sub.add_argument(
+                "--before", required=True, metavar="DATE", help="UTC date or timezone-aware ISO-8601 instant"
+            )
+            sub.add_argument("--yes", action="store_true", help="remove every listed run artifact older than --before")
+        elif name == "diff":
+            sub.add_argument("run_id", nargs="?", metavar="RUN-ID", help="compare with a retained run report")
 
 
 def capabilities_document():
@@ -91,8 +102,16 @@ def capabilities_document():
             "files": ["report.json", "report.md", "actions.jsonl", "backups/", "staging/", "stderr.log", "undo.sh"],
             "index": ".doctor/scorecard_history.jsonl",
             "latest": ".doctor/latest",
-            "undo_latest_resolves_to": "the newest run whose actions.jsonl is not empty",
+            "undo_latest_resolves_to": "the newest retained run whose actions.jsonl is not empty",
             "lock": mutate.LOCK_RELPATH,
+        },
+        "retention": {
+            "gc_cutoff": "run ID creation time strictly before --before; date-only cutoffs are UTC midnight",
+            "gc_dry_run": "default; lists the exact batch without writes",
+            "gc_yes": "removes the batch and relinquishes its undo backups",
+            "gc_latest": "refuses the entire batch if it includes the target of .doctor/latest",
+            "diff": "read-only comparison of planned actions with the current detector results",
+            "since": "default-run comparison of findings with a retained report",
         },
         "writes_only_under": [".doctor/", "the paths named by a planned action"],
         "online": False,
@@ -105,15 +124,15 @@ def robot_docs_text():
     lines = [
         "# cairn doctor — agent handbook",
         "",
-        "Detect first, fix second. `cairn doctor` never writes outside .doctor/; `--fix` is the only mutating form",
-        "and every write it makes is backed up verbatim first and replayable in reverse by `cairn doctor undo`.",
+        "`cairn doctor` records reports under .doctor/. `--fix` backs up each changed path verbatim,",
+        "and `cairn doctor undo` restores action runs whose artifacts remain retained.",
         "",
         "## The sequence when an M0 command refuses",
         "1. cairn doctor --robot-triage           one document: what is wrong and the exact next command",
         "2. cairn doctor --explain <finding-id>   the evidence behind one finding",
-        "3. cairn doctor --dry-run --fix          the plan; writes nothing but the run artifact",
+        "3. cairn doctor --dry-run --fix          the plan; writes only the run artifact",
         "4. cairn doctor --fix                    apply the two repairs the doctor owns",
-        "5. cairn doctor undo latest              restore every byte the newest run with actions changed",
+        "5. cairn doctor undo latest              restore the newest retained action run",
         "",
         "## Detectors",
     ]
@@ -130,9 +149,15 @@ def robot_docs_text():
         f"- {doc['run_artifacts']['directory']} holding {', '.join(doc['run_artifacts']['files'])}",
         f"- {doc['run_artifacts']['index']} is the index `cairn doctor ls` prints",
         f"- {doc['run_artifacts']['latest']} points at the newest run",
-        f"- {doc['run_artifacts']['lock']} is the flock a --fix holds; the kernel releases it when the holder dies",
-        "- a backup carries the source file's flags, so a run that backed up a uappnd file leaves an",
-        "  append-only tree: chflags -R nouappnd .doctor/runs/<run-id> before clearing that directory",
+        f"- {doc['run_artifacts']['lock']} serializes report-producing runs, undo and collection",
+        "- `cairn doctor gc --before YYYY-MM-DD` lists runs created strictly before UTC midnight",
+        "  on that date; a date-time cutoff must include a timezone",
+        "- gc lists candidates without writes; `gc --before DATE --yes` removes the listed artifacts",
+        "  and permanently relinquishes their undo backups; it refuses the entire batch if it selects latest",
+        "- gc clears file flags without following symlinks; do not clear flags manually",
+        "- `cairn doctor diff [RUN-ID]` compares planned actions with current detector results without writes",
+        "- `cairn doctor --since RUN-ID` adds a findings comparison to a new default-run report",
+        "  diff and --since require the referenced report to remain available",
         "",
         "## Under --quick",
         "- full: the detector runs entire; skipped: it does not run; partial: it runs its cheap half only",
@@ -218,7 +243,10 @@ def _run_robot_docs(ns):  # noqa: ARG001
 
 
 def _run_ls(ns, root):
-    rows = artifacts.history(root)
+    rows = [
+        {**row, "artifact_state": "available" if artifacts.report_available(root, row.get("run_id")) else "unavailable"}
+        for row in artifacts.history(root)
+    ]
     if ns.json:
         cli.emit_json("doctor", {"mode": "ls", "runs": rows})
         return exits.DOCTOR_HEALTHY
@@ -228,7 +256,7 @@ def _run_ls(ns, root):
     for row in rows:
         print(
             f"{row['run_id']}  {row['mode']:<8} exit={row['exit_code']} "
-            f"findings={row['findings']} actions={row['actions']}"
+            f"findings={row['findings']} actions={row['actions']} artifacts={row['artifact_state']}"
         )
     return exits.DOCTOR_HEALTHY
 
@@ -252,14 +280,14 @@ def _run_health(ns, root):
 
 
 def _run_undo(ns, root):
-    run_dir = artifacts.resolve_undo_target(root, ns.run_id)
-    if run_dir is None:
-        raise CliError(
-            exits.DOCTOR_USAGE,
-            f"cairn doctor undo: no run {ns.run_id} under {artifacts.runs_dir(root)}",
-            next_command="cairn doctor ls",
-        )
     with mutate.acquire(root) as _lock:
+        run_dir = artifacts.resolve_undo_target(root, ns.run_id)
+        if run_dir is None:
+            raise CliError(
+                exits.DOCTOR_USAGE,
+                f"cairn doctor undo: no retained action run {ns.run_id} under {artifacts.runs_dir(root)}",
+                next_command="cairn doctor ls",
+            )
         restored = mutate.undo(root, run_dir)
     payload = {
         "mode": "undo",
@@ -271,8 +299,122 @@ def _run_undo(ns, root):
     return exits.DOCTOR_HEALTHY
 
 
+def _reference_report(root, run_id, command):
+    if not artifacts.valid_run_id(run_id):
+        raise CliError(
+            exits.DOCTOR_USAGE,
+            f"cairn doctor {command}: invalid run id {run_id!r}",
+            next_command="cairn doctor ls",
+        )
+    try:
+        report = artifacts.report(root, run_id)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        raise mutate.Refused(f"cairn doctor {command}: unsafe run artifact: {exc}") from exc
+    if report is None:
+        raise mutate.Refused(
+            f"cairn doctor {command}: report for {run_id} is unavailable or collected; run: cairn doctor ls"
+        )
+    return report
+
+
+def _action_delta(current, previous):
+    current_by_key = {json_key(action): action for action in current}
+    previous_by_key = {json_key(action): action for action in previous}
+    return (
+        [current_by_key[key] for key in sorted(current_by_key.keys() - previous_by_key.keys())],
+        [previous_by_key[key] for key in sorted(previous_by_key.keys() - current_by_key.keys())],
+    )
+
+
+def json_key(value):
+    return json.dumps(value, sort_keys=True, separators=(",", ":"))
+
+
+def _run_diff(ns, root):
+    reference = getattr(ns, "run_id", None)
+    prior_actions = []
+    if reference is not None:
+        prior = _reference_report(root, reference, "diff")
+        prior_actions = prior.get("actions_planned", [])
+    ctx = _context(ns, root)
+    actions = [action.as_dict() for action in fixers.plan(detectors.detect(ctx, only=_only(ns)))]
+    added, removed = _action_delta(actions, prior_actions)
+    payload = {
+        "mode": "diff",
+        "reference": reference,
+        "actions_planned": actions,
+        "added": added,
+        "removed": removed,
+    }
+    lines = [f"cairn doctor diff: {len(actions)} planned action(s)"]
+    lines.extend(f"+ {action['describe']} ({', '.join(action['because'])})" for action in added)
+    lines.extend(f"- {action['describe']} ({', '.join(action['because'])})" for action in removed)
+    if not added and not removed:
+        lines.append("no planned-action changes")
+    _emit(ns, payload, "\n".join(lines) + "\n")
+    return exits.DOCTOR_HEALTHY
+
+
+def _run_gc(ns, root):
+    try:
+        result = doctor_gc.collect(root, ns.before, yes=ns.yes)
+    except doctor_gc.CollectionFailure as exc:
+        payload = {
+            "mode": "gc",
+            "dry_run": False,
+            "candidates": exc.candidates,
+            "removed": exc.removed,
+            "cleared_flags": exc.cleared_flags,
+            "partial_state_possible": True,
+            "failure_path": exc.path,
+            "error": str(exc),
+        }
+        text = (
+            f"cairn doctor gc: stopped; removed={len(exc.removed)} "
+            f"cleared_flags={len(exc.cleared_flags)} partial_state_possible=true\n"
+        )
+        _emit(ns, payload, text)
+        sys.stderr.write(
+            f"error: {exc}; completed removals={len(exc.removed)}; "
+            f"cleared flags={len(exc.cleared_flags)}; inspect `cairn doctor ls` before retrying\n"
+        )
+        lg.info(
+            "gc_partial",
+            detail=str(exc),
+            removed=exc.removed,
+            cleared_flags=exc.cleared_flags,
+            failure_path=exc.path,
+        )
+        return exits.DOCTOR_REFUSED
+    except ValueError as exc:
+        raise CliError(
+            exits.DOCTOR_USAGE,
+            f"cairn doctor gc --before: {exc}",
+            next_command="cairn doctor gc --before YYYY-MM-DD",
+        ) from exc
+    except doctor_gc.UnsafeCollection as exc:
+        raise mutate.Refused(str(exc)) from exc
+    payload = {"mode": "gc", **result}
+    lines = [
+        f"cairn doctor gc: candidates={len(result['candidates'])} dry_run={str(result['dry_run']).lower()} "
+        f"removed={len(result['removed'])}"
+    ]
+    lines.extend(
+        f"  {item['run_id']} started={item['created_at']} path={item['path']}" for item in result["candidates"]
+    )
+    lines.extend(f"  cleared flags={item['flags']:#x} path={item['path']}" for item in result["cleared_flags"])
+    lines.extend(f"  removed {run_id}" for run_id in result["removed"])
+    _emit(ns, payload, "\n".join(lines) + "\n")
+    return exits.DOCTOR_HEALTHY
+
+
 def _report_text(report):
     lines = [f"cairn doctor {report['run_id']}: {report['summary']}"]
+    if report.get("since") is not None:
+        delta = report["since"]
+        lines.append(
+            f"since {delta['run_id']}: {len(delta['added'])} findings added, {len(delta['resolved'])} resolved"
+        )
     for finding in report["findings"]:
         lines.append(f"[{finding['severity']}] {finding['id']}: {finding['message']}")
         lines.append(f"    evidence: {finding['evidence']}")
@@ -307,44 +449,54 @@ def _explain(ns, findings, root):
 def _main_run(ns, root):
     only = _only(ns)
     ctx = _context(ns, root)
+    since_report = _reference_report(root, ns.since, "--since") if ns.since else None
     fix = getattr(ns, "fix", False)
     mode = "fix" if fix and not ns.dry_run else "dry-run" if fix else "detect"
-    lock = mutate.acquire(root) if mode == "fix" else None
-    run = artifacts.start(root, lock)
+    lock = mutate.acquire(root)
     try:
-        findings = detectors.detect(ctx, only=only)
-        planned = fixers.plan(findings)
-        actions = []
-        if mode == "fix":
-            actions = fixers.apply(run, planned)
+        run = artifacts.start(root, lock)
+        try:
             findings = detectors.detect(ctx, only=only)
             planned = fixers.plan(findings)
-        if findings and mode == "fix":
-            code = exits.DOCTOR_PARTIAL
-        elif findings:
-            code = exits.DOCTOR_FINDINGS
-        else:
-            code = exits.DOCTOR_HEALTHY
-        report = {
-            "mode": mode,
-            "run_id": run.run_id,
-            "run_dir": str(run.run_dir),
-            "root": str(root),
-            "exit_code": code,
-            "exit_meaning": exits.DOCTOR[code],
-            "summary": _summary(findings),
-            "findings": [f.as_dict() for f in findings],
-            "actions_planned": [a.as_dict() for a in planned],
-            "actions": actions,
-            "recommended_command": _recommended(findings, mode),
-            "capabilities_command": CAPABILITIES_COMMAND,
-            "ts": cli.now_iso(),
-        }
-        artifacts.finish(run, report)
+            actions = []
+            if mode == "fix":
+                actions = fixers.apply(run, planned)
+                findings = detectors.detect(ctx, only=only)
+                planned = fixers.plan(findings)
+            if findings and mode == "fix":
+                code = exits.DOCTOR_PARTIAL
+            elif findings:
+                code = exits.DOCTOR_FINDINGS
+            else:
+                code = exits.DOCTOR_HEALTHY
+            report = {
+                "mode": mode,
+                "run_id": run.run_id,
+                "run_dir": str(run.run_dir),
+                "root": str(root),
+                "exit_code": code,
+                "exit_meaning": exits.DOCTOR[code],
+                "summary": _summary(findings),
+                "findings": [f.as_dict() for f in findings],
+                "actions_planned": [a.as_dict() for a in planned],
+                "actions": actions,
+                "recommended_command": _recommended(findings, mode),
+                "capabilities_command": CAPABILITIES_COMMAND,
+                "ts": cli.now_iso(),
+            }
+            if since_report is not None:
+                previous = {finding["id"]: finding for finding in since_report.get("findings", [])}
+                current = {finding["id"]: finding for finding in report["findings"]}
+                report["since"] = {
+                    "run_id": ns.since,
+                    "added": [current[key] for key in sorted(current.keys() - previous.keys())],
+                    "resolved": [previous[key] for key in sorted(previous.keys() - current.keys())],
+                }
+            artifacts.finish(run, report)
+        finally:
+            artifacts.close(run)
     finally:
-        artifacts.close(run)
-        if lock is not None:
-            lock.release()
+        lock.release()
     if ns.explain:
         return _explain(ns, findings, root)
     if ns.robot_triage:
@@ -368,6 +520,16 @@ def _main_run(ns, root):
 def _dispatch(ns):
     root = Path(ns.root).resolve()
     command = getattr(ns, "doctor_command", None)
+    if command is not None and ns.since:
+        raise CliError(
+            exits.DOCTOR_USAGE,
+            "--since is available only on the default doctor run",
+            next_command="cairn doctor --help",
+        )
+    if command == "gc":
+        return _run_gc(ns, root)
+    if command == "diff":
+        return _run_diff(ns, root)
     if command == "capabilities":
         return _run_capabilities(ns)
     if command == "robot-docs":
@@ -387,21 +549,25 @@ def _run(ns):
     try:
         return _dispatch(ns)
     except mutate.ConcurrencyLost as exc:
-        sys.stderr.write(f"error: {exc}; run: cairn doctor (read-only) or wait\n")
+        sys.stderr.write(f"error: {exc}; run: cairn doctor health or wait\n")
         lg.info("refused", reason="concurrency", detail=str(exc))
         return exits.DOCTOR_CONCURRENCY
     except mutate.Refused as exc:
-        sys.stderr.write(f"error: {exc}; nothing was changed; run: {CAPABILITIES_COMMAND}\n")
+        sys.stderr.write(f"error: {exc}; inspect `cairn doctor ls` before retrying; run: {CAPABILITIES_COMMAND}\n")
         lg.info("refused", reason="unsafe", detail=str(exc))
         return exits.DOCTOR_REFUSED
     except mutate.UndoFailed as exc:
-        sys.stderr.write(f"error: {exc}; nothing was changed; run: cairn doctor ls\n")
+        sys.stderr.write(f"error: {exc}; inspect `cairn doctor ls` before retrying\n")
         lg.info("refused", reason="undo_failed", detail=str(exc))
         return exits.DOCTOR_ROLLED_BACK
+    except artifacts.UnsafeArtifactPath as exc:
+        sys.stderr.write(f"error: {exc}; inspect `cairn doctor ls` before retrying\n")
+        lg.info("refused", reason="unsafe_artifact", detail=str(exc))
+        return exits.DOCTOR_REFUSED
     except OSError as exc:
         sys.stderr.write(
             f"error: {exc}; the doctor could not read or write under --root; "
-            f"nothing was changed; run: cairn doctor --root <a writable checkout>\n"
+            f"inspect `cairn doctor ls` before retrying; run: cairn doctor --root <a writable checkout>\n"
         )
         lg.info("refused", reason="io", detail=str(exc))
         return exits.DOCTOR_REFUSED
@@ -411,7 +577,7 @@ cli.register(
     "doctor",
     configure,
     _run,
-    summary="diagnose the M0 deploy shape read-only, and repair the two failure modes it owns with --fix",
+    summary="diagnose and repair the M0 deploy shape; undo repairs or explicitly collect old doctor artifacts",
     read_only=False,
     json=True,
     dangerous=True,

@@ -244,7 +244,8 @@ def test_robot_docs_prints_the_handbook(shape, capsys):
         "## Exit codes (doctor)",
         "D-pin-mode",
         "F-modes",
-        "chflags -R nouappnd .doctor/runs/<run-id>",
+        "gc --before DATE --yes` removes the listed artifacts",
+        "permanently relinquishes their undo backups",
         "under --quick: partial",
     ):
         assert needle in out

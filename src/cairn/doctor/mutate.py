@@ -27,7 +27,7 @@ class Refused(Exception):
 
 class ConcurrencyLost(Exception):
     def __init__(self, path, holder):
-        super().__init__(f"another cairn doctor --fix holds {path} (pid {holder})")
+        super().__init__(f"another cairn doctor process holds {path} (pid {holder})")
         self.path = str(path)
         self.holder = holder
 

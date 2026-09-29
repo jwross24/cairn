@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 DOCTOR_PACKAGE = Path(__file__).resolve().parents[2] / "src" / "cairn" / "doctor"
+DOCTOR_GC_MODULE = DOCTOR_PACKAGE.parent / "doctor_gc.py"
 WRITE_ALLOWED = {"mutate.py", "artifacts.py"}
 RMDIR_ALLOWED = {"mutate.py"}
 
@@ -61,16 +62,23 @@ def _is_os(func, modules):
 
 
 def scan_source(name, text):
+    return _scan_source(name, text, deletion_authority=False)
+
+
+def _scan_source(name, text, *, deletion_authority):
     tree = ast.parse(text)
     modules, imported = _aliases(tree)
     violations = []
 
     def report(attr):
         if attr in DELETE_ATTRS:
-            violations.append(f"{name}: {attr} — the doctor deletes nothing")
+            if not deletion_authority:
+                violations.append(f"{name}: {attr} — deletion is confined to doctor_gc.py")
+        elif attr == "chflags" and name not in WRITE_ALLOWED and not deletion_authority:
+            violations.append(f"{name}: chflags outside mutate.py/artifacts.py/doctor_gc.py")
         elif attr == "rmdir" and name not in RMDIR_ALLOWED:
             violations.append(f"{name}: rmdir outside mutate.py")
-        elif attr in WRITE_ATTRS and name not in WRITE_ALLOWED:
+        elif attr in WRITE_ATTRS and name not in WRITE_ALLOWED and not (attr == "chflags" and deletion_authority):
             violations.append(f"{name}: {attr} outside mutate.py/artifacts.py")
 
     for node in ast.walk(tree):
@@ -103,11 +111,20 @@ def _sources():
     return sorted(p for p in DOCTOR_PACKAGE.rglob("*.py") if "__pycache__" not in p.parts)
 
 
-def test_no_doctor_module_writes_outside_the_mutate_chokepoint():
+def scan_tree(package=DOCTOR_PACKAGE, gc_module=DOCTOR_GC_MODULE):
+    package = Path(package)
+    gc_module = Path(gc_module)
+    gc_is_external = not gc_module.is_relative_to(package) and gc_module.name == "doctor_gc.py"
     violations = []
-    for path in _sources():
-        violations += scan_source(path.name, path.read_text())
-    assert violations == []
+    for path in sorted(p for p in package.rglob("*.py") if "__pycache__" not in p.parts):
+        name = path.relative_to(package).as_posix()
+        violations += _scan_source(name, path.read_text(), deletion_authority=False)
+    violations += _scan_source("doctor_gc.py", gc_module.read_text(), deletion_authority=gc_is_external)
+    return violations
+
+
+def test_no_doctor_module_writes_outside_the_mutate_chokepoint():
+    assert scan_tree() == []
 
 
 def test_the_package_actually_has_the_modules_the_scan_polices():
@@ -166,6 +183,27 @@ def test_a_planted_writer_module_is_caught(source, needle):
 )
 def test_a_planted_deleter_is_caught_even_in_the_chokepoint(source):
     assert scan_source("mutate.py", source)
+
+
+def test_a_planted_deleter_is_caught_in_a_scratch_copy_of_an_existing_module(tmp_path):
+    package = tmp_path / "doctor"
+    package.mkdir()
+    source = (DOCTOR_PACKAGE / "mutate.py").read_text()
+    planted = package / "mutate.py"
+    planted.write_text(source + "\ndef planted(path):\n    os.unlink(path)\n")
+    gc_copy = tmp_path / "doctor_gc.py"
+    gc_copy.write_text(DOCTOR_GC_MODULE.read_text())
+    assert "mutate.py: unlink" in "\n".join(scan_tree(package, gc_copy))
+
+
+def test_a_package_module_never_inherits_the_external_deletion_authority(tmp_path):
+    package = tmp_path / "doctor"
+    package.mkdir()
+    (package / "doctor_gc.py").write_text("import os\ndef planted(path):\n    os.unlink(path)\n")
+    gc_copy = tmp_path / "doctor_gc.py"
+    gc_copy.write_text("def collect(path):\n    return path\n")
+    violations = scan_tree(package, gc_copy)
+    assert any("doctor_gc.py: unlink" in violation for violation in violations)
 
 
 def test_rmdir_is_allowed_only_in_the_chokepoint():
