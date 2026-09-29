@@ -1,6 +1,7 @@
 import dataclasses
 import json
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -10,6 +11,7 @@ from cairn import (
     bundle,
     claims,
     foundations,
+    human_authority,
     instances,
     justify,
     ladder,
@@ -223,7 +225,14 @@ def bound_production_run(writer, shipped, tmp_path, run_id, declared_size=(7, 77
     scratch = tmp_path / f"bound-{run_id}"
     scratch.mkdir()
     attestation_log = scratch / "attestations.log"
-    attestation_log.touch()
+    attest.init(str(attestation_log), shipped.waiver_target())
+    human_authority.append(
+        writer,
+        str(attestation_log),
+        human_authority.STATEMENT_RATIFICATION,
+        {"statement_hash": statement.hash, "issued_by": "test-operator", "at": datetime.now(UTC).isoformat()},
+        gate_bundle_hash=shipped.hash,
+    )
     table, arm_trials = ladder.run(
         writer,
         shipped,

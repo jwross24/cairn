@@ -2,12 +2,13 @@ import dataclasses
 import json
 import sqlite3
 import sys
+from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 
 import pytest
 
-from cairn import claims, ladder, ladderplan, laddertable, ledger, runner
+from cairn import attest, claims, human_authority, ladder, ladderplan, laddertable, ledger, runner
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import factories
@@ -189,12 +190,21 @@ def test_a_yank_failure_rolls_back_the_table_and_ledger_but_preserves_trial_rece
 
 
 def test_wrong_answer_disowns_bound_evidence_without_refuting_the_statement(
-    writer, shipped, tmp_path, plan, hypothesis_object, attest_path
+    writer, shipped, tmp_path, plan, hypothesis_object
 ):
     statement = factories.claim_statement(family="dlp", seed=91)
     claims.write_claim_statement(writer, statement)
     bound = dataclasses.replace(hypothesis_object, claim_statement_hash=statement.hash)
-    table, trials = run_wrong_answer(writer, shipped, tmp_path, plan, bound, attest_path)
+    bound_attest_path = tmp_path / "bound-attestations.log"
+    attest.init(str(bound_attest_path), shipped.waiver_target())
+    human_authority.append(
+        writer,
+        str(bound_attest_path),
+        human_authority.STATEMENT_RATIFICATION,
+        {"statement_hash": statement.hash, "issued_by": "test-operator", "at": datetime.now(UTC).isoformat()},
+        gate_bundle_hash=shipped.hash,
+    )
+    table, trials = run_wrong_answer(writer, shipped, tmp_path, plan, bound, bound_attest_path)
     evidence = claims.evidence_for(writer, statement.hash)
     claimant_ids = {trial.attempt_id for trial in trials if trial.arm == ladder.CLAIMANT}
     assert {node["attempt_id"] for node in evidence} == claimant_ids
