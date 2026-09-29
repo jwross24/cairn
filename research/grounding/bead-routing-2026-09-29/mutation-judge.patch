@@ -1,0 +1,11 @@
+--- a/scripts/route.py
++++ b/scripts/route.py
+@@ -367,7 +367,7 @@
+     reason = answer.get("reason")
+     if (
+         not isinstance(answer_class, str)
+-        or answer_class not in {"Standard", "Demanding"}
++        or answer_class not in {"Mechanical", "Standard", "Demanding"}
+         or not isinstance(reason, str)
+         or not reason.strip()
+         or any(line_break in reason for line_break in ("\n", "\r"))

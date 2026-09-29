@@ -1,0 +1,11 @@
+--- a/scripts/route.py
++++ b/scripts/route.py
+@@ -203,7 +203,7 @@
+ 
+ 
+ def _identity_paths(root: Path) -> set[str]:
+-    return set(_skill_sources(root)) | set(_gate_bundle_sources())
++    return set(_gate_bundle_sources())
+ 
+ 
+ def _is_critical_path(path: str, identity_paths: set[str]) -> bool:

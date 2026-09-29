@@ -1,0 +1,11 @@
+--- a/scripts/route.py
++++ b/scripts/route.py
+@@ -426,7 +426,7 @@
+         else:
+             selected = answer["class"]
+             reasons.append(f"judge selected {selected}: {answer['reason']}")
+-    if requested and CLASS_RANK[requested] > CLASS_RANK[selected]:
++    if requested:
+         reasons.append(f"route label raises class from {selected} to {requested}")
+         selected = requested
+     return {

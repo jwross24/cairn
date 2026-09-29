@@ -1,0 +1,61 @@
+{
+  "base_commit": "05a46e42de487ecf2c95ecc093cb57eb5f36dac3",
+  "files": {
+    "scripts/route.py": {
+      "bytes": 15066,
+      "sha256": "bb5c79db0d8b5c9ffd9e12e5d031d53b1a5d42f5e02980adbbb3750cdd4a2019"
+    },
+    "tests/unit/test_route.py": {
+      "bytes": 10164,
+      "sha256": "f1239843100b8863a354e226d1ebd759d2b5170e1117eda2d6c0a2c7dbc78e59"
+    },
+    "AGENTS.md": {
+      "bytes": 22338,
+      "sha256": "ab96d8eefe748e377c86edab63ead879e6c03dad384c67792bba0c120741796f"
+    },
+    "research/decisions/adr-015-bead-model-routing.md": {
+      "bytes": 1870,
+      "sha256": "d5c2b5618d445ba643df45401a25f6ca771685403e14a3fe45edd06bc5afb17e"
+    }
+  },
+  "unit_contract_command": "uv run pytest --no-header -q --tb=short --disable-warnings tests/unit/test_route.py tests/unit/test_identity_sources.py",
+  "unit_contract_exit": 0,
+  "mutations": {
+    "critical": {
+      "exit": 1,
+      "source_sha256": "c74bb5e988f2f6d741e211a3a4770933ecbe27a96a78e5702a2d00a1bfd241ea",
+      "patch": "mutation-critical.patch",
+      "result": "mutation-critical.txt"
+    },
+    "label": {
+      "exit": 1,
+      "source_sha256": "5cd026b13d21fd2cae14ab477f7a91cbd1fb1304b6a54f3c21354a7c1ccb2eb4",
+      "patch": "mutation-label.patch",
+      "result": "mutation-label.txt"
+    },
+    "judge": {
+      "exit": 1,
+      "source_sha256": "acc3936dcbffbc9c229847b054c1f540bfd6ac35be98679dda5c6072a82d506a",
+      "patch": "mutation-judge.patch",
+      "result": "mutation-judge.txt"
+    },
+    "fallback": {
+      "exit": 1,
+      "source_sha256": "c13295055e8002dad8e727cfd2028ff39a3d375f12d4b1de5a503ca2f63e33e2",
+      "patch": "mutation-fallback.patch",
+      "result": "mutation-fallback.txt"
+    },
+    "identity": {
+      "exit": 1,
+      "source_sha256": "7aa991dddbca71b4714f61d89900e5feaf4215c303535b236121572b7cab1993",
+      "patch": "mutation-identity.patch",
+      "result": "mutation-identity.txt"
+    },
+    "unknown-class": {
+      "exit": 1,
+      "source_sha256": "573a18e40e94f113c5aac7f66fb099c1861212db4491d68d8f5c6e76521688f8",
+      "patch": "mutation-unknown-class.patch",
+      "result": "mutation-unknown-class.txt"
+    }
+  }
+}

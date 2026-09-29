@@ -1,0 +1,11 @@
+--- a/scripts/route.py
++++ b/scripts/route.py
+@@ -389,7 +389,7 @@
+             continue
+         value = label.removeprefix("route:").casefold()
+         if value not in known:
+-            raise RouteError(f"unknown route class label: {label}")
++            continue
+         candidate = known[value]
+         if requested is None or CLASS_RANK[candidate] > CLASS_RANK[requested]:
+             requested = candidate

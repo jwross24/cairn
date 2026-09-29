@@ -1,0 +1,16 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________ test_critical_body_path_cannot_be_lowered_by_route_label ___________
+tests/unit/test_route.py:72: in test_critical_body_path_cannot_be_lowered_by_route_label
+    assert result["class"] == "Critical"
+E   AssertionError: assert 'Demanding' == 'Critical'
+E     
+E     - Critical
+E     + Demanding
+------------------------------ Captured log setup ------------------------------
+DEBUG    cairn:_test_logging.py:78 phase
+---------------------------- Captured log teardown -----------------------------
+DEBUG    cairn:_test_logging.py:80 phase
+=========================== short test summary info ============================
+FAILED tests/unit/test_route.py::test_critical_body_path_cannot_be_lowered_by_route_label
+1 failed, 1191 warnings in 0.19s

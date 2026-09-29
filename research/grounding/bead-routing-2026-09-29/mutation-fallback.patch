@@ -1,0 +1,11 @@
+--- a/scripts/route.py
++++ b/scripts/route.py
+@@ -421,7 +421,7 @@
+         judge_result["answer"] = shown_answer
+         judge_result["error"] = error
+         if error:
+-            selected = "Demanding"
++            selected = "Standard"
+             reasons.append(f"judge failure raises gray work to Demanding: {error}")
+         else:
+             selected = answer["class"]

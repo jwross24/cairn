@@ -1,0 +1,11 @@
+--- a/scripts/route.py
++++ b/scripts/route.py
+@@ -251,7 +251,7 @@
+ 
+ def _floor(paths: tuple[str, ...], identities: set[str]) -> tuple[str, list[str]]:
+     critical = tuple(path for path in paths if _is_critical_path(path, identities))
+-    if critical:
++    if False and critical:
+         return "Critical", [f"critical path: {path}" for path in critical]
+     if paths and all(_is_documentation_path(path) for path in paths):
+         return "Mechanical", ["all identified paths are documentation or bead records"]

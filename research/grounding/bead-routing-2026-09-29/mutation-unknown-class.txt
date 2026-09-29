@@ -1,0 +1,14 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______________________ test_unknown_route_label_refuses _______________________
+/tmp/cairn-q120.wulzBJ/mutations/unknown-class/tests/unit/test_route.py:120: in test_unknown_route_label_refuses
+    with pytest.raises(route.RouteError, match="unknown route class label"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE RouteError
+------------------------------ Captured log setup ------------------------------
+DEBUG    cairn:_test_logging.py:78 phase
+---------------------------- Captured log teardown -----------------------------
+DEBUG    cairn:_test_logging.py:80 phase
+=========================== short test summary info ============================
+FAILED ../../../../tmp/cairn-q120.wulzBJ/mutations/unknown-class/tests/unit/test_route.py::test_unknown_route_label_refuses
+1 failed, 2140 warnings in 0.26s

@@ -283,6 +283,7 @@ committed (`.gitignore` re-includes it against the global ignore). `br` never ru
   session handled; `cm context "<task>" --json` before non-trivial work, with inline
   `// [cass: helpful <rule-id>] - reason` feedback in the session and never `cm mark`.
 - Search by question shape: `rg` for literals, semantic search for "how does X work". Never `rg` for codemods.
+- Classify bead scope with `uv run python scripts/route.py <bead-id>`; the router emits the class, path floor, reasons, and judge status. Fleet routing owns model assignments.
 - `slb`, `ntm` and `agent-mail` are installed but unused: this is a single-agent repository, and no
   reservation or swarm protocol applies until a second agent works the tree. `rch`, `xf`, `ms`: not installed.
 
