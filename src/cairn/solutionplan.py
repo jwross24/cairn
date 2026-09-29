@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 
-from cairn import container, log
+from cairn import claims, container, log
 from cairn.gateplan import BLOCKED_PREFIX, MISMATCH_REASON, RESULT_BLOCKED, RESULT_FAIL, RESULT_PASS
 
 lg = log.get("solutionplan")
@@ -56,6 +56,18 @@ KIND_EXPECTATION = {
 
 TIMEOUT_REASON = "step-timeout"
 STEP_FIELDS = ("step", "kind", "expect", "blocking", "timeout_s")
+
+STEP_GATE = "solution_plan_step"
+SUMMARY_GATE = "challenge_render"
+SUMMARY_STEP = "solution_plan"
+FIRST_FAILURE_PREFIX = "first-failure:"
+INCOMPLETE_PLAN_REASON = "incomplete-plan"
+PERSISTED_RESULT = {
+    RESULT_PASS: RESULT_PASS,
+    RESULT_FAIL: RESULT_FAIL,
+    RESULT_TIMEOUT: RESULT_FAIL,
+    RESULT_BLOCKED: RESULT_BLOCKED,
+}
 
 
 class PlanInvalid(ValueError):
@@ -139,6 +151,56 @@ class SolutionPlan:
             )
             results.append(StepResult(step.step, step.kind, step.expect, observed, result, reasons, wall_ms))
         return PlanResult(tuple(results), self.arm)
+
+
+def persist(
+    sub, result, *, bundle_hash, pin_hash, statement_hash, formal_statement_hash, renderer_hash, prelude_hash, at
+):
+    if not result.steps:
+        raise PlanInvalid("plan-result-empty")
+    for step in result.steps:
+        if step.result not in PERSISTED_RESULT:
+            raise PlanInvalid(f"unknown-step-result:{step.step}.{step.result!r}")
+    binding = {
+        "bundle_hash": bundle_hash,
+        "pin_hash": pin_hash,
+        "statement_hash": statement_hash,
+        "formal_statement_hash": formal_statement_hash,
+        "renderer_hash": renderer_hash,
+        "prelude_hash": prelude_hash,
+        "arm": result.arm,
+        "at": at,
+    }
+    complete = tuple(step.kind for step in result.steps) == STEP_KINDS
+    bound = isinstance(formal_statement_hash, str) and formal_statement_hash != ""
+    passed = result.ok and complete and bound
+    reasons = []
+    if not result.ok:
+        failing = next(step for step in result.steps if step.result != RESULT_PASS)
+        reasons.append(f"{FIRST_FAILURE_PREFIX}{failing.step}")
+    if not complete or not bound:
+        reasons.append(INCOMPLETE_PLAN_REASON)
+    with sub._tx():
+        step_hashes = []
+        for step in result.steps:
+            run = claims.GateRun(
+                gate=STEP_GATE,
+                plan_step=step.step,
+                result=PERSISTED_RESULT[step.result],
+                reasons=tuple(step.reasons),
+                **binding,
+            )
+            step_hashes.append(claims.write_gate_run(sub, run))
+        summary = claims.GateRun(
+            gate=SUMMARY_GATE,
+            plan_step=SUMMARY_STEP,
+            result=RESULT_PASS if passed else RESULT_FAIL,
+            reasons=tuple(reasons),
+            **binding,
+        )
+        summary_hash = claims.write_gate_run(sub, summary)
+    lg.info("persisted", summary=summary_hash, result=summary.result, steps=len(step_hashes), reasons=list(reasons))
+    return summary_hash, tuple(step_hashes)
 
 
 class ImportsUnparsable(ValueError):

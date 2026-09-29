@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import attest, claims, cli, nogo, scrutiny
+from cairn import attest, claims, cli, nogo, scrutiny, solutionplan
 from cairn.tiergate import REASON_ORDER, Launch, TierGate, TierRefused
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -13,6 +13,7 @@ import _substrate_helpers as helpers
 import factories
 from test_nogo_tier_wiring import arena, attest_review, declare, launch
 from test_repro_gate import ladder_evidence
+from test_solution_plan_persist import plan_result
 from test_tier_gate import METHOD_IDENTITY, synthetic_profile
 
 AT = "2026-09-05T00:00:00.000000+00:00"
@@ -157,11 +158,16 @@ def test_a_theorem_at_top_class_needs_the_formalization_gate_and_the_statement_r
     launch_ = tier_launch(arena, 3, key=key, statement_hash=theorem.hash)
     before = scrutiny_reasons(arena, launch_)
     assert {scrutiny.SCRUTINY_FORMALIZATION_ABSENT, scrutiny.SCRUTINY_STATEMENT_REVIEW_ABSENT} <= before
-    claims.write_gate_run(
+    solutionplan.persist(
         arena["sub"],
-        factories.gate_run(
-            gate="challenge_render", result="pass", statement_hash=theorem.hash, seed=4, arm="dev-macos-fake-landrun"
-        ),
+        plan_result(),
+        bundle_hash=arena["bundle"].hash,
+        pin_hash=arena["bundle"].pin_hash,
+        statement_hash=theorem.hash,
+        formal_statement_hash="f0" * 32,
+        renderer_hash="e1" * 32,
+        prelude_hash="d2" * 32,
+        at=factories.CREATED_AT,
     )
     unplaced = factories.review_verdict(theorem.hash, verdict="approve", seed=3)
     offset = attest.append_record(str(arena["attest"]), claims.review_verdict_canonical(unplaced))
@@ -172,6 +178,37 @@ def test_a_theorem_at_top_class_needs_the_formalization_gate_and_the_statement_r
     assert scrutiny.SCRUTINY_FORMALIZATION_ABSENT not in after
     assert scrutiny.SCRUTINY_STATEMENT_REVIEW_ABSENT not in after
     assert scrutiny.EXPERT_SIGNOFF_ABSENT in after
+
+
+def gate_row(**kw):
+    fields = {"gate": "challenge_render", "result": "pass", "arm": "dev-macos-fake-landrun"}
+    fields.update(kw)
+    return factories.gate_run(seed=4, **fields)
+
+
+NOT_A_SUMMARY = {
+    "one passing step row": {"gate": "solution_plan_step", "plan_step": "build", "formal_statement_hash": "f0" * 32},
+    "an unbound render pass": {},
+    "a bound render pass": {"formal_statement_hash": "f0" * 32},
+    "a failing summary": {"plan_step": "solution_plan", "formal_statement_hash": "f0" * 32, "result": "fail"},
+    "a summary pass without a formal hash": {"plan_step": "solution_plan"},
+}
+
+
+@pytest.mark.parametrize("label", sorted(NOT_A_SUMMARY))
+def test_a_formalization_obligation_is_not_met_by_anything_but_a_passing_bound_summary(tmp_path, label):
+    stmt = factories.claim_statement(seed=41, formal_source="theorem T : True := trivial")
+    sub = helpers.open_writer(tmp_path)
+    try:
+        claims.write_claim_statement(sub, stmt)
+        claims.write_gate_run(sub, gate_row(statement_hash=stmt.hash, **NOT_A_SUMMARY[label]))
+        assert scrutiny._formalization_passed(sub, stmt.hash) is False
+        claims.write_gate_run(
+            sub, gate_row(statement_hash=stmt.hash, plan_step="solution_plan", formal_statement_hash="f0" * 32)
+        )
+        assert scrutiny._formalization_passed(sub, stmt.hash) is True
+    finally:
+        sub.close()
 
 
 def test_a_ladder_keep_and_a_passed_repro_record_meet_their_obligations_until_the_attempt_is_disowned(arena, statement):

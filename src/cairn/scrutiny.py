@@ -65,6 +65,7 @@ SIGNOFF = Struct(
 )
 COST_MODEL_KIND = "cost_model"
 FORMALIZATION_GATE_NAME = "challenge_render"
+FORMALIZATION_SUMMARY_STEP = "solution_plan"
 LADDER_TABLE = "ladder_table"
 KEEP = "KEEP"
 APPROVE = "approve"
@@ -242,8 +243,9 @@ def _ladder_keep(sub, statement_hash):
 
 def _formalization_passed(sub, statement_hash):
     row = sub.conn.execute(
-        "SELECT 1 FROM gate_runs WHERE gate = ? AND statement_hash = ? AND result = 'pass' LIMIT 1",
-        (FORMALIZATION_GATE_NAME, statement_hash),
+        "SELECT 1 FROM gate_runs WHERE gate = ? AND plan_step = ? AND formal_statement_hash IS NOT NULL "
+        "AND statement_hash = ? AND result = 'pass' LIMIT 1",
+        (FORMALIZATION_GATE_NAME, FORMALIZATION_SUMMARY_STEP, statement_hash),
     ).fetchone()
     return row is not None
 

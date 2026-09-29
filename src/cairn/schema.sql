@@ -287,7 +287,7 @@ CREATE TABLE IF NOT EXISTS review_verdicts (
 
 CREATE TABLE IF NOT EXISTS gate_runs (
     run_id TEXT PRIMARY KEY,
-    gate TEXT NOT NULL CHECK (gate IN ('canon_kat', 'verifier', 'tier_gate', 'self_test', 'gate_plan', 'bundle_open', 'ladder_plan', 'challenge_render')),
+    gate TEXT NOT NULL CHECK (gate IN ('canon_kat', 'verifier', 'tier_gate', 'self_test', 'gate_plan', 'bundle_open', 'ladder_plan', 'challenge_render', 'solution_plan_step')),
     bundle_hash TEXT NOT NULL,
     pin_hash TEXT NOT NULL,
     plan_step TEXT,

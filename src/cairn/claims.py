@@ -30,6 +30,7 @@ GATES = (
     "bundle_open",
     "ladder_plan",
     "challenge_render",
+    "solution_plan_step",
 )
 GATE_RESULTS = ("pass", "fail", "refused", "blocked", "admitted")
 TIERS = (0, 1, 2, 3)
@@ -96,7 +97,7 @@ REVIEW_VERDICT = Struct(
         Field("supersedes", Optional(STR)),
     ],
 )
-FORMALIZATION_GATES = frozenset({"challenge_render"})
+FORMALIZATION_GATES = frozenset({"challenge_render", "solution_plan_step"})
 GATE_RUN = Struct(
     "gate_run",
     [
