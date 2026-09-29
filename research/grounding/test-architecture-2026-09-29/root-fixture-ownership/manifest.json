@@ -64,5 +64,23 @@
     "artifact": "db-parent-ubs.log.gz",
     "bytes": 24410,
     "sha256": "e4759fc287140993047a259b11fdfc4ae0166a97e2facfe787a75a6a1212b8eb"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/2de-ci-run.json",
+    "artifact": "2de-ci-run.json.gz",
+    "bytes": 45805,
+    "sha256": "20eac3845d58041f6b40d35bde3856bdc6ba0d9367a819b4bbbe53fbd2bd3952"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/2de-ci-run.log",
+    "artifact": "2de-ci-run.log.gz",
+    "bytes": 2314007,
+    "sha256": "b75104dabe5b900d83fb4bb25de2e62ea3e76d8dbac92b610c5c39e44f1ed039"
+  },
+  {
+    "source": "/tmp/cairn-day-lane3.uMzz8z/2de-ci-profile.json",
+    "artifact": "2de-ci-profile.json.gz",
+    "bytes": 91642,
+    "sha256": "3c6d55ac7c408d1f1974e4c9bd8e97f55015ee24f09c31456fa653c4ff6bf088"
   }
 ]

@@ -65,8 +65,29 @@ Unverified seams are collection behavior without a terminal reporter or with imp
 
 ## CI boundary and claims
 
-The CI summary associated with source `133f23aa647f42eb00e9aa1063b798ad3ac606b3` records 17 MAP status-contract failures and nine other lanes passing. It is not a CI result for the ownership overlay. No pushed CI pass for this fixture work is recorded here.
+The fixture repair is committed at `2de797830071146bc4433983e8ff8e5d3f90bebe`. Its two owned source files have the byte lengths and SHA-256 values recorded above. [Run 36596493998](https://github.com/jwross24/cairn/actions/runs/36596493998) is terminal success on that exact pushed commit, with all ten jobs successful. The Python log names each of the five `test_db_snapshot.py` contracts and the actual M0 path caller as `PASSED`.
 
-**No-Claim:** These fixture results do not establish a speedup, global leak freedom, a production database defect, or a pushed CI pass for this work. The source-only fixture map does not label the entire fixture audit as passing.
+| Lane | Collected | Passed | Deselected | Skipped / xfailed | Pytest seconds |
+|---|---:|---:|---:|---:|---:|
+| Python | 4460 | 4269 | 188 | 2 / 1 | 877.79 |
+| Lean | 4460 | 122 | 4338 | 0 / 0 | 722.25 |
+| Solution | 4460 | 18 | 4442 | 0 / 0 | 449.31 |
+| Solution plan exact | 4460 | 1 | 4459 | 0 / 0 | 837.14 |
+| Solution plan refusals | 4460 | 2 | 4458 | 0 / 0 | 568.59 |
+| Container | 45 | 35 | 10 | 0 / 0 | 663.23 |
+| Container replay exact | 45 | 2 | 43 | 0 / 0 | 458.35 |
+| Container replay refusals | 45 | 4 | 41 | 0 / 0 | 548.40 |
+| Container plan exact | 45 | 1 | 44 | 0 / 0 | 433.26 |
+| Container plan refusals | 45 | 3 | 42 | 0 / 0 | 543.84 |
+
+Every lane reports zero failures, errors, and warnings. The two Python skips are the external compliance-skill drift checks; the xfail is corpus completeness. None exercises `db_snapshot`, and none is counted as passed. Their broader audit holds are documented in [compliance-drift.md](compliance-drift.md) and the checklist.
+
+The exact metadata, full log, and parsed counts are retained as [`2de-ci-run.json.gz`](root-fixture-ownership/2de-ci-run.json.gz), [`2de-ci-run.log.gz`](root-fixture-ownership/2de-ci-run.log.gz), and [`2de-ci-profile.json.gz`](root-fixture-ownership/2de-ci-profile.json.gz). The profiler's planted missing-lane, malformed-summary, nonterminal, failed-run, and incorrect step-category inputs refuse. The invocation was:
+
+```bash
+uv run python research/grounding/test-architecture-2026-09-29/pilot_profile.py --run-json /tmp/cairn-day-lane3.uMzz8z/2de-ci-run.json --run-log /tmp/cairn-day-lane3.uMzz8z/2de-ci-run.log --self-test
+```
+
+**No-Claim:** These fixture results do not establish a speedup, global leak freedom, or a production database defect. The source-only fixture map does not label the entire fixture audit as passing.
 
 Raw logs and the exact reproducer source are retained under [`root-fixture-ownership/`](root-fixture-ownership/). [`manifest.json`](root-fixture-ownership/manifest.json) records each source path, artifact name, uncompressed byte length, and uncompressed SHA-256.
