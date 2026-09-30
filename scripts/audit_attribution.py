@@ -31,8 +31,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import shlex
 import subprocess
 import sys
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -40,7 +42,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from closing_commit import GIT_FAILED_EXIT, STAGED, UNKNOWN, GitError, resolve
 
-IGNORE_LIST_PATHS = (".ubsignore", ".eslintignore", ".gitignore", ".flake8", "pyproject.toml")
+IGNORE_LIST_PATHS = (".ubsignore", ".eslintignore", ".gitignore", ".flake8")
 ATTRIBUTED_CATEGORIES = ("anomaly_empty_diff", "anomaly_ignore_list_growth")
 SEVERITIES = ("BLOCKING", "MAJOR", "MINOR", "NOTE")
 STAGED_LABEL = "(staged)"
@@ -62,6 +64,10 @@ class ClosingDiff:
     ignore_adds: int
 
 
+class IgnoreConfigError(ValueError):
+    pass
+
+
 def rederive(diff: ClosingDiff | None) -> list[dict]:
     if diff is None:
         return []
@@ -80,7 +86,7 @@ def rederive(diff: ClosingDiff | None) -> list[dict]:
                 "severity": "BLOCKING",
                 "category": "anomaly_ignore_list_growth",
                 "description": (
-                    f"Closing commit {diff.label} added {diff.ignore_adds} line(s) to ignore "
+                    f"Closing commit {diff.label} added {diff.ignore_adds} entry(s) to ignore "
                     "lists — possible silencing instead of fixing"
                 ),
             }
@@ -147,12 +153,15 @@ def prior_pass(names: list[str], current: str) -> str | None:
 
 
 def _git(root: Path, args: list[str]) -> str:
-    proc = subprocess.run(
-        ["git", "-C", str(root), *args],
-        capture_output=True,
-        text=True,
-        timeout=GIT_TIMEOUT_SECONDS,
-    )
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(root), *args],
+            capture_output=True,
+            text=True,
+            timeout=GIT_TIMEOUT_SECONDS,
+        )
+    except (OSError, UnicodeError, subprocess.TimeoutExpired) as failure:
+        raise GitError(f"git {' '.join(args)} could not be read: {failure}") from failure
     if proc.returncode != 0:
         raise GitError(f"git {' '.join(args)} exited {proc.returncode}: {proc.stderr.strip()[-400:]}")
     return proc.stdout
@@ -161,6 +170,181 @@ def _git(root: Path, args: list[str]) -> str:
 def count_ignore_adds(diff_text: str) -> int:
     """Added lines in an ignore-list diff, counted the way `grep -cE '^\\+[^+]'` counts them."""
     return sum(1 for line in diff_text.splitlines() if len(line) > 1 and line[0] == "+" and line[1] != "+")
+
+
+def _table(value: object, name: str) -> dict:
+    if not isinstance(value, dict):
+        raise IgnoreConfigError(f"{name} must be a table")
+    return value
+
+
+def _strings(value: object, name: str) -> list[str]:
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise IgnoreConfigError(f"{name} must be an array of strings")
+    return value
+
+
+def _warning_filter(value: str, name: str) -> str:
+    parts = [part.strip() for part in value.split(":")]
+    if len(parts) > 5:
+        raise IgnoreConfigError(f"{name}: warning filter has more than five fields")
+    action = parts[0]
+    actions = [item for item in ("default", "error", "ignore", "always", "module", "once") if item.startswith(action)]
+    if not action:
+        parts[0] = "default"
+    elif action == "all":
+        parts[0] = "always"
+    elif len(actions) == 1:
+        parts[0] = actions[0]
+    else:
+        raise IgnoreConfigError(f"{name}: invalid warning action {action!r}")
+    parts.extend([""] * (5 - len(parts)))
+    if not parts[2]:
+        parts[2] = "Warning"
+    try:
+        line = int(parts[4] or "0")
+    except ValueError as failure:
+        raise IgnoreConfigError(f"{name}: invalid warning line {parts[4]!r}") from failure
+    if line < 0:
+        raise IgnoreConfigError(f"{name}: warning line must be nonnegative")
+    parts[4] = str(line)
+    return ":".join(parts)
+
+
+def _pytest_ignores(config: dict, name: str) -> set[tuple[str, ...]]:
+    entries = set()
+    warnings = config.get("filterwarnings", [])
+    if isinstance(warnings, str) and name.endswith("ini_options"):
+        warnings = [line.strip() for line in warnings.splitlines() if line.strip()]
+    filters = [
+        ("config", _warning_filter(item, f"{name}.filterwarnings"))
+        for item in _strings(warnings, f"{name}.filterwarnings")
+    ]
+    excluded = config.get("norecursedirs", [])
+    if isinstance(excluded, str) and name.endswith("ini_options"):
+        excluded = excluded.split()
+    entries.update(("pytest", "norecursedirs", item) for item in _strings(excluded, f"{name}.norecursedirs"))
+    args = config.get("addopts", [])
+    if isinstance(args, str) and name.endswith("ini_options"):
+        try:
+            args = shlex.split(args)
+        except ValueError as failure:
+            raise IgnoreConfigError(f"{name}.addopts: {failure}") from failure
+    iterator = iter(_strings(args, f"{name}.addopts"))
+    for arg in iterator:
+        flag, separator, value = arg.partition("=")
+        if arg.startswith("-W"):
+            flag, separator, value = "-W", arg[2:], arg[2:]
+        if flag not in ("--ignore", "--ignore-glob", "-W", "--pythonwarnings"):
+            continue
+        if not separator:
+            value = next(iterator, "")
+        if not value or value.startswith("--"):
+            raise IgnoreConfigError(f"{name}.addopts: {flag} requires a value")
+        if flag in ("-W", "--pythonwarnings"):
+            filters.append(("cli", _warning_filter(value, f"{name}.addopts")))
+        else:
+            entries.add(("pytest", flag, value))
+    for index, (source, warning) in enumerate(filters):
+        if warning.split(":", 1)[0] == "ignore":
+            context = json.dumps(filters[index + 1 :])
+            entries.add(("pytest", "filterwarnings", source, warning, context))
+    return entries
+
+
+def pyproject_ignores(text: str) -> set[tuple[str, ...]]:
+    try:
+        config = tomllib.loads(text)
+    except tomllib.TOMLDecodeError as failure:
+        raise IgnoreConfigError(f"invalid TOML: {failure}") from failure
+    tool = _table(config.get("tool", {}), "tool")
+    entries = set()
+    ruff = _table(tool.get("ruff", {}), "tool.ruff")
+    lint = _table(ruff.get("lint", {}), "tool.ruff.lint")
+    for key in ("ignore", "extend-ignore", "per-file-ignores", "extend-per-file-ignores"):
+        selected = set()
+        for section, name in ((ruff, "tool.ruff"), (lint, "tool.ruff.lint")):
+            if key in ("ignore", "extend-ignore"):
+                parsed = {("ruff", "ignore", item) for item in _strings(section.get(key, []), f"{name}.{key}")}
+            else:
+                parsed = set()
+                for pattern, codes in _table(section.get(key, {}), f"{name}.{key}").items():
+                    parsed.update(
+                        ("ruff", "per-file-ignores", pattern, code)
+                        for code in _strings(codes, f"{name}.{key}.{pattern}")
+                    )
+            if key in section:
+                selected = parsed
+        entries.update(selected)
+    for section, name, category, keys in (
+        (ruff, "tool.ruff", "exclude", ("exclude", "extend-exclude")),
+        (lint, "tool.ruff.lint", "lint.exclude", ("exclude",)),
+        (_table(ruff.get("format", {}), "tool.ruff.format"), "tool.ruff.format", "format.exclude", ("exclude",)),
+    ):
+        for key in keys:
+            entries.update(("ruff", category, item) for item in _strings(section.get(key, []), f"{name}.{key}"))
+    ty = _table(tool.get("ty", {}), "tool.ty")
+    overrides = ty.get("overrides", [])
+    if not isinstance(overrides, list):
+        raise IgnoreConfigError("tool.ty.overrides must be an array of tables")
+    scopes = [(ty, "tool.ty", "global")]
+    for index, value in enumerate(overrides):
+        name = f"tool.ty.overrides[{index}]"
+        override = _table(value, name)
+        include = _strings(override.get("include", ["**"]), f"{name}.include")
+        exclude = _strings(override.get("exclude", []), f"{name}.exclude")
+        scopes.append((override, name, json.dumps([include, exclude])))
+    for section, name, scope in scopes:
+        for rule, severity in _table(section.get("rules", {}), f"{name}.rules").items():
+            if severity not in ("ignore", "warn", "error"):
+                raise IgnoreConfigError(f"{name}.rules.{rule} must be ignore, warn, or error")
+            if severity == "ignore":
+                entries.add(("ty", "rules", scope, rule))
+    src = _table(ty.get("src", {}), "tool.ty.src")
+    entries.update(("ty", "src.exclude", item) for item in _strings(src.get("exclude", []), "tool.ty.src.exclude"))
+    pytest = _table(tool.get("pytest", {}), "tool.pytest")
+    ini_options = _table(pytest.get("ini_options", {}), "tool.pytest.ini_options")
+    if ini_options and any(key != "ini_options" for key in pytest):
+        raise IgnoreConfigError("tool.pytest and tool.pytest.ini_options cannot both contain settings")
+    entries.update(_pytest_ignores(pytest, "tool.pytest"))
+    entries.update(_pytest_ignores(ini_options, "tool.pytest.ini_options"))
+    codespell = _table(tool.get("codespell", {}), "tool.codespell")
+    for key in ("ignore-words-list", "uri-ignore-words-list", "ignore-words", "skip", "exclude-file"):
+        value = codespell.get(key, "")
+        if isinstance(value, list):
+            value = ",".join(_strings(value, f"tool.codespell.{key}"))
+        if not isinstance(value, str):
+            raise IgnoreConfigError(f"tool.codespell.{key} must be a string or array of strings")
+        entries.update(("codespell", key, item.strip()) for item in value.split(",") if item.strip())
+    for key in ("ignore-regex", "ignore-multiline-regex"):
+        value = codespell.get(key, "")
+        if not isinstance(value, str):
+            raise IgnoreConfigError(f"tool.codespell.{key} must be a string")
+        if value:
+            entries.add(("codespell", key, value))
+    return entries
+
+
+def _pyproject_at(root: Path, revision: str | None) -> set[tuple[str, ...]]:
+    if revision is None:
+        return set()
+    if revision == STAGED:
+        listing = _git(root, ["ls-files", "--stage", "-z", "--", "pyproject.toml"])
+    else:
+        listing = _git(root, ["ls-tree", "-z", revision, "--", "pyproject.toml"])
+    if not listing:
+        return set()
+    rows = listing.rstrip("\0").split("\0")
+    fields = rows[0].split("\t", 1)[0].split()
+    if len(rows) != 1 or len(fields) != 3 or fields[0] not in ("100644", "100755"):
+        raise IgnoreConfigError(f"{revision}:pyproject.toml is not a regular, resolved file")
+    if revision == STAGED and fields[2] != "0":
+        raise IgnoreConfigError("staged pyproject.toml has an unresolved conflict")
+    blob = fields[1] if revision == STAGED else fields[2]
+    try:
+        return pyproject_ignores(_git(root, ["cat-file", "blob", blob]))
+    except IgnoreConfigError as failure:
+        raise IgnoreConfigError(f"{revision}:pyproject.toml: {failure}") from failure
 
 
 def git_closing_diff_reader(root: Path):
@@ -172,13 +356,22 @@ def git_closing_diff_reader(root: Path):
             adds = _git(root, ["diff", "--cached", "--", *IGNORE_LIST_PATHS])
             label = STAGED_LABEL
         else:
-            names = _git(root, ["show", "--pretty=format:", "--name-only", resolution])
+            names = _git(root, ["show", "--first-parent", "--pretty=format:", "--name-only", resolution])
             adds = _git(root, ["show", resolution, "--", *IGNORE_LIST_PATHS])
             label = resolution
+        ignore_adds = count_ignore_adds(adds)
+        if "pyproject.toml" in names.splitlines():
+            if resolution == STAGED:
+                status = _git(root, ["diff", "--cached", "--no-renames", "--name-status", "--", "pyproject.toml"])
+                parent = None if status.startswith("A\t") else "HEAD"
+            else:
+                parents = _git(root, ["rev-list", "--parents", "-n", "1", resolution]).split()
+                parent = parents[1] if len(parents) > 1 else None
+            ignore_adds += len(_pyproject_at(root, resolution) - _pyproject_at(root, parent))
         return ClosingDiff(
             label=label,
             files_changed=len([line for line in names.splitlines() if line.strip()]),
-            ignore_adds=count_ignore_adds(adds),
+            ignore_adds=ignore_adds,
         )
 
     return read
@@ -321,6 +514,9 @@ def main(argv: list[str] | None = None) -> int:
                 checked += 1
                 failed += bool(bead_failure)
                 print(f"{bead_failure.upper() if bead_failure else 'OK'} {bead_id} {verdict}")
+    except IgnoreConfigError as failure:
+        print(f"attribution: IGNORE-CONFIG-FAILED {failure}", file=sys.stderr)
+        return GIT_FAILED_EXIT
     except GitError as failure:
         print(f"attribution: GIT-FAILED {failure}", file=sys.stderr)
         return GIT_FAILED_EXIT
