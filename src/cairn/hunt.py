@@ -668,7 +668,7 @@ def _trial_record(context, execution, outcome, verifier_status, verifier_evidenc
     )
 
 
-def run_hunt(sub, plan, executor: Callable, verifier: Callable, *, run_id=None, attest_path=None):
+def run_hunt(sub, plan, executor: Callable, verifier: Callable, *, run_id=None, attest_path=None, floor_protocol=None):
     if not isinstance(plan, HuntPlan):
         raise PlanRefused("run_hunt requires HuntPlan")
     if plan.distribution.kind != UNIFORM_INTEGER:
@@ -677,7 +677,16 @@ def run_hunt(sub, plan, executor: Callable, verifier: Callable, *, run_id=None, 
     _validate_hypothesis(sub, plan)
     population, statement = _scope(sub, plan)
     run_id = run_id or secrets.token_hex(16)
-    nonce_record = instances.draw_nonce(sub, plan.hypothesis_key, run_id)
+    floor_registration = None
+    if floor_protocol is None:
+        nonce_record = instances.draw_nonce(sub, plan.hypothesis_key, run_id)
+    else:
+        from cairn import ladder, small_numbers_floor
+
+        small_numbers_floor.validate_protocol(sub, floor_protocol, plan)
+        commitment, nonce_record = ladder.commit_entropy(sub, hypothesis_hash=plan.hypothesis_key, run_id=run_id)
+        ladder.check_order(sub, hypothesis_hash=plan.hypothesis_key, nonce=nonce_record.nonce)
+        floor_registration = small_numbers_floor.register_run(sub, floor_protocol, plan, commitment)
     nonce = nonce_record.nonce
     contexts = []
     for trial in range(plan.trial_count):
@@ -877,6 +886,8 @@ def run_hunt(sub, plan, executor: Callable, verifier: Callable, *, run_id=None, 
         tuple(trials),
     )
     run_hash = sub.put_node("hunt_run", run_canonical(record), producer_identity="gate:hunt")
+    if floor_registration is not None:
+        sub.add_lineage(run_hash, floor_registration, EDGE_INPUT)
     for parent in (plan.hash, plan.distribution.hash):
         sub.add_lineage(run_hash, parent, EDGE_INPUT)
     for trial in trials:

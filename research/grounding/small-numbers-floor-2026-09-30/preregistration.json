@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "registered_utc": "2026-09-30T16:24:00Z",
+  "amendment_before_sampling": "MagentaSparrow ruling #437 requires a comparison where the floor can bind. The version1 draft was not committed or sampled. The false-control budgets are amended from3/epsilon to1/epsilon; the full-budget redundancy is retained as a derived result, not sampled evidence.",
+  "calibration": "CONJECTURE",
+  "alpha": "1/20",
+  "stake_rule": "fixed maximum: lambda = 1/(1-epsilon)",
+  "seed_policy": "fresh gate-owned entropy, committed after hypothesis and protocol, hashed into run registration before any sampling; never caller-supplied or selected after outcomes",
+  "sampler": "R4 uniform_integer rejection sampler; its source identity is pinned in each run registration; pseudorandom uniform-word assumption is explicit",
+  "failure_coding": "X=0 only for a validated SURVIVED_TRIAL; X=1 only for a verified COUNTEREXAMPLE; incomplete, budget-exceeded, failed, or unverified executions are not clean cases",
+  "comparison_schedule": "completed declared hunt budgets of1/epsilon, below the maximum-stake clean threshold at alpha=1/20; not interim prefixes of a longer hunt",
+  "decision_rule": "adopt iff at least one completed SURVIVED planted-false hunt has final E < 20; otherwise drop for this comparison. KILLED already denies and INCOMPLETE has no clean admission. An adoption still requires reviewed bundle-configured Tier-2 proving-only wiring before bead close.",
+  "false_controls": [
+    {"name": "endpoint-100", "statement": "100 does not divide n+1", "D": {"kind": "uniform_integer", "ranges": {"n": [0, 99]}}, "epsilon": "1/100", "budget": 100},
+    {"name": "endpoint-1000", "statement": "1000 does not divide n+1", "D": {"kind": "uniform_integer", "ranges": {"n": [0, 999]}}, "epsilon": "1/1000", "budget": 1000},
+    {"name": "endpoint-2000", "statement": "2000 does not divide n+1", "D": {"kind": "uniform_integer", "ranges": {"n": [0, 1999]}}, "epsilon": "1/2000", "budget": 2000},
+    {"name": "R4-euler", "statement": "n*n+n+41 is prime", "D": {"kind": "uniform_integer", "ranges": {"n": [0, 40]}}, "epsilon": "1/41", "budget": 41}
+  ],
+  "positive_control": {"name": "clean-1000", "statement": "n is at most 999", "D": {"kind": "uniform_integer", "ranges": {"n": [0, 999]}}, "epsilon": "1/1000", "budget": 3000},
+  "replicates": 1,
+  "reproduction": "fresh uncached executor/verifier attempt reruns on original recipes, real substrate reproducibility records, resampling original committed nonce and matching canonical X/E transcript; not a second statistical sample",
+  "derived_redundancy": {
+    "statement": "For epsilon=1/N and fixed maximum stake, a clean n-case prefix has exact E=(N/(N-1))^n. At n=3N, -3N*log(1-1/N)>3, hence E>e^3>20. Verified failures already kill the hunt. No sampling is needed to establish redundancy at budgets3N.",
+    "exact_first_clean_crossings": [{"N": 100, "n": 299}, {"N": 1000, "n": 2995}, {"N": 2000, "n": 5990}, {"N": 41, "n": 122}],
+    "verification": "Exact rational comparison checks (N/(N-1))^(n-1)<20 and (N/(N-1))^n>=20 for each row. This is derived arithmetic, not an in-repository Lean proof or sampled experiment result."
+  },
+  "design_limit": "At the false controls' completed budgets N, a clean hunt has E near e and below20, so a false conjecture that survives the hunt can be additionally denied by the floor. One fresh run per control can still yield only KILLED outcomes and a drop under the decision rule. Decisions concern these synthetic D and budgets only, not utility at other stakes, distributions, budgets, or resource schedules.",
+  "no_claim": "No promotion, reward, universality, Lean proof, or family-wide inference. Synthetic controls are fixtures, not external mathematics findings. The floor remains unwired unless the preregistered adoption criterion is met."
+}
