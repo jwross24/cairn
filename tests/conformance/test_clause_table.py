@@ -35,6 +35,18 @@ def test_coverage_table_matches_clauses():
         assert row[3] == getattr(clause.check, "__name__", ""), clause.id
 
 
+def test_axis_clause_and_coverage_require_every_axis_and_arm():
+    clause = next(clause for clause in CLAUSES if clause.id == "S2-12")
+    row = next(row for row in _coverage_rows() if row[0] == clause.id)
+    expected = (
+        "the skill declares each of its axes, `implementation` or `algorithm`, and the input range over which "
+        "each axis is independent; every declared axis must satisfy every arm, and a cross-check that has "
+        "never disagreed is reported as untested, not as passing"
+    )
+    assert clause.text == expected
+    assert row[2] == expected + " (L71, L76; cairn-l527 ratification)"
+
+
 def test_every_registered_subject_is_a_skill_subject():
     assert len({subject.name for subject in SUBJECTS}) == len(SUBJECTS)
     assert any(subject.conforming for subject in SUBJECTS)

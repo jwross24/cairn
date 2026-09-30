@@ -38,7 +38,7 @@ S2-07 gets a subject that ships no certificate.
 | S2-09 | MUST | grain a skill at a capability with a stable interface, a self-test, and a declared cost profile (L104) | `check_declared_cost_profile` |
 | S2-10 | MUST | on disagreement the skill returns `status = DISAGREE` (not OK, so never cached), writes both transcripts and digests to a substrate node (L77) | `check_disagree_semantics` |
 | S2-11 | MUST | the launch contract of cairn-m0-e0s.9: an environment allowlist and no substrate handle in the child | `check_no_substrate_handle` |
-| S2-12 | MUST | the skill declares its axis — `implementation` or `algorithm` — and the input range over which that axis is independent … a cross-check that has never disagreed is reported as untested, not as passing (L71, L76) | `check_axis_declaration` |
+| S2-12 | MUST | the skill declares each of its axes, `implementation` or `algorithm`, and the input range over which each axis is independent; every declared axis must satisfy every arm, and a cross-check that has never disagreed is reported as untested, not as passing (L71, L76; cairn-l527 ratification) | `check_axis_declaration` |
 | S2-13 | SHOULD | skills that produce floats declare a numeric profile or a tolerance (L61) | `check_numeric_profile` |
 | S2-14 | SHOULD | Tier-0 arithmetic skills verify their own answer before returning (L68) | `check_postcondition_arm` |
 
@@ -73,8 +73,10 @@ disagreement — and requires both digests to appear in the substrate blob the r
 for the attempt.
 
 **S2-12's ledger arm.** "Reported as untested, not as passing" is checked as: the certificate's
-`selftest_summary.cross_check` block holds exactly `axis` and `independent_range`, so the
-ledger cannot record a cross-check as having passed.
+`selftest_summary.cross_check` record holds exactly `axis` and `independent_range`, so the
+ledger cannot record a cross-check as having passed. Plural declarations require a list
+with exactly one such record per axis and the same independent range as its declaration.
+Every extra key, including `passed` and `result`, fails the clause.
 
 **S2-12's in-range arm.** A declared axis, a declared interval and `untested` outside it are
 satisfied by a subject that hardcodes its in-range answer, so the clause also requires that
@@ -83,6 +85,28 @@ answer to be earned. The subject runs twice on in-range inputs — once as itsel
 `cross_check.result` must differ between the two. A constant fails. A subject declaring no
 `SEAM` fails here too, since nothing can be planted against its in-range result. The verdict
 reason names the observed pair, so the S2-12 column alone says whether a comparison runs.
+
+**S2-12's plural declarations.** A module declares `CROSS_CHECKS` as a nonempty list or tuple
+of records holding exactly `axis`, `independent_range` and `seam`. Axis names must be unique
+members of `AXES`. Each interval names an input field. Child output `cross_check` is a list
+of records holding exactly `axis`, `independent_range` and `result`, one per declared axis.
+The singular interface uses `CROSS_CHECK_AXIS`, `INDEPENDENT_RANGE` and `SEAM`, with mapping
+output and ledger records.
+
+`SkillSubject.cross_check_inputs` maps each plural axis to an `inside` and an `outside`
+complete input document. The inside document satisfies every interval for that axis; the
+outside document violates at least one. Missing or misplaced probes fail the clause.
+Inputs are supplied explicitly because a size change can invalidate curve parameters or
+fall outside the skill's declared cost profile. The harness launches each document through
+the real runner and selects only that axis's declared seam through `CAIRN_HARNESS_AXIS`.
+Every axis must independently satisfy all five arms. A passing axis cannot cover another
+axis with an inert seam, a tested out-of-range result or a malformed ledger record.
+
+`test_axis_declaration.py` exercises disjoint ranges and distinct seams, including the
+two-axis subject whose `implementation` seam is inert. Its FAIL reason names that axis.
+These checks establish comparison execution within declared ranges and ledger records
+without pass claims. They establish no mathematical proof or empirical independence
+outside those ranges and perform no calibration promotion.
 
 **Vocabulary width.** S2-04 accepts the four origins PLAN L62 names, and
 `cairn.selftest.ORIGINS` holds the same four, so a §2-legal corpus and a corpus

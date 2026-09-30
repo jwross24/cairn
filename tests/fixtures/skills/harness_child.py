@@ -5,6 +5,7 @@ import sys
 
 SUBJECT_ENV = "CAIRN_HARNESS_SUBJECT"
 MODE_ENV = "CAIRN_HARNESS_MODE"
+AXIS_ENV = "CAIRN_HARNESS_AXIS"
 MODE_SEAM = "seam"
 MODE_ENV_DUMP = "env-dump"
 SEAM_OFFSET = 2
@@ -38,7 +39,12 @@ def main(stderr=None):
     subject = importlib.import_module(os.environ[SUBJECT_ENV])
     mode = os.environ.get(MODE_ENV, "")
     if mode == MODE_SEAM:
-        _plant_seam(subject.SEAM)
+        axis = os.environ.get(AXIS_ENV)
+        if axis is None:
+            seam = subject.SEAM
+        else:
+            seam = next(record["seam"] for record in subject.CROSS_CHECKS if record["axis"] == axis)
+        _plant_seam(seam)
     elif mode == MODE_ENV_DUMP:
         _dump_environment(stderr)
     return subject.main()
