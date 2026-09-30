@@ -36,6 +36,7 @@ CC = "/usr/bin/clang"
 CFLAGS = ("-O2", "-std=c11", "-Wall")
 
 C_SOURCE = r"""
+#define _POSIX_C_SOURCE 200809L
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
