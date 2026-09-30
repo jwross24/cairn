@@ -1,3 +1,4 @@
+import re
 import subprocess
 import sys
 
@@ -300,3 +301,95 @@ def test_a_refusal_whose_shape_does_not_match_its_exit_code_is_refused_by_the_de
         countedvm.decode(stdout, exit_code)
     accepted = countedvm.decode('{"status":"REFUSED","reason":"x","count":0,"executed":1}', 3)
     assert (accepted.status, accepted.reason, accepted.count, accepted.executed) == ("REFUSED", "x", 0, 1)
+
+
+EVEN_A = 1
+EVEN_B = 0
+EVEN_CURVE = pari.ellinit([0, 0, 0, EVEN_A, EVEN_B], P_FIELD)
+EVEN_N = int(pari.ellcard(EVEN_CURVE))
+EVEN_POINTS = [None] + [
+    (x, y) for x in range(P_FIELD) for y in range(P_FIELD) if (y * y - (x**3 + EVEN_A * x + EVEN_B)) % P_FIELD == 0
+]
+
+
+def test_the_even_order_curve_adds_and_doubles_like_pari_including_two_torsion(tmp_path):
+    assert EVEN_N == 24
+    assert len(EVEN_POINTS) == EVEN_N
+    torsion = [point for point in EVEN_POINTS if point is not None and point[1] == 0]
+    assert torsion == [(0, 0)]
+    for point_p in EVEN_POINTS:
+        instance = Instance(P_FIELD, EVEN_A, EVEN_B, EVEN_N, point_p, point_p)
+        doubled = _run(tmp_path, instance, "setp p0 P\ndblp p0 p0\nhalt", BUDGET)
+        expected = _lift(pari.elladd(EVEN_CURVE, _pari_point(point_p), _pari_point(point_p)))
+        assert (doubled.status, doubled.count, doubled.p0) == ("OK", 1, expected), point_p
+        for point_q in EVEN_POINTS:
+            instance = Instance(P_FIELD, EVEN_A, EVEN_B, EVEN_N, point_p, point_q)
+            added = _run(tmp_path, instance, "setp p0 P\nsetp p1 Q\naddp p0 p0 p1\nhalt", BUDGET)
+            expected = _lift(pari.elladd(EVEN_CURVE, _pari_point(point_p), _pari_point(point_q)))
+            assert (added.status, added.count, added.p0) == ("OK", 1, expected), (point_p, point_q)
+    torsion_instance = Instance(P_FIELD, EVEN_A, EVEN_B, EVEN_N, (0, 0), (0, 0))
+    doubled_torsion = _run(tmp_path, torsion_instance, "setp p0 P\ndblp p0 p0\nhalt", BUDGET)
+    assert (doubled_torsion.status, doubled_torsion.count, doubled_torsion.p0) == ("OK", 1, None)
+    via_add = _run(tmp_path, torsion_instance, "setp p0 P\nsetp p1 Q\naddp p0 p0 p1\nhalt", BUDGET)
+    assert (via_add.status, via_add.count, via_add.p0) == ("OK", 1, None)
+
+
+EVERY_OPCODE = "\n".join(
+    [
+        "table t0 4",
+        "setp p0 P",
+        "setp p1 Q",
+        "setp p2 inf",
+        "addp p3 p0 p1",
+        "dblp p4 p0",
+        "negp p5 p4",
+        "sset s0 3",
+        "mulp p6 p0 s0",
+        "eqp i0 p3 p3",
+        "isinf i1 p2",
+        "sadd s1 s0 s0",
+        "ssub s2 s1 s0",
+        "sneg s3 s2",
+        "seq i2 s2 s0",
+        "iset i3 1",
+        "iadd i4 i3 2",
+        "isub i5 i4 1",
+        "ieq i6 i5 i4",
+        "ilt i7 i3 i4",
+        "partition i8 p0 3",
+        "tstore t0 i3 p6 s0 s1",
+        "tload p7 s4 s5 t0 i3",
+        "tfind i9 t0 p6",
+        "jz i6 skip",
+        "halt",
+        "skip:",
+        "jmp onward",
+        "halt",
+        "onward:",
+        "jnz i7 solve",
+        "halt",
+        "solve:",
+        "sset s6 5",
+        "sset s7 1",
+        "sset s8 0",
+        "sset s9 3",
+        "solve s10 s6 s7 s8 s9",
+        "result s10",
+        "halt",
+    ]
+)
+
+
+def test_every_opcode_executes_in_one_program(tmp_path):
+    generator = max(
+        (point for point in POINTS if point is not None), key=lambda c: int(pari.ellorder(CURVE, _pari_point(c)))
+    )
+    outcome = _run(tmp_path, _instance(generator, generator), EVERY_OPCODE, BUDGET)
+    assert outcome.status == "OK"
+    assert outcome.count == 2 + countedvm.expected_mul_ops(3)
+    assert outcome.result == (4 * pow(3, -1, N)) % N
+    assert outcome.i0 == 1
+    opcodes = {line.split()[0] for line in EVERY_OPCODE.splitlines() if not line.endswith(":")}
+    implemented = set(re.findall(r'strcmp\(op, "([a-z]+)"\)', countedvm.SOURCE.read_text()))
+    assert "jmp" in implemented
+    assert opcodes == implemented
