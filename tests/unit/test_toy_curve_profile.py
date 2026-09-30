@@ -1,4 +1,4 @@
-import re
+import json
 from pathlib import Path
 
 import pytest
@@ -6,35 +6,14 @@ import pytest
 from cairn.profile import CostProfile, Evaluation, Production, ProfileUndeclared, SizeCost, Verification
 from cairn.skills import toy_curve
 
-BRIEF = Path(__file__).resolve().parent.parent.parent / "research" / "grounding" / "m0-stack-facts.md"
-COLUMNS = (
-    "bits",
-    "seeds",
-    "mean_tries",
-    "sd_tries",
-    "min_tries",
-    "max_tries",
-    "per_try_ms",
-    "in_process_mean_wall_s",
-    "mean_wall_s",
-)
+RAW = Path(__file__).resolve().parents[2] / "research" / "grounding" / "toy-curve-implementation-axis-costs.json"
 
 
 def committed_table():
-    text = BRIEF.read_text()
-    start = text.index("### 6a.")
-    section = text[start:]
-    end = re.search(r"^## ", section, re.MULTILINE)
-    section = section[: end.start()] if end else section
-    rows = {}
-    for line in section.splitlines():
-        cells = [c.strip() for c in line.strip().strip("|").split("|")] if line.startswith("|") else []
-        if len(cells) == len(COLUMNS) and cells[0].isdigit():
-            row = dict(zip(COLUMNS, cells, strict=True))
-            rows[int(row["bits"])] = {
-                k: (int(v) if k in ("bits", "seeds", "min_tries", "max_tries") else float(v)) for k, v in row.items()
-            }
-    return rows
+    doc = json.loads(RAW.read_text())
+    assert doc["target"] == "toy-curve-tries" and doc["seeds"] == 50
+    assert doc["sizes"] == [30, 40, 50, 60, 70]
+    return {row["bits"]: row for row in doc["rows"]}
 
 
 def test_evaluate_40_equals_the_committed_table_mean_wall_s():
@@ -47,7 +26,7 @@ def test_evaluate_40_equals_the_committed_table_mean_wall_s():
 def test_profile_per_size_cites_the_committed_table():
     table = committed_table()
     profile = toy_curve.COST_PROFILE
-    assert profile.declared_sizes() == (30, 40, 50, 60) == tuple(sorted(table))
+    assert profile.declared_sizes() == (30, 40, 50, 60, 70) == tuple(sorted(table))
     for bits, row in table.items():
         cost = profile.production.per_size[bits]
         assert row["seeds"] >= 50
@@ -56,7 +35,7 @@ def test_profile_per_size_cites_the_committed_table():
         assert cost.mean_wall_s == row["mean_wall_s"]
     assert profile.tier == 0 and profile.production.model == "c_ln_p_tries"
     assert profile.verification == Verification(grade="Replayable", cost_model="same_as_production")
-    assert "§6a" in profile.source and "seeds 50" in profile.source
+    assert "toy-curve-implementation-axis-costs.md" in profile.source and "seeds 50" in profile.source
     assert toy_curve.REPLAY_GRADE == "Replayable" and toy_curve.DO_NOT_CACHE is False
 
 
@@ -64,8 +43,8 @@ def test_profile_per_size_cites_the_committed_table():
 def test_profile_undeclared_sizes_raise_and_name_the_declared_ones(bits):
     with pytest.raises(ProfileUndeclared, match=rf"no size {bits}") as info:
         toy_curve.COST_PROFILE.evaluate(bits)
-    assert info.value.bits == bits and info.value.declared == (30, 40, 50, 60)
-    assert "[30, 40, 50, 60]" in str(info.value)
+    assert info.value.bits == bits and info.value.declared == (30, 40, 50, 60, 70)
+    assert "[30, 40, 50, 60, 70]" in str(info.value)
 
 
 @pytest.mark.parametrize("bits", [True, "40", 40.0, None], ids=["bool", "str", "float", "none"])

@@ -152,11 +152,18 @@ def test_the_shipped_corpus_loads_from_its_committed_path():
     assert selftest.load_corpus() == selftest.load_corpus(selftest.CORPUS_PATH)
 
 
-@pytest.mark.parametrize("module", [toy_curve, bsgs, rho_dp, instance_maker])
+@pytest.mark.parametrize("module", [bsgs, rho_dp, instance_maker])
 def test_single_axis_certificate_summary_bytes_are_unchanged(module):
     singular = {"axis": module.CROSS_CHECK_AXIS, "independent_range": module.INDEPENDENT_RANGE}
     actual = json.dumps(selftest.cross_check_summary(module), sort_keys=True, separators=(",", ":")).encode()
     assert actual == json.dumps(singular, sort_keys=True, separators=(",", ":")).encode()
+
+
+def test_toy_curve_certificate_summary_preserves_both_declared_axes():
+    assert selftest.cross_check_summary(toy_curve) == [
+        {"axis": "algorithm", "independent_range": {"bits": [0, 50]}},
+        {"axis": "implementation", "independent_range": {"bits": [30, 60]}},
+    ]
 
 
 def test_plural_certificate_summary_preserves_each_declared_range(monkeypatch):

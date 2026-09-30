@@ -132,16 +132,21 @@ def test_gp_cypari2_rows_agree_plumbing_one_library_twice(outputs, bits, seed):
 @pytest.mark.parametrize(("bits", "seed"), ROWS, ids=lambda v: str(v))
 def test_cross_check_is_differential_on_algorithm_axis(outputs, bits, seed):
     out = outputs[(bits, seed)]
-    assert out.cross_check["axis"] == "algorithm"
-    assert out.cross_check["independent_range"] == {"bits": [0, 50]}
-    assert out.cross_check["result"] == ("agree" if bits <= toy_curve.SEA_SEARCH_ABOVE_BITS else "untested")
+    assert out.cross_check == [
+        {
+            "axis": "algorithm",
+            "independent_range": {"bits": [0, 50]},
+            "result": "agree" if bits <= 50 else "untested",
+        },
+        {"axis": "implementation", "independent_range": {"bits": [30, 60]}, "result": "agree"},
+    ]
     assert out.status == "OK"
     assert bool(pari.pari.isprime(out.n))
 
 
 def test_declared_seam_is_the_ellsea_wrapper():
-    assert toy_curve.SEAM == "cairn.pari.ellsea"
-    module, attribute = toy_curve.SEAM.rsplit(".", 1)
+    assert toy_curve.SEAM == toy_curve.CROSS_CHECKS[0]["seam"] == "cairn.pari.ellsea"
+    module, attribute = toy_curve.CROSS_CHECKS[0]["seam"].rsplit(".", 1)
     assert module == pari.__name__ and callable(getattr(pari, attribute))
 
 
@@ -214,7 +219,14 @@ def test_double_run_same_seed_is_byte_identical_and_another_seed_moves_p():
 
 def _assert_disagree(out, calls, results):
     assert out.status == "DISAGREE"
-    assert out.cross_check == {"axis": "algorithm", "independent_range": {"bits": [0, 50]}, "result": "disagree"}
+    assert out.cross_check == [
+        {
+            "axis": "algorithm",
+            "independent_range": {"bits": [0, 50]},
+            "result": "disagree" if out.bits <= 50 else "untested",
+        },
+        {"axis": "implementation", "independent_range": {"bits": [30, 60]}, "result": "agree"},
+    ]
     assert [t["call"] for t in out.transcripts] == calls
     first, second = out.transcripts
     assert (first["result"], second["result"]) == results
@@ -291,7 +303,8 @@ def test_every_run_logs_the_declared_fields(caplog):
     toy_curve.run(30, 3)
     record = [r for r in caplog.records if r.name == log.LOGGER_NAME and r.getMessage() == "run"][-1]
     assert record.fields["bits"] == 30 and record.fields["seed"] == 3 and record.fields["tries"] == BRIEF_TRIES[(30, 3)]
-    assert record.fields["n_bits"] == 30 and record.fields["cross_check"] == "agree" and record.fields["status"] == "OK"
+    assert record.fields["n_bits"] == 30 and record.fields["status"] == "OK"
+    assert record.fields["cross_check"] == {"algorithm": "agree", "implementation": "agree"}
     assert record.fields["wall_ms"] > 0
     json.loads(log.JsonFormatter().format(record))
 
@@ -300,8 +313,8 @@ def test_identity_bundle_is_stable_and_carries_the_live_toolchain():
     first = toy_curve.skill_identity_hash()
     bundle = toy_curve.identity_bundle()
     assert first == toy_curve.skill_identity_hash() == keys.identity_bundle_hash(bundle)
-    assert bundle["interface_version"] == "toy_curve/1"
-    assert set(bundle["tool_digests"]) == {"gp_binary_sha256", "cypari2", "libpari"}
+    assert bundle["interface_version"] == "toy_curve/2"
+    assert set(bundle["tool_digests"]) == {"gp_binary_sha256", "cypari2", "libpari", "gmpy2", "gmp"}
     assert bundle["tool_digests"]["libpari"] == pari.pari_versions()["libpari"]
     assert bundle["tool_digests"]["gp_binary_sha256"] == env.gp_binary_sha256()
     assert bundle["container_digest"] == keys.env_manifest_digest(env.manifest())
@@ -359,6 +372,6 @@ def test_module_entry_writes_a_disagree_document(monkeypatch):
     out, err = io.StringIO(), io.StringIO()
     assert toy_curve.main(stdin=io.StringIO('{"bits": 40, "seed": 1}'), stdout=out, stderr=err) == 0
     document = json.loads(out.getvalue())
-    assert document["status"] == "DISAGREE" and document["cross_check"]["result"] == "disagree"
+    assert document["status"] == "DISAGREE" and document["cross_check"][0]["result"] == "disagree"
     assert [t["call"] for t in document["transcripts"]] == ["ellcard", "ellsea"]
     assert err.getvalue() == ""

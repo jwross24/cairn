@@ -82,6 +82,7 @@ so the protocol holds on its own. A guard's refusal is a safety mechanism, never
 - Identity-bearing files, skill revision: `src/cairn/ec.py`, `src/cairn/instances.py`,
   `src/cairn/pari.py`, `src/cairn/skills/bsgs.py`, `src/cairn/skills/bsgs_corpus.json`,
   `src/cairn/skills/instance_maker.py`, `src/cairn/skills/instance_maker_corpus.json`,
+  `src/cairn/skills/order_bsgs_gmpy2.py`,
   `src/cairn/skills/rho_dp.py`, `src/cairn/skills/rho_dp_corpus.json`,
   `src/cairn/skills/toy_curve.py`, `src/cairn/skills/toy_curve_corpus.json`.
 - Identity-bearing files, gate bundle: `bundle/Containerfile`, `bundle/allow_lists.json`,
@@ -110,7 +111,8 @@ We use **uv** for everything. Never `pip`, `poetry`, `conda` or an ad-hoc `pytho
 - `requires-python = ">=3.14"` in `pyproject.toml`, mirrored in `[tool.ty.environment]`; change the pin
   there, nowhere else. The same file pins the PyPI index (`[[tool.uv.index]]`, `default = true`) because
   `~/.config/uv/uv.toml` points at a corporate Artifactory that times out off-network. Keep it.
-- Runtime dependencies: `blake3` (content addressing) and `cypari2` (PARI arithmetic). Dev group:
+- Runtime dependencies: `blake3` (content addressing), `claude-agent-sdk` (agent execution),
+  `cypari2` (PARI arithmetic), and `gmpy2` (independent integer arithmetic). Dev group:
   `pytest`, `pytest-timeout`, `hypothesis`, `ruff`, `ty`, `codespell`. Add a dependency with `uv add`.
 
 ## Code Editing Discipline

@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import blake3
+import gmpy2
 
 from cairn import canon, ec, env, keys, log, pari
 from cairn.canon import INT, STR, CanonError, Field, List, Map, Optional, Struct
@@ -40,6 +41,7 @@ IDENTITY_SOURCES = (
     "src/cairn/skills/bsgs.py",
     "src/cairn/skills/instance_maker.py",
     "src/cairn/skills/instance_maker_corpus.json",
+    "src/cairn/skills/order_bsgs_gmpy2.py",
     "src/cairn/skills/toy_curve.py",
 )
 STATUS_OK = "OK"
@@ -52,15 +54,15 @@ COST_PROFILE = CostProfile(
     production=Production(
         model="c_ln_p_tries",
         per_size={
-            28: SizeCost(mean_tries=49.7, sd_tries=37.67, per_try_s=988.4925e-6, mean_wall_s=0.0491),
-            30: SizeCost(mean_tries=45.0, sd_tries=46.7, per_try_s=746.9944e-6, mean_wall_s=0.0336),
-            40: SizeCost(mean_tries=55.5, sd_tries=38.86, per_try_s=913.9955e-6, mean_wall_s=0.0507),
-            50: SizeCost(mean_tries=79.2, sd_tries=69.22, per_try_s=2239.772e-6, mean_wall_s=0.1774),
-            60: SizeCost(mean_tries=93.6, sd_tries=93.9, per_try_s=8072.7288e-6, mean_wall_s=0.7556),
+            28: SizeCost(mean_tries=49.7, sd_tries=37.67, per_try_s=745.0959e-6, mean_wall_s=0.0370),
+            30: SizeCost(mean_tries=45.0, sd_tries=46.7, per_try_s=559.9244e-6, mean_wall_s=0.0252),
+            40: SizeCost(mean_tries=55.5, sd_tries=38.86, per_try_s=816.0001e-6, mean_wall_s=0.0453),
+            50: SizeCost(mean_tries=79.2, sd_tries=69.22, per_try_s=1909.1165e-6, mean_wall_s=0.1512),
+            60: SizeCost(mean_tries=84.0, sd_tries=65.32, per_try_s=7150.9745e-6, mean_wall_s=0.6007),
         },
     ),
     verification=Verification(grade=REPLAY_GRADE, cost_model="same_as_production"),
-    source="research/grounding/m1-dlp-skill-costs.md §4: cairn measure dlp --skill instance-maker --sizes 28,30,40,50,60 --seeds 10, 2026-09-02, seeds 1..10 per size (STRONG-EMPIRICAL on the sample)",
+    source="research/grounding/toy-curve-implementation-axis-costs.md: cairn measure dlp --skill instance-maker --sizes 28,30,40,50,60 --seeds 10, 2026-09-30, seeds 1..10 per size (STRONG-EMPIRICAL on the sample)",
 )
 
 INPUTS = Struct("instance_maker_inputs", [Field("bits", INT), Field("seed", INT)])
@@ -268,7 +270,7 @@ def second_opinion(p, a, b, n, P, Q, seed):
 
 def check_postcondition(out):
     curve = toy_curve.ToyCurveOutput(
-        out.bits, out.seed, out.p, out.a, out.b, out.n, out.P, out.tries, _cross_check("untested"), STATUS_OK
+        out.bits, out.seed, out.p, out.a, out.b, out.n, out.P, out.tries, toy_curve._cross_checks(), STATUS_OK
     )
     try:
         toy_curve.check_postcondition(curve)
@@ -302,7 +304,7 @@ def run(bits, seed):
     check_postcondition(out)
     if curve.status == toy_curve.STATUS_DISAGREE and curve.transcripts is not None:
         result = "disagree" if bits <= CROSS_CHECK_MAX_BITS else "untested"
-        out = _with_cross_check(out, result, STATUS_DISAGREE, tuple(curve.transcripts[:2]))
+        out = _with_cross_check(out, result, STATUS_DISAGREE, tuple(curve.transcripts))
     elif bits <= CROSS_CHECK_MAX_BITS:
         first = _transcript("instance_maker", (a, b, p), x)
         second = _transcript("bsgs", (a, b, p), second_opinion(p, a, b, n, P, Q, seed))
@@ -365,6 +367,8 @@ def identity_bundle(root=REPO_ROOT):
             "gp_binary_sha256": env.gp_binary_sha256(),
             "cypari2": versions["cypari2"],
             "libpari": versions["libpari"],
+            "gmpy2": gmpy2.version(),
+            "gmp": gmpy2.mp_version(),
         },
         "container_digest": keys.env_manifest_digest(env.manifest()),
         "numeric_profile": pari.NUMERIC_PROFILE,

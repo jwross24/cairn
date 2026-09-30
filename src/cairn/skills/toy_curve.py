@@ -1,24 +1,37 @@
 import json
 import sys
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 import blake3
+import gmpy2
 
 from cairn import canon, env, keys, log, pari
 from cairn.canon import INT, STR, CanonError, Field, List, Map, Optional, Struct
 from cairn.profile import CostProfile, Production, SizeCost, Verification
+from cairn.skills import order_bsgs_gmpy2
 
-INTERFACE_VERSION = "toy_curve/1"
+INTERFACE_VERSION = "toy_curve/2"
 SEAM = "cairn.pari.ellsea"
-CROSS_CHECK_AXIS = "algorithm"
-INDEPENDENT_RANGE = {"bits": [0, 50]}
+CROSS_CHECKS: tuple[dict, ...] = (
+    {"axis": "algorithm", "independent_range": {"bits": [0, 50]}, "seam": "cairn.pari.ellsea"},
+    {
+        "axis": "implementation",
+        "independent_range": {"bits": [30, 60]},
+        "seam": "cairn.skills.order_bsgs_gmpy2.group_order",
+    },
+)
 SEA_SEARCH_ABOVE_BITS = 50
 REPLAY_GRADE = "Replayable"
 DO_NOT_CACHE = False
 REPO_ROOT = Path(__file__).resolve().parents[3]
-IDENTITY_SOURCES = ("src/cairn/pari.py", "src/cairn/skills/toy_curve.py", "src/cairn/skills/toy_curve_corpus.json")
+IDENTITY_SOURCES = (
+    "src/cairn/pari.py",
+    "src/cairn/skills/order_bsgs_gmpy2.py",
+    "src/cairn/skills/toy_curve.py",
+    "src/cairn/skills/toy_curve_corpus.json",
+)
 STATUS_OK = "OK"
 STATUS_DISAGREE = "DISAGREE"
 LOG_STEP = "skill.toy_curve"
@@ -28,14 +41,15 @@ COST_PROFILE = CostProfile(
     production=Production(
         model="c_ln_p_tries",
         per_size={
-            30: SizeCost(mean_tries=39.48, sd_tries=29.83, per_try_s=1.053e-3, mean_wall_s=0.1372),
-            40: SizeCost(mean_tries=50.6, sd_tries=46.22, per_try_s=1.096e-3, mean_wall_s=0.1338),
-            50: SizeCost(mean_tries=63.82, sd_tries=60.56, per_try_s=2.548e-3, mean_wall_s=0.2511),
-            60: SizeCost(mean_tries=87.9, sd_tries=78.93, per_try_s=8.992e-3, mean_wall_s=0.8777),
+            30: SizeCost(mean_tries=39.48, sd_tries=29.83, per_try_s=0.654e-3, mean_wall_s=0.1009),
+            40: SizeCost(mean_tries=50.6, sd_tries=46.22, per_try_s=0.841e-3, mean_wall_s=0.1154),
+            50: SizeCost(mean_tries=63.82, sd_tries=60.56, per_try_s=2.164e-3, mean_wall_s=0.2107),
+            60: SizeCost(mean_tries=68.72, sd_tries=59.09, per_try_s=7.681e-3, mean_wall_s=0.6095),
+            70: SizeCost(mean_tries=118.98, sd_tries=107.89, per_try_s=8.466e-3, mean_wall_s=1.0578),
         },
     ),
     verification=Verification(grade=REPLAY_GRADE, cost_model="same_as_production"),
-    source="research/grounding/m0-stack-facts.md §6a: cairn measure toy-curve-tries --sizes 30,40,50,60 --seeds 50, 2026-08-21, seeds 1..50 per size (STRONG-EMPIRICAL on the sample)",
+    source="research/grounding/toy-curve-implementation-axis-costs.md: cairn measure toy-curve-tries --sizes 30,40,50,60,70 --seeds 50, 2026-09-30, seeds 1..50 per size (STRONG-EMPIRICAL on the sample)",
 )
 
 INPUTS = Struct("toy_curve_inputs", [Field("bits", INT), Field("seed", INT)])
@@ -57,7 +71,7 @@ OUTPUT = Struct(
         Field("n", INT),
         Field("P", List(INT)),
         Field("tries", INT),
-        Field("cross_check", CROSS_CHECK),
+        Field("cross_check", List(CROSS_CHECK)),
         Field("status", STR),
         Field("transcripts", Optional(List(TRANSCRIPT))),
     ],
@@ -85,7 +99,7 @@ class ToyCurveOutput:
     n: int
     P: tuple
     tries: int
-    cross_check: dict
+    cross_check: list
     status: str
     transcripts: tuple | None = None
 
@@ -99,11 +113,14 @@ class ToyCurveOutput:
             "n": self.n,
             "P": list(self.P),
             "tries": self.tries,
-            "cross_check": {
-                "axis": self.cross_check["axis"],
-                "independent_range": {k: list(v) for k, v in self.cross_check["independent_range"].items()},
-                "result": self.cross_check["result"],
-            },
+            "cross_check": [
+                {
+                    "axis": record["axis"],
+                    "independent_range": {k: list(v) for k, v in record["independent_range"].items()},
+                    "result": record["result"],
+                }
+                for record in self.cross_check
+            ],
             "status": self.status,
             "transcripts": None if self.transcripts is None else [dict(t) for t in self.transcripts],
         }
@@ -249,12 +266,22 @@ def _transcript(call, curve, result):
     return {**body, "digest": keys.node_hash(TRANSCRIPT_BODY.name, canon.encode(TRANSCRIPT_BODY, body))}
 
 
-def _cross_check(result):
-    return {
-        "axis": CROSS_CHECK_AXIS,
-        "independent_range": {k: list(v) for k, v in INDEPENDENT_RANGE.items()},
-        "result": result,
-    }
+def _cross_checks():
+    return [
+        {
+            "axis": declaration["axis"],
+            "independent_range": {k: list(v) for k, v in declaration["independent_range"].items()},
+            "result": "untested",
+        }
+        for declaration in CROSS_CHECKS
+    ]
+
+
+def _with_cross_check(out, axis, result):
+    return replace(
+        out,
+        cross_check=[{**record, "result": result} if record["axis"] == axis else record for record in out.cross_check],
+    )
 
 
 def check_postcondition(out):
@@ -279,17 +306,25 @@ def run(bits, seed):
     a, b, n, tries, E, search_call = _search(bits, p)
     curve = (a, b, p)
     confirm, P = _settle(bits, E, curve)
-    out = ToyCurveOutput(bits, seed, p, a, b, n, P, tries, _cross_check("untested"), STATUS_OK)
+    out = ToyCurveOutput(bits, seed, p, a, b, n, P, tries, _cross_checks(), STATUS_OK)
     check_postcondition(out)
     if confirm is not None and confirm["result"] != n:
-        out = _disagree(out, _transcript(search_call, curve, n), confirm)
+        out = _disagree(out, _transcript(search_call, curve, n), confirm, axis=None)
     elif bits <= SEA_SEARCH_ABOVE_BITS:
         sea = _transcript("ellsea", curve, int(pari.ellsea(E)))
         card = _transcript("ellcard", curve, n)
         out = (
-            _disagree(out, card, sea)
+            _disagree(out, card, sea, axis="algorithm")
             if sea["result"] != n
-            else ToyCurveOutput(bits, seed, p, a, b, n, P, tries, _cross_check("agree"), STATUS_OK)
+            else _with_cross_check(out, "algorithm", "agree")
+        )
+    if 30 <= bits <= 60:
+        primary = _transcript(search_call, curve, n)
+        independent = _transcript("gmpy2_bsgs", curve, int(order_bsgs_gmpy2.group_order(p, a, b, [P])))
+        out = (
+            _disagree(out, primary, independent, axis="implementation")
+            if independent["result"] != n
+            else _with_cross_check(out, "implementation", "agree")
         )
     wall_ms = round((time.monotonic() - start) * 1000, 3)
     lg.info(
@@ -298,7 +333,7 @@ def run(bits, seed):
         seed=seed,
         tries=tries,
         n_bits=n.bit_length(),
-        cross_check=out.cross_check["result"],
+        cross_check={record["axis"]: record["result"] for record in out.cross_check},
         status=out.status,
         wall_ms=wall_ms,
     )
@@ -307,20 +342,10 @@ def run(bits, seed):
     return out
 
 
-def _disagree(out, first, second):
-    return ToyCurveOutput(
-        out.bits,
-        out.seed,
-        out.p,
-        out.a,
-        out.b,
-        out.n,
-        out.P,
-        out.tries,
-        _cross_check("disagree"),
-        STATUS_DISAGREE,
-        (first, second),
-    )
+def _disagree(out, first, second, *, axis):
+    marked = out if axis is None else _with_cross_check(out, axis, "disagree")
+    transcripts = (first, second) if out.transcripts is None else (*out.transcripts, second)
+    return replace(marked, status=STATUS_DISAGREE, transcripts=transcripts)
 
 
 def implementation_revision(root=REPO_ROOT):
@@ -341,6 +366,8 @@ def identity_bundle(root=REPO_ROOT):
             "gp_binary_sha256": env.gp_binary_sha256(),
             "cypari2": versions["cypari2"],
             "libpari": versions["libpari"],
+            "gmpy2": gmpy2.version(),
+            "gmp": gmpy2.mp_version(),
         },
         "container_digest": keys.env_manifest_digest(env.manifest()),
         "numeric_profile": pari.NUMERIC_PROFILE,

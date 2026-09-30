@@ -1,3 +1,4 @@
+import json
 import re
 from pathlib import Path
 
@@ -11,6 +12,20 @@ SECTIONS = {rho_dp: "## 1.", bsgs: "## 3.", instance_maker: "## 4."}
 
 
 def committed_table(module):
+    if module is instance_maker:
+        path = NOTE.with_name("instance-maker-implementation-axis-costs.json")
+        doc = json.loads(path.read_text())
+        assert doc["skill"] == "instance-maker" and doc["seeds"] == 10
+        return {
+            row["bits"]: {
+                "mean ops": row["mean_ops"],
+                "sd ops": row["sd_ops"],
+                "per-op us": row["per_op_us"],
+                "mean wall s": row["mean_wall_s"],
+                "seeds": row["seeds"],
+            }
+            for row in doc["rows"]
+        }
     text = NOTE.read_text()
     start = text.index(SECTIONS[module])
     section = text[start + 1 :]
@@ -42,7 +57,8 @@ def test_every_declared_size_is_the_committed_measurement(module):
         assert cost.per_try_s == pytest.approx(float(row["per-op us"]) * 1e-6, rel=1e-9)
         assert cost.mean_wall_s == float(row["mean wall s"])
         assert int(row["seeds"]) >= 2
-    assert "m1-dlp-skill-costs.md" in profile.source and "cairn measure dlp" in profile.source
+    source = "toy-curve-implementation-axis-costs.md" if module is instance_maker else "m1-dlp-skill-costs.md"
+    assert source in profile.source and "cairn measure dlp" in profile.source
 
 
 def test_rho_dp_declares_a_constant_witness_check_at_the_fifty_bit_measurement():

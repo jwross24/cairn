@@ -218,6 +218,9 @@ def test_the_slice_records_its_hypothesis_object_and_the_derivation_lineage(depl
     try:
         key = m0.keys.hypothesis_key(m0._hypothesis(40))
         assert conn.execute("SELECT count(*) FROM hypothesis_objects WHERE hash = ?", (key,)).fetchone()[0] == 1
+        row = conn.execute("SELECT canonical FROM hypothesis_objects WHERE hash = ?", (key,)).fetchone()
+        stored = m0.canon.decode(m0.keys.HYPOTHESIS_OBJECT, row["canonical"])
+        assert stored["method_identity"]["interface_version"] == "toy_curve/2"
         edges = [
             (r["parent_hash"], r["edge_kind"])
             for r in conn.execute("SELECT * FROM lineage WHERE child_hash = ?", (node_b,))

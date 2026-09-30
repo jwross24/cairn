@@ -112,8 +112,10 @@ def test_selftest_certifies_the_revision_and_records_every_row(tmp_path, pinned_
     summary = json.loads(row["selftest_summary"])
     assert summary["pass"] == 4 and summary["floor"] == 4
     assert summary["randomized_arm"] is True
-    assert summary["cross_check"]["axis"] == toy_curve.CROSS_CHECK_AXIS
-    assert summary["cross_check"]["independent_range"] == toy_curve.INDEPENDENT_RANGE
+    assert summary["cross_check"] == [
+        {"axis": "algorithm", "independent_range": {"bits": [0, 50]}},
+        {"axis": "implementation", "independent_range": {"bits": [30, 60]}},
+    ]
     origins = summary["corpus_origins"]
     assert origins["F5"]["P"] == "author_supplied"
     assert origins["F5"]["Q"] == "author_supplied"

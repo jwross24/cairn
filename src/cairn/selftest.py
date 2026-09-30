@@ -297,7 +297,7 @@ def postcondition_arm(seed):
         "b": out.b,
         "n": out.n,
         "P": list(out.P),
-        "cross_check": out.cross_check["result"],
+        "cross_check": [{"axis": record["axis"], "result": record["result"]} for record in out.cross_check],
         "status": out.status,
         "outcome": "pass",
     }

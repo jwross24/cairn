@@ -221,7 +221,10 @@ def test_a_toy_curve_disagreement_propagates_with_its_transcripts(monkeypatch):
         out = real(bits, seed)
         curve = (out.a, out.b, out.p)
         return toy_curve._disagree(
-            out, toy_curve._transcript("ellcard", curve, out.n), toy_curve._transcript("ellsea", curve, out.n + 2)
+            out,
+            toy_curve._transcript("ellcard", curve, out.n),
+            toy_curve._transcript("ellsea", curve, out.n + 2),
+            axis="algorithm",
         )
 
     monkeypatch.setattr(toy_curve, "run", disagreeing)

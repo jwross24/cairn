@@ -8,8 +8,14 @@ from cairn import canon, keys, pari
 from cairn.skills import toy_curve
 from cairn.skills.toy_curve import InputError, ToyCurveOutput
 
-CROSS_AGREE = {"axis": "algorithm", "independent_range": {"bits": [0, 50]}, "result": "agree"}
-CROSS_DISAGREE = {"axis": "algorithm", "independent_range": {"bits": [0, 50]}, "result": "disagree"}
+CROSS_AGREE = [
+    {"axis": "algorithm", "independent_range": {"bits": [0, 50]}, "result": "agree"},
+    {"axis": "implementation", "independent_range": {"bits": [30, 60]}, "result": "agree"},
+]
+CROSS_DISAGREE = [
+    {"axis": "algorithm", "independent_range": {"bits": [0, 50]}, "result": "disagree"},
+    {"axis": "implementation", "independent_range": {"bits": [30, 60]}, "result": "agree"},
+]
 FIXED_OK = ToyCurveOutput(
     30, 1, 922854029, 736418726, 866050641, 922807351, (432221713, 837442395), 48, CROSS_AGREE, "OK"
 )

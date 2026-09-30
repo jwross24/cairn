@@ -75,12 +75,12 @@ dependencies = [
     { name = "blake3" },
     { name = "claude-agent-sdk" },
     { name = "cypari2" },
+    { name = "gmpy2" },
 ]
 
 [package.dev-dependencies]
 dev = [
     { name = "codespell" },
-    { name = "gmpy2" },
     { name = "hypothesis" },
     { name = "pytest" },
     { name = "pytest-timeout" },
@@ -94,12 +94,12 @@ requires-dist = [
     { name = "blake3", specifier = ">=1.0.9" },
     { name = "claude-agent-sdk", specifier = "==0.2.152" },
     { name = "cypari2", specifier = ">=2.2.4" },
+    { name = "gmpy2", specifier = ">=2.3.1" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "codespell", specifier = "==2.4.3" },
-    { name = "gmpy2", specifier = ">=2.3.1" },
     { name = "hypothesis", specifier = ">=6.165.10" },
     { name = "pytest", specifier = ">=9.1.1" },
     { name = "pytest-timeout", specifier = "==2.4.0" },

@@ -808,6 +808,10 @@ TOY_CURVE = SkillSubject(
     transcript=toy_curve_transcript,
     postcondition=toy_curve_postcondition,
     expected_must_failures=frozenset(),
+    cross_check_inputs={
+        "algorithm": {"inside": {"bits": 40, "seed": 1}, "outside": {"bits": 60, "seed": 1}},
+        "implementation": {"inside": {"bits": 60, "seed": 1}, "outside": {"bits": 70, "seed": 1}},
+    },
 )
 
 DLP_INSTANCES = json.loads((Path(__file__).resolve().parents[1] / "vectors" / "dlp_instances.json").read_text())[

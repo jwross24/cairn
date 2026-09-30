@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import skill_contract
 
-from cairn import substrate
+from cairn import bundle, substrate
 
 ROOT = Path(__file__).resolve().parents[2]
 multi_axis = importlib.import_module("skills.multi_axis")
@@ -76,6 +76,30 @@ def test_second_inert_seam_fails_and_names_implementation(axis_context):
     assert verdict.status == skill_contract.FAIL
     assert "axis implementation:" in verdict.reason
     assert "whether or not skills.multi_axis.implementation_sum is planted" in verdict.reason
+
+
+@pytest.fixture
+def toy_axis_context(axis_context, pinned_bundle):
+    bundle_path, pin_path = pinned_bundle()
+    gate = bundle.GateBundle.open(bundle_path, pin_path)
+    return replace(axis_context, config=gate.verifier_config(), bundle_hash=gate.hash)
+
+
+def test_toy_curve_passes_every_declared_axis_arm(toy_axis_context):
+    verdict = skill_contract.check_axis_declaration(skill_contract.TOY_CURVE, toy_axis_context)
+    assert verdict.status == skill_contract.PASS, verdict.reason
+    assert "axis algorithm" in verdict.reason and "axis implementation" in verdict.reason
+    assert "cairn.skills.order_bsgs_gmpy2.group_order" in verdict.reason
+    print(json.dumps(verdict.__dict__, sort_keys=True))
+
+
+def test_toy_curve_plural_ledger_refuses_an_implementation_pass_claim(toy_axis_context):
+    certificate = skill_contract.certified(skill_contract.TOY_CURVE, toy_axis_context)
+    certificate["summary"]["cross_check"][1]["passed"] = True
+    verdict = skill_contract.check_axis_declaration(skill_contract.TOY_CURVE, toy_axis_context)
+    assert verdict.status == skill_contract.FAIL
+    assert "axis implementation: ledger cross_check has keys" in verdict.reason
+    assert "passed" in verdict.reason
 
 
 @pytest.mark.parametrize("axis", skill_contract.AXES)

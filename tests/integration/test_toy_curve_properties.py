@@ -21,7 +21,7 @@ def build_output(bits, seed):
     a, b, n, tries, E, call = toy_curve._search(bits, p)
     confirm, point = toy_curve._settle(bits, E, (a, b, p))
     return toy_curve.ToyCurveOutput(
-        bits, seed, p, a, b, n, point, tries, toy_curve._cross_check("untested"), toy_curve.STATUS_OK
+        bits, seed, p, a, b, n, point, tries, toy_curve._cross_checks(), toy_curve.STATUS_OK
     )
 
 

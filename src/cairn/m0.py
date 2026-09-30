@@ -169,7 +169,7 @@ def _hypothesis(bits):
     return {
         "target_family": TARGET_FAMILY,
         "claimed": {"model": "c_ln_p_tries"},
-        "method_identity": {"interface_version": "toy_curve/1", "params": {}},
+        "method_identity": {"interface_version": toy_curve.INTERFACE_VERSION, "params": {}},
         "declared_parameter_ranges": {"bits": [bits, bits]},
         "sampling_distribution": None,
     }
