@@ -231,4 +231,85 @@ evaluated per shape and arm as `0.10 × figure < 0.2432`, and the commit carryin
 precedes every timed run recorded below. `getrusage` reports whole microseconds, so at 10000
 operations per call the resolution is one tenth of a nanosecond per operation.
 
+## Measurement, CPU-deployed, both arms, 2026-09-30
+
+The pre-registration is carried by commit `48b06ef`. Each run took the heavy lock and the 6 GiB
+cap; the orchestrator confirmed on the bead that these runs stand as the pre-registered ones
+(agent-mail 468 and its follow-up).
+
+| | `macos-host` | `linux-container` |
+|---|---|---|
+| Raw JSON | [deployed-cpu-ratio-macos-2026-09-30.json](deployed-cpu-ratio-macos-2026-09-30.json), 36716 bytes, SHA-256 `4f04a8c5b7af8cf5ec981aaf961a0b1515ecd9bbe05f744be6c08688d953b9d1` | [deployed-cpu-ratio-linux-2026-09-30.json](deployed-cpu-ratio-linux-2026-09-30.json), 36670 bytes, SHA-256 `23c64e0f6e071767c88b3420ee81ad774eef361f4bba4a32ac901a80b7d16f34` |
+| Taken at | 18:02:45 through 18:02:51 UTC | 18:02:55 through 18:02:56 UTC |
+| Compiler | Apple clang 21.0.0, `-O2 -std=c11 -Wall` | Debian clang 14.0.6, `-O2 -std=c11 -Wall`, kernel `7.0.14-orbstack` |
+| Counted binary, reference binary | `9059d68af3db123e…`, `25322a466385bcc9…` | `c52bf5a73c375168…`, `453a6e69f5881984…` |
+| Load, 1-minute | 40.90 ahead of the pairs, 39.77 after | 0.07 ahead and after, inside the container |
+| Memory | 3943 free 16 KiB pages ahead, 5366 after | `MemFree` 14933048 kB ahead, 14924052 kB after |
+| Open files | `kern.num_files` 24335 ahead, 24726 after | `file-nr` 340 ahead and after |
+| Correctness prelude | 20 counted checks, 4 malformed refusals, serve sessions of 1, 2, 3 and 31 requests counted exactly | the same |
+
+Per-pair ratios over 15 pairs, each arm's process-tree CPU per operation over the reference
+child CPU per operation, with the pre-registered figure rule applied:
+
+| Arm, kind | Min | Median | Max | Sample SD | Spread | Verdict | Figure (rule) | `0.10 × figure` | Bound holds |
+|---|---:|---:|---:|---:|---:|---|---:|---:|---|
+| macOS, `cpu_deployed_batch` (10000 ops) | 2.343 | 2.782 | 3.611 | 0.353 | 0.456 | within bound | 2.782 (median) | 0.2782 | no |
+| macOS, `cpu_deployed_trial_batch` (37396 ops) | 1.206 | 1.464 | 1.965 | 0.187 | 0.518 | exceeded | 1.965 (max) | 0.1965 | yes |
+| macOS, `cpu_deployed_ipc` (10000 round trips) | 43.12 | 59.08 | 79.38 | 8.16 | 0.614 | exceeded | 79.38 (max) | 7.938 | no |
+| Linux, `cpu_deployed_batch` (10000 ops) | 0.962 | 1.318 | 1.617 | 0.170 | 0.496 | within bound | 1.318 (median) | 0.1318 | yes |
+| Linux, `cpu_deployed_trial_batch` (37396 ops) | 0.890 | 1.100 | 1.674 | 0.224 | 0.713 | exceeded | 1.674 (max) | 0.1674 | yes |
+| Linux, `cpu_deployed_ipc` (10000 round trips) | 15.56 | 25.49 | 29.24 | 3.95 | 0.537 | exceeded | 29.24 (max) | 2.924 | no |
+
+Per-arm absolute medians in nanoseconds per group operation, with min and max; process-tree
+CPU is the parent's delta plus the children's delta, and the children's delta covers the
+child's chain plus its spawn:
+
+| Arm | macOS child CPU | macOS tree CPU | Linux child CPU | Linux tree CPU |
+|---|---:|---:|---:|---:|
+| `reference` | 209.7 (157.1, 227.1) | 586.1 (450.9, 662.2) | 193.1 (148.6, 302.0) | 286.4 (198.5, 497.7) |
+| `batch` | 206.3 (178.1, 233.1) | 576.4 (495.9, 678.3) | 182.4 (156.6, 278.0) | 247.3 (208.7, 445.9) |
+| `trial_batch` | 203.2 (184.4, 221.4) | 296.2 (270.9, 327.1) | 193.3 (165.5, 282.4) | 209.1 (181.5, 338.4) |
+| `ipc` | 4559 (3548, 5137) | 12095 (9719, 13513) | 1408 (1208, 1498) | 5045 (4338, 5531) |
+
+The median spawn plus protocol CPU per call, tree CPU less the child's own clock, is 3.60 ms
+and 3.48 ms on the host for the two batch arms under a load of 41, and 0.69 ms and 0.81 ms in
+the container.
+
+What the rows say:
+
+- Under the CPU meaning the mean-trial batch shape holds the bound on both arms with the
+  maximum observed ratio (1.965 on the host, 1.674 in the container), and the shortest-trial
+  batch shape holds in the container at its median (1.318) and fails on the host at its median
+  (2.782, a within-bound spread, so the median is the figure). The host run sat under a
+  1-minute load of 41 from the other lanes' suites; its spawn plus protocol CPU is 3.6 ms per
+  call against 0.7 ms in the container, and the two arms also differ in operating system,
+  compiler, binaries and Python, so this record does not separate the load's share of that
+  difference from the arm's. The pairing keeps the ratio a same-window figure on each arm and
+  does not make either a quiet-host figure.
+- Per-operation IPC fails on both arms by an order of magnitude, at the median as well as the
+  maximum: the child's own CPU per request is 4.56 µs on the host and 1.41 µs in the
+  container, 22 and 7 times the reference chain step, before the client's side is counted.
+  The per-op round-trip shape cannot carry the pin at the plan's tolerance.
+- The batch shape's figure is set by the spawn term over the trial's operation count. At the
+  40-bit floor count of 1171749 operations the host's 3.6 ms of spawn CPU is 1.5 percent of
+  the chain and the container's 0.7 ms is 0.3 percent; the 30-bit rung's short trials are
+  where the shape fails on the host.
+
+## Where this leaves `clock.rate_ratio` under the CPU meaning
+
+The pin stays `1.0` with provenance `seeded:cairn-m1-cqt.1.4`. The measured figures the pin
+would carry are, per shape and arm, in the table above: for the mean-trial batch shape 1.965
+on the host and 1.674 in the container, which the loader accepts; for the shortest-trial
+batch shape 2.782 on the host, which it refuses, and 1.318 in the container; for the per-op
+shape 79.38 and 29.24, which it refuses. The orchestrator's rule is that the pin moves only
+for the shape the gate deploys, with that shape named in the provenance, and the tree fixes no
+shape: no method routes arithmetic through a process-kind object, `ladder.run`'s `ops_counter`
+has no production supplier, and the counted object's own code path counts a degenerate call at
+a fraction of a generic step (the compulsory-cost floor above). The shape decision goes to the
+owner with both numbers: the batch shape whose walk runs inside the object holds the bound on
+both arms at the mean 30-bit trial and fails on the host at the shortest 30-bit trials; the
+per-op shape fails everywhere. Until the owner names the shape and item 1 builds an object
+that charges constant work per counted call, `ladderplan` keeps the seeded value and refuses
+any figure at or above 2.432.
+
 No production source, bundle object, pin, golden or admission changed for this record.
