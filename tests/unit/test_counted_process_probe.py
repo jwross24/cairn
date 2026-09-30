@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from research.grounding import probe_clock_reference_cost
 from research.grounding import probe_counted_process as probe
+from research.grounding import probe_deployed_cpu as deployed_cpu
 from research.grounding import probe_deployed_rate as deployed
 from research.grounding import probe_paired_rate as paired
 
@@ -452,3 +453,146 @@ def test_non_preregistered_deployed_settings_require_the_exploratory_flag():
         deployed.PREREGISTERED["trial_ops"],
         deployed.PREREGISTERED["seed"],
     )
+
+
+def test_cpu_delta_sums_self_and_children_and_refuses_backwards_counters():
+    before = {"self_ns": 100, "children_ns": 1000}
+    assert deployed_cpu.cpu_delta(before, {"self_ns": 150, "children_ns": 1600}) == {
+        "parent_cpu_ns": 50,
+        "children_cpu_ns": 600,
+        "tree_cpu_ns": 650,
+    }
+    with pytest.raises(deployed_cpu.counted.ProbeError, match="backwards"):
+        deployed_cpu.cpu_delta(before, {"self_ns": 150, "children_ns": 900})
+
+
+def test_call_with_cpu_reads_rusage_at_the_reap_hook(monkeypatch):
+    phase = {"name": "before"}
+    readings = {
+        "before": {"self_ns": 0, "children_ns": 0},
+        "hook": {"self_ns": 7, "children_ns": 13},
+        "after": {"self_ns": 99, "children_ns": 99},
+    }
+    monkeypatch.setattr(deployed_cpu, "rusage_ns", lambda: dict(readings[phase["name"]]))
+
+    def fake_call(*args, after_reap):
+        phase["name"] = "hook"
+        after_reap()
+        phase["name"] = "after"
+        return {"ops": 10, "child_cpu_ns": 5, "parent_wall_ns": 9}
+
+    monkeypatch.setattr(deployed_cpu.deployed, "_call_arm", fake_call)
+    assert deployed_cpu.call_with_cpu("batch", "ref", "counted", 10, 20) == {
+        "ops": 10,
+        "child_cpu_ns": 5,
+        "parent_wall_ns": 9,
+        "parent_cpu_ns": 7,
+        "children_cpu_ns": 13,
+        "tree_cpu_ns": 20,
+    }
+
+
+def test_an_arm_call_that_never_reaps_is_refused(monkeypatch):
+    monkeypatch.setattr(deployed_cpu, "rusage_ns", lambda: {"self_ns": 0, "children_ns": 0})
+    monkeypatch.setattr(
+        deployed_cpu.deployed,
+        "_call_arm",
+        lambda *args, after_reap: {"ops": 10, "child_cpu_ns": 5, "parent_wall_ns": 9},
+    )
+    with pytest.raises(deployed_cpu.counted.ProbeError, match="reported 0 reaps"):
+        deployed_cpu.call_with_cpu("batch", "ref", "counted", 10, 20)
+
+
+def test_cpu_pair_ratios_divide_tree_cpu_by_reference_child_cpu():
+    results = {
+        "reference": {"ops": 10_000, "child_cpu_ns": 1_000_000, "tree_cpu_ns": 2_500_000},
+        "batch": {"ops": 10_000, "tree_cpu_ns": 2_000_000},
+        "trial_batch": {"ops": 40_000, "tree_cpu_ns": 5_000_000},
+        "ipc": {"ops": 10_000, "tree_cpu_ns": 60_000_000},
+    }
+    assert deployed_cpu.pair_ratios(results) == {
+        "cpu_deployed_batch": "2.000000000",
+        "cpu_deployed_trial_batch": "1.250000000",
+        "cpu_deployed_ipc": "60.000000000",
+    }
+    results["reference"]["child_cpu_ns"] = 0
+    with pytest.raises(deployed_cpu.counted.ProbeError):
+        deployed_cpu.pair_ratios(results)
+
+
+def test_cpu_figures_follow_the_rule_and_the_bound_evaluates():
+    summary = {
+        "cpu_deployed_batch": {"median": "2.3", "max": "2.6", "spread": "0.2"},
+        "cpu_deployed_trial_batch": {"median": "1.3", "max": "1.9", "spread": "0.7"},
+        "cpu_deployed_ipc": {"median": "60", "max": "70", "spread": "0.1"},
+    }
+    verdicts = deployed_cpu.spread_verdicts(summary, deployed_cpu.PREREGISTERED["spread_bound"])
+    assert verdicts == {
+        "cpu_deployed_batch": "within_bound",
+        "cpu_deployed_trial_batch": "exceeded",
+        "cpu_deployed_ipc": "within_bound",
+    }
+    figures = deployed_cpu.figures(summary, verdicts)
+    assert [figures[kind]["figure"] for kind in deployed_cpu.RATIO_KINDS] == ["2.3", "1.9", "60"]
+    evaluation = deployed_cpu.deployed.evaluate_bound(
+        {"clock_tolerance": "0.10", "keep_band_excess": "0.2432"}, figures
+    )
+    assert [evaluation[kind]["holds"] for kind in deployed_cpu.RATIO_KINDS] == [True, True, False]
+    assert evaluation["cpu_deployed_batch"]["product"] == "0.230000000"
+
+
+def test_cpu_preregistration_mirrors_the_wall_probe_and_names_the_quantity():
+    cpu = deployed_cpu.PREREGISTERED
+    wall = deployed_cpu.deployed.PREREGISTERED
+    for field in ("pairs", "ops", "trial_ops", "seed", "warmup_calls_per_arm"):
+        assert cpu[field] == wall[field]
+    assert cpu["arms"] == list(deployed_cpu.deployed.ARMS)
+    spread_bound = cpu["spread_bound"]
+    assert isinstance(spread_bound, dict)
+    assert set(spread_bound) == set(deployed_cpu.RATIO_KINDS)
+    assert set(spread_bound.values()) == {"0.50"}
+    quantity = cpu["quantity"]
+    assert isinstance(quantity, str)
+    assert "RUSAGE_CHILDREN" in quantity
+    assert "cpu" not in spread_bound
+
+
+def test_non_preregistered_cpu_settings_require_the_exploratory_flag():
+    with pytest.raises(SystemExit):
+        deployed_cpu._arguments(["--arm", "x", "--seed", "1"])
+    assert deployed_cpu._arguments(["--arm", "x", "--seed", "1", "--exploratory"]).seed == 1
+    defaults = deployed_cpu._arguments(["--arm", "x"])
+    assert (defaults.pairs, defaults.ops, defaults.trial_ops, defaults.seed) == (
+        deployed_cpu.PREREGISTERED["pairs"],
+        deployed_cpu.PREREGISTERED["ops"],
+        deployed_cpu.PREREGISTERED["trial_ops"],
+        deployed_cpu.PREREGISTERED["seed"],
+    )
+
+
+def test_cpu_summarize_arms_reports_every_clock_per_op():
+    def arm_row(tree_cpu_ns):
+        return {
+            "ops": 10_000,
+            "child_cpu_ns": 1_000_000,
+            "parent_cpu_ns": 2_000_000,
+            "children_cpu_ns": tree_cpu_ns - 2_000_000,
+            "tree_cpu_ns": tree_cpu_ns,
+            "parent_wall_ns": 5_000_000,
+        }
+
+    rows = [
+        {arm: arm_row(120_000_000) for arm in deployed_cpu.deployed.ARMS},
+        {arm: arm_row(130_000_000) for arm in deployed_cpu.deployed.ARMS},
+    ]
+    summary = deployed_cpu.summarize_arms(rows)
+    assert set(summary) == set(deployed_cpu.deployed.ARMS)
+    assert set(summary["batch"]) == {
+        "child_cpu_per_group_op",
+        "parent_cpu_per_group_op",
+        "children_cpu_per_group_op",
+        "tree_cpu_per_group_op",
+        "parent_wall_per_group_op",
+    }
+    assert summary["batch"]["tree_cpu_per_group_op"]["median"] == "0.000012500000"
+    assert summary["batch"]["child_cpu_per_group_op"]["median"] == "0.000000100000"

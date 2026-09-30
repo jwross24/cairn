@@ -177,4 +177,58 @@ here. Spawn stays inside the deployed rate in either case. Until the owner takes
 under it holds, `ladderplan` keeps refusing a ratio at or above 2.432, which is the gate
 failing closed on a number it cannot yet support.
 
+## The wall figures overstate the predicate's quantity
+
+The orchestrator's correction on the bead (agent-mail message 464, 2026-09-30 17:42 UTC) sets
+the quantity the deployed ratio must be measured in. The clock predicate in
+`laddertable._clock` compares a trial's process-tree CPU seconds, user plus system from the
+execution receipt, against counted operations at the reference rate, so the budget a method
+can hide uncounted work inside is process-tree CPU, and the ratio that sizes that room is
+process-tree CPU per counted operation in the deployed shape, the method process's protocol
+CPU plus the spawn's CPU plus the child's CPU, over the reference child CPU per operation.
+The tables above use parent wall per operation as the numerator. Wall includes the exec and
+scheduling waits of each spawn, about 2.9 ms per call on the host and 3.1 to 5.1 ms in the
+container on the batch arms' medians (parent wall less child CPU), and wall is not the
+quantity `_clock` bounds; the wall figures therefore overstate the predicate's quantity, and
+the numbers above stand as the record of the wall measurement, not as the figures the pin is
+judged by. `laddertable._wall` bounds elapsed time relative to reported CPU: it fires when
+wall exceeds CPU by more than its tolerance, so it limits idle waiting but does not by itself
+close a computation channel, since added CPU under a fixed wall makes it easier to pass. The
+CPU-deployed measurement is pre-registered below.
+
+The checker's review of this reasoning (gpt-6-astra, logged as findings on the bead) holds
+the CPU unit and the reference child CPU denominator and names two premises the bound rests on
+that this record does not establish. First, complete accounting: the receipt is `wait4` on the
+trial's direct child, which rolls up descendants only as they are reaped, and the runner's own
+CPU sits outside it; `laddertable._measurement_scope` refuses a trial whose scope is weaker
+than `tree`, and that predicate, not this ratio, is what excludes unaccounted execution.
+Second, a compulsory-cost floor: `clock_tolerance * rate_ratio < 2 * design_radius` bounds the
+hidden work only if every counted call costs at least the allowance per operation. The
+prototype counts a call before its arithmetic, and `ec_add_impl` returns early for an
+inverse-point addition, so a session of 10000 `a P (-P)` requests is accepted and counted with
+the field arithmetic skipped. In the serve shape that session still costs 433 ns of child CPU
+per request, above the 171.6 ns allowance at the plan's tolerance, because the pipe round trip
+dominates, so the serve shape does not demonstrate the hole; in a batch shape the skipped
+arithmetic is the whole per-operation cost, about 156 ns against the same allowance, and a
+counted object with that code path would count a near-free call. A counted object that fills
+the slot must charge every counted call at least the reference cost or refuse to count a
+short-circuited one; that is a requirement on item 1 of `cairn-m1-cqt.1.4`, and the live
+allowance in `ladder.py` still comes from the method's declared profile until item 4 lands.
+
+## Pre-registration, CPU-deployed
+
+`probe_deployed_cpu.py` reuses the four arms, the pair design, the order rule, the warm-up,
+the spread definition, the 0.50 bound per kind and the figure rule of the wall probe, and
+changes only the numerator: the parent takes `getrusage(RUSAGE_SELF)` and
+`getrusage(RUSAGE_CHILDREN)` directly ahead of the spawn and again at the reap, before any
+response is parsed or validated, with the garbage collector held off in between and the
+serve mode's kill timer joined, and the arm's cost is the sum of the two user plus system
+deltas, so the parent's protocol CPU, the spawn's CPU and the reaped child's CPU are inside it
+and the probe's own oracle work is not. The denominator stays the reference child CPU per operation from the
+reference binary's own clock. The kinds are `cpu_deployed_batch`, `cpu_deployed_trial_batch`
+and `cpu_deployed_ipc`; the `cpu` kind of `paired-rate-ratio.md` is never used. The bound is
+evaluated per shape and arm as `0.10 × figure < 0.2432`, and the commit carrying this section
+precedes every timed run recorded below. `getrusage` reports whole microseconds, so at 10000
+operations per call the resolution is one tenth of a nanosecond per operation.
+
 No production source, bundle object, pin, golden or admission changed for this record.

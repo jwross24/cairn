@@ -97,7 +97,7 @@ def validate_serve_summary(payload, ops):
     return payload
 
 
-def run_serve(binary, ops):
+def run_serve(binary, ops, after_reap=None):
     binary = Path(binary)
     if not binary.is_file():
         raise ServeError(f"binary is missing: {binary}")
@@ -133,6 +133,8 @@ def run_serve(binary, ops):
         remainder = process.stdout.read()
         stderr = process.stderr.read()
         process.wait(timeout=SERVE_TIMEOUT_S)
+        if after_reap is not None:
+            after_reap()
     except subprocess.TimeoutExpired as exc:
         process.kill()
         raise ServeError(f"serve process exceeded {SERVE_TIMEOUT_S}s") from exc
@@ -141,6 +143,7 @@ def run_serve(binary, ops):
         raise ServeError("serve process closed its input") from exc
     finally:
         timer.cancel()
+        timer.join()
         if process.poll() is None:
             process.kill()
             process.wait()
@@ -166,14 +169,14 @@ def arm_order(seed, pair_index):
     return tuple(sorted(ARMS, key=rank))
 
 
-def _call_arm(arm, reference_binary, counted_binary, ops, trial_ops):
+def _call_arm(arm, reference_binary, counted_binary, ops, trial_ops, after_reap=None):
     if arm == "reference":
-        child_cpu_ns, wall_ns = paired.run_reference(reference_binary, ops)
+        child_cpu_ns, wall_ns = paired.run_reference(reference_binary, ops, after_reap=after_reap)
         return {"ops": ops, "child_cpu_ns": child_cpu_ns, "parent_wall_ns": wall_ns}
     if arm == "ipc":
-        return {"ops": ops, **run_serve(counted_binary, ops)}
+        return {"ops": ops, **run_serve(counted_binary, ops, after_reap=after_reap)}
     batch = ops if arm == "batch" else trial_ops
-    payload, wall_ns = counted.run_binary(counted_binary, "counted", batch, timed=True)
+    payload, wall_ns = counted.run_binary(counted_binary, "counted", batch, timed=True, after_reap=after_reap)
     return {"ops": batch, "child_cpu_ns": payload["child_cpu_ns"], "parent_wall_ns": wall_ns, "count": payload["count"]}
 
 

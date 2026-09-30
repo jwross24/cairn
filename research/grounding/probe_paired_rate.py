@@ -109,7 +109,7 @@ def validate_reference(payload, ops):
     return round(cpu_s * 1_000_000_000)
 
 
-def run_reference(binary, ops):
+def run_reference(binary, ops, after_reap=None):
     binary = Path(binary)
     if not binary.is_file() or not os.access(binary, os.X_OK):
         raise counted.ProbeError(f"binary is missing or not executable: {binary}")
@@ -131,6 +131,8 @@ def run_reference(binary, ops):
     except OSError as exc:
         raise counted.ProbeError(f"could not start reference process: {binary}") from exc
     wall_ns = time.perf_counter_ns() - started
+    if after_reap is not None:
+        after_reap()
     if completed.returncode != 0:
         raise counted.ProbeError(f"reference process exited {completed.returncode}: {completed.stderr.strip()}")
     if completed.stderr:

@@ -179,7 +179,7 @@ def build_binary(compiler=CC):
     }
 
 
-def run_binary(binary, mode, ops, timed=False):
+def run_binary(binary, mode, ops, timed=False, after_reap=None):
     binary = Path(binary)
     if not binary.is_file() or not os.access(binary, os.X_OK):
         raise ProbeError(f"binary is missing or not executable: {binary}")
@@ -199,6 +199,8 @@ def run_binary(binary, mode, ops, timed=False):
     except OSError as exc:
         raise ProbeError(f"could not start counted process: {binary}") from exc
     wall_ns = time.perf_counter_ns() - started if timed else None
+    if after_reap is not None:
+        after_reap()
     if completed.returncode != 0:
         raise ProbeError(f"counted process exited {completed.returncode}: {completed.stderr.strip()}")
     if completed.stderr:
