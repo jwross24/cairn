@@ -120,6 +120,96 @@ static int parse_ops(const char *text, u64 *value) {
     return 1;
 }
 
+static int parse_coordinate(const char **cursor, u64 *value) {
+    const char *text = *cursor;
+    while (*text == ' ') {
+        text++;
+    }
+    if (*text < '0' || *text > '9') {
+        return 0;
+    }
+    u64 parsed = 0;
+    for (; *text >= '0' && *text <= '9'; text++) {
+        u64 digit = (u64)(*text - '0');
+        if (parsed > (p - 1 - digit) / 10) {
+            return 0;
+        }
+        parsed = parsed * 10 + digit;
+    }
+    *cursor = text;
+    *value = parsed;
+    return 1;
+}
+
+static int parse_point(const char **cursor, point *value) {
+    u64 x = 0;
+    u64 y = 0;
+    if (!parse_coordinate(cursor, &x) || !parse_coordinate(cursor, &y)) {
+        return 0;
+    }
+    value->x = x;
+    value->y = y;
+    value->inf = 0;
+    return 1;
+}
+
+static int line_ends(const char *cursor) {
+    while (*cursor == ' ') {
+        cursor++;
+    }
+    return *cursor == '\n' || *cursor == '\0';
+}
+
+static int serve_requests(u64 max_requests) {
+    char line[128];
+    u64 served = 0;
+    while (fgets(line, sizeof line, stdin) != NULL) {
+        if (strchr(line, '\n') == NULL) {
+            fprintf(stderr, "request line must end with a newline\n");
+            return 0;
+        }
+        if (strcmp(line, "q\n") == 0) {
+            return 1;
+        }
+        if (served >= max_requests) {
+            fprintf(stderr, "request count exceeds OPS\n");
+            return 0;
+        }
+        const char *cursor = line + 1;
+        point out = {0, 0, 0};
+        if (line[0] == 'd') {
+            point value = {0, 0, 0};
+            if (!parse_point(&cursor, &value) || !line_ends(cursor)) {
+                fprintf(stderr, "malformed double request\n");
+                return 0;
+            }
+            out = counted_double(value);
+        } else if (line[0] == 'a') {
+            point left = {0, 0, 0};
+            point right = {0, 0, 0};
+            if (!parse_point(&cursor, &left) || !parse_point(&cursor, &right) || !line_ends(cursor)) {
+                fprintf(stderr, "malformed add request\n");
+                return 0;
+            }
+            out = counted_add(left, right);
+        } else {
+            fprintf(stderr, "unknown request\n");
+            return 0;
+        }
+        served++;
+        if (out.inf) {
+            fputs("inf\n", stdout);
+        } else {
+            printf("%" PRIu64 " %" PRIu64 "\n", out.x, out.y);
+        }
+        if (fflush(stdout) != 0) {
+            return 0;
+        }
+    }
+    fprintf(stderr, "input ended without q\n");
+    return 0;
+}
+
 static int elapsed_ns(struct timespec start, struct timespec end, u64 *value) {
     int64_t seconds = (int64_t)end.tv_sec - (int64_t)start.tv_sec;
     int64_t nanoseconds = (int64_t)end.tv_nsec - (int64_t)start.tv_nsec;
@@ -145,7 +235,8 @@ int main(int argc, char **argv) {
     int counted = strcmp(mode, "counted") == 0;
     int count_only = strcmp(mode, "count-only") == 0;
     int zero_work = strcmp(mode, "zero-work") == 0;
-    if (!raw && !counted && !count_only && !zero_work) {
+    int serve = strcmp(mode, "serve") == 0;
+    if (!raw && !counted && !count_only && !zero_work && !serve) {
         fprintf(stderr, "unknown mode\n");
         return 2;
     }
@@ -187,6 +278,11 @@ int main(int argc, char **argv) {
     } else if (count_only) {
         for (u64 i = 0; i < ops; i++) {
             group_calls += 1;
+        }
+        count = group_calls;
+    } else if (serve) {
+        if (!serve_requests(ops)) {
+            return 2;
         }
         count = group_calls;
     }

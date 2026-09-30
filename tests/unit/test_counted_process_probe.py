@@ -2,6 +2,7 @@ import hashlib
 import json
 import statistics
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -11,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from research.grounding import probe_clock_reference_cost
 from research.grounding import probe_counted_process as probe
+from research.grounding import probe_deployed_rate as deployed
 from research.grounding import probe_paired_rate as paired
 
 
@@ -274,3 +276,179 @@ def test_ratio_summary_handles_rows_with_two_ratio_kinds():
     assert set(summary) == {"cpu", "wall"}
     assert summary["cpu"]["median"] == "1.100000000"
     assert summary["wall"]["spread"] == "0.000000000"
+
+
+def _serve_payload(count, point=None):
+    return {"mode": "serve", "requested_ops": 3, "count": count, "point": point, "child_cpu_ns": 5}
+
+
+def test_a_valid_serve_summary_is_accepted():
+    payload = _serve_payload(3)
+    assert deployed.validate_serve_summary(payload, 3) == payload
+
+
+def test_a_serve_summary_with_a_wrong_count_is_refused():
+    with pytest.raises(deployed.ServeError, match="serve count was"):
+        deployed.validate_serve_summary(_serve_payload(2), 3)
+
+
+def test_a_serve_summary_that_reports_a_point_is_refused():
+    with pytest.raises(deployed.ServeError):
+        deployed.validate_serve_summary(_serve_payload(3, [1, 2]), 3)
+
+
+@pytest.mark.parametrize("junk", ["1\n", "1 2 3\n", "a b\n", f"{deployed.counted.P} 1\n", "True 1\n"])
+def test_serve_responses_parse_points_and_refuse_junk(junk):
+    assert deployed._parse_response("1 2\n") == (1, 2)
+    assert deployed._parse_response("inf\n") is None
+    with pytest.raises(deployed.ServeError):
+        deployed._parse_response(junk)
+
+
+def test_requests_alternate_double_and_add_and_refuse_infinity():
+    assert deployed._request(0, (5, 7)) == "d 5 7\n"
+    assert deployed._request(1, (5, 7)) == f"a 5 7 {deployed.counted.GX} {deployed.counted.GY}\n"
+    with pytest.raises(deployed.ServeError):
+        deployed._request(0, None)
+
+
+def test_arm_order_is_deterministic_and_a_permutation():
+    seed = deployed.PREREGISTERED["seed"]
+    first = [deployed.arm_order(seed, pair) for pair in range(1, 16)]
+    second = [deployed.arm_order(seed, pair) for pair in range(1, 16)]
+    assert first == second
+    assert all(sorted(order) == sorted(deployed.ARMS) for order in first)
+    assert len(set(first)) >= 2
+
+
+def test_pair_ratios_divide_parent_wall_by_reference_child_cpu():
+    results = {
+        "reference": {"ops": 10_000, "child_cpu_ns": 1_000_000, "parent_wall_ns": 2_000_000},
+        "batch": {"ops": 10_000, "parent_wall_ns": 2_500_000, "child_cpu_ns": 1, "count": 10_000},
+        "trial_batch": {"ops": 40_000, "parent_wall_ns": 12_000_000, "child_cpu_ns": 1, "count": 40_000},
+        "ipc": {"ops": 10_000, "parent_wall_ns": 300_000_000, "child_cpu_ns": 1, "count": 10_000},
+    }
+    assert deployed.pair_ratios(results) == {
+        "deployed_batch": "2.500000000",
+        "deployed_trial_batch": "3.000000000",
+        "deployed_ipc": "300.000000000",
+    }
+
+
+def test_figures_follow_the_rule_and_the_bound_evaluates_exactly():
+    summary = {
+        "deployed_batch": {"median": "2.4", "max": "3.9", "spread": "0.1"},
+        "deployed_trial_batch": {"median": "1.5", "max": "2.0", "spread": "0.9"},
+        "deployed_ipc": {"median": "300", "max": "400", "spread": "0.2"},
+    }
+    verdicts = deployed.spread_verdicts(summary, deployed.PREREGISTERED["spread_bound"])
+    assert verdicts == {
+        "deployed_batch": "within_bound",
+        "deployed_trial_batch": "exceeded",
+        "deployed_ipc": "within_bound",
+    }
+    chosen = deployed.figures(summary, verdicts)
+    assert {kind: entry["figure"] for kind, entry in chosen.items()} == {
+        "deployed_batch": "2.4",
+        "deployed_trial_batch": "2.0",
+        "deployed_ipc": "300",
+    }
+    bound = {"clock_tolerance": "0.10", "keep_band_excess": "0.2432"}
+    evaluation = deployed.evaluate_bound(bound, chosen)
+    assert evaluation["deployed_batch"]["product"] == "0.240000000"
+    assert [evaluation[kind]["holds"] for kind in deployed.RATIO_KINDS] == [True, True, False]
+    committed = deployed.clock_bound()
+    assert committed["max_admissible_ratio"] == "2.432000000"
+    assert committed["current_rate_ratio"] == "1.0"
+
+
+def test_verify_chain_refuses_a_wrong_intermediate_point_behind_the_right_endpoint():
+    ec = deployed.counted.ec
+    base = (deployed.counted.GX, deployed.counted.GY)
+    first = ec.double(deployed.counted.P, deployed.counted.A, base)
+    second = ec.add(deployed.counted.P, deployed.counted.A, first, base)
+    assert deployed.verify_chain([first, second], 2) == deployed.counted.expected_point(2)
+    with pytest.raises(deployed.ServeError, match="serve response 0 was"):
+        deployed.verify_chain([(1, 2), second], 2)
+    with pytest.raises(deployed.ServeError, match="serve returned 1 responses"):
+        deployed.verify_chain([first], 2)
+
+
+def test_a_silent_serve_child_is_killed_at_the_timeout(monkeypatch):
+    popen = deployed.subprocess.Popen
+    silent = [sys.executable, "-c", "import time; time.sleep(5)"]
+    monkeypatch.setattr(deployed, "SERVE_TIMEOUT_S", 0.2)
+    monkeypatch.setattr(deployed.subprocess, "Popen", lambda argv, **kw: popen(silent, **kw))
+    started = time.monotonic()
+    with pytest.raises(deployed.ServeError, match="closed its output"):
+        deployed.run_serve(sys.executable, 1)
+    assert time.monotonic() - started < 2
+
+
+def _fake_serve_child(monkeypatch, source):
+    popen = deployed.subprocess.Popen
+    monkeypatch.setattr(deployed.subprocess, "Popen", lambda argv, **kw: popen([sys.executable, "-c", source], **kw))
+
+
+def test_output_after_the_serve_summary_is_refused(monkeypatch):
+    point = deployed.counted.expected_point(1)
+    summary = json.dumps({"mode": "serve", "requested_ops": 1, "count": 1, "point": None, "child_cpu_ns": 1})
+    source = "\n".join(
+        [
+            "import sys, time",
+            "sys.stdin.readline()",
+            f"print('{point[0]} {point[1]}', flush=True)",
+            "sys.stdin.readline()",
+            f"sys.stdout.write({summary + chr(10) + 'UNEXPECTED' + chr(10)!r})",
+            "sys.stdout.flush()",
+            "time.sleep(0.1)",
+        ]
+    )
+    _fake_serve_child(monkeypatch, source)
+    with pytest.raises(deployed.ServeError, match="wrote after its summary"):
+        deployed.run_serve(sys.executable, 1)
+
+
+def test_a_refused_serve_child_is_reaped(monkeypatch):
+    children = []
+    popen = deployed.subprocess.Popen
+
+    def spawn(argv, **kw):
+        child = popen([sys.executable, "-c", 'import time; print("bad", flush=True); time.sleep(30)'], **kw)
+        children.append(child)
+        return child
+
+    monkeypatch.setattr(deployed.subprocess, "Popen", spawn)
+    with pytest.raises(deployed.ServeError, match="not a point"):
+        deployed.run_serve(sys.executable, 1)
+    assert children[0].returncode is not None
+    assert all(stream.closed for stream in (children[0].stdin, children[0].stdout, children[0].stderr))
+
+
+def test_a_child_that_exits_before_the_first_request_is_refused_and_closed(monkeypatch):
+    children = []
+    popen = deployed.subprocess.Popen
+
+    def spawn(argv, **kw):
+        child = popen([sys.executable, "-c", "pass"], **kw)
+        child.wait()
+        children.append(child)
+        return child
+
+    monkeypatch.setattr(deployed.subprocess, "Popen", spawn)
+    with pytest.raises(deployed.ServeError):
+        deployed.run_serve(sys.executable, 1)
+    assert all(stream.closed for stream in (children[0].stdin, children[0].stdout, children[0].stderr))
+
+
+def test_non_preregistered_deployed_settings_require_the_exploratory_flag():
+    with pytest.raises(SystemExit):
+        deployed._arguments(["--arm", "x", "--pairs", "3"])
+    assert deployed._arguments(["--arm", "x", "--pairs", "3", "--exploratory"]).pairs == 3
+    defaults = deployed._arguments(["--arm", "x"])
+    assert (defaults.pairs, defaults.ops, defaults.trial_ops, defaults.seed) == (
+        deployed.PREREGISTERED["pairs"],
+        deployed.PREREGISTERED["ops"],
+        deployed.PREREGISTERED["trial_ops"],
+        deployed.PREREGISTERED["seed"],
+    )
