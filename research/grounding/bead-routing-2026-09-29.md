@@ -4,14 +4,14 @@ Scope authority: MagentaSparrow agent-mail 415, 2026-09-29. Cairn emits the clas
 
 ## Source and checks
 
-`bead-routing-2026-09-29/manifest.json` records the base revision, source byte counts, SHA-256 digests, mutation patches, and exit codes. The implementation and test changes were reviewed line by line by the parent agent.
+`bead-routing-2026-09-29/manifest.json` records the base revision, source byte counts, SHA-256 digests, mutation patches, and exit codes. The implementation and test changes were reviewed line by line by the parent agent. Committed acceptance uses `561f0f0213731b36d5d5993a105448fb109e15e8`; the four reviewed source files match the recorded byte counts and digests.
 
 ```sh
 scripts/check.sh --fast --paths scripts/route.py tests/unit/test_route.py AGENTS.md research/decisions/adr-015-bead-model-routing.md
 uv run pytest --no-header -q --tb=short --disable-warnings tests/unit/test_route.py tests/unit/test_identity_sources.py
 ```
 
-The scoped fast gate passed. The affected suite passed 64 tests with no skips. The 2,140 warnings concern pytest cleanup of retained temporary directories; `--disable-warnings` suppresses their repeated detail, not tests. Raw result: `bead-routing-2026-09-29/tests.txt`.
+The scoped fast gate passed. The affected suite passed 64 tests with no skips, including the replay on committed code. The 2,140 warnings concern pytest cleanup of retained temporary directories; `--disable-warnings` suppresses their repeated detail, not tests. Raw committed result: `bead-routing-2026-09-29/committed/tests.txt`.
 
 ## Real CLI observations
 
@@ -21,9 +21,9 @@ uv run python scripts/route.py cairn-m1-cqt.5.6
 uv run python scripts/route.py cairn-fjd7
 ```
 
-All three commands exited 0 and emitted exactly `class`, `reasons`, `floor`, and `judge`. Their JSON is retained in `mechanical.json`, `critical.json`, and `gray.json` beneath `bead-routing-2026-09-29/`.
+All three commands exited 0 on committed code and emitted exactly `class`, `reasons`, `floor`, and `judge`. Their JSON is retained in `mechanical-with-touches.json`, `critical.json`, and `gray.json` beneath `bead-routing-2026-09-29/committed/`.
 
-The README bead has a Mechanical floor and does not call the judge. It identifies `README.md` in its body but has no literal `Touches:` line; it alone does not satisfy an acceptance clause requiring that literal field. Documentation-only `Touches:` lines have automated coverage.
+The README bead has the accurate `Touches: README.md` metadata authorized by MagentaSparrow in agent-mail 419. It receives a Mechanical floor without calling the judge. Documentation-only `Touches:` lines also have automated coverage.
 
 The formalization bead has a Critical floor and does not call the judge. The gate-reporting bead has a Standard floor and received a live Demanding answer with no judge error. The call used `/Users/jwross/.local/bin/codex`, version `0.155.0-alpha.16`, with the fixed first-party judge and low effort. A single response establishes adapter execution, not classifier calibration.
 
@@ -48,8 +48,12 @@ PYTHONPATH="$scratch_tree/src:$scratch_tree/tests" \
   "tests/unit/test_route.py::$test_name"
 ```
 
-The first five mutations used test bytes differing from the final test module only in the unrelated unknown-class test. The unknown-class mutation uses the final test module. No identity-bearing production source or golden is modified by this work.
+Committed mutation replays use exact committed test bytes and the committed router plus the corresponding retained patch. Patch-byte and SHA-256 comparisons passed. The `committed/` directory retains each replay's failing output. No identity-bearing production source or golden is modified by this work.
 
 ## Verification boundary
 
-This artifact records local evidence. Pushed CI and committed-code replay are separate close requirements recorded in the bead. Unknown-model validation and a model assignment table are outside the scope authorized in mail 415. The untracked table file is excluded from this change.
+CI run [36644266988](https://github.com/jwross24/cairn/actions/runs/36644266988) completed successfully on pushed commit `561f0f0213731b36d5d5993a105448fb109e15e8`. All 20 jobs succeeded. The parent independently checked the exact SHA, terminal conclusions, and all 26 router cases marked PASSED in the Python lane. Raw job metadata is in `bead-routing-2026-09-29/committed/implementation-ci.json`.
+
+Exclusions are explicit: the existing live compliance gatherer and renderer drift checks were skipped, and `test_the_corpus_bars_are_met` was xfailed. None is counted as passed or as evidence supplied by this router change.
+
+Unknown-model validation and a model assignment table are outside the scope authorized in mail 415. The untracked table file is excluded from this change. Owner mail 419 authorizes the standalone closure/evidence push after green implementation CI.

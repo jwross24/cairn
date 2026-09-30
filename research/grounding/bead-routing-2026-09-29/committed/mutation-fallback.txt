@@ -1,0 +1,76 @@
+FFFFFF                                                                   [100%]
+=================================== FAILURES ===================================
+___________ test_judge_timeout_and_garbage_route_demanding[timeout] ____________
+tests/unit/test_route.py:101: in test_judge_timeout_and_garbage_route_demanding
+    assert result["class"] == "Demanding"
+E   AssertionError: assert 'Standard' == 'Demanding'
+E     
+E     - Demanding
+E     + Standard
+------------------------------ Captured log setup ------------------------------
+DEBUG    cairn:_test_logging.py:78 phase
+---------------------------- Captured log teardown -----------------------------
+DEBUG    cairn:_test_logging.py:80 phase
+___________ test_judge_timeout_and_garbage_route_demanding[garbage] ____________
+tests/unit/test_route.py:101: in test_judge_timeout_and_garbage_route_demanding
+    assert result["class"] == "Demanding"
+E   AssertionError: assert 'Standard' == 'Demanding'
+E     
+E     - Demanding
+E     + Standard
+------------------------------ Captured log setup ------------------------------
+DEBUG    cairn:_test_logging.py:78 phase
+---------------------------- Captured log teardown -----------------------------
+DEBUG    cairn:_test_logging.py:80 phase
+__________ test_judge_timeout_and_garbage_route_demanding[class-list] __________
+tests/unit/test_route.py:101: in test_judge_timeout_and_garbage_route_demanding
+    assert result["class"] == "Demanding"
+E   AssertionError: assert 'Standard' == 'Demanding'
+E     
+E     - Demanding
+E     + Standard
+------------------------------ Captured log setup ------------------------------
+DEBUG    cairn:_test_logging.py:78 phase
+---------------------------- Captured log teardown -----------------------------
+DEBUG    cairn:_test_logging.py:80 phase
+__________ test_judge_timeout_and_garbage_route_demanding[class-dict] __________
+tests/unit/test_route.py:101: in test_judge_timeout_and_garbage_route_demanding
+    assert result["class"] == "Demanding"
+E   AssertionError: assert 'Standard' == 'Demanding'
+E     
+E     - Demanding
+E     + Standard
+------------------------------ Captured log setup ------------------------------
+DEBUG    cairn:_test_logging.py:78 phase
+---------------------------- Captured log teardown -----------------------------
+DEBUG    cairn:_test_logging.py:80 phase
+_________ test_judge_timeout_and_garbage_route_demanding[empty-reason] _________
+tests/unit/test_route.py:101: in test_judge_timeout_and_garbage_route_demanding
+    assert result["class"] == "Demanding"
+E   AssertionError: assert 'Standard' == 'Demanding'
+E     
+E     - Demanding
+E     + Standard
+------------------------------ Captured log setup ------------------------------
+DEBUG    cairn:_test_logging.py:78 phase
+---------------------------- Captured log teardown -----------------------------
+DEBUG    cairn:_test_logging.py:80 phase
+_______ test_judge_timeout_and_garbage_route_demanding[multiline-reason] _______
+tests/unit/test_route.py:101: in test_judge_timeout_and_garbage_route_demanding
+    assert result["class"] == "Demanding"
+E   AssertionError: assert 'Standard' == 'Demanding'
+E     
+E     - Demanding
+E     + Standard
+------------------------------ Captured log setup ------------------------------
+DEBUG    cairn:_test_logging.py:78 phase
+---------------------------- Captured log teardown -----------------------------
+DEBUG    cairn:_test_logging.py:80 phase
+=========================== short test summary info ============================
+FAILED tests/unit/test_route.py::test_judge_timeout_and_garbage_route_demanding[timeout]
+FAILED tests/unit/test_route.py::test_judge_timeout_and_garbage_route_demanding[garbage]
+FAILED tests/unit/test_route.py::test_judge_timeout_and_garbage_route_demanding[class-list]
+FAILED tests/unit/test_route.py::test_judge_timeout_and_garbage_route_demanding[class-dict]
+FAILED tests/unit/test_route.py::test_judge_timeout_and_garbage_route_demanding[empty-reason]
+FAILED tests/unit/test_route.py::test_judge_timeout_and_garbage_route_demanding[multiline-reason]
+6 failed, 2140 warnings in 0.54s
