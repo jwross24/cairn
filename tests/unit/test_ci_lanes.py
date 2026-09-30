@@ -21,6 +21,9 @@ from _ci_lanes import (
     M0_LANES,
     M0_TEST_CASES,
     M0_TEST_PATHS,
+    PROVEN_DEV_TEST,
+    PROVEN_GOLD_TEST,
+    PROVEN_TEST_PATH,
     SOLUTION_LIBRARY_BINDING_TEST,
     SOLUTION_LIBRARY_CASE_TEST,
     SOLUTION_LIBRARY_ITEMS,
@@ -145,6 +148,33 @@ def test_each_lane_runs_its_selected_tests(pytester, lane, passed, deselected):
     _suite(pytester)
     result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
     result.assert_outcomes(passed=passed, deselected=deselected)
+
+
+@pytest.mark.parametrize(
+    ("lane", "expected"),
+    [
+        ("container-plan-exact", {PROVEN_GOLD_TEST}),
+        ("solution-plan-exact", {PROVEN_DEV_TEST}),
+        ("python-integration", set()),
+    ],
+)
+def test_proven_derivation_arms_run_with_their_real_prerequisites(pytester, lane, expected):
+    _suite(pytester)
+    path = pytester.path / PROVEN_TEST_PATH
+    path.write_text(f"def {PROVEN_GOLD_TEST}():\n    assert True\ndef {PROVEN_DEV_TEST}():\n    assert True\n")
+    result = pytester.runpytest("-q", "--collect-only", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
+    assert result.ret == 0
+    assert {line.split("::")[1] for line in result.outlines if line.startswith(PROVEN_TEST_PATH + "::")} == expected
+
+
+def test_an_unassigned_proven_derivation_arm_refuses_collection(pytester):
+    _suite(pytester)
+    (pytester.path / PROVEN_TEST_PATH).write_text("def test_unassigned():\n    assert True\n")
+    result = pytester.runpytest(
+        "-q", "--collect-only", "--import-mode=importlib", "--cairn-ci-lane=container-plan-exact"
+    )
+    assert result.ret != 0
+    assert "unassigned PROVEN derivation test" in result.stderr.str()
 
 
 def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytester):
@@ -659,7 +689,7 @@ def test_every_direct_lean_import_has_one_explicit_lane_classification():
         "tests/unit/test_lean_pins.py",
         "tests/unit/test_linux_dependency_cache.py",
     }
-    indirect_lean = {"tests/integration/test_prefilters_in_gate.py"}
+    indirect_lean = {"tests/integration/test_prefilters_in_gate.py", PROVEN_TEST_PATH}
     assert not set(LEAN_TEST_PATHS) & set(SOLUTION_TEST_PATHS)
     assert not set(LEAN_TEST_PATHS) & set(SOLUTION_LIBRARY_TEST_PATHS)
     assert not set(M0_TEST_PATHS) & set(GATEPLAN_TEST_PATHS)

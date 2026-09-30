@@ -54,7 +54,12 @@ def covering_case(draw):
 @given(covering_case())
 def test_mr_w_a_covering_population_always_justifies(case):
     scope, _, evidence, ctx = case
-    assert isinstance(justify.justify(evidence, _statement(scope), ctx), justify.Justification)
+    result = justify.justify(evidence, _statement(scope), ctx)
+    assert (
+        isinstance(result, justify.Absent) and result.reason == "lean-gate-absent"
+        if evidence["kind"] == "lean_artifact"
+        else isinstance(result, justify.Justification)
+    )
 
 
 @given(covering_case())
@@ -62,7 +67,8 @@ def test_mr_an_audit_only_grade_justifies_nothing_whatever_the_evidence(case):
     scope, _, evidence, ctx = case
     audit_only = dataclasses.replace(ctx, grade=justify.AUDIT_ONLY)
     result = justify.justify(evidence, _statement(scope), audit_only)
-    assert isinstance(result, justify.Absent) and result.reason == justify.REASON_AUDIT_ONLY
+    reason = "lean-gate-absent" if evidence["kind"] == "lean_artifact" else justify.REASON_AUDIT_ONLY
+    assert isinstance(result, justify.Absent) and result.reason == reason
 
 
 @given(covering_case(), st.data())
@@ -75,7 +81,10 @@ def test_mr_w_widening_further_keeps_the_same_class(case, data):
         "population": {**wider, "assumption_set": population["assumption_set"]},
     }
     result = justify.justify(widened, _statement(scope), ctx)
-    assert isinstance(result, justify.Justification) and result.cls == baseline.cls
+    if evidence["kind"] == "lean_artifact":
+        assert result == baseline == justify.Absent("lean-gate-absent", evidence["hash"])
+    else:
+        assert isinstance(result, justify.Justification) and result.cls == baseline.cls
 
 
 @given(covering_case(), st.data())

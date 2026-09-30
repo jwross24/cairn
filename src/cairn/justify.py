@@ -3,7 +3,20 @@ import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 
-from cairn import claims, cli, disagreement, exits, foundations, laddertable, log, repro, substrate
+from cairn import (
+    canon,
+    claims,
+    cli,
+    container,
+    disagreement,
+    exits,
+    foundations,
+    human_queue,
+    laddertable,
+    log,
+    repro,
+    substrate,
+)
 from cairn.errors import CliError
 
 lg = log.get("justify")
@@ -37,6 +50,10 @@ class Justification:
     kind: str
     evidence_hash: str
     reason: str
+    gate_run_hash: str | None = None
+    review_verdict_hash: str | None = None
+    record_digest: str | None = None
+    file_offset: int | None = None
 
 
 @dataclass(frozen=True)
@@ -81,6 +98,11 @@ class Context:
     offered_class: str | None = None
     tier: int = 0
     inadmissible: bool = False
+    formalization_reason: str | None = "lean-gate-absent"
+    gate_run_hash: str | None = None
+    review_verdict_hash: str | None = None
+    record_digest: str | None = None
+    file_offset: int | None = None
 
 
 @dataclass(frozen=True)
@@ -310,6 +332,8 @@ def _judge(evidence, statement, ctx, kind, ceiling, evidence_hash):
         return CoverageViolation(field, evidence_hash)
     if ctx.inadmissible:
         return Absent(REASON_INADMISSIBLE, evidence_hash)
+    if kind == "lean_artifact" and ctx.formalization_reason is not None:
+        return Absent(ctx.formalization_reason, evidence_hash)
     in_sample = _load(evidence.get("in_sample_sizes"))
     in_sample_ok = contains(in_sample, scope.get("size_interval"))
     cls, reason = kind_class(
@@ -343,7 +367,16 @@ def _judge(evidence, statement, ctx, kind, ceiling, evidence_hash):
             return Justification(CONJECTURE, kind, evidence_hash, REASON_REPRO_DEFERRED)
     if producer_capped(ctx.producer_summary, ctx.attempt_inputs):
         ceiling = weakest(ceiling, CONJECTURE)
-    return Justification(weakest(cls, ceiling), kind, evidence_hash, reason)
+    return Justification(
+        weakest(cls, ceiling),
+        kind,
+        evidence_hash,
+        reason,
+        ctx.gate_run_hash if kind == "lean_artifact" else None,
+        ctx.review_verdict_hash if kind == "lean_artifact" else None,
+        ctx.record_digest if kind == "lean_artifact" else None,
+        ctx.file_offset if kind == "lean_artifact" else None,
+    )
 
 
 def _certificate_summary(sub, evidence):
@@ -435,15 +468,96 @@ def _attempt_inputs(sub, evidence):
     return (_load(evidence.get("population")) or {}).get("param_ranges")
 
 
+def _bound_gate_run(sub, digest):
+    row = claims.get_gate_run(sub, digest)
+    node = sub.get_node(digest)
+    if row is None or node is None or node["kind"] != "gate_run":
+        return None, "lean-gate-absent"
+    canonical = bytes(node["canonical"])
+    if substrate.node_hash_for("gate_run", canonical) != digest:
+        return None, "lean-gate-canonical"
+    try:
+        run = canon.decode(claims.GATE_RUN, canonical)
+    except canon.CanonError:
+        return None, "lean-gate-canonical"
+    if any((_load(row[name]) if name == "reasons" else row[name]) != value for name, value in run.items()):
+        return None, "lean-gate-canonical"
+    return row, None
+
+
+def _formalization(sub, evidence, statement):
+    from cairn import solutionplan
+
+    if evidence.get("producer_tag") != "gate":
+        return None, "lean-gate-absent"
+    edges = [edge for edge in sub.lineage_of(evidence["hash"]) if edge["edge_kind"] == substrate.EDGE_INPUT]
+    if len(edges) != 1 or edges[0]["parent_hash"] != evidence.get("producer_identity"):
+        return None, "lean-gate-binding"
+    digest = edges[0]["parent_hash"]
+    run, reason = _bound_gate_run(sub, digest)
+    if run is None:
+        return None, reason
+    if (
+        run["gate"] != solutionplan.SUMMARY_GATE
+        or run["plan_step"] != solutionplan.SUMMARY_STEP
+        or run["statement_hash"] != statement["hash"]
+        or run["pin_hash"] != run["bundle_hash"]
+        or run["result"] != solutionplan.RESULT_PASS
+        or not all(run[name] for name in ("formal_statement_hash", "renderer_hash", "prelude_hash"))
+    ):
+        return None, "lean-gate-binding"
+    steps = [edge for edge in sub.lineage_of(digest) if edge["edge_kind"] == substrate.EDGE_INPUT]
+    if len(steps) != len(solutionplan.STEP_KINDS):
+        return None, "lean-gate-incomplete"
+    names = set()
+    for edge in steps:
+        step, reason = _bound_gate_run(sub, edge["parent_hash"])
+        if step is None:
+            return None, reason
+        if (
+            step["gate"] != solutionplan.STEP_GATE
+            or step["result"] != solutionplan.RESULT_PASS
+            or not step["plan_step"]
+            or step["plan_step"] in names
+            or any(
+                step[name] != run[name]
+                for name in (
+                    "statement_hash",
+                    "formal_statement_hash",
+                    "bundle_hash",
+                    "pin_hash",
+                    "renderer_hash",
+                    "prelude_hash",
+                    "arm",
+                    "at",
+                )
+            )
+        ):
+            return None, "lean-gate-incomplete"
+        names.add(step["plan_step"])
+    if run["arm"] != container.GOLD_ARM:
+        return run, f"lean-gate-arm:{run['arm']}"
+    return run, None
+
+
 def context_for(sub, evidence, statement, attest_path, *, offered_class=None):
-    approved = any(
-        row["verdict"] == "approve" for row in claims.visible_review_verdicts(sub, statement["hash"], attest_path)
+    gate_run, formalization_reason = (
+        _formalization(sub, evidence, statement) if evidence.get("kind") == "lean_artifact" else (None, None)
+    )
+    reviews = claims.visible_review_verdicts(sub, statement["hash"], attest_path)
+    review = next(
+        (
+            row
+            for row in reviews
+            if row["verdict"] == "approve" and (gate_run is None or row["gate_bundle_hash"] == gate_run["bundle_hash"])
+        ),
+        None,
     )
     return Context(
         grade=_grade(sub, evidence.get("hash")),
         repro_passed=_repro_passed(sub, evidence),
         has_cost_model=claims.has_cost_model(sub, statement["hash"]),
-        approved=approved,
+        approved=review is not None,
         disowned=_disowned(sub, evidence),
         statement_status=statement.get("status", "open"),
         producer_summary=_certificate_summary(sub, evidence),
@@ -451,6 +565,11 @@ def context_for(sub, evidence, statement, attest_path, *, offered_class=None):
         offered_class=offered_class,
         tier=claims.ticket_tier_for(sub, statement["hash"]),
         inadmissible=_inadmissible(sub, evidence),
+        formalization_reason=formalization_reason,
+        gate_run_hash=None if gate_run is None else gate_run["run_id"],
+        review_verdict_hash=None if review is None else claims._verdict_of(review).hash,
+        record_digest=None if review is None else review["record_digest"],
+        file_offset=None if review is None else review["file_offset"],
     )
 
 
@@ -461,7 +580,17 @@ def _current_tag(sub, statement_hash):
 
 def _justification_record(result):
     fields = {"result": type(result).__name__}
-    for name in ("cls", "kind", "reason", "field", "evidence_hash"):
+    for name in (
+        "cls",
+        "kind",
+        "reason",
+        "field",
+        "evidence_hash",
+        "gate_run_hash",
+        "review_verdict_hash",
+        "record_digest",
+        "file_offset",
+    ):
         value = getattr(result, name, None)
         if value is not None:
             fields[name] = value
@@ -476,6 +605,25 @@ def derive_tag(sub, statement_hash, attest_path, *, actor=ACTOR):
     for row in claims.evidence_for(sub, statement_hash):
         ctx = context_for(sub, row, statement, attest_path)
         results.append((row, justify(row, statement, ctx)))
+
+    if any(isinstance(result, Pending) and result.reason == REASON_HUMAN_REVIEW for _, result in results):
+        open_review = any(
+            item["class"] == human_queue.STATEMENT_REVIEW
+            and item["target_kind"] == human_queue.STATEMENT
+            and item["target"] == statement_hash
+            for item in human_queue.open_items(sub, attest_path)
+        )
+        if not open_review:
+            human_queue.enqueue(
+                sub,
+                human_queue.Item(
+                    human_queue.STATEMENT_REVIEW,
+                    human_queue.STATEMENT,
+                    statement_hash,
+                    cli.now_iso(),
+                    blocker=human_queue.STATEMENT_REVIEW,
+                ),
+            )
 
     refuted_by = next((row["hash"] for row, result in results if isinstance(result, Refutation)), None)
     best = strongest(results)

@@ -388,10 +388,10 @@ DONE_WHEN = [
         "table-verdict-KEEP_IN_SAMPLE",
         SPECULATION,
     ),
-    (case_lean_artifact_with_matching_verdict, "Justification", PROVEN, PROVEN),
-    (case_lean_artifact_with_a_reject_verdict, "Pending", "human_review", SPECULATION),
-    (case_lean_artifact_with_forged_digest, "Pending", "human_review", SPECULATION),
-    (case_lean_artifact_with_forged_verdict_fields, "Pending", "human_review", SPECULATION),
+    (case_lean_artifact_with_matching_verdict, "Absent", "lean-gate-absent", SPECULATION),
+    (case_lean_artifact_with_a_reject_verdict, "Absent", "lean-gate-absent", SPECULATION),
+    (case_lean_artifact_with_forged_digest, "Absent", "lean-gate-absent", SPECULATION),
+    (case_lean_artifact_with_forged_verdict_fields, "Absent", "lean-gate-absent", SPECULATION),
     (case_disowned_ladder_table, "Absent", "disowned", SPECULATION),
     (case_author_supplied_producer, "Justification", CONJECTURE, CONJECTURE),
     (
@@ -421,6 +421,14 @@ def test_the_done_when_set(writer, attest_path, db_snapshot, build, result_type,
     row = claims.get_evidence_node(writer, node.hash)
     stored = claims.get_claim_statement(writer, statement.hash)
     ctx = justify.context_for(writer, row, stored, attest_path, offered_class=offered)
+    if build == case_lean_artifact_with_matching_verdict:
+        assert ctx.approved
+    elif build in (
+        case_lean_artifact_with_a_reject_verdict,
+        case_lean_artifact_with_forged_digest,
+        case_lean_artifact_with_forged_verdict_fields,
+    ):
+        assert not ctx.approved
     result = justify.justify(row, stored, ctx)
     assert type(result).__name__ == result_type
     assert (getattr(result, "cls", None) or getattr(result, "field", None) or getattr(result, "reason", None)) == detail

@@ -1,7 +1,8 @@
+import json
 import re
 from dataclasses import dataclass
 
-from cairn import claims, container, log
+from cairn import claims, container, log, substrate
 from cairn.gateplan import BLOCKED_PREFIX, MISMATCH_REASON, RESULT_BLOCKED, RESULT_FAIL, RESULT_PASS
 
 lg = log.get("solutionplan")
@@ -217,6 +218,22 @@ def persist(
             **binding,
         )
         summary_hash = claims.write_gate_run(sub, summary)
+        for step_hash in step_hashes:
+            sub.add_lineage(summary_hash, step_hash, substrate.EDGE_INPUT)
+        statement = claims.get_claim_statement(sub, statement_hash)
+        if passed and statement is not None:
+            population = json.loads(statement["scope"])
+            artifact = claims.EvidenceNode(
+                kind="lean_artifact",
+                target_statement_hash=statement_hash,
+                population=population,
+                assumptions=frozenset(population["assumption_set"]),
+                producer_identity=summary_hash,
+                producer_tag="gate",
+                created_at=at,
+            )
+            claims.write_evidence_node(sub, artifact)
+            sub.add_lineage(artifact.hash, summary_hash, substrate.EDGE_INPUT)
     lg.info("persisted", summary=summary_hash, result=summary.result, steps=len(step_hashes), reasons=list(reasons))
     return summary_hash, tuple(step_hashes)
 

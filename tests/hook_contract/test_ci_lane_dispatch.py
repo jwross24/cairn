@@ -21,6 +21,9 @@ from _ci_lanes import (
     M0_LANES,
     M0_TEST_CASES,
     M0_TEST_PATHS,
+    PROVEN_DEV_TEST,
+    PROVEN_GOLD_TEST,
+    PROVEN_TEST_PATH,
     SOLUTION_LIBRARY_BINDING_TEST,
     SOLUTION_LIBRARY_CASE_TEST,
     SOLUTION_LIBRARY_ITEMS,
@@ -254,18 +257,24 @@ def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
             "container-plan-exact": CONTAINER_PLAN_CASES[:1],
             "container-plan-refusals": CONTAINER_PLAN_CASES[1:],
         }[lane]
-        assert selected == [
+        expected = [
             f"tests/integration/test_container_statement_hash.py::test_linux_ordered_plan_runs_each_step_in_order[{case}]"
             for case in cases
         ]
+        if lane in ("container-plan", "container-plan-exact"):
+            expected.append(f"{PROVEN_TEST_PATH}::{PROVEN_GOLD_TEST}")
+        assert selected == expected
     if lane.startswith("solution-plan-"):
         selected = [line for line in result.stdout.splitlines() if line.startswith("tests/") and "::" in line]
         cases = ("exact",) if lane == "solution-plan-exact" else ("sorry", "timeout")
-        assert selected == [
+        expected = [
             "tests/integration/test_solution_build_compile.py::"
             f"test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks[{case}]"
             for case in cases
         ]
+        if lane == "solution-plan-exact":
+            expected.append(f"{PROVEN_TEST_PATH}::{PROVEN_DEV_TEST}")
+        assert set(selected) == set(expected)
 
 
 def test_python_lanes_partition_the_previous_fallback_population():

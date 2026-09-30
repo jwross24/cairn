@@ -265,7 +265,7 @@ def test_other_kinds_keep_the_positive_coverage_rule(kind):
             False,
             "Absent",
         ),
-        ("lean_artifact", None, None, "Replayable", False, "Pending"),
+        ("lean_artifact", None, None, "Replayable", False, "Absent"),
         ("not_a_kind", None, True, "Replayable", False, "Absent"),
     ],
     ids=[
@@ -305,7 +305,7 @@ def test_kind_to_max_class(kind, verdict, repro, grade, cost_model, expected):
         assert type(result).__name__ == expected
 
 
-def test_lean_artifact_with_an_approve_verdict_is_the_only_route_to_proven():
+def test_an_approve_verdict_without_a_bound_gate_run_cannot_justify_proven():
     evidence = {
         "hash": "e" * 64,
         "kind": "lean_artifact",
@@ -314,9 +314,9 @@ def test_lean_artifact_with_an_approve_verdict_is_the_only_route_to_proven():
         "assumptions": [],
     }
     statement = {"hash": "s" * 64, "scope": _scope()}
-    assert isinstance(justify.justify(evidence, statement, justify.Context()), justify.Pending)
+    assert isinstance(justify.justify(evidence, statement, justify.Context()), justify.Absent)
     approved = justify.justify(evidence, statement, justify.Context(approved=True))
-    assert isinstance(approved, justify.Justification) and approved.cls == PROVEN
+    assert isinstance(approved, justify.Absent) and approved.reason == "lean-gate-absent"
     assert {kind for kind, cls in justify.KIND_MAX_CLASS.items() if cls == PROVEN} == {"lean_artifact"}
 
 

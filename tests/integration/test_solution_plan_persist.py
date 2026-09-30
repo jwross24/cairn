@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import bundle, challenge, claims, container, scrutiny, solutionbuild, solutionchecks, solutionplan
+from cairn import bundle, challenge, claims, container, justify, scrutiny, solutionbuild, solutionchecks, solutionplan
 from cairn.solutionplan import PlanInvalid, PlanResult, StepResult, StepTimeout
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -231,6 +231,87 @@ def test_an_all_pass_plan_persists_six_step_rows_and_one_passing_summary(writer,
     assert (summary["plan_step"], summary["result"], summary["arm"]) == (solutionplan.SUMMARY_STEP, "pass", ARM)
     assert summary["formal_statement_hash"] == FORMAL
     assert scrutiny._formalization_passed(writer, statement.hash) is True
+
+
+def test_a_complete_passing_plan_emits_one_artifact_bound_to_its_summary_and_steps(writer, statement):
+    summary_hash, step_hashes = persist(writer, plan_result(), statement)
+    (artifact,) = claims.evidence_for(writer, statement.hash)
+    assert (artifact["kind"], artifact["producer_identity"], artifact["producer_tag"], artifact["verdict"]) == (
+        "lean_artifact",
+        summary_hash,
+        "gate",
+        None,
+    )
+    assert json.loads(artifact["population"]) == json.loads(claims.to_json(statement.scope))
+    assert set(json.loads(artifact["assumptions"])) == set(statement.scope["assumption_set"])
+    assert [(edge["parent_hash"], edge["edge_kind"]) for edge in writer.lineage_of(artifact["hash"])] == [
+        (summary_hash, "input")
+    ]
+    assert {edge["parent_hash"] for edge in writer.lineage_of(summary_hash)} == set(step_hashes)
+    persist(writer, plan_result(), statement)
+    assert len(claims.evidence_for(writer, statement.hash)) == 1
+
+
+@pytest.mark.parametrize("failure", ["fail", "timeout"])
+def test_a_nonpassing_plan_emits_no_lean_artifact(writer, statement, failure):
+    persist(writer, plan_result(build={"result": failure}), statement)
+    assert claims.evidence_for(writer, statement.hash) == []
+
+
+def test_a_passing_summary_with_a_different_pin_is_refused_as_proof_evidence(writer, statement):
+    persist(writer, plan_result(), statement)
+    (artifact,) = claims.evidence_for(writer, statement.hash)
+    run, reason = justify._formalization(writer, artifact, claims.get_claim_statement(writer, statement.hash))
+    assert run is None
+    assert reason == "lean-gate-binding"
+
+
+@pytest.mark.parametrize("producer", ["isolated-summary", "individual-step", "extra-input", "another-statement"])
+def test_an_artifact_requires_the_complete_bound_gate_run(writer, statement, producer):
+    summary_hash, step_hashes = persist(writer, plan_result(), statement, pin_hash="b3" * 32)
+    (emitted,) = claims.evidence_for(writer, statement.hash)
+    source = summary_hash
+    expected = "lean-gate-binding"
+    if producer == "isolated-summary":
+        summary = claims.GateRun(
+            gate=solutionplan.SUMMARY_GATE,
+            plan_step=solutionplan.SUMMARY_STEP,
+            bundle_hash="b3" * 32,
+            pin_hash="b3" * 32,
+            statement_hash=statement.hash,
+            formal_statement_hash=FORMAL,
+            renderer_hash=RENDERER,
+            prelude_hash=PRELUDE,
+            arm=ARM,
+            result="pass",
+            reasons=(),
+            at="2026-09-30T12:00:00Z",
+        )
+        source = claims.write_gate_run(writer, summary)
+        expected = "lean-gate-incomplete"
+    elif producer == "individual-step":
+        source = step_hashes[0]
+    elif producer == "extra-input":
+        writer.add_lineage(emitted["hash"], step_hashes[0], "input")
+    evidence = claims.EvidenceNode(
+        kind="lean_artifact",
+        target_statement_hash=statement.hash,
+        population=statement.scope,
+        assumptions=frozenset(statement.scope["assumption_set"]),
+        producer_identity=source,
+        producer_tag="gate",
+    )
+    claims.write_evidence_node(writer, evidence)
+    writer.add_lineage(evidence.hash, source, "input")
+    stored = claims.get_claim_statement(writer, statement.hash)
+    if producer == "another-statement":
+        replacement = factories.claim_statement(seed=33, supersedes=statement.hash)
+        claims.write_claim_statement(writer, replacement)
+        stored = claims.get_claim_statement(writer, replacement.hash)
+    row = claims.get_evidence_node(writer, evidence.hash)
+    run, reason = justify._formalization(writer, row, stored)
+    assert run is None
+    assert reason == expected
 
 
 def test_an_all_pass_dev_arm_plan_persists_a_passing_summary_that_meets_no_obligation(writer, statement):

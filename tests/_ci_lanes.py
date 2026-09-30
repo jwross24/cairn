@@ -72,7 +72,11 @@ SOLUTION_LIBRARY_LANES = (
 CONTAINER_TEST_PATHS = (
     "tests/integration/test_container_statement_hash.py",
     "tests/integration/test_lean_container.py",
+    "tests/integration/test_proven_derivation.py",
 )
+PROVEN_TEST_PATH = CONTAINER_TEST_PATHS[-1]
+PROVEN_GOLD_TEST = "test_real_gold_artifact_requires_matching_review_and_records_the_bindings"
+PROVEN_DEV_TEST = "test_real_approved_dev_artifact_stays_at_its_supported_tag_with_the_arm_named"
 LEAN_SOLUTION_TESTS = (
     "test_a_compiling_weaker_statement_fails_real_prelude_closure_comparison",
     "test_real_prelude_forgery_passes_axioms_but_fails_fresh_replay",
@@ -175,7 +179,14 @@ def pytest_collection_modifyitems(config, items):
     deselected = []
     for item in items:
         path = item.path.relative_to(config.rootpath).as_posix()
-        if path in SOLUTION_TEST_PATHS:
+        if path == PROVEN_TEST_PATH:
+            if item.originalname == PROVEN_GOLD_TEST:
+                item_lane = "container-plan-exact"
+            elif item.originalname == PROVEN_DEV_TEST:
+                item_lane = "solution-plan-exact"
+            else:
+                raise pytest.UsageError(f"unassigned PROVEN derivation test: {item.nodeid}")
+        elif path in SOLUTION_TEST_PATHS:
             if item.originalname in SOLUTION_PLAN_TESTS:
                 case = getattr(item, "callspec", None)
                 case = case.params.get("case") if case is not None else None
