@@ -1,11 +1,14 @@
 import copy
+import importlib
 import json
 import re
+from pathlib import Path
 
 import pytest
 
 from cairn import selftest
 from cairn.selftest import CorpusSchemaError
+from cairn.skills import bsgs, instance_maker, rho_dp, toy_curve
 
 BASE = json.loads(selftest.CORPUS_PATH.read_text())
 
@@ -147,3 +150,21 @@ def test_a_corpus_file_that_is_json_but_not_an_object_is_refused(tmp_path):
 
 def test_the_shipped_corpus_loads_from_its_committed_path():
     assert selftest.load_corpus() == selftest.load_corpus(selftest.CORPUS_PATH)
+
+
+@pytest.mark.parametrize("module", [toy_curve, bsgs, rho_dp, instance_maker])
+def test_single_axis_certificate_summary_bytes_are_unchanged(module):
+    singular = {"axis": module.CROSS_CHECK_AXIS, "independent_range": module.INDEPENDENT_RANGE}
+    actual = json.dumps(selftest.cross_check_summary(module), sort_keys=True, separators=(",", ":")).encode()
+    assert actual == json.dumps(singular, sort_keys=True, separators=(",", ":")).encode()
+
+
+def test_plural_certificate_summary_preserves_each_declared_range(monkeypatch):
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "fixtures"))
+    module = importlib.import_module("skills.multi_axis")
+    summary = selftest.cross_check_summary(module)
+    assert summary == [
+        {"axis": "algorithm", "independent_range": {"bits": [10, 20]}},
+        {"axis": "implementation", "independent_range": {"bits": [30, 40]}},
+    ]
+    assert all(set(record) == {"axis", "independent_range"} for record in summary)

@@ -71,7 +71,7 @@ def kind_table_off_by_one():
 @contextmanager
 def producer_rule_ignores_range():
     def cross_check_covers(cross_check, inputs):
-        return isinstance(cross_check, dict)
+        return justify.CrossCheckCoverage(isinstance(cross_check, (dict, list, tuple)), {}, {})
 
     with _swap(justify, "cross_check_covers", cross_check_covers):
         yield

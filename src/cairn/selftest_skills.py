@@ -493,7 +493,7 @@ def certify(sub, config, which, *, doc=None, root=None):
     summary = {
         "corpus_origins": first["origins"],
         "randomized_arm": True,
-        "cross_check": {"axis": module.CROSS_CHECK_AXIS, "independent_range": module.INDEPENDENT_RANGE},
+        "cross_check": selftest.cross_check_summary(module),
         "pass": first["passes"],
         "floor": first["floor"],
         "must_fail_witnesses": first["arms"]["verifier"]["fail"],

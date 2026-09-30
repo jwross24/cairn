@@ -388,6 +388,102 @@ def test_producer_standing(origins, randomized_arm, cross_check, inputs, expecte
     assert justify.producer_capped(summary, inputs) is expected
 
 
+def test_axis_contributions_are_clipped_to_the_requested_interval():
+    checks = [
+        {"axis": "algorithm", "independent_range": {"bits": [0, 50]}},
+        {"axis": "implementation", "independent_range": {"bits": [30, 60]}},
+    ]
+    coverage = justify.cross_check_covers(checks, {"bits": [10, 60]})
+    assert coverage.covered is True
+    assert coverage.dimensions == {"bits": True}
+    assert coverage.contributions == {"bits": {"algorithm": [10, 50], "implementation": [30, 60]}}
+    summary = factories.selftest_summary(AUTHOR_ORIGINS, False, checks)
+    assert justify.producer_capped(summary, {"bits": [10, 60]}) is False
+
+
+@pytest.mark.parametrize(("start", "covered"), [(20, True), (21, True), (22, False), (30, False)])
+def test_integer_union_covers_adjacent_ranges_and_refuses_gaps(start, covered):
+    checks = [
+        {"axis": "algorithm", "independent_range": {"bits": [10, 20]}},
+        {"axis": "implementation", "independent_range": {"bits": [start, 40]}},
+    ]
+    coverage = justify.cross_check_covers(checks, {"bits": [10, 40]})
+    assert coverage.covered is covered
+    assert coverage.dimensions == {"bits": covered}
+    assert coverage.contributions == {"bits": {"algorithm": [10, 20], "implementation": [start, 40]}}
+
+
+def test_each_input_dimension_has_its_own_verdict_and_contributions():
+    checks = [
+        {"axis": "algorithm", "independent_range": {"bits": [0, 50]}},
+        {"axis": "implementation", "independent_range": {"seed": [1, 10]}},
+    ]
+    coverage = justify.cross_check_covers(checks, {"bits": 40, "seed": 5, "missing": 1})
+    assert coverage.covered is False
+    assert coverage.dimensions == {"bits": True, "seed": True, "missing": False}
+    assert coverage.contributions == {
+        "bits": {"algorithm": [40, 40]},
+        "seed": {"implementation": [5, 5]},
+        "missing": {},
+    }
+
+
+@pytest.mark.parametrize("inputs", [None, {}, [], {"bits": True}, {"bits": [50, 40]}, {"bits": "40"}])
+def test_invalid_cross_check_inputs_are_uncovered(inputs):
+    assert justify.cross_check_covers(COVERING_CROSS_CHECK, inputs).covered is False
+
+
+@pytest.mark.parametrize(
+    "checks",
+    [
+        [],
+        [None],
+        [{"axis": "algorithm"}],
+        [{"axis": "vibes", "independent_range": {"bits": [0, 60]}}],
+        [{"independent_range": {"bits": [0, 60]}}],
+        [COVERING_CROSS_CHECK, COVERING_CROSS_CHECK],
+        [COVERING_CROSS_CHECK, {"axis": "implementation", "independent_range": {}}],
+        [COVERING_CROSS_CHECK, {"axis": "implementation", "independent_range": {"bits": [60, 0]}}],
+        [COVERING_CROSS_CHECK, {"axis": "implementation", "independent_range": {"bits": [False, 60]}}],
+        [COVERING_CROSS_CHECK, {"axis": "implementation", "independent_range": {"bits": ["0", 60]}}],
+    ],
+)
+def test_malformed_plural_records_do_not_borrow_a_valid_records_coverage(checks):
+    coverage = justify.cross_check_covers(checks, INPUTS)
+    assert coverage.covered is False
+    assert coverage.dimensions == {"bits": False}
+
+
+def test_a_singular_axis_less_record_keeps_coverage_without_inventing_attribution():
+    coverage = justify.cross_check_covers({"independent_range": {"bits": [0, 50]}}, INPUTS)
+    assert coverage.covered is True
+    assert coverage.dimensions == {"bits": True}
+    assert coverage.contributions == {"bits": {}}
+
+
+def test_coverage_requires_an_explicit_verdict_access():
+    with pytest.raises(TypeError, match=r"use coverage\.covered"):
+        bool(justify.cross_check_covers(COVERING_CROSS_CHECK, INPUTS))
+
+
+def test_deferred_justification_keeps_axis_attribution():
+    scope = _scope()
+    evidence = {"hash": "e" * 64, "kind": "statistical", "population": scope, "assumptions": []}
+    ctx = justify.Context(
+        tier=2,
+        producer_summary=factories.selftest_summary(AUTHOR_ORIGINS, False, COVERING_CROSS_CHECK),
+        attempt_inputs=INPUTS,
+    )
+    result = justify.justify(evidence, {"hash": "s" * 64, "scope": scope}, ctx)
+    assert result.cls == CONJECTURE
+    assert result.reason == justify.REASON_REPRO_DEFERRED
+    assert result.cross_check_coverage.record() == {
+        "covered": True,
+        "dimensions": {"bits": True},
+        "contributions": {"bits": {"algorithm": [40, 50]}},
+    }
+
+
 def test_a_capped_producer_pulls_a_strong_empirical_node_to_conjecture():
     evidence = {
         "hash": "e" * 64,

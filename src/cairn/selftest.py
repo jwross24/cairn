@@ -399,6 +399,20 @@ def run_once(config, *, doc=None, root=None):
     }
 
 
+def cross_check_summary(module):
+    if hasattr(module, "CROSS_CHECKS"):
+        return [
+            {
+                "axis": declaration["axis"],
+                "independent_range": {
+                    name: list(interval) for name, interval in declaration["independent_range"].items()
+                },
+            }
+            for declaration in module.CROSS_CHECKS
+        ]
+    return {"axis": module.CROSS_CHECK_AXIS, "independent_range": module.INDEPENDENT_RANGE}
+
+
 def certify(sub, config, *, doc=None, root=None):
     from cairn import env
     from cairn.skills import toy_curve
@@ -418,10 +432,7 @@ def certify(sub, config, *, doc=None, root=None):
     summary = {
         "corpus_origins": first["origins"],
         "randomized_arm": True,
-        "cross_check": {
-            "axis": toy_curve.CROSS_CHECK_AXIS,
-            "independent_range": toy_curve.INDEPENDENT_RANGE,
-        },
+        "cross_check": cross_check_summary(toy_curve),
         "pass": first["passes"],
         "floor": first["floor"],
         "must_fail_witnesses": first["arms"]["verifier"]["fail"],

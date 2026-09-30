@@ -45,6 +45,23 @@ REASON_PREMISE_CEILING = "premise-ceiling"
 
 
 @dataclass(frozen=True)
+class CrossCheckCoverage:
+    covered: bool
+    dimensions: dict[str, bool]
+    contributions: dict[str, dict[str, list[int]]]
+
+    def __bool__(self):
+        raise TypeError("use coverage.covered")
+
+    def record(self):
+        return {
+            "covered": self.covered,
+            "dimensions": self.dimensions,
+            "contributions": self.contributions,
+        }
+
+
+@dataclass(frozen=True)
 class Justification:
     cls: str
     kind: str
@@ -54,6 +71,7 @@ class Justification:
     review_verdict_hash: str | None = None
     record_digest: str | None = None
     file_offset: int | None = None
+    cross_check_coverage: CrossCheckCoverage | None = None
 
 
 @dataclass(frozen=True)
@@ -231,23 +249,78 @@ def _origin_values(origins):
     return []
 
 
+def _cross_check_records(cross_check):
+    singular = isinstance(cross_check, dict)
+    records = [cross_check] if singular else cross_check
+    if not isinstance(records, (list, tuple)) or not records:
+        return None
+    seen = set()
+    for record in records:
+        if not isinstance(record, dict):
+            return None
+        ranges = record.get("independent_range")
+        if not isinstance(ranges, dict) or not ranges:
+            return None
+        if not singular:
+            axis = record.get("axis")
+            if axis not in ("algorithm", "implementation") or axis in seen:
+                return None
+            seen.add(axis)
+            for bounds in ranges.values():
+                interval = _interval(bounds)
+                if interval is None or interval[0] > interval[1]:
+                    return None
+    return records
+
+
+def _dimension_coverage(records, dimension, wanted):
+    interval = _interval(wanted)
+    if interval is None or interval[0] > interval[1]:
+        return False, {}
+    low, high = interval
+    intervals = []
+    contributions = {}
+    for record in records:
+        bounds = _interval(record["independent_range"].get(dimension))
+        if bounds is None or bounds[0] > bounds[1]:
+            continue
+        start, end = max(low, bounds[0]), min(high, bounds[1])
+        if start > end:
+            continue
+        intervals.append((start, end))
+        axis = record.get("axis")
+        if isinstance(axis, str):
+            contributions[axis] = [start, end]
+    cursor = low
+    for start, end in sorted(intervals):
+        if start > cursor:
+            break
+        cursor = max(cursor, end + 1)
+    return cursor > high, contributions
+
+
 def cross_check_covers(cross_check, inputs):
-    if not isinstance(cross_check, dict) or not isinstance(inputs, dict) or not inputs:
-        return False
-    ranges = cross_check.get("independent_range")
-    if not isinstance(ranges, dict) or not ranges:
-        return False
-    return all(contains(ranges.get(axis), wanted) for axis, wanted in inputs.items())
+    if not isinstance(inputs, dict) or not inputs:
+        return CrossCheckCoverage(False, {}, {})
+    records = _cross_check_records(cross_check)
+    if records is None:
+        return CrossCheckCoverage(False, dict.fromkeys(inputs, False), {})
+    dimensions = {}
+    contributions = {}
+    for dimension, wanted in inputs.items():
+        dimensions[dimension], contributions[dimension] = _dimension_coverage(records, dimension, wanted)
+    return CrossCheckCoverage(all(dimensions.values()), dimensions, contributions)
 
 
-def producer_capped(summary, inputs):
+def producer_capped(summary, inputs, *, coverage=None):
     if not isinstance(summary, dict):
         return False
     if not all(value == AUTHOR_SUPPLIED for value in _origin_values(summary.get("corpus_origins"))):
         return False
     if summary.get("randomized_arm"):
         return False
-    return not cross_check_covers(summary.get("cross_check"), inputs)
+    coverage = cross_check_covers(summary.get("cross_check"), inputs) if coverage is None else coverage
+    return not coverage.covered
 
 
 def kind_class(
@@ -354,6 +427,11 @@ def _judge(evidence, statement, ctx, kind, ceiling, evidence_hash):
         return LatticeViolation("refuted-statement", evidence_hash)
     if ctx.grade == AUDIT_ONLY:
         return Absent(REASON_AUDIT_ONLY, evidence_hash)
+    coverage = (
+        cross_check_covers(ctx.producer_summary.get("cross_check"), ctx.attempt_inputs)
+        if isinstance(ctx.producer_summary, dict) and ctx.producer_summary.get("cross_check") is not None
+        else None
+    )
     if ctx.repro_passed is None and repro.policy(ctx.grade, ctx.tier) == repro.RERUN_ON_DERIVE:
         reproduced, _ = kind_class(
             kind,
@@ -364,8 +442,8 @@ def _judge(evidence, statement, ctx, kind, ceiling, evidence_hash):
             approved=ctx.approved,
         )
         if reproduced is not None and rank(weakest(reproduced, ceiling)) > rank(CONJECTURE):
-            return Justification(CONJECTURE, kind, evidence_hash, REASON_REPRO_DEFERRED)
-    if producer_capped(ctx.producer_summary, ctx.attempt_inputs):
+            return Justification(CONJECTURE, kind, evidence_hash, REASON_REPRO_DEFERRED, cross_check_coverage=coverage)
+    if producer_capped(ctx.producer_summary, ctx.attempt_inputs, coverage=coverage):
         ceiling = weakest(ceiling, CONJECTURE)
     return Justification(
         weakest(cls, ceiling),
@@ -376,6 +454,7 @@ def _judge(evidence, statement, ctx, kind, ceiling, evidence_hash):
         ctx.review_verdict_hash if kind == "lean_artifact" else None,
         ctx.record_digest if kind == "lean_artifact" else None,
         ctx.file_offset if kind == "lean_artifact" else None,
+        coverage,
     )
 
 
@@ -594,6 +673,9 @@ def _justification_record(result):
         value = getattr(result, name, None)
         if value is not None:
             fields[name] = value
+    coverage = getattr(result, "cross_check_coverage", None)
+    if coverage is not None:
+        fields["cross_check_coverage"] = coverage.record()
     return claims.to_json(fields)
 
 
@@ -713,6 +795,11 @@ def _payload(derivation):
                 "detail": getattr(result, "cls", None)
                 or getattr(result, "field", None)
                 or getattr(result, "reason", None),
+                **(
+                    {"cross_check_coverage": result.cross_check_coverage.record()}
+                    if isinstance(result, Justification) and result.cross_check_coverage is not None
+                    else {}
+                ),
             }
             for row, result in derivation.results
         ],
