@@ -1,6 +1,8 @@
 import json
 import sqlite3
 from dataclasses import dataclass
+from itertools import combinations
+from math import prod
 from pathlib import Path
 
 from cairn import (
@@ -273,30 +275,35 @@ def _cross_check_records(cross_check):
     return records
 
 
-def _dimension_coverage(records, dimension, wanted):
-    interval = _interval(wanted)
-    if interval is None or interval[0] > interval[1]:
-        return False, {}
-    low, high = interval
-    intervals = []
-    contributions = {}
-    for record in records:
-        bounds = _interval(record["independent_range"].get(dimension))
+def _clip_box(ranges, requested):
+    clipped = {}
+    for dimension, (low, high) in requested.items():
+        bounds = _interval(ranges.get(dimension))
         if bounds is None or bounds[0] > bounds[1]:
-            continue
+            return None
         start, end = max(low, bounds[0]), min(high, bounds[1])
         if start > end:
-            continue
-        intervals.append((start, end))
-        axis = record.get("axis")
-        if isinstance(axis, str):
-            contributions[axis] = [start, end]
-    cursor = low
-    for start, end in sorted(intervals):
-        if start > cursor:
-            break
-        cursor = max(cursor, end + 1)
-    return cursor > high, contributions
+            return None
+        clipped[dimension] = (start, end)
+    return clipped
+
+
+def _box_volume(box):
+    return prod(high - low + 1 for low, high in box.values())
+
+
+def _box_union_volume(boxes):
+    volume = 0
+    for count in range(1, len(boxes) + 1):
+        for selected in combinations(boxes, count):
+            intersection = selected[0]
+            for box in selected[1:]:
+                intersection = _clip_box(box, intersection)
+                if intersection is None:
+                    break
+            if intersection is not None:
+                volume += (1 if count % 2 else -1) * _box_volume(intersection)
+    return volume
 
 
 def cross_check_covers(cross_check, inputs):
@@ -305,11 +312,27 @@ def cross_check_covers(cross_check, inputs):
     records = _cross_check_records(cross_check)
     if records is None:
         return CrossCheckCoverage(False, dict.fromkeys(inputs, False), {})
-    dimensions = {}
-    contributions = {}
+    requested = {}
     for dimension, wanted in inputs.items():
-        dimensions[dimension], contributions[dimension] = _dimension_coverage(records, dimension, wanted)
-    return CrossCheckCoverage(all(dimensions.values()), dimensions, contributions)
+        interval = _interval(wanted)
+        if interval is None or interval[0] > interval[1]:
+            return CrossCheckCoverage(False, dict.fromkeys(inputs, False), {dimension: {} for dimension in inputs})
+        requested[dimension] = interval
+    clipped = []
+    for record in records:
+        box = _clip_box(record["independent_range"], requested)
+        if box is not None:
+            clipped.append((record.get("axis"), box))
+    dimensions = {
+        dimension: _box_union_volume([{dimension: box[dimension]} for _, box in clipped]) == high - low + 1
+        for dimension, (low, high) in requested.items()
+    }
+    contributions = {
+        dimension: {axis: list(box[dimension]) for axis, box in clipped if isinstance(axis, str)}
+        for dimension in requested
+    }
+    covered = _box_union_volume([box for _, box in clipped]) == _box_volume(requested)
+    return CrossCheckCoverage(covered, dimensions, contributions)
 
 
 def producer_capped(summary, inputs, *, coverage=None):

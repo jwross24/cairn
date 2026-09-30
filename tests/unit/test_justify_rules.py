@@ -413,19 +413,92 @@ def test_integer_union_covers_adjacent_ranges_and_refuses_gaps(start, covered):
     assert coverage.contributions == {"bits": {"algorithm": [10, 20], "implementation": [start, 40]}}
 
 
-def test_each_input_dimension_has_its_own_verdict_and_contributions():
+def test_axes_missing_requested_dimensions_contribute_nothing():
     checks = [
         {"axis": "algorithm", "independent_range": {"bits": [0, 50]}},
         {"axis": "implementation", "independent_range": {"seed": [1, 10]}},
     ]
     coverage = justify.cross_check_covers(checks, {"bits": 40, "seed": 5, "missing": 1})
     assert coverage.covered is False
-    assert coverage.dimensions == {"bits": True, "seed": True, "missing": False}
+    assert coverage.dimensions == {"bits": False, "seed": False, "missing": False}
     assert coverage.contributions == {
-        "bits": {"algorithm": [40, 40]},
-        "seed": {"implementation": [5, 5]},
+        "bits": {},
+        "seed": {},
         "missing": {},
     }
+
+
+def test_a_point_cannot_borrow_dimensions_from_distinct_axis_boxes():
+    checks = [
+        {"axis": "algorithm", "independent_range": {"x": [0, 10], "y": [0, 0]}},
+        {"axis": "implementation", "independent_range": {"x": [0, 0], "y": [0, 10]}},
+    ]
+    coverage = justify.cross_check_covers(checks, {"x": 5, "y": 5})
+    assert coverage.covered is False
+    assert coverage.dimensions == {"x": False, "y": False}
+    assert coverage.contributions == {"x": {}, "y": {}}
+
+
+def test_l_shaped_axis_boxes_do_not_cover_their_bounding_square():
+    checks = [
+        {"axis": "algorithm", "independent_range": {"x": [0, 10], "y": [0, 0]}},
+        {"axis": "implementation", "independent_range": {"x": [0, 0], "y": [0, 10]}},
+    ]
+    coverage = justify.cross_check_covers(checks, {"x": [0, 10], "y": [0, 10]})
+    assert coverage.covered is False
+    assert coverage.dimensions == {"x": True, "y": True}
+    assert coverage.contributions == {
+        "x": {"algorithm": [0, 10], "implementation": [0, 0]},
+        "y": {"algorithm": [0, 0], "implementation": [0, 10]},
+    }
+    assert justify.producer_capped(
+        factories.selftest_summary(AUTHOR_ORIGINS, False, checks), {"x": [0, 10], "y": [0, 10]}
+    )
+
+
+@pytest.mark.parametrize("start", [4, 5, 6])
+def test_axis_boxes_jointly_cover_a_rectangle_without_double_counting_overlap(start):
+    checks = [
+        {"axis": "algorithm", "independent_range": {"x": [0, 5], "y": [-5, 15]}},
+        {"axis": "implementation", "independent_range": {"x": [start, 10], "y": [0, 10]}},
+    ]
+    coverage = justify.cross_check_covers(checks, {"x": [0, 10], "y": [0, 10]})
+    assert coverage.covered is True
+    assert coverage.dimensions == {"x": True, "y": True}
+    assert coverage.contributions == {
+        "x": {"algorithm": [0, 5], "implementation": [start, 10]},
+        "y": {"algorithm": [0, 10], "implementation": [0, 10]},
+    }
+
+
+def test_overlapping_boxes_are_not_counted_twice_to_fill_an_uncovered_region():
+    checks = [
+        {"axis": "algorithm", "independent_range": {"x": [0, 5], "y": [0, 10]}},
+        {"axis": "implementation", "independent_range": {"x": [0, 5], "y": [0, 10]}},
+    ]
+    coverage = justify.cross_check_covers(checks, {"x": [0, 11], "y": [0, 10]})
+    assert coverage.covered is False
+    assert coverage.dimensions == {"x": False, "y": True}
+
+
+@pytest.mark.parametrize("algorithm_range", [{"x": [0, 10], "y": [0, 0]}, {"x": [0, 10]}])
+def test_scalar_point_receives_credit_from_only_its_complete_covering_box(algorithm_range):
+    checks = [
+        {"axis": "algorithm", "independent_range": algorithm_range},
+        {"axis": "implementation", "independent_range": {"x": [0, 10], "y": [0, 10]}},
+    ]
+    coverage = justify.cross_check_covers(checks, {"x": 5, "y": 5})
+    assert coverage.covered is True
+    assert coverage.dimensions == {"x": True, "y": True}
+    assert coverage.contributions == {
+        "x": {"implementation": [5, 5]},
+        "y": {"implementation": [5, 5]},
+    }
+
+
+def test_extra_dimensions_in_a_singular_axis_less_record_do_not_expand_the_request():
+    coverage = justify.cross_check_covers({"independent_range": {"bits": [0, 50], "seed": [10, 1]}}, INPUTS)
+    assert coverage.record() == {"covered": True, "dimensions": {"bits": True}, "contributions": {"bits": {}}}
 
 
 @pytest.mark.parametrize("inputs", [None, {}, [], {"bits": True}, {"bits": [50, 40]}, {"bits": "40"}])
