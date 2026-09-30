@@ -224,10 +224,19 @@ def git(root, *args):
     return result.stdout.strip()
 
 
-@pytest.fixture
-def config_repo(tmp_path, monkeypatch):
-    import conftest
+def _root_conftest(pytestconfig):
+    # several conftest.py files share the bare module name "conftest"; the isolation guard reads the root one's globals
+    path = Path(__file__).resolve().parents[1] / "conftest.py"
+    return next(
+        plugin
+        for plugin in pytestconfig.pluginmanager.get_plugins()
+        if getattr(plugin, "__file__", None) and Path(plugin.__file__).resolve() == path
+    )
 
+
+@pytest.fixture
+def config_repo(tmp_path, monkeypatch, pytestconfig):
+    conftest = _root_conftest(pytestconfig)
     allowed = conftest._allowed_argv0
     monkeypatch.setattr(conftest, "_allowed_argv0", lambda: {*allowed(), "git"})
     root = tmp_path / "repo"
