@@ -36,3 +36,25 @@ resource floor without enforcing it. Tier-2 proving admission requires a separat
 reviewed gate and bundle-pinned policy. The comparison
 concerns only the registered synthetic distributions and schedules. The derived
 redundancy at budgets `3/epsilon` is arithmetic, not sampled evidence or a Lean proof.
+
+The retained comparison is **ADOPT**, with `enforced=false`, at source
+`a4718e8f60303140b8138a76484b4d1359adc482`. `decision.md` states the result and its
+limits; `summary.json` retains the complete registered run summaries, and
+`substrate.sqlite.gz` retains the real substrate. `manifest.json` records byte
+lengths, SHA-256 digests and runner provenance. The archived database decompresses
+to 119,062,528 bytes. Recipe replays verify the original sample and are not an
+independent statistical replication.
+
+`audit_study.py` validates the archived comparison without sampling or launching
+workers. It retains its decompressed scratch database and opens SQLite read-only.
+
+```bash
+uv run python research/grounding/small-numbers-floor-2026-09-30/audit_study.py \
+  --artifact-dir research/grounding/small-numbers-floor-2026-09-30
+```
+
+MagentaSparrow ruling #446 authorizes an experiment-decision close with the adopted
+floor explicitly unenforced. The immutable preregistration's historical
+wiring-before-close sentence remains part of its bytes; that acceptance-scope
+ruling does not alter the sampled quantitative adoption criterion. `cairn-yrov`,
+blocked by `cairn-ziz`, owns the separately reviewed Tier-2 proving admission.

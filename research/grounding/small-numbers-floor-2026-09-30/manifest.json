@@ -1,0 +1,24 @@
+{
+  "decision_hash": "5c04ee8e4eb6e32de24782a51406c44cfed0accce3f3bfbafdea3904f5daf02a",
+  "enforced": false,
+  "exit_status": 0,
+  "independent_replication": false,
+  "peak_footprint_gib": "0.08",
+  "preregistration_sha256": "0eefc3c077b1a083039a53a005377922326c1b2ab8d50dfc8620cd1a1a290f3e",
+  "receipts": 8274,
+  "registered_runs": 5,
+  "source_sha": "a4718e8f60303140b8138a76484b4d1359adc482",
+  "study_command": "lockf -k /tmp/cairn-heavy.lock uv run --no-project python /Users/jwross/.local/share/cairn-agent-mail/orders/memcap.py 6 uv run python research/grounding/small-numbers-floor-2026-09-30/run_experiment.py --source-sha a4718e8f60303140b8138a76484b4d1359adc482 --output /tmp/cairn-floor-parent.4Lv4bm/study-a4718e8",
+  "substrate_archive": {
+    "bytes": 23763379,
+    "sha256": "575fec45e4951f06ba2ead3f24664f0b9aa53c72bc3379488a3a3c39c4c36a9b"
+  },
+  "substrate_uncompressed": {
+    "bytes": 119062528,
+    "sha256": "209f8bf1701a4ca1a83f16588d4e5a7803837c1a260676319032586a85b47183"
+  },
+  "summary": {
+    "bytes": 1844903,
+    "sha256": "64d2cb7c88b81e5017d381caec995c782b5f2e79322382b0d918e55f47cd799d"
+  }
+}
