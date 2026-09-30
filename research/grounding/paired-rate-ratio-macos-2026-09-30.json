@@ -1,0 +1,1591 @@
+{
+  "arm_summary": {
+    "counted": {
+      "child_cpu_per_group_op": {
+        "max": "0.000000173500",
+        "median": "0.000000152700",
+        "min": "0.000000151200",
+        "sd": "0.000000005974",
+        "unit": "s/group_op"
+      },
+      "parent_wall_per_group_op": {
+        "max": "0.000000627771",
+        "median": "0.000000363542",
+        "min": "0.000000320233",
+        "sd": "0.000000055586",
+        "unit": "s/group_op"
+      }
+    },
+    "reference": {
+      "child_cpu_per_group_op": {
+        "max": "0.000000170400",
+        "median": "0.000000153500",
+        "min": "0.000000152400",
+        "sd": "0.000000005818",
+        "unit": "s/group_op"
+      },
+      "parent_wall_per_group_op": {
+        "max": "0.000000474262",
+        "median": "0.000000356767",
+        "min": "0.000000327379",
+        "sd": "0.000000034084",
+        "unit": "s/group_op"
+      }
+    }
+  },
+  "counted_correctness_checks": [
+    {
+      "mode": "raw",
+      "ops_per_process_call": 0,
+      "result": {
+        "child_cpu_ns": null,
+        "count": null,
+        "mode": "raw",
+        "point": [
+          258236120896152398,
+          475063108841005863
+        ],
+        "requested_ops": 0
+      }
+    },
+    {
+      "mode": "counted",
+      "ops_per_process_call": 0,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 0,
+        "mode": "counted",
+        "point": [
+          258236120896152398,
+          475063108841005863
+        ],
+        "requested_ops": 0
+      }
+    },
+    {
+      "mode": "count-only",
+      "ops_per_process_call": 0,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 0,
+        "mode": "count-only",
+        "point": null,
+        "requested_ops": 0
+      }
+    },
+    {
+      "mode": "zero-work",
+      "ops_per_process_call": 0,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 0,
+        "mode": "zero-work",
+        "point": null,
+        "requested_ops": 0
+      }
+    },
+    {
+      "mode": "raw",
+      "ops_per_process_call": 1,
+      "result": {
+        "child_cpu_ns": null,
+        "count": null,
+        "mode": "raw",
+        "point": [
+          854410513911781858,
+          27848132763119188
+        ],
+        "requested_ops": 1
+      }
+    },
+    {
+      "mode": "counted",
+      "ops_per_process_call": 1,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 1,
+        "mode": "counted",
+        "point": [
+          854410513911781858,
+          27848132763119188
+        ],
+        "requested_ops": 1
+      }
+    },
+    {
+      "mode": "count-only",
+      "ops_per_process_call": 1,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 1,
+        "mode": "count-only",
+        "point": null,
+        "requested_ops": 1
+      }
+    },
+    {
+      "mode": "zero-work",
+      "ops_per_process_call": 1,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 0,
+        "mode": "zero-work",
+        "point": null,
+        "requested_ops": 1
+      }
+    },
+    {
+      "mode": "raw",
+      "ops_per_process_call": 2,
+      "result": {
+        "child_cpu_ns": null,
+        "count": null,
+        "mode": "raw",
+        "point": [
+          688880949010793000,
+          790090237295869340
+        ],
+        "requested_ops": 2
+      }
+    },
+    {
+      "mode": "counted",
+      "ops_per_process_call": 2,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 2,
+        "mode": "counted",
+        "point": [
+          688880949010793000,
+          790090237295869340
+        ],
+        "requested_ops": 2
+      }
+    },
+    {
+      "mode": "count-only",
+      "ops_per_process_call": 2,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 2,
+        "mode": "count-only",
+        "point": null,
+        "requested_ops": 2
+      }
+    },
+    {
+      "mode": "zero-work",
+      "ops_per_process_call": 2,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 0,
+        "mode": "zero-work",
+        "point": null,
+        "requested_ops": 2
+      }
+    },
+    {
+      "mode": "raw",
+      "ops_per_process_call": 3,
+      "result": {
+        "child_cpu_ns": null,
+        "count": null,
+        "mode": "raw",
+        "point": [
+          396771410188466083,
+          850837664584714677
+        ],
+        "requested_ops": 3
+      }
+    },
+    {
+      "mode": "counted",
+      "ops_per_process_call": 3,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 3,
+        "mode": "counted",
+        "point": [
+          396771410188466083,
+          850837664584714677
+        ],
+        "requested_ops": 3
+      }
+    },
+    {
+      "mode": "count-only",
+      "ops_per_process_call": 3,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 3,
+        "mode": "count-only",
+        "point": null,
+        "requested_ops": 3
+      }
+    },
+    {
+      "mode": "zero-work",
+      "ops_per_process_call": 3,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 0,
+        "mode": "zero-work",
+        "point": null,
+        "requested_ops": 3
+      }
+    },
+    {
+      "mode": "raw",
+      "ops_per_process_call": 10000,
+      "result": {
+        "child_cpu_ns": null,
+        "count": null,
+        "mode": "raw",
+        "point": [
+          476377072802646283,
+          562446501424608226
+        ],
+        "requested_ops": 10000
+      }
+    },
+    {
+      "mode": "counted",
+      "ops_per_process_call": 10000,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 10000,
+        "mode": "counted",
+        "point": [
+          476377072802646283,
+          562446501424608226
+        ],
+        "requested_ops": 10000
+      }
+    },
+    {
+      "mode": "count-only",
+      "ops_per_process_call": 10000,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 10000,
+        "mode": "count-only",
+        "point": null,
+        "requested_ops": 10000
+      }
+    },
+    {
+      "mode": "zero-work",
+      "ops_per_process_call": 10000,
+      "result": {
+        "child_cpu_ns": null,
+        "count": 0,
+        "mode": "zero-work",
+        "point": null,
+        "requested_ops": 10000
+      }
+    }
+  ],
+  "host_observations": {
+    "after": {
+      "file_nr": null,
+      "free_pages_16k": 46159,
+      "kern_num_files": 17200,
+      "load_1m": 5.38916015625,
+      "loadavg_line": null,
+      "meminfo_free_kb": null,
+      "taken_at": "2026-09-30T15:39:07.524675+00:00"
+    },
+    "before": {
+      "file_nr": null,
+      "free_pages_16k": 4909,
+      "kern_num_files": 17212,
+      "load_1m": 5.38916015625,
+      "loadavg_line": null,
+      "meminfo_free_kb": null,
+      "taken_at": "2026-09-30T15:39:06.659341+00:00"
+    }
+  },
+  "kind": "paired_rate",
+  "malformed_inputs_refused": [
+    "-1",
+    "3junk",
+    "1000001",
+    "18446744073709551616"
+  ],
+  "metadata": {
+    "arm": "macos-host",
+    "binary": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-counted-process-q6g1gphn/counted_process",
+    "binary_sha256": "6076929c04bc516f1856a7fb543e3a1ae1de23acf67417600169e0355bda69dd",
+    "cflags": [
+      "-O2",
+      "-std=c11",
+      "-Wall"
+    ],
+    "compiler": "/usr/bin/clang",
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.3.34.2)",
+    "curve": {
+      "a": "645824996691681933",
+      "b": "382308953708622014",
+      "bits": 60,
+      "n": "866004982950395713",
+      "p": "866004983247663323"
+    },
+    "host_1m_load_average": 5.38916015625,
+    "kernel": "25.6.0",
+    "machine": "arm64",
+    "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+    "python": "3.14.7 (main, Sep  1 2026, 14:05:28) [Clang 22.1.3 ]",
+    "reference_binary": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-counted-process-q6g1gphn/ecbench",
+    "reference_binary_sha256": "25322a466385bcc9ccb95a3aa8a74988a25d48b8b75745dfe0486fbd313a8ce9",
+    "reference_source_sha256": "4fced42e85e8e533ff21d24e8e8d558870fff98650e0ff88868aeffb4f17ac3e",
+    "scratch": "/var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/cairn-counted-process-q6g1gphn",
+    "source": "/Users/jwross/Documents/cairn/research/grounding/counted_process.c",
+    "source_provenance": "probe_build_input",
+    "source_sha256": "acaaa26e24b4acabc683871483d88e784a2d0993fa30d36798de1fc84e4f2a51"
+  },
+  "null_control": {
+    "median_bound_cpu": [
+      "0.90",
+      "1.10"
+    ],
+    "pairs": [
+      {
+        "first": {
+          "child_cpu_ns": 2139000,
+          "parent_wall_ns": 5645459
+        },
+        "pair": 1,
+        "ratio": {
+          "cpu": "0.718092567",
+          "wall": "0.816489501"
+        },
+        "second": {
+          "child_cpu_ns": 1536000,
+          "parent_wall_ns": 4609458
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1531000,
+          "parent_wall_ns": 4423125
+        },
+        "pair": 2,
+        "ratio": {
+          "cpu": "1.004572175",
+          "wall": "0.922453017"
+        },
+        "second": {
+          "child_cpu_ns": 1538000,
+          "parent_wall_ns": 4080125
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1802000,
+          "parent_wall_ns": 5943166
+        },
+        "pair": 3,
+        "ratio": {
+          "cpu": "1.133740289",
+          "wall": "1.076902109"
+        },
+        "second": {
+          "child_cpu_ns": 2043000,
+          "parent_wall_ns": 6400208
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1535000,
+          "parent_wall_ns": 3946917
+        },
+        "pair": 4,
+        "ratio": {
+          "cpu": "1.125732899",
+          "wall": "1.310474226"
+        },
+        "second": {
+          "child_cpu_ns": 1728000,
+          "parent_wall_ns": 5172333
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1564000,
+          "parent_wall_ns": 4526959
+        },
+        "pair": 5,
+        "ratio": {
+          "cpu": "1.033248082",
+          "wall": "0.964812582"
+        },
+        "second": {
+          "child_cpu_ns": 1616000,
+          "parent_wall_ns": 4367667
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1793000,
+          "parent_wall_ns": 5216375
+        },
+        "pair": 6,
+        "ratio": {
+          "cpu": "0.943112103",
+          "wall": "0.762518799"
+        },
+        "second": {
+          "child_cpu_ns": 1691000,
+          "parent_wall_ns": 3977584
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1530000,
+          "parent_wall_ns": 3481667
+        },
+        "pair": 7,
+        "ratio": {
+          "cpu": "0.998692810",
+          "wall": "1.040019048"
+        },
+        "second": {
+          "child_cpu_ns": 1528000,
+          "parent_wall_ns": 3621000
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1629000,
+          "parent_wall_ns": 4622333
+        },
+        "pair": 8,
+        "ratio": {
+          "cpu": "0.995089012",
+          "wall": "0.835346566"
+        },
+        "second": {
+          "child_cpu_ns": 1621000,
+          "parent_wall_ns": 3861250
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1525000,
+          "parent_wall_ns": 3866083
+        },
+        "pair": 9,
+        "ratio": {
+          "cpu": "1.007213115",
+          "wall": "0.926335777"
+        },
+        "second": {
+          "child_cpu_ns": 1536000,
+          "parent_wall_ns": 3581291
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1772000,
+          "parent_wall_ns": 4381708
+        },
+        "pair": 10,
+        "ratio": {
+          "cpu": "0.924379233",
+          "wall": "1.063864137"
+        },
+        "second": {
+          "child_cpu_ns": 1638000,
+          "parent_wall_ns": 4661542
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1538000,
+          "parent_wall_ns": 3723416
+        },
+        "pair": 11,
+        "ratio": {
+          "cpu": "0.993498049",
+          "wall": "0.954880142"
+        },
+        "second": {
+          "child_cpu_ns": 1528000,
+          "parent_wall_ns": 3555416
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1541000,
+          "parent_wall_ns": 4238708
+        },
+        "pair": 12,
+        "ratio": {
+          "cpu": "0.990914990",
+          "wall": "0.942966111"
+        },
+        "second": {
+          "child_cpu_ns": 1527000,
+          "parent_wall_ns": 3996958
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1523000,
+          "parent_wall_ns": 3517417
+        },
+        "pair": 13,
+        "ratio": {
+          "cpu": "0.996060407",
+          "wall": "0.958196029"
+        },
+        "second": {
+          "child_cpu_ns": 1517000,
+          "parent_wall_ns": 3370375
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1709000,
+          "parent_wall_ns": 5008500
+        },
+        "pair": 14,
+        "ratio": {
+          "cpu": "0.901696899",
+          "wall": "0.846219826"
+        },
+        "second": {
+          "child_cpu_ns": 1541000,
+          "parent_wall_ns": 4238292
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1527000,
+          "parent_wall_ns": 3609208
+        },
+        "pair": 15,
+        "ratio": {
+          "cpu": "1.002619515",
+          "wall": "0.975248586"
+        },
+        "second": {
+          "child_cpu_ns": 1531000,
+          "parent_wall_ns": 3519875
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1524000,
+          "parent_wall_ns": 4087667
+        },
+        "pair": 16,
+        "ratio": {
+          "cpu": "1.002624672",
+          "wall": "0.969389630"
+        },
+        "second": {
+          "child_cpu_ns": 1528000,
+          "parent_wall_ns": 3962542
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1534000,
+          "parent_wall_ns": 3503542
+        },
+        "pair": 17,
+        "ratio": {
+          "cpu": "0.994784876",
+          "wall": "1.024605956"
+        },
+        "second": {
+          "child_cpu_ns": 1526000,
+          "parent_wall_ns": 3589750
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1521000,
+          "parent_wall_ns": 4272375
+        },
+        "pair": 18,
+        "ratio": {
+          "cpu": "1.004602235",
+          "wall": "0.860479476"
+        },
+        "second": {
+          "child_cpu_ns": 1528000,
+          "parent_wall_ns": 3676291
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1541000,
+          "parent_wall_ns": 3404625
+        },
+        "pair": 19,
+        "ratio": {
+          "cpu": "1.343932511",
+          "wall": "1.569384881"
+        },
+        "second": {
+          "child_cpu_ns": 2071000,
+          "parent_wall_ns": 5343167
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1551000,
+          "parent_wall_ns": 4368833
+        },
+        "pair": 20,
+        "ratio": {
+          "cpu": "0.986460348",
+          "wall": "0.879163154"
+        },
+        "second": {
+          "child_cpu_ns": 1530000,
+          "parent_wall_ns": 3840917
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1524000,
+          "parent_wall_ns": 3582209
+        },
+        "pair": 21,
+        "ratio": {
+          "cpu": "1.101706037",
+          "wall": "1.392739508"
+        },
+        "second": {
+          "child_cpu_ns": 1679000,
+          "parent_wall_ns": 4989084
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1542000,
+          "parent_wall_ns": 4210459
+        },
+        "pair": 22,
+        "ratio": {
+          "cpu": "1.010376135",
+          "wall": "0.849976689"
+        },
+        "second": {
+          "child_cpu_ns": 1558000,
+          "parent_wall_ns": 3578792
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1525000,
+          "parent_wall_ns": 3752417
+        },
+        "pair": 23,
+        "ratio": {
+          "cpu": "1.134426230",
+          "wall": "1.149847685"
+        },
+        "second": {
+          "child_cpu_ns": 1730000,
+          "parent_wall_ns": 4314708
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1529000,
+          "parent_wall_ns": 4083791
+        },
+        "pair": 24,
+        "ratio": {
+          "cpu": "1.001962067",
+          "wall": "0.896838256"
+        },
+        "second": {
+          "child_cpu_ns": 1532000,
+          "parent_wall_ns": 3662500
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1523000,
+          "parent_wall_ns": 3451459
+        },
+        "pair": 25,
+        "ratio": {
+          "cpu": "1.020354563",
+          "wall": "1.214389625"
+        },
+        "second": {
+          "child_cpu_ns": 1554000,
+          "parent_wall_ns": 4191416
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1525000,
+          "parent_wall_ns": 3684292
+        },
+        "pair": 26,
+        "ratio": {
+          "cpu": "1.000655738",
+          "wall": "0.930391239"
+        },
+        "second": {
+          "child_cpu_ns": 1526000,
+          "parent_wall_ns": 3427833
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1527000,
+          "parent_wall_ns": 3355875
+        },
+        "pair": 27,
+        "ratio": {
+          "cpu": "1.187295350",
+          "wall": "1.187171751"
+        },
+        "second": {
+          "child_cpu_ns": 1813000,
+          "parent_wall_ns": 3984000
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1548000,
+          "parent_wall_ns": 3779959
+        },
+        "pair": 28,
+        "ratio": {
+          "cpu": "0.980620155",
+          "wall": "0.953515633"
+        },
+        "second": {
+          "child_cpu_ns": 1518000,
+          "parent_wall_ns": 3604250
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1520000,
+          "parent_wall_ns": 3274292
+        },
+        "pair": 29,
+        "ratio": {
+          "cpu": "0.995394737",
+          "wall": "1.041637398"
+        },
+        "second": {
+          "child_cpu_ns": 1513000,
+          "parent_wall_ns": 3410625
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1534000,
+          "parent_wall_ns": 4291584
+        },
+        "pair": 30,
+        "ratio": {
+          "cpu": "0.996088657",
+          "wall": "0.848152337"
+        },
+        "second": {
+          "child_cpu_ns": 1528000,
+          "parent_wall_ns": 3639917
+        }
+      },
+      {
+        "first": {
+          "child_cpu_ns": 1525000,
+          "parent_wall_ns": 3402209
+        },
+        "pair": 31,
+        "ratio": {
+          "cpu": "0.998032787",
+          "wall": "0.997048388"
+        },
+        "second": {
+          "child_cpu_ns": 1522000,
+          "parent_wall_ns": 3392167
+        }
+      }
+    ],
+    "ratio_summary": {
+      "cpu": {
+        "max": "1.343932511",
+        "median": "1.000655738",
+        "min": "0.718092567",
+        "n": 31,
+        "sd": "0.101177859",
+        "spread": "0.625429826"
+      },
+      "wall": {
+        "max": "1.569384881",
+        "median": "0.958196029",
+        "min": "0.762518799",
+        "n": 31,
+        "sd": "0.178023074",
+        "spread": "0.842067863"
+      }
+    },
+    "verdict": "within_bound"
+  },
+  "preregistered": true,
+  "preregistration": {
+    "null_control_pairs": 31,
+    "null_median_bound_cpu": [
+      "0.90",
+      "1.10"
+    ],
+    "ops": 10000,
+    "pairs": 31,
+    "seed": 20260930,
+    "spread": "(max - min) / median over the per-pair ratios",
+    "spread_bound": {
+      "cpu": "0.30",
+      "deployed": "0.50",
+      "wall": "0.50"
+    },
+    "warmup_calls_per_arm": 1
+  },
+  "ratio_semantics": {
+    "cpu": "counted child CPU per group op over reference child CPU per group op; both on CLOCK_PROCESS_CPUTIME_ID inside the child",
+    "deployed": "counted parent wall per group op over reference child CPU per group op; the spawned counted object over the bundle's reference clock",
+    "null": "second reference call over first reference call in the same pair; no counting term, expected median 1.0",
+    "wall": "counted parent wall per group op over reference parent wall per group op; both include one process spawn per call"
+  },
+  "ratio_summary": {
+    "cpu": {
+      "max": "1.138451444",
+      "median": "0.990202482",
+      "min": "0.888497653",
+      "n": 31,
+      "sd": "0.058455951",
+      "spread": "0.252426949"
+    },
+    "deployed": {
+      "max": "3.995995544",
+      "median": "2.376088889",
+      "min": "1.879303404",
+      "n": 31,
+      "sd": "0.362842712",
+      "spread": "0.890830368"
+    },
+    "wall": {
+      "max": "1.407623719",
+      "median": "1.014195918",
+      "min": "0.852517198",
+      "n": 31,
+      "sd": "0.115868900",
+      "spread": "0.547336576"
+    }
+  },
+  "reference_correctness": [
+    {
+      "child_cpu_ns": 1000,
+      "ops": 0
+    },
+    {
+      "child_cpu_ns": 1000,
+      "ops": 1
+    },
+    {
+      "child_cpu_ns": 1000,
+      "ops": 2
+    },
+    {
+      "child_cpu_ns": 2000,
+      "ops": 3
+    },
+    {
+      "child_cpu_ns": 1534000,
+      "ops": 10000
+    }
+  ],
+  "settings": {
+    "ops": 10000,
+    "pairs": 31,
+    "seed": 20260930
+  },
+  "spread_verdicts": {
+    "cpu": "within_bound",
+    "deployed": "exceeded",
+    "wall": "exceeded"
+  },
+  "timing": {
+    "pairs": [
+      {
+        "counted": {
+          "child_cpu_ns": 1539000,
+          "count": 10000,
+          "parent_wall_ns": 3421875
+        },
+        "order": [
+          "reference",
+          "counted"
+        ],
+        "pair": 1,
+        "ratio": {
+          "cpu": "0.911190053",
+          "deployed": "2.025976909",
+          "wall": "0.994622679"
+        },
+        "reference": {
+          "child_cpu_ns": 1689000,
+          "parent_wall_ns": 3440375
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1515000,
+          "count": 10000,
+          "parent_wall_ns": 3262625
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 2,
+        "ratio": {
+          "cpu": "0.992791612",
+          "deployed": "2.138024246",
+          "wall": "0.996588971"
+        },
+        "reference": {
+          "child_cpu_ns": 1526000,
+          "parent_wall_ns": 3273792
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1639000,
+          "count": 10000,
+          "parent_wall_ns": 3425875
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 3,
+        "ratio": {
+          "cpu": "1.071942446",
+          "deployed": "2.240598430",
+          "wall": "1.032097101"
+        },
+        "reference": {
+          "child_cpu_ns": 1529000,
+          "parent_wall_ns": 3319334
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1551000,
+          "count": 10000,
+          "parent_wall_ns": 3691083
+        },
+        "order": [
+          "reference",
+          "counted"
+        ],
+        "pair": 4,
+        "ratio": {
+          "cpu": "1.014388489",
+          "deployed": "2.414050360",
+          "wall": "1.034592915"
+        },
+        "reference": {
+          "child_cpu_ns": 1529000,
+          "parent_wall_ns": 3567667
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1528000,
+          "count": 10000,
+          "parent_wall_ns": 4128750
+        },
+        "order": [
+          "reference",
+          "counted"
+        ],
+        "pair": 5,
+        "ratio": {
+          "cpu": "0.921036769",
+          "deployed": "2.488698011",
+          "wall": "1.014195918"
+        },
+        "reference": {
+          "child_cpu_ns": 1659000,
+          "parent_wall_ns": 4070959
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1512000,
+          "count": 10000,
+          "parent_wall_ns": 3635416
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 6,
+        "ratio": {
+          "cpu": "0.988235294",
+          "deployed": "2.376088889",
+          "wall": "0.997724296"
+        },
+        "reference": {
+          "child_cpu_ns": 1530000,
+          "parent_wall_ns": 3643708
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1698000,
+          "count": 10000,
+          "parent_wall_ns": 3650375
+        },
+        "order": [
+          "reference",
+          "counted"
+        ],
+        "pair": 7,
+        "ratio": {
+          "cpu": "1.109803922",
+          "deployed": "2.385866013",
+          "wall": "1.044008294"
+        },
+        "reference": {
+          "child_cpu_ns": 1530000,
+          "parent_wall_ns": 3496500
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1537000,
+          "count": 10000,
+          "parent_wall_ns": 3631792
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 8,
+        "ratio": {
+          "cpu": "1.000651042",
+          "deployed": "2.364447917",
+          "wall": "1.073013091"
+        },
+        "reference": {
+          "child_cpu_ns": 1536000,
+          "parent_wall_ns": 3384667
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1517000,
+          "count": 10000,
+          "parent_wall_ns": 3372708
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 9,
+        "ratio": {
+          "cpu": "0.992151733",
+          "deployed": "2.205826030",
+          "wall": "1.018906537"
+        },
+        "reference": {
+          "child_cpu_ns": 1529000,
+          "parent_wall_ns": 3310125
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1515000,
+          "count": 10000,
+          "parent_wall_ns": 3336958
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 10,
+        "ratio": {
+          "cpu": "0.990196078",
+          "deployed": "2.181018301",
+          "wall": "0.958448426"
+        },
+        "reference": {
+          "child_cpu_ns": 1530000,
+          "parent_wall_ns": 3481625
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1561000,
+          "count": 10000,
+          "parent_wall_ns": 3451208
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 11,
+        "ratio": {
+          "cpu": "1.020261438",
+          "deployed": "2.255691503",
+          "wall": "1.029942328"
+        },
+        "reference": {
+          "child_cpu_ns": 1530000,
+          "parent_wall_ns": 3350875
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1514000,
+          "count": 10000,
+          "parent_wall_ns": 3755208
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 12,
+        "ratio": {
+          "cpu": "0.959442332",
+          "deployed": "2.379726236",
+          "wall": "1.101570303"
+        },
+        "reference": {
+          "child_cpu_ns": 1578000,
+          "parent_wall_ns": 3408959
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1518000,
+          "count": 10000,
+          "parent_wall_ns": 3399500
+        },
+        "order": [
+          "reference",
+          "counted"
+        ],
+        "pair": 13,
+        "ratio": {
+          "cpu": "0.985714286",
+          "deployed": "2.207467532",
+          "wall": "0.999069553"
+        },
+        "reference": {
+          "child_cpu_ns": 1540000,
+          "parent_wall_ns": 3402666
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1514000,
+          "count": 10000,
+          "parent_wall_ns": 3390917
+        },
+        "order": [
+          "reference",
+          "counted"
+        ],
+        "pair": 14,
+        "ratio": {
+          "cpu": "0.902264601",
+          "deployed": "2.020808701",
+          "wall": "0.917942189"
+        },
+        "reference": {
+          "child_cpu_ns": 1678000,
+          "parent_wall_ns": 3694042
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1621000,
+          "count": 10000,
+          "parent_wall_ns": 4188625
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 15,
+        "ratio": {
+          "cpu": "1.062950820",
+          "deployed": "2.746639344",
+          "wall": "1.168606288"
+        },
+        "reference": {
+          "child_cpu_ns": 1525000,
+          "parent_wall_ns": 3584291
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1516000,
+          "count": 10000,
+          "parent_wall_ns": 3709834
+        },
+        "order": [
+          "reference",
+          "counted"
+        ],
+        "pair": 16,
+        "ratio": {
+          "cpu": "0.990202482",
+          "deployed": "2.423144350",
+          "wall": "1.099698829"
+        },
+        "reference": {
+          "child_cpu_ns": 1531000,
+          "parent_wall_ns": 3373500
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1513000,
+          "count": 10000,
+          "parent_wall_ns": 3421792
+        },
+        "order": [
+          "reference",
+          "counted"
+        ],
+        "pair": 17,
+        "ratio": {
+          "cpu": "0.973616474",
+          "deployed": "2.201925354",
+          "wall": "0.927765462"
+        },
+        "reference": {
+          "child_cpu_ns": 1554000,
+          "parent_wall_ns": 3688208
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1634000,
+          "count": 10000,
+          "parent_wall_ns": 4447541
+        },
+        "order": [
+          "reference",
+          "counted"
+        ],
+        "pair": 18,
+        "ratio": {
+          "cpu": "1.065189048",
+          "deployed": "2.899309648",
+          "wall": "1.335414228"
+        },
+        "reference": {
+          "child_cpu_ns": 1534000,
+          "parent_wall_ns": 3330458
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1521000,
+          "count": 10000,
+          "parent_wall_ns": 3587250
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 19,
+        "ratio": {
+          "cpu": "0.905357143",
+          "deployed": "2.135267857",
+          "wall": "0.852517198"
+        },
+        "reference": {
+          "child_cpu_ns": 1680000,
+          "parent_wall_ns": 4207833
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1549000,
+          "count": 10000,
+          "parent_wall_ns": 3873291
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 20,
+        "ratio": {
+          "cpu": "1.001940492",
+          "deployed": "2.505362872",
+          "wall": "0.992377738"
+        },
+        "reference": {
+          "child_cpu_ns": 1546000,
+          "parent_wall_ns": 3903041
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1527000,
+          "count": 10000,
+          "parent_wall_ns": 3883000
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 21,
+        "ratio": {
+          "cpu": "0.995436767",
+          "deployed": "2.531290743",
+          "wall": "1.123675167"
+        },
+        "reference": {
+          "child_cpu_ns": 1534000,
+          "parent_wall_ns": 3455625
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1514000,
+          "count": 10000,
+          "parent_wall_ns": 3202333
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 22,
+        "ratio": {
+          "cpu": "0.888497653",
+          "deployed": "1.879303404",
+          "wall": "0.884245716"
+        },
+        "reference": {
+          "child_cpu_ns": 1704000,
+          "parent_wall_ns": 3621542
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1649000,
+          "count": 10000,
+          "parent_wall_ns": 3715292
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 23,
+        "ratio": {
+          "cpu": "1.074267101",
+          "deployed": "2.420385668",
+          "wall": "0.957724491"
+        },
+        "reference": {
+          "child_cpu_ns": 1535000,
+          "parent_wall_ns": 3879291
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1735000,
+          "count": 10000,
+          "parent_wall_ns": 3656125
+        },
+        "order": [
+          "reference",
+          "counted"
+        ],
+        "pair": 24,
+        "ratio": {
+          "cpu": "1.138451444",
+          "deployed": "2.399032152",
+          "wall": "1.011294803"
+        },
+        "reference": {
+          "child_cpu_ns": 1524000,
+          "parent_wall_ns": 3615291
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1533000,
+          "count": 10000,
+          "parent_wall_ns": 3824458
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 25,
+        "ratio": {
+          "cpu": "0.962335217",
+          "deployed": "2.400789705",
+          "wall": "1.029925668"
+        },
+        "reference": {
+          "child_cpu_ns": 1593000,
+          "parent_wall_ns": 3713334
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1560000,
+          "count": 10000,
+          "parent_wall_ns": 3594208
+        },
+        "order": [
+          "reference",
+          "counted"
+        ],
+        "pair": 26,
+        "ratio": {
+          "cpu": "1.016286645",
+          "deployed": "2.341503583",
+          "wall": "1.040015718"
+        },
+        "reference": {
+          "child_cpu_ns": 1535000,
+          "parent_wall_ns": 3455917
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1514000,
+          "count": 10000,
+          "parent_wall_ns": 3913583
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 27,
+        "ratio": {
+          "cpu": "0.983116883",
+          "deployed": "2.541287662",
+          "wall": "1.087521762"
+        },
+        "reference": {
+          "child_cpu_ns": 1540000,
+          "parent_wall_ns": 3598625
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1515000,
+          "count": 10000,
+          "parent_wall_ns": 3371042
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 28,
+        "ratio": {
+          "cpu": "0.981853532",
+          "deployed": "2.184732340",
+          "wall": "0.960114586"
+        },
+        "reference": {
+          "child_cpu_ns": 1543000,
+          "parent_wall_ns": 3511083
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1595000,
+          "count": 10000,
+          "parent_wall_ns": 4188875
+        },
+        "order": [
+          "counted",
+          "reference"
+        ],
+        "pair": 29,
+        "ratio": {
+          "cpu": "0.963746224",
+          "deployed": "2.531042296",
+          "wall": "0.883239767"
+        },
+        "reference": {
+          "child_cpu_ns": 1655000,
+          "parent_wall_ns": 4742625
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1514000,
+          "count": 10000,
+          "parent_wall_ns": 3539250
+        },
+        "order": [
+          "reference",
+          "counted"
+        ],
+        "pair": 30,
+        "ratio": {
+          "cpu": "0.991486575",
+          "deployed": "2.317779961",
+          "wall": "0.963509027"
+        },
+        "reference": {
+          "child_cpu_ns": 1527000,
+          "parent_wall_ns": 3673292
+        }
+      },
+      {
+        "counted": {
+          "child_cpu_ns": 1521000,
+          "count": 10000,
+          "parent_wall_ns": 6277709
+        },
+        "order": [
+          "reference",
+          "counted"
+        ],
+        "pair": 31,
+        "ratio": {
+          "cpu": "0.968173138",
+          "deployed": "3.995995544",
+          "wall": "1.407623719"
+        },
+        "reference": {
+          "child_cpu_ns": 1571000,
+          "parent_wall_ns": 4459792
+        }
+      }
+    ],
+    "warmup": [
+      {
+        "arm": "reference",
+        "call": 1,
+        "child_cpu_ns": 1536000,
+        "parent_wall_ns": 3320375
+      },
+      {
+        "arm": "counted",
+        "call": 1,
+        "child_cpu_ns": 1516000,
+        "count": 10000,
+        "parent_wall_ns": 3405000
+      }
+    ]
+  },
+  "timing_status": "PAIRED_PROVISIONAL"
+}
