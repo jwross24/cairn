@@ -5,12 +5,14 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from research.grounding import probe_clock_reference_cost
+from research.grounding import probe_constant_work as constant_work
 from research.grounding import probe_counted_process as probe
 from research.grounding import probe_deployed_cpu as deployed_cpu
 from research.grounding import probe_deployed_rate as deployed
@@ -596,3 +598,157 @@ def test_cpu_summarize_arms_reports_every_clock_per_op():
     }
     assert summary["batch"]["tree_cpu_per_group_op"]["median"] == "0.000012500000"
     assert summary["batch"]["child_cpu_per_group_op"]["median"] == "0.000000100000"
+
+
+def test_expected_kind_points_match_independent_arithmetic():
+    counted = constant_work.counted
+    base = (counted.GX, counted.GY)
+    assert constant_work.expected_kind_point("kind-add", 3) == counted.ec.mul(counted.P, counted.A, base, 4)
+    assert constant_work.expected_kind_point("kind-double", 3) == counted.ec.mul(counted.P, counted.A, base, 8)
+    assert constant_work.expected_kind_point("kind-inverse", 3) is None
+    assert constant_work.expected_kind_point("kind-torsion", 3) is None
+    assert constant_work.expected_kind_point("kind-identity", 3) == base
+    assert constant_work.expected_kind_point("kind-adjacent", 3) == (
+        (0 - counted.GX - (counted.GX + 1)) % counted.P,
+        (-counted.GY) % counted.P,
+    )
+    assert constant_work.expected_kind_point("counted", 3) == probe.expected_point(3)
+    with pytest.raises(probe.ProbeError):
+        constant_work.expected_kind_point("kind-bogus", 3)
+
+
+def test_a_kind_payload_with_a_wrong_count_or_point_is_refused():
+    payload = _payload("kind-inverse", 3, 3, None, 5)
+    assert constant_work.validate_kind_payload(payload, "kind-inverse", 3, True) == payload
+    with pytest.raises(probe.ProbeError, match="count was"):
+        constant_work.validate_kind_payload(_payload("kind-inverse", 3, 2, None, 5), "kind-inverse", 3, True)
+    with pytest.raises(probe.ProbeError, match="expected infinity"):
+        constant_work.validate_kind_payload(_payload("kind-inverse", 3, 3, [1, 2], 5), "kind-inverse", 3, True)
+    wrong = [constant_work.counted.GX, constant_work.counted.GY + 1]
+    with pytest.raises(probe.ProbeError, match="point was"):
+        constant_work.validate_kind_payload(_payload("kind-identity", 3, 3, wrong, 5), "kind-identity", 3, True)
+
+
+def test_kind_order_is_a_permutation_and_deterministic():
+    orders = [constant_work.kind_order(constant_work.PREREGISTERED["seed"], pair) for pair in range(1, 16)]
+    for pair, order in enumerate(orders, start=1):
+        assert sorted(order) == sorted(constant_work.KINDS)
+        assert order == constant_work.kind_order(constant_work.PREREGISTERED["seed"], pair)
+    assert len(set(orders)) >= 2
+
+
+def test_pair_ratios_divide_each_kind_by_the_generic_add():
+    results = {kind: {"ops": 10_000, "child_cpu_ns": 4_400_000} for kind in constant_work.KINDS}
+    results["kind-add"] = {"ops": 10_000, "child_cpu_ns": 4_000_000}
+    results["kind-inverse"] = {"ops": 10_000, "child_cpu_ns": 2_000_000}
+    ratios = constant_work.pair_ratios(results)
+    assert ratios["kind-inverse"] == "0.500000000"
+    assert ratios["kind-double"] == "1.100000000"
+    assert "kind-add" not in ratios
+    results["kind-add"] = {"ops": 10_000, "child_cpu_ns": 0}
+    with pytest.raises(probe.ProbeError):
+        constant_work.pair_ratios(results)
+
+
+def test_verdicts_apply_the_band_and_the_spread_bound():
+    summary = {
+        "kind-inverse": {"median": "0.899999999", "spread": "0.1"},
+        "kind-double": {"median": "0.90", "spread": "0.6"},
+    }
+    band = constant_work.PREREGISTERED["constant_work_band"]
+    bound = constant_work.PREREGISTERED["spread_bound"]
+    result = constant_work.verdicts(summary, band, bound)
+    assert result["kind-inverse"] == {"constant_work": "cheaper", "spread": "within_bound"}
+    assert result["kind-double"] == {"constant_work": "constant_work", "spread": "exceeded"}
+    assert constant_work.requirement_holds(result) is False
+    summary["kind-inverse"]["median"] = "0.90"
+    assert constant_work.requirement_holds(constant_work.verdicts(summary, band, bound)) is False
+    summary["kind-double"]["spread"] = "0.50"
+    assert constant_work.requirement_holds(constant_work.verdicts(summary, band, bound)) is True
+
+
+def test_planted_outcome_requires_every_expected_kind_to_be_cheaper():
+    def entry(label):
+        return {"constant_work": label, "spread": "within_bound"}
+
+    partial = {
+        "kind-inverse": entry("cheaper"),
+        "kind-identity": entry("cheaper"),
+        "kind-torsion": entry("constant_work"),
+    }
+    outcome = constant_work.planted_outcome("early-return", partial)
+    assert outcome["fails_for_the_stated_reason"] is False
+    assert outcome["observed_cheaper"] == ["kind-identity", "kind-inverse"]
+    full = {**partial, "kind-torsion": entry("cheaper")}
+    assert constant_work.planted_outcome("early-return", full)["fails_for_the_stated_reason"] is True
+    adjacent = {"kind-adjacent": entry("cheaper"), "kind-inverse": entry("constant_work")}
+    assert constant_work.planted_outcome("variable-inversion", adjacent)["fails_for_the_stated_reason"] is True
+
+
+def test_run_kind_reads_rusage_at_the_reap_hook_and_validates(monkeypatch):
+    phase = {"name": "before"}
+    readings = {
+        "before": {"self_ns": 0, "children_ns": 0},
+        "hook": {"self_ns": 7, "children_ns": 13},
+        "after": {"self_ns": 99, "children_ns": 99},
+    }
+    calls = []
+
+    def fake_rusage():
+        return readings[phase["name"]]
+
+    def fake_run_binary(binary, mode, ops, timed=False, after_reap=None, validate=True):
+        calls.append({"timed": timed, "validate": validate})
+        phase["name"] = "hook"
+        assert after_reap is not None
+        after_reap()
+        phase["name"] = "after"
+        return _payload("kind-inverse", 3, 3, None, 5), 9
+
+    monkeypatch.setattr(constant_work, "rusage_ns", fake_rusage)
+    monkeypatch.setattr(constant_work.counted, "run_binary", fake_run_binary)
+    assert constant_work.run_kind("bin", "kind-inverse", 3) == {
+        "ops": 3,
+        "child_cpu_ns": 5,
+        "parent_wall_ns": 9,
+        "tree_cpu_ns": 20,
+    }
+    assert calls == [{"timed": True, "validate": False}]
+
+
+def test_non_preregistered_constant_work_settings_require_the_exploratory_flag():
+    with pytest.raises(SystemExit):
+        constant_work._arguments(["--arm", "x", "--pairs", "3"])
+    assert constant_work._arguments(["--arm", "x", "--pairs", "3", "--exploratory"]).pairs == 3
+    assert constant_work._arguments(["--arm", "x", "--planted", "early-return"]).planted == "early-return"
+    with pytest.raises(SystemExit):
+        constant_work._arguments(["--arm", "x", "--planted", "bogus"])
+    defaults = constant_work._arguments(["--arm", "x"])
+    assert (defaults.pairs, defaults.ops, defaults.seed) == (
+        constant_work.PREREGISTERED["pairs"],
+        constant_work.PREREGISTERED["ops"],
+        constant_work.PREREGISTERED["seed"],
+    )
+
+
+def test_build_binary_records_extra_cflags_in_its_metadata(monkeypatch, tmp_path):
+    compiler = tmp_path / "clang"
+    compiler.touch()
+    compile_argv = []
+
+    def fake_compiler(command):
+        if command[1:] == ["--version"]:
+            return SimpleNamespace(returncode=0, stdout="fake clang 1.0\n", stderr="")
+        compile_argv.append(list(command))
+        Path(command[command.index("-o") + 1]).write_bytes(b"x")
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(probe, "_run_compiler", fake_compiler)
+    monkeypatch.setattr(probe.os, "access", lambda path, mode: True)
+    build = probe.build_binary(compiler, extra_cflags=("-DCAIRN_EARLY_RETURN",))
+    cflags = build["cflags"]
+    assert isinstance(cflags, list)
+    assert cflags[-1:] == ["-DCAIRN_EARLY_RETURN"]
+    assert len(compile_argv) == 1
+    argv = compile_argv[0]
+    assert argv[argv.index("-Wall") + 1] == "-DCAIRN_EARLY_RETURN"

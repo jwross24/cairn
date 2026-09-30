@@ -149,7 +149,7 @@ def _run_compiler(command):
         raise ProbeError(f"compiler command failed: {command[0]}") from exc
 
 
-def build_binary(compiler=CC):
+def build_binary(compiler=CC, extra_cflags=()):
     compiler = Path(compiler)
     if not compiler.is_file() or not os.access(compiler, os.X_OK):
         raise ProbeError(f"compiler is missing or not executable: {compiler}")
@@ -163,7 +163,7 @@ def build_binary(compiler=CC):
     version = _run_compiler([str(compiler), "--version"])
     if version.returncode != 0 or not version.stdout.strip():
         raise ProbeError(f"could not identify compiler: {version.stderr.strip()}")
-    compiled = _run_compiler([str(compiler), *CFLAGS, "-o", str(binary), str(SOURCE)])
+    compiled = _run_compiler([str(compiler), *CFLAGS, *extra_cflags, "-o", str(binary), str(SOURCE)])
     if compiled.returncode != 0:
         raise ProbeError(f"C build failed: {compiled.stderr.strip()}")
     if not binary.is_file():
@@ -173,13 +173,13 @@ def build_binary(compiler=CC):
         "scratch": str(scratch),
         "compiler": str(compiler),
         "compiler_version": version.stdout.splitlines()[0],
-        "cflags": list(CFLAGS),
+        "cflags": [*CFLAGS, *extra_cflags],
         "source_sha256": _sha256(SOURCE),
         "binary_sha256": _sha256(binary),
     }
 
 
-def run_binary(binary, mode, ops, timed=False, after_reap=None):
+def run_binary(binary, mode, ops, timed=False, after_reap=None, validate=True):
     binary = Path(binary)
     if not binary.is_file() or not os.access(binary, os.X_OK):
         raise ProbeError(f"binary is missing or not executable: {binary}")
@@ -206,7 +206,8 @@ def run_binary(binary, mode, ops, timed=False, after_reap=None):
     if completed.stderr:
         raise ProbeError(f"counted process wrote to stderr: {completed.stderr.strip()}")
     payload = decode_output(completed.stdout)
-    validate_payload(payload, mode, ops, timed)
+    if validate:
+        validate_payload(payload, mode, ops, timed)
     return payload, wall_ns
 
 

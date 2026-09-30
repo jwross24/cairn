@@ -91,14 +91,185 @@ static point ec_add_impl(point left, point right) {
     return out;
 }
 
+static const u64 mont_p_inv_neg = UINT64_C(3689230223249208493);
+static const u64 mont_r2 = UINT64_C(277405704032568442);
+static const u64 mont_one = UINT64_C(260639425508621833);
+
+static u64 ct_mask(int condition) {
+    return (u64)0 - (u64)(condition != 0);
+}
+
+static u64 ct_select(u64 mask, u64 when_set, u64 when_clear) {
+    return (when_set & mask) | (when_clear & ~mask);
+}
+
+static u64 mont_redc(u128 t) {
+    u64 m = (u64)t * mont_p_inv_neg;
+    u64 u = (u64)((t + (u128)m * (u128)p) >> 64);
+    return ct_select(ct_mask(u >= p), u - p, u);
+}
+
+static u64 mont_mul(u64 x, u64 y) {
+    return mont_redc((u128)x * (u128)y);
+}
+
+static u64 to_mont(u64 x) {
+    return mont_mul(x, mont_r2);
+}
+
+static u64 from_mont(u64 x) {
+    return mont_redc((u128)x);
+}
+
+static u64 ct_inv_mont(u64 x) {
+    const u64 exponent = p - 2;
+    u64 result = mont_one;
+    for (int bit = 59; bit >= 0; bit--) {
+        result = mont_mul(result, result);
+        u64 product = mont_mul(result, x);
+        result = ct_select(ct_mask((int)((exponent >> bit) & 1)), product, result);
+    }
+    return result;
+}
+
+static u64 field_inverse_mont(u64 x) {
+#ifdef CAIRN_VARIABLE_INVERSION
+    return to_mont(invmod(from_mont(x)));
+#else
+    return ct_inv_mont(x);
+#endif
+}
+
+static point ct_step(point left, point right) {
+    u64 left_inf = ct_mask(left.inf);
+    u64 right_inf = ct_mask(right.inf);
+    u64 both_finite = ~left_inf & ~right_inf;
+    u64 same_x = ct_mask(left.x == right.x);
+    u64 same_y = ct_mask(left.y == right.y);
+    u64 doubling = both_finite & same_x & same_y;
+    u64 inverse = both_finite & same_x & ~same_y;
+    u64 torsion = doubling & ct_mask(left.y == 0);
+#ifdef CAIRN_EARLY_RETURN
+    if (left.inf) {
+        return right;
+    }
+    if (right.inf) {
+        return left;
+    }
+    if (inverse || torsion) {
+        point out = {0, 0, 1};
+        return out;
+    }
+#endif
+    u64 lx = to_mont(left.x);
+    u64 ly = to_mont(left.y);
+    u64 rx = to_mont(right.x);
+    u64 ry = to_mont(right.y);
+    u64 dx = submod(rx, lx);
+    u64 dy = submod(ry, ly);
+    u64 tangent_num = addmod(mont_mul(to_mont(3), mont_mul(lx, lx)), to_mont(a_coeff));
+    u64 tangent_den = addmod(ly, ly);
+    u64 den = ct_select(doubling, tangent_den, dx);
+    u64 num = ct_select(doubling, tangent_num, dy);
+    u64 lam = mont_mul(num, field_inverse_mont(den));
+    u64 x3 = submod(submod(mont_mul(lam, lam), lx), rx);
+    u64 y3 = submod(mont_mul(lam, submod(lx, x3)), ly);
+    u64 out_inf = (left_inf & right_inf) | (both_finite & (inverse | torsion));
+    point out;
+    out.x = ct_select(left_inf, right.x, ct_select(right_inf, left.x, from_mont(x3)));
+    out.y = ct_select(left_inf, right.y, ct_select(right_inf, left.y, from_mont(y3)));
+    out.x = ct_select(out_inf, 0, out.x);
+    out.y = ct_select(out_inf, 0, out.y);
+    out.inf = (int)(out_inf & 1);
+    return out;
+}
+
 static point counted_double(point value) {
     group_calls += 1;
-    return ec_double_impl(value);
+    return ct_step(value, value);
 }
 
 static point counted_add(point left, point right) {
     group_calls += 1;
-    return ec_add_impl(left, right);
+    return ct_step(left, right);
+}
+
+static volatile u64 kind_left_x;
+static volatile u64 kind_left_y;
+static volatile int kind_left_inf;
+static volatile u64 kind_right_x;
+static volatile u64 kind_right_y;
+static volatile int kind_right_inf;
+static volatile u64 kind_sink;
+static volatile u64 kind_zero;
+
+static u64 kind_carry(void) {
+    return kind_sink & kind_zero;
+}
+
+static point kind_left(void) {
+    u64 carry = kind_carry();
+    point out = {kind_left_x ^ carry, kind_left_y ^ carry, kind_left_inf};
+    return out;
+}
+
+static point kind_right(void) {
+    u64 carry = kind_carry();
+    point out = {kind_right_x ^ carry, kind_right_y ^ carry, kind_right_inf};
+    return out;
+}
+
+static void kind_feed(point value) {
+    kind_sink = value.x | value.y | (u64)value.inf;
+}
+
+static void set_kind_inputs(point left, point right) {
+    kind_left_x = left.x;
+    kind_left_y = left.y;
+    kind_left_inf = left.inf;
+    kind_right_x = right.x;
+    kind_right_y = right.y;
+    kind_right_inf = right.inf;
+}
+
+static int run_kind(const char *kind, u64 ops, point *acc) {
+    point base = {gx, gy, 0};
+    point negated = {gx, p - gy, 0};
+    point infinity = {0, 0, 1};
+    point torsion = {gx, 0, 0};
+    point adjacent = {gx + 1, gy, 0};
+    if (strcmp(kind, "kind-add") == 0) {
+        *acc = base;
+        for (u64 i = 0; i < ops; i++) {
+            *acc = counted_add(*acc, base);
+        }
+        return 1;
+    }
+    if (strcmp(kind, "kind-double") == 0) {
+        *acc = base;
+        for (u64 i = 0; i < ops; i++) {
+            *acc = counted_double(*acc);
+        }
+        return 1;
+    }
+    if (strcmp(kind, "kind-inverse") == 0) {
+        set_kind_inputs(base, negated);
+    } else if (strcmp(kind, "kind-identity") == 0) {
+        set_kind_inputs(infinity, base);
+    } else if (strcmp(kind, "kind-torsion") == 0) {
+        set_kind_inputs(torsion, torsion);
+    } else if (strcmp(kind, "kind-adjacent") == 0) {
+        set_kind_inputs(base, adjacent);
+    } else {
+        return 0;
+    }
+    *acc = infinity;
+    int doubling = strcmp(kind, "kind-torsion") == 0;
+    for (u64 i = 0; i < ops; i++) {
+        *acc = doubling ? counted_double(kind_left()) : counted_add(kind_left(), kind_right());
+        kind_feed(*acc);
+    }
+    return 1;
 }
 
 static int parse_ops(const char *text, u64 *value) {
@@ -236,7 +407,8 @@ int main(int argc, char **argv) {
     int count_only = strcmp(mode, "count-only") == 0;
     int zero_work = strcmp(mode, "zero-work") == 0;
     int serve = strcmp(mode, "serve") == 0;
-    if (!raw && !counted && !count_only && !zero_work && !serve) {
+    int kind = strncmp(mode, "kind-", 5) == 0;
+    if (!raw && !counted && !count_only && !zero_work && !serve && !kind) {
         fprintf(stderr, "unknown mode\n");
         return 2;
     }
@@ -285,6 +457,12 @@ int main(int argc, char **argv) {
             return 2;
         }
         count = group_calls;
+    } else if (kind) {
+        if (!run_kind(mode, ops, &acc)) {
+            fprintf(stderr, "unknown kind\n");
+            return 2;
+        }
+        count = group_calls;
     }
 
     if (timed) {
@@ -301,7 +479,7 @@ int main(int argc, char **argv) {
         printf("null");
     }
     printf(",\"point\":");
-    if (raw || counted) {
+    if (raw || counted || kind) {
         if (acc.inf) {
             printf("null");
         } else {
