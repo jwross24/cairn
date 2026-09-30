@@ -468,6 +468,8 @@ def test_module_defined_public_api_is_closed():
         "replay_grade",
         "shape_departures",
         "enqueue_shape_departures",
+        "enqueue_clock_inconclusive",
+        "effective_clock_tolerance",
         "write",
         "read",
         "recorded_verdict",
@@ -505,6 +507,7 @@ def test_module_defined_public_api_is_closed():
         "ALL_RUNGS_PASS",
         "REJECT_PREDICATES",
         "INCONCLUSIVE_PREDICATES",
+        "CLOCK_QUEUE_PREDICATES",
         "PREDICATES",
         "REFUTATION_KIND",
     }

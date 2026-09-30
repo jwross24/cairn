@@ -58,6 +58,7 @@ ALL_RUNGS_PASS = "all_rungs_pass"
 
 REJECT_PREDICATES = (RECOVERY, COUNT_DIVERGENCE, MEMORY_CAP, REFUTATION_FLOOR, IN_SAMPLE_MISS, OUT_OF_SAMPLE_MISS)
 INCONCLUSIVE_PREDICATES = (UNCOUNTED_BACKEND, MEASUREMENT_SCOPE, CLOCK, WALL, FAILED_TRIAL, INSIDE_BAND)
+CLOCK_QUEUE_PREDICATES = (CLOCK, WALL)
 PREDICATES = (*REJECT_PREDICATES, *INCONCLUSIVE_PREDICATES, ALL_RUNGS_PASS)
 
 REFUTATION_KIND = {
@@ -640,10 +641,15 @@ def _measurement_scope(trials):
     return None
 
 
-def _clock(trials, rows_by_bits, plan):
+def effective_clock_tolerance(plan):
     tolerance = plan.tolerances.clock
-    rate_ratio = plan.rate_ratio
-    effective = tolerance if rate_ratio == 0 else min(tolerance, 2 * plan.design_radius / rate_ratio)
+    if plan.rate_ratio == 0:
+        return tolerance
+    return min(tolerance, 2 * plan.design_radius / plan.rate_ratio)
+
+
+def _clock(trials, rows_by_bits, plan):
+    effective = effective_clock_tolerance(plan)
     for t in trials:
         if t.gate_ops.kind != OPS_EXACT:
             continue
@@ -800,6 +806,12 @@ def enqueue_shape_departures(sub, table, plan, *, at=None):
         human_queue.enqueue_shape_departure(sub, rung=f"{table.run_id}:{bits}", at=at)
         for bits in shape_departures(table, plan)
     )
+
+
+def enqueue_clock_inconclusive(sub, table, v, *, at=None):
+    if v.kind != INCONCLUSIVE or v.predicate not in CLOCK_QUEUE_PREDICATES:
+        return None
+    return human_queue.enqueue_clock_inconclusive(sub, rung=f"{table.run_id}:{v.rung_bits}", at=at)
 
 
 def _insert_rung(sub, table_hash, row):
@@ -1079,6 +1091,8 @@ def write(sub, table, plan, *, at=None, attempt_id=None, trial_attempts=None, ev
             _store_membership(sub, table, members)
         for node in evidence_nodes:
             write_evidence_node(sub, table, node)
+        if inserted:
+            enqueue_clock_inconclusive(sub, table, v, at=created_at)
     return table.hash
 
 
