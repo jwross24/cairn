@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef __APPLE__
+#include <sandbox.h>
+#endif
 
 typedef uint64_t u64;
 typedef int64_t i64;
@@ -768,7 +771,28 @@ static int execute(void) {
     return refuse("no_halt");
 }
 
+static const char *containment = "none";
+
+static int contain(void) {
+#ifdef __APPLE__
+    char *error = NULL;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    int rc = sandbox_init("pure-computation", SANDBOX_NAMED, &error);
+#pragma clang diagnostic pop
+    if (rc != 0) {
+        return 0;
+    }
+    containment = "pure-computation";
+#endif
+    return 1;
+}
+
 int main(void) {
+    if (!contain()) {
+        printf("{\"status\":\"REFUSED\",\"reason\":\"containment_failed\"}\n");
+        return 2;
+    }
     for (int i = 0; i < REGISTERS; i++) {
         preg[i] = infinity();
     }
@@ -782,7 +806,7 @@ int main(void) {
                refusal == NULL ? "unfinished" : refusal, group_ops, executed);
         return 3;
     }
-    printf("{\"status\":\"OK\",\"count\":%" PRIu64 ",\"executed\":%" PRIu64 ",\"result\":", group_ops, executed);
+    printf("{\"status\":\"OK\",\"sandbox\":\"%s\",\"count\":%" PRIu64 ",\"executed\":%" PRIu64 ",\"result\":", containment, group_ops, executed);
     if (result_set) {
         printf("%" PRIu64, result_value);
     } else {

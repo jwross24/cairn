@@ -7,6 +7,9 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
+from cairn import runner
+from cairn.substrate import blob_hash
+
 SOURCE = Path(__file__).resolve().with_name("vm.c")
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CC = Path("/usr/bin/clang")
@@ -16,7 +19,10 @@ STATUS_OK = "OK"
 STATUS_REFUSED = "REFUSED"
 EXIT_INPUT_REFUSED = 2
 EXIT_PROGRAM_REFUSED = 3
-OUTPUT_KEYS = {"status", "count", "executed", "result", "p0", "i0"}
+OUTPUT_KEYS = {"status", "sandbox", "count", "executed", "result", "p0", "i0"}
+SANDBOX_PURE_COMPUTATION = "pure-computation"
+SANDBOX_NONE = "none"
+SANDBOX_REQUIRED = {"darwin": SANDBOX_PURE_COMPUTATION}
 REFUSAL_KEYS = ({"status", "reason"}, {"status", "reason", "count", "executed"})
 COUNTING_CONVENTION = {
     "addp": "one group op, whatever the operands; an add that reaches the doubling formula is still one op",
@@ -53,6 +59,7 @@ class Outcome:
     p0: tuple | None
     i0: int | None
     exit_code: int
+    sandbox: str | None = None
 
 
 def source_sha256():
@@ -137,6 +144,7 @@ def decode(stdout, exit_code):
             None if p0 is None else tuple(p0),
             payload["i0"],
             exit_code,
+            payload["sandbox"],
         )
     if payload.get("status") == STATUS_REFUSED:
         expected_keys = {EXIT_INPUT_REFUSED: REFUSAL_KEYS[0], EXIT_PROGRAM_REFUSED: REFUSAL_KEYS[1]}.get(exit_code)
@@ -174,6 +182,114 @@ def run(binary, instance, program, budget):
     if completed.returncode not in (0, EXIT_INPUT_REFUSED, EXIT_PROGRAM_REFUSED):
         raise CountedVmError(f"vm exited {completed.returncode}")
     return decode(completed.stdout, completed.returncode)
+
+
+class LaunchRefused(CountedVmError):
+    def __init__(self, reason, detail=""):
+        super().__init__(f"{reason}: {detail}" if detail else reason)
+        self.reason = reason
+
+
+@dataclass(frozen=True)
+class VmLaunch:
+    attempt_id: str
+    outcome: Outcome
+    program_digest: str
+    instance_hash: str
+    binary_digest: str
+    stdout_digest: str
+    argv: tuple
+    cpu_user_s: float
+    cpu_sys_s: float
+    wall_s: float
+    peak_rss_bytes: int
+    measurement_scope: str
+    binding: str
+
+
+def file_digest(path):
+    return blob_hash(Path(path).read_bytes())
+
+
+def instance_hash(instance):
+    lines = [
+        f"p {instance.p}",
+        f"a {instance.a}",
+        f"b {instance.b}",
+        f"n {instance.n}",
+        _point_line("P", instance.P),
+        _point_line("Q", instance.Q),
+    ]
+    return blob_hash("\n".join(lines).encode("ascii"))
+
+
+def _binding(fields):
+    return blob_hash(json.dumps(fields, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+
+
+def launch(binary, expected_binary_digest, instance, program, budget, *, attempt_id, scratch_dir, wall_cap_s=None):
+    binary = Path(binary)
+    binary_digest = file_digest(binary)
+    if binary_digest != expected_binary_digest:
+        raise LaunchRefused("binary_digest_mismatch", f"{binary_digest} != {expected_binary_digest}")
+    scratch_dir = Path(scratch_dir)
+    scratch_dir.mkdir(parents=True, exist_ok=True)
+    out_path, err_path = scratch_dir / "stdout", scratch_dir / "stderr"
+    stdin_bytes = document(instance, program, budget).encode("ascii")
+    ran = runner.spawn_and_wait(
+        [str(binary)],
+        out_path,
+        err_path,
+        wall_cap_s=RUN_TIMEOUT_S if wall_cap_s is None else wall_cap_s,
+        env=runner.child_env(),
+        stdin_bytes=stdin_bytes,
+    )
+    stdout_bytes, stderr_bytes = out_path.read_bytes(), err_path.read_bytes()
+    if ran.timed_out:
+        raise LaunchRefused("wall_cap_exceeded")
+    if ran.argv != (str(binary),):
+        raise LaunchRefused("argv_not_direct", repr(ran.argv))
+    if stderr_bytes:
+        raise LaunchRefused("vm_stderr", stderr_bytes.decode("utf-8", "replace").strip())
+    if ran.exit_status not in (0, EXIT_INPUT_REFUSED, EXIT_PROGRAM_REFUSED):
+        raise LaunchRefused("vm_exit", str(ran.exit_status))
+    try:
+        outcome = decode(stdout_bytes.decode("utf-8"), ran.exit_status)
+    except (CountedVmError, UnicodeDecodeError) as exc:
+        raise LaunchRefused("output_not_protocol", str(exc)) from exc
+    required = SANDBOX_REQUIRED.get(sys.platform)
+    if outcome.status == STATUS_OK and required is not None and outcome.sandbox != required:
+        raise LaunchRefused("containment_missing", f"{outcome.sandbox!r} != {required!r}")
+    program_digest = blob_hash(program.encode("utf-8"))
+    inst_hash = instance_hash(instance)
+    stdout_digest = blob_hash(stdout_bytes)
+    binding = _binding(
+        {
+            "attempt_id": attempt_id,
+            "binary_digest": binary_digest,
+            "instance_hash": inst_hash,
+            "program_digest": program_digest,
+            "budget": budget,
+            "stdout_digest": stdout_digest,
+            "count": outcome.count,
+            "result": outcome.result,
+        }
+    )
+    return VmLaunch(
+        attempt_id,
+        outcome,
+        program_digest,
+        inst_hash,
+        binary_digest,
+        stdout_digest,
+        ran.argv,
+        ran.cpu_user_s,
+        ran.cpu_sys_s,
+        ran.wall_s,
+        ran.peak_rss_bytes,
+        ran.measurement_scope,
+        binding,
+    )
 
 
 def expected_mul_ops(k):
