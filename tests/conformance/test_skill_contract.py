@@ -1,3 +1,4 @@
+import dataclasses
 import json
 import logging
 import os
@@ -22,6 +23,12 @@ FIXTURES = str(ROOT / "tests" / "fixtures")
 DISCREPANCIES = Path(__file__).resolve().parent / "DISCREPANCIES.md"
 CASES = [(subject, clause) for subject in SUBJECTS for clause in CLAUSES]
 IDS = [f"{subject.name}-{clause.id}" for subject, clause in CASES]
+NO_SEAM = dataclasses.replace(skill_contract.NONCONFORMING, name="no_seam", module="skills.no_seam")
+NO_SEAM_REASON = "the subject declares no seam, so its in-range result answers to no second opinion"
+CONSTANT_RESULT_REASON = (
+    "in range the cross-check reports 'agree' whether or not cairn.pari.ellsea is planted, "
+    "so it compares nothing and S2-12 carries no evidence that a cross-check exists"
+)
 
 
 class _Records(logging.Handler):
@@ -163,3 +170,58 @@ def test_the_json_test_log_carries_a_record_per_clause(harness, json_test_log):
 def test_discrepancies_exist_only_for_an_xfail(verdicts):
     xfail = [v for row in verdicts.values() for v in row if v.status == skill_contract.XFAIL]
     assert DISCREPANCIES.exists() == bool(xfail)
+
+
+@pytest.fixture(scope="module")
+def refusal_verdicts(harness):
+    return {
+        (subject.name, clause_id): skill_contract.CLAUSES_BY_ID[clause_id].check(subject, harness)
+        for subject, clause_ids in ((NO_SEAM, ("S2-10", "S2-12")), (skill_contract.NONCONFORMING, ("S2-12",)))
+        for clause_id in clause_ids
+    }
+
+
+def _assert_refusal_reason(verdict, expected, other):
+    assert verdict.status == skill_contract.FAIL, verdict
+    assert verdict.reason == expected, verdict
+    assert verdict.reason != other, verdict
+
+
+@pytest.mark.parametrize(
+    ("name", "clause_id", "expected", "other"),
+    [
+        ("no_seam", "S2-10", "the subject declares no seam for its cross-check: None", CONSTANT_RESULT_REASON),
+        ("no_seam", "S2-12", NO_SEAM_REASON, CONSTANT_RESULT_REASON),
+        ("nonconforming", "S2-12", CONSTANT_RESULT_REASON, NO_SEAM_REASON),
+    ],
+)
+def test_cross_check_refusals_name_the_reached_branch(refusal_verdicts, name, clause_id, expected, other):
+    _assert_refusal_reason(refusal_verdicts[name, clause_id], expected, other)
+
+
+def test_no_seam_subject_clears_the_earlier_axis_range_and_ledger_arms(harness, refusal_verdicts):
+    module = skill_contract.imported(NO_SEAM)
+    assert not hasattr(module, "SEAM")
+    assert module.CROSS_CHECK_AXIS in skill_contract.AXES
+    for name, interval in module.INDEPENDENT_RANGE.items():
+        assert name in NO_SEAM.inputs and len(interval) == 2 and interval[0] <= interval[1]
+    outside = skill_contract._document(
+        harness,
+        skill_contract._launch(NO_SEAM, harness, inputs=NO_SEAM.out_of_range_inputs, salt="no-seam-outside"),
+    )
+    assert outside["cross_check"]["result"] == "untested"
+    certificate = skill_contract.certified(NO_SEAM, harness)
+    summary = certificate["summary"]["cross_check"]
+    assert summary == {"axis": module.CROSS_CHECK_AXIS, "independent_range": module.INDEPENDENT_RANGE}
+    assert harness.sub.get_certificate(certificate["identity_bundle_hash"]) is not None
+    assert refusal_verdicts["no_seam", "S2-12"].reason == NO_SEAM_REASON
+
+
+@pytest.mark.parametrize("name", ["no_seam", "nonconforming"])
+def test_swapping_no_seam_and_constant_result_reasons_is_refused(refusal_verdicts, name):
+    expected, other = (
+        (NO_SEAM_REASON, CONSTANT_RESULT_REASON) if name == "no_seam" else (CONSTANT_RESULT_REASON, NO_SEAM_REASON)
+    )
+    mixed_up = dataclasses.replace(refusal_verdicts[name, "S2-12"], reason=other)
+    with pytest.raises(AssertionError):
+        _assert_refusal_reason(mixed_up, expected, other)
