@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import cli, exits, keys, runner, substrate
+from cairn import canon, cli, escrow, exits, keys, runner, substrate
 from cairn.profile import Evaluation
 from cairn.skills import toy_curve
 from cairn.substrate import blob_hash
@@ -116,6 +116,66 @@ def test_the_manifest_is_linked_to_its_recipe(writer, tmp_path):
     attempt = _fixture_launch(writer, tmp_path, "skills.disagree")
     edges = {(r["parent_hash"], r["edge_kind"]) for r in writer.lineage_of(attempt.output_manifest_hash)}
     assert (attempt.recipe_key, substrate.EDGE_OUTPUT_OF) in edges
+
+
+def test_a_scratch_output_json_collision_refuses_and_settles_the_attempt(writer, tmp_path):
+    input_bytes = b"trial input"
+    input_hash = writer.put_blob(input_bytes)
+    document = {
+        "statement_hash": "s" * 64,
+        "plan_hash": "p" * 64,
+        "run_id": "collision",
+        "trial": 0,
+        "point": {"n": 41},
+        "seed": 7,
+        "input_blob_hash": input_hash,
+    }
+    with pytest.raises(runner.RunnerError, match=r"output\.json"):
+        runner.launch(
+            writer,
+            "skills.output_artifact",
+            {**_recipe(seed=7), "inputs": {"hunt_input": (input_hash, len(input_bytes))}},
+            stdin_document=document,
+            **_kw(tmp_path),
+        )
+    rows = writer.conn.execute("SELECT * FROM attempts").fetchall()
+    assert len(rows) == 1
+    attempt = rows[0]
+    assert attempt["status"] == "FAIL"
+    assert attempt["ended_at"] is not None
+    assert attempt["output_manifest_hash"] is None
+    assert runner.running_attempts(writer) == []
+    assert not escrow.standing(writer, attempt["attempt_id"])
+    assert escrow.reservation(writer, attempt["attempt_id"])["released_at"] is not None
+    attempt_dir = tmp_path / "runs" / attempt["attempt_id"]
+    assert json.loads((attempt_dir / "stdout").read_bytes()) == {**document, "status": "OK", "candidate": False}
+    assert json.loads((attempt_dir / "scratch" / "output.json").read_bytes()) == {
+        **document,
+        "status": "OK",
+        "candidate": True,
+    }
+    assert writer.serve(attempt["recipe_key"]) is None
+
+
+@pytest.mark.parametrize("artifact_name", ["ordinary.json", "nested/output.json"])
+def test_ordinary_scratch_artifacts_preserve_authenticated_stdout(writer, tmp_path, artifact_name):
+    attempt = runner.launch(
+        writer,
+        "skills.output_artifact",
+        _recipe(),
+        stdin_document={"artifact_name": artifact_name},
+        **_kw(tmp_path),
+    )
+    assert attempt.status == "OK"
+    stdout = (tmp_path / "runs" / attempt.attempt_id / "stdout").read_bytes()
+    manifest = canon.decode(substrate.OUTPUT_MANIFEST, writer.get_node(attempt.output_manifest_hash)["canonical"])
+    output_hash, output_size = manifest["artifacts"]["output.json"]
+    assert writer.get_blob(output_hash) == stdout
+    assert output_size == len(stdout)
+    assert output_hash == writer.get_receipt(attempt.receipt_hash)["stdout_digest"]
+    artifact_hash, _ = manifest["artifacts"][artifact_name]
+    assert json.loads(writer.get_blob(artifact_hash))["candidate"] is True
+    assert json.loads(stdout)["candidate"] is False
 
 
 def test_a_second_identical_launch_is_served_from_cache(writer, tmp_path, db_snapshot):
@@ -278,6 +338,32 @@ def test_a_grant_that_cannot_cover_the_ceiling_refuses_before_spawning(writer, t
         )
     assert popen_spy == []
     assert writer.conn.execute("SELECT count(*) FROM attempts").fetchone()[0] == 0
+
+
+def test_a_core_second_grant_cannot_cover_only_the_wall_second_ceiling(writer, tmp_path, popen_spy):
+    evaluation = Evaluation(0.2, 0.4, 0.2)
+    with pytest.raises(runner.BudgetRefused):
+        _fixture_launch(
+            writer,
+            tmp_path,
+            "skills.disagree",
+            evaluation=evaluation,
+            budget_remaining=runner.ceiling_for(evaluation.expected_wall_s, 4),
+        )
+    assert popen_spy == []
+    assert writer.conn.execute("SELECT count(*) FROM attempts").fetchone()[0] == 0
+
+
+def test_a_core_second_grant_exactly_covering_the_core_ceiling_is_accepted(writer, tmp_path):
+    evaluation = Evaluation(0.2, 0.4, 0.2)
+    attempt = _fixture_launch(
+        writer,
+        tmp_path,
+        "skills.disagree",
+        evaluation=evaluation,
+        budget_remaining=runner.ceiling_for(evaluation.expected_core_s, 4),
+    )
+    assert attempt.status == runner.STATUS_DISAGREE
 
 
 def test_the_argv_is_the_interpreter_and_the_named_module(writer, tmp_path, popen_spy):

@@ -2,9 +2,10 @@
 
 The template names what a method under test may reach — the gate-owned counted object, the
 uncounted backends its hypothesis object declares, the gate-owned scratch path, and nothing
-else. The instantiation binds those names to this host's resolved paths and is the object bead
-cairn-m1-cqt.1.3 writes into the ladder dispatch record, so which allow-list a rung ran under is
-a ledger fact.
+else. Gate-owned paths the method must never read, the substrate among them, are named at
+instantiation as withheld roots and denied after the read grant. The instantiation binds those
+names to this host's resolved paths and is the object bead cairn-m1-cqt.1.3 writes into the
+ladder dispatch record, so which allow-list a rung ran under is a ledger fact.
 
 Enforcement is pre-execution and independent of the method: research/grounding/
 method-allowlist-macos-sandbox.md measures what the arm confines. Naming a violated clause reads
@@ -61,7 +62,7 @@ PROFILE = """(version 1)
 (allow sysctl-read)
 (allow mach-lookup)
 (allow file-read* (subpath "/"))
-(allow file-write* (subpath (param "SCRATCH")))
+{withheld}(allow file-write* (subpath (param "SCRATCH")))
 """
 DENIED = re.compile(rb"Operation not permitted|posix_spawn: [^\n]*: Undefined error: 0")
 QUOTED = re.compile(rb"'([^'\n]*)'")
@@ -208,6 +209,7 @@ class AllowList:
     network_egress: bool
     writable_root: str
     profile_hash: str
+    withheld_roots: tuple[str, ...] = ()
 
     def as_dict(self):
         return asdict(self)
@@ -217,12 +219,28 @@ class AllowList:
         return node_hash_for(RECORD_KIND, bundle.canonical_bytes(RECORD_KIND, self.as_dict()))
 
 
-def profile_bytes(exec_paths):
+def profile_bytes(exec_paths, withheld_roots=()):
     execs = " ".join(f'(literal "{path}")' for path in exec_paths)
-    return PROFILE.format(execs=execs).encode()
+    withheld = "".join(f'(deny file-read* (subpath "{path}"))\n' for path in withheld_roots)
+    return PROFILE.format(execs=execs, withheld=withheld).encode()
 
 
-def instantiate(gate_bundle, *, hypothesis, counted_object, scratch_dir, backend_paths=None, name=LADDER_METHOD):
+def _withheld(paths, writable_root, exec_paths):
+    resolved = tuple(sorted({_resolved("withheld root", p) for p in paths}))
+    for path in resolved:
+        if path == os.sep:
+            _refuse("withheld roots must not name the filesystem root")
+        if within(writable_root, path):
+            _refuse(f"withheld root {path!r} covers the scratch path {writable_root!r}")
+        for exe in exec_paths:
+            if within(exe, path):
+                _refuse(f"withheld root {path!r} covers the executable {exe!r}")
+    return resolved
+
+
+def instantiate(
+    gate_bundle, *, hypothesis, counted_object, scratch_dir, backend_paths=None, withheld_roots=(), name=LADDER_METHOD
+):
     entry = template(gate_bundle, name)
     mechanism = mechanism_for(entry)
     declared = declared_backends(hypothesis, entry)
@@ -238,6 +256,7 @@ def instantiate(gate_bundle, *, hypothesis, counted_object, scratch_dir, backend
     if not Path(writable_root).is_dir():
         _refuse(f"scratch {writable_root!r} is not a directory")
     exec_paths = tuple(sorted(execs))
+    withheld = _withheld(withheld_roots, writable_root, exec_paths)
     value = AllowList(
         template_name=name,
         template_hash=blob_hash(gate_bundle.raw(BUNDLE_KIND)),
@@ -248,7 +267,8 @@ def instantiate(gate_bundle, *, hypothesis, counted_object, scratch_dir, backend
         exec_paths=exec_paths,
         network_egress=entry["network_egress"],
         writable_root=writable_root,
-        profile_hash=blob_hash(profile_bytes(exec_paths)),
+        profile_hash=blob_hash(profile_bytes(exec_paths, withheld)),
+        withheld_roots=withheld,
     )
     lg.info(
         "instantiate",
@@ -257,6 +277,7 @@ def instantiate(gate_bundle, *, hypothesis, counted_object, scratch_dir, backend
         mechanism=mechanism,
         declared=list(declared),
         exec_paths=list(exec_paths),
+        withheld_roots=list(withheld),
         allow_list_hash=value.hash,
     )
     return value
@@ -277,7 +298,9 @@ def check_instantiation(value, gate_bundle, name=LADDER_METHOD):
         _refuse(f"allow-list mechanism {value.mechanism!r} is outside the template")
     if any(n not in catalog or catalog[n]["counted"] for n in value.declared_backends):
         _refuse("allow-list declares a backend the template catalog does not offer as uncounted")
-    if value.profile_hash != blob_hash(profile_bytes(value.exec_paths)):
+    if tuple(value.withheld_roots) != _withheld(value.withheld_roots, value.writable_root, value.exec_paths):
+        _refuse("allow-list withheld roots are unresolved, repeated or cover the scratch path or an executable")
+    if value.profile_hash != blob_hash(profile_bytes(value.exec_paths, value.withheld_roots)):
         _refuse("allow-list profile hash does not address its own exec paths")
     permitted = 1 + sum(1 for n in value.declared_backends if catalog[n]["kind"] == "process")
     derived = {t for p in value.exec_paths if (t := reexec_target(p)) is not None and t in value.exec_paths}
@@ -296,7 +319,15 @@ def check_instantiation(value, gate_bundle, name=LADDER_METHOD):
 
 
 def check_binding(
-    value, gate_bundle, *, hypothesis, counted_object, scratch_dir, backend_paths=None, name=LADDER_METHOD
+    value,
+    gate_bundle,
+    *,
+    hypothesis,
+    counted_object,
+    scratch_dir,
+    backend_paths=None,
+    withheld_roots=(),
+    name=LADDER_METHOD,
 ):
     check_instantiation(value, gate_bundle, name)
     expected = instantiate(
@@ -305,6 +336,7 @@ def check_binding(
         counted_object=counted_object,
         scratch_dir=scratch_dir,
         backend_paths=backend_paths,
+        withheld_roots=withheld_roots,
         name=name,
     )
     if value != expected:
@@ -314,7 +346,7 @@ def check_binding(
 
 
 def write_profile(value, path):
-    data = profile_bytes(value.exec_paths)
+    data = profile_bytes(value.exec_paths, value.withheld_roots)
     if blob_hash(data) != value.profile_hash:
         _refuse("the rendered profile does not match the allow-list profile hash")
     path.write_bytes(data)
@@ -337,6 +369,8 @@ def detect_violation(exit_status, stderr_bytes, value):
     if any(marker in text for marker in EXEC_MARKERS):
         return "undeclared_exec"
     paths = [os.path.realpath(os.fsdecode(p)) for p in QUOTED.findall(text) if p.startswith(b"/")]
+    if any(within(p, root) for p in paths for root in value.withheld_roots):
+        return "withheld_read"
     if any(not within(p, value.writable_root) for p in paths):
         return "outside_write"
     return UNCLASSIFIED if paths else "network_egress"
@@ -366,6 +400,7 @@ def read(sub, digest):
         network_egress=fields["network_egress"],
         writable_root=fields["writable_root"],
         profile_hash=fields["profile_hash"],
+        withheld_roots=tuple(fields["withheld_roots"]),
     )
     if value.hash != digest:
         _refuse(f"{RECORD_KIND} node {digest} does not match its content address")

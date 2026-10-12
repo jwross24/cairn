@@ -191,6 +191,54 @@ def test_released_names_the_closure_that_lifted_the_freeze(writer, attest_path):
     assert closure["ref"] == "orchestrator:done"
 
 
+@pytest.mark.parametrize("path", [human_queue.PATH_ATTESTATION, human_queue.PATH_BLOCKER_CLEARED])
+@pytest.mark.parametrize("ruling_at", [AT0, AT1])
+def test_a_planted_stale_or_equal_time_closure_keeps_the_disagreement_frozen(writer, attest_path, path, ruling_at):
+    statement = _statement(writer, 11)
+    _set_tag(writer, statement.hash, "CONJECTURE")
+    ruling = _ruling(writer, attest_path, statement.hash, seed=105, at=ruling_at)
+    rec = disagreement.record(
+        writer, statement_hash=statement.hash, left_hash=LEFT, right_hash=RIGHT, classification=PROOF_GAP, at=AT1
+    )
+    freeze = disagreement.freeze_for(writer, statement.hash, attest_path)
+    writer.conn.execute(
+        "INSERT INTO human_queue_closures (item_id, path, ref, record_digest, file_offset, closed_at)"
+        " VALUES (?, ?, 'human:ruling', ?, ?, ?)",
+        (rec.item_id, path, ruling["record_digest"], ruling["file_offset"], AT2),
+    )
+    writer.conn.commit()
+    assert human_queue.visible_closure(writer, rec.item_id, attest_path) is None
+    assert disagreement.released(writer, rec.hash, attest_path) is None
+    assert disagreement.freeze_for(writer, statement.hash, attest_path) == freeze
+    assert human_queue.depth(writer, attest_path) == 1
+
+
+@pytest.mark.parametrize("first_path", [human_queue.PATH_ATTESTATION, human_queue.PATH_BLOCKER_CLEARED])
+@pytest.mark.parametrize("second_path", [human_queue.PATH_ATTESTATION, human_queue.PATH_BLOCKER_CLEARED])
+def test_planted_reuse_of_a_ruling_cannot_release_a_freeze(writer, attest_path, first_path, second_path):
+    statement = _statement(writer, 12)
+    _set_tag(writer, statement.hash, "CONJECTURE")
+    first = disagreement.record(
+        writer, statement_hash=statement.hash, left_hash=LEFT, right_hash=RIGHT, classification=PROOF_GAP, at=AT1
+    )
+    second = disagreement.record(
+        writer, statement_hash=statement.hash, left_hash=LEFT2, right_hash=RIGHT2, classification=PROOF_GAP, at=AT2
+    )
+    ruling = _ruling(writer, attest_path, statement.hash, seed=106)
+    for rec, path in ((first, first_path), (second, second_path)):
+        writer.conn.execute(
+            "INSERT INTO human_queue_closures (item_id, path, ref, record_digest, file_offset, closed_at)"
+            " VALUES (?, ?, 'human:ruling', ?, ?, ?)",
+            (rec.item_id, path, ruling["record_digest"], ruling["file_offset"], AT4),
+        )
+    writer.conn.commit()
+    for rec in (first, second):
+        assert human_queue.visible_closure(writer, rec.item_id, attest_path) is None
+        assert disagreement.released(writer, rec.hash, attest_path) is None
+    assert disagreement.freeze_for(writer, statement.hash, attest_path) is not None
+    assert human_queue.depth(writer, attest_path) == 2
+
+
 def test_tag_history_reflects_the_freeze_and_the_release_while_the_disagreement_row_stays_unchanged(
     writer, attest_path
 ):

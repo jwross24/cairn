@@ -715,11 +715,22 @@ def visible_review_verdicts(sub, statement_hash, path):
     return [row for row in review_verdicts_for(sub, statement_hash) if verdict_matches_file(row, path)]
 
 
+def mirrored_review_verdict(sub, statement_hash, record_digest, file_offset):
+    for row in review_verdicts_for(sub, statement_hash):
+        if (
+            row["record_digest"] == record_digest
+            and row["file_offset"] == file_offset
+            and _verdict_of(row).record_digest == record_digest
+        ):
+            return row
+    return None
+
+
+def effective_review_verdicts(sub, statement_hash, path):
+    rows = visible_review_verdicts(sub, statement_hash, path)
+    superseded = {(row["supersedes"], row["gate_bundle_hash"]) for row in rows if row["supersedes"] is not None}
+    return [row for row in rows if (_verdict_of(row).hash, row["gate_bundle_hash"]) not in superseded]
+
+
 def verdict_mirrored(sub, statement_hash, record_digest, file_offset):
-    """A verdict row at that digest and offset, honest to its fields."""
-    return any(
-        row["record_digest"] == record_digest
-        and row["file_offset"] == file_offset
-        and _verdict_of(row).record_digest == record_digest
-        for row in review_verdicts_for(sub, statement_hash)
-    )
+    return mirrored_review_verdict(sub, statement_hash, record_digest, file_offset) is not None

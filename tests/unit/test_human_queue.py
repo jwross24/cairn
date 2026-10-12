@@ -343,7 +343,7 @@ def test_an_attestation_closure_binds_a_statement_item_to_a_verdict_on_its_state
         )
 
     def mirrored_verdict(target, seed):
-        verdict = factories.review_verdict(target, seed=seed, file_offset=attest_path.stat().st_size)
+        verdict = factories.review_verdict(target, seed=seed, at=T1, file_offset=attest_path.stat().st_size)
         assert attest.append_record(attest_path, claims.review_verdict_canonical(verdict)) == verdict.file_offset
         claims.write_review_verdict(writer, verdict)
         return verdict

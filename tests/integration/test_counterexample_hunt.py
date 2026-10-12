@@ -1,13 +1,96 @@
 import json
+from pathlib import Path
 
 import pytest
 
-from cairn import claims, gc, hunt, instances, ledger, runner, substrate
+from cairn import claims, gc, hunt, instances, justify, ledger, runner, substrate
 from cairn.profile import Evaluation
 
 EXECUTOR = "e" * 64
 VERIFIER = "v" * 64
 TOOL_DIGESTS = {"fixture": "f" * 64}
+FIXTURES = str(Path(__file__).resolve().parent.parent / "fixtures")
+
+
+def _artifact_executor(sub, tmp_path, context, artifact_name):
+    return runner.launch(
+        sub,
+        "skills.output_artifact",
+        {
+            "skill_identity_hash": EXECUTOR,
+            "inputs": {"hunt_input": (context.input_blob_hash, context.input_blob_size)},
+            "seed": context.seed,
+            "tool_versions": TOOL_DIGESTS,
+            "container_digest": "c" * 64,
+            "salt": f"hunt/{context.run_id}/{context.trial}/artifact",
+        },
+        bundle_hash="b" * 64,
+        evaluation=Evaluation(0.05, 0.05, 0.05),
+        ceiling_multiplier=4,
+        tool_digests=TOOL_DIGESTS,
+        scratch_root=tmp_path / "runs",
+        skip_cache_lookup=True,
+        do_not_cache=True,
+        env_extra={"PYTHONPATH": FIXTURES},
+        stdin_document={
+            "statement_hash": context.plan.statement_hash,
+            "plan_hash": context.plan.hash,
+            "run_id": context.run_id,
+            "trial": context.trial,
+            "point": dict(context.point),
+            "seed": context.seed,
+            "input_blob_hash": context.input_blob_hash,
+            "artifact_name": artifact_name,
+        },
+    )
+
+
+@pytest.mark.parametrize("artifact_name", ["ordinary.json", "nested/output.json"])
+def test_hunt_accepts_authenticated_stdout_with_ordinary_artifacts(tmp_path, artifact_name):
+    sub, plan, _, verifier, _ = _setup(tmp_path, trials=1)
+    try:
+        result = hunt.run_hunt(
+            sub, plan, lambda context: _artifact_executor(sub, tmp_path, context, artifact_name), verifier
+        )
+        assert result.verdict == "SURVIVED"
+        trial = result.record.trials[0]
+        assert trial.outcome == "SURVIVED_TRIAL"
+        evidence = json.loads(sub.get_blob(trial.execution_evidence))
+        receipt = evidence["receipt"]
+        manifest = hunt.canon.decode(
+            substrate.OUTPUT_MANIFEST, sub.get_node(evidence["attempt"]["output_manifest_hash"])["canonical"]
+        )
+        output_hash, output_size = manifest["artifacts"]["output.json"]
+        stdout = (tmp_path / "runs" / trial.attempt_id / "stdout").read_bytes()
+        assert sub.get_blob(output_hash) == stdout
+        assert output_size == len(stdout)
+        assert output_hash == receipt["stdout_digest"]
+        assert json.loads(stdout)["candidate"] is False
+        artifact_hash, _ = manifest["artifacts"][artifact_name]
+        assert json.loads(sub.get_blob(artifact_hash))["candidate"] is True
+    finally:
+        sub.close()
+
+
+def test_hunt_refuses_manifest_stdout_mismatch_before_candidate_evaluation(tmp_path, monkeypatch):
+    sub, plan, _, verifier, _ = _setup(tmp_path, trials=1)
+    try:
+        put_manifest = sub.put_output_manifest
+
+        def inject_manifest(artifacts, **kwargs):
+            return put_manifest({**artifacts, "output.json": artifacts["ordinary.json"]}, **kwargs)
+
+        def refuse_candidate_evaluation(*args, **kwargs):
+            pytest.fail("candidate evaluation reached unauthenticated output")
+
+        monkeypatch.setattr(sub, "put_output_manifest", inject_manifest)
+        monkeypatch.setattr(hunt, "_validate_binding", refuse_candidate_evaluation)
+        with pytest.raises(hunt.ExecutionRefused, match=r"output\.json.*stdout"):
+            hunt.run_hunt(
+                sub, plan, lambda context: _artifact_executor(sub, tmp_path, context, "ordinary.json"), verifier
+            )
+    finally:
+        sub.close()
 
 
 def _programs(root):
@@ -377,6 +460,57 @@ def test_survived_hunt_runs_every_declared_trial_and_exposes_only_standing(tmp_p
         sub.close()
 
 
+@pytest.mark.parametrize("mutation", ["disown", "mark_inadmissible"])
+def test_survived_hunt_evidence_requires_every_executor_live(tmp_path, mutation):
+    sub, plan, executor, verifier, statement = _setup(tmp_path, bounds=(0, 39))
+    try:
+        result = hunt.run_hunt(sub, plan, executor, verifier)
+        assert result.verdict == "SURVIVED"
+        evidence = claims.get_evidence_node(sub, result.evidence_hash)
+        statement_row = claims.get_claim_statement(sub, statement.hash)
+        first, last = (trial.attempt_id for trial in result.record.trials)
+        assert first != last and evidence["attempt_id"] == last
+        assert justify.derive_tag(sub, statement.hash, None).tag == justify.CONJECTURE
+        transcript = bytes(sub.get_node(result.run_hash)["canonical"])
+
+        getattr(sub, mutation)(first)
+
+        context = justify.context_for(sub, evidence, statement_row, None)
+        absent = justify.justify(evidence, statement_row, context)
+        assert isinstance(absent, justify.Absent)
+        assert absent.reason == ("disowned" if mutation == "disown" else justify.REASON_INADMISSIBLE)
+        assert justify.derive_tag(sub, statement.hash, None).tag == justify.SPECULATION
+        assert bytes(sub.get_node(result.run_hash)["canonical"]) == transcript
+        assert hunt.record_for(sub, result.run_hash) == result.record
+    finally:
+        sub.close()
+
+
+@pytest.mark.parametrize("mutation", ["disown", "mark_inadmissible"])
+@pytest.mark.parametrize("member", ["attempt_id", "verifier_attempt_id"])
+def test_killed_hunt_evidence_requires_counterexample_executor_and_verifier_live(tmp_path, mutation, member):
+    sub, plan, executor, verifier, statement = _setup(tmp_path)
+    try:
+        result = hunt.run_hunt(sub, plan, executor, verifier)
+        assert result.verdict == "KILLED"
+        evidence = claims.get_evidence_node(sub, result.evidence_hash)
+        statement_row = claims.get_claim_statement(sub, statement.hash)
+        context = justify.context_for(sub, evidence, statement_row, None)
+        assert isinstance(justify.justify(evidence, statement_row, context), justify.Refutation)
+
+        getattr(sub, mutation)(getattr(result.record.trials[-1], member))
+
+        context = justify.context_for(sub, evidence, statement_row, None)
+        absent = justify.justify(evidence, statement_row, context)
+        assert isinstance(absent, justify.Absent)
+        assert absent.reason == ("disowned" if mutation == "disown" else justify.REASON_INADMISSIBLE)
+        assert justify.derive_tag(sub, statement.hash, None).refuted_by is None
+        assert claims.get_claim_statement(sub, statement.hash)["status"] == "refuted"
+        assert hunt.record_for(sub, result.run_hash) == result.record
+    finally:
+        sub.close()
+
+
 def test_failed_verifier_keeps_hunt_incomplete_without_standing(tmp_path):
     sub, plan, executor, verifier, statement = _setup(tmp_path, verifier_valid=False)
     try:
@@ -390,6 +524,22 @@ def test_failed_verifier_keeps_hunt_incomplete_without_standing(tmp_path):
             == "open"
         )
         print(json.dumps(hunt.canon.decode(hunt.RUN, hunt.run_canonical(result.record))))
+    finally:
+        sub.close()
+
+
+def test_incomplete_hunt_evidence_derives_absent_with_the_verdict_reason(tmp_path):
+    sub, plan, executor, verifier, statement = _setup(tmp_path, verifier_valid=False)
+    try:
+        result = hunt.run_hunt(sub, plan, executor, verifier)
+        assert result.verdict == "INCOMPLETE"
+        evidence = claims.get_evidence_node(sub, result.evidence_hash)
+        statement_row = claims.get_claim_statement(sub, statement.hash)
+        context = justify.context_for(sub, evidence, statement_row, None)
+        absent = justify.justify(evidence, statement_row, context)
+        assert isinstance(absent, justify.Absent)
+        assert absent.reason == "hunt-verdict-INCOMPLETE"
+        assert justify.derive_tag(sub, statement.hash, None).tag == justify.SPECULATION
     finally:
         sub.close()
 

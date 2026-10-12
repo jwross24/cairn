@@ -228,28 +228,36 @@ def blocker_is_attested(item):
     return item["blocker"] is not None and item["blocker"] not in GATE_BLOCKERS
 
 
-def _blocker_clearing_binding(sub, item, record_digest, file_offset):
+def _attested_blocker_binding(sub, item, record_digest, file_offset):
     unbound = _attestation_binding(sub, item, record_digest, file_offset)
     if unbound:
         return unbound
     spent = sub.conn.execute(
-        f"SELECT item_id FROM {CLOSURES} WHERE path = ? AND record_digest = ? AND file_offset = ? AND item_id != ?",
-        (PATH_BLOCKER_CLEARED, record_digest, file_offset, item["item_id"]),
+        f"SELECT c.item_id FROM {CLOSURES} AS c JOIN {ITEMS} AS i ON i.item_id = c.item_id "
+        "WHERE c.path IN (?, ?) AND c.record_digest = ? AND c.file_offset = ? AND c.item_id != ? "
+        "AND i.blocker IS NOT NULL AND i.blocker NOT IN (?, ?)",
+        (PATH_ATTESTATION, PATH_BLOCKER_CLEARED, record_digest, file_offset, item["item_id"], *GATE_BLOCKERS),
     ).fetchone()
     if spent is not None:
         return f"the record at offset {file_offset} already cleared item {spent['item_id']}; one ruling clears one item"
     if item["target_kind"] != STATEMENT:
         return None
+    row = claims.mirrored_review_verdict(sub, item["target"], record_digest, file_offset)
+    if row is None:
+        return f"no review verdict on statement {item['target']} is mirrored at offset {file_offset} with digest {record_digest}"
     raised = datetime.fromisoformat(item["enqueued_at"])
-    for row in claims.review_verdicts_for(sub, item["target"]):
-        if row["record_digest"] == record_digest and row["file_offset"] == file_offset:
-            if datetime.fromisoformat(row["at"]) > raised:
-                return None
-            return (
-                f"the verdict at offset {file_offset} was issued {row['at']}, at or before item "
-                f"{item['item_id']} was raised {item['enqueued_at']}; it ruled on nothing that existed yet"
-            )
-    return f"no review verdict on statement {item['target']} is mirrored at offset {file_offset} with digest {record_digest}"
+    if datetime.fromisoformat(row["at"]) > raised:
+        return None
+    return (
+        f"the verdict at offset {file_offset} was issued {row['at']}, at or before item "
+        f"{item['item_id']} was raised {item['enqueued_at']}; it ruled on nothing that existed yet"
+    )
+
+
+def _attestation_closing_binding(sub, item, record_digest, file_offset):
+    if blocker_is_attested(item):
+        return _attested_blocker_binding(sub, item, record_digest, file_offset)
+    return _attestation_binding(sub, item, record_digest, file_offset)
 
 
 def closure_visible(sub, item, row, attest_path):
@@ -258,14 +266,16 @@ def closure_visible(sub, item, row, attest_path):
             return True
         if row["record_digest"] is None or row["file_offset"] is None:
             return False
-        if _blocker_clearing_binding(sub, item, row["record_digest"], row["file_offset"]):
+        if _attested_blocker_binding(sub, item, row["record_digest"], row["file_offset"]):
             return False
         return attest.attestation_record_matches(attest_path, row["file_offset"], row["record_digest"])
     if row["path"] not in HUMAN_PATHS:
         return True
     if row["path"] == PATH_ACKNOWLEDGMENT and not _acknowledgment_row_matches(sub, row):
         return False
-    if row["path"] == PATH_ATTESTATION and _attestation_binding(sub, item, row["record_digest"], row["file_offset"]):
+    if row["path"] == PATH_ATTESTATION and _attestation_closing_binding(
+        sub, item, row["record_digest"], row["file_offset"]
+    ):
         return False
     return attest.attestation_record_matches(attest_path, row["file_offset"], row["record_digest"])
 
@@ -304,7 +314,7 @@ def _record_closure(sub, item_id, path, *, ref, record_digest=None, file_offset=
 
 def close_by_attestation(sub, item_id, *, attest_path, file_offset, record_digest, at=None):
     item = _require_open(sub, item_id, attest_path)
-    unbound = _attestation_binding(sub, item, record_digest, file_offset)
+    unbound = _attestation_closing_binding(sub, item, record_digest, file_offset)
     if unbound:
         raise ClosingRuleViolation(unbound)
     if not attest.attestation_record_matches(attest_path, file_offset, record_digest):
@@ -324,7 +334,7 @@ def close_by_blocker_clear(sub, item_id, *, attest_path, cleared_by, record_dige
                 f"blocker {item['blocker']} on item {item_id} names a human ruling; "
                 f"clearing it carries an attestation record, not {cleared_by!r} alone"
             )
-        unbound = _blocker_clearing_binding(sub, item, record_digest, file_offset)
+        unbound = _attested_blocker_binding(sub, item, record_digest, file_offset)
         if unbound:
             raise ClosingRuleViolation(unbound)
         if not attest.attestation_record_matches(attest_path, file_offset, record_digest):

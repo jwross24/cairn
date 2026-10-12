@@ -518,7 +518,7 @@ def _recipe(sub, attempt):
         raise ExecutionRefused(f"attempt recipe is not canonical: {exc}") from None
 
 
-def _output(sub, attempt):
+def _output(sub, attempt, receipt):
     manifest_hash = attempt["output_manifest_hash"]
     if manifest_hash is None:
         return None, None
@@ -533,6 +533,8 @@ def _output(sub, attempt):
     if artifact is None:
         raise ExecutionRefused("attempt output manifest has no output.json")
     output_hash, output_size = artifact
+    if receipt is None or output_hash != receipt["stdout_digest"]:
+        raise ExecutionRefused("attempt output.json digest differs from the process receipt stdout digest")
     data = sub.get_blob(output_hash)
     if data is None or len(data) != output_size:
         raise ExecutionRefused("attempt output.json blob is missing or has the wrong size")
@@ -593,7 +595,7 @@ def _validate_attempt(sub, attempt_obj, context, identity, required_inputs, seen
                     raise ExecutionRefused(f"{name} digest differs from the process receipt")
                 streams[name] = sub.put_blob(data)
         evidence["stream_blobs"] = streams
-    document, output_hash = _output(sub, attempt)
+    document, output_hash = _output(sub, attempt, receipt)
     if attempt["status"] == runner.STATUS_OK:
         if receipt is None or receipt["exit_status"] != 0:
             raise ExecutionRefused("successful hunt attempt has no successful process receipt")
@@ -977,4 +979,54 @@ def record_for(sub, digest):
         value["counterexample_trial"],
         value["standing"],
         trials,
+    )
+
+
+def record_for_evidence(sub, evidence):
+    bindings = [
+        edge["parent_hash"]
+        for edge in sub.lineage_of(evidence["hash"])
+        if edge["edge_kind"] == EDGE_INPUT
+        and (node := sub.get_node(edge["parent_hash"])) is not None
+        and node["kind"] == "hunt_run"
+    ]
+    if len(bindings) != 1:
+        return None
+    try:
+        record = record_for(sub, bindings[0])
+    except canon.CanonError, ValueError, TypeError:
+        return None
+    if (
+        record is None
+        or record.hash != bindings[0]
+        or record.statement_hash != evidence["target_statement_hash"]
+        or record.verdict != evidence["verdict"]
+    ):
+        return None
+    return record
+
+
+def required_attempt_ids(sub, evidence):
+    record = record_for_evidence(sub, evidence)
+    if record is None:
+        return None
+    if record.verdict == "SURVIVED":
+        members = tuple(trial.attempt_id for trial in record.trials)
+    elif record.verdict == "KILLED":
+        trial = record.trials[record.counterexample_trial]
+        members = (trial.attempt_id, trial.verifier_attempt_id)
+    else:
+        return None
+    if len(set(members)) != len(members) or any(
+        attempt_id is None or sub.get_attempt(attempt_id) is None for attempt_id in members
+    ):
+        return None
+    return members
+
+
+def attempts_admissible(sub, evidence):
+    members = required_attempt_ids(sub, evidence)
+    return members is not None and all(
+        (row := sub.get_attempt(attempt_id)) is not None and row["disowned_at"] is None and not row["inadmissible"]
+        for attempt_id in members
     )

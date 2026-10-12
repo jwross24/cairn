@@ -527,6 +527,12 @@ def _table_bindings(sub, node_hash):
 
 
 def _member_attempts(sub, evidence):
+    if evidence.get("kind") == "counterexample_hunt_record":
+        if evidence.get("verdict") not in ("SURVIVED", "KILLED"):
+            return ()
+        from cairn import hunt
+
+        return hunt.required_attempt_ids(sub, evidence)
     attempt_id = evidence.get("attempt_id")
     table_hash = (
         laddertable.mapped_table_for_attempt(sub, attempt_id)
@@ -541,15 +547,18 @@ def _member_attempts(sub, evidence):
 def _disowned(sub, evidence):
     return any(
         row is not None and row["disowned_at"] is not None
-        for attempt_id in _member_attempts(sub, evidence)
+        for attempt_id in _member_attempts(sub, evidence) or ()
         if (row := sub.get_attempt(attempt_id)) is not None
     )
 
 
 def _inadmissible(sub, evidence):
+    members = _member_attempts(sub, evidence)
+    if members is None:
+        return True
     return any(
         row is not None and bool(row["inadmissible"])
-        for attempt_id in _member_attempts(sub, evidence)
+        for attempt_id in members
         if (row := sub.get_attempt(attempt_id)) is not None
     )
 
@@ -646,7 +655,7 @@ def context_for(sub, evidence, statement, attest_path, *, offered_class=None):
     gate_run, formalization_reason = (
         _formalization(sub, evidence, statement) if evidence.get("kind") == "lean_artifact" else (None, None)
     )
-    reviews = claims.visible_review_verdicts(sub, statement["hash"], attest_path)
+    reviews = claims.effective_review_verdicts(sub, statement["hash"], attest_path)
     review = next(
         (
             row

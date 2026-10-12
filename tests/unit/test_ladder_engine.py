@@ -204,6 +204,13 @@ def test_pre_spawn_refusal_table(writer, shipped, seeded, popen_spy, label, buil
     assert writer.conn.execute(f"SELECT count(*) FROM {ladder.TABLE}").fetchone()[0] == 0
 
 
+@pytest.mark.parametrize("field", ["profile_hash", "writable_root", "withheld_roots"])
+def test_a_dispatched_allow_list_missing_a_field_is_not_read_as_defaulted(writer, shipped, seeded, field):
+    stored = {key: item for key, item in seeded["allow_list"].as_dict().items() if key != field}
+    with pytest.raises(KeyError, match=field):
+        ladder.check_dispatch(writer, shipped, _dispatch(seeded, allow_list=stored), seeded["plan"])
+
+
 def test_every_refusal_reason_is_the_pre_spawn_vocabulary():
     assert {r[2] for r in REFUSALS} <= set(ladder.PRE_SPAWN_REASONS)
 
@@ -240,6 +247,16 @@ def test_the_dispatch_record_carries_the_full_dispatched_identity(writer, shippe
     assert popen_spy == []
 
 
+@pytest.mark.parametrize("field", ["writable_root", "counted_object"])
+def test_dispatch_refuses_an_allow_list_with_a_substituted_binding(writer, shipped, seeded, popen_spy, field):
+    policy = {**seeded["allow_list"].as_dict(), field: "/substituted"}
+    value = _dispatch(seeded, allow_list=policy)
+    with pytest.raises(ladder.RunRefused) as raised:
+        ladder.check_dispatch(writer, shipped, value, seeded["plan"])
+    assert raised.value.reason == ladder.ALLOW_LIST_UNBOUND
+    assert popen_spy == []
+
+
 def test_the_trial_recipe_key_is_built_from_the_dispatched_identity(seeded):
     value = _dispatch(seeded)
     recipe = ladder._recipe(value, 7, "ladder/x")
@@ -269,28 +286,27 @@ def test_the_hold_out_rung_runs_the_claimant_alone(plan):
 
 
 def _arm_trial(arm, bits, trial, ops, **overrides):
-    fields = {
-        "arm": arm,
-        "bits": bits,
-        "trial": trial,
-        "seed": 1,
-        "status": runner.STATUS_OK,
-        "recovered": True,
-        "output_complete": True,
-        "reported_ops": ops,
-        "gate_ops": laddertable.OpsObservation(laddertable.OPS_EXACT, ops),
-        "cpu_seconds": "0.010000",
-        "wall_seconds": "0.010000",
-        "peak_rss_bytes": 1000,
-        "scratch_bytes": 0,
-        "reported_memory_bytes": 1000,
-        "replay_grade": "Replayable",
-        "measurement_scope": runner.SCOPE_TREE,
-        "attempt_id": "attempt-1",
-        "instance_hash": "aa" * 32,
-    }
-    fields.update(overrides)
-    return ladder.ArmTrial(**fields)
+    value = ladder.ArmTrial(
+        arm=arm,
+        bits=bits,
+        trial=trial,
+        seed=1,
+        status=runner.STATUS_OK,
+        recovered=True,
+        output_complete=True,
+        reported_ops=ops,
+        gate_ops=laddertable.OpsObservation(laddertable.OPS_EXACT, ops),
+        cpu_seconds="0.010000",
+        wall_seconds="0.010000",
+        peak_rss_bytes=1000,
+        scratch_bytes=0,
+        reported_memory_bytes=1000,
+        replay_grade="Replayable",
+        measurement_scope=runner.SCOPE_TREE,
+        attempt_id="attempt-1",
+        instance_hash="aa" * 32,
+    )
+    return dataclasses.replace(value, **overrides)
 
 
 def _rung_of(plan, bits):

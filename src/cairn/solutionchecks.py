@@ -1,3 +1,4 @@
+import shutil
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -521,16 +522,25 @@ def observe_closure_comparison(gate, assembled, *, comparator, timeout_s):
         lg.info("comparator_absent", binary=str(binary))
         return solutionplan.OBSERVED_REFUSED, (f"{COMPARATOR_ABSENT_PREFIX}{binary}",), _elapsed_ms(start)
     try:
-        result = lean.run_argv(comparator_argv(gate.lean, binary), cwd=assembled.root, timeout_s=timeout_s)
-    except lean.LeanTimeout as exc:
-        raise solutionplan.StepTimeout(solutionplan.KIND_CLOSURE_COMPARISON, exc.timeout_s) from None
-    wall_ms = _elapsed_ms(start)
+        project = solutionbuild.fresh_comparison(gate, assembled)
+    except solutionbuild.SolutionRefused as exc:
+        return solutionplan.OBSERVED_REFUSED, (exc.reason,), _elapsed_ms(start)
     try:
-        solutionbuild.assert_unchanged(assembled)
-    except solutionbuild.InputsChanged as exc:
-        return solutionplan.OBSERVED_REFUSED, (exc.reason,), wall_ms
-    if result.rc == 0:
-        return solutionplan.EXPECT_CLOSURE_MATCHED, (), wall_ms
-    reasons = (CLOSURE_MISMATCH, f"rc:{result.rc}", _head(result.stdout) or _head(result.stderr))
-    lg.info("comparison_refused", module=assembled.solution_module, reasons=list(reasons))
-    return solutionplan.OBSERVED_REFUSED, reasons, wall_ms
+        try:
+            result = lean.run_argv(comparator_argv(gate.lean, binary), cwd=project.root, timeout_s=timeout_s)
+        except lean.LeanTimeout as exc:
+            raise solutionplan.StepTimeout(solutionplan.KIND_CLOSURE_COMPARISON, exc.timeout_s) from None
+        wall_ms = _elapsed_ms(start)
+        try:
+            solutionbuild.assert_unchanged(assembled)
+            solutionbuild.assert_unchanged(project)
+            solutionbuild.assert_dependencies(gate, project)
+        except solutionbuild.SolutionRefused as exc:
+            return solutionplan.OBSERVED_REFUSED, (exc.reason,), wall_ms
+        if result.rc == 0:
+            return solutionplan.EXPECT_CLOSURE_MATCHED, (), wall_ms
+        reasons = (CLOSURE_MISMATCH, f"rc:{result.rc}", _head(result.stdout) or _head(result.stderr))
+        lg.info("comparison_refused", module=assembled.solution_module, reasons=list(reasons))
+        return solutionplan.OBSERVED_REFUSED, reasons, wall_ms
+    finally:
+        shutil.rmtree(Path(project.root).parent, ignore_errors=True)

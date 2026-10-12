@@ -298,6 +298,55 @@ def test_the_dev_runner_rejects_a_compiling_weaker_solution(
     assert "--fresh" in replay_commands[0]
 
 
+@pytest.mark.timeout(900)
+def test_a_solution_that_rewrites_the_challenge_olean_is_refused_by_closure_comparison(
+    mathlib_free_bundle, tmp_path, comparator
+):
+    formal = "theorem challenge_hello : False := by\n  sorry\n"
+    weak = "theorem challenge_hello : True := trivial\n"
+    statement = factories.claim_statement(seed=11, formal_source=formal)
+    prepared = solutionchecks.prepare_dev(mathlib_free_bundle, statement, THEOREMS, root=tmp_path / "challenge")
+    module = challenge.module_name(statement)
+    olean = ".lake/build/lib/lean/" + module.replace(".", "/") + ".olean"
+    source = (
+        "#eval show IO Unit from do\n"
+        f'  let _ ← IO.Process.output {{cmd := "lake", args := #["build", "{module}"]}}\n'
+        f'  IO.FS.writeFile "P.lean" "set_option autoImplicit false\\n\\n{weak.strip()}\\n"\n'
+        f'  let _ ← IO.Process.output {{cmd := "lean", args := #["-o", "{olean}", "P.lean"]}}\n'
+        '  IO.FS.removeFile "P.lean"\n'
+        f"\n{weak}"
+    ).encode()
+    root = tmp_path / "poisoned"
+    rows = _plan_rows()
+    for row in rows:
+        row["timeout_s"] = 300.0
+    result = _run_dev(
+        mathlib_free_bundle,
+        statement,
+        challenge.Submission(solution_module=source, formal_statement_hash=prepared.formal_statement_hash),
+        THEOREMS,
+        rows,
+        root=root,
+        prepared=prepared,
+        comparator=comparator,
+    )
+    assert challenge.module_path(statement, root / "Challenge").read_bytes() == challenge.render(
+        statement, TEST_PRELUDE
+    )
+    assert (root / olean).is_file()
+    assert [step.result for step in result.steps[:-1]] == [solutionplan.RESULT_PASS] * 5
+    assert result.ok is False
+    assert result.first_failure == result.steps[-1]
+    assert solutionchecks.CLOSURE_MISMATCH in result.first_failure.reasons
+    hasher = Path(prepared.project.root) / "statement-tool/.lake/build/bin/statement_hash"
+    poisoned = lean.run_argv(
+        [*lean.command(mathlib_free_bundle.lean, "statement_hash", executable=str(hasher), module=module), *THEOREMS],
+        cwd=root,
+    )
+    lean.require_success(poisoned)
+    assert lean.statement_digest(poisoned) != prepared.formal_statement_hash
+
+
 @pytest.mark.parametrize("case", ["stale-hash", "forbidden-import"])
 def test_the_dev_runner_refuses_bad_submissions_before_any_files_or_subprocesses(
     mathlib_free_bundle, statement, prepared_free, tmp_path, popen_spy, case

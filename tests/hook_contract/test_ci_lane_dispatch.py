@@ -326,8 +326,8 @@ def test_python_lanes_partition_the_previous_fallback_population():
     [
         ("m0", M0_TEST_PATHS, 17),
         *((lane, M0_TEST_PATHS, len(M0_TEST_CASES[lane]) + (2 if lane == "m0-boundaries" else 0)) for lane in M0_LANES),
-        ("lean", LEAN_TEST_PATHS, 122),
-        ("lean-core", LEAN_TEST_PATHS, 121),
+        ("lean", LEAN_TEST_PATHS, 129),
+        ("lean-core", LEAN_TEST_PATHS, 128),
         ("lean-replay", ("tests/integration/test_solution_build_compile.py",), 1),
         ("gateplan", GATEPLAN_TEST_PATHS, 28),
         ("solution-library", SOLUTION_LIBRARY_TEST_PATHS, 3),

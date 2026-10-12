@@ -2,8 +2,9 @@ import json
 import os
 import shutil
 import subprocess
+import tempfile
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from cairn import canon, challenge, container, lean, log, solutionplan
@@ -70,6 +71,7 @@ class Assembled:
     inputs: tuple
     input_hashes: tuple
     fingerprint: str
+    dependency_project: str | None
 
 
 def module_name(formal_statement_hash):
@@ -120,6 +122,25 @@ def assert_unchanged(assembled):
     if changed:
         lg.info("inputs_changed", root=assembled.root, paths=changed)
         raise InputsChanged(sorted(changed))
+
+
+def fresh_comparison(gate, assembled):
+    assert_unchanged(assembled)
+    assert_dependencies(gate, assembled)
+    source = Path(assembled.root).resolve()
+    directory = Path(tempfile.mkdtemp(prefix="cairn-comparison-", dir=source.parent))
+    try:
+        root = directory / "project"
+        _write_project(gate, root, assembled.dependency_project)
+        for relative in assembled.inputs:
+            (root / relative).write_bytes((source / relative).read_bytes())
+        project = replace(assembled, root=str(root))
+        assert_unchanged(project)
+        assert_dependencies(gate, project)
+    except BaseException:
+        shutil.rmtree(directory, ignore_errors=True)
+        raise
+    return project
 
 
 def config(challenge_module, solution_module, theorem_names, pins, *, external_kernels=None):
@@ -314,6 +335,7 @@ def _assemble(
         inputs=inputs,
         input_hashes=tuple(blob_hash((root / relative).read_bytes()) for relative in inputs),
         fingerprint=fingerprint(root, inputs),
+        dependency_project=str(Path(dependency_project).resolve()) if dependency_project is not None else None,
     )
     lg.info(
         "assembled",

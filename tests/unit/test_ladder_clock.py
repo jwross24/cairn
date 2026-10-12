@@ -120,11 +120,61 @@ def test_a_clean_table_enqueues_no_clock_item(writer, plan):
     assert _queue_rows(writer) == []
 
 
-def test_writing_the_same_overrun_table_twice_enqueues_one_item(writer, plan):
-    table = _table(wall_seconds="1.3")
+@pytest.mark.parametrize(
+    ("first", "second", "predicate", "rung_bits"),
+    [
+        ({"wall_seconds": "1.3"}, {"wall_seconds": "1.3"}, laddertable.WALL, 30),
+        ({"cpu_seconds": "1.2"}, {"cpu_seconds": "1.2"}, laddertable.CLOCK, 30),
+        ({"cpu_seconds": "1.2"}, {"wall_seconds": "1.3"}, laddertable.CLOCK, 30),
+        ({"wall_seconds": "1.3"}, {"cpu_seconds": "1.2"}, laddertable.CLOCK, 40),
+        (
+            {"cpu_seconds": "1.2", "wall_seconds": "1.5"},
+            {"cpu_seconds": "1.2", "wall_seconds": "1.5"},
+            laddertable.CLOCK,
+            30,
+        ),
+    ],
+)
+def test_two_overrunning_rungs_enqueue_one_clock_item_per_rung(writer, plan, first, second, predicate, rung_bits):
+    base = _table()
+    overruns = {30: first, 40: second}
+    table = dataclasses.replace(
+        base,
+        trials=tuple(dataclasses.replace(trial, **overruns.get(trial.bits, {})) for trial in base.trials),
+    )
+    expected_verdict = laddertable.verdict(table, plan)
+    assert (expected_verdict.kind, expected_verdict.predicate, expected_verdict.rung_bits) == (
+        laddertable.INCONCLUSIVE,
+        predicate,
+        rung_bits,
+    )
+    laddertable.write(writer, table, plan)
+    recorded = laddertable.recorded_verdict(writer, table.hash)
+    assert (recorded.kind, recorded.predicate, recorded.rung_bits) == (
+        expected_verdict.kind,
+        expected_verdict.predicate,
+        expected_verdict.rung_bits,
+    )
+    assert _queue_rows(writer) == [
+        (human_queue.CLOCK_INCONCLUSIVE, human_queue.RUNG, f"{RUN_ID}:30"),
+        (human_queue.CLOCK_INCONCLUSIVE, human_queue.RUNG, f"{RUN_ID}:40"),
+    ]
+
+
+@pytest.mark.parametrize("rungs", [(30,), (30, 40)])
+def test_writing_the_same_overrun_table_twice_enqueues_one_item_per_rung(writer, plan, rungs):
+    base = _table()
+    table = dataclasses.replace(
+        base,
+        trials=tuple(
+            dataclasses.replace(trial, wall_seconds="1.3") if trial.bits in rungs else trial for trial in base.trials
+        ),
+    )
     laddertable.write(writer, table, plan)
     laddertable.write(writer, table, plan)
-    assert len(_queue_rows(writer)) == 1
+    assert _queue_rows(writer) == [
+        (human_queue.CLOCK_INCONCLUSIVE, human_queue.RUNG, f"{RUN_ID}:{bits}") for bits in rungs
+    ]
 
 
 def test_rewriting_an_undated_table_at_a_later_time_enqueues_one_item(writer, plan):
@@ -137,11 +187,32 @@ def test_rewriting_an_undated_table_at_a_later_time_enqueues_one_item(writer, pl
     assert [row[0] for row in rows] == ["2026-09-30T17:00:00Z"]
 
 
-def test_a_verdict_outside_the_clock_predicates_is_not_enqueued(writer):
-    table = _table()
-    verdict = laddertable.Verdict(laddertable.INCONCLUSIVE, laddertable.FAILED_TRIAL, rung_bits=30)
-    assert laddertable.enqueue_clock_inconclusive(writer, table, verdict) is None
+@pytest.mark.parametrize(
+    ("kind", "predicate"),
+    [(laddertable.INCONCLUSIVE, laddertable.FAILED_TRIAL), (laddertable.REJECT, laddertable.CLOCK)],
+)
+def test_a_verdict_outside_the_clock_predicates_is_not_enqueued(writer, plan, kind, predicate):
+    table = _table(wall_seconds="1.3")
+    verdict = laddertable.Verdict(kind, predicate, rung_bits=30)
+    assert laddertable.enqueue_clock_inconclusive(writer, table, plan, verdict) is None
     assert _queue_rows(writer) == []
+
+
+@pytest.mark.parametrize("claimant_overrun", [False, True])
+def test_baseline_overruns_do_not_enqueue_clock_items(writer, plan, claimant_overrun):
+    base = _table(**({"wall_seconds": "1.3"} if claimant_overrun else {}))
+    table = dataclasses.replace(
+        base,
+        trials=base.trials
+        + tuple(
+            dataclasses.replace(trial, arm=ladderplan.ARMS[1], cpu_seconds="1.2", wall_seconds="1.5")
+            for trial in base.trials
+            if trial.bits == 40
+        ),
+    )
+    laddertable.write(writer, table, plan)
+    expected = [(human_queue.CLOCK_INCONCLUSIVE, human_queue.RUNG, f"{RUN_ID}:30")] if claimant_overrun else []
+    assert _queue_rows(writer) == expected
 
 
 def test_effective_clock_tolerance_takes_the_smaller_of_plan_and_band(plan):

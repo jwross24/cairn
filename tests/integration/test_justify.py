@@ -1,12 +1,13 @@
 import json
 import sqlite3
 import sys
+from dataclasses import replace
 from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
 
-from cairn import attest, claims, disagreement, exits, human_queue, justify, keys
+from cairn import attest, claims, disagreement, exits, human_queue, hunt, justify, keys, substrate
 from cairn.justify import CONJECTURE, PROVEN, SPECULATION, STRONG_EMPIRICAL
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -45,6 +46,42 @@ def _statement(writer, **kw):
     return statement
 
 
+def _bind_counterexample(writer, evidence, seed):
+    executor = writer.start_attempt(writer.put_recipe(recipe(seed=seed)))
+    writer.close_attempt(executor, "OK")
+    verifier = writer.start_attempt(writer.put_recipe(recipe(seed=seed + 1)))
+    writer.close_attempt(verifier, "OK")
+    transcript = writer.put_blob(b"verified counterexample")
+    trial = hunt.TrialRecord(
+        0,
+        {axis: bounds[0] for axis, bounds in evidence.population["param_ranges"].items()},
+        seed,
+        executor,
+        "OK",
+        transcript,
+        "COUNTEREXAMPLE",
+        "OK",
+        transcript,
+        verifier,
+    )
+    record = hunt.HuntRecord(
+        "a" * 64,
+        "b" * 64,
+        evidence.target_statement_hash,
+        "c" * 64,
+        f"hunt-{seed}",
+        1,
+        1,
+        "FULL_DECLARED_BUDGET",
+        "KILLED",
+        0,
+        False,
+        (trial,),
+    )
+    run_hash = writer.put_node("hunt_run", hunt.run_canonical(record), producer_identity="gate:hunt")
+    writer.add_lineage(evidence.hash, run_hash, substrate.EDGE_INPUT)
+
+
 def _wide_population(statement, size=(30, 60)):
     return {
         **statement.scope,
@@ -53,12 +90,49 @@ def _wide_population(statement, size=(30, 60)):
     }
 
 
-def _append_verdict(writer, attest_path, statement_hash, verdict="approve"):
-    unplaced = factories.review_verdict(statement_hash, verdict=verdict, seed=3)
+def _append_verdict(writer, attest_path, statement_hash, verdict="approve", **kw):
+    unplaced = factories.review_verdict(statement_hash, verdict=verdict, seed=3, **kw)
     offset = attest.append_record(attest_path, claims.review_verdict_canonical(unplaced))
-    placed = factories.review_verdict(statement_hash, verdict=verdict, seed=3, file_offset=offset)
+    placed = replace(unplaced, file_offset=offset)
     claims.write_review_verdict(writer, placed)
     return offset
+
+
+@pytest.mark.parametrize("decision", ["reject", "needs_revision"])
+def test_a_superseding_review_removes_authorization_and_evidence_pointers(writer, attest_path, decision):
+    statement = _statement(writer)
+    node = factories.evidence_node("model_proof", statement.hash, statement.scope, frozenset({"A1"}))
+    claims.write_evidence_node(writer, node)
+    stored = claims.get_claim_statement(writer, statement.hash)
+    row = claims.get_evidence_node(writer, node.hash)
+    offset = _append_verdict(writer, attest_path, statement.hash)
+    approval = factories.review_verdict(statement.hash, seed=3, file_offset=offset)
+    context = justify.context_for(writer, row, stored, attest_path)
+    assert context.approved
+    assert (context.review_verdict_hash, context.record_digest, context.file_offset) == (
+        approval.hash,
+        approval.record_digest,
+        approval.file_offset,
+    )
+    _append_verdict(writer, attest_path, statement.hash, verdict=decision, supersedes=approval.hash)
+    context = justify.context_for(writer, row, stored, attest_path)
+    assert not context.approved
+    assert (context.review_verdict_hash, context.record_digest, context.file_offset) == (None, None, None)
+    assert justify.kind_class("lean_artifact", None, approved=context.approved) == (
+        None,
+        justify.REASON_HUMAN_REVIEW,
+    )
+    rejection = claims._verdict_of(claims.visible_review_verdicts(writer, statement.hash, attest_path)[-1])
+    offset = _append_verdict(writer, attest_path, statement.hash, supersedes=rejection.hash)
+    replacement = factories.review_verdict(statement.hash, seed=3, file_offset=offset, supersedes=rejection.hash)
+    context = justify.context_for(writer, row, stored, attest_path)
+    assert context.approved
+    assert (context.review_verdict_hash, context.record_digest, context.file_offset) == (
+        replacement.hash,
+        replacement.record_digest,
+        replacement.file_offset,
+    )
+    assert len(claims.visible_review_verdicts(writer, statement.hash, attest_path)) == 3
 
 
 def _certify(writer, revision, summary):
@@ -499,6 +573,7 @@ def test_a_downgrade_carries_the_refuting_evidence_and_moves_the_statement_to_re
         seed=22,
     )
     claims.write_evidence_node(writer, hunt)
+    _bind_counterexample(writer, hunt, 22)
     derived = justify.derive_tag(writer, statement.hash, attest_path)
 
     assert derived.tag == SPECULATION and derived.refuted_by == hunt.hash
@@ -521,6 +596,7 @@ def test_an_out_of_scope_counterexample_does_not_downgrade_the_statement(writer,
         seed=22,
     )
     claims.write_evidence_node(writer, hunt)
+    _bind_counterexample(writer, hunt, 22)
 
     derived = justify.derive_tag(writer, statement.hash, attest_path)
 

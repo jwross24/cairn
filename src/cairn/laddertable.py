@@ -808,10 +808,27 @@ def enqueue_shape_departures(sub, table, plan, *, at=None):
     )
 
 
-def enqueue_clock_inconclusive(sub, table, v, *, at=None):
+def _clock_overrun_rungs(table, plan):
+    rows_by_bits = {row.bits: row for row in table.rungs}
+    return tuple(
+        sorted(
+            {
+                trial.bits
+                for trial in table.trials
+                if trial.arm == ladderplan.ARMS[0]
+                and (_clock([trial], rows_by_bits, plan) is not None or _wall([trial], plan) is not None)
+            }
+        )
+    )
+
+
+def enqueue_clock_inconclusive(sub, table, plan, v, *, at=None):
     if v.kind != INCONCLUSIVE or v.predicate not in CLOCK_QUEUE_PREDICATES:
         return None
-    return human_queue.enqueue_clock_inconclusive(sub, rung=f"{table.run_id}:{v.rung_bits}", at=at)
+    return tuple(
+        human_queue.enqueue_clock_inconclusive(sub, rung=f"{table.run_id}:{bits}", at=at)
+        for bits in _clock_overrun_rungs(table, plan)
+    )
 
 
 def _insert_rung(sub, table_hash, row):
@@ -1092,7 +1109,7 @@ def write(sub, table, plan, *, at=None, attempt_id=None, trial_attempts=None, ev
         for node in evidence_nodes:
             write_evidence_node(sub, table, node)
         if inserted:
-            enqueue_clock_inconclusive(sub, table, v, at=created_at)
+            enqueue_clock_inconclusive(sub, table, plan, v, at=created_at)
     return table.hash
 
 

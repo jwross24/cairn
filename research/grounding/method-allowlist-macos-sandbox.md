@@ -35,6 +35,9 @@ under test. The profile the gate renders is deny-default and names six allow for
 (allow file-write* (subpath (param "SCRATCH")))
 ```
 
+An instantiation that names withheld roots places one `(deny file-read* (subpath "<root>"))` line
+for each between the read grant and the write grant; with none named the profile is the one above.
+
 Parameters reach the profile as `-D KEY=value` and are read with `(param "KEY")`.
 
 ## 2. What the arm confines, measured
@@ -96,13 +99,15 @@ child's stderr, so a method that catches `PermissionError` and exits 0 is confin
 | Naming from the child's stderr | cooperative; a method that swallows `EPERM` defeats it | STRONG-EMPIRICAL |
 | Naming from the unified log (`log show`, sandbox violation records) | not probed | OPEN: no bead; the stderr channel carries M1 |
 
-The classes `detect_violation` reports are `undeclared_exec`, `outside_write`, `network_egress`
-and `denied_unclassified`. `undeclared_exec` is decided by an exec marker in the trace
-(`_execute_child`, `execvp(`, `Failed to exec`), the last two being the mechanism's own wording at
-exit 71; `outside_write` by a quoted path that resolves outside the writable root; `network_egress`
-by a denial naming no path. A denial whose every quoted path lies inside the writable root is
-`denied_unclassified` rather than silently dropped. No class turns on whether the denied path
-exists on the auditing host, so the same bytes name the same class on any machine.
+The classes `detect_violation` reports are `undeclared_exec`, `withheld_read`, `outside_write`,
+`network_egress` and `denied_unclassified`. `undeclared_exec` is decided by an exec marker in the
+trace (`_execute_child`, `execvp(`, `Failed to exec`), the last two being the mechanism's own
+wording at exit 71; `withheld_read` by a quoted path that resolves within a withheld root, which
+outranks `outside_write` because the child's report does not say whether the denied operation was
+a read or a write; `outside_write` by a quoted path that resolves outside the writable root;
+`network_egress` by a denial naming no path. A denial whose every quoted path lies inside the
+writable root is `denied_unclassified` rather than silently dropped. No class turns on whether the
+denied path exists on the auditing host, so the same bytes name the same class on any machine.
 
 ## 5. Scope and platform
 
@@ -126,8 +131,11 @@ refuses rather than producing an unenforced instantiation. CI runs macOS only
   for the Apple framework layout measured here; an interpreter that re-execs into some other path
   is confined and its honest method does not start, which is a loud red rather than a silent
   widening.
-- Read access is unrestricted by design: the method reads its interpreter, its standard library
-  and its declared backends. A read-side channel is out of this bead's scope.
+- Read access is granted under `/` less the withheld roots an instantiation names; the template
+  does not name or require any, and the ladder self-test withholds the substrate and its `-wal`,
+  `-shm` and `-journal` files. Bead `cairn-m1-cqt.1.4`'s VM path closes substrate reads for
+  counted methods by construction; the withheld roots cover uncounted-backend methods and any
+  future native adapter. This brief claims nothing about the VM path's safety.
 - The counted object slot holds a stand-in. Its binding to the real gate-owned counted object is
   bead `cairn-m1-cqt.1.4`'s assertion, and no rung runs at this bead's close.
 - The `INCONCLUSIVE`-at-best cap an uncounted-backend declaration earns is bead

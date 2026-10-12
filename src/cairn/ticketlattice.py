@@ -140,21 +140,25 @@ def ladder_candidate(sub, gate_bundle, hypothesis_key, method_identity):
     )
 
 
-def _hunt_record(sub, evidence_hash):
-    for edge in sub.lineage_of(evidence_hash):
-        record = hunt.record_for(sub, edge["parent_hash"])
-        if record is not None:
-            return record
-    return None
-
-
 def hunt_candidate(sub, hypothesis_key, method_identity):
     """The most recent counterexample-hunt record for the key and method, whatever verdict it carries."""
-    rows = sub.conn.execute("SELECT hash FROM evidence_nodes WHERE kind = ? ORDER BY rowid", (hunt.KIND,)).fetchall()
+    hypothesis = claims.get_hypothesis_object(sub, hypothesis_key)
+    statement_hash = hypothesis["claim_statement_hash"] if hypothesis is not None else None
+    rows = sub.conn.execute("SELECT * FROM evidence_nodes WHERE kind = ? ORDER BY rowid", (hunt.KIND,)).fetchall()
     found = None
     for row in rows:
-        record = _hunt_record(sub, row["hash"])
-        if record is None or record.hypothesis_key != hypothesis_key:
+        record = hunt.record_for_evidence(sub, row)
+        if record is None:
+            if statement_hash is not None and row["target_statement_hash"] == statement_hash:
+                found = None
+            continue
+        if record.hypothesis_key != hypothesis_key:
+            continue
+        plan_node = sub.get_node(record.plan_hash)
+        if plan_node is None or plan_node["kind"] != "hunt_plan":
+            continue
+        plan = canon.decode(hunt.PLAN, plan_node["canonical"])
+        if plan["method_identity"] != method_identity:
             continue
         found = Candidate(
             claim_kind=CONJECTURE,
@@ -162,7 +166,7 @@ def hunt_candidate(sub, hypothesis_key, method_identity):
             node_hash=row["hash"],
             verdict=record.verdict,
             hypothesis_key=record.hypothesis_key,
-            method_identity=dict(method_identity),
+            method_identity=plan["method_identity"],
         )
     return found
 
@@ -232,6 +236,9 @@ def select_kind(
         candidate, implementation_revision=implementation_revision, rung_bits=profile.declared_bits(inputs)
     )
     admits = not unbound and candidate.verdict in ADMITTING_VERDICTS[claim_kind]
+    if claim_kind == CONJECTURE:
+        evidence = claims.get_evidence_node(sub, candidate.node_hash)
+        admits = admits and evidence is not None and hunt.attempts_admissible(sub, evidence)
     return Selection(claim_kind, candidate, admits, unbound)
 
 

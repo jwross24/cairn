@@ -184,7 +184,40 @@ def test_the_trigger_refuses_both_branches_written_the_wrong_way_round(writer, a
     assert human_queue.depth(writer, attest_path) == 2
 
 
-def test_a_ruling_issued_before_the_dispute_existed_does_not_settle_it(writer, attest_path):
+@pytest.mark.parametrize("close_path", [human_queue.PATH_ATTESTATION, human_queue.PATH_BLOCKER_CLEARED])
+@pytest.mark.parametrize("ruling_at", [AT0, AT1])
+def test_a_ruling_issued_at_or_before_the_dispute_existed_does_not_settle_it(
+    writer, attest_path, close_path, ruling_at
+):
+    statement = factories.claim_statement(seed=7)
+    claims.write_claim_statement(writer, statement)
+    claims.append_tag_history(
+        writer, statement.hash, None, "CONJECTURE", None, claims.to_json({"result": "fixture"}), "test", at=AT0
+    )
+    stale = _ruling(writer, attest_path, statement.hash, seed=7, at=ruling_at)
+    rec = disagreement.record(
+        writer,
+        statement_hash=statement.hash,
+        left_hash=LEFT,
+        right_hash=RIGHT,
+        classification=disagreement.STATEMENT_ERROR,
+        at=AT1,
+    )
+    with pytest.raises(ClosingRuleViolation, match="ruled on nothing that existed yet"):
+        _close(
+            writer,
+            rec.item_id,
+            attest_path=attest_path,
+            close_path=close_path,
+            record_digest=stale.record_digest,
+            file_offset=stale.file_offset,
+            at=AT1,
+        )
+    assert disagreement.freeze_for(writer, statement.hash, attest_path) is not None
+    assert human_queue.depth(writer, attest_path) == 1
+
+
+def test_a_forged_shadow_row_with_a_later_at_cannot_clear_a_stale_ruling(writer, attest_path):
     statement = factories.claim_statement(seed=7)
     claims.write_claim_statement(writer, statement)
     claims.append_tag_history(
@@ -199,6 +232,19 @@ def test_a_ruling_issued_before_the_dispute_existed_does_not_settle_it(writer, a
         classification=disagreement.STATEMENT_ERROR,
         at=AT1,
     )
+    before = disagreement.freeze_for(writer, statement.hash, attest_path)
+    assert before is not None
+    honest = claims.review_verdicts_for(writer, statement.hash)[0]
+    forged = {**honest, "row_id": honest["row_id"] - 1, "at": AT4}
+    writer.conn.execute(
+        f"INSERT INTO review_verdicts ({', '.join(forged)}) VALUES ({', '.join('?' for _ in forged)})",
+        tuple(forged.values()),
+    )
+    writer.conn.commit()
+    shadow = claims.review_verdicts_for(writer, statement.hash)[0]
+    assert shadow["at"] == AT4
+    assert claims._verdict_of(shadow).record_digest != shadow["record_digest"]
+    assert claims.mirrored_review_verdict(writer, statement.hash, stale.record_digest, stale.file_offset) == honest
     with pytest.raises(ClosingRuleViolation, match="ruled on nothing that existed yet"):
         human_queue.close_by_blocker_clear(
             writer,
@@ -207,13 +253,43 @@ def test_a_ruling_issued_before_the_dispute_existed_does_not_settle_it(writer, a
             cleared_by="human:ruling",
             record_digest=stale.record_digest,
             file_offset=stale.file_offset,
-            at=AT1,
+            at=AT4,
         )
-    assert disagreement.freeze_for(writer, statement.hash, attest_path) is not None
+    assert human_queue.visible_closure(writer, rec.item_id, attest_path) is None
+    assert disagreement.freeze_for(writer, statement.hash, attest_path) == before
     assert human_queue.depth(writer, attest_path) == 1
 
 
-def test_one_ruling_settles_one_dispute_and_not_the_next(writer, attest_path):
+def _close(writer, item_id, *, attest_path, close_path, **bound):
+    if close_path == human_queue.PATH_ATTESTATION:
+        return human_queue.close_by_attestation(writer, item_id, attest_path=attest_path, **bound)
+    return human_queue.close_by_blocker_clear(
+        writer, item_id, attest_path=attest_path, cleared_by="human:ruling", **bound
+    )
+
+
+def test_a_ruling_recorded_on_both_paths_for_the_same_item_remains_visible(writer, attest_path):
+    statement, rec = _attested_item(writer, attest_path, 10)
+    ruling = _ruling(writer, attest_path, statement.hash, seed=10)
+    for path in (human_queue.PATH_ATTESTATION, human_queue.PATH_BLOCKER_CLEARED):
+        writer.conn.execute(
+            "INSERT INTO human_queue_closures (item_id, path, ref, record_digest, file_offset, closed_at)"
+            " VALUES (?, ?, 'human:ruling', ?, ?, ?)",
+            (rec.item_id, path, ruling.record_digest, ruling.file_offset, AT4),
+        )
+    writer.conn.commit()
+    item = human_queue.get_item(writer, rec.item_id)
+    assert all(
+        human_queue.closure_visible(writer, item, row, attest_path)
+        for row in human_queue.closures_of(writer, rec.item_id)
+    )
+    assert human_queue.depth(writer, attest_path) == 0
+    assert disagreement.freeze_for(writer, statement.hash, attest_path) is None
+
+
+@pytest.mark.parametrize("first_path", [human_queue.PATH_ATTESTATION, human_queue.PATH_BLOCKER_CLEARED])
+@pytest.mark.parametrize("second_path", [human_queue.PATH_ATTESTATION, human_queue.PATH_BLOCKER_CLEARED])
+def test_one_ruling_settles_one_dispute_and_not_the_next(writer, attest_path, first_path, second_path):
     statement = factories.claim_statement(seed=8)
     claims.write_claim_statement(writer, statement)
     claims.append_tag_history(
@@ -241,11 +317,25 @@ def test_one_ruling_settles_one_dispute_and_not_the_next(writer, attest_path):
     ruling = factories.review_verdict(statement.hash, verdict="approve", seed=8, at=AT1, file_offset=offset)
     claims.write_review_verdict(writer, ruling)
     bound = {"record_digest": ruling.record_digest, "file_offset": ruling.file_offset}
-    human_queue.close_by_blocker_clear(
-        writer, first.item_id, attest_path=attest_path, cleared_by="human:first", at=AT1, **bound
-    )
-    with pytest.raises(ClosingRuleViolation, match="one ruling clears one item"):
-        human_queue.close_by_blocker_clear(
-            writer, second.item_id, attest_path=attest_path, cleared_by="human:second", at=AT1, **bound
-        )
+    assert human_queue.depth(writer, attest_path) == 2
+    _close(writer, first.item_id, attest_path=attest_path, close_path=first_path, at=AT1, **bound)
+    assert human_queue.visible_closure(writer, first.item_id, attest_path)["path"] == first_path
     assert human_queue.depth(writer, attest_path) == 1
+    assert disagreement.freeze_for(writer, statement.hash, attest_path) is not None
+    with pytest.raises(ClosingRuleViolation, match="one ruling clears one item"):
+        _close(writer, second.item_id, attest_path=attest_path, close_path=second_path, at=AT1, **bound)
+    assert human_queue.closures_of(writer, second.item_id) == []
+    assert human_queue.visible_closure(writer, first.item_id, attest_path)["path"] == first_path
+    assert human_queue.depth(writer, attest_path) == 1
+    assert disagreement.freeze_for(writer, statement.hash, attest_path) is not None
+    fresh = _ruling(writer, attest_path, statement.hash, seed=9)
+    _close(
+        writer,
+        second.item_id,
+        attest_path=attest_path,
+        close_path=second_path,
+        record_digest=fresh.record_digest,
+        file_offset=fresh.file_offset,
+    )
+    assert human_queue.depth(writer, attest_path) == 0
+    assert disagreement.freeze_for(writer, statement.hash, attest_path) is None

@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+from integration.test_justify import _bind_counterexample
 
 from cairn import (
     attest,
@@ -653,6 +654,7 @@ def refuting_hunt(writer, statement, seed):
         seed=seed,
     )
     claims.write_evidence_node(writer, node)
+    _bind_counterexample(writer, node, seed)
     return node
 
 

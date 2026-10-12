@@ -248,21 +248,24 @@ def launch_trial(
         attest_path=attest_path,
     )
     tiers = gate_bundle.tiers
+    evaluation = instance_maker.COST_PROFILE.evaluate(bits)
     attempt = runner.launch(
         sub,
         "cairn.skills.instance_maker",
         maker_recipe(seed, f"trial/{nonce}/{bits}/{trial}"),
         stdin_document={"bits": bits, "seed": seed},
         bundle_hash=gate_bundle.hash,
-        evaluation=instance_maker.COST_PROFILE.evaluate(bits),
+        evaluation=evaluation,
         ceiling_multiplier=tiers["ceiling_multiplier"] if ceiling_multiplier is None else ceiling_multiplier,
         wall_cap_multiplier=tiers["wall_cap_multiplier"],
         wall_cap_floor_s=tiers["wall_cap_floor_s"],
+        subprocess_startup_ms=tiers["subprocess_startup_ms"],
         tool_digests=instance_maker.identity_bundle()["tool_digests"],
         scratch_root=scratch_root,
         replay=instance_maker.REPLAY_GRADE,
         skip_cache_lookup=True,
         do_not_cache=instance_maker.DO_NOT_CACHE,
+        budget_remaining=budget_remaining - evaluation.expected_verification_core_s,
         attest_path=attest_path,
     )
     bind_admission(sub, gate_bundle, admission, attempt.attempt_id, record.hypothesis_key, method_identity)

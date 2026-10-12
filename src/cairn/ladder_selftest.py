@@ -177,6 +177,7 @@ def _run_context(gate_bundle, sub, plan, plan_hash, hypothesis, run_id, scratch_
         hypothesis=hypothesis_value,
         counted_object=os.path.realpath(sys.executable),
         scratch_dir=allow_scratch,
+        withheld_roots=[f"{sub.path}{suffix}" for suffix in ("", "-wal", "-shm", "-journal")],
     )
     values = {}
     for arm in arms:

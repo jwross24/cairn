@@ -256,7 +256,7 @@ def _formalization_passed(sub, statement_hash):
 def _reviewed(sub, statement_hash, attest_path):
     if attest_path is None:
         return False
-    return any(row["verdict"] == APPROVE for row in claims.visible_review_verdicts(sub, statement_hash, attest_path))
+    return any(row["verdict"] == APPROVE for row in claims.effective_review_verdicts(sub, statement_hash, attest_path))
 
 
 def _reproduced(sub, statement_hash):

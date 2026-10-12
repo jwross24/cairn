@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
+from integration.test_counterexample_hunt import _setup as setup_hunt
 
 from cairn import (
     attest,
@@ -13,6 +14,7 @@ from cairn import (
     claims,
     human_authority,
     hunt,
+    justify,
     ladderplan,
     laddertable,
     nogo,
@@ -353,14 +355,24 @@ def test_the_rung_role_comes_from_the_pinned_plan_and_an_off_plan_size_has_none(
     assert ticketlattice.rung_role(gate_bundle, {"seed": 7}) is None
 
 
-def survived_hunt(sub, hypothesis_key, trials=2, verdict="SURVIVED"):
-    """A hunt record seeded through the real writers; the run's own execution is bead R4's."""
+def survived_hunt(sub, hypothesis_key, trials=2, verdict="SURVIVED", *, method=METHOD, store_plan=True):
+    hunt_plan = hunt.HuntPlan(
+        STATEMENT,
+        hypothesis_key,
+        hunt.Distribution({"n": (0, trials - 1)}),
+        trials,
+        {"n": (0, trials - 1)},
+        method_identity=method,
+    )
+    if store_plan:
+        sub.put_node("hunt_plan", hunt.plan_canonical(hunt_plan), producer_identity="gate:hunt")
+    attempts = [helpers.launch(sub, sub.put_recipe(helpers.recipe(seed=index + 1)))[0] for index in range(trials)]
     survived = tuple(
         hunt.TrialRecord(
             trial=index,
             point={"n": index},
             seed=index + 1,
-            attempt_id=f"attempt-{index}",
+            attempt_id=attempts[index],
             execution_status="OK",
             execution_evidence=f"{index:02d}" * 32,
             outcome="SURVIVED_TRIAL",
@@ -371,8 +383,8 @@ def survived_hunt(sub, hypothesis_key, trials=2, verdict="SURVIVED"):
     )
     standing = verdict == "SURVIVED"
     record = hunt.HuntRecord(
-        "ee" * 32,
-        "ef" * 32,
+        hunt_plan.hash,
+        hunt_plan.distribution.hash,
         STATEMENT,
         hypothesis_key,
         "hunt-nonce",
@@ -460,7 +472,46 @@ def test_a_multi_kind_claim_needs_both_tickets_and_is_refused_while_either_is_ab
     survived_hunt(sub, obj.hash)
     both = tier_two(sub, gate_bundle, obj.hash)
     assert [s.admits for s in both] == [True, True]
+    assert both[1].candidate.method_identity == METHOD
     assert ticketlattice.admits_tier_two(both)
+
+
+@pytest.mark.parametrize("method", [OTHER_METHOD, {**METHOD, "params": {"variant": "other"}}])
+def test_a_survived_hunt_for_another_method_is_not_this_launchs_ticket(gate, method):
+    sub, gate_bundle = gate
+    obj = record_hypothesis(sub, conjecture_marker="true")
+    survived_hunt(sub, obj.hash)
+    selection = ticketlattice.select_kind(
+        sub,
+        gate_bundle,
+        ticketlattice.CONJECTURE,
+        hypothesis_key=obj.hash,
+        method_identity=method,
+        inputs={"bits": HOLD_OUT_BITS},
+        implementation_revision=REVISION,
+    )
+    assert selection.candidate is None
+    assert not selection.admits
+
+
+def test_a_hunt_without_a_stored_plan_is_not_a_conjecture_ticket(gate):
+    sub, gate_bundle = gate
+    obj = record_hypothesis(sub, conjecture_marker="true")
+    survived_hunt(sub, obj.hash, store_plan=False)
+    selection = tier_two(sub, gate_bundle, obj.hash)[1]
+    assert selection.candidate is None
+    assert not selection.admits
+
+
+def test_a_later_hunt_for_another_method_preserves_the_matching_ticket(gate):
+    sub, gate_bundle = gate
+    obj = record_hypothesis(sub, conjecture_marker="true")
+    matching = survived_hunt(sub, obj.hash)
+    survived_hunt(sub, obj.hash, verdict="INCOMPLETE", method=OTHER_METHOD)
+    selection = tier_two(sub, gate_bundle, obj.hash)[1]
+    assert selection.candidate.node_hash == matching
+    assert selection.candidate.method_identity == METHOD
+    assert selection.admits
 
 
 def test_a_survived_record_alone_does_not_admit_the_algorithmic_half(gate):
@@ -492,6 +543,100 @@ def test_a_survived_hunt_for_another_hypothesis_is_not_this_claims_ticket(gate, 
     selections = tier_two(sub, gate_bundle, obj.hash)
     assert selections[1].candidate is None
     assert not ticketlattice.admits_tier_two(selections)
+
+
+@pytest.mark.parametrize("mutation", ["disown", "mark_inadmissible"])
+@pytest.mark.parametrize("member", ["earlier", "unrelated"])
+def test_hunt_ticket_reads_live_required_members(tmp_path, mutation, member):
+    sub, plan, executor, verifier, statement = setup_hunt(tmp_path, bounds=(0, 39))
+    try:
+        older = hunt.run_hunt(sub, plan, executor, verifier)
+        result = hunt.run_hunt(sub, plan, executor, verifier)
+        assert result.verdict == "SURVIVED"
+
+        def selection():
+            return ticketlattice.select_kind(
+                sub,
+                None,
+                ticketlattice.CONJECTURE,
+                hypothesis_key=plan.hypothesis_key,
+                method_identity=plan.method_identity,
+                inputs={},
+                implementation_revision=None,
+                statement_hash=statement.hash,
+            )
+
+        assert selection().admits
+        assert selection().candidate.node_hash == result.evidence_hash
+        if member == "earlier":
+            attempt_id = result.record.trials[0].attempt_id
+            assert attempt_id != claims.get_evidence_node(sub, result.evidence_hash)["attempt_id"]
+        else:
+            attempt_id, _ = helpers.launch(sub, sub.put_recipe(helpers.recipe(seed=99)))
+        getattr(sub, mutation)(attempt_id)
+
+        assert hunt.attempts_admissible(sub, claims.get_evidence_node(sub, older.evidence_hash))
+        assert selection().admits is (member == "unrelated")
+        assert selection().candidate.node_hash == result.evidence_hash
+        assert selection().candidate.verdict == "SURVIVED"
+        if member == "unrelated":
+            assert justify.derive_tag(sub, statement.hash, None).tag == justify.CONJECTURE
+    finally:
+        sub.close()
+
+
+@pytest.mark.parametrize("binding", ["absent", "ambiguous", "missing_attempt", "duplicate_attempt", "wrong_statement"])
+def test_hunt_membership_without_unique_required_executions_grants_no_authority(tmp_path, binding):
+    sub, plan, executor, verifier, statement = setup_hunt(tmp_path, bounds=(0, 39))
+    try:
+        result = hunt.run_hunt(sub, plan, executor, verifier)
+        assert justify.derive_tag(sub, statement.hash, None).tag == justify.CONJECTURE
+        evidence = claims.EvidenceNode(
+            kind=hunt.KIND,
+            target_statement_hash=statement.hash,
+            population=statement.scope,
+            assumptions=plan.assumption_set,
+            producer_identity="gate:hunt",
+            producer_tag="gate",
+            verdict="SURVIVED",
+        )
+        evidence_hash = claims.write_evidence_node(sub, evidence)
+        if binding != "absent":
+            record = result.record
+            if binding in ("missing_attempt", "duplicate_attempt"):
+                first = dataclasses.replace(
+                    record.trials[0],
+                    attempt_id="missing" if binding == "missing_attempt" else record.trials[-1].attempt_id,
+                )
+                record = dataclasses.replace(record, trials=(first, record.trials[-1]))
+            elif binding == "wrong_statement":
+                record = dataclasses.replace(record, statement_hash=OTHER_STATEMENT)
+            run_hash = sub.put_node("hunt_run", hunt.run_canonical(record), producer_identity="gate:hunt")
+            sub.add_lineage(evidence_hash, run_hash, substrate.EDGE_INPUT)
+            if binding == "ambiguous":
+                other = dataclasses.replace(record, nonce="another-nonce")
+                other_hash = sub.put_node("hunt_run", hunt.run_canonical(other), producer_identity="gate:hunt")
+                sub.add_lineage(evidence_hash, other_hash, substrate.EDGE_INPUT)
+
+        row = claims.get_evidence_node(sub, evidence_hash)
+        statement_row = claims.get_claim_statement(sub, statement.hash)
+        context = justify.context_for(sub, row, statement_row, None)
+        assert isinstance(justify.justify(row, statement_row, context), justify.Absent)
+        selected = ticketlattice.select_kind(
+            sub,
+            None,
+            ticketlattice.CONJECTURE,
+            hypothesis_key=plan.hypothesis_key,
+            method_identity=plan.method_identity,
+            inputs={},
+            implementation_revision=None,
+            statement_hash=statement.hash,
+        )
+        assert not selected.admits
+        assert selected.candidate is None or selected.candidate.node_hash == evidence_hash
+        assert hunt.record_for(sub, result.run_hash) == result.record
+    finally:
+        sub.close()
 
 
 BUDGET_PLENTY = 10_000_000.0

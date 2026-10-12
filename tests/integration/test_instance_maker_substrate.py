@@ -231,6 +231,30 @@ def test_the_ceiling_multiplier_defaults_to_the_bundles_tiers_object(harness, mo
     )
     assert seen["ceiling_multiplier"] == gate.tiers["ceiling_multiplier"] == 4
     assert seen["do_not_cache"] is True and seen["skip_cache_lookup"] is True and seen["stdin_document"]["bits"] == 28
+    assert seen["budget_remaining"] == BUDGET - instance_maker.COST_PROFILE.evaluate(28).expected_verification_core_s
+
+
+def test_a_maker_grant_must_cover_production_ceiling_and_verification(harness, popen_spy):
+    sub, gate, scratch = harness
+    selftest_skills.certify(sub, gate.verifier_config(), selftest_skills.INSTANCE_MAKER)
+    instances.commit_nonce(sub, HYPOTHESIS, "run-1", NONCE)
+    popen_spy.clear()
+    evaluation = instance_maker.COST_PROFILE.evaluate(28)
+    grant = runner.ceiling_for(evaluation.expected_core_s, CEILING)
+    with pytest.raises(runner.BudgetRefused):
+        instances.launch_trial(
+            sub,
+            gate,
+            nonce=NONCE,
+            bits=28,
+            trial=0,
+            scratch_root=scratch,
+            method_identity=METHOD_IDENTITY,
+            budget_remaining=grant,
+            ceiling_multiplier=CEILING,
+        )
+    assert popen_spy == []
+    assert sub.conn.execute("SELECT count(*) FROM attempts").fetchone()[0] == 0
 
 
 HOLD_OUT_BITS = 60

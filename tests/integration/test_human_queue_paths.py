@@ -138,6 +138,45 @@ def test_a_blocker_clearing_closes_the_item_that_held_it(deploy):
     print(before[1], after[1])
 
 
+def test_blocker_free_attestations_do_not_spend_a_ruling_on_an_attested_blocker(deploy):
+    with substrate.Substrate.open(deploy["db"]) as sub:
+        earlier = human_queue.enqueue(sub, Item("leaked", "statement", deploy["statement"].hash, T0))
+        unplaced = factories.review_verdict(deploy["statement"].hash, seed=5, at=AT)
+        offset = attest.append_record(deploy["attest"], claims.review_verdict_canonical(unplaced))
+        ruling = factories.review_verdict(deploy["statement"].hash, seed=5, at=AT, file_offset=offset)
+        claims.write_review_verdict(sub, ruling)
+        bound = {
+            "attest_path": deploy["attest"],
+            "record_digest": ruling.record_digest,
+            "file_offset": ruling.file_offset,
+        }
+        for item_id in (earlier, deploy["items"]["leaked"], deploy["items"]["review"]):
+            before = human_queue.depth(sub, deploy["attest"])
+            human_queue.close_by_attestation(sub, item_id, **bound)
+            assert human_queue.depth(sub, deploy["attest"]) == before - 1
+        assert human_queue.visible_closure(sub, earlier, deploy["attest"]) is not None
+        assert human_queue.visible_closure(sub, deploy["items"]["leaked"], deploy["attest"]) is not None
+        assert human_queue.visible_closure(sub, deploy["items"]["review"], deploy["attest"]) is not None
+
+
+def test_a_blocker_free_attestation_accepts_a_ruling_older_than_the_item(deploy):
+    with substrate.Substrate.open(deploy["db"]) as sub:
+        unplaced = factories.review_verdict(deploy["statement"].hash, seed=6, at=T0)
+        offset = attest.append_record(deploy["attest"], claims.review_verdict_canonical(unplaced))
+        ruling = factories.review_verdict(deploy["statement"].hash, seed=6, at=T0, file_offset=offset)
+        claims.write_review_verdict(sub, ruling)
+        before = human_queue.depth(sub, deploy["attest"])
+        human_queue.close_by_attestation(
+            sub,
+            deploy["items"]["leaked"],
+            attest_path=deploy["attest"],
+            record_digest=ruling.record_digest,
+            file_offset=ruling.file_offset,
+        )
+        assert human_queue.depth(sub, deploy["attest"]) == before - 1
+        assert human_queue.visible_closure(sub, deploy["items"]["leaked"], deploy["attest"]) is not None
+
+
 def test_a_terminal_status_closes_a_blocker_free_item_on_the_statement_it_names(deploy):
     with substrate.Substrate.open(deploy["db"]) as sub:
         with pytest.raises(ClosingRuleViolation, match="not a terminal status"):

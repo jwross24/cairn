@@ -525,3 +525,98 @@ def test_a_script_in_a_framework_bin_derives_no_re_exec_target(tmp_path):
     script.write_text("#!/bin/sh\nexit 0\n")
     script.chmod(0o755)
     assert allowlist.reexec_target(str(script)) is None
+
+
+def test_withheld_roots_are_resolved_denied_after_the_read_grant_and_addressed(shipped, scratch, tmp_path):
+    secret = tmp_path / "store"
+    secret.mkdir()
+    value = allowlist.instantiate(
+        shipped, hypothesis=_hypothesis(), counted_object=BACKEND, scratch_dir=scratch, withheld_roots=[secret, secret]
+    )
+    resolved = os.path.realpath(secret)
+    assert value.withheld_roots == (resolved,)
+    text = allowlist.profile_bytes(value.exec_paths, value.withheld_roots).decode()
+    grant, deny = (
+        text.index('(allow file-read* (subpath "/"))'),
+        text.index(f'(deny file-read* (subpath "{resolved}"))'),
+    )
+    assert grant < deny
+    assert value.profile_hash == blob_hash(text.encode())
+    assert allowlist.check_instantiation(value, shipped) is True
+
+
+def test_no_withheld_roots_leaves_the_profile_bytes_unchanged(instance):
+    assert b"deny file-read*" not in allowlist.profile_bytes(instance.exec_paths)
+    assert instance.withheld_roots == ()
+
+
+@pytest.mark.parametrize("covers", ["scratch", "executable", "root"])
+def test_a_withheld_root_that_would_blind_the_method_is_refused(shipped, scratch, covers):
+    root = {"scratch": scratch.parent, "executable": Path(BACKEND).parent, "root": Path(os.sep)}[covers]
+    with pytest.raises(allowlist.AllowListRefused, match="withheld root"):
+        allowlist.instantiate(
+            shipped, hypothesis=_hypothesis(), counted_object=BACKEND, scratch_dir=scratch, withheld_roots=[root]
+        )
+
+
+def test_a_withheld_root_the_profile_cannot_name_is_refused(shipped, scratch, tmp_path):
+    hostile = tmp_path / 'qu"ote'
+    with pytest.raises(allowlist.AllowListRefused, match="sandbox profile literal"):
+        allowlist.instantiate(
+            shipped, hypothesis=_hypothesis(), counted_object=BACKEND, scratch_dir=scratch, withheld_roots=[hostile]
+        )
+
+
+def test_dropping_a_withheld_root_from_a_record_is_refused_by_the_binding(shipped, scratch, tmp_path):
+    secret = tmp_path / "store"
+    secret.mkdir()
+    kwargs = {"hypothesis": _hypothesis(), "counted_object": BACKEND, "scratch_dir": scratch}
+    held = allowlist.instantiate(shipped, withheld_roots=[secret], **kwargs)
+    bare = allowlist.instantiate(shipped, **kwargs)
+    assert allowlist.check_binding(held, shipped, withheld_roots=[secret], **kwargs) is True
+    with pytest.raises(allowlist.AllowListRefused, match="differs from the one the gate derives"):
+        allowlist.check_binding(bare, shipped, withheld_roots=[secret], **kwargs)
+
+
+@pytest.fixture
+def withholding(shipped, scratch, tmp_path):
+    store = tmp_path / "store"
+    store.mkdir()
+    value = allowlist.instantiate(
+        shipped, hypothesis=_hypothesis(), counted_object=BACKEND, scratch_dir=scratch, withheld_roots=[store]
+    )
+    return value, Path(value.withheld_roots[0])
+
+
+def _denied(path):
+    return f"PermissionError: [Errno 1] Operation not permitted: '{path}'\n".encode()
+
+
+@pytest.mark.parametrize("leaf", ["", "/substrate.sqlite", "/nested/never-created.db"])
+def test_a_denied_path_within_a_withheld_root_is_named_a_withheld_read(withholding, leaf):
+    value, store = withholding
+    assert allowlist.detect_violation(1, _denied(f"{store}{leaf}"), value) == "withheld_read"
+
+
+def test_a_symlink_into_a_withheld_root_is_named_by_where_it_leads(withholding, tmp_path):
+    value, store = withholding
+    alias = tmp_path / "alias"
+    alias.symlink_to(store)
+    assert allowlist.detect_violation(1, _denied(alias / "substrate.sqlite"), value) == "withheld_read"
+
+
+def test_a_withheld_root_names_only_paths_within_it(withholding):
+    value, store = withholding
+    assert allowlist.detect_violation(1, _denied(f"{store}-sibling/x"), value) == "outside_write"
+    assert allowlist.detect_violation(1, _denied(store.parent), value) == "outside_write"
+
+
+def test_a_withheld_read_outranks_an_outside_write_in_one_report(withholding):
+    value, store = withholding
+    stderr = _denied("/etc/planted.txt") + _denied(store / "substrate.sqlite")
+    assert allowlist.detect_violation(1, stderr, value) == "withheld_read"
+
+
+def test_without_withheld_roots_no_denied_path_is_a_withheld_read(instance, tmp_path):
+    assert instance.withheld_roots == ()
+    assert allowlist.detect_violation(1, _denied(tmp_path / "store" / "substrate.sqlite"), instance) == "outside_write"

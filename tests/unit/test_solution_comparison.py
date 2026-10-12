@@ -71,19 +71,116 @@ def test_a_matching_closure_is_the_expectation(gate, assembled, comparator):
     assert wall_ms >= 0
 
 
-def test_the_comparator_runs_in_the_assembled_root_on_the_config_the_gate_wrote(gate, assembled, comparator):
+def test_the_comparator_runs_in_a_fresh_root_on_the_inputs_the_gate_wrote(gate, assembled, comparator):
     seen = {}
+    artifact = Path(assembled.root) / ".lake/build/lib/lean/Challenge/poisoned.olean"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_bytes(b"poisoned")
 
     def call(argv, *, cwd=None, timeout_s=None):
+        assert cwd is not None
         seen["argv"] = list(argv)
         seen["cwd"] = cwd
+        root = Path(cwd)
+        assert not (root / ".lake/build").exists()
+        for relative in assembled.inputs:
+            assert (root / relative).read_bytes() == (Path(assembled.root) / relative).read_bytes()
+            assert not (root / relative).samefile(Path(assembled.root) / relative)
         return lean.Run(argv=tuple(argv), cwd=cwd, rc=0, stdout="", stderr="", wall_ms=1.0)
 
     _observe(gate, assembled, comparator, call)
-    assert seen["cwd"] == assembled.root
+    assert seen["cwd"] != assembled.root
+    assert not Path(seen["cwd"]).is_relative_to(Path(assembled.root))
     assert seen["argv"][-2:] == [str(comparator), solutionbuild.CONFIG_NAME]
     assert seen["argv"][1] == f"+{gate.lean['toolchain']}"
     assert (Path(assembled.root) / solutionbuild.CONFIG_NAME).is_file()
+
+
+def test_an_input_rewritten_in_the_fresh_comparison_root_refuses_even_on_a_zero_rc(gate, assembled, comparator):
+    target = next(name for name in assembled.inputs if name.startswith(solutionbuild.CHALLENGE_DIR))
+
+    def call(argv, *, cwd=None, timeout_s=None):
+        assert cwd is not None
+        (Path(cwd) / target).write_bytes(b"theorem challenge_hello : True := trivial\n")
+        return lean.Run(argv=tuple(argv), cwd=cwd, rc=0, stdout="", stderr="", wall_ms=1.0)
+
+    observed, reasons, _ = _observe(gate, assembled, comparator, call)
+    assert observed == solutionplan.OBSERVED_REFUSED
+    assert reasons == (f"solution-inputs-changed:{target}",)
+    solutionbuild.assert_unchanged(assembled)
+
+
+def _remembering(seen, inner):
+    def call(argv, *, cwd=None, timeout_s=None):
+        assert cwd is not None
+        seen["directory"] = Path(cwd).parent
+        assert seen["directory"].is_dir()
+        return inner(argv, cwd=cwd, timeout_s=timeout_s)
+
+    return call
+
+
+def test_the_comparison_directory_is_removed_after_a_matching_closure(gate, assembled, comparator):
+    seen = {}
+    observed, _, _ = _observe(gate, assembled, comparator, _remembering(seen, _run()))
+    assert observed == solutionplan.EXPECT_CLOSURE_MATCHED
+    assert not seen["directory"].exists()
+
+
+def test_the_comparison_directory_is_removed_after_a_nonzero_comparator(gate, assembled, comparator):
+    seen = {}
+    observed, _, _ = _observe(gate, assembled, comparator, _remembering(seen, _run(rc=1)))
+    assert observed == solutionplan.OBSERVED_REFUSED
+    assert not seen["directory"].exists()
+
+
+def test_the_comparison_directory_is_removed_after_a_timeout(gate, assembled, comparator):
+    seen = {}
+
+    def expire(argv, *, cwd=None, timeout_s=None):
+        raise lean.LeanTimeout(tuple(argv), 0.25)
+
+    with pytest.raises(solutionplan.StepTimeout):
+        _observe(gate, assembled, comparator, _remembering(seen, expire), timeout_s=0.25)
+    assert not seen["directory"].exists()
+
+
+def test_the_comparison_directory_is_removed_after_an_input_is_rewritten(gate, assembled, comparator):
+    seen = {}
+    target = next(name for name in assembled.inputs if name.startswith(solutionbuild.CHALLENGE_DIR))
+
+    def rewrite(argv, *, cwd=None, timeout_s=None):
+        assert cwd is not None
+        (Path(cwd) / target).write_bytes(b"theorem challenge_hello : True := trivial\n")
+        return _run()(argv, cwd=cwd, timeout_s=timeout_s)
+
+    observed, reasons, _ = _observe(gate, assembled, comparator, _remembering(seen, rewrite))
+    assert observed == solutionplan.OBSERVED_REFUSED
+    assert reasons == (f"solution-inputs-changed:{target}",)
+    assert not seen["directory"].exists()
+
+
+def test_the_comparison_directory_is_removed_after_an_unexpected_error(gate, assembled, comparator):
+    seen = {}
+
+    def fail(argv, *, cwd=None, timeout_s=None):
+        raise OSError("comparator crashed")
+
+    with pytest.raises(OSError, match="comparator crashed"):
+        _observe(gate, assembled, comparator, _remembering(seen, fail))
+    assert not seen["directory"].exists()
+
+
+def test_no_comparison_directory_remains_when_the_fresh_root_cannot_be_assembled(
+    gate, assembled, comparator, monkeypatch
+):
+    def refuse(*args, **kwargs):
+        raise solutionbuild.SolutionRefused("dependency-refused")
+
+    monkeypatch.setattr(solutionbuild, "_write_project", refuse)
+    observed, reasons, _ = _observe(gate, assembled, comparator, _run())
+    assert (observed, reasons) == (solutionplan.OBSERVED_REFUSED, ("dependency-refused",))
+    assert list(Path(assembled.root).parent.glob("cairn-comparison-*")) == []
 
 
 def test_a_comparator_binary_that_is_not_there_refuses_and_never_runs_a_command(gate, assembled, tmp_path):

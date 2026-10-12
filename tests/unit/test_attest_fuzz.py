@@ -1,4 +1,6 @@
+import fcntl
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -26,6 +28,112 @@ def _write(tmp_path, data, name="attestations.log"):
     path = tmp_path / name
     path.write_bytes(data)
     return path
+
+
+@given(bodies=st.lists(st.binary(max_size=16384), min_size=2, max_size=4, unique=True))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_appended_records_match_only_their_own_frame_offsets(tmp_path_factory, bodies):
+    path = tmp_path_factory.mktemp("append") / "attestations.log"
+    offsets = [attest.append_record(path, body) for body in bodies]
+    assert list(attest.records(path)) == list(zip(offsets, bodies, strict=True))
+    assert path.read_bytes() == _framed(bodies)
+    for index, body in enumerate(bodies):
+        for other, offset in enumerate(offsets):
+            assert attest.attestation_record_matches(path, offset, blob_hash(body)) == (index == other)
+
+
+@pytest.mark.parametrize("failure", [None, "write", "flush", "no_progress"])
+def test_append_holds_lock_through_short_writes_and_flush_and_releases_on_failure(
+    tmp_path, monkeypatch, caplog, failure
+):
+    path = _write(tmp_path, b"")
+    original_open = Path.open
+    opened_files = []
+    events = []
+
+    class ShortWriteFile:
+        def __init__(self, file):
+            self.file = file
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return self.file.__exit__(*args)
+
+        def __getattr__(self, name):
+            return getattr(self.file, name)
+
+        def assert_locked(self):
+            with original_open(path, "ab", buffering=0) as contender, pytest.raises(BlockingIOError):
+                fcntl.flock(contender.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+        def seek(self, *args):
+            self.assert_locked()
+            events.append("seek")
+            return self.file.seek(*args)
+
+        def tell(self):
+            self.assert_locked()
+            events.append("tell")
+            return self.file.tell()
+
+        def write(self, data):
+            self.assert_locked()
+            events.append("write")
+            if failure == "write":
+                raise OSError("injected write failure")
+            if failure == "no_progress":
+                return 0
+            return self.file.write(data[:3])
+
+        def flush(self):
+            self.assert_locked()
+            events.append("flush")
+            if failure == "flush":
+                raise OSError("injected flush failure")
+            return self.file.flush()
+
+    def opened(self, *args, **kwargs):
+        file = original_open(self, *args, **kwargs)
+        if self == path and args and args[0] == "ab":
+            assert kwargs["buffering"] == 0
+            opened_files.append(file)
+            return ShortWriteFile(file)
+        return file
+
+    monkeypatch.setattr(Path, "open", opened)
+    if failure:
+        message = "made no progress" if failure == "no_progress" else f"injected {failure} failure"
+        with pytest.raises(OSError, match=message):
+            attest.append_record(path, b"body")
+        assert not any(record.getMessage() == "append" for record in caplog.records)
+    else:
+        assert attest.append_record(path, b"body") == 0
+        assert events == ["seek", "tell", "write", "write", "write", "write", "flush"]
+        assert path.read_bytes() == attest.frame(b"body")
+    assert opened_files[0].closed
+    with original_open(path, "ab") as contender:
+        fcntl.flock(contender.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        fcntl.flock(contender.fileno(), fcntl.LOCK_UN)
+
+
+def test_lock_acquisition_failure_closes_file_without_appending_or_reporting_success(tmp_path, monkeypatch, caplog):
+    path = _write(tmp_path, b"")
+    descriptors = []
+
+    def refused(fd, operation):
+        assert operation == fcntl.LOCK_EX
+        descriptors.append(fd)
+        raise OSError("injected lock failure")
+
+    monkeypatch.setattr(attest.fcntl, "flock", refused)
+    with pytest.raises(OSError, match="injected lock failure"):
+        attest.append_record(path, b"body")
+    assert path.read_bytes() == b""
+    assert not any(record.getMessage() == "append" for record in caplog.records)
+    with pytest.raises(OSError, match="Bad file descriptor"):
+        os.fstat(descriptors[0])
 
 
 @st.composite

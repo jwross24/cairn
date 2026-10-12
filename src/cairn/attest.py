@@ -1,3 +1,4 @@
+import fcntl
 import json
 import os
 import stat
@@ -54,9 +55,20 @@ def frame(canonical):
 
 def append_record(path, canonical):
     framed = frame(canonical)
-    with Path(path).open("ab") as fh:
-        offset = fh.tell()
-        fh.write(framed)
+    with Path(path).open("ab", buffering=0) as fh:
+        fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+        try:
+            fh.seek(0, os.SEEK_END)
+            offset = fh.tell()
+            remaining = memoryview(framed)
+            while remaining:
+                written = fh.write(remaining)
+                if not written:
+                    raise OSError("attestation append made no progress")
+                remaining = remaining[written:]
+            fh.flush()
+        finally:
+            fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
     lg.info("append", path=str(path), offset=offset, bytes=len(framed), digest=blob_hash(canonical))
     return offset
 

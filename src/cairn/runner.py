@@ -11,7 +11,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from cairn import canon, cli, escrow, exits, keys, log, yank
+from cairn import allowlist, bundle, canon, cli, escrow, exits, keys, log, yank
 from cairn.errors import CliError
 from cairn.substrate import blob_hash
 
@@ -367,10 +367,22 @@ class RunnerError(Exception):
 
 
 class BudgetRefused(RunnerError):
-    def __init__(self, remaining, ceiling_s):
+    def __init__(self, remaining, ceiling_core_s):
         self.remaining = remaining
-        self.ceiling_s = ceiling_s
-        super().__init__(f"remaining budget {remaining} cannot cover the ceiling {ceiling_s}")
+        self.ceiling_core_s = ceiling_core_s
+        super().__init__(
+            f"remaining budget {remaining} core seconds cannot cover the ceiling {ceiling_core_s} core seconds"
+        )
+
+
+@dataclass(frozen=True)
+class MethodPolicy:
+    gate_bundle: bundle.GateBundle
+    hypothesis: dict
+    allow_list: allowlist.AllowList
+    dispatch_hash: str
+    scratch_root: Path
+    backend_paths: dict = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -384,6 +396,8 @@ class Attempt:
     launch: Launch | None = None
     parsed: ParsedOutput | None = None
     diverged: tuple = ()
+    allow_list_hash: str | None = None
+    writable_root: str | None = None
 
 
 def running_attempts(sub):
@@ -422,8 +436,11 @@ def _artifacts(sub, stdout_bytes, scratch_dir):
                     reason="not a regular file",
                 )
                 continue
+            artifact_name = str(path.relative_to(root))
+            if artifact_name == "output.json":
+                raise RunnerError("scratch artifact output.json collides with captured stdout")
             data = path.read_bytes()
-            artifacts[str(path.relative_to(root))] = (sub.put_blob(data), len(data))
+            artifacts[artifact_name] = (sub.put_blob(data), len(data))
     return artifacts
 
 
@@ -458,13 +475,32 @@ def launch(
     env_extra=None,
     stdin_document=None,
     attest_path=None,
+    method_policy=None,
+    require_method_policy=False,
 ):
     lg = log.get(LOG_STEP)
+    if require_method_policy and method_policy is None:
+        raise allowlist.AllowListRefused("the method launch requires an allow-list policy")
+    if method_policy is not None:
+        if bundle_hash != method_policy.gate_bundle.hash:
+            raise allowlist.AllowListRefused("launch bundle differs from the method policy bundle")
+        if not skip_cache_lookup or not do_not_cache:
+            raise allowlist.AllowListRefused("a confined method launch must bypass the cache")
+        allowlist.check_binding(
+            method_policy.allow_list,
+            method_policy.gate_bundle,
+            hypothesis=method_policy.hypothesis,
+            counted_object=os.path.realpath(sys.executable),
+            scratch_dir=method_policy.scratch_root,
+            backend_paths=method_policy.backend_paths,
+            withheld_roots=method_policy.allow_list.withheld_roots,
+        )
     startup_scan(sub)
     ceiling_s = ceiling_for(evaluation.expected_wall_s, ceiling_multiplier, subprocess_startup_ms)
     wall_cap_s = wall_cap_for(ceiling_s, wall_cap_multiplier, wall_cap_floor_s)
-    if budget_remaining is not None and budget_remaining < ceiling_s:
-        raise BudgetRefused(budget_remaining, ceiling_s)
+    ceiling_core_s = ceiling_for(evaluation.expected_core_s, ceiling_multiplier, subprocess_startup_ms)
+    if budget_remaining is not None and budget_remaining < ceiling_core_s:
+        raise BudgetRefused(budget_remaining, ceiling_core_s)
     recipe_key = sub.put_recipe(recipe, do_not_cache=do_not_cache)
     if not skip_cache_lookup:
         served = sub.serve(recipe_key)
@@ -492,14 +528,58 @@ def launch(
     )
     try:
         attempt_dir = Path(scratch_root) / attempt_id
-        scratch_dir = attempt_dir / "scratch"
+        attempt_dir.mkdir(parents=True)
+        method_root = attempt_dir if method_policy is None else method_policy.scratch_root / attempt_id
+        scratch_dir = method_root / "scratch"
         scratch_dir.mkdir(parents=True)
+        argv = skill_argv(skill_module, scratch_dir)
+        effective = None
+        if method_policy is not None:
+            if not allowlist.within(str(scratch_dir.resolve()), method_policy.allow_list.writable_root):
+                raise allowlist.AllowListRefused("allocated method scratch is outside the dispatch root")
+            effective = allowlist.instantiate(
+                method_policy.gate_bundle,
+                hypothesis=method_policy.hypothesis,
+                counted_object=method_policy.allow_list.counted_object,
+                scratch_dir=scratch_dir,
+                backend_paths=method_policy.backend_paths,
+                withheld_roots=method_policy.allow_list.withheld_roots,
+            )
+            allowlist.check_binding(
+                effective,
+                method_policy.gate_bundle,
+                hypothesis=method_policy.hypothesis,
+                counted_object=argv[0],
+                scratch_dir=scratch_dir,
+                backend_paths=method_policy.backend_paths,
+                withheld_roots=method_policy.allow_list.withheld_roots,
+            )
+            profile_path = allowlist.write_profile(effective, attempt_dir / "method.sb")
+            argv = allowlist.argv_for(effective, profile_path, argv)
+            allowlist.record(sub, effective)
+            launch_record = sub.put_node(
+                "method_launch",
+                bundle.canonical_bytes(
+                    "method_launch",
+                    {
+                        "attempt_id": attempt_id,
+                        "dispatch_hash": method_policy.dispatch_hash,
+                        "allow_list_hash": effective.hash,
+                        "writable_root": effective.writable_root,
+                        "argv": argv,
+                    },
+                ),
+                replay_grade="AuditOnly",
+            )
+            sub.add_lineage(launch_record, effective.hash, "input")
+            sub.add_lineage(launch_record, method_policy.dispatch_hash, "input")
+            sub.add_root("ledger_row", launch_record)
         out_path, err_path = attempt_dir / "stdout", attempt_dir / "stderr"
         document = {} if stdin_document is None else stdin_document
         stdin_bytes = (json.dumps(document, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
         before = allocated_bytes(scratch_dir)
         run = spawn_and_wait(
-            skill_argv(skill_module, scratch_dir),
+            argv,
             out_path,
             err_path,
             wall_cap_s=wall_cap_s,
@@ -552,8 +632,7 @@ def launch(
             honor_yank=True,
             attest_path=attest_path,
         )
-        if status != STATUS_SKILL_YANKED:
-            escrow.settle_on_close(sub, attempt_id, status)
+        escrow.settle_on_close(sub, attempt_id, status)
         diverged = _diverged(sub, recipe_key) if status == STATUS_OK else ()
         lg.info(
             "launch",
@@ -577,12 +656,13 @@ def launch(
             run,
             parsed,
             diverged,
+            effective.hash if effective is not None else None,
+            effective.writable_root if effective is not None else None,
         )
     except Exception:
         if sub.get_attempt(attempt_id)["ended_at"] is None:
             status = sub.close_attempt(attempt_id, STATUS_FAIL, honor_yank=True, attest_path=attest_path)
-            if status != STATUS_SKILL_YANKED:
-                escrow.settle_on_close(sub, attempt_id, status)
+            escrow.settle_on_close(sub, attempt_id, status)
             lg.warning("launch_aborted", attempt_id=attempt_id, recipe_key=recipe_key)
         raise
 

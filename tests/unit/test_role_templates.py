@@ -77,6 +77,14 @@ def test_the_skeptic_checklist_carries_its_item(shipped, keyword):
     assert keyword in roles.load(shipped, roles.SKEPTIC)[0]
 
 
+def test_the_skeptic_checklist_checks_the_zero_denominator_claim(shipped):
+    text = roles.load(shipped, roles.SKEPTIC)[0]
+    assert "holds emptily wherever the denominator vanishes" not in text
+    assert "quotient takes the value 0 wherever the denominator vanishes" in text
+    assert "can be true or false" in text
+    assert "Name what the statement asserts about 0 there and whether the informal claim intends it" in text
+
+
 @pytest.mark.parametrize("keyword", PROVER_KEYWORDS)
 def test_the_prover_brief_carries_its_item(shipped, keyword):
     assert keyword in roles.load(shipped, roles.PROVER)[0]

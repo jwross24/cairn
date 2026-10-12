@@ -48,7 +48,7 @@ def _baseline(sub, stmt):
     claims.write_evidence_node(sub, node)
 
 
-def _review(sub, path, stmt, gate, decision="approve"):
+def _review(sub, path, stmt, gate, decision="approve", *, supersedes=None):
     unplaced = claims.ReviewVerdict(
         statement_hash=stmt.hash,
         reviewer="test-owned-operator",
@@ -56,6 +56,7 @@ def _review(sub, path, stmt, gate, decision="approve"):
         checklist_template_hash=gate.digest_of("role_templates"),
         gate_bundle_hash=gate.hash,
         at="2026-09-30T16:00:00Z",
+        supersedes=supersedes,
     )
     offset = attest.append_record(path, claims.review_verdict_canonical(unplaced))
     verdict = replace(unplaced, file_offset=offset)
@@ -182,6 +183,34 @@ def test_real_gold_artifact_requires_matching_review_and_records_the_bindings(
         assert pointers["review_verdict_hash"] == verdict.hash
         assert pointers["record_digest"] == verdict.record_digest
         assert pointers["file_offset"] == verdict.file_offset
+        for decision in ("reject", "needs_revision"):
+            blocking = _review(sub, path, current, linux_bundle, decision, supersedes=verdict.hash)
+            context = justify.context_for(sub, artifact, claims.get_claim_statement(sub, current.hash), path)
+            assert context.formalization_reason is None
+            assert not context.approved
+            assert (context.review_verdict_hash, context.record_digest, context.file_offset) == (None, None, None)
+            refused = justify.derive_tag(sub, current.hash, path)
+            assert refused.tag == justify.CONJECTURE
+            assert any(isinstance(value, justify.Pending) for _, value in refused.results)
+            history = claims.tag_history_for(sub, current.hash)[-1]
+            assert (history["from_tag"], history["to_tag"]) == (justify.PROVEN, justify.CONJECTURE)
+            pointers = json.loads(history["justification"])
+            assert all(pointers.get(name) is None for name in ("review_verdict_hash", "record_digest", "file_offset"))
+            verdict = _review(sub, path, current, linux_bundle, supersedes=blocking.hash)
+            proven = justify.derive_tag(sub, current.hash, path)
+            assert proven.tag == justify.PROVEN
+            history = claims.tag_history_for(sub, current.hash)[-1]
+            assert (history["from_tag"], history["to_tag"], history["evidence_hash"]) == (
+                justify.CONJECTURE,
+                justify.PROVEN,
+                artifact["hash"],
+            )
+            pointers = json.loads(history["justification"])
+            assert pointers["gate_run_hash"] == run["run_id"]
+            assert pointers["review_verdict_hash"] == verdict.hash
+            assert pointers["record_digest"] == verdict.record_digest
+            assert pointers["file_offset"] == verdict.file_offset
+        assert len(claims.visible_review_verdicts(sub, current.hash, path)) == 6
         assert bounded_containers
         assert all("--memory=6g" in args for args in bounded_containers)
         print(f"real docker memory-bound invocations: {len(bounded_containers)}")

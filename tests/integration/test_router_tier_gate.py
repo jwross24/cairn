@@ -180,6 +180,28 @@ def test_a_theorem_at_top_class_needs_the_formalization_gate_and_the_statement_r
     assert scrutiny.EXPERT_SIGNOFF_ABSENT in after
 
 
+def place_review(arena, statement_hash, verdict="approve", **kw):
+    unplaced = factories.review_verdict(statement_hash, verdict=verdict, seed=3, **kw)
+    offset = attest.append_record(str(arena["attest"]), claims.review_verdict_canonical(unplaced))
+    placed = dataclasses.replace(unplaced, file_offset=offset)
+    claims.write_review_verdict(arena["sub"], placed)
+    return placed
+
+
+@pytest.mark.parametrize("decision", ["reject", "needs_revision"])
+def test_a_superseded_approval_no_longer_meets_the_statement_review_obligation(arena, decision):
+    theorem = factories.claim_statement(seed=23, family="toy_curve", formal_source="theorem T : True := trivial")
+    claims.write_claim_statement(arena["sub"], theorem)
+    key = hypothesis(arena, cost_model=BELOW_BOUND)
+    launch_ = tier_launch(arena, 3, key=key, statement_hash=theorem.hash)
+    approval = place_review(arena, theorem.hash)
+    assert scrutiny._reviewed(arena["sub"], theorem.hash, str(arena["attest"])) is True
+    assert scrutiny.SCRUTINY_STATEMENT_REVIEW_ABSENT not in scrutiny_reasons(arena, launch_)
+    place_review(arena, theorem.hash, verdict=decision, supersedes=approval.hash)
+    assert scrutiny._reviewed(arena["sub"], theorem.hash, str(arena["attest"])) is False
+    assert scrutiny.SCRUTINY_STATEMENT_REVIEW_ABSENT in scrutiny_reasons(arena, launch_)
+
+
 def gate_row(**kw):
     fields = {"gate": "challenge_render", "result": "pass", "arm": "gold-linux-container"}
     fields.update(kw)

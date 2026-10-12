@@ -11,7 +11,7 @@ arm's seed is fixed before the method sees the instance and no two arms share a 
 import dataclasses
 import importlib
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from decimal import Decimal
 from pathlib import Path
 from uuid import uuid4
@@ -22,6 +22,7 @@ from cairn import (
     canon,
     claims,
     cli,
+    escrow,
     instances,
     keys,
     ladderplan,
@@ -226,6 +227,7 @@ def _allow_list(dispatch):
         network_egress=data["network_egress"],
         writable_root=data["writable_root"],
         profile_hash=data["profile_hash"],
+        withheld_roots=tuple(data["withheld_roots"]),
     )
 
 
@@ -257,6 +259,8 @@ def check_dispatch(sub, gate_bundle, dispatch, plan, *, attest_path=None):
         raise RunRefused(YANKED_REVISION, f"skill identity {dispatch.identity_bundle_hash[:12]} is yanked")
     if dispatch.allow_list.get("bundle_hash") != gate_bundle.hash:
         raise RunRefused(ALLOW_LIST_UNBOUND, "the instantiated allow-list names another gate bundle")
+    if _allow_list(dispatch).hash != dispatch.allow_list_hash:
+        raise RunRefused(ALLOW_LIST_UNBOUND, "the instantiated allow-list differs from its recorded hash")
     if not allowlist.check_instantiation(_allow_list(dispatch), gate_bundle):
         raise RunRefused(ALLOW_LIST_UNBOUND, "the instantiated allow-list does not match the bundle template")
     return dispatch
@@ -370,6 +374,8 @@ class ArmTrial:
     measurement_scope: str
     attempt_id: str
     instance_hash: str
+    allow_list_hash: str | None = None
+    writable_root: str | None = None
 
 
 def _receipt_scratch(sub, attempt):
@@ -377,6 +383,34 @@ def _receipt_scratch(sub, attempt):
         return 0
     row = sub.get_receipt(attempt.receipt_hash)
     return 0 if row is None else int(row["scratch_bytes_written"])
+
+
+@dataclass
+class RunBudget:
+    granted_core_s: float
+    attempt_ids: list[str] = field(default_factory=list)
+
+    def snapshot(self, sub):
+        production = 0.0
+        verification = 0.0
+        for attempt_id in self.attempt_ids:
+            attempt = sub.get_attempt(attempt_id)
+            receipt = sub.get_receipt(attempt["receipt_hash"])
+            reservation = escrow.reservation(sub, attempt_id)
+            if receipt is None or reservation is None:
+                raise substrate.SubstrateError(f"run budget cannot reconcile attempt {attempt_id}")
+            production += receipt["cpu_user_s"] + receipt["cpu_sys_s"]
+            if reservation["released_at"] is None:
+                verification += reservation["reserved"]
+        return {
+            "granted_core_s": self.granted_core_s,
+            "production_core_s": production,
+            "verification_core_s": verification,
+            "budget_remaining_core_s": self.granted_core_s - production - verification,
+        }
+
+    def remaining(self, sub):
+        return self.snapshot(sub)["budget_remaining_core_s"]
 
 
 def _admit(sub, gate_bundle, value, *, bits, seed, budget_remaining, attest_path):
@@ -408,8 +442,23 @@ def run_arm(
     scratch_root,
     budget_remaining,
     attest_path=None,
+    backend_paths=None,
 ):
     module = value.module
+    recorded_dispatch = sub.get_node(value.hash)
+    if recorded_dispatch is None or recorded_dispatch["kind"] != KIND:
+        raise RunRefused(ALLOW_LIST_UNBOUND, "the launch does not name a recorded dispatch")
+    recorded_policy = _allow_list(value)
+    if recorded_policy.hash != value.allow_list_hash:
+        raise RunRefused(ALLOW_LIST_UNBOUND, "the launch allow-list differs from its recorded hash")
+    policy = runner.MethodPolicy(
+        gate_bundle=gate_bundle,
+        hypothesis=_hypothesis(sub, value.hypothesis_hash),
+        allow_list=recorded_policy,
+        dispatch_hash=value.hash,
+        scratch_root=Path(recorded_policy.writable_root),
+        backend_paths=dict(backend_paths or {}),
+    )
     seed = method_seed(value.nonce, value.hypothesis_hash, value.arm, bits, trial)
     _admit(
         sub,
@@ -426,12 +475,13 @@ def run_arm(
     document["Q"] = [str(c) for c in fields["Q"]]
     if module.INPUTS is not None and any(f.name == "negation_map" for f in module.INPUTS.fields):
         document["negation_map"] = False
+    evaluation = module.COST_PROFILE.evaluate(bits)
     attempt = runner.launch(
         sub,
         value.skill,
         _recipe(value, seed, f"ladder/{value.run_id}/{value.arm}/{bits}/{trial}"),
         bundle_hash=gate_bundle.hash,
-        evaluation=module.COST_PROFILE.evaluate(bits),
+        evaluation=evaluation,
         ceiling_multiplier=plan.patience_multiplier,
         wall_cap_multiplier=gate_bundle.tiers["wall_cap_multiplier"],
         wall_cap_floor_s=gate_bundle.tiers["wall_cap_floor_s"],
@@ -441,8 +491,11 @@ def run_arm(
         replay=module.REPLAY_GRADE,
         skip_cache_lookup=True,
         do_not_cache=True,
+        budget_remaining=budget_remaining - evaluation.expected_verification_core_s,
         stdin_document=document,
         attest_path=attest_path,
+        method_policy=policy,
+        require_method_policy=True,
     )
     launch = attempt.launch
     parsed = attempt.parsed.document if attempt.parsed is not None else {}
@@ -473,6 +526,8 @@ def run_arm(
         measurement_scope=launch.measurement_scope if launch else runner.SCOPE_UNSAMPLED,
         attempt_id=attempt.attempt_id,
         instance_hash=instance_hash,
+        allow_list_hash=attempt.allow_list_hash,
+        writable_root=attempt.writable_root,
     )
 
 
@@ -571,6 +626,7 @@ def run(
     ceiling_multiplier=None,
     ops_counter=None,
     at=None,
+    backend_paths=None,
 ):
     """One ladder run: every rung, every trial, every arm on the gate's instance stream."""
     with Path(attest_path).open("rb"):
@@ -583,6 +639,7 @@ def run(
         check_dispatch(sub, gate_bundle, value, plan, attest_path=attest_path)
     claimant = records[CLAIMANT]
 
+    budget = RunBudget(budget_remaining)
     arm_trials = []
     for rung in plan.rungs:
         by_arm = {arm: [] for arm in arms_for(rung)}
@@ -595,10 +652,11 @@ def run(
                 trial=trial,
                 scratch_root=scratch_root,
                 method_identity=claimant.method_identity,
-                budget_remaining=budget_remaining,
+                budget_remaining=budget.remaining(sub),
                 ceiling_multiplier=ceiling_multiplier,
                 attest_path=attest_path,
             )
+            budget.attempt_ids.append(attempt.attempt_id)
             if out is None:
                 raise RunRefused(
                     INSTANCE_FAILED, f"the instance stream stopped at {rung.bits}/{trial} with {attempt.status}"
@@ -615,10 +673,12 @@ def run(
                         bits=rung.bits,
                         trial=trial,
                         scratch_root=scratch_root,
-                        budget_remaining=budget_remaining,
+                        budget_remaining=budget.remaining(sub),
                         attest_path=attest_path,
+                        backend_paths=backend_paths,
                     )
                 )
+                budget.attempt_ids.append(by_arm[arm][-1].attempt_id)
         for values in by_arm.values():
             arm_trials.extend(values)
 
@@ -693,5 +753,7 @@ def run(
                     verdict_ref=entry,
                     at=table.created_at,
                 )
-    lg.info("run", run_id=run_id, table=table.hash, rungs=len(rungs), trials=len(canonical_trials))
+    lg.info(
+        "run", run_id=run_id, table=table.hash, rungs=len(rungs), trials=len(canonical_trials), **budget.snapshot(sub)
+    )
     return table, tuple(arm_trials)

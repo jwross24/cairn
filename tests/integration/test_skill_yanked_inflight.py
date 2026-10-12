@@ -209,6 +209,36 @@ def test_a_receipt_write_failure_honors_the_yank_and_its_settlement_owner(writer
     assert len(yank.records_for(writer, REVISION, attest_path=writer._attest_path)) == 1
 
 
+@pytest.mark.parametrize("receipt_failure", [False, True], ids=["completed", "receipt-failure"])
+def test_a_launch_after_yank_propagation_releases_escrow_once(writer, tmp_path, receipt_failure):
+    attest_path = str(tmp_path / "attest.log")
+    ruling = _authorize(writer, attest_path)
+    outcome = _record(writer, attest_path, ruling)
+    assert outcome.disowned == outcome.released == ()
+    if receipt_failure:
+        writer.conn.executescript(
+            "CREATE TRIGGER reject_receipt BEFORE INSERT ON receipts BEGIN SELECT RAISE(ABORT, 'receipt rejected'); END;"
+        )
+        with pytest.raises(sqlite3.IntegrityError, match="receipt rejected"):
+            _launch(writer, tmp_path, attest_path=attest_path, finish=True)
+        row = dict(writer.conn.execute("SELECT * FROM attempts").fetchone())
+        assert row["receipt_hash"] is None
+    else:
+        attempt = _launch(writer, tmp_path, attest_path=attest_path, finish=True)
+        row = writer.get_attempt(attempt.attempt_id)
+        assert attempt.status == "SKILL_YANKED"
+        assert row["receipt_hash"] is not None
+    assert row["status"] == "SKILL_YANKED" and row["ended_at"] is not None
+    assert row["disowned_at"] is None
+    reservation = escrow.reservation(writer, row["attempt_id"])
+    assert reservation["released_at"] is not None
+    assert reservation["released_by"] == "status:SKILL_YANKED"
+    assert reservation["spent_at"] is None
+    assert not escrow.standing(writer, row["attempt_id"])
+    updates = writer.conn.execute("SELECT attempt_id, settler FROM settlement_updates").fetchall()
+    assert [tuple(update) for update in updates] == [(row["attempt_id"], "runner")]
+
+
 def test_a_skill_yanked_status_alone_is_neither_cacheable_nor_a_ticket(writer):
     key = writer.put_recipe(helpers.recipe())
     attempt_id, _ = helpers.launch(writer, key, status="SKILL_YANKED", payloads={"out": b"result"})
