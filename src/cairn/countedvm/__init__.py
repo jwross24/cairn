@@ -21,8 +21,9 @@ EXIT_INPUT_REFUSED = 2
 EXIT_PROGRAM_REFUSED = 3
 OUTPUT_KEYS = {"status", "sandbox", "count", "executed", "result", "p0", "i0"}
 SANDBOX_PURE_COMPUTATION = "pure-computation"
+SANDBOX_SECCOMP = "seccomp-stdio-anonymous-memory"
 SANDBOX_NONE = "none"
-SANDBOX_REQUIRED = {"darwin": SANDBOX_PURE_COMPUTATION}
+SANDBOX_REQUIRED = {"darwin": SANDBOX_PURE_COMPUTATION, "linux": SANDBOX_SECCOMP}
 REFUSAL_KEYS = ({"status", "reason"}, {"status", "reason", "count", "executed"})
 COUNTING_CONVENTION = {
     "addp": "one group op, whatever the operands; an add that reaches the doubling formula is still one op",

@@ -13,7 +13,7 @@ PROGRAM = "setp p0 P\nsset s0 5\nmulp p0 p0 s0\nhalt"
 BUDGET = 10_000
 EXPECTED_COUNT = countedvm.expected_mul_ops(5)
 REQUIRED = countedvm.SANDBOX_REQUIRED.get(sys.platform)
-DARWIN_ONLY = pytest.mark.skipif(REQUIRED is None, reason="the pure-computation sandbox exists on darwin only")
+CONTAINMENT_ONLY = pytest.mark.skipif(REQUIRED is None, reason="containment supports macOS and Linux")
 
 
 def _child(request):
@@ -65,10 +65,10 @@ def test_a_direct_launch_binds_the_count_to_the_attempt_the_program_the_instance
     assert _launch(genuine["binary"], genuine["digest"], tmp_path)["binding"] == run["binding"]
 
 
-@DARWIN_ONLY
+@CONTAINMENT_ONLY
 def test_the_launched_vm_reports_the_containment_it_applied(genuine, tmp_path):
     run = _launch(genuine["binary"], genuine["digest"], tmp_path)
-    assert run["outcome"]["sandbox"] == countedvm.SANDBOX_PURE_COMPUTATION
+    assert run["outcome"]["sandbox"] == REQUIRED
 
 
 def test_a_relay_wrapper_that_forwards_the_genuine_vm_and_rewrites_its_count_is_refused_before_it_runs(
@@ -95,7 +95,7 @@ def test_an_unpinned_binary_that_prints_a_plausible_success_line_is_refused_on_i
     assert _launch(forged, genuine["digest"], tmp_path) == {"refused": "binary_digest_mismatch"}
 
 
-@DARWIN_ONLY
+@CONTAINMENT_ONLY
 def test_a_vm_built_without_its_containment_call_is_refused_even_when_its_digest_is_pinned(tmp_path):
     mutant = _child(
         {"op": "mutant", "scratch": str(tmp_path / "mutant"), "old": "if (!contain()) {", "new": "if (0) {"}
@@ -103,7 +103,7 @@ def test_a_vm_built_without_its_containment_call_is_refused_even_when_its_digest
     assert _launch(mutant["binary"], mutant["digest"], tmp_path) == {"refused": "containment_missing"}
 
 
-@DARWIN_ONLY
+@CONTAINMENT_ONLY
 def test_the_containment_the_vm_applies_stops_a_file_read_that_an_uncontained_process_completes(tmp_path):
     results = _child({"op": "probe", "scratch": str(tmp_path / "probe")})
     assert results["uncontained"] == {"rc": 0, "stdout": "open=3 read=1\n"}

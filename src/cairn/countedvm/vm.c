@@ -1,4 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
+#ifdef __linux__
+#define _DEFAULT_SOURCE
+#endif
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -6,6 +9,16 @@
 #include <string.h>
 #ifdef __APPLE__
 #include <sandbox.h>
+#endif
+#ifdef __linux__
+#include <errno.h>
+#include <stddef.h>
+#include <linux/audit.h>
+#include <linux/filter.h>
+#include <linux/seccomp.h>
+#include <sys/mman.h>
+#include <sys/prctl.h>
+#include <sys/syscall.h>
 #endif
 
 typedef uint64_t u64;
@@ -773,6 +786,84 @@ static int execute(void) {
 
 static const char *containment = "none";
 
+#ifdef __linux__
+#define VM_DENY (SECCOMP_RET_ERRNO | EPERM)
+#define VM_ALLOW_NR(nr) \
+    BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, nr, 0, 1), \
+    BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW)
+#define VM_REQUIRE_ARG(word, value) \
+    BPF_STMT(BPF_LD | BPF_W | BPF_ABS, word), \
+    BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, value, 1, 0), \
+    BPF_STMT(BPF_RET | BPF_K, VM_DENY)
+#define VM_ARG_LO(index) offsetof(struct seccomp_data, args[index])
+#define VM_ARG_HI(index) (offsetof(struct seccomp_data, args[index]) + 4)
+
+static int contain_linux(void) {
+#if defined(__aarch64__)
+    const unsigned int arch = AUDIT_ARCH_AARCH64;
+#elif defined(__x86_64__) && !defined(__ILP32__)
+    const unsigned int arch = AUDIT_ARCH_X86_64;
+#else
+    return refuse("containment_unsupported_arch");
+#endif
+#if defined(__aarch64__) || (defined(__x86_64__) && !defined(__ILP32__))
+    static char input_buffer[8192];
+    static char output_buffer[4096];
+    if (setvbuf(stdin, input_buffer, _IOFBF, sizeof(input_buffer)) != 0 ||
+        setvbuf(stdout, output_buffer, _IOFBF, sizeof(output_buffer)) != 0) {
+        return 0;
+    }
+    struct sock_filter filter[] = {
+        BPF_STMT(BPF_LD | BPF_W | BPF_ABS, offsetof(struct seccomp_data, arch)),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, arch, 1, 0),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_KILL_PROCESS),
+        BPF_STMT(BPF_LD | BPF_W | BPF_ABS, offsetof(struct seccomp_data, nr)),
+        VM_ALLOW_NR(__NR_brk),
+        VM_ALLOW_NR(__NR_munmap),
+        VM_ALLOW_NR(__NR_exit),
+        VM_ALLOW_NR(__NR_exit_group),
+        VM_ALLOW_NR(__NR_rt_sigreturn),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_read, 0, 7),
+        VM_REQUIRE_ARG(VM_ARG_HI(0), 0),
+        BPF_STMT(BPF_LD | BPF_W | BPF_ABS, VM_ARG_LO(0)),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, 0, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
+        BPF_STMT(BPF_RET | BPF_K, VM_DENY),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_write, 0, 8),
+        VM_REQUIRE_ARG(VM_ARG_HI(0), 0),
+        BPF_STMT(BPF_LD | BPF_W | BPF_ABS, VM_ARG_LO(0)),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, 1, 2, 0),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, 2, 1, 0),
+        BPF_STMT(BPF_RET | BPF_K, VM_DENY),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_mmap, 1, 0),
+        BPF_STMT(BPF_RET | BPF_K, VM_DENY),
+        VM_REQUIRE_ARG(VM_ARG_HI(0), 0),
+        VM_REQUIRE_ARG(VM_ARG_LO(0), 0),
+        VM_REQUIRE_ARG(VM_ARG_HI(2), 0),
+        VM_REQUIRE_ARG(VM_ARG_LO(2), PROT_READ | PROT_WRITE),
+        VM_REQUIRE_ARG(VM_ARG_HI(3), 0),
+        VM_REQUIRE_ARG(VM_ARG_LO(3), MAP_PRIVATE | MAP_ANONYMOUS),
+        VM_REQUIRE_ARG(VM_ARG_LO(4), UINT32_MAX),
+        BPF_STMT(BPF_LD | BPF_W | BPF_ABS, VM_ARG_HI(4)),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, 0, 2, 0),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, UINT32_MAX, 1, 0),
+        BPF_STMT(BPF_RET | BPF_K, VM_DENY),
+        VM_REQUIRE_ARG(VM_ARG_HI(5), 0),
+        VM_REQUIRE_ARG(VM_ARG_LO(5), 0),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
+    };
+    struct sock_fprog program = {(unsigned short)(sizeof(filter) / sizeof(filter[0])), filter};
+    if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0 ||
+        prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &program) != 0) {
+        return 0;
+    }
+    containment = "seccomp-stdio-anonymous-memory";
+    return 1;
+#endif
+}
+#endif
+
 static int contain(void) {
 #ifdef __APPLE__
     char *error = NULL;
@@ -784,13 +875,16 @@ static int contain(void) {
         return 0;
     }
     containment = "pure-computation";
+#elif defined(__linux__)
+    return contain_linux();
 #endif
     return 1;
 }
 
 int main(void) {
     if (!contain()) {
-        printf("{\"status\":\"REFUSED\",\"reason\":\"containment_failed\"}\n");
+        printf("{\"status\":\"REFUSED\",\"reason\":\"%s\"}\n",
+               refusal == NULL ? "containment_failed" : refusal);
         return 2;
     }
     for (int i = 0; i < REGISTERS; i++) {
