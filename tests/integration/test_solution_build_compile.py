@@ -428,6 +428,7 @@ def test_the_dev_runner_records_an_empty_solution_as_build_refusal(
     assert not root.exists()
 
 
+@pytest.mark.timeout(900)
 @pytest.mark.parametrize("tamper_manifest", [False, True])
 def test_real_prelude_solution_and_challenge_build_with_private_pinned_dependencies(
     pinned_bundle, tmp_path, tamper_manifest, comparator
