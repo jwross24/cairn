@@ -211,6 +211,13 @@ def test_failed_control_or_plant_stops_before_question_nonce(tmp_path, pinned_bu
     report = json.loads(completed.stdout)
     assert report["stopped"] == {"role": role, "claim_id": statement["claim_id"], "verdict": verdict}
     assert "refused: " in completed.stderr
+    if verdict == "INCOMPLETE":
+        stopped = next(row for row in report["statements"] if row["role"] == role)
+        with substrate.Substrate.open(db, role="reader") as sub:
+            record = hunt.record_for(sub, stopped["run_hash"])
+            assert record is not None
+            assert [trial.outcome for trial in record.trials] == ["VERIFIER_FAILED"]
+            assert sub.conn.execute("SELECT count(*) FROM skill_certificates").fetchone()[0] == 0
     question = campaign.prepare_statements(spec)[0]
     with sqlite3.connect(db) as conn:
         assert (

@@ -1,6 +1,17 @@
-"""The §2 self-test for discrete-log, instance-maker and slope-weight skills."""
+"""The §2 self-test for the M1 baseline skills: rho_dp, bsgs and the instance-maker.
+
+Each skill runs its vendored corpus under a pinned case seed, then a
+randomized_postcondition arm keyed on H(implementation_revision || label): a
+fresh instance from toy_curve, the skill's own answer checked end to end, a
+wrong answer refused by the Tier-0 verifier, and for rho_dp the witness refused
+in each planted form by the gate-side witness verifier. The certificate is the
+digest of the canonical transcript, and a double run must be byte-equal.
+"""
 
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 from cairn import canon, ec, env, keys, log, selftest, verifier, witness
@@ -519,6 +530,69 @@ def load_slope_corpus(which, path=None):
     return check_slope_corpus(doc)
 
 
+def _slope_decision_arm(seed, ell, weight):
+    from cairn.skills import slope_weight_a, slope_weight_b
+    from cairn.slopemodel import slope_hunt_executor
+
+    child_env = {**os.environ, "PYTHONPATH": str(REPO_ROOT / "src"), "PYTHONSAFEPATH": "1"}
+    records = []
+    for name, predicate, expected in (
+        ("holding", {"kind": "weight_ge_counting_bound"}, False),
+        ("failing", {"kind": "weight_le", "num": 0, "den": 1}, True),
+    ):
+        document = {
+            "statement_hash": _nonce_from(seed, name.encode()),
+            "plan_hash": _nonce_from(seed, b"slope-hunt-plan"),
+            "run_id": f"slope-selftest-{name}",
+            "trial": 0,
+            "point": {"t": ell},
+            "seed": seed,
+            "input_blob_hash": _nonce_from(seed, b"slope-hunt-input"),
+            "predicate": predicate,
+        }
+        observations = {}
+        for role, module, decision in (
+            ("executor", slope_weight_a.HUNT_MODULE, "candidate"),
+            ("verifier", slope_weight_b.HUNT_MODULE, "counterexample_valid"),
+        ):
+            completed = subprocess.run(
+                [sys.executable, "-m", module],
+                input=selftest._canonical_json(document),
+                capture_output=True,
+                text=True,
+                timeout=60,
+                env=child_env,
+            )
+            if completed.returncode != 0:
+                raise SelftestFailed(f"hunt-{role}-arm", f"the {name} statement exited {completed.returncode}")
+            try:
+                output = json.loads(completed.stdout)
+            except json.JSONDecodeError:
+                raise SelftestFailed(f"hunt-{role}-arm", f"the {name} statement returned malformed JSON") from None
+            if (
+                not isinstance(output, dict)
+                or any(output.get(field) != document[field] for field in slope_hunt_executor.BINDING)
+                or output.get("status") != "OK"
+                or output.get("l") != ell
+                or output.get("weight") != weight
+            ):
+                raise SelftestFailed(f"hunt-{role}-arm", f"the {name} statement returned mismatched binding or result")
+            if role == "verifier" and output.get("executor_output_digest") != document["executor_output_digest"]:
+                raise SelftestFailed("hunt-verifier-arm", f"the {name} statement returned mismatched executor digest")
+            observed = output.get(decision)
+            if type(observed) is not bool or observed is not expected:
+                raise SelftestFailed(
+                    f"hunt-{role}-arm", f"the {name} statement returned {decision}={observed}, expected {expected}"
+                )
+            observations[decision] = observed
+            if role == "executor":
+                document["executor_output_digest"] = canon.digest(
+                    "cairn/selftest-slope-executor/v1", completed.stdout.encode()
+                )
+        records.append({"id": name, "predicate": predicate, **observations})
+    return records
+
+
 def _slope_run_once(which, _config, *, doc=None, root=None):
     from cairn.slopemodel import slope_hunt_verifier, slope_predicates, slopemodel_b
 
@@ -566,10 +640,26 @@ def _slope_run_once(which, _config, *, doc=None, root=None):
         pass
     else:
         raise SelftestFailed("verifier-arm", "the planted weight 20644183 at (65537, 145) was accepted")
-    verifier_body = {"ok": 1, "fail": 1, "planted": {"l": 65537, "n": 145, "W": 20644183}, "outcome": OUTCOME_PASS}
+    decisions = _slope_decision_arm(seed, ell, output["weight"])
+    ok = sum(record["counterexample_valid"] for record in decisions)
+    fail = sum(not record["counterexample_valid"] for record in decisions)
+    verifier_body = {
+        "ok": ok,
+        "fail": fail,
+        "planted": {"l": 65537, "n": 145, "W": 20644183},
+        "decisions": decisions,
+        "outcome": OUTCOME_PASS,
+    }
     records.append(("arm", "verifier", verifier_body))
     lg.info("arm", name="verifier", observed=selftest._canonical_json(verifier_body))
-    arms = {"postcondition": OUTCOME_PASS, "verifier": {"ok": 1, "fail": 1}}
+    arms = {
+        "postcondition": OUTCOME_PASS,
+        "executor": {
+            "candidate": sum(record["candidate"] for record in decisions),
+            "non_candidate": sum(not record["candidate"] for record in decisions),
+        },
+        "verifier": {"ok": ok, "fail": fail},
+    }
     return _result(records, ledger, passes, floor, arms, seed, doc)
 
 

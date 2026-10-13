@@ -61,13 +61,17 @@ def test_cli_certifies_real_pair_and_records_origins(certified_pair, which):
     module = selftest_skills.module_for(which)
     document = documents[which]
     assert document["identity_bundle_hash"] == module.skill_identity_hash()
-    assert document["arms"] == {"postcondition": "pass", "verifier": {"ok": 1, "fail": 1}}
+    assert document["arms"] == {
+        "postcondition": "pass",
+        "executor": {"candidate": 1, "non_candidate": 1},
+        "verifier": {"ok": 1, "fail": 1},
+    }
     with substrate.Substrate.open(db, role="reader") as sub:
         row = sub.get_certificate(document["identity_bundle_hash"])
     assert row["cert_hash"] == document["certificate"]
     summary = json.loads(row["selftest_summary"])
     assert summary["must_fail_witnesses"] == 1
-    assert summary["cross_check"] == {"axis": "algorithm", "independent_range": {"l": [3, 2**22]}}
+    assert summary["cross_check"] == []
     assert summary["corpus_origins"]["printed65537"]["W"] == "upstream_vendored"
     assert summary["corpus_origins"]["agreement65537"]["W"] == "author_supplied"
 
@@ -193,6 +197,59 @@ def test_constant_accept_verifier_fails_without_minting_certificate(tmp_path, pi
         with pytest.raises(selftest.SelftestFailed, match=r"planted weight 20644183 at \(65537, 145\) was accepted"):
             selftest_skills.certify(sub, bundle.GateBundle.open(bundle_path, pin).verifier_config(), which, doc=doc)
         assert sub.conn.execute("SELECT count(*) FROM skill_certificates").fetchone()[0] == 0
+
+
+@pytest.mark.parametrize("role", ["executor", "verifier"])
+def test_constant_accept_hunt_decision_on_disk_refuses_cli_certificate(tmp_path, pinned_bundle, role):
+    bundle_path, pin = pinned_bundle()
+    root = tmp_path / "mutated"
+    shutil.copytree(ROOT / "src", root / "src", ignore=shutil.ignore_patterns("__pycache__"))
+    if role == "verifier":
+        relative, signature, value = (
+            "src/cairn/slopemodel/slope_hunt_verifier.py",
+            "def statement_fails(predicate: dict, ell: int, weight: int) -> bool:\n",
+            "True",
+        )
+        expected = "hunt-verifier-arm: the holding statement returned counterexample_valid=True, expected False"
+    else:
+        relative, signature, value = (
+            "src/cairn/slopemodel/slope_predicates.py",
+            "def holds(predicate: dict, ell: int, weight: int) -> bool:\n",
+            "True",
+        )
+        expected = "hunt-executor-arm: the failing statement returned candidate=False, expected True"
+    path = root / relative
+    original = path.read_text()
+    assert original.count(signature) == 1
+    path.write_text(original.replace(signature, signature + f"    return {value}\n"))
+    db = tmp_path / "refused.sqlite"
+    argv = [
+        sys.executable,
+        "-m",
+        "cairn",
+        "selftest",
+        selftest_skills.SLOPE_WEIGHT_B,
+        "--db",
+        str(db),
+        "--bundle",
+        str(bundle_path),
+        "--pin",
+        str(pin),
+        "--json",
+    ]
+    completed = subprocess.run(
+        argv,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        env={**os.environ, "PYTHONPATH": str(root / "src"), "PYTHONSAFEPATH": "1"},
+    )
+    assert completed.returncode == exits.GATE_REFUSED, completed.stderr
+    assert expected in completed.stderr
+    assert completed.stdout == ""
+    with substrate.Substrate.open(db, role="reader") as sub:
+        assert sub.conn.execute("SELECT count(*) FROM skill_certificates").fetchone()[0] == 0
+    print(json.dumps({"argv": argv, "source": str(path), "exit": completed.returncode, "stderr": completed.stderr}))
 
 
 def _campaign_spec():

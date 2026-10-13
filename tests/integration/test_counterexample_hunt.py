@@ -574,6 +574,7 @@ def test_non_boolean_verifier_result_does_not_kill(tmp_path, invalid_value):
         assert result.verdict == "INCOMPLETE"
         assert result.standing is False
         assert result.record.trials[0].outcome == "VERIFIER_UNVERIFIED"
+        assert result.record.trials[0].verifier_status == runner.STATUS_FAIL
         assert result.ledger_hash is None
         assert ledger.entries_for(sub, plan.hypothesis_key) == []
         assert (

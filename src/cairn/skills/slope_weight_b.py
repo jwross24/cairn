@@ -8,8 +8,7 @@ from cairn.slopemodel import slopemodel_b
 INTERFACE_VERSION = "slope_weight_b/1"
 REPLAY_GRADE = "Replayable"
 DO_NOT_CACHE = True
-CROSS_CHECK_AXIS = "algorithm"
-INDEPENDENT_RANGE = {"l": [3, slopemodel_b.MAX_L]}
+CROSS_CHECKS: tuple[dict, ...] = ()
 REPO_ROOT = Path(__file__).resolve().parents[3]
 HUNT_MODULE = "cairn.slopemodel.slope_hunt_verifier"
 IDENTITY_SOURCES = (
@@ -17,6 +16,8 @@ IDENTITY_SOURCES = (
     "src/cairn/skills/slope_weight_b_corpus.json",
     "src/cairn/slopemodel/slopemodel_b.py",
     "src/cairn/slopemodel/slope_hunt_verifier.py",
+    "src/cairn/__init__.py",
+    "src/cairn/slopemodel/__init__.py",
 )
 
 
