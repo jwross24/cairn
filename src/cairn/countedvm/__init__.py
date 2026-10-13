@@ -1,9 +1,12 @@
+import annotationlib
 import hashlib
+import inspect
 import json
 import os
 import subprocess
 import sys
 import tempfile
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -39,6 +42,9 @@ SANDBOX_SECCOMP = "seccomp-stdio-anonymous-memory"
 SANDBOX_NONE = "none"
 SANDBOX_REQUIRED = {"darwin": SANDBOX_PURE_COMPUTATION, "linux": SANDBOX_SECCOMP}
 REFUSAL_KEYS = ({"status", "reason"}, {"status", "reason", "count", "executed"})
+GENERATOR_CONTRACT_REFUSAL = "generator_contract_violation"
+GENERATOR_INPUT_KEYS = {"n", "seed", "bounds"}
+CURVE_INPUT_KEYS = {"p", "a", "b", "P", "Q"}
 COUNTING_CONVENTION = {
     "addp": "one group op, whatever the operands; an add that reaches the doubling formula is still one op",
     "dblp": "one group op, whatever the operand",
@@ -331,6 +337,58 @@ def launch(
         ran.peak_rss_bytes,
         ran.measurement_scope,
         binding,
+    )
+
+
+def _check_generator_contract(generator, call_arguments, extra):
+    if extra or set(call_arguments) != GENERATOR_INPUT_KEYS:
+        raise LaunchRefused(GENERATOR_CONTRACT_REFUSAL, "generator receives only n, seed, bounds")
+    bounds = call_arguments["bounds"]
+    if not isinstance(bounds, Mapping):
+        raise LaunchRefused(GENERATOR_CONTRACT_REFUSAL, "bounds must be a mapping")
+    bounds = dict(bounds)
+    if any(type(key) is not str or key in CURVE_INPUT_KEYS or type(value) is not int for key, value in bounds.items()):
+        raise LaunchRefused(GENERATOR_CONTRACT_REFUSAL, "bounds must contain named integer bounds without curve fields")
+    call_arguments["bounds"] = bounds
+    if type(call_arguments["seed"]) is not int:
+        raise LaunchRefused(GENERATOR_CONTRACT_REFUSAL, "seed must be an integer")
+    try:
+        signature = inspect.signature(generator, annotation_format=annotationlib.Format.STRING)
+        signature.bind(**call_arguments)
+    except (TypeError, ValueError) as exc:
+        raise LaunchRefused(GENERATOR_CONTRACT_REFUSAL, str(exc)) from exc
+
+
+def generate_and_launch(
+    binary,
+    expected_binary_digest,
+    instance,
+    generator,
+    budget,
+    *,
+    seed,
+    bounds,
+    attempt_id,
+    scratch_dir,
+    wall_cap_s=None,
+    instruction_set="plain/1",
+    **extra,
+):
+    call_arguments = {"n": instance.n, "seed": seed, "bounds": bounds, **extra}
+    _check_generator_contract(generator, call_arguments, extra)
+    program = generator(**call_arguments)
+    if type(program) is not str:
+        raise LaunchRefused(GENERATOR_CONTRACT_REFUSAL, "generator must return program text")
+    return launch(
+        binary,
+        expected_binary_digest,
+        instance,
+        program,
+        budget,
+        attempt_id=attempt_id,
+        scratch_dir=scratch_dir,
+        wall_cap_s=wall_cap_s,
+        instruction_set=instruction_set,
     )
 
 
