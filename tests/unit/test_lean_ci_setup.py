@@ -6,6 +6,10 @@ from _ci_lanes import LEAN_LANES, M0_LANES, SOLUTION_LIBRARY_LANES
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
+SOLUTION_PLAN_EXACT_JOB_TIMEOUT = "timeout-minutes: ${{ matrix.lane == 'solution-plan-exact' && 45 || 20 }}"
+SOLUTION_PLAN_EXACT_SESSION_DEADLINE = (
+    "CAIRN_SESSION_DEADLINE: ${{ matrix.lane == 'solution-plan-exact' && '1962' || '1080' }}"
+)
 MATHLIB_CACHE = "Restore the pinned mathlib cache"
 MATHLIB_SETUP = "Provision the pinned mathlib prerequisite"
 LEAN_CACHE = "Restore the Lean toolchain"
@@ -240,7 +244,9 @@ def _assert_ci_lanes(text):
     assert "fail-fast: false" in text
     assert "continue-on-error:" not in text
     assert 'CAIRN_SESSION_DEADLINE: "1080"' in text
-    assert "timeout-minutes: 20" in text
+    macos_job = text.split("  check:\n", 1)[1]
+    assert SOLUTION_PLAN_EXACT_JOB_TIMEOUT in macos_job
+    assert SOLUTION_PLAN_EXACT_SESSION_DEADLINE in macos_job
     assert 'run: scripts/check.sh --ci-lane "${{ matrix.lane }}"' in _step(text, GATES)
     assert "name: cairn-failure-diagnostics-${{ matrix.lane }}" in text
     for name in (
@@ -260,7 +266,7 @@ def test_all_ci_lanes_run_the_same_gates_with_independent_deadlines():
 def _assert_container_lane(text):
     job = text.split("  container:\n", 1)[1].split("  check:\n", 1)[0]
     assert "runs-on: ubuntu-24.04-arm" in job
-    assert "timeout-minutes: 45" in job
+    assert "timeout-minutes: 41" in {line.strip() for line in job.splitlines()}
     assert 'CAIRN_SESSION_DEADLINE: "1080"' in job
     assert "continue-on-error:" not in job
     assert "uv sync --locked --all-groups" in job
@@ -506,7 +512,8 @@ def test_diagnostics_contract_refuses_lost_test_evidence(removed):
     ("old", "new"),
     [
         ("runs-on: ubuntu-24.04-arm", "runs-on: macos-latest"),
-        ("timeout-minutes: 45", "timeout-minutes: 20"),
+        ("timeout-minutes: 41", "timeout-minutes: 20"),
+        ("timeout-minutes: 41", "timeout-minutes: 410"),
         ('--ci-lane "${{ matrix.lane }}"', "--fast"),
         (CONTAINER_LANES, "lane: [container]"),
         ("container-plan-proven, ", ""),
@@ -533,7 +540,13 @@ def test_container_lane_contract_refuses_missing_execution(old, new):
         ("solution-plan-exact, solution-plan-refusals", "solution-plan"),
         ("fail-fast: false", "fail-fast: true"),
         ('CAIRN_SESSION_DEADLINE: "1080"', 'CAIRN_SESSION_DEADLINE: "1800"'),
-        ("timeout-minutes: 20", "timeout-minutes: 30"),
+        (SOLUTION_PLAN_EXACT_JOB_TIMEOUT, "timeout-minutes: 20"),
+        (SOLUTION_PLAN_EXACT_JOB_TIMEOUT, SOLUTION_PLAN_EXACT_JOB_TIMEOUT.replace("|| 20", "|| 30")),
+        (SOLUTION_PLAN_EXACT_SESSION_DEADLINE, 'CAIRN_SESSION_DEADLINE: "1080"'),
+        (
+            SOLUTION_PLAN_EXACT_SESSION_DEADLINE,
+            SOLUTION_PLAN_EXACT_SESSION_DEADLINE.replace("|| '1080'", "|| '1962'"),
+        ),
         ("if: matrix.lane != 'python'", "if: matrix.lane == 'lean'"),
         ("if: matrix.lane != 'python'", "if: matrix.lane == 'solution'"),
         ('--ci-lane "${{ matrix.lane }}"', "--unit"),

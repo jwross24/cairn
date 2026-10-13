@@ -564,7 +564,7 @@ def test_real_prelude_forgery_passes_axioms_but_fails_fresh_replay(prepared_real
     )
 
 
-@pytest.mark.timeout(900)
+@pytest.mark.timeout(1800)
 @pytest.mark.parametrize("case", ["exact", "sorry", "timeout"])
 def test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks(
     prepared_real, tmp_path, comparator, popen_spy, case

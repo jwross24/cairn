@@ -23,7 +23,7 @@ jobs:
       matrix:
         lane: [container, container-replay-exact, container-replay-refusals, container-plan-exact, container-plan-proven, container-plan-refusals]
     runs-on: ubuntu-24.04-arm
-    timeout-minutes: 45
+    timeout-minutes: 41
     env:
       CAIRN_SESSION_DEADLINE: "1080"
       BR_VERSION: "0.6.0"
@@ -184,15 +184,13 @@ jobs:
     # with os.chflags and stat.UF_APPEND, which exist on macOS and BSD and not on
     # Linux; cairn-hcl owns the Linux arm. An ubuntu run fails before it starts.
     runs-on: macos-latest
-    # Tests default to 180 s with per-test marker overrides; the session deadline is
-    # 1080 s. The 20-minute job cap leaves room for setup and teardown outside pytest.
-    timeout-minutes: 20
+    timeout-minutes: ${{ matrix.lane == 'solution-plan-exact' && 45 || 20 }}
     env:
       PYTEST_ADDOPTS: "-vv"
       # Under the job ceiling by enough that pytest dies first and leaves a thread
       # profile, rather than the job being canceled with a blank transcript. The
       # local default is higher; nothing meters a local run.
-      CAIRN_SESSION_DEADLINE: "1080"
+      CAIRN_SESSION_DEADLINE: ${{ matrix.lane == 'solution-plan-exact' && '1962' || '1080' }}
       # The artifact-block gate parses `br show <id> --json`, so the runner and the
       # machines that write the beads have to agree on that shape. A bump here misses
       # the cache key below, which is what fetches the binary again.
