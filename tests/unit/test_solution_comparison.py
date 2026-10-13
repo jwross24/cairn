@@ -247,6 +247,118 @@ def test_a_container_comparison_rechecks_inputs_after_a_timeout(gate, container_
         solutionchecks.observe_container_comparison(gate, container_compilation, timeout_s=0.25)
 
 
+def _container_outcome(outcome, seen, before=None):
+    def call(ctx, image, argv, **kwargs):
+        root = Path(kwargs["mounts"][0][0])
+        seen["root"] = root
+        assert root.is_dir()
+        if before is not None:
+            before(root)
+        if outcome == "timeout":
+            raise lean.LeanTimeout(tuple(argv), 0.25)
+        rc = 0 if outcome == "match" else 1
+        return lean.Run(argv=tuple(argv), cwd=None, rc=rc, stdout="", stderr="The statements differ.\n", wall_ms=1.0)
+
+    return call
+
+
+def _observe_container_outcome(gate, compilation, outcome):
+    if outcome == "timeout":
+        with pytest.raises(solutionplan.StepTimeout):
+            solutionchecks.observe_container_comparison(gate, compilation, timeout_s=0.25)
+        return
+    observed, reasons, _ = solutionchecks.observe_container_comparison(gate, compilation)
+    if outcome == "match":
+        assert (observed, reasons) == (solutionplan.EXPECT_CLOSURE_MATCHED, ())
+    else:
+        assert observed == solutionplan.OBSERVED_REFUSED
+        assert reasons == (solutionchecks.CLOSURE_MISMATCH, "rc:1", "The statements differ.")
+
+
+CONTAINER_OUTCOMES = ["match", "mismatch", "timeout"]
+
+
+@pytest.mark.parametrize("outcome", CONTAINER_OUTCOMES)
+def test_a_container_comparison_mounts_a_fresh_root_and_releases_it(gate, container_compilation, monkeypatch, outcome):
+    monkeypatch.setattr(container, "assert_pinned", lambda *args, **kwargs: None)
+    seen = {}
+    monkeypatch.setattr(container, "run", _container_outcome(outcome, seen))
+    _observe_container_outcome(gate, container_compilation, outcome)
+    candidate = Path(container_compilation.project.root)
+    assert seen["root"] != candidate
+    assert not seen["root"].is_relative_to(candidate)
+    assert seen["root"].parent.name.startswith("cairn-comparison-")
+    assert not seen["root"].parent.exists()
+    assert list(candidate.parent.glob("cairn-comparison-*")) == []
+    solutionbuild.assert_unchanged(container_compilation.project)
+
+
+@pytest.mark.parametrize("outcome", CONTAINER_OUTCOMES)
+def test_a_container_comparison_rechecks_the_fresh_root_while_it_still_exists(
+    gate, container_compilation, monkeypatch, outcome
+):
+    monkeypatch.setattr(container, "assert_pinned", lambda *args, **kwargs: None)
+    seen, unchanged, dependencies = {}, [], []
+    real_unchanged, real_dependencies = solutionbuild.assert_unchanged, solutionbuild.assert_dependencies
+
+    def record_unchanged(project):
+        unchanged.append((Path(project.root), Path(project.root).is_dir()))
+        return real_unchanged(project)
+
+    def record_dependencies(bound, project):
+        dependencies.append((Path(project.root), Path(project.root).is_dir()))
+        return real_dependencies(bound, project)
+
+    def forget_checks_before_the_run(root):
+        unchanged.clear()
+        dependencies.clear()
+
+    monkeypatch.setattr(solutionbuild, "assert_unchanged", record_unchanged)
+    monkeypatch.setattr(solutionbuild, "assert_dependencies", record_dependencies)
+    monkeypatch.setattr(container, "run", _container_outcome(outcome, seen, before=forget_checks_before_the_run))
+    _observe_container_outcome(gate, container_compilation, outcome)
+    candidate = Path(container_compilation.project.root)
+    assert unchanged == [(candidate, True), (seen["root"], True)]
+    assert dependencies == [(candidate, True), (seen["root"], True)]
+    assert not seen["root"].parent.exists()
+
+
+@pytest.mark.parametrize("outcome", CONTAINER_OUTCOMES)
+def test_an_input_changed_in_the_fresh_container_root_refuses_and_the_root_is_released(
+    gate, container_compilation, monkeypatch, outcome
+):
+    monkeypatch.setattr(container, "assert_pinned", lambda *args, **kwargs: None)
+    target = next(name for name in container_compilation.project.inputs if name.startswith(solutionbuild.CHALLENGE_DIR))
+    seen = {}
+
+    def rewrite(root):
+        (root / target).write_bytes(b"theorem challenge_hello : True := trivial\n")
+
+    monkeypatch.setattr(container, "run", _container_outcome(outcome, seen, before=rewrite))
+    with pytest.raises(solutionbuild.SolutionRefused, match=f"solution-inputs-changed:{target}"):
+        solutionchecks.observe_container_comparison(gate, container_compilation, timeout_s=0.25)
+    assert not seen["root"].parent.exists()
+    solutionbuild.assert_unchanged(container_compilation.project)
+
+
+def test_no_container_comparison_root_remains_when_the_fresh_root_cannot_be_assembled(
+    gate, container_compilation, monkeypatch
+):
+    monkeypatch.setattr(container, "assert_pinned", lambda *args, **kwargs: None)
+
+    def refuse(*args, **kwargs):
+        raise solutionbuild.SolutionRefused("dependency-refused")
+
+    def unexpected(*args, **kwargs):
+        raise AssertionError("the comparator ran without a fresh root")
+
+    monkeypatch.setattr(solutionbuild, "_write_project", refuse)
+    monkeypatch.setattr(container, "run", unexpected)
+    with pytest.raises(solutionbuild.SolutionRefused, match="dependency-refused"):
+        solutionchecks.observe_container_comparison(gate, container_compilation)
+    assert list(Path(container_compilation.project.root).parent.glob("cairn-comparison-*")) == []
+
+
 @pytest.mark.parametrize("field", ["bundle_hash", "pin_hash"])
 def test_a_container_comparison_refuses_unbound_compilation_before_running(
     gate, container_compilation, monkeypatch, field

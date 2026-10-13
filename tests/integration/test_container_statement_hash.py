@@ -342,6 +342,7 @@ def test_linux_candidate_closure_comparison_matches_exact_statement(
     timed_comparison = [argv for argv in popen_spy if solutionchecks.CONTAINER_COMPARATOR_BINARY in argv]
     assert len(timed_comparison) == 1
     assert any("stop" in argv for argv in popen_spy)
+    assert list(tmp_path.glob("cairn-comparison-*")) == []
 
 
 @pytest.mark.timeout(1800)
@@ -379,24 +380,29 @@ def test_linux_candidate_closure_comparison_refuses_weaker_statement(
     solutionbuild.assert_dependencies(linux_bundle, compilation.project)
 
 
-@pytest.mark.parametrize("poisoned", [False, True])
+COMPARATOR_STATEMENT_MISMATCH = "Challenge and solution theorem statement do not match"
+POISON_LOG = ".lake/poison/log.txt"
+
+
+@pytest.mark.parametrize("poison", ["none", "root-file", "dot-lake"])
 def test_linux_comparison_uses_source_inputs_without_candidate_build_artifacts(
-    linux_image, pinned_bundle, tmp_path, monkeypatch, popen_spy, poisoned
+    linux_image, pinned_bundle, tmp_path, monkeypatch, popen_spy, poison
 ):
     prelude = tmp_path / "minimal-prelude.lean"
     prelude.write_text("set_option autoImplicit false\n")
     monkeypatch.setattr(challenge, "PRELUDE_PATH", prelude)
     gate = bundle.GateBundle.open(*pinned_bundle(name="comparison-bundle"))
-    proposition = "False" if poisoned else "True"
+    proposition = "True" if poison == "none" else "False"
     formal = f"theorem challenge_hello : {proposition} := by\n  sorry\n"
     statement = factories.claim_statement(seed=11, formal_source=formal)
     theorems = ("challenge_hello",)
     prepared = solutionchecks.prepare_container(gate, linux_image, statement, theorems, root=tmp_path / "prepared")
     module = challenge.module_name(statement)
     olean = ".lake/build/lib/lean/" + module.replace(".", "/") + ".olean"
+    prepared_olean = (Path(prepared.project.root) / olean).read_bytes()
     weak = "theorem challenge_hello : True := trivial\n"
     source = weak
-    if poisoned:
+    if poison == "root-file":
         source = (
             "#eval show IO Unit from do\n"
             f'  let built ← IO.Process.output {{cmd := "lake", args := #["build", "{module}"]}}\n'
@@ -404,6 +410,17 @@ def test_linux_comparison_uses_source_inputs_without_candidate_build_artifacts(
             f'  IO.FS.writeFile "Poison.lean" "set_option autoImplicit false\\n\\n{weak.strip()}\\n"\n'
             f'  let changed ← IO.Process.output {{cmd := "lean", args := #["-o", "{olean}", "Poison.lean"]}}\n'
             "  if changed.exitCode != 0 then throw <| IO.userError changed.stderr\n"
+            f"\n{weak}"
+        )
+    if poison == "dot-lake":
+        source = (
+            "#eval show IO Unit from do\n"
+            f'  let built ← IO.Process.output {{cmd := "lake", args := #["build", "{module}"]}}\n'
+            '  IO.FS.createDirAll ".lake/poison"\n'
+            f'  IO.FS.writeFile ".lake/poison/Poison.lean" "set_option autoImplicit false\\n\\n{weak.strip()}\\n"\n'
+            "  let changed ← IO.Process.output "
+            f'{{cmd := "lean", args := #["-o", "{olean}", ".lake/poison/Poison.lean"]}}\n'
+            f'  IO.FS.writeFile "{POISON_LOG}" s!"built={{built.exitCode}} changed={{changed.exitCode}}"\n'
             f"\n{weak}"
         )
     compilation = solutionchecks.compile_container(
@@ -421,21 +438,47 @@ def test_linux_comparison_uses_source_inputs_without_candidate_build_artifacts(
     expected_source = challenge.render(statement, gate.challenge_prelude)
     assert rendered.read_bytes() == expected_source
     assert (original / olean).is_file()
+    if poison != "none":
+        assert (original / olean).read_bytes() != prepared_olean
+    real_run = container.run
+    fresh = {}
+
+    def run_then_read_the_fresh_root(ctx, image, argv, **kwargs):
+        result = real_run(ctx, image, argv, **kwargs)
+        if solutionchecks.CONTAINER_COMPARATOR_BINARY in argv:
+            root = Path(kwargs["mounts"][0][0])
+            log_path = root / POISON_LOG
+            fresh.update(
+                root=root,
+                stderr=result.stderr,
+                challenge_source=challenge.module_path(statement, root / "Challenge").read_bytes(),
+                challenge_olean=(root / olean).read_bytes(),
+                poison_log=log_path.read_text() if log_path.is_file() else None,
+            )
+        return result
+
+    monkeypatch.setattr(container, "run", run_then_read_the_fresh_root)
     popen_spy.clear()
     observed, reasons, _ = solutionchecks.observe_container_comparison(gate, compilation)
-    if poisoned:
+    if poison == "none":
+        assert (observed, reasons) == (solutionplan.EXPECT_CLOSURE_MATCHED, ())
+    else:
         assert observed == solutionplan.OBSERVED_REFUSED
         assert reasons[:2] == (solutionchecks.CLOSURE_MISMATCH, "rc:1")
-    else:
-        assert (observed, reasons) == (solutionplan.EXPECT_CLOSURE_MATCHED, ())
+    if poison == "dot-lake":
+        assert fresh["poison_log"] == "built=0 changed=0"
+        assert fresh["challenge_olean"] != prepared_olean
+        assert COMPARATOR_STATEMENT_MISMATCH in fresh["stderr"]
     comparisons = [argv for argv in popen_spy if solutionchecks.CONTAINER_COMPARATOR_BINARY in argv]
     assert len(comparisons) == 1
     mount = comparisons[0][comparisons[0].index("--mount") + 1]
     comparison_root = Path(mount.split("source=", 1)[1].split(",target=", 1)[0])
+    assert comparison_root == fresh["root"]
     assert comparison_root != original
     assert comparison_root.parent.name.startswith("cairn-comparison-")
-    assert comparison_root.is_dir()
-    assert challenge.module_path(statement, comparison_root / "Challenge").read_bytes() == expected_source
+    assert fresh["challenge_source"] == expected_source
+    assert not comparison_root.parent.exists()
+    assert list(tmp_path.glob("cairn-comparison-*")) == []
     assert rendered.read_bytes() == expected_source
     solutionbuild.assert_unchanged(compilation.project)
     solutionbuild.assert_dependencies(gate, compilation.project)

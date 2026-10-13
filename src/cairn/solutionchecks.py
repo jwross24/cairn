@@ -164,29 +164,33 @@ def observe_container_comparison(gate, compilation, *, timeout_s=lean.DEFAULT_TI
     solutionbuild.assert_dependencies(gate, project)
     comparison = None
     try:
-        container.assert_pinned(gate, image, timeout_s=timeout_s)
-        comparison = solutionbuild.fresh_comparison(gate, project)
-        result = container.run(
-            image.context,
-            image.image_id,
-            ["lake", f"+{gate.lean['toolchain']}", "env", CONTAINER_COMPARATOR_BINARY, solutionbuild.CONFIG_NAME],
-            user=container.host_user(),
-            mounts=((comparison.root, "/project", "readonly=false"),),
-            workdir="/project",
-            env=(("HOME", "/project"),),
-            timeout_s=timeout_s,
-        )
-    except lean.LeanTimeout as exc:
+        try:
+            container.assert_pinned(gate, image, timeout_s=timeout_s)
+            comparison = solutionbuild.fresh_comparison(gate, project)
+            result = container.run(
+                image.context,
+                image.image_id,
+                ["lake", f"+{gate.lean['toolchain']}", "env", CONTAINER_COMPARATOR_BINARY, solutionbuild.CONFIG_NAME],
+                user=container.host_user(),
+                mounts=((comparison.root, "/project", "readonly=false"),),
+                workdir="/project",
+                env=(("HOME", "/project"),),
+                timeout_s=timeout_s,
+            )
+        except lean.LeanTimeout as exc:
+            solutionbuild.assert_unchanged(project)
+            solutionbuild.assert_dependencies(gate, project)
+            if comparison is not None:
+                solutionbuild.assert_unchanged(comparison)
+                solutionbuild.assert_dependencies(gate, comparison)
+            raise solutionplan.StepTimeout(solutionplan.KIND_CLOSURE_COMPARISON, exc.timeout_s) from None
         solutionbuild.assert_unchanged(project)
         solutionbuild.assert_dependencies(gate, project)
+        solutionbuild.assert_unchanged(comparison)
+        solutionbuild.assert_dependencies(gate, comparison)
+    finally:
         if comparison is not None:
-            solutionbuild.assert_unchanged(comparison)
-            solutionbuild.assert_dependencies(gate, comparison)
-        raise solutionplan.StepTimeout(solutionplan.KIND_CLOSURE_COMPARISON, exc.timeout_s) from None
-    solutionbuild.assert_unchanged(project)
-    solutionbuild.assert_dependencies(gate, project)
-    solutionbuild.assert_unchanged(comparison)
-    solutionbuild.assert_dependencies(gate, comparison)
+            shutil.rmtree(Path(comparison.root).parent, ignore_errors=True)
     wall_ms = _elapsed_ms(start)
     lg.info("container_comparison", image_id=image.image_id, result=result.__dict__)
     if result.rc == 0:
