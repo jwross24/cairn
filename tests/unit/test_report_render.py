@@ -1,3 +1,4 @@
+import logging
 import re
 import sqlite3
 
@@ -16,6 +17,11 @@ HEADINGS = [
     "Tier spend",
     "Limitations",
 ]
+
+
+@pytest.fixture(autouse=True)
+def isolated_log_handlers(monkeypatch):
+    monkeypatch.setattr(logging.getLogger("cairn"), "handlers", [])
 
 
 def build_records(path, *, status="open", entropy_first=False, tagged=False):
