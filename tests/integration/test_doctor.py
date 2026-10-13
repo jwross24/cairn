@@ -182,6 +182,28 @@ def test_every_detector_leaves_the_examined_tree_byte_identical(shape):
     assert stray == set(), stray
 
 
+@pytest.mark.parametrize(
+    ("fixture_name", "reason"),
+    [
+        ("bundle_plan_stale", "missing-required-selftest:ladder_selftest_method_identity"),
+        ("bundle_ladder_plan_absent", "plan-object-absent"),
+    ],
+)
+def test_refused_pinned_plans_name_the_parser_reason_and_operator_repin_sequence(fixture_name, reason, shape, capsys):
+    doctor_fixtures.load(fixture_name).corrupt(shape)
+    before = tree_hashes(shape, sidecars=True)
+    code, out, err = run(shape.argv("--json", only="deploy"), capsys)
+    assert code == exits.DOCTOR_FINDINGS, out + err
+    findings = json.loads(out)["findings"]
+    assert len(findings) == 1
+    finding = findings[0]
+    assert finding["id"] == "D-bundle-plans/invalid"
+    assert finding["severity"] == detectors.ERROR and reason in finding["evidence"]
+    assert finding["recommended_command"] == bundle.repin_sequence(shape.bundle, shape.pin)
+    assert finding["fixable"] is False and finding["fixer"] is None
+    assert tree_hashes(shape, sidecars=True) == before
+
+
 def test_a_planted_mutating_detector_is_visible_to_the_tree_hash_comparison(shape, monkeypatch):
     def dirty(ctx):
         (ctx.root / "planted-by-a-detector").write_text("x")

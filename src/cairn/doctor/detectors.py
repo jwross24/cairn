@@ -5,7 +5,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-from cairn import attest, bundle, kat, log, pari, substrate
+from cairn import attest, bundle, gateplan, kat, ladderplan, log, pari, substrate
 
 lg = log.get("doctor.detect")
 
@@ -237,6 +237,34 @@ def d_bundle(ctx):
             )
         ]
     return []
+
+
+def d_bundle_plans(ctx):
+    if d_bundle(ctx):
+        return []
+    gate_bundle = bundle.GateBundle.open(ctx.bundle, ctx.pin)
+    reasons = []
+    for name, parser in (
+        ("gate_plan", gateplan.GatePlan.from_bundle),
+        ("ladder_plan", ladderplan.LadderPlan.from_bundle),
+    ):
+        try:
+            parser(gate_bundle)
+        except (gateplan.PlanInvalid, ladderplan.LadderPlanInvalid, bundle.BundleError) as exc:
+            reasons.append(f"{name}: {exc}")
+    if not reasons:
+        return []
+    return [
+        Finding(
+            "D-bundle-plans/invalid",
+            "deploy",
+            ERROR,
+            "the pinned gate bundle carries a plan the current parsers refuse",
+            f"{ctx.bundle}: {'; '.join(reasons)}",
+            False,
+            repin_command(ctx),
+        )
+    ]
 
 
 def _mode_findings(path, prefix, subsystem, want_mode, want_flags, recommended):
@@ -621,6 +649,7 @@ DETECTORS = (
     Detector("D-gp-facts", "gp", d_gp_facts, "one stdin line through run_gp returns rc 0 / OK / empty stderr"),
     Detector("D-pari-inprocess", "pari", d_pari_inprocess, "cypari2 stack, corpus case 1 ellcard, libpari version"),
     Detector("D-bundle", "deploy", d_bundle, "the gate bundle opens and its recomputed hash equals the pin"),
+    Detector("D-bundle-plans", "deploy", d_bundle_plans, "the pinned bundle's gate and ladder plans parse read-only"),
     Detector("D-pin-mode", "deploy", d_pin_mode, "the pin is 0444 and carries uappnd"),
     Detector("D-attest-mode", "deploy", d_attest_mode, "the attestation file is 0644+uappnd and frames its records"),
     Detector("D-substrate", "substrate", d_substrate, "wal, integrity_check, shipped schema, RUNNING attempts"),

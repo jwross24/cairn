@@ -114,6 +114,15 @@ Development tests also require pinned Lean/mathlib tools and Docker. See
 [Development and verification](docs/development.md) for provisioning, test commands,
 cache setup, diagnostic retention, and formalization adapter details.
 
+### Deploy
+
+Run `cairn bundle build`, `cairn bundle pin`, `cairn attest init`, `cairn selftest toy-curve`,
+`cairn gate selftest`, then `cairn m0-run`, in that order through `uv run`. The
+[deployment commands](docs/development.md#deployment) include every path and flag.
+`deploy/` artifacts and `var/` are git-ignored and operator-owned. A pinned deployment whose
+plans the checkout refuses is diagnosed by read-only `cairn doctor`; rebuilding and re-pinning
+remain the operator's decision.
+
 ## Quick start
 
 ```bash
@@ -223,6 +232,19 @@ bundle pin`), reviewing the diff first. Never hand-edit or `chmod` anything unde
 `gp` is not on `PATH`, or a `gp` subprocess hit a stack error. Run `cairn env --json` to see
 what was actually found (`gp_bin`, `libpari` version); `cairn doctor` diagnoses the rest of
 the M0 deploy shape read-only, and `cairn doctor --fix` repairs the two failure modes it owns.
+
+### `GATE_REFUSED` (exit 2): invalid gate or ladder plan
+
+The pinned bundle's plan fails the current parser, for example with
+`missing-required-selftest:ladder_selftest_method_identity` or `plan-object-absent`.
+Run `uv run cairn doctor --json` for the refusal reason and the deliberate rebuild-and-repin
+command. The doctor does not rebuild or re-pin a bundle.
+
+### `BACKEND` (exit 4): `SchemaMismatch`
+
+The substrate differs from the shipped schema, and Cairn ships no migration. Run
+`uv run cairn doctor --json` to inspect the schema mismatch and deployment findings.
+Preserving the existing data or choosing a fresh substrate is an operator decision.
 
 ### `WriterAlreadyOpen` on a substrate call
 

@@ -3,6 +3,32 @@
 Run commands from the repository root. Project rules live in [AGENTS.md](../AGENTS.md);
 the system map is [MAP.md](../MAP.md).
 
+## Deployment
+
+The canonical operator sequence in `uv run cairn robot-docs` compiles and pins a bundle,
+initializes attestations, certifies the exemplar skill, checks the planted failures, and runs
+the M0 slice. Run these commands in order from the repository root:
+
+```bash
+uv run cairn bundle build --bundle deploy/gate-bundle.sqlite
+uv run cairn bundle pin --bundle deploy/gate-bundle.sqlite --pin deploy/gate-bundle.pin
+uv run cairn attest init --attest deploy/attestations.log --bundle deploy/gate-bundle.sqlite --pin deploy/gate-bundle.pin
+uv run cairn selftest toy-curve --db var/substrate.sqlite --bundle deploy/gate-bundle.sqlite --pin deploy/gate-bundle.pin
+uv run cairn gate selftest --db var/substrate.sqlite --bundle deploy/gate-bundle.sqlite --pin deploy/gate-bundle.pin --attest deploy/attestations.log
+uv run cairn m0-run --bits 40 --seed 1 --db var/substrate.sqlite --bundle deploy/gate-bundle.sqlite --pin deploy/gate-bundle.pin --attest deploy/attestations.log
+```
+
+The pin carries mode `0444` and the user append-only flag; attestations are append-only.
+Deployment artifacts under `deploy/` and the substrate under `var/` are git-ignored and
+operator-owned. These commands initialize a deployment; replacing a pinned bundle requires
+deliberate operator review. Read-only `uv run cairn doctor --json` reports plan refusals and
+the matching rebuild-and-repin sequence without executing it. `cairn doctor --fix` owns only
+its mode and directory repairs, not bundle replacement or substrate migration.
+
+An invalid plan refuses with exit 2. A substrate that differs from the shipped schema refuses
+with `SchemaMismatch`, exit 4; Cairn ships no migration. Run `uv run cairn doctor --json`
+to inspect either refusal before deciding how to preserve or replace operator-owned data.
+
 ## Lean prerequisites
 
 The Lean integration suite requires the comparator and exporter pinned in
