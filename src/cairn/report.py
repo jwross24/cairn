@@ -56,6 +56,27 @@ def _validate_trial_evidence(sub, record):
                 _require_blob(sub, value[0])
 
 
+def _executor_observations(sub, trial):
+    if trial.execution_evidence is None:
+        return ""
+    evidence = json.loads(sub.get_blob(trial.execution_evidence))
+    stdout = evidence.get("stream_blobs", {}).get("stdout")
+    if stdout is None:
+        return ""
+    try:
+        output = json.loads(sub.get_blob(stdout))
+    except TypeError, ValueError:
+        return ""
+    if not isinstance(output, dict):
+        return ""
+    observations = [
+        f"{label}: {output[field]}"
+        for field, label in (("l", "prime"), ("weight", "weight"))
+        if type(output.get(field)) is int
+    ]
+    return "; executor observations: " + "; ".join(observations) if observations else ""
+
+
 def _skeptic_records(sub, statement_hash):
     records = []
     for row in sub.conn.execute("SELECT dispatch_id FROM worker_dispatches ORDER BY rowid"):
@@ -266,7 +287,7 @@ def render(sub, *, kind, statement_hash=None, ladder_table_hash=None, attest_pat
             run_lines.append(
                 line(
                     f"trial: {trial.trial}; point: {_json(dict(trial.point))}; seed: {seed}; outcome: {trial.outcome}; "
-                    f"verifier status: {trial.verifier_status or 'not run'}",
+                    f"verifier status: {trial.verifier_status or 'not run'}{_executor_observations(sub, trial)}",
                     pointer,
                 )
             )

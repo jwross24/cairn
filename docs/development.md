@@ -29,6 +29,35 @@ An invalid plan refuses with exit 2. A substrate that differs from the shipped s
 with `SchemaMismatch`, exit 4; Cairn ships no migration. Run `uv run cairn doctor --json`
 to inspect either refusal before deciding how to preserve or replace operator-owned data.
 
+## Fresh campaign deployment
+
+Prepare the bundle, operator pin, and fixture-waiver attestation with one module command:
+
+```bash
+campaign_work="$(mktemp -d)"
+uv run python -m cairn.deployment --src bundle/ --directory "$campaign_work/deployment"
+```
+
+The destination must not exist, and its parent must exist. The command exclusively creates
+a directory with mode `0700` containing `gate-bundle.sqlite`, `gate-bundle.pin`, and
+`attestations.log`. It reads source objects and validates the fixture hypothesis before
+creation, compares the built hash with the preflight hash before pinning, and checks the
+bundle, pin, and exact fixture waiver at offset 0 before success. `--src` selects the JSON
+source directory; verifier, Lean, renderer, container, and linter inputs come from the
+repository paths used by `cairn bundle build`.
+
+Successful stdout is one JSON document with `bundle`, `pin`, and `attest` paths,
+`bundle_hash`, `waiver_offset`, `waiver_digest`, and `status: "ready"`. Pass the three paths
+as `--bundle`, `--pin`, and `--attest` to the campaign runner. The bundle and pin carry
+mode `0444`; pin and attestation carry append-only flags where the existing writers
+support them. A platform without flag support emits a warning and relies on mode bits.
+
+Existing destinations, including dangling symlinks, refuse without modification.
+A failure exits nonzero and reports its `stage` and `retained` paths on stderr. Partial
+files remain in place; retries require a different absent destination. The command does
+not replace a deployment, create a substrate, run a campaign, certify an evaluator, or
+issue an operator session, statement ratification, or review verdict.
+
 ## Lean prerequisites
 
 The Lean integration suite requires the comparator and exporter pinned in
