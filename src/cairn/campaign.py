@@ -74,7 +74,20 @@ def parse_spec(value):
         _text(version, f"tool_versions[{name!r}]")
     for name in ("executor", "verifier"):
         program = value[name]
-        _object(program, {"module", "sources", "digest", "expected_wall_s"}, name)
+        fields = {"module", "sources", "digest", "expected_wall_s"}
+        if "skill" in program or "skill_identity_hash" in program:
+            fields |= {"skill", "skill_identity_hash"}
+        _object(program, fields, name)
+        if "skill" in program:
+            from cairn import selftest_skills
+
+            if program["skill"] not in selftest_skills.NAMES:
+                raise ValueError(f"{name}.skill must name a registered self-test skill")
+            if (
+                not isinstance(program["skill_identity_hash"], str)
+                or re.fullmatch(r"[0-9a-f]{64}", program["skill_identity_hash"]) is None
+            ):
+                raise ValueError(f"{name}.skill_identity_hash must be 64 lowercase hex characters")
         if (
             not isinstance(program["module"], str)
             or re.fullmatch(r"[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*", program["module"]) is None
@@ -151,6 +164,32 @@ def check_digests(spec):
         actual = source_digest(spec["module_dir"], program["sources"])
         if actual != program["digest"]:
             raise CampaignRefused(f"{name} digest differs from the spec")
+        if "skill" in program:
+            _check_skill_program(spec, name)
+
+
+def _check_skill_program(spec, name):
+    from cairn import selftest_skills
+
+    program = spec[name]
+    module = selftest_skills.module_for(program["skill"])
+    allowed = {module.__name__, getattr(module, "HUNT_MODULE", module.__name__)}
+    if program["module"] not in allowed:
+        raise CampaignRefused(f"{name} module is outside the named skill's entry points")
+    root = Path(module.REPO_ROOT).resolve()
+    if Path(spec["module_dir"]).resolve() != root / "src":
+        raise CampaignRefused(f"{name} module_dir differs from the installed skill's source root")
+    expected = {(root / relative).resolve() for relative in module.IDENTITY_SOURCES}
+    actual = {(Path(spec["module_dir"]) / relative).resolve() for relative in program["sources"]}
+    launched = (Path(spec["module_dir"]) / (program["module"].replace(".", "/") + ".py")).resolve()
+    if actual != expected or launched not in expected:
+        raise CampaignRefused(f"{name} sources do not match the named skill's identity sources")
+    if module.skill_identity_hash(root) != program["skill_identity_hash"]:
+        raise CampaignRefused(f"{name} skill identity differs from the spec")
+
+
+def _program_identity(program):
+    return program.get("skill_identity_hash", program["digest"])
 
 
 def prepare_statements(spec):
@@ -176,8 +215,8 @@ def prepare_statements(spec):
             method_identity=spec["method_identity"],
             target_family=spec["family"],
             assumption_set=frozenset(row["scope"]["assumption_set"]),
-            executor_identity=spec["executor"]["digest"],
-            verifier_identity=spec["verifier"]["digest"],
+            executor_identity=_program_identity(spec["executor"]),
+            verifier_identity=_program_identity(spec["verifier"]),
         )
         prepared.append(PreparedStatement(row, statement, hypothesis, plan))
     return prepared
@@ -199,8 +238,8 @@ def statement_document(prepared):
 def plan_document(spec, prepared):
     return {
         "family": spec["family"],
-        "executor_identity": spec["executor"]["digest"],
-        "verifier_identity": spec["verifier"]["digest"],
+        "executor_identity": _program_identity(spec["executor"]),
+        "verifier_identity": _program_identity(spec["verifier"]),
         "statements": [statement_document(row) for row in prepared],
     }
 
@@ -238,7 +277,7 @@ def run_campaign(spec, prepared, *, db, bundle_path, pin, attest, scratch):
             check_digests(spec)
             program = spec[name]
             recipe = {
-                "skill_identity_hash": program["digest"],
+                "skill_identity_hash": _program_identity(program),
                 "inputs": inputs,
                 "seed": context.seed,
                 "tool_versions": tool_digests,
@@ -246,6 +285,9 @@ def run_campaign(spec, prepared, *, db, bundle_path, pin, attest, scratch):
                 "salt": f"hunt/{context.run_id}/{context.trial}/{name}",
             }
             wall = program["expected_wall_s"]
+            child_env = {"PYTHONPATH": str(Path(spec["module_dir"]).resolve())}
+            if "skill" in program:
+                child_env["PYTHONSAFEPATH"] = "1"
             return runner.launch(
                 sub,
                 program["module"],
@@ -257,7 +299,7 @@ def run_campaign(spec, prepared, *, db, bundle_path, pin, attest, scratch):
                 scratch_root=scratch,
                 skip_cache_lookup=True,
                 do_not_cache=True,
-                env_extra={"PYTHONPATH": str(Path(spec["module_dir"]).resolve())},
+                env_extra=child_env,
                 stdin_document=document,
                 attest_path=attest,
             )

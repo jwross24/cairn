@@ -1,0 +1,14 @@
+{
+ "schema_version": 1,
+ "pass_floor": 8,
+ "cases": [
+  {"id": "printed65537", "ledger": "pass", "source": "Bernstein and Lange, Two grumpy giants and a baby, page 15, https://cr.yp.to/elliptic/grumpy-20120709.pdf", "fields": {"l": {"value": 65537, "origin": "upstream_vendored"}, "n": {"value": 146, "origin": "upstream_vendored"}, "W": {"value": 20644183, "origin": "upstream_vendored"}}},
+  {"id": "printed1000003", "ledger": "pass", "source": "Bernstein and Lange, Two grumpy giants and a baby, page 15, https://cr.yp.to/elliptic/grumpy-20120709.pdf", "fields": {"l": {"value": 1000003, "origin": "upstream_vendored"}, "n": {"value": 558, "origin": "upstream_vendored"}, "W": {"value": 1205458963, "origin": "upstream_vendored"}}},
+  {"id": "agreement65537", "ledger": "pass", "source": "Author-supplied fitted-1 evaluation; schedule: Bernstein and Lange, page 15, https://cr.yp.to/elliptic/grumpy-20120709.pdf", "fields": {"l": {"value": 65537, "origin": "author_supplied"}, "n": {"value": 144, "origin": "author_supplied"}, "W": {"value": 20738804, "origin": "author_supplied"}}},
+  {"id": "agreement131101", "ledger": "pass", "source": "Author-supplied fitted-1 evaluation; schedule: Bernstein and Lange, page 15, https://cr.yp.to/elliptic/grumpy-20120709.pdf", "fields": {"l": {"value": 131101, "origin": "author_supplied"}, "n": {"value": 204, "origin": "author_supplied"}, "W": {"value": 58318053, "origin": "author_supplied"}}},
+  {"id": "agreement300007", "ledger": "pass", "source": "Author-supplied fitted-1 evaluation; schedule: Bernstein and Lange, page 15, https://cr.yp.to/elliptic/grumpy-20120709.pdf", "fields": {"l": {"value": 300007, "origin": "author_supplied"}, "n": {"value": 309, "origin": "author_supplied"}, "W": {"value": 200303435, "origin": "author_supplied"}}},
+  {"id": "agreement1048583", "ledger": "pass", "source": "Author-supplied fitted-1 evaluation; schedule: Bernstein and Lange, page 15, https://cr.yp.to/elliptic/grumpy-20120709.pdf", "fields": {"l": {"value": 1048583, "origin": "author_supplied"}, "n": {"value": 578, "origin": "author_supplied"}, "W": {"value": 1301244038, "origin": "author_supplied"}}},
+  {"id": "agreement2097169", "ledger": "pass", "source": "Author-supplied fitted-1 evaluation; schedule: Bernstein and Lange, page 15, https://cr.yp.to/elliptic/grumpy-20120709.pdf", "fields": {"l": {"value": 2097169, "origin": "author_supplied"}, "n": {"value": 817, "origin": "author_supplied"}, "W": {"value": 3678553067, "origin": "author_supplied"}}},
+  {"id": "agreement4194301", "ledger": "pass", "source": "Author-supplied fitted-1 evaluation; schedule: Bernstein and Lange, page 15, https://cr.yp.to/elliptic/grumpy-20120709.pdf", "fields": {"l": {"value": 4194301, "origin": "author_supplied"}, "n": {"value": 1155, "origin": "author_supplied"}, "W": {"value": 10364823966, "origin": "author_supplied"}}}
+ ]
+}

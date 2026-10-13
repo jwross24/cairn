@@ -1,12 +1,12 @@
 usage: cairn selftest [-h] [--db PATH] [--bundle PATH] [--pin PATH]
                       [--attest PATH] [--log LEVEL] [--json]
-                      [{toy-curve,rho-dp,bsgs,instance-maker}]
+                      [{toy-curve,rho-dp,bsgs,instance-maker,slope-weight-a,slope-weight-b}]
 
 run a skill's vendored known-answer corpus and record its certificate; exit 2
 on any failure
 
 positional arguments:
-  {toy-curve,rho-dp,bsgs,instance-maker}
+  {toy-curve,rho-dp,bsgs,instance-maker,slope-weight-a,slope-weight-b}
 
 options:
   -h, --help            show this help message and exit

@@ -139,7 +139,8 @@ CI partitions the test population into 21 disjoint lanes:
 - `solution-library-dlp`: the DLP library challenge-gate case.
 - `solution-library-finite-point`: the finite-point library challenge-gate case.
 - `solution-library-binding`: the stale formal statement binding refusal case.
-- `solution-plan-exact`: the successful ordered-plan case and approved-dev artifact tag case.
+- `solution-plan-exact`: the successful ordered-plan case, approved-dev artifact tag case, and
+  the 21 slope skill certification cases in `tests/integration/test_slope_weight_selftest.py`.
 - `solution-plan-refusals`: the `sorry` and replay-timeout ordered-plan cases with shared setup.
 - `container`: Linux hashing, preparation, compilation, axiom, dependency-cache, and lifecycle tests.
 - `container-replay-exact`: successful Linux fresh replay and exact closure comparison.
@@ -154,12 +155,14 @@ The `python`, `python-integration`, four M0, and `gateplan` lanes do not provisi
 comparator, or exporter prerequisites. The M0 and `gateplan` suites use PARI/GP. Both Lean leaves and
 all three solution-library leaves keep the Lean and comparator prerequisites required by their tests.
 
-Each CI lane has a 1,080-second session deadline and a 20-minute job ceiling. The local
+CI lanes have a 1,080-second session deadline, except `solution-plan-exact`, whose deadline is
+1,962 seconds. macOS jobs have a 20-minute ceiling, except `solution-plan-exact` at 45 minutes;
+Linux container jobs have a 41-minute ceiling. The local
 `--ci-lane m0`, `--ci-lane lean`, `--ci-lane solution-library`, `--ci-lane solution-plan`,
 `--ci-lane container-replay` and `--ci-lane container-plan` forms aggregate their respective cases.
 The `container-plan` aggregate includes all three leaves, retaining five tests.
 Lane membership is defined in `tests/_ci_lanes.py` and tested as a disjoint union.
-The real-prelude ordered-plan test has a 900-second watchdog including setup and teardown;
+The real-prelude ordered-plan test has a 1,800-second watchdog including setup and teardown;
 the replay subprocess retains its 600-second bound.
 
 Whole-project typing targets macOS. Linux CI also checks the container adapter, preparation

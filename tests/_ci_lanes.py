@@ -86,6 +86,7 @@ LEAN_LANES = ("lean-core", "lean-replay")
 SOLUTION_PLAN_TESTS = ("test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks",)
 SOLUTION_PLAN_CASES = ("exact", "sorry", "timeout")
 SOLUTION_PLAN_LANES = ("solution-plan-exact", "solution-plan-refusals")
+SOLUTION_PLAN_EXACT_TEST_PATHS = ("tests/integration/test_slope_weight_selftest.py",)
 CONTAINER_REPLAY_TESTS = (
     "test_linux_candidate_fresh_replay",
     "test_linux_replay_timeouts_keep_their_stage_and_check_inputs",
@@ -164,6 +165,7 @@ def pytest_collection_modifyitems(config, items):
     validate_manifest(ROOT, SOLUTION_TEST_PATHS)
     validate_manifest(ROOT, SOLUTION_LIBRARY_TEST_PATHS)
     validate_manifest(ROOT, CONTAINER_TEST_PATHS)
+    validate_manifest(ROOT, SOLUTION_PLAN_EXACT_TEST_PATHS)
     validate_manifest(
         ROOT,
         (
@@ -173,6 +175,7 @@ def pytest_collection_modifyitems(config, items):
             *SOLUTION_TEST_PATHS,
             *SOLUTION_LIBRARY_TEST_PATHS,
             *CONTAINER_TEST_PATHS,
+            *SOLUTION_PLAN_EXACT_TEST_PATHS,
         ),
     )
     lane = config.getoption("--cairn-ci-lane")
@@ -187,6 +190,8 @@ def pytest_collection_modifyitems(config, items):
                 item_lane = "solution-plan-exact"
             else:
                 raise pytest.UsageError(f"unassigned PROVEN derivation test: {item.nodeid}")
+        elif path in SOLUTION_PLAN_EXACT_TEST_PATHS:
+            item_lane = "solution-plan-exact"
         elif path in SOLUTION_TEST_PATHS:
             if item.originalname in SOLUTION_PLAN_TESTS:
                 case = getattr(item, "callspec", None)
