@@ -1,0 +1,18 @@
+{
+  "reading": "bl2012-two-grumpy-giants/fitted-1",
+  "printed_source": {
+    "title": "Two grumpy giants and a baby",
+    "authors": "Daniel J. Bernstein and Tanja Lange",
+    "url": "https://cr.yp.to/elliptic/grumpy-20120709.pdf",
+    "page": 15
+  },
+  "printed": [
+    {"l": 65537, "n": 146, "weight": 20644183},
+    {"l": 1000003, "n": 558, "weight": 1205458963}
+  ],
+  "neighbors": [
+    {"l": 65537, "n": 145, "weight": 20906358},
+    {"l": 65537, "n": 147, "weight": 20729459}
+  ],
+  "neighbor_source": "Scratch fitted-1 evaluator acceptance at /tmp/cairn-path-20261013/campaign/acceptance.json; computed answers, not printed in the paper"
+}
