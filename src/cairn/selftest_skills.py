@@ -1,12 +1,4 @@
-"""The §2 self-test for the M1 baseline skills: rho_dp, bsgs and the instance-maker.
-
-Each skill runs its vendored corpus under a pinned case seed, then a
-randomized_postcondition arm keyed on H(implementation_revision || label): a
-fresh instance from toy_curve, the skill's own answer checked end to end, a
-wrong answer refused by the Tier-0 verifier, and for rho_dp the witness refused
-in each planted form by the gate-side witness verifier. The certificate is the
-digest of the canonical transcript, and a double run must be byte-equal.
-"""
+"""The §2 self-test for discrete-log, instance-maker and slope-weight skills."""
 
 import json
 from pathlib import Path
@@ -19,12 +11,22 @@ SKILLS_DIR = Path(__file__).resolve().parent / "skills"
 RHO_DP = "rho-dp"
 BSGS = "bsgs"
 INSTANCE_MAKER = "instance-maker"
-NAMES = (RHO_DP, BSGS, INSTANCE_MAKER)
-MODULES = {RHO_DP: "cairn.skills.rho_dp", BSGS: "cairn.skills.bsgs", INSTANCE_MAKER: "cairn.skills.instance_maker"}
+SLOPE_WEIGHT_A = "slope-weight-a"
+SLOPE_WEIGHT_B = "slope-weight-b"
+NAMES = (RHO_DP, BSGS, INSTANCE_MAKER, SLOPE_WEIGHT_A, SLOPE_WEIGHT_B)
+MODULES = {
+    RHO_DP: "cairn.skills.rho_dp",
+    BSGS: "cairn.skills.bsgs",
+    INSTANCE_MAKER: "cairn.skills.instance_maker",
+    SLOPE_WEIGHT_A: "cairn.skills.slope_weight_a",
+    SLOPE_WEIGHT_B: "cairn.skills.slope_weight_b",
+}
 CORPUS_PATHS = {
     RHO_DP: SKILLS_DIR / "rho_dp_corpus.json",
     BSGS: SKILLS_DIR / "bsgs_corpus.json",
     INSTANCE_MAKER: SKILLS_DIR / "instance_maker_corpus.json",
+    SLOPE_WEIGHT_A: SKILLS_DIR / "slope_weight_a_corpus.json",
+    SLOPE_WEIGHT_B: SKILLS_DIR / "slope_weight_b_corpus.json",
 }
 LOG_STEP = "selftest"
 CASE_SEED = 1
@@ -470,7 +472,122 @@ def _result(records, ledger, passes, floor, arms, seed, doc):
     }
 
 
-RUN_ONCE = {RHO_DP: rho_dp_run_once, BSGS: bsgs_run_once, INSTANCE_MAKER: instance_maker_run_once}
+def check_slope_corpus(doc):
+    if not isinstance(doc, dict) or set(doc) != {"schema_version", "pass_floor", "cases"}:
+        raise selftest.CorpusSchemaError("$", "corpus must hold exactly schema_version, pass_floor and cases")
+    if type(doc["schema_version"]) is not int or doc["schema_version"] != 1:
+        raise selftest.CorpusSchemaError("$.schema_version", "schema_version must be 1")
+    cases = doc["cases"]
+    if not isinstance(cases, list) or not cases:
+        raise selftest.CorpusSchemaError("$.cases", "cases must be a non-empty list")
+    seen = set()
+    for index, case in enumerate(cases):
+        path = f"$.cases[{index}]"
+        if not isinstance(case, dict) or set(case) != {"id", "ledger", "source", "fields"}:
+            raise selftest.CorpusSchemaError(path, "case must hold exactly id, ledger, source and fields")
+        if not isinstance(case["id"], str) or not case["id"] or case["id"] in seen:
+            raise selftest.CorpusSchemaError(f"{path}.id", "id must be a unique non-empty string")
+        seen.add(case["id"])
+        if case["ledger"] not in selftest.LEDGER_VALUES:
+            raise selftest.CorpusSchemaError(f"{path}.ledger", "unknown ledger value")
+        if not isinstance(case["source"], str) or not case["source"]:
+            raise selftest.CorpusSchemaError(f"{path}.source", "source must be a non-empty string")
+        fields = case["fields"]
+        if not isinstance(fields, dict) or set(fields) != {"l", "n", "W"}:
+            raise selftest.CorpusSchemaError(f"{path}.fields", "fields must hold exactly l, n and W")
+        for name, field in fields.items():
+            field_path = f"{path}.fields.{name}"
+            if not isinstance(field, dict) or set(field) != set(selftest.FIELD_KEYS):
+                raise selftest.CorpusSchemaError(field_path, "field must hold exactly value and origin")
+            if field["origin"] not in selftest.ORIGINS:
+                raise selftest.CorpusSchemaError(f"{field_path}.origin", "unknown field origin")
+            if not _is_int(field["value"]):
+                raise selftest.CorpusSchemaError(f"{field_path}.value", "value must be an integer")
+        values = _values(case)
+        if not 3 <= values["l"] <= 2**22 or not 1 <= values["n"] <= values["l"] - 2 or values["W"] < 0:
+            raise selftest.CorpusSchemaError(f"{path}.fields", "l, n or W is outside the evaluator's range")
+    selftest._check_floor(doc["pass_floor"], len(cases))
+    return doc
+
+
+def load_slope_corpus(which, path=None):
+    path = CORPUS_PATHS[which] if path is None else path
+    try:
+        doc = json.loads(Path(path).read_text())
+    except json.JSONDecodeError as exc:
+        raise selftest.CorpusSchemaError("$", f"corpus is not valid JSON: {exc}") from None
+    return check_slope_corpus(doc)
+
+
+def _slope_run_once(which, _config, *, doc=None, root=None):
+    from cairn.slopemodel import slope_hunt_verifier, slope_predicates, slopemodel_b
+
+    module = module_for(which)
+    peer = module_for(SLOPE_WEIGHT_B if which == SLOPE_WEIGHT_A else SLOPE_WEIGHT_A)
+    lg = log.get(LOG_STEP)
+    doc = load_slope_corpus(which) if doc is None else check_slope_corpus(doc)
+    seed = _instance_seed(_revision(module, root))
+    records, ledger, passes = [], {}, 0
+    for case in doc["cases"]:
+        values = _values(case)
+        try:
+            output = module.run(values["l"], values["n"])
+        except module.InputError as exc:
+            body = {"outcome": OUTCOME_REFUSED, "reason": str(exc)}
+        else:
+            body = {**output, "outcome": OUTCOME_PASS if output["weight"] == values["W"] else OUTCOME_WRONG}
+        if case["ledger"] == "pass":
+            if body["outcome"] != OUTCOME_PASS:
+                raise SelftestFailed("ledger", f"case {case['id']} declares pass but the evaluator reported {body}")
+            passes += 1
+        ledger[case["id"]] = case["ledger"]
+        records.append(("case", case["id"], {"ledger": case["ledger"], "observed": body}))
+        lg.info("case", id=case["id"], ledger=case["ledger"], observed=selftest._canonical_json(body))
+    floor = doc["pass_floor"]
+    if passes < floor:
+        raise SelftestFailed("floor", f"{passes} passing cases is below the floor {floor}")
+    ell = slopemodel_b.next_prime(257 + seed % 4096)
+    n = slope_predicates.step_size(ell)
+    if n != slope_hunt_verifier.step_size(ell):
+        raise SelftestFailed("postcondition-arm", "the independent step-size rules disagree")
+    output, independent = module.run(ell, n), peer.run(ell, n)
+    if output != independent:
+        raise SelftestFailed("postcondition-arm", f"independent evaluators disagree: {output} != {independent}")
+    arm_body = {**output, "independent_match": True, "outcome": OUTCOME_PASS}
+    records.append(("arm", "postcondition", arm_body))
+    lg.info("arm", name="postcondition", seed=seed, observed=selftest._canonical_json(arm_body))
+    try:
+        module.check_weight(65537, 146, 20644183)
+    except (module.InputError, module.PostconditionFailed) as exc:
+        raise SelftestFailed("verifier-arm", f"the published weight was refused: {exc}") from None
+    try:
+        module.check_weight(65537, 145, 20644183)
+    except module.PostconditionFailed:
+        pass
+    else:
+        raise SelftestFailed("verifier-arm", "the planted weight 20644183 at (65537, 145) was accepted")
+    verifier_body = {"ok": 1, "fail": 1, "planted": {"l": 65537, "n": 145, "W": 20644183}, "outcome": OUTCOME_PASS}
+    records.append(("arm", "verifier", verifier_body))
+    lg.info("arm", name="verifier", observed=selftest._canonical_json(verifier_body))
+    arms = {"postcondition": OUTCOME_PASS, "verifier": {"ok": 1, "fail": 1}}
+    return _result(records, ledger, passes, floor, arms, seed, doc)
+
+
+def slope_weight_a_run_once(config, *, doc=None, root=None):
+    return _slope_run_once(SLOPE_WEIGHT_A, config, doc=doc, root=root)
+
+
+def slope_weight_b_run_once(config, *, doc=None, root=None):
+    return _slope_run_once(SLOPE_WEIGHT_B, config, doc=doc, root=root)
+
+
+RUN_ONCE = {
+    RHO_DP: rho_dp_run_once,
+    BSGS: bsgs_run_once,
+    INSTANCE_MAKER: instance_maker_run_once,
+    SLOPE_WEIGHT_A: slope_weight_a_run_once,
+    SLOPE_WEIGHT_B: slope_weight_b_run_once,
+}
 
 
 def run_once(which, config, *, doc=None, root=None):

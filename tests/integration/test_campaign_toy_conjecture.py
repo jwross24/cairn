@@ -4,12 +4,31 @@ import subprocess
 import sys
 from pathlib import Path
 
+import _substrate_helpers as helpers
 import pytest
+from test_counterexample_hunt import _certify
 
 from cairn import bundle, campaign, canon, env, hunt, keys, substrate
 
+CERTIFIED_CAMPAIGN = (
+    "import json, runpy, sys, types\n"
+    "from pathlib import Path\n"
+    "from cairn import keys, selftest_skills\n"
+    "fixtures = json.loads(sys.argv.pop(1))\n"
+    "for name, entry in fixtures.items():\n"
+    "    module = types.ModuleType(entry['module'])\n"
+    "    module.IDENTITY_SOURCES = tuple(entry['sources'])\n"
+    "    module.REPO_ROOT = Path(entry['root'])\n"
+    "    module.skill_identity_hash = lambda root, identity=entry['identity']: keys.identity_bundle_hash(identity)\n"
+    "    sys.modules[entry['module']] = module\n"
+    "    selftest_skills.NAMES += (name,)\n"
+    "    selftest_skills.MODULES[name] = entry['module']\n"
+    "runpy.run_module('cairn.campaign', run_name='__main__')\n"
+)
+
 
 def make_spec(root):
+    root = root / "src"
     root.mkdir(parents=True, exist_ok=True)
     (root / "toy_executor.py").write_text(
         "import json, sys\n"
@@ -73,24 +92,42 @@ def make_spec(root):
     }
 
 
-def run_spec(tmp_path, spec, pinned_bundle, *, chronology=False):
+def run_spec(tmp_path, spec, pinned_bundle, *, chronology=False, certified=False):
+    db = tmp_path / "substrate.sqlite"
+    fixtures = {}
+    if chronology or certified:
+        with substrate.Substrate.open(db) as sub:
+            if chronology:
+                sub.conn.executescript(
+                    "CREATE TABLE campaign_chronology (seq INTEGER PRIMARY KEY, kind TEXT, hash TEXT);"
+                    "CREATE TRIGGER campaign_node AFTER INSERT ON nodes BEGIN "
+                    "INSERT INTO campaign_chronology(kind,hash) VALUES (NEW.kind,NEW.hash); END;"
+                    "CREATE TRIGGER campaign_nonce AFTER INSERT ON instance_nonces BEGIN "
+                    "INSERT INTO campaign_chronology(kind,hash) VALUES ('nonce',NEW.hypothesis_key); END;"
+                )
+            if certified:
+                for producer in ("executor", "verifier"):
+                    program = spec[producer]
+                    identity = {
+                        **helpers.IDENTITY_A,
+                        "interface_version": program["module"] + "/1",
+                        "implementation_revision": program["digest"],
+                    }
+                    skill = "fixture-toy-" + producer
+                    program["skill"] = skill
+                    program["skill_identity_hash"] = _certify(sub, identity)
+                    fixtures[skill] = {
+                        "module": program["module"],
+                        "sources": ["src/" + source for source in program["sources"]],
+                        "identity": identity,
+                        "root": str(Path(spec["module_dir"]).parent),
+                    }
     spec_path = tmp_path / "spec.json"
     spec_path.write_text(json.dumps(spec))
-    db = tmp_path / "substrate.sqlite"
-    if chronology:
-        with substrate.Substrate.open(db) as sub:
-            sub.conn.executescript(
-                "CREATE TABLE campaign_chronology (seq INTEGER PRIMARY KEY, kind TEXT, hash TEXT);"
-                "CREATE TRIGGER campaign_node AFTER INSERT ON nodes BEGIN "
-                "INSERT INTO campaign_chronology(kind,hash) VALUES (NEW.kind,NEW.hash); END;"
-                "CREATE TRIGGER campaign_nonce AFTER INSERT ON instance_nonces BEGIN "
-                "INSERT INTO campaign_chronology(kind,hash) VALUES ('nonce',NEW.hypothesis_key); END;"
-            )
     bundle_path, pin = pinned_bundle()
     argv = [
         sys.executable,
-        "-m",
-        "cairn.campaign",
+        *(["-c", CERTIFIED_CAMPAIGN, json.dumps(fixtures)] if certified else ["-m", "cairn.campaign"]),
         "--spec",
         str(spec_path),
         "--db",
@@ -110,14 +147,15 @@ def run_spec(tmp_path, spec, pinned_bundle, *, chronology=False):
 
 def test_toy_campaign_runs_real_trials_and_preregisters_before_entropy(tmp_path, pinned_bundle):
     spec = make_spec(tmp_path / "modules")
-    completed, db, gate_bundle, argv = run_spec(tmp_path, spec, pinned_bundle, chronology=True)
+    completed, db, gate_bundle, argv = run_spec(tmp_path, spec, pinned_bundle, chronology=True, certified=True)
     assert completed.returncode == 0, completed.stderr
     report = json.loads(completed.stdout)
     assert "stopped" not in report
     assert report["bundle_hash"] == gate_bundle.hash
     assert report["container_digest"] == keys.env_manifest_digest(env.manifest())
-    assert report["executor_identity"] == spec["executor"]["digest"]
-    assert report["verifier_identity"] == spec["verifier"]["digest"]
+    assert report["executor_identity"] == spec["executor"]["skill_identity_hash"]
+    assert report["verifier_identity"] == spec["verifier"]["skill_identity_hash"]
+    assert report["executor_identity"] != report["verifier_identity"]
     assert [row["role"] for row in report["statements"]] == ["control_must_survive", "plant_must_be_killed", "question"]
     assert [row["verdict"] for row in report["statements"]] == ["SURVIVED", "KILLED", "KILLED"]
     assert [row["expected_verdict"] for row in report["statements"]] == ["SURVIVED", "KILLED", None]
@@ -168,12 +206,12 @@ def test_failed_control_or_plant_stops_before_question_nonce(tmp_path, pinned_bu
     statement["scope"]["param_ranges"] = {"n": bounds}
     statement["distribution"] = {"n": bounds}
     statement["predicate"]["accept"] = accept
-    completed, db, _, _ = run_spec(tmp_path, spec, pinned_bundle)
+    completed, db, _, _ = run_spec(tmp_path, spec, pinned_bundle, certified=verdict == "KILLED")
     assert completed.returncode == 2, completed.stderr
     report = json.loads(completed.stdout)
     assert report["stopped"] == {"role": role, "claim_id": statement["claim_id"], "verdict": verdict}
     assert "refused: " in completed.stderr
-    question = campaign.prepare_statements(campaign.parse_spec(spec))[0]
+    question = campaign.prepare_statements(spec)[0]
     with sqlite3.connect(db) as conn:
         assert (
             conn.execute(
@@ -207,7 +245,7 @@ def test_modified_source_refuses_before_attempt(tmp_path, pinned_bundle, produce
 def test_incomplete_question_prints_document_and_refuses(tmp_path, pinned_bundle):
     spec = make_spec(tmp_path / "modules")
     spec["statements"][0]["predicate"]["accept"] = False
-    completed, db, _, _ = run_spec(tmp_path, spec, pinned_bundle)
+    completed, db, _, _ = run_spec(tmp_path, spec, pinned_bundle, certified=True)
     assert completed.returncode == 2
     report = json.loads(completed.stdout)
     assert report["stopped"] == {"role": "question", "claim_id": "euler-question", "verdict": "INCOMPLETE"}

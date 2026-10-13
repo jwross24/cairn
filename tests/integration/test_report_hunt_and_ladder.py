@@ -38,7 +38,7 @@ def _cli(path, statement_hash):
 
 @pytest.mark.parametrize(("bounds", "verdict"), [((0, 3), "SURVIVED"), ((40, 40), "KILLED")])
 def test_real_hunt_cli_and_three_read_only_renders(tmp_path, bounds, verdict):
-    sub, plan, executor, verifier, statement = _setup(tmp_path, bounds=bounds, trials=2)
+    sub, plan, executor, verifier, statement = _setup(tmp_path, bounds=bounds, trials=2, certified=verdict == "KILLED")
     try:
         result = hunt.run_hunt(sub, plan, executor, verifier)
         assert result.verdict == verdict

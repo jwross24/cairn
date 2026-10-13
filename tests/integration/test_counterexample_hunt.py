@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import _substrate_helpers as helpers
 import pytest
 
 from cairn import claims, gc, hunt, instances, justify, ledger, runner, substrate
@@ -10,6 +11,17 @@ EXECUTOR = "e" * 64
 VERIFIER = "v" * 64
 TOOL_DIGESTS = {"fixture": "f" * 64}
 FIXTURES = str(Path(__file__).resolve().parent.parent / "fixtures")
+
+
+def _certify(sub, identity, must_fail=1):
+    digest = sub.put_identity_bundle(identity)
+    sub.put_certificate(
+        digest,
+        helpers.TRANSCRIPT_HASH,
+        helpers.ENV_MANIFEST_HASH,
+        {**helpers.SELFTEST_SUMMARY, "must_fail_witnesses": must_fail},
+    )
+    return digest
 
 
 def _artifact_executor(sub, tmp_path, context, artifact_name):
@@ -153,9 +165,18 @@ def _setup(
     disown_attempt=False,
     ranges=None,
     size_axis=None,
+    certified=False,
+    same_identity=False,
+    must_fail=1,
 ):
     _programs(tmp_path)
     sub = substrate.Substrate.open(tmp_path / "substrate.sqlite")
+    executor_identity = _certify(sub, helpers.IDENTITY_A) if certified else EXECUTOR
+    verifier_identity = (
+        executor_identity
+        if same_identity
+        else (_certify(sub, helpers.IDENTITY_B, must_fail) if certified else VERIFIER)
+    )
     statement_bounds = bounds if statement_bounds is None else statement_bounds
     ranges = {"n": bounds} if ranges is None else dict(ranges)
     statement_ranges = dict(ranges)
@@ -170,8 +191,8 @@ def _setup(
         ranges,
         size_axis=size_axis,
         target_family="euler",
-        executor_identity=EXECUTOR,
-        verifier_identity=VERIFIER,
+        executor_identity=executor_identity,
+        verifier_identity=verifier_identity,
     )
     hypothesis = claims.HypothesisObject(
         "euler",
@@ -189,8 +210,8 @@ def _setup(
         ranges,
         size_axis=size_axis,
         target_family="euler",
-        executor_identity=EXECUTOR,
-        verifier_identity=VERIFIER,
+        executor_identity=executor_identity,
+        verifier_identity=verifier_identity,
     )
     claims.write_hypothesis_object(sub, hypothesis)
 
@@ -233,7 +254,7 @@ def _setup(
         }
         return launch(
             ctx,
-            EXECUTOR,
+            executor_identity,
             "hunt_evaluator",
             {"hunt_input": (ctx.input_blob_hash, ctx.input_blob_size)},
             document,
@@ -254,7 +275,7 @@ def _setup(
         }
         return launch(
             ctx,
-            VERIFIER,
+            verifier_identity,
             "hunt_verifier",
             {
                 "hunt_input": (ctx.input_blob_hash, ctx.input_blob_size),
@@ -282,7 +303,7 @@ def _assert_executed_transcript_survives_gc(sub, result):
 
 
 def test_killed_hunt_records_real_counterexample_and_full_transcript(tmp_path):
-    sub, plan, executor, verifier, statement = _setup(tmp_path)
+    sub, plan, executor, verifier, statement = _setup(tmp_path, certified=True)
     try:
         result = hunt.run_hunt(sub, plan, executor, verifier)
         assert result.verdict == "KILLED"
@@ -329,7 +350,7 @@ def test_killed_hunt_records_real_counterexample_and_full_transcript(tmp_path):
 
 
 def test_verified_counterexample_refutes_a_statement_wider_than_the_sampling_distribution(tmp_path):
-    sub, plan, executor, verifier, statement = _setup(tmp_path, statement_bounds=(0, 41))
+    sub, plan, executor, verifier, statement = _setup(tmp_path, statement_bounds=(0, 41), certified=True)
     try:
         result = hunt.run_hunt(sub, plan, executor, verifier)
         assert result.verdict == "KILLED"
@@ -348,6 +369,7 @@ def test_multi_axis_hunt_uses_explicit_size_axis_and_records_all_dimensions(tmp_
         tmp_path,
         ranges={"a": (1, 2), "n": (40, 41)},
         size_axis="n",
+        certified=True,
     )
     try:
         result = hunt.run_hunt(sub, plan, executor, verifier)
@@ -383,7 +405,7 @@ def test_verified_counterexample_outside_statement_scope_does_not_refute(tmp_pat
 
 
 def test_derive_failure_leaves_no_ledger_entry(tmp_path, monkeypatch):
-    sub, plan, executor, verifier, statement = _setup(tmp_path)
+    sub, plan, executor, verifier, statement = _setup(tmp_path, certified=True)
 
     def injected_failure(*args, **kwargs):
         raise RuntimeError("injected derive failure")
@@ -489,7 +511,7 @@ def test_survived_hunt_evidence_requires_every_executor_live(tmp_path, mutation)
 @pytest.mark.parametrize("mutation", ["disown", "mark_inadmissible"])
 @pytest.mark.parametrize("member", ["attempt_id", "verifier_attempt_id"])
 def test_killed_hunt_evidence_requires_counterexample_executor_and_verifier_live(tmp_path, mutation, member):
-    sub, plan, executor, verifier, statement = _setup(tmp_path)
+    sub, plan, executor, verifier, statement = _setup(tmp_path, certified=True)
     try:
         result = hunt.run_hunt(sub, plan, executor, verifier)
         assert result.verdict == "KILLED"

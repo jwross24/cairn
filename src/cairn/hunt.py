@@ -6,7 +6,7 @@ from pathlib import Path
 
 import blake3
 
-from cairn import canon, claims, instances, justify, keys, ledger, runner, substrate
+from cairn import canon, claims, instances, justify, keys, ledger, repro, runner, substrate
 from cairn.canon import BOOL, INT, NON_EMPTY_STR, STR, Field, List, Map, Optional, Set, Struct
 from cairn.substrate import EDGE_INPUT, SubstrateError, _now, blob_hash
 
@@ -851,6 +851,20 @@ def run_hunt(sub, plan, executor: Callable, verifier: Callable, *, run_id=None, 
             )
             verification_problem = True
             break
+        verifier_standing, reason = _verifier_standing(sub, plan)
+        if not verifier_standing:
+            trials.append(
+                _trial_record(
+                    context,
+                    execution,
+                    "VERIFIER_UNVERIFIED",
+                    reason,
+                    verification.evidence_hash,
+                    verification.attempt_id,
+                )
+            )
+            verification_problem = True
+            break
         population = point_population
         trials.append(
             _trial_record(
@@ -941,6 +955,13 @@ def run_hunt(sub, plan, executor: Callable, verifier: Callable, *, run_id=None, 
     if nonce_record.withheld:
         instances.publish_nonce(sub, nonce)
     return HuntResult(record, run_hash, evidence_hash, ledger_hash, derivation)
+
+
+def _verifier_standing(sub, plan):
+    grade, reason = repro.owner_grade(
+        sub, plan.executor_identity, repro.Verifier(repro.SKILL_VERIFIER, plan.verifier_identity)
+    )
+    return grade == repro.VERIFIABLE, reason
 
 
 @dataclass(frozen=True)

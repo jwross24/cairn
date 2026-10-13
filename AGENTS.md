@@ -85,6 +85,11 @@ so the protocol holds on its own. A guard's refusal is a safety mechanism, never
   `src/cairn/skills/instance_maker.py`, `src/cairn/skills/instance_maker_corpus.json`,
   `src/cairn/skills/order_bsgs_gmpy2.py`,
   `src/cairn/skills/rho_dp.py`, `src/cairn/skills/rho_dp_corpus.json`,
+  `src/cairn/skills/slope_weight_a.py`, `src/cairn/skills/slope_weight_a_corpus.json`,
+  `src/cairn/skills/slope_weight_b.py`, `src/cairn/skills/slope_weight_b_corpus.json`,
+  `src/cairn/slopemodel/slopemodel_a.py`, `src/cairn/slopemodel/slopemodel_b.py`,
+  `src/cairn/slopemodel/slope_predicates.py`, `src/cairn/slopemodel/slope_hunt_executor.py`,
+  `src/cairn/slopemodel/slope_hunt_verifier.py`,
   `src/cairn/skills/toy_curve.py`, `src/cairn/skills/toy_curve_corpus.json`.
 - Identity-bearing files, gate bundle: `bundle/Containerfile`, `bundle/allow_lists.json`,
   `bundle/auditor.json`, `bundle/challenge_prelude.lean`, `bundle/container.json`,
