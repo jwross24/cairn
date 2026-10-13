@@ -379,6 +379,68 @@ def test_linux_candidate_closure_comparison_refuses_weaker_statement(
     solutionbuild.assert_dependencies(linux_bundle, compilation.project)
 
 
+@pytest.mark.parametrize("poisoned", [False, True])
+def test_linux_comparison_uses_source_inputs_without_candidate_build_artifacts(
+    linux_image, pinned_bundle, tmp_path, monkeypatch, popen_spy, poisoned
+):
+    prelude = tmp_path / "minimal-prelude.lean"
+    prelude.write_text("set_option autoImplicit false\n")
+    monkeypatch.setattr(challenge, "PRELUDE_PATH", prelude)
+    gate = bundle.GateBundle.open(*pinned_bundle(name="comparison-bundle"))
+    proposition = "False" if poisoned else "True"
+    formal = f"theorem challenge_hello : {proposition} := by\n  sorry\n"
+    statement = factories.claim_statement(seed=11, formal_source=formal)
+    theorems = ("challenge_hello",)
+    prepared = solutionchecks.prepare_container(gate, linux_image, statement, theorems, root=tmp_path / "prepared")
+    module = challenge.module_name(statement)
+    olean = ".lake/build/lib/lean/" + module.replace(".", "/") + ".olean"
+    weak = "theorem challenge_hello : True := trivial\n"
+    source = weak
+    if poisoned:
+        source = (
+            "#eval show IO Unit from do\n"
+            f'  let built ← IO.Process.output {{cmd := "lake", args := #["build", "{module}"]}}\n'
+            "  if built.exitCode != 0 then throw <| IO.userError built.stderr\n"
+            f'  IO.FS.writeFile "Poison.lean" "set_option autoImplicit false\\n\\n{weak.strip()}\\n"\n'
+            f'  let changed ← IO.Process.output {{cmd := "lean", args := #["-o", "{olean}", "Poison.lean"]}}\n'
+            "  if changed.exitCode != 0 then throw <| IO.userError changed.stderr\n"
+            f"\n{weak}"
+        )
+    compilation = solutionchecks.compile_container(
+        gate,
+        linux_image,
+        statement,
+        challenge.Submission(solution_module=source.encode(), formal_statement_hash=prepared.formal_statement_hash),
+        theorems,
+        prepared=prepared,
+        root=tmp_path / "candidate",
+    )
+    lean.require_success(compilation.result)
+    original = Path(compilation.project.root)
+    rendered = challenge.module_path(statement, original / "Challenge")
+    expected_source = challenge.render(statement, gate.challenge_prelude)
+    assert rendered.read_bytes() == expected_source
+    assert (original / olean).is_file()
+    popen_spy.clear()
+    observed, reasons, _ = solutionchecks.observe_container_comparison(gate, compilation)
+    if poisoned:
+        assert observed == solutionplan.OBSERVED_REFUSED
+        assert reasons[:2] == (solutionchecks.CLOSURE_MISMATCH, "rc:1")
+    else:
+        assert (observed, reasons) == (solutionplan.EXPECT_CLOSURE_MATCHED, ())
+    comparisons = [argv for argv in popen_spy if solutionchecks.CONTAINER_COMPARATOR_BINARY in argv]
+    assert len(comparisons) == 1
+    mount = comparisons[0][comparisons[0].index("--mount") + 1]
+    comparison_root = Path(mount.split("source=", 1)[1].split(",target=", 1)[0])
+    assert comparison_root != original
+    assert comparison_root.parent.name.startswith("cairn-comparison-")
+    assert comparison_root.is_dir()
+    assert challenge.module_path(statement, comparison_root / "Challenge").read_bytes() == expected_source
+    assert rendered.read_bytes() == expected_source
+    solutionbuild.assert_unchanged(compilation.project)
+    solutionbuild.assert_dependencies(gate, compilation.project)
+
+
 @pytest.mark.timeout(1800)
 @pytest.mark.parametrize("case", ["exact", "sorry", "weaker", "stale-hash"])
 def test_linux_ordered_plan_runs_each_step_in_order(
