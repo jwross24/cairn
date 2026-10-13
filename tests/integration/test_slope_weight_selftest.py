@@ -63,14 +63,14 @@ def test_cli_certifies_real_pair_and_records_origins(certified_pair, which):
     assert document["identity_bundle_hash"] == module.skill_identity_hash()
     assert document["arms"] == {
         "postcondition": "pass",
-        "executor": {"candidate": 1, "non_candidate": 1},
-        "verifier": {"ok": 1, "fail": 1},
+        "executor": {"candidate": 1, "non_candidate": 2},
+        "verifier": {"ok": 1, "fail": 2},
     }
     with substrate.Substrate.open(db, role="reader") as sub:
         row = sub.get_certificate(document["identity_bundle_hash"])
     assert row["cert_hash"] == document["certificate"]
     summary = json.loads(row["selftest_summary"])
-    assert summary["must_fail_witnesses"] == 1
+    assert summary["must_fail_witnesses"] == 2
     assert summary["cross_check"] == []
     assert summary["corpus_origins"]["printed65537"]["W"] == "upstream_vendored"
     assert summary["corpus_origins"]["agreement65537"]["W"] == "author_supplied"
@@ -199,8 +199,12 @@ def test_constant_accept_verifier_fails_without_minting_certificate(tmp_path, pi
         assert sub.conn.execute("SELECT count(*) FROM skill_certificates").fetchone()[0] == 0
 
 
-@pytest.mark.parametrize("role", ["executor", "verifier"])
-def test_constant_accept_hunt_decision_on_disk_refuses_cli_certificate(tmp_path, pinned_bundle, role):
+@pytest.mark.parametrize(
+    ("role", "kind_only"),
+    [("executor", False), ("verifier", False), ("executor", True), ("verifier", True)],
+    ids=["executor-global", "verifier-global", "executor-weight-le", "verifier-weight-le"],
+)
+def test_constant_accept_hunt_decision_on_disk_refuses_cli_certificate(tmp_path, pinned_bundle, role, kind_only):
     bundle_path, pin = pinned_bundle()
     root = tmp_path / "mutated"
     shutil.copytree(ROOT / "src", root / "src", ignore=shutil.ignore_patterns("__pycache__"))
@@ -221,7 +225,14 @@ def test_constant_accept_hunt_decision_on_disk_refuses_cli_certificate(tmp_path,
     path = root / relative
     original = path.read_text()
     assert original.count(signature) == 1
-    path.write_text(original.replace(signature, signature + f"    return {value}\n"))
+    if kind_only:
+        value = "True" if role == "verifier" else "False"
+        mutation = f'    if predicate["kind"] == "weight_le":\n        return {value}\n'
+        decision = "counterexample_valid" if role == "verifier" else "candidate"
+        expected = f"hunt-{role}-arm: the holding_weight_le statement returned {decision}=True, expected False"
+    else:
+        mutation = f"    return {value}\n"
+    path.write_text(original.replace(signature, signature + mutation))
     db = tmp_path / "refused.sqlite"
     argv = [
         sys.executable,

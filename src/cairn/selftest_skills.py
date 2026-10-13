@@ -538,6 +538,7 @@ def _slope_decision_arm(seed, ell, weight):
     records = []
     for name, predicate, expected in (
         ("holding", {"kind": "weight_ge_counting_bound"}, False),
+        ("holding_weight_le", {"kind": "weight_le", "num": 10, "den": 1}, False),
         ("failing", {"kind": "weight_le", "num": 0, "den": 1}, True),
     ):
         document = {

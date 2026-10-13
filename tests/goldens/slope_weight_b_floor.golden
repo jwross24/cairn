@@ -2,11 +2,11 @@
  "arms": {
   "executor": {
    "candidate": 1,
-   "non_candidate": 1
+   "non_candidate": 2
   },
   "postcondition": "pass",
   "verifier": {
-   "fail": 1,
+   "fail": 2,
    "ok": 1
   }
  },
