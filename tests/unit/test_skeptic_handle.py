@@ -4,6 +4,7 @@ from dataclasses import FrozenInstanceError, fields
 
 import pytest
 
+from cairn import hunt
 from cairn.skeptic import Handle, RerunRequest, ScopedReadRefused, snapshot
 
 
@@ -74,6 +75,27 @@ def test_handle_rerun_rejects_lean_or_incomplete_projection():
                 ),
             ),
         ).request_rerun("e" * 64)
+
+
+@pytest.mark.parametrize("unexpected", [False, True])
+def test_hunt_rerun_preserves_minimal_request_and_refuses_unrecognized_fields(unexpected):
+    projection = {
+        "kind": hunt.KIND,
+        "recipe_hash": "r" * 64,
+        "certificate_hash": None,
+        "repro_record_hash": None,
+        "attempt_id": "a" * 32,
+        "hunt_run_hash": "h" * 64,
+        "verifier_certificate_hash": None,
+    }
+    if unexpected:
+        projection["unhanded_text"] = "outside scope"
+    handle = Handle(statement_hash="s" * 64, _records=(("e" * 64, json.dumps(projection)),))
+    if unexpected:
+        with pytest.raises(ScopedReadRefused):
+            handle.request_rerun("e" * 64)
+    else:
+        assert handle.request_rerun("e" * 64) == RerunRequest("s" * 64, "e" * 64, "a" * 32, "r" * 64)
 
 
 def test_snapshot_has_no_scope_override_and_handle_carries_no_live_authority():

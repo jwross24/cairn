@@ -62,14 +62,15 @@ def _skeptic_records(sub, statement_hash):
         sent = dispatch.read(sub, row["dispatch_id"])
         if sent.role != "skeptic" or statement_hash not in sent.handed_node_hashes:
             continue
-        records.append((sent, dispatch.result(sub, sent.dispatch_id)))
+        view = dispatch.skeptic_record(sub, sent.dispatch_id, statement_hash)
+        records.append((sent, dispatch.result(sub, sent.dispatch_id), view))
     return records
 
 
 def _require_campaign(kind, statement, skeptic_records):
     if kind != "campaign":
         return
-    if not any(result is not None for _, result in skeptic_records):
+    if not any(view is not None for _, _, view in skeptic_records):
         raise ReportRefused("missing skeptic_record")
     if statement is None or statement["status"] == "open":
         raise ReportRefused("statement not terminal")
@@ -352,13 +353,15 @@ def render(sub, *, kind, statement_hash=None, ladder_table_hash=None, attest_pat
     section("Pre-registration", pre)
     section("Hunt record" if runs else "Ladder table", run_lines + table_lines)
     skeptic_lines = []
-    for sent, result in skeptic_records:
+    for sent, result, view in skeptic_records:
         skeptic_lines.append(line(f"dispatch: {_json(sent.as_dict())}", sent.hash))
         skeptic_lines.append(
             line(f"result: {_json(result.as_dict())}", result.hash)
             if result is not None
             else line("result: absent", sent.hash)
         )
+        if view is not None:
+            skeptic_lines.append(line(f"audit observation: {_json(view.as_dict())}", view.result_hash))
     section("Skeptic record", skeptic_lines or ["absent"])
     calibration = [line(f"latest tag: {tag}; evidence pointer: {tag_evidence or 'none'}", tag_evidence)]
     calibration.extend(
@@ -381,8 +384,8 @@ def render(sub, *, kind, statement_hash=None, ladder_table_hash=None, attest_pat
         [line(f"{entry['decision']}: {_json(entry)}", entry["hash"]) for entry in entries] or [line("none")],
     )
     section("Tier spend", [line(_spend(sub, attempts))])
-    if not any(result is not None for _, result in skeptic_records):
-        limitations.append(("Skeptic record absent", default_pointer))
+    if not any(view is not None for _, _, view in skeptic_records):
+        limitations.append(("Completed typed Skeptic review absent", default_pointer))
     if statement is not None:
         for review in claims.review_verdicts_for(sub, statement_hash):
             verified = False

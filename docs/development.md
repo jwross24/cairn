@@ -29,6 +29,93 @@ An invalid plan refuses with exit 2. A substrate that differs from the shipped s
 with `SchemaMismatch`, exit 4; Cairn ships no migration. Run `uv run cairn doctor --json`
 to inspect either refusal before deciding how to preserve or replace operator-owned data.
 
+## Dispatch canary before a campaign Skeptic
+
+Run this procedure against the campaign's existing substrate before dispatching its Skeptic.
+Set the absolute campaign path explicitly; an absent destination refuses rather than initializes
+a substrate. The probe requires SDK `0.2.152` and bundled CLI `2.1.259` and checks both versions.
+
+```bash
+export CAIRN_CAMPAIGN_DB=/absolute/path/to/campaign/substrate.sqlite
+```
+
+The command captures fresh, actual SDK/CLI request bodies at an ephemeral loopback endpoint with
+a dummy credential and synthetic `LOCAL_CAPTURE_ONLY` replies. It creates a scratch home,
+project, bundle, and substrate. All four ambient sources must appear in the control requests;
+none may appear in dispatch requests, which must contain the handed-node control. Both arms
+must complete successfully. This measures serialized context isolation only and establishes
+no model or provider behavior. No paid provider request or deployed bundle pin is part of it.
+
+```bash
+uv run python - <<'PY'
+import hashlib
+import json
+import os
+from pathlib import Path
+
+from cairn import canary
+from cairn.substrate import Substrate
+from research.grounding import probe_dispatch_canary as probe
+
+campaign = Path(os.environ["CAIRN_CAMPAIGN_DB"]).expanduser().resolve()
+if not campaign.is_file():
+    raise SystemExit("campaign substrate must already exist")
+
+capture = probe.run()
+checks = capture["required_source_checks"]
+if (
+    capture["exit_code"] != 0
+    or not capture["capture_complete"]
+    or not capture["dispatch_clean_with_handed_control"]
+    or not capture["all_arms_completed_synthetic_response"]
+    or set(checks) != set(canary.SOURCES)
+    or not all(checks.values())
+):
+    raise SystemExit("capture failed or incomplete; campaign substrate was not opened")
+
+directory = Path(capture["artifact_directory"])
+observations = {}
+for arm in ("dispatch", "control"):
+    bodies = []
+    for entry in capture["request_bodies"][arm]:
+        body = (directory / entry["file"]).read_bytes()
+        if len(body) != entry["byte_length"] or hashlib.sha256(body).hexdigest() != entry["sha256"]:
+            raise SystemExit("captured request body differs from its summary")
+        bodies.append(body)
+    classified = probe._classify_arm(
+        bodies, capture["plantings"], canary.control_token(capture["seed"])
+    )
+    if not bodies or any(classified[key] != capture["arms"][arm][key] for key in classified):
+        raise SystemExit("captured request checks differ from their summary")
+    observations[arm] = "\n".join(body.decode("utf-8", errors="replace") for body in bodies)
+
+with Substrate.open(campaign, role="writer") as sub:
+    recorded = canary.record(
+        sub,
+        form=canary.FORM_REQUEST_BYTES,
+        plantings=capture["plantings"],
+        observed=observations["dispatch"],
+        control_observed=observations["control"],
+        handed_control_detected=capture["arms"]["dispatch"]["handed_control_detected"],
+        sdk_version=capture["sdk_cli"]["sdk_version"],
+        cli_version=capture["sdk_cli"]["cli_version"],
+    )
+    grounded = canary.require_grounded(sub)
+    print(json.dumps(
+        {"capture": str(directory), "record_hash": recorded.hash, "record": grounded.as_dict()},
+        sort_keys=True,
+    ))
+PY
+```
+
+`canary.record` writes the captured dispatch and control observations as blobs and appends a
+canary record to the selected campaign substrate. Retain the printed record hash and scratch
+capture directory, including `summary.json`, request bodies, and init/result diagnostics.
+Do not copy a historical PASS record or substitute an echo for captured request bytes.
+`require_grounded` requires the newest record to pass with the worker's SDK/CLI versions;
+a later failed record or a version change blocks dispatch until a fresh capture passes.
+The procedure grounds dispatch only. It does not dispatch a Skeptic or produce findings.
+
 ## Lean prerequisites
 
 The Lean integration suite requires the comparator and exporter pinned in

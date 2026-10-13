@@ -1,10 +1,11 @@
+import json
 import logging
 import re
 import sqlite3
 
 import pytest
 
-from cairn import attest, claims, dispatch, hunt, instances, ladder, report, substrate
+from cairn import attest, bundle, claims, dispatch, hunt, instances, ladder, report, substrate
 
 HEADINGS = [
     "Claim",
@@ -93,30 +94,35 @@ def build_records(path, *, status="open", entropy_first=False, tagged=False):
     return statement, hypothesis, evidence
 
 
-def add_skeptic(path, statement_hash, *, role="skeptic", result_present=True):
+def add_skeptic(path, statement_hash, *, role="skeptic", result_present=True, status="success", text=None):
+    source = path.parent / "skeptic-fixture"
+    source.mkdir()
+    config = {
+        "template": dispatch.SKEPTIC_HUNT_TEMPLATE,
+        "tools": [],
+        "model": "claude-offline-fixture",
+        "max_turns": 1,
+        "timeout_s": 1,
+    }
+    (source / "worker_roles.json").write_text(json.dumps({role: config}))
+    (source / "role_templates.json").write_text(json.dumps({dispatch.SKEPTIC_HUNT_TEMPLATE: "1. Offline fixture"}))
+    bundle_path, pin = path.parent / "skeptic-bundle.sqlite", path.parent / "skeptic-bundle.pin"
+    pin.write_text(bundle.build(source, bundle_path) + "\n")
+    gate = bundle.GateBundle.open(bundle_path, pin)
     with substrate.Substrate.open(path) as sub:
-        sent = dispatch.DispatchRecord(
-            "report-skeptic",
-            role,
-            (statement_hash,),
-            "a" * 64,
-            (),
-            "b" * 64,
-            None,
-            "not recorded",
-            "c" * 64,
-            "d" * 64,
-            "fixture",
-            "fixture",
-            "fixture",
-            "2026-10-13T00:00:00Z",
-        )
-        dispatch._write(sub, "worker_dispatch", "worker_dispatches", sent, ())
+        sent = dispatch._record(sub, dispatch._prepare(sub, gate, role=role, node_ids=(statement_hash,)))
         if result_present:
+            response = {
+                "statement_hash": statement_hash,
+                "verdict": "gap",
+                "items": [
+                    {"id": 1, "outcome": "gap", "answer": "Recorded review\n## forged heading", "cited_node_hashes": []}
+                ],
+            }
             result = dispatch.DispatchResult(
                 sent.dispatch_id,
-                "OK",
-                "Recorded review\n## forged heading",
+                status,
+                json.dumps(response) if text is None else text,
                 "fixture-session",
                 (),
                 (),
@@ -125,6 +131,7 @@ def add_skeptic(path, statement_hash, *, role="skeptic", result_present=True):
                 "2026-10-13T00:00:01Z",
             )
             dispatch._write(sub, "worker_result", "worker_results", result, (sent.hash,))
+    return sent
 
 
 def test_section_order_untagged_absent_and_byte_equal(tmp_path):
@@ -166,12 +173,35 @@ def test_statement_free_formatter_emits_prose():
 def test_terminal_status_and_campaign_skeptic(tmp_path, status):
     path = tmp_path / "report.sqlite"
     statement, _, _ = build_records(path, status=status)
-    add_skeptic(path, statement.hash)
+    sent = add_skeptic(path, statement.hash)
     text = report.document(db_path=path, kind="campaign", statement_hash=statement.hash)
     assert text.startswith(f"## Claim\n\nstatus: {status};")
-    assert "report-skeptic" in text
+    assert sent.dispatch_id in text
     assert "Recorded review\\n## forged heading" in text
     assert re.findall(r"^## (.+)$", text, re.MULTILINE) == HEADINGS
+
+
+@pytest.mark.parametrize("result_present", [True, False])
+def test_failed_or_pending_skeptic_stays_visible_but_cannot_complete_campaign(tmp_path, result_present):
+    path = tmp_path / "report.sqlite"
+    statement, _, _ = build_records(path, status="withdrawn")
+    sent = add_skeptic(path, statement.hash, status="error", text="TimeoutError", result_present=result_present)
+    text = report.document(db_path=path, kind="run", statement_hash=statement.hash)
+    assert sent.dispatch_id in text
+    assert "TimeoutError" in text if result_present else "result: absent" in text
+    assert "Completed typed Skeptic review absent" in text
+    with pytest.raises(report.ReportRefused, match="missing skeptic_record"):
+        report.document(db_path=path, kind="campaign", statement_hash=statement.hash)
+
+
+def test_malformed_success_skeptic_refuses_campaign(tmp_path, capsys):
+    path = tmp_path / "report.sqlite"
+    statement, _, _ = build_records(path, status="withdrawn")
+    add_skeptic(path, statement.hash, text="not JSON")
+    code = report.main(["--db", str(path), "--kind", "campaign", "--statement", statement.hash])
+    captured = capsys.readouterr()
+    assert code == 2 and captured.out == ""
+    assert "malformed skeptic_record" in captured.err
 
 
 @pytest.mark.parametrize("skeptic_case", ["absent", "dispatch_only", "wrong_role"])

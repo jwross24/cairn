@@ -7,11 +7,12 @@ from pathlib import Path
 from uuid import uuid4
 
 from cairn import bundle, canary, cli, log, roles, skeptic, worker
-from cairn.substrate import HashMismatch, UnknownNode, node_hash_for
+from cairn.substrate import HashMismatch, UnknownNode, blob_hash, node_hash_for
 
 lg = log.get("dispatch")
 ROLE_CONFIG = "worker_roles"
 REQUEST_BYTES_UNAVAILABLE = "sdk-query-does-not-expose-provider-bytes"
+SKEPTIC_HUNT_TEMPLATE = "skeptic_hunt_checklist"
 
 
 class DispatchRefused(ValueError):
@@ -70,11 +71,14 @@ class DispatchResult:
     cost_usd: str | None
     at: str
     rerun_requests: tuple[dict[str, str], ...] = ()
+    read_node_hashes: tuple[str, ...] = ()
 
     def as_dict(self):
         value = asdict(self)
         if not self.rerun_requests:
             value.pop("rerun_requests")
+        if not self.read_node_hashes:
+            value.pop("read_node_hashes")
         return value
 
     @property
@@ -235,7 +239,148 @@ def result(sub, dispatch_id):
         "worker_result",
         DispatchResult,
         dispatch_id,
-        ("observed_tools", "observed_skills", "observed_plugins", "rerun_requests"),
+        ("observed_tools", "observed_skills", "observed_plugins", "rerun_requests", "read_node_hashes"),
+    )
+
+
+@dataclass(frozen=True)
+class SkepticItem:
+    id: int
+    outcome: str
+    answer: str
+    cited_node_hashes: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class SkepticRecord:
+    statement_hash: str
+    dispatch_id: str
+    dispatch_hash: str
+    result_hash: str
+    role_template_hash: str
+    verdict: str
+    items: tuple[SkepticItem, ...]
+    read_node_hashes: tuple[str, ...]
+    rerun_requests: tuple[dict[str, str], ...]
+
+    def as_dict(self):
+        return asdict(self)
+
+
+def _closed_json(text):
+    def pairs(values):
+        result = {}
+        for key, value in values:
+            if key in result:
+                raise DispatchRefused("malformed skeptic_record: duplicate JSON key")
+            result[key] = value
+        return result
+
+    def constant(_value):
+        raise DispatchRefused("malformed skeptic_record: nonfinite JSON value")
+
+    try:
+        return json.loads(text, object_pairs_hook=pairs, parse_constant=constant)
+    except (TypeError, json.JSONDecodeError) as exc:
+        raise DispatchRefused("malformed skeptic_record: expected strict JSON") from exc
+
+
+def _recorded_blob(sub, digest):
+    raw = sub.get_blob(digest)
+    if raw is None:
+        raise DispatchRefused("skeptic_record evidence missing")
+    if blob_hash(raw) != digest:
+        raise HashMismatch("skeptic_record blob does not match its content address")
+    return raw
+
+
+def skeptic_record(sub, dispatch_id, statement_hash):
+    sent = read(sub, dispatch_id)
+    if sent is None or sent.role != "skeptic" or sent.handed_node_hashes != (statement_hash,):
+        return None
+    finished = result(sub, dispatch_id)
+    if finished is None or finished.status != "success":
+        return None
+    if not isinstance(finished.session_id, str) or not finished.session_id.strip():
+        raise DispatchRefused("malformed skeptic_record: successful session missing")
+    statement = sub.get_node(statement_hash)
+    if (
+        statement is None
+        or statement["kind"] != "claim_statement"
+        or node_hash_for(statement["kind"], bytes(statement["canonical"])) != statement_hash
+    ):
+        raise DispatchRefused("malformed skeptic_record: statement missing or changed")
+    if (
+        set(finished.observed_tools) != set(sent.tool_allow_list)
+        or finished.observed_skills
+        or finished.observed_plugins
+    ):
+        raise DispatchRefused("malformed skeptic_record: observed worker configuration differs")
+    config = bundle._decode(_recorded_blob(sub, sent.role_config_hash))
+    if not isinstance(config, dict) or not isinstance(config.get("skeptic"), dict):
+        raise DispatchRefused("malformed skeptic_record: role configuration")
+    selected = config["skeptic"]
+    if selected.get("template") != SKEPTIC_HUNT_TEMPLATE:
+        return None
+    if (
+        set(selected) != {"template", "tools", "model", "max_turns", "timeout_s"}
+        or selected.get("tools") != list(sent.tool_allow_list)
+        or selected.get("model") != sent.model
+    ):
+        raise DispatchRefused("malformed skeptic_record: dispatch configuration differs")
+    template = _recorded_blob(sub, sent.role_template_hash).decode("utf-8")
+    ids = tuple(int(value) for value in re.findall(r"^\s*(\d+)\.\s+\S", template, re.MULTILINE))
+    if not ids or ids != tuple(range(1, len(ids) + 1)):
+        raise DispatchRefused("malformed skeptic_record: numbered template items")
+    value = _closed_json(finished.text)
+    if not isinstance(value, dict) or set(value) != {"statement_hash", "verdict", "items"}:
+        raise DispatchRefused("malformed skeptic_record: response fields")
+    if value["statement_hash"] != statement_hash:
+        raise DispatchRefused("malformed skeptic_record: response statement differs")
+    outcomes = {"clear": 0, "gap": 1, "issue": 2}
+    if not isinstance(value["items"], list) or len(value["items"]) != len(ids):
+        raise DispatchRefused("malformed skeptic_record: checklist coverage")
+    reads = finished.read_node_hashes
+    if reads and "mcp__cairn_skeptic__read_node" not in sent.tool_allow_list:
+        raise DispatchRefused("malformed skeptic_record: reads without scoped tool")
+    for digest in reads:
+        node = sub.get_node(digest) if isinstance(digest, str) else None
+        raw = sub.get_blob(digest) if isinstance(digest, str) and node is None else None
+        if (node is not None and node_hash_for(node["kind"], bytes(node["canonical"])) != digest) or (
+            node is None and (raw is None or blob_hash(raw) != digest)
+        ):
+            raise DispatchRefused("malformed skeptic_record: observed read missing or changed")
+    items = []
+    for expected, item in zip(ids, value["items"], strict=True):
+        if not isinstance(item, dict) or set(item) != {"id", "outcome", "answer", "cited_node_hashes"}:
+            raise DispatchRefused("malformed skeptic_record: item fields")
+        if type(item["id"]) is not int or item["id"] != expected:
+            raise DispatchRefused("malformed skeptic_record: checklist item IDs")
+        if not isinstance(item["outcome"], str) or item["outcome"] not in outcomes:
+            raise DispatchRefused("malformed skeptic_record: item outcome")
+        if not isinstance(item["answer"], str) or not item["answer"].strip():
+            raise DispatchRefused("malformed skeptic_record: item answer")
+        citations = item["cited_node_hashes"]
+        if (
+            not isinstance(citations, list)
+            or any(not isinstance(digest, str) or digest not in reads for digest in citations)
+            or len(set(citations)) != len(citations)
+        ):
+            raise DispatchRefused("malformed skeptic_record: citation was not observed read")
+        items.append(SkepticItem(expected, item["outcome"], item["answer"], tuple(citations)))
+    verdict = max((item.outcome for item in items), key=outcomes.__getitem__)
+    if value["verdict"] != verdict:
+        raise DispatchRefused("malformed skeptic_record: verdict differs from item outcomes")
+    return SkepticRecord(
+        statement_hash,
+        dispatch_id,
+        sent.hash,
+        finished.hash,
+        sent.role_template_hash,
+        verdict,
+        tuple(items),
+        reads,
+        finished.rerun_requests,
     )
 
 

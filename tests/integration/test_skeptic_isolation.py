@@ -13,12 +13,83 @@ from claude_agent_sdk import ClaudeSDKClient, ResultMessage, SystemMessage
 from mcp.client import Client
 from mcp.types import TextContent
 
-from cairn import bundle, claims, dispatch, runner, skeptic, skeptic_tools, substrate, worker
+from cairn import bundle, canon, claims, dispatch, hunt, runner, skeptic, skeptic_tools, substrate, worker
 from cairn.profile import Evaluation
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import factories
 from _substrate_helpers import ENV_MANIFEST_HASH, IDENTITY_A, SELFTEST_SUMMARY, TRANSCRIPT_HASH, recipe
+
+
+def _seed_hunt(writer, statement, identity_hash, gate):
+    root = writer.path.parent / "hunt-programs"
+    root.mkdir(exist_ok=True)
+    (root / "scoped_hunt_survival.py").write_text(
+        "import json, sys\n"
+        "d = json.load(sys.stdin)\n"
+        "d.update(status='OK', candidate=False)\n"
+        "print(json.dumps(d, sort_keys=True))\n"
+    )
+    distribution = hunt.Distribution({"bits": (30, 30)})
+    method = {"interface_version": "scoped_fixture/1", "params": {}}
+    hypothesis = claims.HypothesisObject(
+        statement.scope["target_family"],
+        {"fixture": "survival"},
+        method,
+        {"bits": [30, 30]},
+        distribution.hash,
+        statement.hash,
+    )
+    claims.write_hypothesis_object(writer, hypothesis)
+    plan = hunt.HuntPlan(
+        statement.hash,
+        hypothesis.hash,
+        distribution,
+        1,
+        {"bits": (30, 30)},
+        method_identity=method,
+        target_family=statement.scope["target_family"],
+        assumption_set=statement.scope["assumption_set"],
+        executor_identity=identity_hash,
+        verifier_identity="v" * 64,
+    )
+
+    def executor(context):
+        return runner.launch(
+            writer,
+            "scoped_hunt_survival",
+            {
+                "skill_identity_hash": identity_hash,
+                "inputs": {"hunt_input": (context.input_blob_hash, context.input_blob_size)},
+                "seed": context.seed,
+                "tool_versions": IDENTITY_A["tool_digests"],
+                "container_digest": IDENTITY_A["container_digest"],
+                "salt": context.run_id,
+            },
+            bundle_hash=gate.hash,
+            evaluation=Evaluation(0.1, 0.1, 0.1),
+            ceiling_multiplier=4,
+            tool_digests=IDENTITY_A["tool_digests"],
+            scratch_root=root / "runs",
+            skip_cache_lookup=True,
+            do_not_cache=True,
+            env_extra={"PYTHONPATH": str(root)},
+            stdin_document={
+                "statement_hash": context.plan.statement_hash,
+                "plan_hash": context.plan.hash,
+                "run_id": context.run_id,
+                "trial": context.trial,
+                "point": dict(context.point),
+                "seed": context.seed,
+                "input_blob_hash": context.input_blob_hash,
+            },
+        )
+
+    result = hunt.run_hunt(writer, plan, executor, lambda *args: pytest.fail("survived hunt called verifier"))
+    assert result.verdict == "SURVIVED"
+    node = claims.EvidenceNode(**canon.decode(claims.EVIDENCE_NODE, writer.get_node(result.evidence_hash)["canonical"]))
+    assert node.hash == result.evidence_hash
+    return node
 
 
 def _seed(writer, gate, *, statement_seed=31, include_lean=True):
@@ -35,7 +106,7 @@ def _seed(writer, gate, *, statement_seed=31, include_lean=True):
     repro = factories.repro_record(attempt_id)
     claims.write_repro_record(writer, repro)
     evidence = {}
-    for offset, kind in enumerate(("ladder_table", "repro_node", "counterexample_hunt_record"), 1):
+    for offset, kind in enumerate(("ladder_table", "repro_node"), 1):
         node = factories.evidence_node(
             kind,
             statement.hash,
@@ -49,6 +120,7 @@ def _seed(writer, gate, *, statement_seed=31, include_lean=True):
         )
         claims.write_evidence_node(writer, node)
         evidence[kind] = node
+    evidence[hunt.KIND] = _seed_hunt(writer, statement, identity_hash, gate)
     lean = None
     gate_run = None
     lean_recipe = None
@@ -300,8 +372,8 @@ def test_rerun_refuses_lean_and_missing_attempt(tmp_path, skeptic_bundle, db_sna
         handle = skeptic.snapshot(writer, gate, seeded["statement"].hash)
         with pytest.raises(skeptic.ScopedReadRefused):
             handle.request_rerun(seeded["evidence"]["lean_artifact"].hash)
-        hunt = factories.evidence_node(
-            "counterexample_hunt_record",
+        missing_attempt = factories.evidence_node(
+            "repro_node",
             seeded["statement"].hash,
             seeded["statement"].scope,
             seeded["statement"].scope["assumption_set"],
@@ -309,11 +381,11 @@ def test_rerun_refuses_lean_and_missing_attempt(tmp_path, skeptic_bundle, db_sna
             seed=999,
             attempt_id=None,
         )
-        claims.write_evidence_node(writer, hunt)
+        claims.write_evidence_node(writer, missing_attempt)
         db_snapshot(writer.conn, "skeptic-rerun-refusals")
         handle = skeptic.snapshot(writer, gate, seeded["statement"].hash)
         with pytest.raises(skeptic.ScopedReadRefused):
-            handle.request_rerun(hunt.hash)
+            handle.request_rerun(missing_attempt.hash)
     finally:
         writer.close()
 
@@ -486,6 +558,17 @@ def test_dispatch_prepares_a_scoped_handle_and_records_rerun_artifacts(tmp_path,
         record = dispatch._record(sub, prepared)
         assert dispatch.read(sub, record.dispatch_id).tool_allow_list == tuple(tools)
         request = asdict(prepared.skeptic_handle.request_rerun(seeded["evidence"]["ladder_table"].hash))
+        scoped = skeptic_tools.ScopedTools(prepared.skeptic_handle, prepared.tools)
+        read_hashes = (seeded["statement"].hash, seeded["evidence"]["ladder_table"].hash)
+
+        async def read_scoped():
+            async with Client(scoped.server["instance"]) as client:
+                for digest in read_hashes:
+                    response = await client.call_tool("read_node", {"node_hash": digest})
+                    assert not response.is_error
+
+        asyncio.run(read_scoped())
+        assert tuple(scoped.read_node_hashes) == read_hashes
         finished = dispatch.DispatchResult(
             dispatch_id=record.dispatch_id,
             status="success",
@@ -497,6 +580,7 @@ def test_dispatch_prepares_a_scoped_handle_and_records_rerun_artifacts(tmp_path,
             cost_usd=None,
             at=record.at,
             rerun_requests=(request,),
+            read_node_hashes=tuple(scoped.read_node_hashes),
         )
         dispatch._write(sub, "worker_result", "worker_results", finished, (record.hash,))
         assert dispatch.result(sub, record.dispatch_id) == finished
@@ -504,6 +588,7 @@ def test_dispatch_prepares_a_scoped_handle_and_records_rerun_artifacts(tmp_path,
             "SELECT record_json FROM worker_results WHERE dispatch_id = ?", (record.dispatch_id,)
         ).fetchone()
         assert json.loads(stored["record_json"])["rerun_requests"] == [request]
+        assert json.loads(stored["record_json"])["read_node_hashes"] == list(read_hashes)
 
 
 @pytest.mark.parametrize("handed", ["empty", "transcript", "statement_and_transcript", "two_statements"])

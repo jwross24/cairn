@@ -58,6 +58,7 @@ async def _execute(prepared, cwd):
     result = _result_payload(initialized, finished)
     if scoped is not None:
         result["rerun_requests"] = tuple(scoped.requests)
+        result["read_node_hashes"] = tuple(scoped.read_node_hashes)
     return result
 
 

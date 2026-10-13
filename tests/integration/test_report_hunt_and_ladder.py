@@ -1,3 +1,4 @@
+import asyncio
 import dataclasses
 import hashlib
 import json
@@ -9,10 +10,11 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
+from mcp.client import Client
 from test_counterexample_hunt import _setup
 from test_ladder_table_repro import _clean_table
 
-from cairn import claims, hunt, instances, ladderplan, laddertable, report, substrate
+from cairn import bundle, claims, dispatch, hunt, instances, ladderplan, laddertable, report, skeptic_tools, substrate
 
 HEADINGS = [
     "Claim",
@@ -74,6 +76,106 @@ def test_real_hunt_cli_and_three_read_only_renders(tmp_path, bounds, verdict):
     else:
         assert "CONJECTURE ceiling and is not a proof" in text
     print(json.dumps({"db": str(path), "statement": statement.hash, "stdout": text}))
+
+
+@pytest.mark.parametrize("blob_state", ["intact", "missing", "changed"])
+def test_real_hunt_and_local_mcp_read_produce_typed_campaign_report(tmp_path, blob_state):
+    sub, plan, executor, verifier, statement = _setup(tmp_path, bounds=(40, 40), trials=1, certified=True)
+    try:
+        hunted = hunt.run_hunt(sub, plan, executor, verifier)
+        assert hunted.verdict == "KILLED"
+        read_hash = hunted.record.trials[0].verifier_evidence
+        assert sub.get_node(read_hash) is None and sub.get_blob(read_hash) is not None
+        source = tmp_path / "offline-skeptic-source"
+        source.mkdir()
+        config = {
+            "template": dispatch.SKEPTIC_HUNT_TEMPLATE,
+            "tools": [skeptic_tools.READ_NODE],
+            "model": "claude-offline-fixture",
+            "max_turns": 1,
+            "timeout_s": 1,
+        }
+        (source / "worker_roles.json").write_text(json.dumps({"skeptic": config}))
+        (source / "role_templates.json").write_text(
+            json.dumps({dispatch.SKEPTIC_HUNT_TEMPLATE: "1. Offline fixture observation"})
+        )
+        (source / "skeptic_scope.json").write_text(json.dumps({"evidence_kinds": [hunt.KIND]}))
+        bundle_path, pin = tmp_path / "offline-bundle.sqlite", tmp_path / "offline-bundle.pin"
+        pin.write_text(bundle.build(source, bundle_path) + "\n")
+        prepared = dispatch._prepare(
+            sub, bundle.GateBundle.open(bundle_path, pin), role="skeptic", node_ids=(statement.hash,)
+        )
+        sent = dispatch._record(sub, prepared)
+        scoped = skeptic_tools.ScopedTools(prepared.skeptic_handle, prepared.tools)
+
+        async def read():
+            async with Client(scoped.server["instance"]) as client:
+                response = await client.call_tool("read_node", {"node_hash": read_hash})
+                assert not response.is_error
+
+        asyncio.run(read())
+        response = {
+            "statement_hash": statement.hash,
+            "verdict": "gap",
+            "items": [
+                {
+                    "id": 1,
+                    "outcome": "gap",
+                    "answer": "Offline fixture only; no model review",
+                    "cited_node_hashes": [read_hash],
+                }
+            ],
+        }
+        finished = dispatch.DispatchResult(
+            sent.dispatch_id,
+            "success",
+            json.dumps(response),
+            "offline-fixture",
+            prepared.tools,
+            (),
+            (),
+            None,
+            sent.at,
+            read_node_hashes=tuple(scoped.read_node_hashes),
+        )
+        dispatch._write(sub, "worker_result", "worker_results", finished, (sent.hash,))
+        if blob_state == "missing":
+            sub.conn.execute("DELETE FROM blobs WHERE hash = ?", (read_hash,))
+        elif blob_state == "changed":
+            sub.conn.execute("UPDATE blobs SET bytes = ? WHERE hash = ?", (b"changed", read_hash))
+        if blob_state != "intact":
+            with pytest.raises(dispatch.DispatchRefused, match="observed read missing or changed"):
+                dispatch.skeptic_record(sub, sent.dispatch_id, statement.hash)
+            with pytest.raises(dispatch.DispatchRefused, match="observed read missing or changed"):
+                report.render(sub, kind="campaign", statement_hash=statement.hash)
+            return
+        view = dispatch.skeptic_record(sub, sent.dispatch_id, statement.hash)
+        assert view.read_node_hashes == (read_hash,)
+        history = claims.tag_history_for(sub, statement.hash)
+    finally:
+        sub.close()
+    path = tmp_path / "substrate.sqlite"
+    before = hashlib.sha256(path.read_bytes()).hexdigest()
+    args = [
+        sys.executable,
+        "-m",
+        "cairn.report",
+        "--db",
+        str(path),
+        "--kind",
+        "campaign",
+        "--statement",
+        statement.hash,
+    ]
+    first = subprocess.run(args, capture_output=True, check=False)
+    second = subprocess.run(args, capture_output=True, check=False)
+    assert first.returncode == second.returncode == 0
+    assert first.stdout == second.stdout and first.stderr == second.stderr == b""
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == before
+    assert b"audit observation:" in first.stdout and b'"verdict":"gap"' in first.stdout
+    assert read_hash.encode() in first.stdout
+    with substrate.Substrate.open(path, role="reader") as reader:
+        assert claims.tag_history_for(reader, statement.hash) == history
 
 
 def test_every_run_on_hypothesis_is_rendered_oldest_first(tmp_path):

@@ -3,7 +3,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from cairn import bundle, canon, claims, keys
+from cairn import bundle, canon, claims, hunt, instances, keys, substrate
 from cairn.substrate import EDGE_INPUT, node_hash_for
 
 MAX_EVIDENCE_KINDS = frozenset({"repro_node", "ladder_table", "counterexample_hunt_record", "lean_artifact"})
@@ -39,7 +39,10 @@ class Handle:
 
     def request_rerun(self, evidence_hash):
         projection = self.read(evidence_hash)
-        if set(projection) != {"kind", "recipe_hash", "certificate_hash", "repro_record_hash", "attempt_id"}:
+        fields = {"kind", "recipe_hash", "certificate_hash", "repro_record_hash", "attempt_id"}
+        if projection.get("kind") == hunt.KIND:
+            fields.update(("hunt_run_hash", "verifier_certificate_hash"))
+        if set(projection) != fields:
             raise ScopedReadRefused("reruns require a non-Lean evidence projection")
         if projection["kind"] == "lean_artifact":
             raise ScopedReadRefused("Lean evidence cannot request a worker rerun")
@@ -134,7 +137,15 @@ def _store_certificate(sub, records, identity_bundle_hash):
     canonical, certificate = _raw_node(sub, cert_hash, "skill_certificate", keys.SELFTEST_CERT)
     if certificate["identity_bundle_hash"] != identity_bundle_hash:
         _refuse(f"certificate {cert_hash!r} names another identity bundle")
-    _store(records, cert_hash, _canonical_projection(canonical))
+    if any(
+        row[field] != certificate[field] for field in ("identity_bundle_hash", "transcript_hash", "env_manifest_hash")
+    ):
+        _refuse(f"certificate {cert_hash!r} companion references differ from its canonical bytes")
+    _store(
+        records,
+        cert_hash,
+        {**_canonical_projection(canonical), "companion_observation": {"selftest_summary": row["selftest_summary"]}},
+    )
     return cert_hash
 
 
@@ -168,6 +179,186 @@ def _non_lean_projection(sub, records, evidence):
         "certificate_hash": certificate_hash,
         "repro_record_hash": evidence["repro_record_hash"],
         "attempt_id": attempt_id,
+    }
+
+
+def _typed_projection(kind, canonical, value):
+    return {"kind": kind, **_canonical_projection(canonical), "value": value}
+
+
+def _hunt_blob(sub, digest):
+    data = sub.get_blob(digest)
+    if data is None or substrate.blob_hash(data) != digest:
+        _refuse(f"hunt evidence blob {digest!r} is absent or does not match its content")
+    try:
+        value = json.loads(data)
+    except (TypeError, ValueError) as exc:
+        _refuse(f"hunt evidence blob {digest!r} is not JSON: {exc}")
+    if not isinstance(value, dict):
+        _refuse(f"hunt evidence blob {digest!r} is not an object")
+    return data, value
+
+
+def _hunt_attempt(sub, records, digest, attempt_id, identity, context, executor_output=None):
+    data, value = _hunt_blob(sub, digest)
+    if attempt_id is None:
+        _store(records, digest, _typed_projection("hunt_trial_evidence", data, value))
+        return None
+    attempt = sub.get_attempt(attempt_id)
+    recorded = value.get("attempt")
+    if (
+        attempt is None
+        or not isinstance(recorded, dict)
+        or any(
+            recorded.get(field) != attempt[field]
+            for field in (
+                "attempt_id",
+                "recipe_key",
+                "status",
+                "output_manifest_hash",
+                "receipt_hash",
+                "skip_cache_lookup",
+            )
+        )
+    ):
+        _refuse(f"hunt evidence {digest!r} does not bind attempt {attempt_id!r}")
+    recipe_canonical, recipe = _raw_node(sub, attempt["recipe_key"], "recipe", keys.RECIPE)
+    if _jsonable(recipe) != value.get("recipe"):
+        _refuse(f"hunt evidence {digest!r} recipe differs from its canonical bytes")
+    if recipe["skill_identity_hash"] != identity or recipe["seed"] != context["seed"]:
+        _refuse(f"hunt attempt {attempt_id!r} identity or seed differs from its trial")
+    input_ref = recipe["inputs"].get("hunt_input")
+    if input_ref is None:
+        _refuse(f"hunt attempt {attempt_id!r} has no hunt_input")
+    input_data, input_value = _hunt_blob(sub, input_ref[0])
+    if len(input_data) != input_ref[1] or input_value != context:
+        _refuse(f"hunt attempt {attempt_id!r} input differs from its trial")
+    if executor_output is not None and tuple(recipe["inputs"].get("executor_output", ())) != executor_output:
+        _refuse(f"hunt verifier {attempt_id!r} input does not bind executor output")
+    _store(records, attempt["recipe_key"], _canonical_projection(recipe_canonical))
+    receipt_hash = attempt["receipt_hash"]
+    receipt = value.get("receipt")
+    if receipt_hash is not None:
+        receipt_canonical, _ = _raw_node(sub, receipt_hash, "receipt", substrate.RECEIPT)
+        try:
+            matches = isinstance(receipt, dict) and substrate.receipt_canonical(receipt) == receipt_canonical
+        except substrate.SubstrateError, TypeError, ValueError, canon.CanonError:
+            matches = False
+        if not matches or receipt.get("receipt_hash") != receipt_hash:
+            _refuse(f"hunt evidence {digest!r} receipt differs from its canonical bytes")
+        _store(records, receipt_hash, _canonical_projection(receipt_canonical))
+    elif receipt is not None:
+        _refuse(f"hunt evidence {digest!r} carries an unbound receipt")
+    output = None
+    manifest_hash = attempt["output_manifest_hash"]
+    if manifest_hash is not None:
+        manifest_canonical, manifest = _raw_node(sub, manifest_hash, "output_manifest", substrate.OUTPUT_MANIFEST)
+        output = manifest["artifacts"].get("output.json")
+        if receipt is None or output is None or output[0] != receipt["stdout_digest"]:
+            _refuse(f"hunt attempt {attempt_id!r} output manifest does not bind receipt stdout")
+        output_data = sub.get_blob(output[0])
+        if output_data is None or len(output_data) != output[1] or substrate.blob_hash(output_data) != output[0]:
+            _refuse(f"hunt attempt {attempt_id!r} stdout is absent or does not match its content")
+        _store(records, manifest_hash, _canonical_projection(manifest_canonical))
+    _store(
+        records,
+        digest,
+        {
+            **_typed_projection("hunt_trial_evidence", data, value),
+            "companion_observation": {"disowned_at": attempt["disowned_at"], "inadmissible": attempt["inadmissible"]},
+        },
+    )
+    return output
+
+
+def _hunt_projection(sub, records, evidence_hash, evidence):
+    record = hunt.record_for_evidence(sub, {**evidence, "hash": evidence_hash})
+    if record is None:
+        _refuse(f"hunt evidence {evidence_hash!r} has no unique bound hunt run")
+    nonce = instances.get_nonce(sub, record.nonce)
+    if nonce is None or nonce.hypothesis_key != record.hypothesis_key:
+        _refuse(f"hunt run {record.hash!r} has no matching persisted nonce")
+    if nonce.withheld:
+        _refuse(f"hunt run {record.hash!r} nonce is unpublished")
+    run_canonical, run = _raw_node(sub, record.hash, "hunt_run", hunt.RUN)
+    plan_canonical, plan = _raw_node(sub, record.plan_hash, "hunt_plan", hunt.PLAN)
+    if any(plan[field] != run[field] for field in ("statement_hash", "hypothesis_key", "distribution_hash")) or (
+        plan["trial_count"] != record.declared_trial_count
+    ):
+        _refuse(f"hunt plan {record.plan_hash!r} does not bind its run")
+    distribution_canonical, distribution = _raw_node(
+        sub, record.distribution_hash, "hunt_distribution", hunt.DISTRIBUTION
+    )
+    hypothesis_canonical, hypothesis = _raw_node(
+        sub, record.hypothesis_key, "hypothesis_object", keys.HYPOTHESIS_OBJECT
+    )
+    hypothesis_row = claims.get_hypothesis_object(sub, record.hypothesis_key)
+    if (
+        hypothesis_row is None
+        or hypothesis_row["claim_statement_hash"] != record.statement_hash
+        or any(
+            hypothesis[source] != plan[target]
+            for source, target in (
+                ("target_family", "target_family"),
+                ("method_identity", "method_identity"),
+                ("declared_parameter_ranges", "family_bounds"),
+                ("sampling_distribution", "distribution_hash"),
+            )
+        )
+    ):
+        _refuse(f"hunt hypothesis {record.hypothesis_key!r} does not bind its plan")
+    required = {record.plan_hash, record.distribution_hash}
+    required.update(
+        digest
+        for trial in record.trials
+        for digest in (trial.execution_evidence, trial.verifier_evidence)
+        if digest is not None
+    )
+    parents = {edge["parent_hash"] for edge in sub.lineage_of(record.hash) if edge["edge_kind"] == EDGE_INPUT}
+    if not required <= parents:
+        _refuse(f"hunt run {record.hash!r} is missing recorded input bindings")
+    for digest, kind, canonical, value in (
+        (record.hash, "hunt_run", run_canonical, run),
+        (record.plan_hash, "hunt_plan", plan_canonical, plan),
+        (record.distribution_hash, "hunt_distribution", distribution_canonical, distribution),
+        (record.hypothesis_key, "hypothesis_object", hypothesis_canonical, hypothesis),
+    ):
+        _store(records, digest, _typed_projection(kind, canonical, value))
+    verifier_certificate_hash = None
+    for role in ("executor", "verifier"):
+        identity = plan[role + "_identity"]
+        certificate_hash = _store_certificate(sub, records, identity)
+        if role == "verifier":
+            verifier_certificate_hash = certificate_hash
+        if certificate_hash is not None or sub.get_node(identity) is not None:
+            canonical, value = _raw_node(sub, identity, "identity_bundle", keys.IDENTITY_BUNDLE)
+            _store(records, identity, _canonical_projection(canonical))
+    for trial in record.trials:
+        context = {
+            "statement_hash": record.statement_hash,
+            "plan_hash": record.plan_hash,
+            "run_id": nonce.run_id,
+            "trial": trial.trial,
+            "point": dict(trial.point),
+            "seed": trial.seed,
+        }
+        output = _hunt_attempt(
+            sub, records, trial.execution_evidence, trial.attempt_id, plan["executor_identity"], context
+        )
+        if trial.verifier_evidence is not None:
+            _hunt_attempt(
+                sub,
+                records,
+                trial.verifier_evidence,
+                trial.verifier_attempt_id,
+                plan["verifier_identity"],
+                context,
+                output,
+            )
+    return {
+        **_non_lean_projection(sub, records, evidence),
+        "hunt_run_hash": record.hash,
+        "verifier_certificate_hash": verifier_certificate_hash,
     }
 
 
@@ -207,6 +398,8 @@ def snapshot(sub, gate_bundle, statement_hash):
             continue
         if evidence["kind"] == "lean_artifact":
             projection = _lean_projection(sub, evidence_hash, statement_hash, pinned)
+        elif evidence["kind"] == hunt.KIND:
+            projection = _hunt_projection(sub, records, evidence_hash, evidence)
         else:
             projection = _non_lean_projection(sub, records, evidence)
         _store(records, evidence_hash, projection)

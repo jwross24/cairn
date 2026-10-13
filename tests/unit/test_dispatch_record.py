@@ -26,7 +26,17 @@ def test_module_defined_public_api_is_closed():
         for name, value in vars(dispatch).items()
         if not name.startswith("_") and callable(value) and getattr(value, "__module__", None) == dispatch.__name__
     }
-    assert public == {"DispatchRefused", "DispatchRecord", "DispatchResult", "read", "result", "run"}
+    assert public == {
+        "DispatchRefused",
+        "DispatchRecord",
+        "DispatchResult",
+        "SkepticItem",
+        "SkepticRecord",
+        "read",
+        "result",
+        "skeptic_record",
+        "run",
+    }
 
 
 def test_the_dispatch_api_has_no_prose_or_sdk_option_input():
