@@ -60,6 +60,9 @@ static point P_in, Q_in;
 static u64 budget;
 static u64 executed;
 static u64 group_ops;
+static u64 table_rows;
+static u64 program_bytes;
+static const char *instruction_set = "plain/1";
 static int result_set;
 static u64 result_value;
 static int solved;
@@ -356,7 +359,7 @@ static int parse_point_line(char *rest, point *out) {
 static int read_input(void) {
     char line[MAX_LINE + 2];
     int have_p = 0, have_a = 0, have_b = 0, have_n = 0, have_P = 0, have_Q = 0, have_budget = 0, in_program = 0;
-    int have_end = 0;
+    int have_end = 0, have_instruction_set = 0;
     int header_lines = 0;
     while (fgets(line, sizeof line, stdin) != NULL) {
         size_t len = strlen(line);
@@ -381,6 +384,7 @@ static int read_input(void) {
                 return refuse("out_of_memory");
             }
             line_count += 1;
+            program_bytes += len;
             continue;
         }
         if (++header_lines > MAX_HEADER_LINES) {
@@ -403,6 +407,21 @@ static int read_input(void) {
                 return refuse("program_header_malformed");
             }
             in_program = 1;
+        } else if (strcmp(key, "instruction_set") == 0) {
+            char *value_text = strtok_r(NULL, " ", &save);
+            if (have_instruction_set || value_text == NULL || strtok_r(NULL, " ", &save) != NULL) {
+                free(copy);
+                return refuse("instruction_set_malformed");
+            }
+            if (strcmp(value_text, "plain/1") == 0) {
+                instruction_set = "plain/1";
+            } else if (strcmp(value_text, "signed/1") == 0) {
+                instruction_set = "signed/1";
+            } else {
+                free(copy);
+                return refuse("instruction_set_unknown");
+            }
+            have_instruction_set = 1;
         } else if (strcmp(key, "P") == 0 || strcmp(key, "Q") == 0) {
             point value;
             if (!parse_point_line(rest, &value)) {
@@ -541,6 +560,17 @@ static int set_index(int reg, i64 value) {
 }
 
 static int execute(void) {
+    if (strcmp(instruction_set, "plain/1") == 0) {
+        for (int i = 0; i < line_count; i++) {
+            if (is_label_line(i)) {
+                continue;
+            }
+            const char *start = lines[i] + strspn(lines[i], " ");
+            if (strncmp(start, "canonicalp", 10) == 0 && (start[10] == ' ' || start[10] == '\0')) {
+                return refuse("instruction_set_forbids_canonicalp");
+            }
+        }
+    }
     int pc = 0;
     char *argv[8];
     while (pc < line_count) {
@@ -594,6 +624,13 @@ static int execute(void) {
             if (parse_register(argv[1], 'p', &d) && parse_register(argv[2], 'p', &x)) {
                 preg[d] = negate(preg[x]);
                 ok = 1;
+            }
+        } else if (strcmp(op, "canonicalp") == 0 && argc == 4) {
+            if (parse_register(argv[1], 'p', &d) && parse_register(argv[2], 'p', &x) && parse_register(argv[3], 'i', &y)) {
+                point source = preg[x];
+                int flipped = !source.inf && source.y > p - source.y;
+                preg[d] = flipped ? negate(source) : source;
+                ok = set_index(y, flipped);
             }
         } else if (strcmp(op, "mulp") == 0 && argc == 4) {
             if (parse_register(argv[1], 'p', &d) && parse_register(argv[2], 'p', &x) && parse_register(argv[3], 's', &y)) {
@@ -682,6 +719,7 @@ static int execute(void) {
                     return refuse("out_of_memory");
                 }
                 tables[d].size = value;
+                table_rows += value;
                 ok = 1;
             }
         } else if (strcmp(op, "tstore") == 0 && argc == 6) {
@@ -900,7 +938,7 @@ int main(void) {
                refusal == NULL ? "unfinished" : refusal, group_ops, executed);
         return 3;
     }
-    printf("{\"status\":\"OK\",\"sandbox\":\"%s\",\"count\":%" PRIu64 ",\"executed\":%" PRIu64 ",\"result\":", containment, group_ops, executed);
+    printf("{\"status\":\"OK\",\"sandbox\":\"%s\",\"instruction_set\":\"%s\",\"count\":%" PRIu64 ",\"executed\":%" PRIu64 ",\"table_rows\":%" PRIu64 ",\"table_bytes\":%" PRIu64 ",\"program_bytes\":%" PRIu64 ",\"program_lines\":%d,\"result\":", containment, instruction_set, group_ops, executed, table_rows, table_rows * (u64)sizeof(entry), program_bytes, line_count);
     if (result_set) {
         printf("%" PRIu64, result_value);
     } else {

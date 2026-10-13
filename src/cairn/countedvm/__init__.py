@@ -19,7 +19,21 @@ STATUS_OK = "OK"
 STATUS_REFUSED = "REFUSED"
 EXIT_INPUT_REFUSED = 2
 EXIT_PROGRAM_REFUSED = 3
-OUTPUT_KEYS = {"status", "sandbox", "count", "executed", "result", "p0", "i0"}
+INSTRUCTION_SETS = {"plain/1", "signed/1"}
+OUTPUT_KEYS = {
+    "status",
+    "sandbox",
+    "instruction_set",
+    "count",
+    "executed",
+    "result",
+    "p0",
+    "i0",
+    "table_rows",
+    "table_bytes",
+    "program_bytes",
+    "program_lines",
+}
 SANDBOX_PURE_COMPUTATION = "pure-computation"
 SANDBOX_SECCOMP = "seccomp-stdio-anonymous-memory"
 SANDBOX_NONE = "none"
@@ -29,6 +43,7 @@ COUNTING_CONVENTION = {
     "addp": "one group op, whatever the operands; an add that reaches the doubling formula is still one op",
     "dblp": "one group op, whatever the operand",
     "negp": "not a group op",
+    "canonicalp": "signed/1 only; smaller-y representative and flip bit; not a group op",
     "mulp": "one group op per double and per add the ladder executes, from the scalar's top set bit down, "
     "identity operands included; a zero scalar executes nothing",
     "solve": "finalization, not a group op",
@@ -61,6 +76,11 @@ class Outcome:
     i0: int | None
     exit_code: int
     sandbox: str | None = None
+    instruction_set: str | None = None
+    table_rows: int | None = None
+    table_bytes: int | None = None
+    program_bytes: int | None = None
+    program_lines: int | None = None
 
 
 def source_sha256():
@@ -91,7 +111,7 @@ def _point_line(name, point):
     return f"{name} {point[0]} {point[1]}"
 
 
-def document(instance, program, budget):
+def document(instance, program, budget, *, instruction_set="plain/1"):
     lines = [
         f"p {instance.p}",
         f"a {instance.a}",
@@ -100,6 +120,7 @@ def document(instance, program, budget):
         _point_line("P", instance.P),
         _point_line("Q", instance.Q),
         f"budget {budget}",
+        f"instruction_set {instruction_set}",
         "program",
         *program.strip("\n").splitlines(),
         "end",
@@ -129,7 +150,9 @@ def decode(stdout, exit_code):
         p0 = payload["p0"]
         if p0 is not None and (type(p0) is not list or len(p0) != 2 or any(type(c) is not int for c in p0)):
             raise CountedVmError("vm p0 must be null or a pair of integers")
-        for key in ("count", "executed"):
+        if type(payload["instruction_set"]) is not str or payload["instruction_set"] not in INSTRUCTION_SETS:
+            raise CountedVmError("vm instruction_set must name a supported version")
+        for key in ("count", "executed", "table_rows", "table_bytes", "program_bytes", "program_lines"):
             if type(payload[key]) is not int or payload[key] < 0:
                 raise CountedVmError(f"vm {key} must be a nonnegative integer")
         if payload["result"] is not None and (type(payload["result"]) is not int or payload["result"] < 0):
@@ -146,6 +169,11 @@ def decode(stdout, exit_code):
             payload["i0"],
             exit_code,
             payload["sandbox"],
+            payload["instruction_set"],
+            payload["table_rows"],
+            payload["table_bytes"],
+            payload["program_bytes"],
+            payload["program_lines"],
         )
     if payload.get("status") == STATUS_REFUSED:
         expected_keys = {EXIT_INPUT_REFUSED: REFUSAL_KEYS[0], EXIT_PROGRAM_REFUSED: REFUSAL_KEYS[1]}.get(exit_code)
@@ -169,10 +197,10 @@ def decode(stdout, exit_code):
     raise CountedVmError("vm output status is unknown")
 
 
-def run(binary, instance, program, budget):
+def run(binary, instance, program, budget, *, instruction_set="plain/1"):
     completed = subprocess.run(
         [str(binary)],
-        input=document(instance, program, budget),
+        input=document(instance, program, budget, instruction_set=instruction_set),
         capture_output=True,
         text=True,
         timeout=RUN_TIMEOUT_S,
@@ -228,7 +256,18 @@ def _binding(fields):
     return blob_hash(json.dumps(fields, sort_keys=True, separators=(",", ":")).encode("utf-8"))
 
 
-def launch(binary, expected_binary_digest, instance, program, budget, *, attempt_id, scratch_dir, wall_cap_s=None):
+def launch(
+    binary,
+    expected_binary_digest,
+    instance,
+    program,
+    budget,
+    *,
+    attempt_id,
+    scratch_dir,
+    wall_cap_s=None,
+    instruction_set="plain/1",
+):
     binary = Path(binary)
     binary_digest = file_digest(binary)
     if binary_digest != expected_binary_digest:
@@ -236,7 +275,7 @@ def launch(binary, expected_binary_digest, instance, program, budget, *, attempt
     scratch_dir = Path(scratch_dir)
     scratch_dir.mkdir(parents=True, exist_ok=True)
     out_path, err_path = scratch_dir / "stdout", scratch_dir / "stderr"
-    stdin_bytes = document(instance, program, budget).encode("ascii")
+    stdin_bytes = document(instance, program, budget, instruction_set=instruction_set).encode("ascii")
     ran = runner.spawn_and_wait(
         [str(binary)],
         out_path,
@@ -259,6 +298,8 @@ def launch(binary, expected_binary_digest, instance, program, budget, *, attempt
     except (CountedVmError, UnicodeDecodeError) as exc:
         raise LaunchRefused("output_not_protocol", str(exc)) from exc
     required = SANDBOX_REQUIRED.get(sys.platform)
+    if outcome.status == STATUS_OK and outcome.instruction_set != instruction_set:
+        raise LaunchRefused("instruction_set_mismatch", f"{outcome.instruction_set!r} != {instruction_set!r}")
     if outcome.status == STATUS_OK and required is not None and outcome.sandbox != required:
         raise LaunchRefused("containment_missing", f"{outcome.sandbox!r} != {required!r}")
     program_digest = blob_hash(program.encode("utf-8"))

@@ -55,6 +55,11 @@ def test_a_direct_launch_binds_the_count_to_the_attempt_the_program_the_instance
     run = _launch(genuine["binary"], genuine["digest"], tmp_path)
     assert run["outcome"]["status"] == countedvm.STATUS_OK
     assert run["outcome"]["count"] == EXPECTED_COUNT
+    assert run["outcome"]["instruction_set"] == "plain/1"
+    assert run["outcome"]["table_rows"] == 0
+    assert run["outcome"]["table_bytes"] == 0
+    assert run["outcome"]["program_bytes"] == len(PROGRAM.encode()) + 1
+    assert run["outcome"]["program_lines"] == len(PROGRAM.splitlines())
     assert run["argv"] == [genuine["binary"]]
     assert run["binary_digest"] == genuine["digest"]
     assert run["program_digest"] == countedvm.blob_hash(PROGRAM.encode())

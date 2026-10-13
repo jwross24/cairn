@@ -1,11 +1,13 @@
+import ctypes
+import json
 import re
 import subprocess
 import sys
 
 import pytest
 
-from cairn import countedvm
-from cairn.countedvm import Instance
+from cairn import countedvm, ec
+from cairn.countedvm import Instance, programs
 from cairn.pari import pari
 
 REPO_ROOT = countedvm.REPO_ROOT
@@ -35,8 +37,8 @@ def _run_text(tmp_path, text):
     return countedvm.decode(completed.stdout, completed.returncode)
 
 
-def _run(tmp_path, instance, program, budget):
-    return _run_text(tmp_path, countedvm.document(instance, program, budget))
+def _run(tmp_path, instance, program, budget, *, instruction_set="plain/1"):
+    return _run_text(tmp_path, countedvm.document(instance, program, budget, instruction_set=instruction_set))
 
 
 def _pari_point(point):
@@ -94,6 +96,115 @@ def test_every_point_negates_like_pari_and_counts_nothing(tmp_path):
         assert outcome.status == "OK", point
         assert outcome.p0 == _lift(pari.ellneg(CURVE, _pari_point(point))), point
         assert outcome.count == 0, point
+
+
+@pytest.mark.parametrize("in_place", [False, True])
+def test_every_point_canonicalizes_like_the_python_rule_without_counting(tmp_path, in_place):
+    for point in POINTS:
+        source = "p0" if in_place else "p1"
+        program = f"setp {source} P\niset i0 1\ncanonicalp p0 {source} i0\nhalt"
+        outcome = _run(tmp_path, _instance(point, point), program, BUDGET, instruction_set="signed/1")
+        representative, flipped = ec.canonical(P_FIELD, point)
+        assert outcome.status == "OK", point
+        assert outcome.p0 == representative, point
+        assert outcome.i0 == int(flipped), point
+        assert outcome.count == 0, point
+        assert outcome.executed == 4, point
+        assert outcome.instruction_set == "signed/1"
+
+
+@pytest.mark.parametrize("prefix", ["", "halt\n", "jmp done\n", "sset s0 1\nhalt\n"])
+def test_plain_set_refuses_even_an_unreachable_canonical_instruction_before_execution(tmp_path, prefix):
+    program = prefix + "canonicalp p0 p0 i0\ndone:\nhalt"
+    outcome = _run(tmp_path, _instance(POINTS[1], POINTS[1]), program, BUDGET)
+    assert (outcome.status, outcome.reason, outcome.count, outcome.executed) == (
+        "REFUSED",
+        "instruction_set_forbids_canonicalp",
+        0,
+        0,
+    )
+
+
+def test_plain_is_the_default_in_both_the_document_and_the_native_reader(tmp_path):
+    instance = _instance(POINTS[1], POINTS[1])
+    text = countedvm.document(instance, "canonicalp:\nhalt", BUDGET)
+    assert "instruction_set plain/1\n" in text
+    explicit = _run_text(tmp_path, text)
+    implicit = _run_text(tmp_path, text.replace("instruction_set plain/1\n", ""))
+    assert explicit == implicit
+    assert explicit.instruction_set == "plain/1"
+
+
+@pytest.mark.parametrize("version", ["unknown/1", "signed/2", "plain/1 extra"])
+def test_unsupported_or_malformed_instruction_sets_are_refused(tmp_path, version):
+    outcome = _run(tmp_path, _instance(POINTS[1], POINTS[1]), "halt", BUDGET, instruction_set=version)
+    assert outcome.status == "REFUSED"
+    assert outcome.reason in {"instruction_set_unknown", "instruction_set_malformed"}
+    assert outcome.exit_code == 2
+
+
+class _VmPoint(ctypes.Structure):
+    _fields_ = [("x", ctypes.c_uint64), ("y", ctypes.c_uint64), ("inf", ctypes.c_int)]
+
+
+class _VmEntry(ctypes.Structure):
+    _fields_ = [("p", _VmPoint), ("s", ctypes.c_uint64), ("t", ctypes.c_uint64), ("used", ctypes.c_int)]
+
+
+@pytest.mark.parametrize("algorithm", ["rho", "bsgs", "two-tables"])
+def test_reported_table_and_program_meters_match_the_admitted_program(tmp_path, algorithm):
+    instance = Instance(101, 90, 44, 89, (2, 38), (12, 23))
+    if algorithm == "rho":
+        program = programs.rho_program(instance.n, seed=17, max_steps=1, restarts=1)
+    elif algorithm == "bsgs":
+        program = programs.bsgs_program(instance.n, seed=0)
+    else:
+        program = "table t0 3\ntable t1 5\nhalt\ntable t2 7\n"
+    outcome = _run(tmp_path, instance, program, BUDGET)
+    assert outcome.status == "OK"
+    admitted = program.strip("\n") + "\n"
+    table_lines = [line for line in admitted.splitlines() if line.startswith("table ")]
+    expected_rows = sum(int(line.split()[2]) for line in table_lines[:2] if algorithm == "two-tables")
+    if algorithm != "two-tables":
+        expected_rows = sum(int(line.split()[2]) for line in table_lines)
+    assert outcome.table_rows == expected_rows
+    assert outcome.table_bytes == expected_rows * ctypes.sizeof(_VmEntry)
+    assert outcome.program_bytes == len(admitted.encode("ascii"))
+    assert outcome.program_lines == len(admitted.splitlines())
+
+
+@pytest.mark.parametrize("program", ["", "halt", "\n\nhalt\n\n"])
+def test_program_meters_measure_the_admitted_lines_including_the_transport_newline(tmp_path, program):
+    outcome = _run(tmp_path, _instance(None, None), program, BUDGET)
+    if not program:
+        assert (outcome.status, outcome.reason) == ("REFUSED", "no_halt")
+    else:
+        assert outcome.status == "OK"
+        assert outcome.program_bytes == len("halt\n".encode("ascii"))
+        assert outcome.program_lines == 1
+
+
+@pytest.mark.parametrize("key", ["table_rows", "table_bytes", "program_bytes", "program_lines", "instruction_set"])
+@pytest.mark.parametrize("bad", [None, -1, True, []])
+def test_the_success_decoder_refuses_invalid_new_meter_and_version_values(tmp_path, key, bad):
+    outcome = _run(tmp_path, _instance(None, None), "halt", BUDGET)
+    payload = {
+        "status": outcome.status,
+        "sandbox": outcome.sandbox,
+        "count": outcome.count,
+        "executed": outcome.executed,
+        "result": outcome.result,
+        "p0": outcome.p0,
+        "i0": outcome.i0,
+        "instruction_set": outcome.instruction_set,
+        "table_rows": outcome.table_rows,
+        "table_bytes": outcome.table_bytes,
+        "program_bytes": outcome.program_bytes,
+        "program_lines": outcome.program_lines,
+    }
+    payload[key] = bad
+    with pytest.raises(countedvm.CountedVmError):
+        countedvm.decode(json.dumps(payload), 0)
 
 
 def test_scalar_multiplication_matches_pari_and_the_counting_convention(tmp_path):
@@ -185,7 +296,7 @@ def test_an_unknown_instruction_and_a_missing_halt_are_refused(tmp_path):
 
 
 def test_the_counting_convention_is_written_and_names_every_group_opcode():
-    for opcode in ("addp", "dblp", "negp", "mulp", "solve"):
+    for opcode in ("addp", "dblp", "negp", "canonicalp", "mulp", "solve"):
         assert opcode in countedvm.COUNTING_CONVENTION
         assert isinstance(countedvm.COUNTING_CONVENTION[opcode], str)
         assert countedvm.COUNTING_CONVENTION[opcode].strip()
@@ -343,6 +454,7 @@ EVERY_OPCODE = "\n".join(
         "addp p3 p0 p1",
         "dblp p4 p0",
         "negp p5 p4",
+        "canonicalp p5 p5 i15",
         "sset s0 3",
         "mulp p6 p0 s0",
         "eqp i0 p3 p3",
@@ -380,16 +492,22 @@ EVERY_OPCODE = "\n".join(
 )
 
 
-def test_every_opcode_executes_in_one_program(tmp_path):
+@pytest.mark.parametrize("instruction_set", ["plain/1", "signed/1"])
+def test_every_opcode_executes_in_one_program(tmp_path, instruction_set):
     generator = max(
         (point for point in POINTS if point is not None), key=lambda c: int(pari.ellorder(CURVE, _pari_point(c)))
     )
-    outcome = _run(tmp_path, _instance(generator, generator), EVERY_OPCODE, BUDGET)
+    program = EVERY_OPCODE
+    if instruction_set == "plain/1":
+        program = program.replace("canonicalp p5 p5 i15\n", "")
+    outcome = _run(tmp_path, _instance(generator, generator), program, BUDGET, instruction_set=instruction_set)
     assert outcome.status == "OK"
     assert outcome.count == 2 + countedvm.expected_mul_ops(3)
     assert outcome.result == (4 * pow(3, -1, N)) % N
     assert outcome.i0 == 1
-    opcodes = {line.split()[0] for line in EVERY_OPCODE.splitlines() if not line.endswith(":")}
+    opcodes = {line.split()[0] for line in program.splitlines() if not line.endswith(":")}
     implemented = set(re.findall(r'strcmp\(op, "([a-z]+)"\)', countedvm.SOURCE.read_text()))
+    if instruction_set == "plain/1":
+        implemented.remove("canonicalp")
     assert "jmp" in implemented
     assert opcodes == implemented
