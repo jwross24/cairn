@@ -39,7 +39,7 @@ LINUX_CACHE_INPUTS = (
 )
 CONTAINER_LANES = (
     "lane: [container, container-replay-exact, container-replay-refusals, "
-    "container-plan-exact, container-plan-refusals]"
+    "container-plan-exact, container-plan-proven, container-plan-refusals]"
 )
 MODULE = "Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point"
 LEAN_SETUP_CONDITION = (
@@ -508,6 +508,7 @@ def test_diagnostics_contract_refuses_lost_test_evidence(removed):
         ("runs-on: ubuntu-24.04-arm", "runs-on: macos-latest"),
         ('--ci-lane "${{ matrix.lane }}"', "--fast"),
         (CONTAINER_LANES, "lane: [container]"),
+        ("container-plan-proven, ", ""),
         ("fail-fast: false", "fail-fast: true"),
         ("name: cairn-failure-diagnostics-${{ matrix.lane }}", "name: cairn-failure-diagnostics"),
         ("ty check --python-platform linux", "ty check --python-platform darwin"),

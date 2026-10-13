@@ -71,7 +71,7 @@ Shared fixture and collection changes require their contract tests and all affec
 Record the tested revision, scope, and exclusions. An interrupted run is incomplete; skipped
 tests are not passed. These development checks do not replace Cairn's mathematical gates.
 
-CI partitions the test population into twenty disjoint lanes:
+CI partitions the test population into 21 disjoint lanes:
 
 - `python`: fallback tests outside `tests/integration/` and the explicit lane manifests.
 - `python-integration`: tests in `tests/integration/` outside the explicit lane manifests.
@@ -87,13 +87,14 @@ CI partitions the test population into twenty disjoint lanes:
 - `solution-library-dlp`: the DLP library challenge-gate case.
 - `solution-library-finite-point`: the finite-point library challenge-gate case.
 - `solution-library-binding`: the stale formal statement binding refusal case.
-- `solution-plan-exact`: the successful ordered-plan case.
+- `solution-plan-exact`: the successful ordered-plan case and approved-dev artifact tag case.
 - `solution-plan-refusals`: the `sorry` and replay-timeout ordered-plan cases with shared setup.
 - `container`: Linux hashing, preparation, compilation, axiom, dependency-cache, and lifecycle tests.
 - `container-replay-exact`: successful Linux fresh replay and exact closure comparison.
 - `container-replay-refusals`: axiom refusal, forged-proof rejection, weaker-statement closure
   mismatch, and stage-specific timeouts.
 - `container-plan-exact`: the successful gold-arm ordered-plan case.
+- `container-plan-proven`: the gold PROVEN artifact review and binding case.
 - `container-plan-refusals`: the gold-arm ordered-plan `sorry`, weaker-statement and stale-hash
   cases.
 
@@ -104,6 +105,7 @@ all three solution-library leaves keep the Lean and comparator prerequisites req
 Each CI lane has a 1,080-second session deadline and a 20-minute job ceiling. The local
 `--ci-lane m0`, `--ci-lane lean`, `--ci-lane solution-library`, `--ci-lane solution-plan`,
 `--ci-lane container-replay` and `--ci-lane container-plan` forms aggregate their respective cases.
+The `container-plan` aggregate includes all three leaves, retaining five tests.
 Lane membership is defined in `tests/_ci_lanes.py` and tested as a disjoint union.
 The real-prelude ordered-plan test has a 900-second watchdog including setup and teardown;
 the replay subprocess retains its 600-second bound.

@@ -74,6 +74,7 @@ so the protocol holds on its own. A guard's refusal is a safety mechanism, never
   `--ci-lane solution-plan-exact`, `--ci-lane solution-plan-refusals`,
   `--ci-lane container`, `--ci-lane container-replay-exact`,
   `--ci-lane container-replay-refusals`, `--ci-lane container-plan-exact`,
+  `--ci-lane container-plan-proven`,
   and `--ci-lane container-plan-refusals`. An index that
   stages nothing takes the tree-wide form. `.githooks/post-commit` pushes a bead-closing commit and
   only such a commit, logging `PUSHED`, `SKIP` or `DENY` to `.check.log`; a failed push is loud and
@@ -149,13 +150,14 @@ each gate has the scope it always had. CI runs `--ci-lane python`, `--ci-lane py
 `--ci-lane solution-plan-exact`, `--ci-lane solution-plan-refusals`,
 `--ci-lane container`, `--ci-lane container-replay-exact`,
 `--ci-lane container-replay-refusals`, `--ci-lane container-plan-exact`,
+`--ci-lane container-plan-proven`,
 and `--ci-lane container-plan-refusals`; their test sets are disjoint and exhaustive.
-With no lane argument, the local check runs all twenty sets and requires Docker for the container tests.
+With no lane argument, the local check runs all 21 sets and requires Docker for the container tests.
 The local aggregate `--ci-lane m0` runs the four M0 lanes; `--ci-lane lean` combines the core
 and fresh-replay cases; and `--ci-lane solution-library` runs all three library cases.
 The local aggregate `--ci-lane solution-plan` runs all three ordered-plan cases in sequence.
 The local aggregate `--ci-lane container-replay` runs both container replay lanes.
-The local aggregate `--ci-lane container-plan` runs both container ordered-plan lanes.
+The local aggregate `--ci-lane container-plan` runs all three container ordered-plan and PROVEN lanes.
 During development, run the fast checks and the tests covering the changed behavior:
 
 ```bash

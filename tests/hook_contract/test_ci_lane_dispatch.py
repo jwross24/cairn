@@ -33,7 +33,7 @@ from _ci_lanes import (
     SOLUTION_TEST_PATHS,
 )
 
-CONTAINER_PLAN_LANES = ("container-plan-exact", "container-plan-refusals")
+CONTAINER_PLAN_LANES = ("container-plan-exact", "container-plan-proven", "container-plan-refusals")
 CONTAINER_AUTHORITY_NODES = (
     "tests/integration/test_lean_container.py::test_the_gold_image_builds_and_the_checker_runs_under_landrun_inside_it",
     "tests/integration/test_lean_container.py::test_the_chattr_probe_inside_the_container_is_recorded",
@@ -189,8 +189,9 @@ def test_invalid_lane_selection_runs_no_gates(dispatch, args):
         *((lane, "tests/integration/test_solution_build_compile.py") for lane in SOLUTION_PLAN_LANES),
         *(
             (lane, "tests/integration/test_container_statement_hash.py")
-            for lane in ("container-plan", *CONTAINER_PLAN_LANES)
+            for lane in ("container-plan", "container-plan-exact", "container-plan-refusals")
         ),
+        ("container-plan-proven", PROVEN_TEST_PATH),
     ],
 )
 def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
@@ -255,13 +256,14 @@ def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
         cases = {
             "container-plan": CONTAINER_PLAN_CASES,
             "container-plan-exact": CONTAINER_PLAN_CASES[:1],
+            "container-plan-proven": (),
             "container-plan-refusals": CONTAINER_PLAN_CASES[1:],
         }[lane]
         expected = [
             f"tests/integration/test_container_statement_hash.py::test_linux_ordered_plan_runs_each_step_in_order[{case}]"
             for case in cases
         ]
-        if lane in ("container-plan", "container-plan-exact"):
+        if lane in ("container-plan", "container-plan-proven"):
             expected.append(f"{PROVEN_TEST_PATH}::{PROVEN_GOLD_TEST}")
         assert selected == expected
     if lane.startswith("solution-plan-"):
@@ -275,6 +277,27 @@ def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
         if lane == "solution-plan-exact":
             expected.append(f"{PROVEN_TEST_PATH}::{PROVEN_DEV_TEST}")
         assert set(selected) == set(expected)
+
+
+def test_container_plan_leaves_are_the_five_node_disjoint_aggregate():
+    path = "tests/integration/test_container_statement_hash.py"
+    plan = f"{path}::test_linux_ordered_plan_runs_each_step_in_order"
+    expected = {
+        "container-plan-exact": {f"{plan}[exact]"},
+        "container-plan-proven": {f"{PROVEN_TEST_PATH}::{PROVEN_GOLD_TEST}"},
+        "container-plan-refusals": {f"{plan}[{case}]" for case in ("sorry", "weaker", "stale-hash")},
+    }
+    combined = set()
+    for lane in CONTAINER_PLAN_LANES:
+        nodes = _collect_nodes(lane)
+        assert nodes == expected[lane]
+        assert combined.isdisjoint(nodes)
+        combined |= nodes
+    assert len(combined) == 5
+    assert _collect_nodes("container-plan") == combined
+    dev_node = f"{PROVEN_TEST_PATH}::{PROVEN_DEV_TEST}"
+    assert dev_node in _collect_nodes("solution-plan-exact")
+    assert dev_node not in combined
 
 
 def test_python_lanes_partition_the_previous_fallback_population():

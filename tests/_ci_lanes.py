@@ -109,6 +109,7 @@ CI_LANES = (
     "container-replay-exact",
     "container-replay-refusals",
     "container-plan-exact",
+    "container-plan-proven",
     "container-plan-refusals",
 )
 
@@ -181,7 +182,7 @@ def pytest_collection_modifyitems(config, items):
         path = item.path.relative_to(config.rootpath).as_posix()
         if path == PROVEN_TEST_PATH:
             if item.originalname == PROVEN_GOLD_TEST:
-                item_lane = "container-plan-exact"
+                item_lane = "container-plan-proven"
             elif item.originalname == PROVEN_DEV_TEST:
                 item_lane = "solution-plan-exact"
             else:
