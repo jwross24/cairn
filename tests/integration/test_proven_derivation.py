@@ -169,7 +169,19 @@ def test_real_gold_artifact_requires_matching_review_and_records_the_bindings(
         refused = justify.derive_tag(sub, current.hash, path)
         assert refused.tag == justify.CONJECTURE
         assert any(isinstance(value, justify.Pending) for _, value in refused.results)
-        verdict = _review(sub, path, current, linux_bundle)
+        plain = _review(sub, path, current, linux_bundle)
+        context = justify.context_for(sub, artifact, claims.get_claim_statement(sub, current.hash), path)
+        assert context.formalization_reason is None
+        assert not context.approved
+        assert (context.review_verdict_hash, context.record_digest, context.file_offset) == (None, None, None)
+        refused = justify.derive_tag(sub, current.hash, path)
+        assert refused.tag == justify.CONJECTURE
+        assert any(isinstance(value, justify.Pending) for _, value in refused.results)
+        expected_approvals = [plain, _review(sub, path, current, linux_bundle, supersedes=rejected.hash)]
+        effective = claims.effective_review_verdicts(sub, current.hash, path)
+        assert [claims._verdict_of(row).hash for row in effective] == [review.hash for review in expected_approvals]
+        assert all(row["verdict"] == "approve" for row in effective)
+        verdict = expected_approvals[0]
         proven = justify.derive_tag(sub, current.hash, path)
         assert proven.tag == justify.PROVEN
         history = claims.tag_history_for(sub, current.hash)[-1]
@@ -196,7 +208,12 @@ def test_real_gold_artifact_requires_matching_review_and_records_the_bindings(
             assert (history["from_tag"], history["to_tag"]) == (justify.PROVEN, justify.CONJECTURE)
             pointers = json.loads(history["justification"])
             assert all(pointers.get(name) is None for name in ("review_verdict_hash", "record_digest", "file_offset"))
-            verdict = _review(sub, path, current, linux_bundle, supersedes=blocking.hash)
+            expected_approvals.pop(0)
+            expected_approvals.append(_review(sub, path, current, linux_bundle, supersedes=blocking.hash))
+            effective = claims.effective_review_verdicts(sub, current.hash, path)
+            assert [claims._verdict_of(row).hash for row in effective] == [review.hash for review in expected_approvals]
+            assert all(row["verdict"] == "approve" for row in effective)
+            verdict = expected_approvals[0]
             proven = justify.derive_tag(sub, current.hash, path)
             assert proven.tag == justify.PROVEN
             history = claims.tag_history_for(sub, current.hash)[-1]
@@ -210,7 +227,7 @@ def test_real_gold_artifact_requires_matching_review_and_records_the_bindings(
             assert pointers["review_verdict_hash"] == verdict.hash
             assert pointers["record_digest"] == verdict.record_digest
             assert pointers["file_offset"] == verdict.file_offset
-        assert len(claims.visible_review_verdicts(sub, current.hash, path)) == 6
+        assert len(claims.visible_review_verdicts(sub, current.hash, path)) == 7
         assert bounded_containers
         assert all("--memory=6g" in args for args in bounded_containers)
         print(f"real docker memory-bound invocations: {len(bounded_containers)}")
