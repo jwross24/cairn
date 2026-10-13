@@ -365,6 +365,8 @@ def test_shadow_package_initializer_outside_installed_root_refuses(tmp_path):
     initializer = source_root / "cairn" / "slopemodel" / "__init__.py"
     initializer.write_text("from . import slopemodel_b\nslopemodel_b.weight = lambda ell, n: (0, 0)\n")
     spec["module_dir"] = str(source_root)
+    for name in ("executor", "verifier"):
+        spec[name]["digest"] = campaign.source_digest(source_root, spec[name]["sources"])
     campaign.parse_spec(spec)
     with pytest.raises(campaign.CampaignRefused, match="installed skill's source root"):
         campaign.check_digests(spec)
