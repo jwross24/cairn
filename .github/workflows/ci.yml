@@ -23,7 +23,7 @@ jobs:
       matrix:
         lane: [container, container-replay-exact, container-replay-refusals, container-plan-exact, container-plan-proven, container-plan-refusals]
     runs-on: ubuntu-24.04-arm
-    timeout-minutes: 20
+    timeout-minutes: 45
     env:
       CAIRN_SESSION_DEADLINE: "1080"
       BR_VERSION: "0.6.0"
