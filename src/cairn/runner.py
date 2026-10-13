@@ -263,6 +263,20 @@ def spawn_and_wait(
     grace=GRACE_S,
     is_yanked=None,
 ):
+    if sys.platform.startswith("linux"):
+        from cairn import rss
+
+        return rss.spawn_and_wait(
+            argv,
+            out_path,
+            err_path,
+            wall_cap_s=wall_cap_s,
+            env=env,
+            stdin_bytes=stdin_bytes,
+            tick=tick,
+            grace=grace,
+            is_yanked=is_yanked,
+        )
     lg = log.get(LOG_STEP)
     lg.debug("spawn", argv=list(argv), stdin_digest=blob_hash(stdin_bytes))
     stdin_path = Path(out_path).with_name("stdin")

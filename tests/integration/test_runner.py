@@ -367,9 +367,28 @@ def test_a_core_second_grant_exactly_covering_the_core_ceiling_is_accepted(write
 
 
 def test_the_argv_is_the_interpreter_and_the_named_module(writer, tmp_path, popen_spy):
-    _fixture_launch(writer, tmp_path, "skills.disagree")
-    assert len(popen_spy) == 1
-    assert popen_spy[0][:3] == [sys.executable, "-m", "skills.disagree"]
+    attempt = _fixture_launch(writer, tmp_path, "skills.disagree")
+    expected = [
+        sys.executable,
+        "-m",
+        "skills.disagree",
+        str(tmp_path / "runs" / attempt.attempt_id / "scratch"),
+    ]
+    if sys.platform == "linux":
+        from cairn import rss
+
+        binary = rss.build_binary()
+        assert len(popen_spy) in (1, 2)
+        if len(popen_spy) == 2:
+            assert popen_spy[0][:-1] == [str(rss.COMPILER), *rss.CFLAGS, "-o"]
+            assert Path(popen_spy[0][-1]).name == "reporter"
+        assert popen_spy[-1][0] == binary.path
+        assert popen_spy[-1][2] == str(binary.fd)
+        assert popen_spy[-1][3:] == expected
+    else:
+        assert len(popen_spy) == 1
+        assert popen_spy[0] == expected
+    assert attempt.launch.argv == tuple(expected)
 
 
 def test_startup_scan_interrupts_an_orphaned_running_attempt(writer, tmp_path):

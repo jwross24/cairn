@@ -56,6 +56,29 @@ writes `enable_nanoda: false` and checks with the in-toolchain kernel only.
 The pinned toolchain and mathlib prerequisite are described in
 [ADR-002](../research/decisions/adr-002-lean-ci-prerequisites.md).
 
+## Linux runner measurements
+
+The Linux runner compiles `src/cairn/rss_reporter.c` once per Python process using
+`/usr/bin/cc`. The compiler must resolve to a root-owned executable without group or
+world write permission. The build has a 20-second timeout. Source, compiler, and binary
+SHA-256 digests appear in the `rss_reporter_build` log event; changed build inputs within
+the process refuse execution. Compilation happens outside the trial's wall-clock interval.
+
+The helper runs from a sealed memory file and obtains the worker's `wait4` usage. Its
+authenticated Unix socket binds measurement packets to the helper's PID. Linux execution
+requires `/proc`, executable memory files with seals, and Unix sequenced-packet sockets
+with sender credentials. The caller must lack `CAP_SYS_ADMIN` and `CAP_SYS_PTRACE` in
+its inheritable, permitted, effective, and ambient capability sets. Workers inherit
+`no_new_privs`; malformed or incomplete reports refuse a measurement.
+
+The helper receives the caller's `env` dictionary. The caller must supply a trusted
+environment; sender authentication does not establish trust in hostile loader configuration.
+
+This measures the worker's peak resident size. Descendant coverage remains subject to
+the receipt's `measurement_scope`; allocation tests do not establish complete process-tree
+coverage. macOS uses the direct `wait4` path. The pinned formalization image removes its
+C compiler and does not satisfy the Linux runner's compilation prerequisite.
+
 ## Checks and parallel CI
 
 ```bash

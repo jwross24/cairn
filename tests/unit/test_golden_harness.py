@@ -83,3 +83,66 @@ def test_isolation_guard_admits_only_the_exact_read_only_dependency_queries(pyte
     result = pytester.runpytest("-p", "no:cacheprovider", "-q")
     result.assert_outcomes(passed=1, failed=3)
     result.stdout.fnmatch_lines(["*IsolationViolation*/usr/bin/git*"])
+
+
+def test_isolation_guard_bounds_the_native_rss_commands(pytester, monkeypatch):
+    monkeypatch.setenv("CAIRN_REPO_ROOT", str(pytester.path))
+    pytester.makeconftest(CONFTEST_SRC)
+    pytester.makepyfile(
+        """
+        import socket
+        import subprocess
+        import sys
+        import pytest
+        from cairn import rss
+        from conftest import IsolationViolation
+
+        def test_native_reporter_or_platform_refusal(tmp_path):
+            if sys.platform != "linux":
+                with pytest.raises(rss.ReporterError, match="requires Linux"):
+                    rss.build_binary()
+                return
+            out = tmp_path / "stdout"
+            err = tmp_path / "stderr"
+            rss.spawn_and_wait(
+                [sys.executable, "-c", "print(123)"], out, err,
+                wall_cap_s=5, env=None, stdin_bytes=b"", tick=0.01,
+                grace=0.1, is_yanked=None,
+            )
+            assert out.read_bytes() == b"123\\n"
+
+        def test_direct_compiler_is_refused():
+            with pytest.raises(IsolationViolation, match="outside the allow-list"):
+                subprocess.run([str(rss.COMPILER), "--version"], capture_output=True)
+
+        def test_reporter_cannot_launder_an_unlisted_worker(tmp_path):
+            if sys.platform != "linux":
+                with pytest.raises(IsolationViolation, match="outside the allow-list"):
+                    subprocess.run(["/proc/self/fd/999", "1", "999", "/bin/echo"])
+                return
+            with pytest.raises(IsolationViolation, match="reporter worker outside"):
+                rss.spawn_and_wait(
+                    ["/bin/echo", "forbidden"], tmp_path / "out", tmp_path / "err",
+                    wall_cap_s=5, env=None, stdin_bytes=b"", tick=0.01,
+                    grace=0.1, is_yanked=None,
+                )
+
+        def test_reporter_requires_the_exact_process_envelope():
+            if sys.platform != "linux":
+                with pytest.raises(IsolationViolation, match="outside the allow-list"):
+                    subprocess.run(["/proc/self/fd/999", "1", "999", sys.executable])
+                return
+            binary = rss.build_binary()
+            receiver, sender = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
+            with receiver, sender:
+                command = [binary.path, str(sender.fileno()), str(binary.fd), sys.executable]
+                kwargs = dict(pass_fds=(sender.fileno(), binary.fd), close_fds=True,
+                              start_new_session=True)
+                for change in (dict(pass_fds=(binary.fd,)), dict(start_new_session=False),
+                               dict(executable=sys.executable)):
+                    with pytest.raises(IsolationViolation, match="outside the allow-list"):
+                        subprocess.Popen(command, **(kwargs | change))
+        """
+    )
+    result = pytester.runpytest("-p", "no:cacheprovider", "-q")
+    result.assert_outcomes(passed=4)
