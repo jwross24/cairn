@@ -1,12 +1,21 @@
 import hashlib
 import math
 
+from cairn.countedvm import expected_mul_ops
+
 MAX_TABLE = 1_048_575
 MAX_INDEX = 1_048_575
 MAX_ORDER = (1 << 62) - 1
 MAX_PARTITION_BITS = 5
 MAX_RESTARTS = 32
-ALGORITHMS = {"rho": "seeded r-adding Floyd with bounded restarts", "bsgs": "full-point baby-step giant-step"}
+MAX_DP_PARTITION_BITS = 7
+MAX_THETA_BITS = 20
+INNER_DEFAULT = 65_536
+ALGORITHMS = {
+    "rho": "seeded r-adding Floyd with bounded restarts",
+    "bsgs": "full-point baby-step giant-step",
+    "dp_rho": "seeded r-adding distinguished-point rho with bounded steps",
+}
 LIMITATIONS = {
     "table_lookup": "tfind scans linearly and charges every scanned row to the instruction budget",
     "table_entries": MAX_TABLE,
@@ -17,6 +26,11 @@ LIMITATIONS = {
     "solve": "terminal; independent xP == Q verification is required after launch",
     "performance": "bounded reference programs, without a ladder performance or calibration claim",
     "baseline_profiles": "different walks and tables from the Python skills; their cost profiles do not apply",
+    "dp_table_entries": MAX_TABLE - 1,
+    "dp_collision": "equal second coefficients halt with no result and i0 equal to MAX_INDEX",
+    "dp_full_table": "a full distinguished-point table halts with no result",
+    "dp_steps": "max_outer times max_inner bounds walk additions; exhaustion halts with no result",
+    "dp_count": "setup_ops plus one counted addition per walk step; table scans consume instructions only",
 }
 
 
@@ -181,4 +195,121 @@ def rho_program(n, *, seed=0, max_steps=MAX_INDEX, restarts=8, partition_bits=5)
             "halt",
         ]
     )
+    return "\n".join(lines) + "\n"
+
+
+def default_theta(bits):
+    _integer("bits", bits, 1, MAX_ORDER.bit_length())
+    return max(1, min(MAX_THETA_BITS, bits // 2 - 8))
+
+
+def default_table_rows(n, theta_bits):
+    _integer("n", n, 2, MAX_ORDER)
+    _integer("theta_bits", theta_bits, 1, MAX_THETA_BITS)
+    return 8 * (math.isqrt(n) >> theta_bits) + 64
+
+
+def default_caps(n):
+    _integer("n", n, 2, MAX_ORDER)
+    steps = 8 * (math.isqrt(n) + 1)
+    outer = (steps + INNER_DEFAULT - 1) // INNER_DEFAULT
+    _integer("max_outer", outer, 0, MAX_INDEX)
+    return outer, INNER_DEFAULT
+
+
+def setup_ops(n, seed, partition_bits=5):
+    _inputs(n, seed)
+    _integer("n", n, 2, MAX_ORDER)
+    _integer("partition_bits", partition_bits, 1, MAX_DP_PARTITION_BITS)
+    total = sum(
+        expected_mul_ops(_draw(n, seed, "step-a", j)) + expected_mul_ops(_draw(n, seed, "step-b", j)) + 1
+        for j in range(1 << partition_bits)
+    )
+    return total + expected_mul_ops(_draw(n, seed, "start-a", 0)) + expected_mul_ops(_draw(n, seed, "start-b", 0)) + 1
+
+
+def dp_rho_program(n, *, seed, theta_bits, partition_bits=5, max_outer, max_inner, table_rows=None):
+    _inputs(n, seed)
+    _integer("n", n, 2, MAX_ORDER)
+    _integer("theta_bits", theta_bits, 1, MAX_THETA_BITS)
+    _integer("partition_bits", partition_bits, 1, MAX_DP_PARTITION_BITS)
+    _integer("max_outer", max_outer, 0, MAX_INDEX)
+    _integer("max_inner", max_inner, 1, MAX_INDEX)
+    rows = default_table_rows(n, theta_bits) if table_rows is None else table_rows
+    _integer("table_rows", rows, 1, MAX_TABLE - 1)
+    lines = [
+        "setp p6 P",
+        "setp p7 Q",
+        "sset s8 0",
+        "isinf i4 p7",
+        "jnz i4 zero",
+        "isinf i4 p6",
+        "jnz i4 exhausted",
+        f"table t0 {1 << partition_bits}",
+        f"table t1 {rows}",
+    ]
+    for j in range(1 << partition_bits):
+        lines.extend(
+            [
+                f"iset i4 {j}",
+                f"sset s4 {_draw(n, seed, 'step-a', j)}",
+                f"sset s5 {_draw(n, seed, 'step-b', j)}",
+                "mulp p3 p6 s4",
+                "mulp p4 p7 s5",
+                "addp p3 p3 p4",
+                "tstore t0 i4 p3 s4 s5",
+            ]
+        )
+    lines.extend(
+        [
+            f"sset s0 {_draw(n, seed, 'start-a', 0)}",
+            f"sset s1 {_draw(n, seed, 'start-b', 0)}",
+            "mulp p0 p6 s0",
+            "mulp p4 p7 s1",
+            "addp p0 p0 p4",
+            "iset i0 0",
+            f"iset i7 {rows}",
+            f"iset i1 {max_outer}",
+            "jz i1 exhausted",
+            "outer:",
+            f"iset i2 {max_inner}",
+            "inner:",
+            *_step("p0", "s0", "s1", partition_bits),
+            f"partition i5 p0 {theta_bits}",
+            "jz i5 dp",
+            "tail:",
+            "isub i2 i2 1",
+            "jnz i2 inner",
+            "isub i1 i1 1",
+            "jnz i1 outer",
+            "exhausted:",
+            "halt",
+            "dp:",
+            "tfind i3 t1 p0",
+            "jnz i3 found",
+            "ilt i6 i0 i7",
+            "jz i6 full",
+            "tstore t1 i0 p0 s0 s1",
+            "iadd i0 i0 1",
+            "jmp tail",
+            "found:",
+            "isub i3 i3 1",
+            "tload p4 s2 s3 t1 i3",
+            "seq i6 s1 s3",
+            "jnz i6 useless",
+            "solve s9 s0 s2 s1 s3",
+            "result s9",
+            "halt",
+            "useless:",
+            f"iset i0 {MAX_INDEX}",
+            "halt",
+            "full:",
+            "halt",
+            "zero:",
+            "result s8",
+            "halt",
+        ]
+    )
+    if len(lines) >= 4000:
+        raise ValueError(f"program has {len(lines)} lines; fewer than 4000 required, VM allows 4096")
     return "\n".join(lines) + "\n"
