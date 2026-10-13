@@ -260,7 +260,7 @@ def test_all_ci_lanes_run_the_same_gates_with_independent_deadlines():
 def _assert_container_lane(text):
     job = text.split("  container:\n", 1)[1].split("  check:\n", 1)[0]
     assert "runs-on: ubuntu-24.04-arm" in job
-    assert "timeout-minutes: 20" in job
+    assert "timeout-minutes: 45" in job
     assert 'CAIRN_SESSION_DEADLINE: "1080"' in job
     assert "continue-on-error:" not in job
     assert "uv sync --locked --all-groups" in job
@@ -506,6 +506,7 @@ def test_diagnostics_contract_refuses_lost_test_evidence(removed):
     ("old", "new"),
     [
         ("runs-on: ubuntu-24.04-arm", "runs-on: macos-latest"),
+        ("timeout-minutes: 45", "timeout-minutes: 20"),
         ('--ci-lane "${{ matrix.lane }}"', "--fast"),
         (CONTAINER_LANES, "lane: [container]"),
         ("container-plan-proven, ", ""),
