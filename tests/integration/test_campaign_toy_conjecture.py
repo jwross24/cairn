@@ -2,11 +2,27 @@ import json
 import sqlite3
 import subprocess
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 
-from cairn import bundle, campaign, canon, env, hunt, keys, substrate
+from cairn import (
+    bundle,
+    campaign,
+    canon,
+    claims,
+    env,
+    foundations,
+    human_authority,
+    hunt,
+    justify,
+    keys,
+    ledger,
+    substrate,
+    ticketlattice,
+    yank,
+)
 
 
 def make_spec(root):
@@ -150,6 +166,146 @@ def test_toy_campaign_runs_real_trials_and_preregisters_before_entropy(tmp_path,
                     assert sub.get_receipt(attempt["receipt_hash"])["gate_bundle_hash"] == gate_bundle.hash
         assert sub.conn.execute("SELECT count(*) FROM instance_nonces").fetchone()[0] == 3
     print(json.dumps({"argv": argv, "stdout": report}, sort_keys=True))
+
+
+@pytest.mark.parametrize(
+    ("target", "ambiguous"),
+    [
+        ("earlier", False),
+        ("final", False),
+        ("unrelated", False),
+        ("killed_verifier", False),
+        ("earlier", True),
+        ("final", True),
+        ("unrelated", True),
+    ],
+)
+def test_campaign_narrow_yank_rederives_required_members(tmp_path, pinned_bundle, target, ambiguous):
+    spec = make_spec(tmp_path / "modules")
+    completed, db, gate_bundle, argv = run_spec(tmp_path, spec, pinned_bundle)
+    assert completed.returncode == 0, completed.stderr
+    report = json.loads(completed.stdout)
+    row = next(item for item in report["statements"] if item["role"] == "control_must_survive")
+    attest = str(tmp_path / "attest.log")
+    with substrate.Substrate.open(db) as sub:
+        record = hunt.record_for(sub, row["run_hash"])
+        first, last = (trial.attempt_id for trial in record.trials)
+        evidence = claims.get_evidence_node(sub, row["evidence_hash"])
+        assert first != last and evidence["attempt_id"] == last
+        assert hunt.required_attempt_ids(sub, evidence) == (first, last)
+        before = claims.tag_history_for(sub, row["statement_hash"])
+        assert before[-1]["to_tag"] == justify.CONJECTURE
+        if ambiguous:
+            other = next(item for item in report["statements"] if item["role"] == "question")
+            sub.add_lineage(evidence["hash"], other["run_hash"], hunt.EDGE_INPUT)
+            assert hunt.required_attempt_ids(sub, evidence) is None
+        assert foundations.rederive_for_attempts(sub, (), attest) == ()
+        assert claims.tag_history_for(sub, row["statement_hash"]) == before
+        killed = next(item for item in report["statements"] if item["role"] == "question")
+        killed_before = claims.tag_history_for(sub, killed["statement_hash"])
+        killed_ledger = ledger.get_entry(sub, killed["ledger_hash"])
+        if target in ("unrelated", "killed_verifier"):
+            other = next(item for item in report["statements"] if item["role"] == "question")
+            trial = hunt.record_for(sub, other["run_hash"]).trials[0]
+            selected_attempt = trial.verifier_attempt_id if target == "killed_verifier" else trial.attempt_id
+            assert selected_attempt not in (first, last)
+        else:
+            selected_attempt = first if target == "earlier" else last
+        attempt = sub.get_attempt(selected_attempt)
+        recipe = canon.decode(keys.RECIPE, sub.get_node(attempt["recipe_key"])["canonical"])
+        revision = recipe["skill_identity_hash"]
+        reach = {"skill_identity_hash": revision, "inputs": {"hunt_input": [recipe["inputs"]["hunt_input"][0]]}}
+        covered, _ = yank.in_reach(sub, reach)
+        assert [item["attempt_id"] for key in covered for item in sub.attempts_for(key)] == [selected_attempt]
+        with pytest.raises(yank.RulingRequired, match="names an attributed ruling"):
+            yank.record(
+                sub,
+                yank_id=target,
+                skill_identity_hash=revision,
+                kind=yank.HUMAN_PATH,
+                attest_path=attest,
+                reach=reach,
+            )
+        assert sub.get_attempt(selected_attempt)["disowned_at"] is None
+        assert sub.conn.execute("SELECT COUNT(*) FROM yank_records").fetchone()[0] == 0
+        authority = human_authority.append(
+            sub,
+            attest,
+            human_authority.YANK_RULING,
+            {
+                "ruling_ref": target,
+                "yank_id": target,
+                "skill_identity_hash": revision,
+                "reach_predicate": yank.reach_json(reach),
+                "issued_by": "test-operator",
+                "at": datetime.now(UTC).isoformat(),
+            },
+            gate_bundle_hash=gate_bundle.hash,
+        )
+        outcome = yank.record(
+            sub,
+            yank_id=target,
+            skill_identity_hash=revision,
+            kind=yank.HUMAN_PATH,
+            attest_path=attest,
+            reach=reach,
+            ruling=yank.Ruling(target, authority["record_digest"], authority["file_offset"]),
+        )
+        assert outcome.disowned == (selected_attempt,)
+        assert sub.get_attempt(selected_attempt)["disowned_at"] is not None
+        if target != "final":
+            assert sub.get_attempt(last)["disowned_at"] is None
+        after = claims.tag_history_for(sub, row["statement_hash"])
+        statement = claims.get_claim_statement(sub, row["statement_hash"])
+        live = justify.justify(evidence, statement, justify.context_for(sub, evidence, statement, attest))
+        ticket = ticketlattice.select_kind(
+            sub,
+            None,
+            ticketlattice.CONJECTURE,
+            hypothesis_key=row["hypothesis_hash"],
+            method_identity=spec["method_identity"],
+            inputs={},
+            implementation_revision=None,
+            statement_hash=row["statement_hash"],
+        )
+        if target in ("unrelated", "killed_verifier") and not ambiguous:
+            assert row["statement_hash"] not in outcome.rederived
+            assert after == before
+            assert isinstance(live, justify.Justification) and ticket.admits
+            if target == "killed_verifier":
+                assert outcome.rederived == ()
+                assert claims.tag_history_for(sub, killed["statement_hash"]) == killed_before
+                assert claims.get_claim_statement(sub, killed["statement_hash"])["status"] == "refuted"
+                assert ledger.get_entry(sub, killed["ledger_hash"]) == killed_ledger
+                assert killed_ledger["decision"] == ledger.REFUTED
+                assert not hunt.attempts_admissible(sub, claims.get_evidence_node(sub, killed["evidence_hash"]))
+        else:
+            assert row["statement_hash"] in outcome.rederived
+            if target != "unrelated":
+                assert outcome.rederived == (row["statement_hash"],)
+            assert after[:-1] == before
+            assert after[-1]["from_tag"] == justify.CONJECTURE
+            assert after[-1]["to_tag"] == justify.SPECULATION
+            assert isinstance(live, justify.Absent)
+            if not ambiguous:
+                assert live.reason == "disowned"
+            assert not ticket.admits
+        print(
+            json.dumps(
+                {
+                    "target": target,
+                    "ambiguous": ambiguous,
+                    "argv": argv,
+                    "campaign": report,
+                    "disowned": outcome.disowned,
+                    "rederived": outcome.rederived,
+                    "before": before,
+                    "after": after,
+                    "final_disowned_at": sub.get_attempt(last)["disowned_at"],
+                },
+                sort_keys=True,
+            )
+        )
 
 
 @pytest.mark.parametrize(
