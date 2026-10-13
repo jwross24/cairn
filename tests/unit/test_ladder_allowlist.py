@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from cairn import allowlist, bundle
-from cairn.substrate import blob_hash
+from cairn.substrate import Substrate, blob_hash
 
 MACHO = b"\xcf\xfa\xed\xfe" + b"\x00" * 28
 BACKEND = os.path.realpath(sys.executable)
@@ -500,6 +500,26 @@ def test_the_instantiation_admits_the_binary_its_counted_object_re_execs_into(sh
     assert allowlist.check_instantiation(value, shipped) is True
 
 
+def test_a_stored_instantiation_settles_after_its_framework_moves(shipped, scratch, tmp_path):
+    stub, target = _framework(tmp_path)
+    withheld = tmp_path / "store"
+    withheld.mkdir()
+    value = allowlist.instantiate(
+        shipped, hypothesis=_hypothesis(), counted_object=stub, scratch_dir=scratch, withheld_roots=[withheld]
+    )
+    assert set(value.exec_paths) == {stub, target}
+    assert allowlist.check_instantiation(value, shipped) is True
+    with Substrate.open(tmp_path / "substrate.sqlite") as sub:
+        digest = allowlist.record(sub, value)
+        (tmp_path / "Python.framework").rename(tmp_path / "moved.framework")
+        assert not Path(stub).exists()
+        assert not Path(target).exists()
+        stored = allowlist.read(sub, digest)
+        assert stored == value
+        assert stored.withheld_roots == (str(withheld),)
+        assert allowlist.check_instantiation(stored, shipped) is True
+
+
 def test_a_derived_re_exec_target_does_not_buy_room_for_an_unrelated_executable(shipped, scratch, tmp_path):
     stub, target = _framework(tmp_path)
     value = allowlist.instantiate(shipped, hypothesis=_hypothesis(), counted_object=stub, scratch_dir=scratch)
@@ -525,6 +545,61 @@ def test_a_script_in_a_framework_bin_derives_no_re_exec_target(tmp_path):
     script.write_text("#!/bin/sh\nexit 0\n")
     script.chmod(0o755)
     assert allowlist.reexec_target(str(script)) is None
+
+
+def test_the_binding_check_refuses_a_framework_script_with_an_underived_app(shipped, scratch, tmp_path):
+    stub, target = _framework(tmp_path)
+    script = Path(stub).parent / "python3.14-config"
+    script.write_text("#!/bin/sh\nexit 0\n")
+    script.chmod(0o755)
+    withheld = tmp_path / "store"
+    withheld.mkdir()
+    bound = {
+        "hypothesis": _hypothesis(),
+        "counted_object": script,
+        "scratch_dir": scratch,
+        "withheld_roots": [withheld],
+    }
+    value = allowlist.instantiate(shipped, **bound)
+    assert value.exec_paths == (str(script),)
+    assert allowlist.check_binding(value, shipped, **bound) is True
+    paths = tuple(sorted({str(script), target}))
+    tampered = dataclasses.replace(
+        value, exec_paths=paths, profile_hash=blob_hash(allowlist.profile_bytes(paths, value.withheld_roots))
+    )
+    assert allowlist.check_instantiation(tampered, shipped) is True
+    with pytest.raises(allowlist.AllowListRefused, match="allow-list differs from the one the gate derives"):
+        allowlist.check_binding(tampered, shipped, **bound)
+
+
+def test_the_binding_check_refuses_a_record_whose_framework_app_is_absent(shipped, scratch, tmp_path):
+    stub, target = _framework(tmp_path)
+    withheld = tmp_path / "store"
+    withheld.mkdir()
+    bound = {"hypothesis": _hypothesis(), "counted_object": stub, "scratch_dir": scratch, "withheld_roots": [withheld]}
+    value = allowlist.instantiate(shipped, **bound)
+    assert set(value.exec_paths) == {stub, target}
+    assert allowlist.check_binding(value, shipped, **bound) is True
+    Path(target).rename(tmp_path / "moved.app")
+    assert not Path(target).exists()
+    assert allowlist.check_instantiation(value, shipped) is True
+    with pytest.raises(allowlist.AllowListRefused, match="exec_paths"):
+        allowlist.check_binding(value, shipped, **bound)
+
+
+def test_the_binding_check_refuses_a_record_whose_framework_app_is_not_executable(shipped, scratch, tmp_path):
+    stub, target = _framework(tmp_path)
+    withheld = tmp_path / "store"
+    withheld.mkdir()
+    bound = {"hypothesis": _hypothesis(), "counted_object": stub, "scratch_dir": scratch, "withheld_roots": [withheld]}
+    value = allowlist.instantiate(shipped, **bound)
+    assert set(value.exec_paths) == {stub, target}
+    assert allowlist.check_binding(value, shipped, **bound) is True
+    Path(target).chmod(0o644)
+    assert not os.access(target, os.X_OK)
+    assert allowlist.check_instantiation(value, shipped) is True
+    with pytest.raises(allowlist.AllowListRefused, match="exec_paths"):
+        allowlist.check_binding(value, shipped, **bound)
 
 
 def test_withheld_roots_are_resolved_denied_after_the_read_grant_and_addressed(shipped, scratch, tmp_path):

@@ -174,15 +174,21 @@ def _executable(label, path):
     return text
 
 
-def reexec_target(path):
+def _reexec_candidate(path):
     match = FRAMEWORK_BIN.match(path)
     if match is None:
+        return None
+    name = match.group("name")
+    return f"{match.group('versions')}/Resources/{name}.app/Contents/MacOS/{name}"
+
+
+def reexec_target(path):
+    target = _reexec_candidate(path)
+    if target is None:
         return None
     with Path(path).open("rb") as handle:
         if handle.read(2) == b"#!":
             return None
-    name = match.group("name")
-    target = f"{match.group('versions')}/Resources/{name}.app/Contents/MacOS/{name}"
     if target != os.path.realpath(target) or not Path(target).is_file() or not os.access(target, os.X_OK):
         return None
     return target
@@ -303,7 +309,7 @@ def check_instantiation(value, gate_bundle, name=LADDER_METHOD):
     if value.profile_hash != blob_hash(profile_bytes(value.exec_paths, value.withheld_roots)):
         _refuse("allow-list profile hash does not address its own exec paths")
     permitted = 1 + sum(1 for n in value.declared_backends if catalog[n]["kind"] == "process")
-    derived = {t for p in value.exec_paths if (t := reexec_target(p)) is not None and t in value.exec_paths}
+    derived = {t for p in value.exec_paths if (t := _reexec_candidate(p)) is not None and t in value.exec_paths}
     roots = set(value.exec_paths) - derived
     if len(roots) > permitted or value.counted_object not in value.exec_paths:
         _refuse(f"allow-list permits {len(roots)} executables against {permitted} the template allows")
