@@ -10,7 +10,7 @@ from cairn import dispatch, worker
 from cairn.substrate import Substrate, blob_hash
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from tests.fixtures.worker_dispatch import ECHO_TEXT, TEMPLATE, arena, make_bundle
+from tests.fixtures.worker_dispatch import ECHO_TEXT, ROLE, TEMPLATE, arena, make_bundle
 
 __all__ = ["arena"]
 
@@ -114,6 +114,17 @@ def test_the_worker_envelope_pins_permission_mode_and_disables_thinking(arena, t
     prepared = dispatch._prepare(sub, gate_bundle, role="echo", node_ids=(node,))
     options = worker._options(prepared, tmp_path)
     assert options.permission_mode == "dontAsk"
+    assert prepared.thinking == "disabled"
     assert options.thinking == {"type": "disabled"}
     assert options.setting_sources == []
     assert options.strict_mcp_config is True
+
+
+def test_a_role_that_pins_adaptive_thinking_reaches_the_sdk_options(arena, tmp_path):
+    sub, _, node = arena
+    directory = tmp_path / "adaptive"
+    directory.mkdir()
+    gate_bundle = make_bundle(directory, {**ROLE, "thinking": "adaptive"})
+    prepared = dispatch._prepare(sub, gate_bundle, role="echo", node_ids=(node,))
+    assert prepared.thinking == "adaptive"
+    assert worker._options(prepared, tmp_path).thinking == {"type": "adaptive"}

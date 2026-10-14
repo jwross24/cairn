@@ -13,6 +13,8 @@ lg = log.get("dispatch")
 ROLE_CONFIG = "worker_roles"
 REQUEST_BYTES_UNAVAILABLE = "sdk-query-does-not-expose-provider-bytes"
 SKEPTIC_HUNT_TEMPLATE = "skeptic_hunt_checklist"
+ROLE_FIELDS = frozenset({"template", "tools", "model", "max_turns", "timeout_s"})
+THINKING_MODES = ("adaptive", "disabled")
 
 
 class DispatchRefused(ValueError):
@@ -32,6 +34,7 @@ class _Prepared:
     bundle_hash: str
     role_config: bytes
     skeptic_handle: skeptic.Handle | None = None
+    thinking: str = "disabled"
 
 
 @dataclass(frozen=True)
@@ -95,9 +98,13 @@ def _prepare(sub, gate_bundle, *, role, node_ids):
     if not isinstance(role, str) or not isinstance(registry, dict) or role not in registry:
         raise DispatchRefused("role is absent from the pinned worker_roles object")
     config = registry[role]
-    fields = {"template", "tools", "model", "max_turns", "timeout_s"}
-    if not isinstance(config, dict) or set(config) != fields:
-        raise DispatchRefused("worker role fields must be template, tools, model, max_turns, timeout_s")
+    if not isinstance(config, dict) or not ROLE_FIELDS <= set(config) <= ROLE_FIELDS | {"thinking"}:
+        raise DispatchRefused(
+            "worker role fields must be template, tools, model, max_turns, timeout_s and optionally thinking"
+        )
+    thinking = config.get("thinking", "disabled")
+    if not isinstance(thinking, str) or thinking not in THINKING_MODES:
+        raise DispatchRefused("worker thinking must be adaptive or disabled")
     if not isinstance(config["template"], str) or not config["template"].strip():
         raise DispatchRefused("worker role needs a role-template name")
     try:
@@ -149,6 +156,7 @@ def _prepare(sub, gate_bundle, *, role, node_ids):
         bundle_hash=pinned.hash,
         role_config=pinned.raw(ROLE_CONFIG),
         skeptic_handle=handle,
+        thinking=thinking,
     )
 
 
@@ -323,7 +331,7 @@ def skeptic_record(sub, dispatch_id, statement_hash):
     if selected.get("template") != SKEPTIC_HUNT_TEMPLATE:
         return None
     if (
-        set(selected) != {"template", "tools", "model", "max_turns", "timeout_s"}
+        not ROLE_FIELDS <= set(selected) <= ROLE_FIELDS | {"thinking"}
         or selected.get("tools") != list(sent.tool_allow_list)
         or selected.get("model") != sent.model
     ):

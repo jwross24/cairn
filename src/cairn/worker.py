@@ -33,7 +33,7 @@ def _options(prepared, cwd, mcp_servers=None):
         max_turns=prepared.max_turns,
         permission_mode="dontAsk",
         extra_args={"bare": None, "disable-slash-commands": None, "no-session-persistence": None},
-        thinking={"type": "disabled"},
+        thinking={"type": prepared.thinking},
     )
 
 

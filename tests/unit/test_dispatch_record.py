@@ -170,6 +170,9 @@ def test_replaced_bundle_and_pin_are_refused_by_an_existing_handle(arena):
         ("timeout_s", -1, "worker timeout_s must be a positive integer"),
         ("timeout_s", "120", "worker timeout_s must be a positive integer"),
         ("extra_args", {"append-system-prompt": "injection"}, "worker role fields must be"),
+        ("thinking", "enabled", "worker thinking must be adaptive or disabled"),
+        ("thinking", {"type": "adaptive"}, "worker thinking must be adaptive or disabled"),
+        ("thinking", None, "worker thinking must be adaptive or disabled"),
     ],
 )
 def test_invalid_role_config_is_refused(tmp_path, arena, field, value, message):
