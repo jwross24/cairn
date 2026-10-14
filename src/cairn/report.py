@@ -5,7 +5,7 @@ import sqlite3
 import sys
 from decimal import Decimal
 
-from cairn import attest, canon, claims, dispatch, exits, hunt, keys, ladder, ladderplan, laddertable, ledger
+from cairn import attest, canon, claims, dispatch, exits, hunt, keys, ladder, ladderplan, laddertable, ledger, repro
 from cairn.substrate import Substrate, SubstrateError
 
 
@@ -272,6 +272,24 @@ def render(sub, *, kind, statement_hash=None, ladder_table_hash=None, attest_pat
         run_lines.append(
             line(f"run id: {nonce['run_id']}; verdict: {record.verdict}; run hash: {record.hash}", pointer)
         )
+        run_lines.append(line(f"recorded statement survival standing: {str(record.standing).lower()}", pointer))
+        owner_rule = "not evaluated; no KILLED witness"
+        if record.verdict == "KILLED":
+            try:
+                owner_grade, owner_reason = repro.owner_grade(
+                    sub, plan["executor_identity"], repro.Verifier(repro.SKILL_VERIFIER, plan["verifier_identity"])
+                )
+            except repro.ReproError as exc:
+                owner_rule = f"unavailable; reason: {exc}"
+            else:
+                owner_rule = f"{owner_grade}; reason: {owner_reason}"
+        run_lines.append(line(f"computed verifier owner rule: {owner_rule}", pointer))
+        admissible = (
+            str(hunt.attempts_admissible(sub, node)).lower()
+            if node is not None
+            else "unavailable; hunt evidence absent"
+        )
+        run_lines.append(line(f"live required hunt attempts admissible: {admissible}", pointer))
         run_lines.append(
             line(
                 f"budget: {record.budget_status}; completed trials: {record.completed_trial_count}/{record.declared_trial_count}",
@@ -300,7 +318,7 @@ def render(sub, *, kind, statement_hash=None, ladder_table_hash=None, attest_pat
                 )
             )
         grade_node = sub.get_node(pointer)
-        limitations.append((f"evidence replay grade: {grade_node['replay_grade']}", pointer))
+        limitations.append((f"stored evidence replay grade: {grade_node['replay_grade']}", pointer))
         for identity_name in ("executor_identity", "verifier_identity"):
             identity = plan[identity_name]
             certified = sub.get_certificate(identity) is not None
