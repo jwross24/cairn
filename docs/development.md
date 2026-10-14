@@ -33,7 +33,7 @@ to inspect either refusal before deciding how to preserve or replace operator-ow
 
 Run this procedure against the campaign's existing substrate before dispatching its Skeptic.
 Set the absolute campaign path explicitly; an absent destination refuses rather than initializes
-a substrate. The probe requires SDK `0.2.152` and bundled CLI `2.1.259` and checks both versions.
+a substrate. The probe requires SDK `0.2.158` and bundled CLI `2.1.280` and checks both versions.
 
 ```bash
 export CAIRN_CAMPAIGN_DB=/absolute/path/to/campaign/substrate.sqlite

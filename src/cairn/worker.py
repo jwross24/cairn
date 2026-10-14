@@ -8,8 +8,8 @@ from claude_agent_sdk import ClaudeAgentOptions, ClaudeSDKClient, ResultMessage,
 
 from cairn import skeptic_tools
 
-SDK_VERSION = "0.2.152"
-CLI_VERSION = "2.1.259"
+SDK_VERSION = "0.2.158"
+CLI_VERSION = "2.1.280"
 TOOLS: frozenset[str] = skeptic_tools.TOOLS
 
 
