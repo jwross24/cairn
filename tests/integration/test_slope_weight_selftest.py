@@ -61,13 +61,17 @@ def test_cli_certifies_real_pair_and_records_origins(certified_pair, which):
     module = selftest_skills.module_for(which)
     document = documents[which]
     assert document["identity_bundle_hash"] == module.skill_identity_hash()
-    assert document["arms"] == {"postcondition": "pass", "verifier": {"ok": 1, "fail": 1}}
+    assert document["arms"] == {
+        "postcondition": "pass",
+        "executor": {"candidate": 1, "non_candidate": 2},
+        "verifier": {"ok": 1, "fail": 2},
+    }
     with substrate.Substrate.open(db, role="reader") as sub:
         row = sub.get_certificate(document["identity_bundle_hash"])
     assert row["cert_hash"] == document["certificate"]
     summary = json.loads(row["selftest_summary"])
-    assert summary["must_fail_witnesses"] == 1
-    assert summary["cross_check"] == {"axis": "algorithm", "independent_range": {"l": [3, 2**22]}}
+    assert summary["must_fail_witnesses"] == 2
+    assert summary["cross_check"] == []
     assert summary["corpus_origins"]["printed65537"]["W"] == "upstream_vendored"
     assert summary["corpus_origins"]["agreement65537"]["W"] == "author_supplied"
 
@@ -195,6 +199,70 @@ def test_constant_accept_verifier_fails_without_minting_certificate(tmp_path, pi
         assert sub.conn.execute("SELECT count(*) FROM skill_certificates").fetchone()[0] == 0
 
 
+@pytest.mark.parametrize(
+    ("role", "kind_only"),
+    [("executor", False), ("verifier", False), ("executor", True), ("verifier", True)],
+    ids=["executor-global", "verifier-global", "executor-weight-le", "verifier-weight-le"],
+)
+def test_constant_accept_hunt_decision_on_disk_refuses_cli_certificate(tmp_path, pinned_bundle, role, kind_only):
+    bundle_path, pin = pinned_bundle()
+    root = tmp_path / "mutated"
+    shutil.copytree(ROOT / "src", root / "src", ignore=shutil.ignore_patterns("__pycache__"))
+    if role == "verifier":
+        relative, signature, value = (
+            "src/cairn/slopemodel/slope_hunt_verifier.py",
+            "def statement_fails(predicate: dict, ell: int, weight: int) -> bool:\n",
+            "True",
+        )
+        expected = "hunt-verifier-arm: the holding statement returned counterexample_valid=True, expected False"
+    else:
+        relative, signature, value = (
+            "src/cairn/slopemodel/slope_predicates.py",
+            "def holds(predicate: dict, ell: int, weight: int) -> bool:\n",
+            "True",
+        )
+        expected = "hunt-executor-arm: the failing statement returned candidate=False, expected True"
+    path = root / relative
+    original = path.read_text()
+    assert original.count(signature) == 1
+    if kind_only:
+        value = "True" if role == "verifier" else "False"
+        mutation = f'    if predicate["kind"] == "weight_le":\n        return {value}\n'
+        decision = "counterexample_valid" if role == "verifier" else "candidate"
+        expected = f"hunt-{role}-arm: the holding_weight_le statement returned {decision}=True, expected False"
+    else:
+        mutation = f"    return {value}\n"
+    path.write_text(original.replace(signature, signature + mutation))
+    db = tmp_path / "refused.sqlite"
+    argv = [
+        sys.executable,
+        "-m",
+        "cairn",
+        "selftest",
+        selftest_skills.SLOPE_WEIGHT_B,
+        "--db",
+        str(db),
+        "--bundle",
+        str(bundle_path),
+        "--pin",
+        str(pin),
+        "--json",
+    ]
+    completed = subprocess.run(
+        argv,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        env={**os.environ, "PYTHONPATH": str(root / "src"), "PYTHONSAFEPATH": "1"},
+    )
+    assert completed.returncode == exits.GATE_REFUSED, completed.stderr
+    assert expected in completed.stderr
+    assert completed.stdout == ""
+    with substrate.Substrate.open(db, role="reader") as sub:
+        assert sub.conn.execute("SELECT count(*) FROM skill_certificates").fetchone()[0] == 0
+    print(json.dumps({"argv": argv, "source": str(path), "exit": completed.returncode, "stderr": completed.stderr}))
+
+
 def _campaign_spec():
     spec = {
         "family": "two-grumpy-giants-slope-model",
@@ -308,6 +376,8 @@ def test_shadow_package_initializer_outside_installed_root_refuses(tmp_path):
     initializer = source_root / "cairn" / "slopemodel" / "__init__.py"
     initializer.write_text("from . import slopemodel_b\nslopemodel_b.weight = lambda ell, n: (0, 0)\n")
     spec["module_dir"] = str(source_root)
+    for name in ("executor", "verifier"):
+        spec[name]["digest"] = campaign.source_digest(source_root, spec[name]["sources"])
     campaign.parse_spec(spec)
     with pytest.raises(campaign.CampaignRefused, match="installed skill's source root"):
         campaign.check_digests(spec)

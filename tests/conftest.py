@@ -125,8 +125,20 @@ def isolation_guard(monkeypatch):
                     ("status", "--porcelain", "--untracked-files=normal"),
                 )
             )
-            if str(argv0) not in _allowed_argv0() and not dependency_query:
-                raise IsolationViolation(f"subprocess outside the allow-list: {argv0}")
+            allowed = _allowed_argv0()
+            if str(argv0) not in allowed and not dependency_query:
+                reporter_command = False
+                if sys.platform == "linux":
+                    from cairn import rss
+
+                    if rss.command_is_reporter(args, kw):
+                        if str(args[3]) not in allowed:
+                            raise IsolationViolation(f"reporter worker outside the allow-list: {args[3]}")
+                        reporter_command = True
+                    else:
+                        reporter_command = rss.command_is_build(args, kw)
+                if not reporter_command:
+                    raise IsolationViolation(f"subprocess outside the allow-list: {argv0}")
             super().__init__(args, *a, **kw)
 
     monkeypatch.setattr(subprocess, "Popen", GuardedPopen)

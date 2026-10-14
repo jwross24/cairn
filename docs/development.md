@@ -116,6 +116,35 @@ Do not copy a historical PASS record or substitute an echo for captured request 
 a later failed record or a version change blocks dispatch until a fresh capture passes.
 The procedure grounds dispatch only. It does not dispatch a Skeptic or produce findings.
 
+## Fresh campaign deployment
+
+Prepare the bundle, operator pin, and fixture-waiver attestation with one module command:
+
+```bash
+campaign_work="$(mktemp -d)"
+uv run python -m cairn.deployment --src bundle/ --directory "$campaign_work/deployment"
+```
+
+The destination must not exist, and its parent must exist. The command exclusively creates
+a directory with mode `0700` containing `gate-bundle.sqlite`, `gate-bundle.pin`, and
+`attestations.log`. It reads source objects and validates the fixture hypothesis before
+creation, compares the built hash with the preflight hash before pinning, and checks the
+bundle, pin, and exact fixture waiver at offset 0 before success. `--src` selects the JSON
+source directory; verifier, Lean, renderer, container, and linter inputs come from the
+repository paths used by `cairn bundle build`.
+
+Successful stdout is one JSON document with `bundle`, `pin`, and `attest` paths,
+`bundle_hash`, `waiver_offset`, `waiver_digest`, and `status: "ready"`. Pass the three paths
+as `--bundle`, `--pin`, and `--attest` to the campaign runner. The bundle and pin carry
+mode `0444`; pin and attestation carry append-only flags where the existing writers
+support them. A platform without flag support emits a warning and relies on mode bits.
+
+Existing destinations, including dangling symlinks, refuse without modification.
+A failure exits nonzero and reports its `stage` and `retained` paths on stderr. Partial
+files remain in place; retries require a different absent destination. The command does
+not replace a deployment, create a substrate, run a campaign, certify an evaluator, or
+issue an operator session, statement ratification, or review verdict.
+
 ## Lean prerequisites
 
 The Lean integration suite requires the comparator and exporter pinned in
@@ -142,6 +171,29 @@ pinned `rust` toolchain) checks the export in addition to the in-toolchain kerne
 writes `enable_nanoda: false` and checks with the in-toolchain kernel only.
 The pinned toolchain and mathlib prerequisite are described in
 [ADR-002](../research/decisions/adr-002-lean-ci-prerequisites.md).
+
+## Linux runner measurements
+
+The Linux runner compiles `src/cairn/rss_reporter.c` once per Python process using
+`/usr/bin/cc`. The compiler must resolve to a root-owned executable without group or
+world write permission. The build has a 20-second timeout. Source, compiler, and binary
+SHA-256 digests appear in the `rss_reporter_build` log event; changed build inputs within
+the process refuse execution. Compilation happens outside the trial's wall-clock interval.
+
+The helper runs from a sealed memory file and obtains the worker's `wait4` usage. Its
+authenticated Unix socket binds measurement packets to the helper's PID. Linux execution
+requires `/proc`, executable memory files with seals, and Unix sequenced-packet sockets
+with sender credentials. The caller must lack `CAP_SYS_ADMIN` and `CAP_SYS_PTRACE` in
+its inheritable, permitted, effective, and ambient capability sets. Workers inherit
+`no_new_privs`; malformed or incomplete reports refuse a measurement.
+
+The helper receives the caller's `env` dictionary. The caller must supply a trusted
+environment; sender authentication does not establish trust in hostile loader configuration.
+
+This measures the worker's peak resident size. Descendant coverage remains subject to
+the receipt's `measurement_scope`; allocation tests do not establish complete process-tree
+coverage. macOS uses the direct `wait4` path. The pinned formalization image removes its
+C compiler and does not satisfy the Linux runner's compilation prerequisite.
 
 ## Checks and parallel CI
 
@@ -174,7 +226,8 @@ CI partitions the test population into 21 disjoint lanes:
 - `solution-library-dlp`: the DLP library challenge-gate case.
 - `solution-library-finite-point`: the finite-point library challenge-gate case.
 - `solution-library-binding`: the stale formal statement binding refusal case.
-- `solution-plan-exact`: the successful ordered-plan case and approved-dev artifact tag case.
+- `solution-plan-exact`: the successful ordered-plan case, approved-dev artifact tag case, and
+  the 21 slope skill certification cases in `tests/integration/test_slope_weight_selftest.py`.
 - `solution-plan-refusals`: the `sorry` and replay-timeout ordered-plan cases with shared setup.
 - `container`: Linux hashing, preparation, compilation, axiom, dependency-cache, and lifecycle tests.
 - `container-replay-exact`: successful Linux fresh replay and exact closure comparison.
@@ -189,12 +242,14 @@ The `python`, `python-integration`, four M0, and `gateplan` lanes do not provisi
 comparator, or exporter prerequisites. The M0 and `gateplan` suites use PARI/GP. Both Lean leaves and
 all three solution-library leaves keep the Lean and comparator prerequisites required by their tests.
 
-Each CI lane has a 1,080-second session deadline and a 20-minute job ceiling. The local
+CI lanes have a 1,080-second session deadline, except `solution-plan-exact`, whose deadline is
+1,962 seconds. macOS jobs have a 20-minute ceiling, except `solution-plan-exact` at 45 minutes;
+Linux container jobs have a 41-minute ceiling. The local
 `--ci-lane m0`, `--ci-lane lean`, `--ci-lane solution-library`, `--ci-lane solution-plan`,
 `--ci-lane container-replay` and `--ci-lane container-plan` forms aggregate their respective cases.
 The `container-plan` aggregate includes all three leaves, retaining five tests.
 Lane membership is defined in `tests/_ci_lanes.py` and tested as a disjoint union.
-The real-prelude ordered-plan test has a 900-second watchdog including setup and teardown;
+The real-prelude ordered-plan test has a 1,800-second watchdog including setup and teardown;
 the replay subprocess retains its 600-second bound.
 
 Whole-project typing targets macOS. Linux CI also checks the container adapter, preparation

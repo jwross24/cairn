@@ -123,6 +123,12 @@ Run `cairn bundle build`, `cairn bundle pin`, `cairn attest init`, `cairn selfte
 plans the checkout refuses is diagnosed by read-only `cairn doctor`; rebuilding and re-pinning
 remain the operator's decision.
 
+For a fresh campaign deployment, run
+`uv run python -m cairn.deployment --directory PATH`, where `PATH` does not exist.
+The command prepares the bundle, pin, and fixture-waiver attestation and prints their JSON
+paths. See [fresh campaign deployment](docs/development.md#fresh-campaign-deployment)
+for setup and failure handling. It grants no operator authority or skill certification.
+
 ## Quick start
 
 ```bash
