@@ -29,6 +29,7 @@ from _ci_lanes import (
     SOLUTION_LIBRARY_ITEMS,
     SOLUTION_LIBRARY_LANES,
     SOLUTION_LIBRARY_TEST_PATHS,
+    SOLUTION_PLAN_EXACT_TEST_PATHS,
     SOLUTION_PLAN_LANES,
     SOLUTION_TEST_PATHS,
 )
@@ -266,16 +267,26 @@ def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
         if lane in ("container-plan", "container-plan-proven"):
             expected.append(f"{PROVEN_TEST_PATH}::{PROVEN_GOLD_TEST}")
         assert selected == expected
-    if lane.startswith("solution-plan-"):
+    if lane in ("solution-plan", *SOLUTION_PLAN_LANES):
         selected = [line for line in result.stdout.splitlines() if line.startswith("tests/") and "::" in line]
-        cases = ("exact",) if lane == "solution-plan-exact" else ("sorry", "timeout")
+        cases = {
+            "solution-plan": ("exact", "sorry", "timeout"),
+            "solution-plan-exact": ("exact",),
+            "solution-plan-refusals": ("sorry", "timeout"),
+        }[lane]
         expected = [
             "tests/integration/test_solution_build_compile.py::"
             f"test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks[{case}]"
             for case in cases
         ]
-        if lane == "solution-plan-exact":
+        if lane in ("solution-plan", "solution-plan-exact"):
             expected.append(f"{PROVEN_TEST_PATH}::{PROVEN_DEV_TEST}")
+            slope_nodes = {
+                node for node in _collect_nodes("all") if node.split("::", 1)[0] in SOLUTION_PLAN_EXACT_TEST_PATHS
+            }
+            assert len(slope_nodes) == 21
+            expected.extend(slope_nodes)
+            assert len(selected) == (25 if lane == "solution-plan" else 23)
         assert set(selected) == set(expected)
 
 
@@ -311,12 +322,21 @@ def test_python_lanes_partition_the_previous_fallback_population():
         *SOLUTION_TEST_PATHS,
         *SOLUTION_LIBRARY_TEST_PATHS,
         *CONTAINER_TEST_PATHS,
+        *SOLUTION_PLAN_EXACT_TEST_PATHS,
     }
     previous_python_nodes = {node for node in all_nodes if node.split("::", 1)[0] not in explicit_paths}
+    validation_primes = json.loads((ROOT / "tests/vectors/slope_validation_primes.json").read_text())
+    manual_validation = {
+        f"tests/integration/test_slopemodel_sweep.py::test_all_validation_primes_agree[{ell}]"
+        for ell in validation_primes
+    }
+    assert len(manual_validation) == 396
+    assert manual_validation <= previous_python_nodes
     assert unit_nodes
     assert integration_nodes
     assert unit_nodes.isdisjoint(integration_nodes)
-    assert unit_nodes | integration_nodes == previous_python_nodes
+    assert manual_validation.isdisjoint(unit_nodes | integration_nodes)
+    assert unit_nodes | integration_nodes | manual_validation == previous_python_nodes
     assert all(not node.split("::", 1)[0].startswith("tests/integration/") for node in unit_nodes)
     assert all(node.split("::", 1)[0].startswith("tests/integration/") for node in integration_nodes)
 

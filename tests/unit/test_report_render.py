@@ -1,6 +1,8 @@
+import json
 import logging
 import re
 import sqlite3
+from types import SimpleNamespace
 
 import pytest
 
@@ -160,6 +162,48 @@ def test_every_assertion_line_has_statement_tag_and_evidence(tmp_path):
 
 def test_statement_free_formatter_emits_prose():
     assert report.assertion_line("A prose sentence", None, "PROVEN", "e" * 64) == "A prose sentence"
+
+
+@pytest.mark.parametrize(
+    ("stdout", "expected"),
+    [
+        (
+            b'{"l":101,"weight":300,"seed":123456789,"note":"private executor text"}',
+            "; executor observations: prime: 101; weight: 300",
+        ),
+        (b'{"l":101}', "; executor observations: prime: 101"),
+        (b'{"weight":300}', "; executor observations: weight: 300"),
+        (b'{"l":true,"weight":false}', ""),
+        (b'{"l":"101","weight":3.5}', ""),
+        (b'{"l":null,"weight":[]}', ""),
+        (b'{"l":101,"weight":"private executor text"}', "; executor observations: prime: 101"),
+        (b'{"status":"FAIL","reason":"private executor text"}', ""),
+        (b"", ""),
+        (b"not JSON", ""),
+        (b"[]", ""),
+        (b"123", ""),
+        (b"null", ""),
+        (b"\xff", ""),
+    ],
+)
+def test_executor_observation_projection_preserves_valid_integer_fields_only(tmp_path, stdout, expected):
+    with substrate.Substrate.open(tmp_path / "observations.sqlite") as sub:
+        stream = sub.put_blob(stdout)
+        evidence = sub.put_blob(json.dumps({"stream_blobs": {"stdout": stream}}).encode())
+        trial = SimpleNamespace(execution_evidence=evidence)
+        assert report._executor_observations(sub, trial) == expected
+
+
+@pytest.mark.parametrize("document", [{"status": "NOT_RUN"}, {"stream_blobs": {}}])
+def test_executor_observation_projection_accepts_evidence_without_stdout(tmp_path, document):
+    with substrate.Substrate.open(tmp_path / "observations.sqlite") as sub:
+        evidence = sub.put_blob(json.dumps(document).encode())
+        assert report._executor_observations(sub, SimpleNamespace(execution_evidence=evidence)) == ""
+
+
+def test_executor_observation_projection_accepts_absent_execution_evidence(tmp_path):
+    with substrate.Substrate.open(tmp_path / "observations.sqlite") as sub:
+        assert report._executor_observations(sub, SimpleNamespace(execution_evidence=None)) == ""
 
 
 @pytest.mark.parametrize("status", ["refuted", "withdrawn"])

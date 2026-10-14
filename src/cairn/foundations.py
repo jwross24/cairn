@@ -200,7 +200,7 @@ def rederive(sub, claim_hash, attest_path, *, actor=None):
 
 
 def rederive_for_attempts(sub, attempt_ids, attest_path):
-    from cairn import justify
+    from cairn import hunt, justify
 
     if not attempt_ids:
         return ()
@@ -209,9 +209,18 @@ def rederive_for_attempts(sub, attempt_ids, attest_path):
         f"SELECT DISTINCT target_statement_hash FROM evidence_nodes WHERE attempt_id IN ({marks}) ORDER BY target_statement_hash",
         tuple(attempt_ids),
     ).fetchall()
+    statements = {row["target_statement_hash"] for row in rows}
+    disowned = set(attempt_ids)
+    hunts = sub.conn.execute(
+        "SELECT * FROM evidence_nodes WHERE kind = ? AND verdict = ?",
+        (hunt.KIND, "SURVIVED"),
+    ).fetchall()
+    for evidence in hunts:
+        members = hunt.required_attempt_ids(sub, evidence)
+        if members is None or disowned.intersection(members):
+            statements.add(evidence["target_statement_hash"])
     rederived = []
-    for row in rows:
-        statement = row["target_statement_hash"]
+    for statement in sorted(statements):
         justify.derive_tag(sub, statement, attest_path)
         rederived.append(statement)
         rederived.extend(d.statement_hash for d in rederive(sub, statement, attest_path))

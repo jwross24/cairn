@@ -664,6 +664,8 @@ def context_for(sub, evidence, statement, attest_path, *, offered_class=None):
         ),
         None,
     )
+    if any(row["verdict"] != "approve" for row in reviews):
+        review = None
     return Context(
         grade=_grade(sub, evidence.get("hash")),
         repro_passed=_repro_passed(sub, evidence),

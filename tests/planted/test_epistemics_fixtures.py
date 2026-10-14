@@ -9,11 +9,12 @@ from _corpus import MUST_FAIL, MUST_PASS
 
 
 def test_the_family_registers_e_through_i_and_five_m_controls():
-    assert len(family.ENTRIES) == 10
+    assert len(family.ENTRIES) == 11
     assert {entry.family for entry in family.ENTRIES} == {"e", "f", "g", "h", "i", "m"}
     assert all(entry.owner_bead == family.OWNER for entry in family.ENTRIES)
     assert [entry.test_id for entry in family.ENTRIES] == [
         family.E_ID,
+        family.E_UNCERTIFIED_ID,
         family.F_ID,
         family.G_ID,
         family.H_ID,
@@ -29,6 +30,7 @@ def test_the_family_registers_e_through_i_and_five_m_controls():
         by_id[test_id].expected_class == MUST_FAIL
         for test_id in (
             family.E_ID,
+            family.E_UNCERTIFIED_ID,
             family.F_ID,
             family.G_ID,
             family.H_ID,
@@ -48,6 +50,7 @@ def test_the_family_registers_e_through_i_and_five_m_controls():
         by_id[test_id].launches
         for test_id in (
             family.E_ID,
+            family.E_UNCERTIFIED_ID,
             family.F_ID,
             family.I_ID,
             family.M_ADMIT_ID,
@@ -69,6 +72,8 @@ def test_every_epistemics_planting_lands_on_real_cold_records(planted_registry, 
         assert all(skip == 1 and status == "OK" for _, skip, status in observation.attempts), observation
     assert observations[family.E_ID].observed_verdict == family.REJECT
     assert len(observations[family.E_ID].attempts) == 2
+    assert observations[family.E_UNCERTIFIED_ID].observed_verdict == family.REJECT
+    assert len(observations[family.E_UNCERTIFIED_ID].attempts) == 2
     assert len(observations[family.F_ID].attempts) == 1
     assert observations[family.G_ID].attempts == ()
     assert observations[family.H_ID].attempts == ()
@@ -80,5 +85,5 @@ def test_every_epistemics_planting_lands_on_real_cold_records(planted_registry, 
     assert len(observations[family.M_AUTHOR_ID].attempts) == 2
     assert len(observations[family.M_AUDIT_ID].attempts) == 2
     result = _corpus.rollup(_corpus.registry(entries), observations)
-    assert (result.plantings, result.controls) == (9, 1)
+    assert (result.plantings, result.controls) == (10, 1)
     assert result.escapes == ()

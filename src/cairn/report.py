@@ -5,7 +5,7 @@ import sqlite3
 import sys
 from decimal import Decimal
 
-from cairn import attest, canon, claims, dispatch, exits, hunt, keys, ladder, ladderplan, laddertable, ledger
+from cairn import attest, canon, claims, dispatch, exits, hunt, keys, ladder, ladderplan, laddertable, ledger, repro
 from cairn.substrate import Substrate, SubstrateError
 
 
@@ -54,6 +54,27 @@ def _validate_trial_evidence(sub, record):
                 _require_blob(sub, stream)
             for value in document.get("recipe", {}).get("inputs", {}).values():
                 _require_blob(sub, value[0])
+
+
+def _executor_observations(sub, trial):
+    if trial.execution_evidence is None:
+        return ""
+    evidence = json.loads(sub.get_blob(trial.execution_evidence))
+    stdout = evidence.get("stream_blobs", {}).get("stdout")
+    if stdout is None:
+        return ""
+    try:
+        output = json.loads(sub.get_blob(stdout))
+    except TypeError, ValueError:
+        return ""
+    if not isinstance(output, dict):
+        return ""
+    observations = [
+        f"{label}: {output[field]}"
+        for field, label in (("l", "prime"), ("weight", "weight"))
+        if type(output.get(field)) is int
+    ]
+    return "; executor observations: " + "; ".join(observations) if observations else ""
 
 
 def _skeptic_records(sub, statement_hash):
@@ -251,6 +272,24 @@ def render(sub, *, kind, statement_hash=None, ladder_table_hash=None, attest_pat
         run_lines.append(
             line(f"run id: {nonce['run_id']}; verdict: {record.verdict}; run hash: {record.hash}", pointer)
         )
+        run_lines.append(line(f"recorded statement survival standing: {str(record.standing).lower()}", pointer))
+        owner_rule = "not evaluated; no KILLED witness"
+        if record.verdict == "KILLED":
+            try:
+                owner_grade, owner_reason = repro.owner_grade(
+                    sub, plan["executor_identity"], repro.Verifier(repro.SKILL_VERIFIER, plan["verifier_identity"])
+                )
+            except repro.ReproError as exc:
+                owner_rule = f"unavailable; reason: {exc}"
+            else:
+                owner_rule = f"{owner_grade}; reason: {owner_reason}"
+        run_lines.append(line(f"computed verifier owner rule: {owner_rule}", pointer))
+        admissible = (
+            str(hunt.attempts_admissible(sub, node)).lower()
+            if node is not None
+            else "unavailable; hunt evidence absent"
+        )
+        run_lines.append(line(f"live required hunt attempts admissible: {admissible}", pointer))
         run_lines.append(
             line(
                 f"budget: {record.budget_status}; completed trials: {record.completed_trial_count}/{record.declared_trial_count}",
@@ -266,7 +305,7 @@ def render(sub, *, kind, statement_hash=None, ladder_table_hash=None, attest_pat
             run_lines.append(
                 line(
                     f"trial: {trial.trial}; point: {_json(dict(trial.point))}; seed: {seed}; outcome: {trial.outcome}; "
-                    f"verifier status: {trial.verifier_status or 'not run'}",
+                    f"verifier status: {trial.verifier_status or 'not run'}{_executor_observations(sub, trial)}",
                     pointer,
                 )
             )
@@ -279,7 +318,7 @@ def render(sub, *, kind, statement_hash=None, ladder_table_hash=None, attest_pat
                 )
             )
         grade_node = sub.get_node(pointer)
-        limitations.append((f"evidence replay grade: {grade_node['replay_grade']}", pointer))
+        limitations.append((f"stored evidence replay grade: {grade_node['replay_grade']}", pointer))
         for identity_name in ("executor_identity", "verifier_identity"):
             identity = plan[identity_name]
             certified = sub.get_certificate(identity) is not None

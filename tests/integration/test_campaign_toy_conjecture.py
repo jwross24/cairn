@@ -2,14 +2,49 @@ import json
 import sqlite3
 import subprocess
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
+import _substrate_helpers as helpers
 import pytest
+from test_counterexample_hunt import _certify
 
-from cairn import bundle, campaign, canon, env, hunt, keys, substrate
+from cairn import (
+    bundle,
+    campaign,
+    canon,
+    claims,
+    env,
+    foundations,
+    human_authority,
+    hunt,
+    justify,
+    keys,
+    ledger,
+    substrate,
+    ticketlattice,
+    yank,
+)
+
+CERTIFIED_CAMPAIGN = (
+    "import json, runpy, sys, types\n"
+    "from pathlib import Path\n"
+    "from cairn import keys, selftest_skills\n"
+    "fixtures = json.loads(sys.argv.pop(1))\n"
+    "for name, entry in fixtures.items():\n"
+    "    module = types.ModuleType(entry['module'])\n"
+    "    module.IDENTITY_SOURCES = tuple(entry['sources'])\n"
+    "    module.REPO_ROOT = Path(entry['root'])\n"
+    "    module.skill_identity_hash = lambda root, identity=entry['identity']: keys.identity_bundle_hash(identity)\n"
+    "    sys.modules[entry['module']] = module\n"
+    "    selftest_skills.NAMES += (name,)\n"
+    "    selftest_skills.MODULES[name] = entry['module']\n"
+    "runpy.run_module('cairn.campaign', run_name='__main__')\n"
+)
 
 
 def make_spec(root):
+    root = root / "src"
     root.mkdir(parents=True, exist_ok=True)
     (root / "toy_executor.py").write_text(
         "import json, sys\n"
@@ -73,24 +108,42 @@ def make_spec(root):
     }
 
 
-def run_spec(tmp_path, spec, pinned_bundle, *, chronology=False):
+def run_spec(tmp_path, spec, pinned_bundle, *, chronology=False, certified=False):
+    db = tmp_path / "substrate.sqlite"
+    fixtures = {}
+    if chronology or certified:
+        with substrate.Substrate.open(db) as sub:
+            if chronology:
+                sub.conn.executescript(
+                    "CREATE TABLE campaign_chronology (seq INTEGER PRIMARY KEY, kind TEXT, hash TEXT);"
+                    "CREATE TRIGGER campaign_node AFTER INSERT ON nodes BEGIN "
+                    "INSERT INTO campaign_chronology(kind,hash) VALUES (NEW.kind,NEW.hash); END;"
+                    "CREATE TRIGGER campaign_nonce AFTER INSERT ON instance_nonces BEGIN "
+                    "INSERT INTO campaign_chronology(kind,hash) VALUES ('nonce',NEW.hypothesis_key); END;"
+                )
+            if certified:
+                for producer in ("executor", "verifier"):
+                    program = spec[producer]
+                    identity = {
+                        **helpers.IDENTITY_A,
+                        "interface_version": program["module"] + "/1",
+                        "implementation_revision": program["digest"],
+                    }
+                    skill = "fixture-toy-" + producer
+                    program["skill"] = skill
+                    program["skill_identity_hash"] = _certify(sub, identity)
+                    fixtures[skill] = {
+                        "module": program["module"],
+                        "sources": ["src/" + source for source in program["sources"]],
+                        "identity": identity,
+                        "root": str(Path(spec["module_dir"]).parent),
+                    }
     spec_path = tmp_path / "spec.json"
     spec_path.write_text(json.dumps(spec))
-    db = tmp_path / "substrate.sqlite"
-    if chronology:
-        with substrate.Substrate.open(db) as sub:
-            sub.conn.executescript(
-                "CREATE TABLE campaign_chronology (seq INTEGER PRIMARY KEY, kind TEXT, hash TEXT);"
-                "CREATE TRIGGER campaign_node AFTER INSERT ON nodes BEGIN "
-                "INSERT INTO campaign_chronology(kind,hash) VALUES (NEW.kind,NEW.hash); END;"
-                "CREATE TRIGGER campaign_nonce AFTER INSERT ON instance_nonces BEGIN "
-                "INSERT INTO campaign_chronology(kind,hash) VALUES ('nonce',NEW.hypothesis_key); END;"
-            )
     bundle_path, pin = pinned_bundle()
     argv = [
         sys.executable,
-        "-m",
-        "cairn.campaign",
+        *(["-c", CERTIFIED_CAMPAIGN, json.dumps(fixtures)] if certified else ["-m", "cairn.campaign"]),
         "--spec",
         str(spec_path),
         "--db",
@@ -110,14 +163,15 @@ def run_spec(tmp_path, spec, pinned_bundle, *, chronology=False):
 
 def test_toy_campaign_runs_real_trials_and_preregisters_before_entropy(tmp_path, pinned_bundle):
     spec = make_spec(tmp_path / "modules")
-    completed, db, gate_bundle, argv = run_spec(tmp_path, spec, pinned_bundle, chronology=True)
+    completed, db, gate_bundle, argv = run_spec(tmp_path, spec, pinned_bundle, chronology=True, certified=True)
     assert completed.returncode == 0, completed.stderr
     report = json.loads(completed.stdout)
     assert "stopped" not in report
     assert report["bundle_hash"] == gate_bundle.hash
     assert report["container_digest"] == keys.env_manifest_digest(env.manifest())
-    assert report["executor_identity"] == spec["executor"]["digest"]
-    assert report["verifier_identity"] == spec["verifier"]["digest"]
+    assert report["executor_identity"] == spec["executor"]["skill_identity_hash"]
+    assert report["verifier_identity"] == spec["verifier"]["skill_identity_hash"]
+    assert report["executor_identity"] != report["verifier_identity"]
     assert [row["role"] for row in report["statements"]] == ["control_must_survive", "plant_must_be_killed", "question"]
     assert [row["verdict"] for row in report["statements"]] == ["SURVIVED", "KILLED", "KILLED"]
     assert [row["expected_verdict"] for row in report["statements"]] == ["SURVIVED", "KILLED", None]
@@ -153,6 +207,146 @@ def test_toy_campaign_runs_real_trials_and_preregisters_before_entropy(tmp_path,
 
 
 @pytest.mark.parametrize(
+    ("target", "ambiguous"),
+    [
+        ("earlier", False),
+        ("final", False),
+        ("unrelated", False),
+        ("killed_verifier", False),
+        ("earlier", True),
+        ("final", True),
+        ("unrelated", True),
+    ],
+)
+def test_campaign_narrow_yank_rederives_required_members(tmp_path, pinned_bundle, target, ambiguous):
+    spec = make_spec(tmp_path / "modules")
+    completed, db, gate_bundle, argv = run_spec(tmp_path, spec, pinned_bundle, certified=True)
+    assert completed.returncode == 0, completed.stderr
+    report = json.loads(completed.stdout)
+    row = next(item for item in report["statements"] if item["role"] == "control_must_survive")
+    attest = str(tmp_path / "attest.log")
+    with substrate.Substrate.open(db) as sub:
+        record = hunt.record_for(sub, row["run_hash"])
+        first, last = (trial.attempt_id for trial in record.trials)
+        evidence = claims.get_evidence_node(sub, row["evidence_hash"])
+        assert first != last and evidence["attempt_id"] == last
+        assert hunt.required_attempt_ids(sub, evidence) == (first, last)
+        before = claims.tag_history_for(sub, row["statement_hash"])
+        assert before[-1]["to_tag"] == justify.CONJECTURE
+        if ambiguous:
+            other = next(item for item in report["statements"] if item["role"] == "question")
+            sub.add_lineage(evidence["hash"], other["run_hash"], hunt.EDGE_INPUT)
+            assert hunt.required_attempt_ids(sub, evidence) is None
+        assert foundations.rederive_for_attempts(sub, (), attest) == ()
+        assert claims.tag_history_for(sub, row["statement_hash"]) == before
+        killed = next(item for item in report["statements"] if item["role"] == "question")
+        killed_before = claims.tag_history_for(sub, killed["statement_hash"])
+        killed_ledger = ledger.get_entry(sub, killed["ledger_hash"])
+        if target in ("unrelated", "killed_verifier"):
+            other = next(item for item in report["statements"] if item["role"] == "question")
+            trial = hunt.record_for(sub, other["run_hash"]).trials[0]
+            selected_attempt = trial.verifier_attempt_id if target == "killed_verifier" else trial.attempt_id
+            assert selected_attempt not in (first, last)
+        else:
+            selected_attempt = first if target == "earlier" else last
+        attempt = sub.get_attempt(selected_attempt)
+        recipe = canon.decode(keys.RECIPE, sub.get_node(attempt["recipe_key"])["canonical"])
+        revision = recipe["skill_identity_hash"]
+        reach = {"skill_identity_hash": revision, "inputs": {"hunt_input": [recipe["inputs"]["hunt_input"][0]]}}
+        covered, _ = yank.in_reach(sub, reach)
+        assert [item["attempt_id"] for key in covered for item in sub.attempts_for(key)] == [selected_attempt]
+        with pytest.raises(yank.RulingRequired, match="names an attributed ruling"):
+            yank.record(
+                sub,
+                yank_id=target,
+                skill_identity_hash=revision,
+                kind=yank.HUMAN_PATH,
+                attest_path=attest,
+                reach=reach,
+            )
+        assert sub.get_attempt(selected_attempt)["disowned_at"] is None
+        assert sub.conn.execute("SELECT COUNT(*) FROM yank_records").fetchone()[0] == 0
+        authority = human_authority.append(
+            sub,
+            attest,
+            human_authority.YANK_RULING,
+            {
+                "ruling_ref": target,
+                "yank_id": target,
+                "skill_identity_hash": revision,
+                "reach_predicate": yank.reach_json(reach),
+                "issued_by": "test-operator",
+                "at": datetime.now(UTC).isoformat(),
+            },
+            gate_bundle_hash=gate_bundle.hash,
+        )
+        outcome = yank.record(
+            sub,
+            yank_id=target,
+            skill_identity_hash=revision,
+            kind=yank.HUMAN_PATH,
+            attest_path=attest,
+            reach=reach,
+            ruling=yank.Ruling(target, authority["record_digest"], authority["file_offset"]),
+        )
+        assert outcome.disowned == (selected_attempt,)
+        assert sub.get_attempt(selected_attempt)["disowned_at"] is not None
+        if target != "final":
+            assert sub.get_attempt(last)["disowned_at"] is None
+        after = claims.tag_history_for(sub, row["statement_hash"])
+        statement = claims.get_claim_statement(sub, row["statement_hash"])
+        live = justify.justify(evidence, statement, justify.context_for(sub, evidence, statement, attest))
+        ticket = ticketlattice.select_kind(
+            sub,
+            None,
+            ticketlattice.CONJECTURE,
+            hypothesis_key=row["hypothesis_hash"],
+            method_identity=spec["method_identity"],
+            inputs={},
+            implementation_revision=None,
+            statement_hash=row["statement_hash"],
+        )
+        if target in ("unrelated", "killed_verifier") and not ambiguous:
+            assert row["statement_hash"] not in outcome.rederived
+            assert after == before
+            assert isinstance(live, justify.Justification) and ticket.admits
+            if target == "killed_verifier":
+                assert outcome.rederived == ()
+                assert claims.tag_history_for(sub, killed["statement_hash"]) == killed_before
+                assert claims.get_claim_statement(sub, killed["statement_hash"])["status"] == "refuted"
+                assert ledger.get_entry(sub, killed["ledger_hash"]) == killed_ledger
+                assert killed_ledger["decision"] == ledger.REFUTED
+                assert not hunt.attempts_admissible(sub, claims.get_evidence_node(sub, killed["evidence_hash"]))
+        else:
+            assert row["statement_hash"] in outcome.rederived
+            if target != "unrelated":
+                assert outcome.rederived == (row["statement_hash"],)
+            assert after[:-1] == before
+            assert after[-1]["from_tag"] == justify.CONJECTURE
+            assert after[-1]["to_tag"] == justify.SPECULATION
+            assert isinstance(live, justify.Absent)
+            if not ambiguous:
+                assert live.reason == "disowned"
+            assert not ticket.admits
+        print(
+            json.dumps(
+                {
+                    "target": target,
+                    "ambiguous": ambiguous,
+                    "argv": argv,
+                    "campaign": report,
+                    "disowned": outcome.disowned,
+                    "rederived": outcome.rederived,
+                    "before": before,
+                    "after": after,
+                    "final_disowned_at": sub.get_attempt(last)["disowned_at"],
+                },
+                sort_keys=True,
+            )
+        )
+
+
+@pytest.mark.parametrize(
     ("role", "bounds", "accept", "verdict"),
     [
         ("plant_must_be_killed", [0, 2], True, "SURVIVED"),
@@ -168,12 +362,19 @@ def test_failed_control_or_plant_stops_before_question_nonce(tmp_path, pinned_bu
     statement["scope"]["param_ranges"] = {"n": bounds}
     statement["distribution"] = {"n": bounds}
     statement["predicate"]["accept"] = accept
-    completed, db, _, _ = run_spec(tmp_path, spec, pinned_bundle)
+    completed, db, _, _ = run_spec(tmp_path, spec, pinned_bundle, certified=verdict == "KILLED")
     assert completed.returncode == 2, completed.stderr
     report = json.loads(completed.stdout)
     assert report["stopped"] == {"role": role, "claim_id": statement["claim_id"], "verdict": verdict}
     assert "refused: " in completed.stderr
-    question = campaign.prepare_statements(campaign.parse_spec(spec))[0]
+    if verdict == "INCOMPLETE":
+        stopped = next(row for row in report["statements"] if row["role"] == role)
+        with substrate.Substrate.open(db, role="reader") as sub:
+            record = hunt.record_for(sub, stopped["run_hash"])
+            assert record is not None
+            assert [trial.outcome for trial in record.trials] == ["VERIFIER_FAILED"]
+            assert sub.conn.execute("SELECT count(*) FROM skill_certificates").fetchone()[0] == 0
+    question = campaign.prepare_statements(spec)[0]
     with sqlite3.connect(db) as conn:
         assert (
             conn.execute(
@@ -207,7 +408,7 @@ def test_modified_source_refuses_before_attempt(tmp_path, pinned_bundle, produce
 def test_incomplete_question_prints_document_and_refuses(tmp_path, pinned_bundle):
     spec = make_spec(tmp_path / "modules")
     spec["statements"][0]["predicate"]["accept"] = False
-    completed, db, _, _ = run_spec(tmp_path, spec, pinned_bundle)
+    completed, db, _, _ = run_spec(tmp_path, spec, pinned_bundle, certified=True)
     assert completed.returncode == 2
     report = json.loads(completed.stdout)
     assert report["stopped"] == {"role": "question", "claim_id": "euler-question", "verdict": "INCOMPLETE"}

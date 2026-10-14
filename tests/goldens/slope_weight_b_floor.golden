@@ -1,0 +1,15 @@
+{
+ "arms": {
+  "executor": {
+   "candidate": 1,
+   "non_candidate": 2
+  },
+  "postcondition": "pass",
+  "verifier": {
+   "fail": 2,
+   "ok": 1
+  }
+ },
+ "floor": 8,
+ "pass": 8
+}

@@ -12,7 +12,8 @@ import pytest
 from test_counterexample_hunt import _setup
 from test_ladder_table_repro import _clean_table
 
-from cairn import claims, hunt, instances, ladderplan, laddertable, report, substrate
+from cairn import claims, hunt, instances, ladderplan, laddertable, report, runner, substrate
+from cairn.profile import Evaluation
 
 HEADINGS = [
     "Claim",
@@ -38,7 +39,7 @@ def _cli(path, statement_hash):
 
 @pytest.mark.parametrize(("bounds", "verdict"), [((0, 3), "SURVIVED"), ((40, 40), "KILLED")])
 def test_real_hunt_cli_and_three_read_only_renders(tmp_path, bounds, verdict):
-    sub, plan, executor, verifier, statement = _setup(tmp_path, bounds=bounds, trials=2)
+    sub, plan, executor, verifier, statement = _setup(tmp_path, bounds=bounds, trials=2, certified=verdict == "KILLED")
     try:
         result = hunt.run_hunt(sub, plan, executor, verifier)
         assert result.verdict == verdict
@@ -95,11 +96,14 @@ def test_every_run_on_hypothesis_is_rendered_oldest_first(tmp_path):
     assert text.count("entropy commitment: none recorded") >= 3
 
 
-def test_missing_evidence_blob_cli_refuses(tmp_path):
+@pytest.mark.parametrize("reference", ["execution_evidence", "stdout"])
+def test_missing_evidence_blob_cli_refuses(tmp_path, reference):
     sub, plan, executor, verifier, statement = _setup(tmp_path, bounds=(0, 3), trials=1)
     try:
         result = hunt.run_hunt(sub, plan, executor, verifier)
         digest = result.record.trials[0].execution_evidence
+        if reference == "stdout":
+            digest = json.loads(sub.get_blob(digest))["stream_blobs"]["stdout"]
     finally:
         sub.close()
     copied = tmp_path / "missing-evidence.sqlite"
@@ -109,6 +113,125 @@ def test_missing_evidence_blob_cli_refuses(tmp_path):
         conn.execute("DELETE FROM blobs WHERE hash = ?", (digest,))
     result = _cli(copied, statement.hash)
     assert (result.returncode, result.stdout, result.stderr) == (2, b"", b"refused: evidence missing\n")
+
+
+def test_real_slope_executor_observations_match_stored_trials_and_render_read_only(tmp_path, monkeypatch):
+    path = tmp_path / "slope.sqlite"
+    with substrate.Substrate.open(path) as sub:
+        bounds = {"t": (101, 107)}
+        statement = claims.ClaimStatement(
+            "slope-report",
+            1,
+            "A bounded slope executor observation",
+            {
+                "target_family": "slope",
+                "size_interval": [101, 107],
+                "param_ranges": {"t": [101, 107]},
+                "assumption_set": [],
+            },
+            {"units": {}, "cost_model": None},
+        )
+        claims.write_claim_statement(sub, statement)
+        distribution = hunt.Distribution(bounds)
+        method = {"interface_version": "counterexample_hunt/1", "params": {}}
+        hypothesis = claims.HypothesisObject(
+            "slope", {"claim": "observations"}, method, {"t": [101, 107]}, distribution.hash, statement.hash
+        )
+        claims.write_hypothesis_object(sub, hypothesis)
+        plan = hunt.HuntPlan(
+            statement.hash,
+            hypothesis.hash,
+            distribution,
+            2,
+            bounds,
+            target_family="slope",
+            executor_identity="e" * 64,
+            verifier_identity="f" * 64,
+        )
+
+        def executor(context):
+            document = {
+                "statement_hash": plan.statement_hash,
+                "plan_hash": plan.hash,
+                "run_id": context.run_id,
+                "trial": context.trial,
+                "point": dict(context.point),
+                "seed": context.seed,
+                "input_blob_hash": context.input_blob_hash,
+                "predicate": {"kind": "weight_le", "num": 100, "den": 1},
+            }
+            return runner.launch(
+                sub,
+                "cairn.slopemodel.slope_hunt_executor",
+                {
+                    "skill_identity_hash": plan.executor_identity,
+                    "inputs": {"hunt_input": (context.input_blob_hash, context.input_blob_size)},
+                    "seed": context.seed,
+                    "tool_versions": {},
+                    "container_digest": "c" * 64,
+                    "salt": f"hunt/{context.run_id}/{context.trial}/executor",
+                },
+                bundle_hash="b" * 64,
+                evaluation=Evaluation(1, 1, 1),
+                ceiling_multiplier=4,
+                tool_digests={},
+                scratch_root=tmp_path / "runs",
+                skip_cache_lookup=True,
+                do_not_cache=True,
+                env_extra={"PYTHONPATH": str(ROOT / "src")},
+                stdin_document=document,
+            )
+
+        def verifier(*args):
+            pytest.fail("a surviving trial invoked the verifier")
+
+        before_publication = []
+        publish = instances.publish_nonce
+
+        def inspect_before_publication(store, nonce, **kwargs):
+            assert instances.withheld(store, nonce)
+            rendered = report.render(store, kind="run", statement_hash=statement.hash)
+            record = next(
+                hunt.record_for(store, row["hash"])
+                for row in store.conn.execute("SELECT hash FROM nodes WHERE kind = 'hunt_run'")
+            )
+            for trial in record.trials:
+                assert str(trial.seed) not in rendered
+            assert rendered.count("seed: withheld") == len(record.trials)
+            assert (
+                "n_rule" not in rendered and "last_index" not in rendered and "bl2012-two-grumpy-giants" not in rendered
+            )
+            before_publication.append(rendered)
+            return publish(store, nonce, **kwargs)
+
+        monkeypatch.setattr(instances, "publish_nonce", inspect_before_publication)
+        result = hunt.run_hunt(sub, plan, executor, verifier)
+        assert result.verdict == "SURVIVED"
+        assert len(before_publication) == 1
+        observations = {}
+        for trial in result.record.trials:
+            evidence = json.loads(sub.get_blob(trial.execution_evidence))
+            output = json.loads(sub.get_blob(evidence["stream_blobs"]["stdout"]))
+            assert type(output["l"]) is type(output["weight"]) is int
+            observations[trial.trial] = {name: output[name] for name in ("l", "weight")}
+        before_rows = "\n".join(sub.conn.iterdump())
+    before_bytes = path.read_bytes()
+    first = report.document(db_path=path, kind="run", statement_hash=statement.hash)
+    second = report.document(db_path=path, kind="run", statement_hash=statement.hash)
+    assert first == second
+    assert path.read_bytes() == before_bytes
+    with substrate.Substrate.open(path, role="reader") as sub:
+        assert "\n".join(sub.conn.iterdump()) == before_rows
+    for trial, values in observations.items():
+        trial_line = next(line for line in first.splitlines() if line.startswith(f"trial: {trial};"))
+        assert f"executor observations: prime: {values['l']}; weight: {values['weight']}" in trial_line
+        assert f"statement={statement.hash[:12]}" in trial_line
+        assert "tag=" in trial_line and "evidence=" in trial_line
+    print(
+        json.dumps(
+            {"observations": observations, "report": first, "unpublished_report": before_publication[0]}, sort_keys=True
+        )
+    )
 
 
 def build_ladder(path, *, bound=True):

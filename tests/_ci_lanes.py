@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+MANUAL_SWEEP_VALIDATION = "tests/integration/test_slopemodel_sweep.py::test_all_validation_primes_agree"
 LEAN_PREREQUISITE_TEST_PATHS = (
     "tests/unit/test_solution_build.py",
     "tests/unit/test_solution_comparison.py",
@@ -86,6 +87,7 @@ LEAN_LANES = ("lean-core", "lean-replay")
 SOLUTION_PLAN_TESTS = ("test_real_prelude_ordered_plan_uses_fresh_replay_and_blocks_later_checks",)
 SOLUTION_PLAN_CASES = ("exact", "sorry", "timeout")
 SOLUTION_PLAN_LANES = ("solution-plan-exact", "solution-plan-refusals")
+SOLUTION_PLAN_EXACT_TEST_PATHS = ("tests/integration/test_slope_weight_selftest.py",)
 CONTAINER_REPLAY_TESTS = (
     "test_linux_candidate_fresh_replay",
     "test_linux_replay_timeouts_keep_their_stage_and_check_inputs",
@@ -164,6 +166,7 @@ def pytest_collection_modifyitems(config, items):
     validate_manifest(ROOT, SOLUTION_TEST_PATHS)
     validate_manifest(ROOT, SOLUTION_LIBRARY_TEST_PATHS)
     validate_manifest(ROOT, CONTAINER_TEST_PATHS)
+    validate_manifest(ROOT, SOLUTION_PLAN_EXACT_TEST_PATHS)
     validate_manifest(
         ROOT,
         (
@@ -173,6 +176,7 @@ def pytest_collection_modifyitems(config, items):
             *SOLUTION_TEST_PATHS,
             *SOLUTION_LIBRARY_TEST_PATHS,
             *CONTAINER_TEST_PATHS,
+            *SOLUTION_PLAN_EXACT_TEST_PATHS,
         ),
     )
     lane = config.getoption("--cairn-ci-lane")
@@ -180,6 +184,9 @@ def pytest_collection_modifyitems(config, items):
     deselected = []
     for item in items:
         path = item.path.relative_to(config.rootpath).as_posix()
+        if lane != "all" and item.nodeid.partition("[")[0] == MANUAL_SWEEP_VALIDATION:
+            deselected.append(item)
+            continue
         if path == PROVEN_TEST_PATH:
             if item.originalname == PROVEN_GOLD_TEST:
                 item_lane = "container-plan-proven"
@@ -187,6 +194,8 @@ def pytest_collection_modifyitems(config, items):
                 item_lane = "solution-plan-exact"
             else:
                 raise pytest.UsageError(f"unassigned PROVEN derivation test: {item.nodeid}")
+        elif path in SOLUTION_PLAN_EXACT_TEST_PATHS:
+            item_lane = "solution-plan-exact"
         elif path in SOLUTION_TEST_PATHS:
             if item.originalname in SOLUTION_PLAN_TESTS:
                 case = getattr(item, "callspec", None)

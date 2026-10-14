@@ -196,8 +196,16 @@ def _dependency_packages(project, manifest, pins):
                     check=False,
                     env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"},
                 )
-            except OSError, subprocess.TimeoutExpired:
-                raise SolutionRefused(f"dependency-checkout-unreadable:{name}") from None
+            except (OSError, subprocess.TimeoutExpired) as exc:
+                lg.warning(
+                    "dependency_checkout_unreadable",
+                    package=name,
+                    query=list(query),
+                    argv=[GIT, "-C", str(package), *query],
+                    exception_class=type(exc).__name__,
+                    error=str(exc),
+                )
+                raise SolutionRefused(f"dependency-checkout-unreadable:{name}") from exc
             if result.returncode != 0 or result.stdout.strip() != expected:
                 raise SolutionRefused(f"dependency-checkout-mismatch:{name}:{query[0]}")
         packages.append(package)

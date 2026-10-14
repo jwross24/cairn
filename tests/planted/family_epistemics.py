@@ -41,6 +41,7 @@ BITS = 30
 SEED = 1
 
 E_ID = "epistemics/e-small-n-killed"
+E_UNCERTIFIED_ID = "epistemics/e-uncertified-hunt-refused"
 F_ID = "epistemics/f-strong-without-repro"
 G_ID = "epistemics/g-statistical-offered-proven"
 H_ID = "epistemics/h-weaker-premise-depth-three"
@@ -142,9 +143,23 @@ def _write_hunt_programs(root):
     )
 
 
-def small_n_hunt_killed(cold):
+def _small_n_hunt(cold, *, certified):
     programs = cold.scratch_root / "hunt-programs"
     _write_hunt_programs(programs)
+    executor_identity = HUNT_EXECUTOR
+    verifier_identity = HUNT_VERIFIER
+    if certified:
+        identities = []
+        for identity in (helpers.IDENTITY_A, helpers.IDENTITY_B):
+            digest = cold.sub.put_identity_bundle(identity)
+            cold.sub.put_certificate(
+                digest,
+                helpers.TRANSCRIPT_HASH,
+                helpers.ENV_MANIFEST_HASH,
+                {**helpers.SELFTEST_SUMMARY, repro.MUST_FAIL_KEY: 1},
+            )
+            identities.append(digest)
+        executor_identity, verifier_identity = identities
     scope = {
         "target_family": "euler",
         "size_interval": [0, 41],
@@ -171,8 +186,8 @@ def small_n_hunt_killed(cold):
         1,
         {"n": (41, 41)},
         target_family="euler",
-        executor_identity=HUNT_EXECUTOR,
-        verifier_identity=HUNT_VERIFIER,
+        executor_identity=executor_identity,
+        verifier_identity=verifier_identity,
     )
 
     def launch(context, identity, module, inputs, document):
@@ -206,7 +221,7 @@ def small_n_hunt_killed(cold):
         }
         return launch(
             context,
-            HUNT_EXECUTOR,
+            executor_identity,
             "hunt_evaluator",
             {"hunt_input": (context.input_blob_hash, context.input_blob_size)},
             document,
@@ -226,7 +241,7 @@ def small_n_hunt_killed(cold):
         }
         return launch(
             context,
-            HUNT_VERIFIER,
+            verifier_identity,
             "hunt_verifier",
             {
                 "hunt_input": (context.input_blob_hash, context.input_blob_size),
@@ -236,6 +251,11 @@ def small_n_hunt_killed(cold):
         )
 
     result = hunt.run_hunt(cold.sub, plan, executor, verifier, attest_path=ATTEST_PATH)
+    return result, statement
+
+
+def small_n_hunt_killed(cold):
+    result, statement = _small_n_hunt(cold, certified=True)
     entry = ledger.get_entry(cold.sub, result.ledger_hash)
     evidence = claims.get_evidence_node(cold.sub, result.evidence_hash)
     attempts = tuple(cold.sub.get_attempt(trial.attempt_id) for trial in result.record.trials)
@@ -269,6 +289,21 @@ def small_n_hunt_killed(cold):
         small_sample_count=len(small_samples),
         small_sample_bounds=[small_samples[0]["n"], small_samples[-1]["n"]],
     )
+    return REJECT
+
+
+def uncertified_hunt_refused(cold):
+    result, statement = _small_n_hunt(cold, certified=False)
+    assert result.verdict == "INCOMPLETE" and result.standing is False, result
+    trial = result.record.trials[0]
+    assert trial.outcome == "VERIFIER_UNVERIFIED"
+    assert trial.verifier_status == "verifier-uncertified"
+    assert cold.sub.get_attempt(trial.verifier_attempt_id)["status"] == "OK"
+    assert result.ledger_hash is None and result.judgment is None
+    assert ledger.entries_for(cold.sub, result.record.hypothesis_key) == []
+    assert claims.get_claim_statement(cold.sub, statement.hash)["status"] == "open"
+    assert cold.sub.conn.execute("SELECT count(*) FROM skill_certificates").fetchone()[0] == 0
+    _emit(E_UNCERTIFIED_ID, hunt=result.run_hash, evidence=result.evidence_hash, reason=trial.verifier_status)
     return REJECT
 
 
@@ -746,6 +781,7 @@ def divergent_cold_rerun(cold):
 
 ENTRIES = (
     Entry(E_ID, "e", MUST_FAIL, REJECT, OWNER, small_n_hunt_killed),
+    Entry(E_UNCERTIFIED_ID, "e", MUST_FAIL, REJECT, OWNER, uncertified_hunt_refused),
     Entry(F_ID, "f", MUST_FAIL, REJECT, OWNER, strong_without_repro_capped),
     Entry(G_ID, "g", MUST_FAIL, REJECT, OWNER, statistical_proven_refused, launches=False),
     Entry(H_ID, "h", MUST_FAIL, REJECT, OWNER, weak_foundation_at_depth_three, launches=False),

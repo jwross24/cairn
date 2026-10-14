@@ -1,0 +1,549 @@
+{
+ "executor": {
+  "digest": "3f38557a7856cecbe63a784b6c95e2359614c5927b11fb86a5a813611e276a10",
+  "expected_wall_s": 120.0,
+  "module": "giants_executor",
+  "sources": [
+   "giants_executor.py",
+   "sweep_fast.py"
+  ]
+ },
+ "family": "slope-model/two-grumpy-giants/exact-interval-sweep/n-milli-in-predicate",
+ "method_identity": {
+  "interface_version": "counterexample_hunt/1",
+  "params": {
+   "n_rule": "n = (n_milli * isqrt(l) + 500) // 1000, n_milli in predicate",
+   "prime": "smallest prime >= t",
+   "schedule": "bl2012-two-grumpy-giants, reading in predicate: bl2012-fitted-1 or chain-free"
+  }
+ },
+ "module_dir": "examples/giants/modules",
+ "statements": [
+  {
+   "claim_id": "giants-counting-bound-fitted-lo",
+   "distribution": {
+    "t": [
+     269484032,
+     1072693248
+    ]
+   },
+   "informal": "For every integer t with 269484032 <= t <= 1072693248: l is the smallest prime >= t; n = (n_milli * isqrt(l) + 500) // 1000 with n_milli from the predicate; W(l, n) is the slope-model weight of the two-grumpy-giants schedule under the named reading, reading bl2012-fitted-1, n_milli 564; W >= sum over i >= 0 of max(0, l - i(i+1)/2).",
+   "predicate": {
+    "kind": "weight_ge_counting_bound",
+    "n_milli": 564,
+    "schedule": "bl2012-fitted-1"
+   },
+   "quantities": {
+    "cost_model": null,
+    "units": {}
+   },
+   "role": "control_must_survive",
+   "scope": {
+    "assumption_set": [],
+    "param_ranges": {
+     "t": [
+      269484032,
+      1072693248
+     ]
+    },
+    "size_interval": [
+     269484032,
+     1072693248
+    ],
+    "target_family": "slope-model/two-grumpy-giants/exact-interval-sweep/n-milli-in-predicate"
+   },
+   "trial_count": 8
+  },
+  {
+   "claim_id": "giants-counting-bound-chainfree-hi",
+   "distribution": {
+    "t": [
+     1074790400,
+     4293918720
+    ]
+   },
+   "informal": "For every integer t with 1074790400 <= t <= 4293918720: l is the smallest prime >= t; n = (n_milli * isqrt(l) + 500) // 1000 with n_milli from the predicate; W(l, n) is the slope-model weight of the two-grumpy-giants schedule under the named reading, reading chain-free, n_milli 564; W >= sum over i >= 0 of max(0, l - i(i+1)/2).",
+   "predicate": {
+    "kind": "weight_ge_counting_bound",
+    "n_milli": 564,
+    "schedule": "chain-free"
+   },
+   "quantities": {
+    "cost_model": null,
+    "units": {}
+   },
+   "role": "control_must_survive",
+   "scope": {
+    "assumption_set": [],
+    "param_ranges": {
+     "t": [
+      1074790400,
+      4293918720
+     ]
+    },
+    "size_interval": [
+     1074790400,
+     4293918720
+    ],
+    "target_family": "slope-model/two-grumpy-giants/exact-interval-sweep/n-milli-in-predicate"
+   },
+   "trial_count": 6
+  },
+  {
+   "claim_id": "giants-fabricated-1p19-fitted-lo",
+   "distribution": {
+    "t": [
+     269484032,
+     1072693248
+    ]
+   },
+   "informal": "For every integer t with 269484032 <= t <= 1072693248: l is the smallest prime >= t; n = (n_milli * isqrt(l) + 500) // 1000 with n_milli from the predicate; W(l, n) is the slope-model weight of the two-grumpy-giants schedule under the named reading, reading bl2012-fitted-1, n_milli 564; W <= (119/100) l^1.5.",
+   "predicate": {
+    "den": 100,
+    "kind": "weight_le",
+    "n_milli": 564,
+    "num": 119,
+    "schedule": "bl2012-fitted-1"
+   },
+   "quantities": {
+    "cost_model": null,
+    "units": {}
+   },
+   "role": "plant_must_be_killed",
+   "scope": {
+    "assumption_set": [],
+    "param_ranges": {
+     "t": [
+      269484032,
+      1072693248
+     ]
+    },
+    "size_interval": [
+     269484032,
+     1072693248
+    ],
+    "target_family": "slope-model/two-grumpy-giants/exact-interval-sweep/n-milli-in-predicate"
+   },
+   "trial_count": 4
+  },
+  {
+   "claim_id": "giants-fabricated-1p19-chainfree-hi",
+   "distribution": {
+    "t": [
+     1074790400,
+     4293918720
+    ]
+   },
+   "informal": "For every integer t with 1074790400 <= t <= 4293918720: l is the smallest prime >= t; n = (n_milli * isqrt(l) + 500) // 1000 with n_milli from the predicate; W(l, n) is the slope-model weight of the two-grumpy-giants schedule under the named reading, reading chain-free, n_milli 564; W <= (119/100) l^1.5.",
+   "predicate": {
+    "den": 100,
+    "kind": "weight_le",
+    "n_milli": 564,
+    "num": 119,
+    "schedule": "chain-free"
+   },
+   "quantities": {
+    "cost_model": null,
+    "units": {}
+   },
+   "role": "plant_must_be_killed",
+   "scope": {
+    "assumption_set": [],
+    "param_ranges": {
+     "t": [
+      1074790400,
+      4293918720
+     ]
+    },
+    "size_interval": [
+     1074790400,
+     4293918720
+    ],
+    "target_family": "slope-model/two-grumpy-giants/exact-interval-sweep/n-milli-in-predicate"
+   },
+   "trial_count": 4
+  },
+  {
+   "claim_id": "giants-fitted-le-1p2020-lo",
+   "distribution": {
+    "t": [
+     269484032,
+     1072693248
+    ]
+   },
+   "informal": "For every integer t with 269484032 <= t <= 1072693248: l is the smallest prime >= t; n = (n_milli * isqrt(l) + 500) // 1000 with n_milli from the predicate; W(l, n) is the slope-model weight of the two-grumpy-giants schedule under the named reading, reading bl2012-fitted-1, n_milli 564; W <= (1202/1000) l^1.5.",
+   "predicate": {
+    "den": 1000,
+    "kind": "weight_le",
+    "n_milli": 564,
+    "num": 1202,
+    "schedule": "bl2012-fitted-1"
+   },
+   "quantities": {
+    "cost_model": null,
+    "units": {}
+   },
+   "role": "question",
+   "scope": {
+    "assumption_set": [],
+    "param_ranges": {
+     "t": [
+      269484032,
+      1072693248
+     ]
+    },
+    "size_interval": [
+     269484032,
+     1072693248
+    ],
+    "target_family": "slope-model/two-grumpy-giants/exact-interval-sweep/n-milli-in-predicate"
+   },
+   "trial_count": 24
+  },
+  {
+   "claim_id": "giants-fitted-le-1p2012-hi",
+   "distribution": {
+    "t": [
+     1074790400,
+     4293918720
+    ]
+   },
+   "informal": "For every integer t with 1074790400 <= t <= 4293918720: l is the smallest prime >= t; n = (n_milli * isqrt(l) + 500) // 1000 with n_milli from the predicate; W(l, n) is the slope-model weight of the two-grumpy-giants schedule under the named reading, reading bl2012-fitted-1, n_milli 564; W <= (12012/10000) l^1.5.",
+   "predicate": {
+    "den": 10000,
+    "kind": "weight_le",
+    "n_milli": 564,
+    "num": 12012,
+    "schedule": "bl2012-fitted-1"
+   },
+   "quantities": {
+    "cost_model": null,
+    "units": {}
+   },
+   "role": "question",
+   "scope": {
+    "assumption_set": [],
+    "param_ranges": {
+     "t": [
+      1074790400,
+      4293918720
+     ]
+    },
+    "size_interval": [
+     1074790400,
+     4293918720
+    ],
+    "target_family": "slope-model/two-grumpy-giants/exact-interval-sweep/n-milli-in-predicate"
+   },
+   "trial_count": 24
+  },
+  {
+   "claim_id": "giants-fitted-ge-1p1990-lo",
+   "distribution": {
+    "t": [
+     269484032,
+     1072693248
+    ]
+   },
+   "informal": "For every integer t with 269484032 <= t <= 1072693248: l is the smallest prime >= t; n = (n_milli * isqrt(l) + 500) // 1000 with n_milli from the predicate; W(l, n) is the slope-model weight of the two-grumpy-giants schedule under the named reading, reading bl2012-fitted-1, n_milli 564; W >= (1199/1000) l^1.5.",
+   "predicate": {
+    "den": 1000,
+    "kind": "weight_ge",
+    "n_milli": 564,
+    "num": 1199,
+    "schedule": "bl2012-fitted-1"
+   },
+   "quantities": {
+    "cost_model": null,
+    "units": {}
+   },
+   "role": "question",
+   "scope": {
+    "assumption_set": [],
+    "param_ranges": {
+     "t": [
+      269484032,
+      1072693248
+     ]
+    },
+    "size_interval": [
+     269484032,
+     1072693248
+    ],
+    "target_family": "slope-model/two-grumpy-giants/exact-interval-sweep/n-milli-in-predicate"
+   },
+   "trial_count": 16
+  },
+  {
+   "claim_id": "giants-fitted-ge-1p1990-hi",
+   "distribution": {
+    "t": [
+     1074790400,
+     4293918720
+    ]
+   },
+   "informal": "For every integer t with 1074790400 <= t <= 4293918720: l is the smallest prime >= t; n = (n_milli * isqrt(l) + 500) // 1000 with n_milli from the predicate; W(l, n) is the slope-model weight of the two-grumpy-giants schedule under the named reading, reading bl2012-fitted-1, n_milli 564; W >= (1199/1000) l^1.5.",
+   "predicate": {
+    "den": 1000,
+    "kind": "weight_ge",
+    "n_milli": 564,
+    "num": 1199,
+    "schedule": "bl2012-fitted-1"
+   },
+   "quantities": {
+    "cost_model": null,
+    "units": {}
+   },
+   "role": "question",
+   "scope": {
+    "assumption_set": [],
+    "param_ranges": {
+     "t": [
+      1074790400,
+      4293918720
+     ]
+    },
+    "size_interval": [
+     1074790400,
+     4293918720
+    ],
+    "target_family": "slope-model/two-grumpy-giants/exact-interval-sweep/n-milli-in-predicate"
+   },
+   "trial_count": 16
+  },
+  {
+   "claim_id": "giants-chainfree-le-1p2006-lo",
+   "distribution": {
+    "t": [
+     269484032,
+     1072693248
+    ]
+   },
+   "informal": "For every integer t with 269484032 <= t <= 1072693248: l is the smallest prime >= t; n = (n_milli * isqrt(l) + 500) // 1000 with n_milli from the predicate; W(l, n) is the slope-model weight of the two-grumpy-giants schedule under the named reading, reading chain-free, n_milli 564; W <= (12006/10000) l^1.5.",
+   "predicate": {
+    "den": 10000,
+    "kind": "weight_le",
+    "n_milli": 564,
+    "num": 12006,
+    "schedule": "chain-free"
+   },
+   "quantities": {
+    "cost_model": null,
+    "units": {}
+   },
+   "role": "question",
+   "scope": {
+    "assumption_set": [],
+    "param_ranges": {
+     "t": [
+      269484032,
+      1072693248
+     ]
+    },
+    "size_interval": [
+     269484032,
+     1072693248
+    ],
+    "target_family": "slope-model/two-grumpy-giants/exact-interval-sweep/n-milli-in-predicate"
+   },
+   "trial_count": 16
+  },
+  {
+   "claim_id": "giants-chainfree-ge-1p1990-lo",
+   "distribution": {
+    "t": [
+     269484032,
+     1072693248
+    ]
+   },
+   "informal": "For every integer t with 269484032 <= t <= 1072693248: l is the smallest prime >= t; n = (n_milli * isqrt(l) + 500) // 1000 with n_milli from the predicate; W(l, n) is the slope-model weight of the two-grumpy-giants schedule under the named reading, reading chain-free, n_milli 564; W >= (1199/1000) l^1.5.",
+   "predicate": {
+    "den": 1000,
+    "kind": "weight_ge",
+    "n_milli": 564,
+    "num": 1199,
+    "schedule": "chain-free"
+   },
+   "quantities": {
+    "cost_model": null,
+    "units": {}
+   },
+   "role": "question",
+   "scope": {
+    "assumption_set": [],
+    "param_ranges": {
+     "t": [
+      269484032,
+      1072693248
+     ]
+    },
+    "size_interval": [
+     269484032,
+     1072693248
+    ],
+    "target_family": "slope-model/two-grumpy-giants/exact-interval-sweep/n-milli-in-predicate"
+   },
+   "trial_count": 16
+  },
+  {
+   "claim_id": "giants-chainfree-le-1p2006-hi",
+   "distribution": {
+    "t": [
+     1074790400,
+     4293918720
+    ]
+   },
+   "informal": "For every integer t with 1074790400 <= t <= 4293918720: l is the smallest prime >= t; n = (n_milli * isqrt(l) + 500) // 1000 with n_milli from the predicate; W(l, n) is the slope-model weight of the two-grumpy-giants schedule under the named reading, reading chain-free, n_milli 564; W <= (12006/10000) l^1.5.",
+   "predicate": {
+    "den": 10000,
+    "kind": "weight_le",
+    "n_milli": 564,
+    "num": 12006,
+    "schedule": "chain-free"
+   },
+   "quantities": {
+    "cost_model": null,
+    "units": {}
+   },
+   "role": "question",
+   "scope": {
+    "assumption_set": [],
+    "param_ranges": {
+     "t": [
+      1074790400,
+      4293918720
+     ]
+    },
+    "size_interval": [
+     1074790400,
+     4293918720
+    ],
+    "target_family": "slope-model/two-grumpy-giants/exact-interval-sweep/n-milli-in-predicate"
+   },
+   "trial_count": 16
+  },
+  {
+   "claim_id": "giants-chainfree-ge-1p1990-hi",
+   "distribution": {
+    "t": [
+     1074790400,
+     4293918720
+    ]
+   },
+   "informal": "For every integer t with 1074790400 <= t <= 4293918720: l is the smallest prime >= t; n = (n_milli * isqrt(l) + 500) // 1000 with n_milli from the predicate; W(l, n) is the slope-model weight of the two-grumpy-giants schedule under the named reading, reading chain-free, n_milli 564; W >= (1199/1000) l^1.5.",
+   "predicate": {
+    "den": 1000,
+    "kind": "weight_ge",
+    "n_milli": 564,
+    "num": 1199,
+    "schedule": "chain-free"
+   },
+   "quantities": {
+    "cost_model": null,
+    "units": {}
+   },
+   "role": "question",
+   "scope": {
+    "assumption_set": [],
+    "param_ranges": {
+     "t": [
+      1074790400,
+      4293918720
+     ]
+    },
+    "size_interval": [
+     1074790400,
+     4293918720
+    ],
+    "target_family": "slope-model/two-grumpy-giants/exact-interval-sweep/n-milli-in-predicate"
+   },
+   "trial_count": 16
+  },
+  {
+   "claim_id": "giants-gwz-ratio-le-1p28-lo",
+   "distribution": {
+    "t": [
+     269484032,
+     1072693248
+    ]
+   },
+   "informal": "For every integer t with 269484032 <= t <= 1072693248: l is the smallest prime >= t; n = (n_milli * isqrt(l) + 500) // 1000 with n_milli from the predicate; W(l, n) is the slope-model weight of the two-grumpy-giants schedule under the named reading, reading bl2012-fitted-1, n_milli 707; W <= (128/100) l^1.5.",
+   "predicate": {
+    "den": 100,
+    "kind": "weight_le",
+    "n_milli": 707,
+    "num": 128,
+    "schedule": "bl2012-fitted-1"
+   },
+   "quantities": {
+    "cost_model": null,
+    "units": {}
+   },
+   "role": "question",
+   "scope": {
+    "assumption_set": [],
+    "param_ranges": {
+     "t": [
+      269484032,
+      1072693248
+     ]
+    },
+    "size_interval": [
+     269484032,
+     1072693248
+    ],
+    "target_family": "slope-model/two-grumpy-giants/exact-interval-sweep/n-milli-in-predicate"
+   },
+   "trial_count": 16
+  },
+  {
+   "claim_id": "giants-gwz-ratio-ge-1p24-lo",
+   "distribution": {
+    "t": [
+     269484032,
+     1072693248
+    ]
+   },
+   "informal": "For every integer t with 269484032 <= t <= 1072693248: l is the smallest prime >= t; n = (n_milli * isqrt(l) + 500) // 1000 with n_milli from the predicate; W(l, n) is the slope-model weight of the two-grumpy-giants schedule under the named reading, reading bl2012-fitted-1, n_milli 707; W >= (124/100) l^1.5.",
+   "predicate": {
+    "den": 100,
+    "kind": "weight_ge",
+    "n_milli": 707,
+    "num": 124,
+    "schedule": "bl2012-fitted-1"
+   },
+   "quantities": {
+    "cost_model": null,
+    "units": {}
+   },
+   "role": "question",
+   "scope": {
+    "assumption_set": [],
+    "param_ranges": {
+     "t": [
+      269484032,
+      1072693248
+     ]
+    },
+    "size_interval": [
+     269484032,
+     1072693248
+    ],
+    "target_family": "slope-model/two-grumpy-giants/exact-interval-sweep/n-milli-in-predicate"
+   },
+   "trial_count": 16
+  }
+ ],
+ "tool_versions": {
+  "python": "3.14.7 (main, Sep  1 2026, 14:05:28) [Clang 22.1.3 ]"
+ },
+ "verifier": {
+  "digest": "da2ce8a1786b3ffee81817df2b983b71733ac061600d584a5585adc4d6239391",
+  "expected_wall_s": 120.0,
+  "module": "giants_verifier",
+  "sources": [
+   "giants_verifier.py",
+   "fast_weight.py"
+  ]
+ }
+}

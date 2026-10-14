@@ -1,4 +1,5 @@
 import json
+import shutil
 import sqlite3
 import sys
 from dataclasses import replace
@@ -7,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from cairn import attest, claims, disagreement, exits, human_queue, hunt, justify, keys, substrate
+from cairn import attest, bundle, claims, disagreement, exits, human_queue, hunt, justify, keys, substrate
 from cairn.justify import CONJECTURE, PROVEN, SPECULATION, STRONG_EMPIRICAL
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -133,6 +134,147 @@ def test_a_superseding_review_removes_authorization_and_evidence_pointers(writer
         replacement.file_offset,
     )
     assert len(claims.visible_review_verdicts(writer, statement.hash, attest_path)) == 3
+
+
+@pytest.fixture
+def canonical_review_case(tmp_path, pinned_bundle, attest_path):
+    current_paths = pinned_bundle()
+    source = tmp_path / "other-bundle-source"
+    shutil.copytree(Path(__file__).parents[2] / "bundle", source)
+    role_path = source / "role_templates.json"
+    roles = json.loads(role_path.read_text())
+    roles["prover_brief"] += "\n"
+    role_path.write_text(json.dumps(roles))
+    other_paths = pinned_bundle("other-deploy", src=source)
+    gates = {"current": bundle.GateBundle.open(*current_paths), "other": bundle.GateBundle.open(*other_paths)}
+    assert gates["current"].hash != gates["other"].hash
+    db = tmp_path / "canonical.sqlite"
+    with open_writer(tmp_path, db.name) as sub:
+        statement = _statement(sub)
+        other = _statement(sub, seed=2)
+        node = factories.evidence_node("model_proof", statement.hash, statement.scope, frozenset({"A1"}))
+        claims.write_evidence_node(sub, node)
+    return db, attest_path, statement, other, node, gates
+
+
+def _canonical_review(case, capsys, *, decision="approve", gate_name="current", statement=None, supersedes=None):
+    db, path, target, _, _, gates = case
+    gate = gates[gate_name]
+    target = target if statement is None else statement
+    with substrate.Substrate.open(db, role="reader") as sub:
+        sequence = len(claims.review_verdicts_for(sub, target.hash))
+    record = db.parent / f"review-{target.hash}-{sequence}.json"
+    fields = {
+        "statement_hash": target.hash,
+        "reviewer": "canonical-reviewer",
+        "verdict": decision,
+        "checklist_template_hash": gate.digest_of("role_templates"),
+        "at": "2026-10-13T00:00:00Z",
+        "supersedes": supersedes,
+    }
+    record.write_text(json.dumps(fields))
+    code, out, err = _cli(
+        [
+            "attest",
+            "append",
+            "--kind",
+            "review_verdict",
+            "--record",
+            str(record),
+            "--db",
+            str(db),
+            "--attest",
+            str(path),
+            "--bundle",
+            gate.path,
+            "--pin",
+            gate.pin_path,
+            "--json",
+        ],
+        capsys,
+    )
+    assert code == exits.OK, err
+    payload = json.loads(out)
+    with substrate.Substrate.open(db, role="reader") as sub:
+        row = claims.visible_review_verdicts(sub, target.hash, path)[-1]
+        verdict = claims._verdict_of(row)
+        assert (verdict.record_digest, verdict.file_offset) == (payload["record_digest"], payload["offset"])
+        assert row["row_id"] == payload["row_id"] and verdict.gate_bundle_hash == gate.hash
+    return verdict
+
+
+@pytest.mark.parametrize(
+    ("shape", "approved"),
+    [
+        ("positive", True),
+        ("same-plain", False),
+        ("same-explicit", False),
+        ("cross-plain", False),
+        ("cross-explicit", False),
+        ("same-restored", True),
+        ("cross-restored", True),
+        ("cross-replacement", False),
+        ("unmirrored", True),
+        ("other-statement", True),
+        ("needs-revision-retires-reject", False),
+        ("plain-needs-revision", False),
+    ],
+)
+def test_canonical_nonapprovals_block_approval_until_bound_supersession(canonical_review_case, capsys, shape, approved):
+    case = canonical_review_case
+    db, path, statement, other, node, gates = case
+    approval = _canonical_review(case, capsys)
+    selected = approval
+    if shape == "unmirrored":
+        unmirrored = factories.review_verdict(
+            statement.hash,
+            verdict="reject",
+            gate_bundle_hash=gates["current"].hash,
+            file_offset=0,
+        )
+        with substrate.Substrate.open(db) as sub:
+            claims.write_review_verdict(sub, unmirrored)
+    elif shape == "other-statement":
+        _canonical_review(case, capsys, decision="reject", statement=other)
+    elif shape == "plain-needs-revision":
+        _canonical_review(case, capsys, decision="needs_revision")
+    elif shape == "needs-revision-retires-reject":
+        rejection = _canonical_review(case, capsys, decision="reject")
+        _canonical_review(case, capsys, decision="needs_revision", supersedes=rejection.hash)
+    elif shape != "positive":
+        rejection_gate = "other" if shape.startswith("cross") and shape != "cross-replacement" else "current"
+        rejection = _canonical_review(
+            case,
+            capsys,
+            decision="reject",
+            gate_name=rejection_gate,
+            supersedes=None if shape.endswith("plain") else approval.hash,
+        )
+        if shape.endswith("restored") or shape == "cross-replacement":
+            replacement = _canonical_review(
+                case,
+                capsys,
+                gate_name="other" if shape == "cross-replacement" else rejection_gate,
+                supersedes=rejection.hash,
+            )
+            if shape == "same-restored":
+                selected = replacement
+    with substrate.Substrate.open(db, role="reader") as sub:
+        context = justify.context_for(
+            sub,
+            claims.get_evidence_node(sub, node.hash),
+            claims.get_claim_statement(sub, statement.hash),
+            path,
+        )
+        historical = claims.visible_review_verdicts(sub, statement.hash, path)
+        assert context.approved is approved
+        assert (context.review_verdict_hash, context.record_digest, context.file_offset) == (
+            (selected.hash, selected.record_digest, selected.file_offset) if approved else (None, None, None)
+        )
+        if shape.endswith("restored") or shape in ("cross-replacement", "needs-revision-retires-reject"):
+            assert len(historical) == 3
+        if shape == "unmirrored":
+            assert len(claims.review_verdicts_for(sub, statement.hash)) == 2 and len(historical) == 1
 
 
 def _certify(writer, revision, summary):

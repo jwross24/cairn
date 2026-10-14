@@ -7,7 +7,9 @@ import sys
 from fractions import Fraction
 from pathlib import Path
 
+import _substrate_helpers as helpers
 import pytest
+from test_counterexample_hunt import _certify
 
 from cairn import claims, hunt, instances, justify, keys, ladder, substrate
 from cairn import small_numbers_floor as floor
@@ -20,6 +22,26 @@ assert SPEC is not None and SPEC.loader is not None
 EXPERIMENT = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = EXPERIMENT
 SPEC.loader.exec_module(EXPERIMENT)
+
+
+class CertifiedFixtureAdapter(EXPERIMENT.FixtureAdapter):
+    @classmethod
+    def identity_bundle(cls, verifier=False):
+        return {
+            **helpers.IDENTITY_A,
+            "interface_version": "floor_fixture/1",
+            "implementation_revision": substrate.blob_hash(cls.worker(verifier).read_bytes()),
+        }
+
+    @classmethod
+    def identity(cls, verifier=False):
+        return keys.identity_bundle_hash(cls.identity_bundle(verifier))
+
+
+def _certify_adapter(sub, adapter):
+    for verifier in (False, True):
+        assert _certify(sub, adapter.identity_bundle(verifier)) == adapter.identity(verifier)
+
 
 GIT_RUNNER = (
     "import shutil, subprocess, sys\n"
@@ -99,7 +121,7 @@ def committed_floor_source(tmp_path):
     return root, _git(root, "rev-parse", "HEAD")
 
 
-def _setup(tmp_path, *, bounds=(0, 0), trials=6, control="clean", mode="normal"):
+def _setup(tmp_path, *, bounds=(0, 0), trials=6, control="clean", mode="normal", certified=False):
     sub = substrate.Substrate.open(tmp_path / "substrate.sqlite")
     distribution = hunt.Distribution({"n": bounds})
     method = {"interface_version": "floor_fixture/1", "params": {"control": control}}
@@ -120,7 +142,10 @@ def _setup(tmp_path, *, bounds=(0, 0), trials=6, control="clean", mode="normal")
         "floor-fixture", {"control": control}, method, {"n": list(bounds)}, distribution.hash, statement.hash
     )
     claims.write_hypothesis_object(sub, hypothesis)
-    adapter = EXPERIMENT.FixtureAdapter(sub, tmp_path / "runs", control, endpoint=1, mode=mode)
+    adapter_class = CertifiedFixtureAdapter if certified else EXPERIMENT.FixtureAdapter
+    adapter = adapter_class(sub, tmp_path / "runs", control, endpoint=1, mode=mode)
+    if certified:
+        _certify_adapter(sub, adapter)
     plan = hunt.HuntPlan(
         statement.hash,
         hypothesis.hash,
@@ -211,7 +236,7 @@ def test_real_clean_hunt_registration_receipts_and_reproduction(tmp_path, monkey
 
 
 def test_real_verified_counterexample_sets_zero_and_reproduces(tmp_path):
-    sub, plan, protocol, adapter, _ = _setup(tmp_path, control="endpoint")
+    sub, plan, protocol, adapter, _ = _setup(tmp_path, control="endpoint", certified=True)
     try:
         result = hunt.run_hunt(sub, plan, adapter.executor, adapter.verifier, floor_protocol=protocol)
         assert result.verdict == "KILLED"
@@ -360,7 +385,7 @@ def test_runtime_metadata_records_interpreter_and_installed_packages():
     assert all(metadata["packages"].values())
 
 
-def test_completed_decision_links_real_hunt_results_and_reproductions(tmp_path, committed_floor_source):
+def test_completed_decision_links_real_hunt_results_and_reproductions(tmp_path, committed_floor_source, monkeypatch):
     _, revision = committed_floor_source
     false_case = {
         "name": "endpoint-fixture",
@@ -387,7 +412,15 @@ def test_completed_decision_links_real_hunt_results_and_reproductions(tmp_path, 
         runtime_hash = floor._write(sub, "small_numbers_floor_runtime", {"source_sha": revision, "runtime": {}})
         summary = {"source_sha": revision, "study_hash": study_hash, "runtime_hash": runtime_hash, "runs": []}
         for case in (false_case, positive_case):
-            statement, plan, protocol, adapter = EXPERIMENT.prepare_case(sub, case, study_hash, tmp_path / "runs")
+            if case is false_case:
+                with monkeypatch.context() as patch:
+                    patch.setattr(EXPERIMENT, "FixtureAdapter", CertifiedFixtureAdapter)
+                    statement, plan, protocol, adapter = EXPERIMENT.prepare_case(
+                        sub, case, study_hash, tmp_path / "runs"
+                    )
+                _certify_adapter(sub, adapter)
+            else:
+                statement, plan, protocol, adapter = EXPERIMENT.prepare_case(sub, case, study_hash, tmp_path / "runs")
             result = hunt.run_hunt(sub, plan, adapter.executor, adapter.verifier, floor_protocol=protocol)
             floor_hash = floor.record_result(sub, protocol, result)
             reproduction_hash = floor.reproduce(

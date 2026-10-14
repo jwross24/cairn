@@ -80,11 +80,18 @@ so the protocol holds on its own. A guard's refusal is a safety mechanism, never
   only such a commit, logging `PUSHED`, `SKIP` or `DENY` to `.check.log`; a failed push is loud and
   leaves the commit local. Bypass, logged: `CAIRN_PUSH_SKIP='<reason>'`.
 - A bead is not done until its closing commit is pushed and `git status` is up to date with `origin/main`.
-- Identity-bearing files, skill revision: `src/cairn/ec.py`, `src/cairn/instances.py`,
+- Identity-bearing files, skill revision: `src/cairn/__init__.py`, `src/cairn/ec.py`,
+  `src/cairn/instances.py`, `src/cairn/log.py`,
   `src/cairn/pari.py`, `src/cairn/skills/bsgs.py`, `src/cairn/skills/bsgs_corpus.json`,
   `src/cairn/skills/instance_maker.py`, `src/cairn/skills/instance_maker_corpus.json`,
   `src/cairn/skills/order_bsgs_gmpy2.py`,
   `src/cairn/skills/rho_dp.py`, `src/cairn/skills/rho_dp_corpus.json`,
+  `src/cairn/skills/slope_weight_a.py`, `src/cairn/skills/slope_weight_a_corpus.json`,
+  `src/cairn/skills/slope_weight_b.py`, `src/cairn/skills/slope_weight_b_corpus.json`,
+  `src/cairn/slopemodel/__init__.py`, `src/cairn/slopemodel/slopemodel_a.py`,
+  `src/cairn/slopemodel/slopemodel_b.py`,
+  `src/cairn/slopemodel/slope_predicates.py`, `src/cairn/slopemodel/slope_hunt_executor.py`,
+  `src/cairn/slopemodel/slope_hunt_verifier.py`,
   `src/cairn/skills/toy_curve.py`, `src/cairn/skills/toy_curve_corpus.json`.
 - Identity-bearing files, gate bundle: `bundle/Containerfile`, `bundle/allow_lists.json`,
   `bundle/auditor.json`, `bundle/challenge_prelude.lean`, `bundle/container.json`,
