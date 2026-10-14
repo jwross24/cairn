@@ -7,7 +7,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from cairn import bundle, canon, claims, exits, hunt, justify, keys, runner, substrate
+from cairn import bundle, canon, claims, exits, hunt, justify, keys, repro, runner, substrate
 from cairn.cli import GLOBAL_DEFAULTS
 from cairn.profile import Evaluation
 
@@ -192,6 +192,18 @@ def _program_identity(program):
     return program.get("skill_identity_hash", program["digest"])
 
 
+def check_verifier_standing(sub, spec):
+    if "skill" not in spec["verifier"]:
+        return
+    verifier = repro.Verifier(repro.SKILL_VERIFIER, _program_identity(spec["verifier"]))
+    grade, reason = repro.owner_grade(sub, _program_identity(spec["executor"]), verifier)
+    if grade != repro.VERIFIABLE:
+        hint = ""
+        if reason == "verifier-uncertified":
+            hint = f"; `cairn selftest {spec['verifier']['skill']}` against this --db certifies it"
+        raise CampaignRefused(f"verifier standing is {grade} ({reason}) before any draw{hint}")
+
+
 def prepare_statements(spec):
     prepared = []
     for row in spec["statements"]:
@@ -269,6 +281,7 @@ def run_campaign(spec, prepared, *, db, bundle_path, pin, attest, scratch):
     report = plan_document(spec, [])
     report.update(bundle_hash=gate_bundle.hash, container_digest=container_digest)
     with substrate.Substrate.open(db) as sub:
+        check_verifier_standing(sub, spec)
         for row in prepared:
             claims.write_claim_statement(sub, row.statement)
             claims.write_hypothesis_object(sub, row.hypothesis)

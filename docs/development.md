@@ -180,6 +180,12 @@ files remain in place; retries require a different absent destination. The comma
 not replace a deployment, create a substrate, run a campaign, certify an evaluator, or
 issue an operator session, statement ratification, or review verdict.
 
+A spec whose verifier names a self-test skill (`skill` and `skill_identity_hash`) runs only
+against a substrate holding that verifier's certificate. Run `cairn selftest <skill>` for the
+executor and the verifier with the same `--db`, `--bundle` and `--pin` before the campaign; an
+uncertified verifier refuses with exit 2 before any record is written or any nonce is drawn.
+`--plan-only` checks neither certification nor runtime readiness.
+
 ## Lean prerequisites
 
 The Lean integration suite requires the comparator and exporter pinned in

@@ -353,6 +353,39 @@ def test_real_certified_skills_run_through_campaign_module(certified_pair, tmp_p
     print(json.dumps({"argv": argv, "stdout": report, "stderr": completed.stderr}, sort_keys=True))
 
 
+def test_uncertified_skill_verifier_refuses_before_any_draw(certified_pair, tmp_path):
+    _, _, bundle_path, pin, _ = certified_pair
+    db = tmp_path / "uncertified.sqlite"
+    spec_path = tmp_path / "spec.json"
+    spec_path.write_text(json.dumps(_campaign_spec()))
+    argv = [
+        sys.executable,
+        "-m",
+        "cairn.campaign",
+        "--spec",
+        str(spec_path),
+        "--db",
+        str(db),
+        "--bundle",
+        str(bundle_path),
+        "--pin",
+        str(pin),
+        "--attest",
+        str(tmp_path / "attest.log"),
+        "--scratch",
+        str(tmp_path / "runs"),
+    ]
+    completed = subprocess.run(argv, capture_output=True, text=True, timeout=60)
+    assert (completed.returncode, completed.stdout) == (exits.GATE_REFUSED, "")
+    assert completed.stderr == (
+        "refused: verifier standing is AuditOnly (verifier-uncertified) before any draw; "
+        f"`cairn selftest {SKILLS[1]}` against this --db certifies it\n"
+    )
+    with substrate.Substrate.open(db, role="reader") as sub:
+        for table in ("instance_nonces", "claim_statements", "hypothesis_objects"):
+            assert sub.conn.execute(f"SELECT count(*) FROM {table}").fetchone()[0] == 0, table
+
+
 @pytest.mark.parametrize("mutation", ["wrong_identity", "wrong_module", "missing_source", "unpaired_field"])
 def test_certified_spec_cannot_impersonate_skill(mutation):
     spec = _campaign_spec()
