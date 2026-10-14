@@ -259,6 +259,11 @@ def _hunt_attempt(sub, records, digest, attempt_id, identity, context, executor_
         output_data = sub.get_blob(output[0])
         if output_data is None or len(output_data) != output[1] or substrate.blob_hash(output_data) != output[0]:
             _refuse(f"hunt attempt {attempt_id!r} stdout is absent or does not match its content")
+        try:
+            output_value = json.loads(output_data)
+        except TypeError, ValueError:
+            output_value = None
+        _store(records, output[0], _typed_projection("hunt_trial_output", output_data, output_value))
         _store(records, manifest_hash, _canonical_projection(manifest_canonical))
     _store(
         records,

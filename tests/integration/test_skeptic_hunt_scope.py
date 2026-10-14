@@ -106,6 +106,7 @@ def test_published_hunts_expose_bound_transcripts_without_write_authority(
         run = handle.read(result.run_hash)["value"]
         assert run["trials"][0]["seed"] == result.record.trials[0].seed
         assert run["trials"][0]["outcome"] == result.record.trials[0].outcome
+        outputs_read = 0
         for trial in result.record.trials:
             for digest, attempt_id in (
                 (trial.execution_evidence, trial.attempt_id),
@@ -117,6 +118,14 @@ def test_published_hunts_expose_bound_transcripts_without_write_authority(
                     assert projected["value"]["attempt"]["attempt_id"] == attempt_id
                     with pytest.raises(skeptic.ScopedReadRefused):
                         handle.read(attempt_id)
+                    if projected["value"]["attempt"]["output_manifest_hash"] is not None:
+                        stdout = projected["value"]["stream_blobs"]["stdout"]
+                        output = handle.read(stdout)
+                        assert output["kind"] == "hunt_trial_output"
+                        assert base64.b64decode(output["canonical"]["content"]) == sub.get_blob(stdout)
+                        assert output["value"] == json.loads(sub.get_blob(stdout))
+                        outputs_read += 1
+        assert outputs_read >= len(result.record.trials)
         if certified:
             assert (
                 handle.read(result.evidence_hash)["verifier_certificate_hash"]
@@ -163,12 +172,19 @@ def test_other_statement_hunt_material_is_outside_scope(tmp_path, hunt_gate):
         result = hunt.run_hunt(sub, plan, executor, verifier)
         other_plan, other = _foreign_hunt(sub, plan, executor, verifier, statement)
         handle = skeptic.snapshot(sub, hunt_gate, statement.hash)
+        own_output, other_output = (
+            json.loads(sub.get_blob(record.trials[0].execution_evidence))["stream_blobs"]["stdout"]
+            for record in (result.record, other.record)
+        )
+        assert own_output != other_output
+        assert handle.read(own_output)["kind"] == "hunt_trial_output"
         for digest in (
             other_plan.hash,
             other.run_hash,
             other.evidence_hash,
             other.record.trials[0].execution_evidence,
             other.record.trials[0].verifier_evidence,
+            other_output,
         ):
             with pytest.raises(skeptic.ScopedReadRefused, match="outside"):
                 handle.read(digest)
