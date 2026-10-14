@@ -186,6 +186,12 @@ executor and the verifier with the same `--db`, `--bundle` and `--pin` before th
 uncertified verifier refuses with exit 2 before any record is written or any nonce is drawn.
 `--plan-only` checks neither certification nor runtime readiness.
 
+A run touches every point its executor evaluates, whatever its deployment. A pre-registration
+that calls a range untouched holds only when no earlier run drew from it: put a negative or a
+rehearsal on a disjoint range, or run it after the registered draw. Separate deployments keep
+separate substrates and do not see each other's draws, so no gate checks this; the run report
+lists each trial's point for the record.
+
 ## Lean prerequisites
 
 The Lean integration suite requires the comparator and exporter pinned in
