@@ -1,18 +1,22 @@
+import argparse
+import asyncio
 import base64
 import json
 import re
+import sqlite3
+import sys
 import tempfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from uuid import uuid4
 
-from cairn import bundle, canary, cli, log, roles, skeptic, worker
-from cairn.substrate import HashMismatch, UnknownNode, blob_hash, node_hash_for
+from cairn import bundle, canary, cli, exits, log, roles, skeptic, worker
+from cairn.substrate import HashMismatch, Substrate, SubstrateError, UnknownNode, blob_hash, node_hash_for
 
 lg = log.get("dispatch")
 ROLE_CONFIG = "worker_roles"
 REQUEST_BYTES_UNAVAILABLE = "sdk-query-does-not-expose-provider-bytes"
-SKEPTIC_HUNT_TEMPLATE = "skeptic_hunt_checklist"
+SKEPTIC_HUNT_TEMPLATE = roles.SKEPTIC_HUNT
 ROLE_FIELDS = frozenset({"template", "tools", "model", "max_turns", "timeout_s"})
 THINKING_MODES = ("adaptive", "disabled")
 
@@ -75,6 +79,7 @@ class DispatchResult:
     at: str
     rerun_requests: tuple[dict[str, str], ...] = ()
     read_node_hashes: tuple[str, ...] = ()
+    run_metrics: str | None = None
 
     def as_dict(self):
         value = asdict(self)
@@ -82,6 +87,8 @@ class DispatchResult:
             value.pop("rerun_requests")
         if not self.read_node_hashes:
             value.pop("read_node_hashes")
+        if self.run_metrics is None:
+            value.pop("run_metrics")
         return value
 
     @property
@@ -409,3 +416,78 @@ async def run(sub, gate_bundle, *, role, node_ids):
     finished = DispatchResult(dispatch_id=record.dispatch_id, at=cli.now_iso(), **outcome)
     _write(sub, "worker_result", "worker_results", finished, (record.hash,))
     return finished
+
+
+class _Parser(argparse.ArgumentParser):
+    def error(self, message):
+        raise ValueError(message)
+
+
+def _newest_dispatch(sub):
+    row = sub.conn.execute("SELECT dispatch_id FROM worker_dispatches ORDER BY rowid DESC LIMIT 1").fetchone()
+    return None if row is None else row["dispatch_id"]
+
+
+def main(argv=None):
+    parser = _Parser(prog="python -m cairn.dispatch")
+    parser.add_argument("--role", required=True)
+    parser.add_argument("--statement", required=True)
+    for name in ("db", "bundle", "pin"):
+        parser.add_argument(f"--{name}", default=cli.GLOBAL_DEFAULTS[name], type=Path)
+    try:
+        args = parser.parse_args(argv)
+    except ValueError as exc:
+        print(f"invalid: {exc}", file=sys.stderr)
+        return exits.USER_INPUT
+    if not args.db.is_file():
+        print(f"refused: substrate {args.db} does not exist; a dispatch never creates one", file=sys.stderr)
+        return exits.ENVIRONMENT
+    try:
+        gate = bundle.GateBundle.open(args.bundle, args.pin)
+        with Substrate.open(args.db, role="writer") as sub:
+            before = _newest_dispatch(sub)
+            try:
+                finished = asyncio.run(run(sub, gate, role=args.role, node_ids=(args.statement,)))
+            except DispatchRefused, bundle.BundleError, SubstrateError:
+                raise
+            except Exception as exc:
+                recorded = _newest_dispatch(sub)
+                where = (
+                    "no dispatch was recorded" if recorded == before else f"dispatch {recorded} holds an error result"
+                )
+                reason = " ".join(str(exc).split())
+                print(f"failed: {type(exc).__name__}: {reason}; {where}", file=sys.stderr)
+                return exits.BACKEND
+            sent = read(sub, finished.dispatch_id)
+            report = {
+                "dispatch_id": finished.dispatch_id,
+                "role": sent.role,
+                "model": sent.model,
+                "status": finished.status,
+                "cost_usd": finished.cost_usd,
+                "run_metrics": None if finished.run_metrics is None else json.loads(finished.run_metrics),
+                "read_node_count": len(finished.read_node_hashes),
+                "typed_record": None,
+            }
+            refusal = None
+            if finished.status == "success":
+                try:
+                    view = skeptic_record(sub, finished.dispatch_id, args.statement)
+                except DispatchRefused as exc:
+                    view, refusal = None, str(exc)
+                report["typed_record"] = None if view is None else view.as_dict()
+            print(json.dumps(report, sort_keys=True, separators=(",", ":")))
+            if finished.status != "success":
+                print(f"failed: dispatch {finished.dispatch_id} holds an error result", file=sys.stderr)
+                return exits.BACKEND
+            if refusal is not None:
+                print(f"refused: {refusal}", file=sys.stderr)
+                return exits.GATE_REFUSED
+            return exits.OK
+    except (DispatchRefused, bundle.BundleError, SubstrateError, sqlite3.Error, OSError) as exc:
+        print(f"refused: {' '.join(str(exc).split())}", file=sys.stderr)
+        return exits.GATE_REFUSED
+
+
+if __name__ == "__main__":
+    sys.exit(main())

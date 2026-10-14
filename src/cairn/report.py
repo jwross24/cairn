@@ -401,6 +401,28 @@ def render(sub, *, kind, statement_hash=None, ladder_table_hash=None, attest_pat
         )
         if view is not None:
             skeptic_lines.append(line(f"audit observation: {_json(view.as_dict())}", view.result_hash))
+            skeptic_lines.append(
+                line(
+                    f"audit verdict: {view.verdict}; checklist template: {view.role_template_hash}; "
+                    f"nodes read: {len(view.read_node_hashes)}",
+                    view.result_hash,
+                )
+            )
+            skeptic_lines.extend(
+                line(
+                    f"checklist item {item.id}: {item.outcome}; answer: {item.answer}; "
+                    f"cited: {_json(list(item.cited_node_hashes))}",
+                    view.result_hash,
+                )
+                for item in view.items
+            )
+            limitations.append(
+                (
+                    f"Skeptic audit verdict {view.verdict} on dispatch {view.dispatch_id}; the record attests "
+                    "the recorded audit response, not approval, truth or a tag.",
+                    view.result_hash,
+                )
+            )
     section("Skeptic record", skeptic_lines or ["absent"])
     calibration = [line(f"latest tag: {tag}; evidence pointer: {tag_evidence or 'none'}", tag_evidence)]
     calibration.extend(

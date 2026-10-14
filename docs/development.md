@@ -116,6 +116,35 @@ Do not copy a historical PASS record or substitute an echo for captured request 
 a later failed record or a version change blocks dispatch until a fresh capture passes.
 The procedure grounds dispatch only. It does not dispatch a Skeptic or produce findings.
 
+## Dispatching the campaign Skeptic
+
+The Skeptic role, its checklist and its read scope are gate-bundle objects: `bundle/worker_roles.json`,
+the `skeptic_hunt_checklist` entry of `bundle/role_templates.json`, and `bundle/skeptic_scope.json`.
+A deployment whose pinned bundle lacks them refuses the dispatch with `BundleError`. The role pins
+`thinking: adaptive` because its model rejects a request with thinking disabled; a role that omits
+the field runs with thinking disabled.
+
+A dispatch is a live, paid provider session. The bundled CLI runs with `--bare` and reads its
+credential from `ANTHROPIC_API_KEY` alone. Export it, then name the statement by hash:
+
+```bash
+uv run python -m cairn.dispatch --role skeptic --statement <statement-hash> \
+  --db <substrate.sqlite> --bundle <gate-bundle.sqlite> --pin <gate-bundle.pin>
+```
+
+Exit 0 prints one JSON line with the dispatch id, the recorded cost, `run_metrics` (duration, turns
+and token usage as the SDK reported them), the count of nodes read through the scoped tools, and the
+typed record with one entry per checklist item. Exit 2 with `refused:` means the dispatch was refused
+before any record was written, or the reply was recorded and is not a typed record; the reason names
+which. Exit 4 with `failed:` means the worker raised or returned an error, and names the dispatch
+whose error result was recorded. A recorded reply that is not a typed record makes every report for
+that statement refuse with the same `malformed skeptic_record` reason.
+
+The typed record attests the recorded audit response: the role, the one handed statement, the
+checklist bytes, each numbered answer, and the nodes actually read. It is not approval, not a proof
+and not a calibration tag. `python -m cairn.report --kind campaign` refuses with
+`missing skeptic_record` until one exists for the statement.
+
 ## Fresh campaign deployment
 
 The [GIANTS examples](../examples/giants/README.md) preserve three AuditOnly historical

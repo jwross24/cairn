@@ -52,11 +52,12 @@ def test_module_defined_public_api_is_closed():
         if not name.startswith("_") and callable(value) and getattr(value, "__module__", None) == roles.__name__
     }
     assert public == {"RoleTemplateError", "templates", "claim_reference", "check_claim_agnostic", "load"}
-    assert (roles.BUNDLE_KIND, roles.SKEPTIC, roles.PROVER, roles.NAMES) == (
+    assert (roles.BUNDLE_KIND, roles.SKEPTIC, roles.SKEPTIC_HUNT, roles.PROVER, roles.NAMES) == (
         "role_templates",
         "skeptic_checklist",
+        "skeptic_hunt_checklist",
         "prover_brief",
-        ("prover_brief", "skeptic_checklist"),
+        ("prover_brief", "skeptic_checklist", "skeptic_hunt_checklist"),
     )
 
 

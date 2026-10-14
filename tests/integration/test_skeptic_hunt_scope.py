@@ -1,17 +1,77 @@
 import base64
 import json
+import shutil
 from dataclasses import replace
 
 import pytest
 from test_counterexample_hunt import _setup
 from test_skeptic_isolation import _make_skeptic_bundle
 
-from cairn import bundle, canon, claims, hunt, instances, skeptic, substrate
+from cairn import bundle, canon, claims, dispatch, hunt, instances, roles, skeptic, skeptic_tools, substrate
+
+SHIPPED_SOURCE = bundle.REPO_ROOT / bundle.DEFAULT_SRC
 
 
 @pytest.fixture
 def hunt_gate(tmp_path, clear_flags):
     return bundle.GateBundle.open(*_make_skeptic_bundle(tmp_path, clear_flags, "hunt", [hunt.KIND]))
+
+
+def test_the_shipped_bundle_prepares_a_hunt_skeptic_over_the_bound_transcript(tmp_path, pinned_bundle):
+    gate = bundle.GateBundle.open(*pinned_bundle())
+    sub, plan, executor, verifier, statement = _run(tmp_path, bounds=(40, 40), certified=True)
+    try:
+        result = hunt.run_hunt(sub, plan, executor, verifier)
+        prepared = dispatch._prepare(sub, gate, role="skeptic", node_ids=(statement.hash,))
+        checklist, checklist_hash = roles.load(gate, roles.SKEPTIC_HUNT)
+        assert prepared.template == checklist
+        assert prepared.tools == (skeptic_tools.LIST_NODES, skeptic_tools.READ_NODE)
+        assert (prepared.model, prepared.max_turns, prepared.timeout_s, prepared.thinking) == (
+            "claude-opus-5-5",
+            32,
+            600,
+            "adaptive",
+        )
+        handle = prepared.skeptic_handle
+        assert handle.read(plan.hash)["value"]["statement_hash"] == statement.hash
+        run = handle.read(result.run_hash)["value"]
+        trial = result.record.trials[0]
+        assert (run["trials"][0]["seed"], run["trials"][0]["outcome"]) == (trial.seed, trial.outcome)
+        verifier_evidence = handle.read(trial.verifier_evidence)["value"]
+        assert verifier_evidence["attempt"]["attempt_id"] == trial.verifier_attempt_id
+        assert dispatch._record(sub, prepared).role_template_hash == checklist_hash
+    finally:
+        sub.close()
+
+
+def _source_without(tmp_path, name):
+    source = tmp_path / "source"
+    shutil.copytree(SHIPPED_SOURCE, source, ignore=shutil.ignore_patterns(name))
+    return source
+
+
+def test_a_bundle_without_worker_roles_cannot_prepare_a_skeptic(tmp_path, pinned_bundle):
+    gate = bundle.GateBundle.open(*pinned_bundle(src=_source_without(tmp_path, "worker_roles.json")))
+    sub, plan, executor, verifier, statement = _run(tmp_path, certified=True)
+    try:
+        hunt.run_hunt(sub, plan, executor, verifier)
+        with pytest.raises(bundle.BundleError, match="carries no 'worker_roles' object"):
+            dispatch._prepare(sub, gate, role="skeptic", node_ids=(statement.hash,))
+    finally:
+        sub.close()
+
+
+def test_a_bundle_without_skeptic_scope_refuses_the_snapshot_and_the_dispatch(tmp_path, pinned_bundle):
+    gate = bundle.GateBundle.open(*pinned_bundle(src=_source_without(tmp_path, "skeptic_scope.json")))
+    sub, plan, executor, verifier, statement = _run(tmp_path, certified=True)
+    try:
+        hunt.run_hunt(sub, plan, executor, verifier)
+        with pytest.raises(skeptic.ScopedReadRefused, match="no skeptic_scope object"):
+            skeptic.snapshot(sub, gate, statement.hash)
+        with pytest.raises(dispatch.DispatchRefused, match="no skeptic_scope object"):
+            dispatch._prepare(sub, gate, role="skeptic", node_ids=(statement.hash,))
+    finally:
+        sub.close()
 
 
 def _run(tmp_path, **kwargs):

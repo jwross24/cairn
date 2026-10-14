@@ -16,8 +16,9 @@ lg = log.get("roles")
 
 BUNDLE_KIND = "role_templates"
 SKEPTIC = "skeptic_checklist"
+SKEPTIC_HUNT = "skeptic_hunt_checklist"
 PROVER = "prover_brief"
-NAMES = (PROVER, SKEPTIC)
+NAMES = (PROVER, SKEPTIC, SKEPTIC_HUNT)
 CLAIM_HASH = re.compile(r"\b[0-9a-fA-F]{32,}\b")
 
 

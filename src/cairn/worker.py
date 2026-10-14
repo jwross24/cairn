@@ -1,5 +1,6 @@
 import asyncio
 import importlib.metadata
+import json
 from pathlib import Path
 
 import claude_agent_sdk
@@ -92,4 +93,15 @@ def _result_payload(initialized, finished):
         "observed_skills": tuple(initialized["skills"]),
         "observed_plugins": tuple(initialized["plugins"]),
         "cost_usd": None if finished.total_cost_usd is None else str(finished.total_cost_usd),
+        "run_metrics": json.dumps(
+            {
+                "duration_ms": finished.duration_ms,
+                "duration_api_ms": finished.duration_api_ms,
+                "num_turns": finished.num_turns,
+                "usage": finished.usage,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+            default=str,
+        ),
     }

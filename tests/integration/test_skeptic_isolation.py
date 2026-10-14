@@ -525,7 +525,9 @@ def test_invalid_pinned_scope_is_refused(tmp_path, clear_flags, kinds):
 
 
 def test_missing_pinned_scope_does_not_grant_the_maximum(tmp_path, pinned_bundle):
-    gate = bundle.GateBundle.open(*pinned_bundle())
+    source = tmp_path / "unscoped-source"
+    shutil.copytree(bundle.REPO_ROOT / "bundle", source, ignore=shutil.ignore_patterns("skeptic_scope.json"))
+    gate = bundle.GateBundle.open(*pinned_bundle(src=source))
     with substrate.Substrate.open(tmp_path / "missing.sqlite") as writer:
         seeded = _seed(writer, gate, include_lean=False)
         with pytest.raises(skeptic.ScopedReadRefused):

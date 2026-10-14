@@ -96,8 +96,9 @@ so the protocol holds on its own. A guard's refusal is a safety mechanism, never
 - Identity-bearing files, gate bundle: `bundle/Containerfile`, `bundle/allow_lists.json`,
   `bundle/auditor.json`, `bundle/challenge_prelude.lean`, `bundle/container.json`,
   `bundle/gate_plan.json`, `bundle/ladder_plan.json`, `bundle/lean.json`,
-  `bundle/role_templates.json`, `bundle/scrutiny.json`, `bundle/tiers.json`,
-  `bundle/verifier.json`, `bundle/waivable_checks.json`, `lean/Cairn/Axioms.lean`,
+  `bundle/role_templates.json`, `bundle/scrutiny.json`, `bundle/skeptic_scope.json`,
+  `bundle/tiers.json`, `bundle/verifier.json`, `bundle/waivable_checks.json`,
+  `bundle/worker_roles.json`, `lean/Cairn/Axioms.lean`,
   `lean/Cairn/StatementHash.lean`, `lean/lake-manifest.json`, `src/cairn/challenge.py`,
   `src/cairn/gp/verify.gp`, and the four vendored prefilter linter sources
   `lean/vendor/formal_conjectures/FormalConjecturesForMathlib/Lean/Elab/InfoTree/Util.lean`,

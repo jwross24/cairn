@@ -187,6 +187,13 @@ def test_real_hunt_and_local_mcp_read_produce_typed_campaign_report(tmp_path, bl
     assert hashlib.sha256(path.read_bytes()).hexdigest() == before
     assert b"audit observation:" in first.stdout and b'"verdict":"gap"' in first.stdout
     assert read_hash.encode() in first.stdout
+    rendered = first.stdout.decode()
+    assert f"audit verdict: gap; checklist template: {sent.role_template_hash}; nodes read: 1" in rendered
+    assert f'checklist item 1: gap; answer: Offline fixture only; no model review; cited: ["{read_hash}"]' in rendered
+    assert (
+        f"Skeptic audit verdict gap on dispatch {sent.dispatch_id}; the record attests the recorded audit "
+        "response, not approval, truth or a tag." in rendered.split("## Limitations")[1]
+    )
     with substrate.Substrate.open(path, role="reader") as reader:
         assert claims.tag_history_for(reader, statement.hash) == history
 

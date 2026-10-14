@@ -36,6 +36,7 @@ def test_module_defined_public_api_is_closed():
         "result",
         "skeptic_record",
         "run",
+        "main",
     }
 
 
@@ -306,6 +307,25 @@ def test_sdk_cost_preserves_missing_and_zero_values(tmp_path, cost, expected):
     message = terminal()
     message.total_cost_usd = cost
     assert worker._result_payload(initialized(tmp_path), message)["cost_usd"] == expected
+
+
+def test_sdk_duration_turns_and_token_usage_are_recorded_with_the_result(tmp_path, arena):
+    sub, gate_bundle, node = arena
+    message = terminal()
+    message.usage = {"input_tokens": 11, "output_tokens": 7, "cache_read_input_tokens": 0}
+    outcome = worker._result_payload(initialized(tmp_path), message)
+    assert json.loads(outcome["run_metrics"]) == {
+        "duration_ms": 1,
+        "duration_api_ms": 1,
+        "num_turns": 1,
+        "usage": {"input_tokens": 11, "output_tokens": 7, "cache_read_input_tokens": 0},
+    }
+    record = dispatch._record(sub, dispatch._prepare(sub, gate_bundle, role="echo", node_ids=(node,)))
+    finished = dispatch.DispatchResult(dispatch_id=record.dispatch_id, at=record.at, **outcome)
+    dispatch._write(sub, "worker_result", "worker_results", finished, (record.hash,))
+    assert dispatch.result(sub, record.dispatch_id).run_metrics == outcome["run_metrics"]
+    bare = dataclasses.replace(finished, run_metrics=None)
+    assert "run_metrics" not in bare.as_dict()
 
 
 @pytest.mark.parametrize("missing", ["initialization", "terminal"])
