@@ -406,14 +406,14 @@ async def run(sub, gate_bundle, *, role, node_ids):
     except canary.CanaryRefused as exc:
         raise DispatchRefused(str(exc)) from None
     record = _record(sub, prepared)
-    cwd = Path(tempfile.mkdtemp(prefix="cairn-worker-"))
     try:
+        cwd = Path(tempfile.mkdtemp(prefix="cairn-worker-"))
         outcome = await worker._execute(prepared, cwd)
+        finished = DispatchResult(dispatch_id=record.dispatch_id, at=cli.now_iso(), **outcome)
     except BaseException as exc:
         failed = DispatchResult(record.dispatch_id, "error", type(exc).__name__, "", (), (), (), None, cli.now_iso())
         _write(sub, "worker_result", "worker_results", failed, (record.hash,))
         raise
-    finished = DispatchResult(dispatch_id=record.dispatch_id, at=cli.now_iso(), **outcome)
     _write(sub, "worker_result", "worker_results", finished, (record.hash,))
     return finished
 
@@ -426,6 +426,19 @@ class _Parser(argparse.ArgumentParser):
 def _newest_dispatch(sub):
     row = sub.conn.execute("SELECT dispatch_id FROM worker_dispatches ORDER BY rowid DESC LIMIT 1").fetchone()
     return None if row is None else row["dispatch_id"]
+
+
+def _after_failure(sub, before):
+    recorded = _newest_dispatch(sub)
+    if recorded == before:
+        return None, "no dispatch was recorded"
+    try:
+        stored = result(sub, recorded)
+    except HashMismatch:
+        return recorded, f"dispatch {recorded} holds a result that does not match its content address"
+    if stored is None:
+        return recorded, f"dispatch {recorded} has no recorded result"
+    return recorded, f"dispatch {recorded} holds an error result"
 
 
 def main(argv=None):
@@ -448,13 +461,10 @@ def main(argv=None):
             before = _newest_dispatch(sub)
             try:
                 finished = asyncio.run(run(sub, gate, role=args.role, node_ids=(args.statement,)))
-            except DispatchRefused, bundle.BundleError, SubstrateError:
-                raise
             except Exception as exc:
-                recorded = _newest_dispatch(sub)
-                where = (
-                    "no dispatch was recorded" if recorded == before else f"dispatch {recorded} holds an error result"
-                )
+                recorded, where = _after_failure(sub, before)
+                if recorded is None and isinstance(exc, (DispatchRefused, bundle.BundleError, SubstrateError)):
+                    raise
                 reason = " ".join(str(exc).split())
                 print(f"failed: {type(exc).__name__}: {reason}; {where}", file=sys.stderr)
                 return exits.BACKEND

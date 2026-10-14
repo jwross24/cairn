@@ -1,4 +1,6 @@
 import json
+import sqlite3
+import tempfile
 
 import pytest
 from mcp.client import Client
@@ -194,6 +196,47 @@ def test_a_worker_failure_is_recorded_as_an_error_result(tmp_path, monkeypatch, 
     assert json.loads(result["record_json"])["status"] == "error"
     with substrate.Substrate.open(db, role="reader") as sub:
         assert dispatch.skeptic_record(sub, result["dispatch_id"], statement_hash) is None
+
+
+def test_a_startup_failure_after_the_record_leaves_one_error_result(tmp_path, monkeypatch, capsys):
+    db, argv, statement_hash = _deployment(tmp_path)
+
+    async def unreachable(prepared, cwd):
+        pytest.fail("the worker ran without a working directory")
+
+    monkeypatch.setattr(worker, "_execute", unreachable)
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path / "absent-temp-root"))
+    assert dispatch.main(argv) == exits.BACKEND
+    err = capsys.readouterr().err
+    (sent,) = _rows(db, "worker_dispatches")
+    assert "failed: FileNotFoundError: " in err
+    assert f"dispatch {sent['dispatch_id']} holds an error result" in err
+    (stored,) = _rows(db, "worker_results")
+    with substrate.Substrate.open(db, role="reader") as sub:
+        finished = dispatch.result(sub, sent["dispatch_id"])
+        assert (finished.status, finished.text, finished.hash) == ("error", "FileNotFoundError", stored["record_hash"])
+        parents = {edge["parent_hash"] for edge in sub.lineage_of(finished.hash)}
+        assert sent["record_hash"] in parents
+        assert dispatch.skeptic_record(sub, sent["dispatch_id"], statement_hash) is None
+
+
+def test_a_dispatch_whose_result_could_not_be_written_says_so(tmp_path, monkeypatch, capsys):
+    db, argv, _ = _deployment(tmp_path)
+    monkeypatch.setattr(worker, "_execute", _scripted())
+    write = dispatch._write
+
+    def failing_result(sub, kind, table, value, parents):
+        if table == "worker_results":
+            raise sqlite3.OperationalError("planted result write failure")
+        return write(sub, kind, table, value, parents)
+
+    monkeypatch.setattr(dispatch, "_write", failing_result)
+    assert dispatch.main(argv) == exits.BACKEND
+    err = capsys.readouterr().err
+    (sent,) = _rows(db, "worker_dispatches")
+    assert f"dispatch {sent['dispatch_id']} has no recorded result" in err
+    assert "holds an error result" not in err
+    assert _rows(db, "worker_results") == []
 
 
 def test_an_error_result_names_what_the_worker_said(tmp_path, monkeypatch, capsys):

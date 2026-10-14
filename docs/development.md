@@ -136,8 +136,9 @@ Exit 0 prints one JSON line with the dispatch id, the recorded cost, `run_metric
 and token usage as the SDK reported them), the count of nodes read through the scoped tools, and the
 typed record with one entry per checklist item. Exit 2 with `refused:` means the dispatch was refused
 before any record was written, or the reply was recorded and is not a typed record; the reason names
-which. Exit 4 with `failed:` means the worker raised or returned an error, and names the dispatch
-whose error result was recorded. A recorded reply that is not a typed record makes every report for
+which. Exit 4 with `failed:` means something failed after the dispatch was recorded (preparing the
+worker's directory, the worker itself, or writing its result); it names the dispatch and says whether
+an error result was recorded, read back from the substrate. A recorded reply that is not a typed record makes every report for
 that statement refuse with the same `malformed skeptic_record` reason.
 
 The typed record attests the recorded audit response: the role, the one handed statement, the
