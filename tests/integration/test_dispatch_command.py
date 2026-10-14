@@ -2,8 +2,9 @@ import json
 
 import pytest
 from mcp.client import Client
+from test_counterexample_hunt import _setup
 
-from cairn import bundle, canary, claims, dispatch, exits, skeptic_tools, substrate, worker
+from cairn import bundle, canary, claims, dispatch, exits, hunt, report, skeptic_tools, substrate, worker
 
 SEED = "dispatch-command"
 
@@ -99,6 +100,70 @@ def test_a_recorded_reply_prints_its_typed_record(tmp_path, monkeypatch, capsys)
     assert report["typed_record"]["verdict"] == "gap"
     assert [item["id"] for item in report["typed_record"]["items"]] == [1, 2]
     assert len(_rows(db, "worker_dispatches")) == len(_rows(db, "worker_results")) == 1
+
+
+def test_the_shipped_skeptic_through_the_command_completes_a_campaign_report(
+    tmp_path, pinned_bundle, monkeypatch, capsys
+):
+    bundle_path, pin = pinned_bundle()
+    sub, plan, executor, verifier, statement = _setup(tmp_path, bounds=(40, 40), trials=1, certified=True)
+    try:
+        result = hunt.run_hunt(sub, plan, executor, verifier)
+        assert result.verdict == "KILLED"
+        plantings = tuple({"source": name, "token": canary.token(name, SEED)} for name in canary.SOURCES)
+        canary.record(
+            sub,
+            form=canary.FORM_ECHO,
+            plantings=plantings,
+            observed="the worker echoed only its handed node " + canary.control_token(SEED),
+            control_observed=" ".join(planted["token"] for planted in plantings),
+            handed_control_detected=True,
+        )
+    finally:
+        sub.close()
+
+    async def execute(prepared, cwd):
+        assert (prepared.model, prepared.thinking) == ("claude-opus-5-5", "adaptive")
+        scoped = skeptic_tools.ScopedTools(prepared.skeptic_handle, prepared.tools)
+        async with Client(scoped.server["instance"]) as client:
+            for digest in prepared.skeptic_handle.node_hashes:
+                assert not (await client.call_tool("read_node", {"node_hash": digest})).is_error
+        reply = {
+            "statement_hash": statement.hash,
+            "verdict": "gap",
+            "items": [
+                {
+                    "id": i,
+                    "outcome": "gap",
+                    "answer": "Offline fixture; no model review",
+                    "cited_node_hashes": [result.evidence_hash],
+                }
+                for i in range(1, 9)
+            ],
+        }
+        return {
+            "status": "success",
+            "text": json.dumps(reply),
+            "session_id": "offline-fixture",
+            "observed_tools": prepared.tools,
+            "observed_skills": (),
+            "observed_plugins": (),
+            "cost_usd": None,
+            "read_node_hashes": tuple(scoped.read_node_hashes),
+        }
+
+    monkeypatch.setattr(worker, "_execute", execute)
+    db = tmp_path / "substrate.sqlite"
+    argv = ["--role", "skeptic", "--statement", statement.hash, "--db", str(db)]
+    assert report.main([*argv[2:], "--kind", "campaign"]) == exits.GATE_REFUSED
+    assert capsys.readouterr().err == "refused: missing skeptic_record\n"
+    assert dispatch.main([*argv, "--bundle", str(bundle_path), "--pin", str(pin)]) == exits.OK
+    record = json.loads(capsys.readouterr().out)["typed_record"]
+    assert [item["id"] for item in record["items"]] == list(range(1, 9))
+    assert report.main([*argv[2:], "--kind", "campaign"]) == exits.OK
+    rendered = capsys.readouterr().out
+    for i in range(1, 9):
+        assert f"checklist item {i}: gap; answer: Offline fixture; no model review" in rendered
 
 
 def test_a_fenced_reply_is_recorded_and_refused_as_a_typed_record(tmp_path, monkeypatch, capsys):
