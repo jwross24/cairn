@@ -155,8 +155,10 @@ def test_the_shipped_skeptic_through_the_command_completes_a_campaign_report(
     monkeypatch.setattr(worker, "_execute", execute)
     db = tmp_path / "substrate.sqlite"
     argv = ["--role", "skeptic", "--statement", statement.hash, "--db", str(db)]
+    capsys.readouterr()
     assert report.main([*argv[2:], "--kind", "campaign"]) == exits.GATE_REFUSED
-    assert capsys.readouterr().err == "refused: missing skeptic_record\n"
+    said = [line for line in capsys.readouterr().err.splitlines() if not line.startswith("{")]
+    assert said == ["refused: missing skeptic_record"]
     assert dispatch.main([*argv, "--bundle", str(bundle_path), "--pin", str(pin)]) == exits.OK
     record = json.loads(capsys.readouterr().out)["typed_record"]
     assert [item["id"] for item in record["items"]] == list(range(1, 9))
