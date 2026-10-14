@@ -214,6 +214,18 @@ def test_robot_docs_prints_the_handbook(capsys):
     assert flag == out
 
 
+def test_version_prints_one_line_and_logs_only_at_debug(capsys, monkeypatch):
+    import importlib.metadata
+
+    monkeypatch.delenv("CAIRN_LOG", raising=False)
+    version = importlib.metadata.version("cairn")
+    assert _run(["--version"], capsys) == (exits.OK, f"{version}\n", "")
+    code, out, err = _run(["--log", "DEBUG", "--version"], capsys)
+    assert (code, out) == (exits.OK, f"{version}\n")
+    record = json.loads(err)
+    assert (record["event"], record["level"], record["version"]) == ("version", "DEBUG", version)
+
+
 def test_bare_invocation_prints_usage_and_hints_and_exits_user_input(capsys):
     code, out, err = _run([], capsys)
     assert code == exits.USER_INPUT

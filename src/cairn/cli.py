@@ -411,7 +411,7 @@ def main(argv=None):
     log.configure(ns.log)
     if ns.version:
         version = importlib.metadata.version("cairn")
-        lg.info("version", version=version)
+        lg.debug("version", version=version)
         print(version)
         return exits.OK
     if ns.robot_help:
