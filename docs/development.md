@@ -71,9 +71,10 @@ certificate, not the executor's. `--plan-only` checks neither certification nor 
 
 `module_dir` resolves against the working directory. For a skill-backed spec it must name the
 installed checkout's `src`, so `"module_dir": "src"`, run from the checkout root, serves every
-snapshot of the checkout on one machine with one spec file and one spec hash; an absolute path
-ties the spec to one snapshot. The skill identity hashes still fold in the machine's gp binary
-and environment manifest, so a spec carries to another machine only when both match.
+snapshot on one machine whose identity sources are byte-identical, with one spec file and one
+spec hash; an absolute path ties the spec to one snapshot. The spec pins the source digest and
+the skill identity hash, and the identity also folds in the machine's gp binary and environment
+manifest, so a spec carries to another snapshot or machine only when all of these match.
 
 A run touches every point its executor evaluates, whatever its deployment. A pre-registration
 that calls a range untouched holds only when no earlier run drew from it: put a negative or a
