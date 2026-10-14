@@ -31,6 +31,11 @@ to inspect either refusal before deciding how to preserve or replace operator-ow
 
 ## Fresh campaign deployment
 
+The [GIANTS examples](../examples/giants/README.md) preserve three AuditOnly historical
+campaign configurations and their frozen modules. From the repository root, inspect one
+with `uv run python -m cairn.campaign --spec examples/giants/campaign1.json --plan-only`.
+The examples document the identity, replay, and scoring limits.
+
 Prepare the bundle, operator pin, and fixture-waiver attestation with one module command:
 
 ```bash
@@ -123,10 +128,12 @@ Shared fixture and collection changes require their contract tests and all affec
 Record the tested revision, scope, and exclusions. An interrupted run is incomplete; skipped
 tests are not passed. These development checks do not replace Cairn's mathematical gates.
 
-CI partitions the test population into 21 disjoint lanes:
+CI partitions its regression tests into 21 disjoint lanes. The full sweep validation is
+an explicit manual exception described below.
 
 - `python`: fallback tests outside `tests/integration/` and the explicit lane manifests.
-- `python-integration`: tests in `tests/integration/` outside the explicit lane manifests.
+- `python-integration`: tests in `tests/integration/` outside the explicit lane manifests
+  and the full sweep validation.
 - `m0-lineage`: the four operator sequence, derivation lineage, and human rendering cases.
 - `m0-replay`: the two same-seed and different-seed replay cases.
 - `m0-transcript`: the three cache-bypass, step-log, and golden transcript cases.
@@ -161,12 +168,52 @@ Linux container jobs have a 41-minute ceiling. The local
 `--ci-lane m0`, `--ci-lane lean`, `--ci-lane solution-library`, `--ci-lane solution-plan`,
 `--ci-lane container-replay` and `--ci-lane container-plan` forms aggregate their respective cases.
 The `container-plan` aggregate includes all three leaves, retaining five tests.
-Lane membership is defined in `tests/_ci_lanes.py` and tested as a disjoint union.
+Lane membership is defined in `tests/_ci_lanes.py`; contracts check the disjoint CI
+population and its exact manual validation exception.
 The real-prelude ordered-plan test has a 1,800-second watchdog including setup and teardown;
 the replay subprocess retains its 600-second bound.
 
 Whole-project typing targets macOS. Linux CI also checks the container adapter, preparation
 code, Lean invocation code, dependency helper, and container tests against Linux APIs.
+
+## Slope sweep evaluators
+
+The independent `cairn.slopemodel.slopemodel_sweep_a` and
+`cairn.slopemodel.slopemodel_sweep_b` modules read `{"l": ..., "n": ...}` from stdin and
+write `{"W": ..., "last": ...}` to stdout:
+
+```bash
+printf '%s\n' '{"l":971153,"n":556}' | uv run python -m cairn.slopemodel.slopemodel_sweep_a
+printf '%s\n' '{"l":971153,"n":556}' | uv run python -m cairn.slopemodel.slopemodel_sweep_b
+```
+
+Both require integer prime `l >= 3` and integer `1 <= n <= l - 2`. A accepts
+`l <= 2**62`; B accepts `l <= 4294967311` and refuses horizons above `125000` or
+correction-stream counts above `250000`. Input bounds provide no guarantee that an
+evaluation fits available time or memory. Both expose `weight(ell, n)` and
+`weight_chain_free(ell, n)` in Python; the JSON entry points compute `weight`.
+
+The routed regression module contains 146 cases, including agreement on the 105 frozen
+validation primes below `2**18`, both planted point-order faults, and supporting checks:
+
+```bash
+uv run pytest -q tests/integration/test_slopemodel_sweep.py --cairn-ci-lane=python-integration --durations=10
+```
+
+Only `tests/integration/test_slopemodel_sweep.py::test_all_validation_primes_agree`
+is excluded from named CI lanes. Default collection and `--cairn-ci-lane=all` retain
+its 396 slow-marked cases. The full test compares both sweeps with both point-sequence
+references on the frozen primes from 5 through 4194007, with
+`n = (564 * isqrt(l) + 500) // 1000`. Run it once on committed code and record the
+revision and wall time in the commit body. A complete passing result is recorded as
+`ALL_AGREE 396`:
+
+```bash
+uv run pytest -q tests/integration/test_slopemodel_sweep.py::test_all_validation_primes_agree --cairn-ci-lane=all --durations=10
+```
+
+Finite agreement is reproducible empirical evidence. It does not establish a mathematical
+proof, certify a Cairn skill, or grant PROVEN.
 
 ## Scratch and diagnostics
 
