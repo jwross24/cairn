@@ -284,9 +284,9 @@ def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
             slope_nodes = {
                 node for node in _collect_nodes("all") if node.split("::", 1)[0] in SOLUTION_PLAN_EXACT_TEST_PATHS
             }
-            assert len(slope_nodes) == 21
+            assert len(slope_nodes) == 23
             expected.extend(slope_nodes)
-            assert len(selected) == (25 if lane == "solution-plan" else 23)
+            assert len(selected) == (27 if lane == "solution-plan" else 25)
         assert set(selected) == set(expected)
 
 

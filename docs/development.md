@@ -283,7 +283,8 @@ an explicit manual exception described below.
 - `solution-library-finite-point`: the finite-point library challenge-gate case.
 - `solution-library-binding`: the stale formal statement binding refusal case.
 - `solution-plan-exact`: the successful ordered-plan case, approved-dev artifact tag case, and
-  the 21 slope skill certification cases in `tests/integration/test_slope_weight_selftest.py`.
+  the 23 slope skill certification and campaign cases in
+  `tests/integration/test_slope_weight_selftest.py`.
 - `solution-plan-refusals`: the `sorry` and replay-timeout ordered-plan cases with shared setup.
 - `container`: Linux hashing, preparation, compilation, axiom, dependency-cache, and lifecycle tests.
 - `container-replay-exact`: successful Linux fresh replay and exact closure comparison.
