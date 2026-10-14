@@ -167,6 +167,8 @@ def test_toy_campaign_runs_real_trials_and_preregisters_before_entropy(tmp_path,
     assert completed.returncode == 0, completed.stderr
     report = json.loads(completed.stdout)
     assert "stopped" not in report
+    assert "certification" not in report
+    assert "runtime_readiness" not in report
     assert report["bundle_hash"] == gate_bundle.hash
     assert report["container_digest"] == keys.env_manifest_digest(env.manifest())
     assert report["executor_identity"] == spec["executor"]["skill_identity_hash"]

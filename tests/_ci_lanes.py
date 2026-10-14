@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+MANUAL_SWEEP_VALIDATION = "tests/integration/test_slopemodel_sweep.py::test_all_validation_primes_agree"
 LEAN_PREREQUISITE_TEST_PATHS = (
     "tests/unit/test_solution_build.py",
     "tests/unit/test_solution_comparison.py",
@@ -183,6 +184,9 @@ def pytest_collection_modifyitems(config, items):
     deselected = []
     for item in items:
         path = item.path.relative_to(config.rootpath).as_posix()
+        if lane != "all" and item.nodeid.partition("[")[0] == MANUAL_SWEEP_VALIDATION:
+            deselected.append(item)
+            continue
         if path == PROVEN_TEST_PATH:
             if item.originalname == PROVEN_GOLD_TEST:
                 item_lane = "container-plan-proven"

@@ -49,6 +49,15 @@ LIBRARY_GATE_BINDING_CASE = SOLUTION_LIBRARY_BINDING_TEST
 LIBRARY_GATE_ITEMS = SOLUTION_LIBRARY_ITEMS
 LIBRARY_GATE_IDS = ("display-dlp", "display-finite-point")
 M0_GATE_PATH = M0_TEST_PATHS[0]
+SWEEP_PATH = "tests/integration/test_slopemodel_sweep.py"
+FULL_SWEEP_TEST = "test_all_validation_primes_agree"
+
+
+def _full_sweep_source(primes):
+    return (
+        f'import pytest\n@pytest.mark.parametrize("ell", {list(primes)!r})\n'
+        f"def {FULL_SWEEP_TEST}(ell):\n    assert ell >= 0\n"
+    )
 
 
 def _m0_source(failing_test=None):
@@ -199,8 +208,9 @@ def test_an_unassigned_proven_derivation_arm_refuses_collection(pytester):
 
 def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytester):
     _suite(pytester)
+    (pytester.path / SWEEP_PATH).write_text(_full_sweep_source(range(396)))
     default = pytester.runpytest("-q", "--import-mode=importlib")
-    default.assert_outcomes(passed=48)
+    default.assert_outcomes(passed=444)
     populations = {}
     for lane in (
         "all",
@@ -288,7 +298,9 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
         assert populations[lane]
         assert not combined & populations[lane]
         combined |= populations[lane]
-    assert combined == populations["all"]
+    manual_validation = {f"{SWEEP_PATH}::{FULL_SWEEP_TEST}[{ell}]" for ell in range(396)}
+    assert not combined & manual_validation
+    assert combined | manual_validation == populations["all"]
     assert (
         populations["solution-plan-exact"] == {f"{SOLUTION_TEST_PATHS[0]}::{PLAN_CASE}[exact]", dev_node} | slope_nodes
     )
@@ -322,12 +334,55 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
         | populations["container"]
         | populations["container-replay"]
         | populations["container-plan"]
+        | manual_validation
     )
     (pytester.path / SOLUTION_PLAN_EXACT_TEST_PATHS[0]).write_text("def test_pass():\n    assert False\n")
     for lane, passed in (("solution-plan-exact", 2), ("solution-plan", 4)):
         result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
-        result.assert_outcomes(failed=1, passed=passed, deselected=45 if lane == "solution-plan-exact" else 43)
+        result.assert_outcomes(failed=1, passed=passed, deselected=441 if lane == "solution-plan-exact" else 439)
         assert result.ret == pytest.ExitCode.TESTS_FAILED
+
+
+@pytest.mark.parametrize(
+    "lane",
+    [None, "all", "m0", "lean", "solution-library", "solution-plan", "container-replay", "container-plan", *CI_LANES],
+)
+def test_named_lanes_exclude_only_the_exact_manual_sweep_validation(pytester, lane):
+    _suite(pytester)
+    source = _full_sweep_source([5, 7, 11])
+    (pytester.path / SWEEP_PATH).write_text(
+        source
+        + f"def {FULL_SWEEP_TEST}_neighbor():\n    assert True\n"
+        + "@pytest.mark.slow\ndef test_other_slow_validation():\n    assert True\n"
+        + "def test_sweeps_agree_with_both_point_sequence_references():\n    assert True\n"
+        + '@pytest.mark.parametrize("fault", ["giant-one-arrives-early", "round-point-order-reversed"])\n'
+        + "def test_agreement_refuses_planted_point_order_faults(fault):\n    assert fault\n"
+        + f"class TestNeighbor:\n    def {FULL_SWEEP_TEST}(self):\n        assert True\n"
+    )
+    (pytester.path / "tests/integration/test_unlisted.py").write_text(source)
+    pytester.makeini("[pytest]\nmarkers = slow: slow validation")
+    args = ["-q", "--collect-only", "--import-mode=importlib"]
+    if lane is not None:
+        args.append(f"--cairn-ci-lane={lane}")
+    result = pytester.runpytest(*args)
+    assert result.ret == pytest.ExitCode.OK
+    nodes = {line for line in result.outlines if line.startswith("tests/") and "::" in line}
+    manual = {f"{SWEEP_PATH}::{FULL_SWEEP_TEST}[{ell}]" for ell in [5, 7, 11]}
+    if lane in (None, "all"):
+        assert manual <= nodes
+    else:
+        assert not manual & nodes
+    if lane in (None, "all", "python-integration"):
+        retained = {
+            f"{SWEEP_PATH}::{FULL_SWEEP_TEST}_neighbor",
+            f"{SWEEP_PATH}::TestNeighbor::{FULL_SWEEP_TEST}",
+            f"{SWEEP_PATH}::test_other_slow_validation",
+            f"{SWEEP_PATH}::test_sweeps_agree_with_both_point_sequence_references",
+            f"{SWEEP_PATH}::test_agreement_refuses_planted_point_order_faults[giant-one-arrives-early]",
+            f"{SWEEP_PATH}::test_agreement_refuses_planted_point_order_faults[round-point-order-reversed]",
+            *(f"tests/integration/test_unlisted.py::{FULL_SWEEP_TEST}[{ell}]" for ell in [5, 7, 11]),
+        }
+        assert retained <= nodes
 
 
 def test_new_lane_manifests_name_only_the_measured_test_modules():
