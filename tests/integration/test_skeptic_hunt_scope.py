@@ -28,7 +28,7 @@ def test_the_shipped_bundle_prepares_a_hunt_skeptic_over_the_bound_transcript(tm
         assert prepared.tools == (skeptic_tools.LIST_NODES, skeptic_tools.READ_NODE)
         assert (prepared.model, prepared.max_turns, prepared.timeout_s, prepared.thinking) == (
             "claude-opus-5-5",
-            32,
+            64,
             600,
             "adaptive",
         )

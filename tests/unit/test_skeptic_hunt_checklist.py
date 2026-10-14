@@ -78,7 +78,7 @@ def test_the_shipped_skeptic_role_runs_the_hunt_checklist_with_read_only_tools(p
             "template": roles.SKEPTIC_HUNT,
             "tools": ["mcp__cairn_skeptic__list_nodes", "mcp__cairn_skeptic__read_node"],
             "model": "claude-opus-5-5",
-            "max_turns": 32,
+            "max_turns": 64,
             "timeout_s": 600,
             "thinking": "adaptive",
         }
