@@ -20,23 +20,44 @@ RUN_ID_RE = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z__[0-9a-f]{6}(?:-[1
 lg = log.get("doctor.artifacts")
 
 
+def _text(path):
+    try:
+        return path.read_text().strip() if path.is_file() else None
+    except OSError, UnicodeDecodeError:
+        return None
+
+
+def _git_dir(root):
+    dot = Path(root) / ".git"
+    if dot.is_dir():
+        return dot
+    text = _text(dot)
+    if text is None or not text.startswith("gitdir:"):
+        return None
+    linked = Path(text.split(":", 1)[1].strip())
+    linked = linked if linked.is_absolute() else Path(root) / linked
+    return linked if linked.is_dir() else None
+
+
 def git_head(root):
-    head = Path(root) / ".git" / "HEAD"
-    if not head.is_file():
+    git_dir = _git_dir(root)
+    text = None if git_dir is None else _text(git_dir / "HEAD")
+    if text is None:
         return "nogit"
-    text = head.read_text().strip()
     if not text.startswith("ref:"):
         return text
     ref = text.split(":", 1)[1].strip()
-    direct = Path(root) / ".git" / ref
-    if direct.is_file():
-        return direct.read_text().strip()
-    packed = Path(root) / ".git" / "packed-refs"
-    if packed.is_file():
-        for line in packed.read_text().splitlines():
-            parts = line.split()
-            if len(parts) == 2 and parts[1] == ref:
-                return parts[0]
+    common_dir = _text(git_dir / "commondir")
+    common = git_dir if common_dir is None else git_dir / common_dir
+    for base in dict.fromkeys((git_dir, common)):
+        direct = _text(base / ref)
+        if direct is not None:
+            return direct
+    packed = _text(common / "packed-refs")
+    for line in [] if packed is None else packed.splitlines():
+        parts = line.split()
+        if len(parts) == 2 and parts[1] == ref:
+            return parts[0]
     return "nogit"
 
 

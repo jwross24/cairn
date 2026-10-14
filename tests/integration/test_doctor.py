@@ -838,6 +838,58 @@ def test_git_head_is_read_textually_and_is_nogit_without_a_checkout(shape):
     assert len(head) == 40 and all(c in "0123456789abcdef" for c in head)
 
 
+GIT_RUNNER = (
+    "import subprocess, sys\n"
+    "p = subprocess.run(['git', '-C', sys.argv[1], *sys.argv[2:]], capture_output=True, text=True)\n"
+    "sys.stdout.write(p.stdout)\n"
+    "sys.stderr.write(p.stderr)\n"
+    "sys.exit(p.returncode)\n"
+)
+
+
+def _git(cwd, *args):
+    return subprocess.run(
+        [sys.executable, "-c", GIT_RUNNER, str(cwd), *args], check=True, capture_output=True, text=True, timeout=60
+    ).stdout.strip()
+
+
+@pytest.fixture
+def linked_worktrees(tmp_path):
+    main = tmp_path / "main"
+    main.mkdir()
+    _git(main, "init", "-q", "-b", "trunk")
+    _git(main, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "one")
+    _git(main, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "two")
+    _git(main, "worktree", "add", "-q", "-b", "side", str(tmp_path / "branch"))
+    _git(main, "worktree", "add", "-q", "--detach", str(tmp_path / "detached"), "HEAD~1")
+    return main, tmp_path / "branch", tmp_path / "detached"
+
+
+@pytest.mark.parametrize("packed", [False, True])
+def test_git_head_reads_a_linked_worktree_through_its_gitdir(linked_worktrees, packed):
+    main, branch, detached = linked_worktrees
+    if packed:
+        _git(main, "pack-refs", "--all")
+    assert (branch / ".git").is_file()
+    for checkout in (main, branch, detached):
+        assert artifacts.git_head(checkout) == _git(checkout, "rev-parse", "HEAD")
+    assert artifacts.git_head(detached) != artifacts.git_head(branch)
+
+
+@pytest.mark.parametrize("content", [b"gitdir: missing/worktree\n", b"not a gitdir line\n", b"", b"\xff\xfe\x00\x80"])
+def test_a_git_file_that_names_no_readable_gitdir_is_nogit(tmp_path, content):
+    (tmp_path / ".git").write_bytes(content)
+    assert artifacts.git_head(tmp_path) == "nogit"
+
+
+@pytest.mark.parametrize("name", ["HEAD", "commondir"])
+def test_a_damaged_file_inside_a_linked_gitdir_is_nogit(linked_worktrees, name):
+    _, branch, _ = linked_worktrees
+    gitdir = Path((branch / ".git").read_text().split(":", 1)[1].strip())
+    (gitdir / name).write_bytes(b"\xff\xfe\x00\x80")
+    assert artifacts.git_head(branch) == "nogit"
+
+
 def test_the_index_line_carries_the_run_and_its_verdict(shape, capsys):
     doctor_fixtures.load("pin_flag").corrupt(shape)
     run(shape.argv("--fix"), capsys)
