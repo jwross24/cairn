@@ -402,6 +402,18 @@ def test_certified_spec_cannot_impersonate_skill(mutation):
         campaign.check_digests(campaign.parse_spec(spec))
 
 
+def test_relative_module_dir_names_the_installed_root_only_from_the_checkout(tmp_path, monkeypatch):
+    spec = _campaign_spec()
+    spec["module_dir"] = "src"
+    spec = campaign.parse_spec(spec)
+    monkeypatch.chdir(ROOT)
+    campaign.check_digests(spec)
+    shutil.copytree(ROOT / "src", tmp_path / "src")
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(campaign.CampaignRefused, match="installed skill's source root"):
+        campaign.check_digests(spec)
+
+
 def test_shadow_package_initializer_outside_installed_root_refuses(tmp_path):
     spec = _campaign_spec()
     source_root = tmp_path / "src"

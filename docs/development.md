@@ -64,10 +64,16 @@ not replace a deployment, create a substrate, run a campaign, certify an evaluat
 issue an operator session, statement ratification, or review verdict.
 
 A spec whose verifier names a self-test skill (`skill` and `skill_identity_hash`) runs only
-against a substrate holding that verifier's certificate. Run `cairn selftest <skill>` for the
-executor and the verifier with the same `--db`, `--bundle` and `--pin` before the campaign; an
-uncertified verifier refuses with exit 2 before any record is written or any nonce is drawn.
-`--plan-only` checks neither certification nor runtime readiness.
+against a substrate holding that verifier's certificate. Run `cairn selftest <skill>` with the
+same `--db`, `--bundle` and `--pin` before the campaign; an uncertified verifier refuses with
+exit 2 before any record is written or any nonce is drawn. The run checks the verifier's
+certificate, not the executor's. `--plan-only` checks neither certification nor runtime readiness.
+
+`module_dir` resolves against the working directory. For a skill-backed spec it must name the
+installed checkout's `src`, so `"module_dir": "src"`, run from the checkout root, serves every
+snapshot of the checkout on one machine with one spec file and one spec hash; an absolute path
+ties the spec to one snapshot. The skill identity hashes still fold in the machine's gp binary
+and environment manifest, so a spec carries to another machine only when both match.
 
 A run touches every point its executor evaluates, whatever its deployment. A pre-registration
 that calls a range untouched holds only when no earlier run drew from it: put a negative or a
