@@ -37,7 +37,8 @@ PROVEN-in-docs, verbatim:
 ## C. Top-level dispatch probe, 2026-09-07
 
 **STRONG-EMPIRICAL**, Python 3.14, `claude-agent-sdk==0.2.152`, bundled Claude Code
-`2.1.259`, model `claude-haiku-4-5-20251001`. The project environment initially held
+`2.1.259`, model `claude-haiku-4-5-20251001`. This live probe was not repeated on the
+pinned `0.2.158` / `2.1.280`; the loopback re-grounding for that pair is in `dispatch-canary.md`. The project environment initially held
 no agent SDK. The installed distribution supplies the CLI; no system CLI is selected.
 
 The live probe uses `query()` with a fresh temporary working directory, a custom
@@ -138,7 +139,8 @@ runner retains its original writer connection. `.4.3` does not make the multi-st
 ## E. Scoped MCP construction
 
 **VERIFIED-PROBE**, 2026-09-08, `claude-agent-sdk==0.2.152`, bundled CLI
-`2.1.259`: an initialization-only `ClaudeSDKClient` registers one in-process
+`2.1.259` (on `2.1.280` the bridge's initialization entry also carries `"source": "sdk"`;
+see `dispatch-canary.md`): an initialization-only `ClaudeSDKClient` registers one in-process
 SDK bridge named `cairn_probe` with exactly the `echo` tool. The command carries
 `--tools ""`, `--allowedTools mcp__cairn_probe__echo`, strict MCP configuration,
 empty settings sources and the three bare-mode flags from section C.

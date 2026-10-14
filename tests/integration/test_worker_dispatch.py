@@ -118,6 +118,7 @@ def test_the_worker_envelope_pins_permission_mode_and_disables_thinking(arena, t
     assert options.thinking == {"type": "disabled"}
     assert options.setting_sources == []
     assert options.strict_mcp_config is True
+    assert json.loads(options.settings) == {"enabledPlugins": {"agents-md@builtin": False, "telemetry@builtin": False}}
 
 
 def test_a_role_that_pins_adaptive_thinking_reaches_the_sdk_options(arena, tmp_path):

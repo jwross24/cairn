@@ -141,7 +141,7 @@ def test_worker_execute_persists_only_successful_local_mcp_reads(arena, tmp_path
                     "tools": list(prepared.tools),
                     "skills": [],
                     "plugins": [],
-                    "mcp_servers": [{"name": skeptic_tools.SERVER_NAME, "status": "connected"}],
+                    "mcp_servers": [{"name": skeptic_tools.SERVER_NAME, "source": "sdk", "status": "connected"}],
                     "slash_commands": [],
                     "session_id": "offline-transport",
                 },

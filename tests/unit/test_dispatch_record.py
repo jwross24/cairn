@@ -270,6 +270,7 @@ def initialized(cwd):
         ("tools", None),
         ("skills", ["ambient-skill"]),
         ("plugins", ["ambient-plugin"]),
+        ("plugins", [{"name": "telemetry", "path": "builtin", "source": "telemetry@builtin"}]),
         ("mcp_servers", ["ambient-server"]),
         ("slash_commands", ["ambient-command"]),
         ("memory_paths", {"auto": "/ambient/memory"}),
@@ -282,6 +283,33 @@ def test_sdk_initialization_drift_is_refused(arena, tmp_path, field, value):
     worker._validate_init(prepared, tmp_path, data)
     with pytest.raises(ValueError, match="grounded dispatch"):
         worker._validate_init(prepared, tmp_path, {**data, field: value})
+
+
+@pytest.mark.parametrize(
+    "servers",
+    [
+        [{"name": skeptic_tools.SERVER_NAME, "status": "connected"}],
+        [{"name": skeptic_tools.SERVER_NAME, "source": "stdio", "status": "connected"}],
+        [{"name": skeptic_tools.SERVER_NAME, "source": "sdk", "status": "failed"}],
+        [
+            {"name": skeptic_tools.SERVER_NAME, "source": "sdk", "status": "connected"},
+            {"name": "ambient", "source": "sdk", "status": "connected"},
+        ],
+    ],
+)
+def test_a_scoped_dispatch_admits_exactly_its_one_sdk_server(arena, tmp_path, servers):
+    sub, gate_bundle, node = arena
+    prepared = dataclasses.replace(
+        dispatch._prepare(sub, gate_bundle, role="echo", node_ids=(node,)), tools=(skeptic_tools.READ_NODE,)
+    )
+    data = {
+        **initialized(tmp_path),
+        "tools": [skeptic_tools.READ_NODE],
+        "mcp_servers": [{"name": skeptic_tools.SERVER_NAME, "source": "sdk", "status": "connected"}],
+    }
+    worker._validate_init(prepared, tmp_path, data)
+    with pytest.raises(ValueError, match="grounded dispatch"):
+        worker._validate_init(prepared, tmp_path, {**data, "mcp_servers": servers})
 
 
 def terminal(*, subtype="success", is_error=False, session_id="one-session"):

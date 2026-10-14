@@ -11,6 +11,12 @@ from cairn import skeptic_tools
 SDK_VERSION = "0.2.158"
 CLI_VERSION = "2.1.280"
 TOOLS: frozenset[str] = skeptic_tools.TOOLS
+# The pinned CLI loads these built-in plugins even under --bare; a worker runs with none.
+BUILTIN_PLUGINS_OFF = json.dumps(
+    {"enabledPlugins": {"agents-md@builtin": False, "telemetry@builtin": False}},
+    sort_keys=True,
+    separators=(",", ":"),
+)
 
 
 def _check_version():
@@ -26,6 +32,7 @@ def _options(prepared, cwd, mcp_servers=None):
         allowed_tools=list(prepared.tools),
         skills=[],
         setting_sources=[],
+        settings=BUILTIN_PLUGINS_OFF,
         strict_mcp_config=True,
         mcp_servers={} if mcp_servers is None else mcp_servers,
         cwd=cwd,
@@ -65,7 +72,9 @@ async def _execute(prepared, cwd):
 
 def _validate_init(prepared, cwd, initialized):
     servers = initialized.get("mcp_servers")
-    expected_servers = [{"name": skeptic_tools.SERVER_NAME, "status": "connected"}] if prepared.tools else []
+    expected_servers = (
+        [{"name": skeptic_tools.SERVER_NAME, "source": "sdk", "status": "connected"}] if prepared.tools else []
+    )
     if (
         initialized.get("claude_code_version") != CLI_VERSION
         or not isinstance(initialized.get("tools"), list)

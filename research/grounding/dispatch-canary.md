@@ -95,3 +95,37 @@ control. That result is an authentication hold, not evidence of isolation.
 `canary.require_grounded` refuses absent, failed or stale records. Its SDK and CLI version checks
 compare against `worker.SDK_VERSION` and `worker.CLI_VERSION`; changing either pin requires a fresh
 passing record. The probe additionally requires control reachability for all four plantings.
+
+## Re-grounding on SDK 0.2.158 / CLI 2.1.280, 2026-10-14
+
+**VERIFIED-PROBE**, SDK 0.2.158 / CLI 2.1.280. CLI SHA-256:
+`387a5c5dcdbb815085edf0baf79591f9d8894efe922bceaf3d75b1b08055229d`. The provider accepts
+`claude-opus-5-5` only from CLI 2.1.280 or newer; 0.2.158 is the oldest SDK release that bundles it.
+
+Request-byte decision form, with the worker envelope that disables the built-in plugins (below):
+
+| Seed | Dispatch arm | Control arm | Verdict |
+|---|---|---|---|
+| `skeptic-sdk-0158-a` | no source token; handed-node control present | all four sources | pass |
+| `skeptic-sdk-0158-b` | no source token; handed-node control present | all four sources | pass |
+| planted: dispatch arm with settings enabled | all four sources leaked | all four sources | fail, exit 2 |
+
+Record hashes `a843ac62423a…`, `cdea62b5c4a5…` (pass) and `1a64e5c71f4f…` (fail). Summaries:
+`/Users/jwross/Documents/fleet-infra/data/cairn-skeptic-20261013/sdk-0158-regrounding/`.
+
+**Built-in plugins.** CLI 2.1.280 loads built-in plugins `agents-md` and `telemetry` under `--bare`
+("built-in plugins load regardless", in the CLI's own strings), and the worker's initialization check,
+which requires an empty plugin list, refuses every dispatch. An explicit
+`--settings '{"enabledPlugins":{"agents-md@builtin":false,"telemetry@builtin":false}}'` empties the
+list in three of three loopback runs; `worker.BUILTIN_PLUGINS_OFF` carries it in every dispatch, and the
+initialization check is unchanged. The CLI also reports each SDK MCP server with `"source": "sdk"`;
+the check compares the exact entry `{"name": "cairn_skeptic", "source": "sdk", "status": "connected"}`.
+
+**AGENTS.md.** The `agents-md` plugin loads `AGENTS.md` as project instructions where a project has no
+`CLAUDE.md`. Planted `AGENTS.md` files in the worker's working directory, its parent Git repository,
+`HOME` and `HOME/.claude` reached neither the request bytes nor the initialization message of the
+worker envelope, with or without the scoped tools, both before and after the built-in plugins were
+disabled. `AGENTS.md` is not a canary planting; this is a separate loopback observation.
+
+**Effort.** CLI 2.1.280 sends `output_config.effort: "medium"` and `max_tokens: 128000` for this model;
+CLI 2.1.259 sent `"high"` and 32000. No role field pins effort.
