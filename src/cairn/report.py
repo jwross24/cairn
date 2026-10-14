@@ -33,6 +33,17 @@ def _json(value):
 def _statement(sub, digest):
     row = claims.get_claim_statement(sub, digest)
     if row is None:
+        named = [
+            match["hash"]
+            for match in sub.conn.execute(
+                "SELECT hash FROM claim_statements WHERE claim_id = ? ORDER BY rowid", (digest,)
+            )
+        ]
+        if named:
+            raise ReportRefused(
+                f"unknown statement; --statement takes a statement hash, "
+                f"and claim id {digest!r} names {', '.join(named)}"
+            )
         raise ReportRefused("unknown statement")
     return row
 
@@ -449,8 +460,8 @@ def main(argv=None):
     parser.add_argument("--db", required=True)
     parser.add_argument("--kind", required=True, choices=("run", "campaign"))
     selector = parser.add_mutually_exclusive_group(required=True)
-    selector.add_argument("--statement")
-    selector.add_argument("--ladder-table")
+    selector.add_argument("--statement", help="claim statement hash (statement_hash in the campaign output)")
+    selector.add_argument("--ladder-table", help="ladder table hash")
     parser.add_argument("--attest")
     try:
         args = parser.parse_args(argv)

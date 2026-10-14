@@ -248,6 +248,25 @@ def test_unknown_statement_cli_refuses(tmp_path, capsys):
     assert (code, captured.out, captured.err) == (2, "", "refused: unknown statement\n")
 
 
+def test_claim_id_selector_refuses_naming_its_statement_hash(tmp_path, capsys):
+    path = tmp_path / "report.sqlite"
+    statement, _, _ = build_records(path)
+    code = report.main(["--db", str(path), "--kind", "run", "--statement", statement.claim_id])
+    captured = capsys.readouterr()
+    assert (code, captured.out) == (2, "")
+    assert captured.err == (
+        f"refused: unknown statement; --statement takes a statement hash, "
+        f"and claim id 'report-claim' names {statement.hash}\n"
+    )
+
+
+def test_statement_selector_help_names_the_hash_source(capsys):
+    with pytest.raises(SystemExit):
+        report.main(["--help"])
+    help_text = " ".join(capsys.readouterr().out.split())
+    assert "--statement STATEMENT claim statement hash (statement_hash in the campaign output)" in help_text
+
+
 def test_missing_statement_row_with_existing_records_cli_refuses(tmp_path, capsys):
     path = tmp_path / "report.sqlite"
     statement, _, _ = build_records(path)
