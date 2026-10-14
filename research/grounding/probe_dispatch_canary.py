@@ -380,9 +380,10 @@ def run(*, seed=None, artifact_dir=None):
             and all(required_source_checks.values())
             and no_errors
         )
-        source_sha = subprocess.run(
-            [shutil.which("git"), "rev-parse", "HEAD"], check=True, capture_output=True, text=True
-        ).stdout.strip()
+        head = subprocess.run(
+            [shutil.which("git"), "rev-parse", "HEAD"], check=False, capture_output=True, text=True
+        )
+        source_sha = head.stdout.strip() if head.returncode == 0 else "nogit"
         summary = {
             "artifact_directory": str(directory),
             "home": str(home),

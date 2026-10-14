@@ -129,6 +129,28 @@ def test_a_worker_failure_is_recorded_as_an_error_result(tmp_path, monkeypatch, 
         assert dispatch.skeptic_record(sub, result["dispatch_id"], statement_hash) is None
 
 
+def test_an_error_result_names_what_the_worker_said(tmp_path, monkeypatch, capsys):
+    db, argv, _ = _deployment(tmp_path)
+
+    async def unauthenticated(prepared, cwd):
+        return {
+            "status": "error",
+            "text": "Not logged in · Please run /login",
+            "session_id": "offline-fixture",
+            "observed_tools": prepared.tools,
+            "observed_skills": (),
+            "observed_plugins": (),
+            "cost_usd": "0",
+        }
+
+    monkeypatch.setattr(worker, "_execute", unauthenticated)
+    assert dispatch.main(argv) == exits.BACKEND
+    captured = capsys.readouterr()
+    assert json.loads(captured.out)["typed_record"] is None
+    assert "holds an error result: Not logged in · Please run /login" in captured.err
+    assert json.loads(_rows(db, "worker_results")[0]["record_json"])["status"] == "error"
+
+
 def test_an_ungrounded_substrate_refuses_before_any_record(tmp_path, monkeypatch, capsys):
     db, argv, _ = _deployment(tmp_path, grounded=False)
 

@@ -478,7 +478,8 @@ def main(argv=None):
                 report["typed_record"] = None if view is None else view.as_dict()
             print(json.dumps(report, sort_keys=True, separators=(",", ":")))
             if finished.status != "success":
-                print(f"failed: dispatch {finished.dispatch_id} holds an error result", file=sys.stderr)
+                said = " ".join(finished.text.split())
+                print(f"failed: dispatch {finished.dispatch_id} holds an error result: {said}", file=sys.stderr)
                 return exits.BACKEND
             if refusal is not None:
                 print(f"refused: {refusal}", file=sys.stderr)
