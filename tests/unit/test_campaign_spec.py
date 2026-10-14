@@ -183,12 +183,20 @@ def test_plan_only_is_pure_repeatable_and_matches_direct_hunt_hashes(tmp_path, s
         verifier_identity=spec["verifier"]["digest"],
     )
     report = json.loads(first.out)
+    assert report["certification"] == "not_checked"
+    assert report["runtime_readiness"] == "not_checked"
     assert report["statements"][0]["statement_hash"] == statement.hash
     assert report["statements"][0]["hypothesis_hash"] == hypothesis.hash
     assert report["statements"][0]["distribution_hash"] == distribution.hash
     assert report["statements"][0]["plan_hash"] == plan.hash
     assert report["executor_identity"] == spec["executor"]["digest"]
     assert report["verifier_identity"] == spec["verifier"]["digest"]
+    with pytest.raises(SystemExit) as info:
+        campaign.main(["--help"])
+    assert info.value.code == 0
+    help_output = capsys.readouterr()
+    assert "certification and runtime readiness are not checked" in " ".join(help_output.out.split())
+    assert help_output.err == ""
 
 
 def test_hypothesis_binds_distinct_statements(spec):

@@ -85,6 +85,8 @@ def test_frozen_campaign_plan_commitments_are_portable_and_read_only(
     completed = _plan(spec_path, tmp_path)
     assert completed.returncode == exits.OK, completed.stderr
     report = json.loads(completed.stdout)
+    assert report.pop("certification") == "not_checked"
+    assert report.pop("runtime_readiness") == "not_checked"
     assert _json_digest(report) == plan_digest
     for name in ("executor", "verifier"):
         program = spec[name]

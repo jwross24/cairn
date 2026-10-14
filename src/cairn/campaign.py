@@ -359,7 +359,11 @@ def run_campaign(spec, prepared, *, db, bundle_path, pin, attest, scratch):
 def main(argv=None):
     parser = ArgumentParser()
     parser.add_argument("--spec", required=True, type=Path)
-    parser.add_argument("--plan-only", action="store_true")
+    parser.add_argument(
+        "--plan-only",
+        action="store_true",
+        help="Plan statements only; certification and runtime readiness are not checked.",
+    )
     parser.add_argument("--scratch", type=Path)
     for name in ("db", "bundle", "pin", "attest"):
         parser.add_argument(f"--{name}", default=GLOBAL_DEFAULTS[name], type=Path)
@@ -376,6 +380,7 @@ def main(argv=None):
         check_digests(spec)
         if args.plan_only:
             report, code = plan_document(spec, prepared), exits.OK
+            report.update(certification="not_checked", runtime_readiness="not_checked")
         else:
             report, code = run_campaign(
                 spec,
