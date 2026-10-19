@@ -187,20 +187,15 @@ jobs:
     timeout-minutes: ${{ matrix.lane == 'solution-plan-exact' && 45 || 20 }}
     env:
       PYTEST_ADDOPTS: "-vv"
-      # cypari2 2.2.4 has no CPython 3.15 build; macos-latest resolves the highest
-      # interpreter requires-python admits, so the lane pins the minor it supports.
+      # cypari2 2.2.4 does not build on the CPython 3.15 that macos-latest resolves.
       UV_PYTHON: "3.14"
       # Under the job ceiling by enough that pytest dies first and leaves a thread
       # profile, rather than the job being canceled with a blank transcript. The
       # local default is higher; nothing meters a local run.
       CAIRN_SESSION_DEADLINE: ${{ matrix.lane == 'solution-plan-exact' && '1962' || '1080' }}
-      # The artifact-block gate parses `br show <id> --json`, so the runner and the
-      # machines that write the beads have to agree on that shape. A bump here misses
-      # the cache key below, which is what fetches the binary again.
-      #
-      # Matches the binary the machines that write this repo carry, so a gate reads the
-      # same br in both places. The 0.6 line names its release asset `br-` with `arm64`;
-      # the 0.5 line used `beads_rust-` with `aarch64` on Linux.
+      # The artifact-block gate parses `br show <id> --json`, so this matches the br the
+      # machines that write the beads carry; it is the install-br cache key. The 0.6 line
+      # names its asset `br-` with `arm64`; the 0.5 line used `beads_rust-` with `aarch64`.
       BR_VERSION: "0.6.0"
       # The elan release that resolves the Lean toolchain `lean/lean-toolchain` names; the
       # release publishes no checksum beside its archive, so the pin is the tag alone.
@@ -213,11 +208,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install PARI/GP
-        run: |
-          # The runner image ships aws/tap untrusted, so Homebrew warns on every
-          # invocation. pari comes from homebrew/core; nothing here wants that tap.
-          brew untap aws/tap || true
-          brew install pari
+        uses: ./.github/actions/install-pari
 
       - name: Restore the Lean toolchain
         id: elan-cache
@@ -274,31 +265,10 @@ jobs:
           "$HOME/.elan/bin/lake" "+$toolchain" exe cache get Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point
           git diff --exit-code -- lake-manifest.json
 
-      - name: Restore br
-        id: br-cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
-        with:
-          path: ~/.cargo/bin/br
-          key: br-${{ env.BR_VERSION }}-${{ runner.os }}-${{ runner.arch }}
-
       - name: Install br
-        if: steps.br-cache.outputs.cache-hit != 'true'
-        # The published binary, checked against the sha256 published beside it.
-        # `cargo install beads_rust` is the other route and it does not hold: the 0.2
-        # line pulls a dependency gated behind a nightly-only feature, and the 0.5 line
-        # declares a rustc floor above what a toolchain in this image is guaranteed to
-        # carry. Either failure would be a red run about Rust, not about cairn.
-        run: |
-          set -euo pipefail
-          asset="br-$BR_VERSION-darwin_$(uname -m).tar.gz"
-          base="https://github.com/Dicklesworthstone/beads_rust/releases/download/v$BR_VERSION"
-          work="$(mktemp -d)"
-          curl -fsSL -o "$work/$asset" "$base/$asset"
-          curl -fsSL -o "$work/$asset.sha256" "$base/$asset.sha256"
-          (cd "$work" && shasum -a 256 -c "$asset.sha256")
-          tar xzf "$work/$asset" -C "$work"
-          mkdir -p "$HOME/.cargo/bin"
-          install -m 755 "$work/br" "$HOME/.cargo/bin/br"
+        uses: ./.github/actions/install-br
+        with:
+          version: ${{ env.BR_VERSION }}
 
       - name: The br the gates read
         run: |
@@ -329,6 +299,8 @@ jobs:
           version: "0.10.9"
           enable-cache: true
           cache-dependency-glob: uv.lock
+          # A cached cypari2 wheel is linked to the libpari it was built against.
+          cache-suffix: pari-2.17.4
 
       - name: Sync the locked environment
         run: uv sync --locked --all-groups

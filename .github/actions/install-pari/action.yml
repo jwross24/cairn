@@ -1,0 +1,26 @@
+name: Install PARI/GP
+description: The PARI/GP 2.17.4 arm64_tahoe Homebrew bottle, fetched by digest, at /opt/homebrew.
+runs:
+  using: composite
+  steps:
+    - name: Install PARI/GP
+      shell: bash
+      env:
+        # Homebrew's stable pari is 2.19.0, which changes the 60-bit curve draws and the
+        # point-counting PRNG consumption the goldens hold; the pin is the 2.17.4
+        # arm64_tahoe bottle the machines that write this repo pour, fetched by digest.
+        PARI_VERSION: "2.17.4"
+        PARI_BOTTLE_SHA256: "4a86a32a47d544444b4d6bd72bbc39e9231c748d0be5b85883f49fb6985bb65c"
+      run: |
+        set -euo pipefail
+        # The runner image ships aws/tap untrusted, so Homebrew warns on every
+        # invocation. pari comes from homebrew/core; nothing here wants that tap.
+        brew untap aws/tap || true
+        brew install gmp readline
+        work="$(mktemp -d)"
+        bottle="$work/pari--$PARI_VERSION.arm64_tahoe.bottle.tar.gz"
+        curl -fsSL -H "Authorization: Bearer QQ==" -o "$bottle" \
+          "https://ghcr.io/v2/homebrew/core/pari/blobs/sha256:$PARI_BOTTLE_SHA256"
+        echo "$PARI_BOTTLE_SHA256  $bottle" | shasum -a 256 -c -
+        brew install "$bottle"
+        test "$(/opt/homebrew/bin/gp --version-short)" = "$PARI_VERSION"

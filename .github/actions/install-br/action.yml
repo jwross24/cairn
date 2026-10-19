@@ -1,0 +1,37 @@
+name: Install br
+description: The published br binary at the pinned version, restored from cache or checked against its published sha256.
+inputs:
+  version:
+    description: The br release, matching the binary the machines that write this repo carry.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Restore br
+      id: br-cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+      with:
+        path: ~/.cargo/bin/br
+        key: br-${{ inputs.version }}-${{ runner.os }}-${{ runner.arch }}
+
+    - name: Install br
+      if: steps.br-cache.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        BR_VERSION: ${{ inputs.version }}
+      # The published binary, checked against the sha256 published beside it.
+      # `cargo install beads_rust` is the other route and it does not hold: the 0.2
+      # line pulls a dependency gated behind a nightly-only feature, and the 0.5 line
+      # declares a rustc floor above what a toolchain in this image is guaranteed to
+      # carry. Either failure would be a red run about Rust, not about cairn.
+      run: |
+        set -euo pipefail
+        asset="br-$BR_VERSION-darwin_$(uname -m).tar.gz"
+        base="https://github.com/Dicklesworthstone/beads_rust/releases/download/v$BR_VERSION"
+        work="$(mktemp -d)"
+        curl -fsSL -o "$work/$asset" "$base/$asset"
+        curl -fsSL -o "$work/$asset.sha256" "$base/$asset.sha256"
+        (cd "$work" && shasum -a 256 -c "$asset.sha256")
+        tar xzf "$work/$asset" -C "$work"
+        mkdir -p "$HOME/.cargo/bin"
+        install -m 755 "$work/br" "$HOME/.cargo/bin/br"
