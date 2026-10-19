@@ -1,11 +1,13 @@
 import json
 import os
+import select
 import shlex
 import shutil
 import subprocess
 import sys
 import uuid
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from _ci_lanes import (
@@ -43,17 +45,43 @@ CONTAINER_AUTHORITY_NODES = (
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def _collect_nodes(lane):
+@pytest.fixture(scope="module")
+def collect():
     env = dict(os.environ)
     env.pop("PYTEST_ADDOPTS", None)
-    result = subprocess.run(
-        [sys.executable, "-m", "pytest", "-q", "--collect-only", f"--cairn-ci-lane={lane}"],
-        cwd=ROOT,
-        env=env,
-        text=True,
-        capture_output=True,
-        timeout=90,
-    )
+    worker = []
+
+    def start():
+        proc = subprocess.Popen(
+            [sys.executable, str(ROOT / "tests/_collect_worker.py")],
+            cwd=ROOT,
+            env=env,
+            text=True,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
+        worker[:] = [proc]
+        return proc
+
+    def run(*pytest_args, timeout):
+        proc = worker[0] if worker and worker[0].poll() is None else start()
+        proc.stdin.write(json.dumps(pytest_args) + "\n")
+        proc.stdin.flush()
+        if not select.select([proc.stdout], [], [], timeout)[0]:
+            proc.kill()
+            raise subprocess.TimeoutExpired(pytest_args, timeout)
+        reply = proc.stdout.readline()
+        assert reply, f"collection worker exited with {proc.wait()}"
+        return SimpleNamespace(**json.loads(reply))
+
+    yield run
+    if worker:
+        worker[0].stdin.close()
+        worker[0].wait(timeout=30)
+
+
+def _collect_nodes(collect, lane):
+    result = collect("-q", "--collect-only", f"--cairn-ci-lane={lane}", timeout=90)
     assert result.returncode == 0, result.stdout + result.stderr
     return {line for line in result.stdout.splitlines() if line.startswith("tests/") and "::" in line}
 
@@ -195,23 +223,14 @@ def test_invalid_lane_selection_runs_no_gates(dispatch, args):
         ("container-plan-proven", PROVEN_TEST_PATH),
     ],
 )
-def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
+def test_the_lane_gate_command_collects_the_real_repository(collect, lane, test_file):
     line = next(
         line
         for line in (ROOT / "scripts/check.sh").read_text().splitlines()
         if line.strip().startswith("gate tests uv run pytest ")
     )
-    argv = [arg.replace("$CI_LANE", lane) for arg in shlex.split(line)[4:]]
-    env = dict(os.environ)
-    env.pop("PYTEST_ADDOPTS", None)
-    result = subprocess.run(
-        [sys.executable, "-m", *argv, "--collect-only"],
-        cwd=ROOT,
-        env=env,
-        text=True,
-        capture_output=True,
-        timeout=60,
-    )
+    argv = [arg.replace("$CI_LANE", lane) for arg in shlex.split(line)[5:]]
+    result = collect(*argv, "--collect-only", timeout=60)
     assert result.returncode == 0, result.stdout + result.stderr
     assert f"{test_file}::" in result.stdout
     if lane.startswith("solution-library"):
@@ -282,7 +301,9 @@ def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
         if lane in ("solution-plan", "solution-plan-exact"):
             expected.append(f"{PROVEN_TEST_PATH}::{PROVEN_DEV_TEST}")
             slope_nodes = {
-                node for node in _collect_nodes("all") if node.split("::", 1)[0] in SOLUTION_PLAN_EXACT_TEST_PATHS
+                node
+                for node in _collect_nodes(collect, "all")
+                if node.split("::", 1)[0] in SOLUTION_PLAN_EXACT_TEST_PATHS
             }
             assert len(slope_nodes) == 23
             expected.extend(slope_nodes)
@@ -290,7 +311,7 @@ def test_the_lane_gate_command_collects_the_real_repository(lane, test_file):
         assert set(selected) == set(expected)
 
 
-def test_container_plan_leaves_are_the_five_node_disjoint_aggregate():
+def test_container_plan_leaves_are_the_five_node_disjoint_aggregate(collect):
     path = "tests/integration/test_container_statement_hash.py"
     plan = f"{path}::test_linux_ordered_plan_runs_each_step_in_order"
     expected = {
@@ -300,21 +321,21 @@ def test_container_plan_leaves_are_the_five_node_disjoint_aggregate():
     }
     combined = set()
     for lane in CONTAINER_PLAN_LANES:
-        nodes = _collect_nodes(lane)
+        nodes = _collect_nodes(collect, lane)
         assert nodes == expected[lane]
         assert combined.isdisjoint(nodes)
         combined |= nodes
     assert len(combined) == 5
-    assert _collect_nodes("container-plan") == combined
+    assert _collect_nodes(collect, "container-plan") == combined
     dev_node = f"{PROVEN_TEST_PATH}::{PROVEN_DEV_TEST}"
-    assert dev_node in _collect_nodes("solution-plan-exact")
+    assert dev_node in _collect_nodes(collect, "solution-plan-exact")
     assert dev_node not in combined
 
 
-def test_python_lanes_partition_the_previous_fallback_population():
-    all_nodes = _collect_nodes("all")
-    unit_nodes = _collect_nodes("python")
-    integration_nodes = _collect_nodes("python-integration")
+def test_python_lanes_partition_the_previous_fallback_population(collect):
+    all_nodes = _collect_nodes(collect, "all")
+    unit_nodes = _collect_nodes(collect, "python")
+    integration_nodes = _collect_nodes(collect, "python-integration")
     explicit_paths = {
         *LEAN_TEST_PATHS,
         *M0_TEST_PATHS,
@@ -354,17 +375,8 @@ def test_python_lanes_partition_the_previous_fallback_population():
         *((lane, SOLUTION_LIBRARY_TEST_PATHS, 1) for lane in SOLUTION_LIBRARY_LANES),
     ],
 )
-def test_new_lane_population_and_ownership_are_exact(lane, paths, count):
-    env = dict(os.environ)
-    env.pop("PYTEST_ADDOPTS", None)
-    result = subprocess.run(
-        [sys.executable, "-m", "pytest", "-q", "--collect-only", f"--cairn-ci-lane={lane}"],
-        cwd=ROOT,
-        env=env,
-        text=True,
-        capture_output=True,
-        timeout=90,
-    )
+def test_new_lane_population_and_ownership_are_exact(collect, lane, paths, count):
+    result = collect("-q", "--collect-only", f"--cairn-ci-lane={lane}", timeout=90)
     assert result.returncode == 0, result.stdout + result.stderr
     selected = [line for line in result.stdout.splitlines() if line.startswith("tests/") and "::" in line]
     assert len(selected) == count
@@ -374,28 +386,11 @@ def test_new_lane_population_and_ownership_are_exact(lane, paths, count):
     assert {node.split("::", 1)[0] for node in selected} == expected_paths
 
 
-def test_lean_container_authority_nodes_have_one_linux_owner():
+def test_lean_container_authority_nodes_have_one_linux_owner(collect):
     nodes = CONTAINER_AUTHORITY_NODES
     owners = {node: [] for node in nodes}
-    env = dict(os.environ)
-    env.pop("PYTEST_ADDOPTS", None)
     for lane in CI_LANES:
-        result = subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "pytest",
-                "-q",
-                "--collect-only",
-                f"--cairn-ci-lane={lane}",
-                *nodes,
-            ],
-            cwd=ROOT,
-            env=env,
-            text=True,
-            capture_output=True,
-            timeout=60,
-        )
+        result = collect("-q", "--collect-only", f"--cairn-ci-lane={lane}", *nodes, timeout=60)
         nodeids = result.stdout.splitlines()
         for node in nodes:
             if lane == "container":
