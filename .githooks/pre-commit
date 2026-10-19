@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
-# Two gates, in cost order. Install once per clone:
+# Gates, in cost order. Install once per clone:
 #
 #   git config core.hooksPath .githooks
 #
-# 1. scripts/check.sh --fast — format, lint and spelling on the paths this commit
-#    stages, so a file the commit does not touch cannot refuse it. The tree-wide
-#    run is CI's (.github/workflows/ci.yml).
+# 0. file-token-limit.sh — no staged file over 5,000 tokens (bytes / 4), no bypass.
+# 1. scripts/check.sh --fast — format, lint and spelling on the staged paths only;
+#    the tree-wide run is CI's (.github/workflows/ci.yml).
 # 2. The beads compliance audit, for any bead this commit closes.
 #
-# Both leave a trace (.check.log, .beads_hook.log). Neither passes quietly when
-# its tooling is missing: check.sh denies without uv, and the absence of the
-# compliance skill is reported rather than swallowed.
+# Gates 1 and 2 leave a trace (.check.log, .beads_hook.log) and do not pass quietly
+# when their tooling is missing.
 #
 # Bypass, named and logged, per gate:
 #   CAIRN_CHECK_SKIP='<reason>' git commit …
@@ -19,6 +18,8 @@ set -uo pipefail
 
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT" || exit 1
+
+"$ROOT/.githooks/file-token-limit.sh" || exit 1
 
 if [ -f scripts/fd_ceiling_gate.py ] && command -v uv >/dev/null 2>&1; then
   uv run python scripts/fd_ceiling_gate.py --root "$ROOT"
