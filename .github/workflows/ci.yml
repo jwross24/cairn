@@ -187,6 +187,9 @@ jobs:
     timeout-minutes: ${{ matrix.lane == 'solution-plan-exact' && 45 || 20 }}
     env:
       PYTEST_ADDOPTS: "-vv"
+      # cypari2 2.2.4 has no CPython 3.15 build; macos-latest resolves the highest
+      # interpreter requires-python admits, so the lane pins the minor it supports.
+      UV_PYTHON: "3.14"
       # Under the job ceiling by enough that pytest dies first and leaves a thread
       # profile, rather than the job being canceled with a blank transcript. The
       # local default is higher; nothing meters a local run.
