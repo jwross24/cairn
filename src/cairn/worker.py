@@ -42,6 +42,7 @@ def _options(prepared, cwd, mcp_servers=None):
         permission_mode="dontAsk",
         extra_args={"bare": None, "disable-slash-commands": None, "no-session-persistence": None},
         thinking={"type": prepared.thinking},
+        effort=prepared.effort,
     )
 
 

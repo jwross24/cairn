@@ -174,6 +174,9 @@ def test_replaced_bundle_and_pin_are_refused_by_an_existing_handle(arena):
         ("thinking", "enabled", "worker thinking must be adaptive or disabled"),
         ("thinking", {"type": "adaptive"}, "worker thinking must be adaptive or disabled"),
         ("thinking", None, "worker thinking must be adaptive or disabled"),
+        ("effort", "extreme", "worker effort must be low, medium, high, xhigh or max"),
+        ("effort", 3, "worker effort must be low, medium, high, xhigh or max"),
+        ("effort", None, "worker effort must be low, medium, high, xhigh or max"),
     ],
 )
 def test_invalid_role_config_is_refused(tmp_path, arena, field, value, message):

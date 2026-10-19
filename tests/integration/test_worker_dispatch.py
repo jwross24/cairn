@@ -2,11 +2,14 @@ import asyncio
 import json
 import sys
 import tempfile
+import typing
 from pathlib import Path
 
+import claude_agent_sdk
+import pytest
 from claude_agent_sdk._internal.transport.subprocess_cli import SubprocessCLITransport
 
-from cairn import dispatch, worker
+from cairn import dispatch, roles, worker
 from cairn.substrate import Substrate, blob_hash
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -116,6 +119,8 @@ def test_the_worker_envelope_pins_permission_mode_and_disables_thinking(arena, t
     assert options.permission_mode == "dontAsk"
     assert prepared.thinking == "disabled"
     assert options.thinking == {"type": "disabled"}
+    assert prepared.effort is None
+    assert options.effort is None
     assert options.setting_sources == []
     assert options.strict_mcp_config is True
     assert json.loads(options.settings) == {"enabledPlugins": {"agents-md@builtin": False, "telemetry@builtin": False}}
@@ -129,3 +134,18 @@ def test_a_role_that_pins_adaptive_thinking_reaches_the_sdk_options(arena, tmp_p
     prepared = dispatch._prepare(sub, gate_bundle, role="echo", node_ids=(node,))
     assert prepared.thinking == "adaptive"
     assert worker._options(prepared, tmp_path).thinking == {"type": "adaptive"}
+
+
+def test_the_role_effort_levels_are_the_sdk_effort_levels():
+    assert typing.get_args(claude_agent_sdk.EffortLevel) == roles.EFFORT_LEVELS
+
+
+@pytest.mark.parametrize("effort", ["low", "medium", "high", "xhigh", "max"])
+def test_a_role_that_pins_effort_reaches_the_sdk_options(arena, tmp_path, effort):
+    sub, _, node = arena
+    directory = tmp_path / effort
+    directory.mkdir()
+    gate_bundle = make_bundle(directory, {**ROLE, "effort": effort})
+    prepared = dispatch._prepare(sub, gate_bundle, role="echo", node_ids=(node,))
+    assert prepared.effort == effort
+    assert worker._options(prepared, tmp_path).effort == effort

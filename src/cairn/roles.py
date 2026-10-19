@@ -22,8 +22,9 @@ PROVER = "prover_brief"
 NAMES = (PROVER, SKEPTIC, SKEPTIC_HUNT)
 CLAIM_HASH = re.compile(r"\b[0-9a-fA-F]{32,}\b")
 ROLE_FIELDS = frozenset({"template", "tools", "model", "max_turns", "timeout_s"})
-OPTIONAL_ROLE_FIELDS = frozenset({"thinking"})
+OPTIONAL_ROLE_FIELDS = frozenset({"thinking", "effort"})
 THINKING_MODES = ("adaptive", "disabled")
+EFFORT_LEVELS = ("low", "medium", "high", "xhigh", "max")
 
 
 class RoleTemplateError(BundleError):
@@ -42,6 +43,7 @@ class RoleConfig:
     max_turns: int
     timeout_s: int
     thinking: str
+    effort: str | None
 
 
 def has_role_fields(config):
@@ -51,11 +53,14 @@ def has_role_fields(config):
 def validate_config(config, tool_registry):
     if not has_role_fields(config):
         raise RoleConfigError(
-            "worker role fields must be template, tools, model, max_turns, timeout_s and optionally thinking"
+            "worker role fields must be template, tools, model, max_turns, timeout_s and optionally thinking and effort"
         )
     thinking = config.get("thinking", "disabled")
     if not isinstance(thinking, str) or thinking not in THINKING_MODES:
         raise RoleConfigError("worker thinking must be adaptive or disabled")
+    effort = config.get("effort")
+    if "effort" in config and (not isinstance(effort, str) or effort not in EFFORT_LEVELS):
+        raise RoleConfigError("worker effort must be low, medium, high, xhigh or max")
     if not isinstance(config["template"], str) or not config["template"].strip():
         raise RoleConfigError("worker role needs a role-template name")
     tools = config["tools"]
@@ -75,6 +80,7 @@ def validate_config(config, tool_registry):
         max_turns=config["max_turns"],
         timeout_s=config["timeout_s"],
         thinking=thinking,
+        effort=effort,
     )
 
 

@@ -26,11 +26,12 @@ def test_the_shipped_bundle_prepares_a_hunt_skeptic_over_the_bound_transcript(tm
         checklist, checklist_hash = roles.load(gate, roles.SKEPTIC_HUNT)
         assert prepared.template == checklist
         assert prepared.tools == (skeptic_tools.LIST_NODES, skeptic_tools.READ_NODE)
-        assert (prepared.model, prepared.max_turns, prepared.timeout_s, prepared.thinking) == (
+        assert (prepared.model, prepared.max_turns, prepared.timeout_s, prepared.thinking, prepared.effort) == (
             "claude-opus-5-5",
             64,
             600,
             "adaptive",
+            "high",
         )
         handle = prepared.skeptic_handle
         assert handle.read(plan.hash)["value"]["statement_hash"] == statement.hash

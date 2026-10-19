@@ -81,6 +81,7 @@ def test_the_shipped_skeptic_role_runs_the_hunt_checklist_with_read_only_tools(p
             "max_turns": 64,
             "timeout_s": 600,
             "thinking": "adaptive",
+            "effort": "high",
         }
     }
     assert gate.object("skeptic_scope") == {"evidence_kinds": ["counterexample_hunt_record"]}

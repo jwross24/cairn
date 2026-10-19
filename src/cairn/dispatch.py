@@ -37,6 +37,7 @@ class _Prepared:
     role_config: bytes
     skeptic_handle: skeptic.Handle | None = None
     thinking: str = "disabled"
+    effort: str | None = None
 
 
 @dataclass(frozen=True)
@@ -144,6 +145,7 @@ def _prepare(sub, gate_bundle, *, role, node_ids):
         role_config=pinned.raw(ROLE_CONFIG),
         skeptic_handle=handle,
         thinking=config.thinking,
+        effort=config.effort,
     )
 
 

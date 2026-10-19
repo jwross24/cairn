@@ -5,6 +5,7 @@
     "model": "claude-opus-5-5",
     "max_turns": 64,
     "timeout_s": 600,
-    "thinking": "adaptive"
+    "thinking": "adaptive",
+    "effort": "high"
   }
 }
