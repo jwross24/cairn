@@ -14,6 +14,7 @@ from cairn.report_records import (
     _skeptic_records,
     _spend,
     _statement,
+    _withdrawals,
     assertion_line,
 )
 from cairn.substrate import Substrate, SubstrateError
@@ -77,6 +78,13 @@ def render(sub, *, kind, statement_hash=None, ladder_table_hash=None, attest_pat
                     f"claim id: {statement['claim_id']}; version: {statement['version']}; informal: {statement['informal']}"
                 ),
                 line(f"scope: {statement['scope']}"),
+                *(
+                    line(
+                        f"withdrawal reason: {payload['reason']}; hunt run: {payload['hunt_run_hash']}; "
+                        f"issued by: {payload['issued_by']} at {payload['at']}; record digest: {digest}"
+                    )
+                    for payload, digest in _withdrawals(sub, statement_hash)
+                ),
             ],
         )
     hypothesis_lines = []

@@ -48,6 +48,15 @@ def _fields(kind):
             "issued_by": "operator-1",
             "at": AT,
         }
+    if kind == human_authority.STATEMENT_WITHDRAWAL:
+        return {
+            "statement_hash": STATEMENT_HASH,
+            "hunt_run_hash": "f6" * 32,
+            "skeptic_dispatch_id": "dispatch-1",
+            "reason": "survived; not promoted",
+            "issued_by": "operator-1",
+            "at": AT,
+        }
     return {"class_key": "class-1", "salt": "salt-2", "issued_by": "operator-1", "at": AT}
 
 

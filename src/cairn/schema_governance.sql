@@ -244,7 +244,7 @@ CREATE TRIGGER IF NOT EXISTS ladder_dispatches_no_update BEFORE UPDATE ON ladder
 CREATE TRIGGER IF NOT EXISTS ladder_dispatches_no_delete BEFORE DELETE ON ladder_dispatches BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 
 CREATE TABLE IF NOT EXISTS human_authority_records (
-    kind TEXT NOT NULL CHECK (kind IN ('operator_session', 'statement_ratification', 'yank_ruling', 'salt_issuance')),
+    kind TEXT NOT NULL CHECK (kind IN ('operator_session', 'statement_ratification', 'yank_ruling', 'salt_issuance', 'statement_withdrawal')),
     canonical BLOB NOT NULL,
     record_digest TEXT NOT NULL,
     file_offset INTEGER NOT NULL CHECK (file_offset >= 0),

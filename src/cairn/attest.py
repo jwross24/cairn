@@ -338,6 +338,22 @@ def _run_append(ns):
         canonical, offset, row = _append_nogo_review(ns, fields, gate)
     elif ns.kind == "expert_signoff":
         canonical, offset, row = _append_signoff(ns, fields, gate)
+    elif ns.kind == human_authority.STATEMENT_WITHDRAWAL:
+        from cairn import withdrawal
+
+        with substrate.Substrate.open(ns.db) as sub:
+            try:
+                row = withdrawal.withdraw(sub, ns.attest, fields, gate_bundle_hash=gate.hash)
+            except withdrawal.WithdrawalRefused as exc:
+                raise CliError(
+                    exits.GATE_REFUSED,
+                    str(exc),
+                    where=fields.get("statement_hash") if isinstance(fields, dict) else None,
+                    next_command="withdraw an open statement citing its SURVIVED hunt and a typed skeptic_record",
+                ) from None
+        canonical = human_authority.canonical(ns.kind, fields, gate_bundle_hash=gate.hash)
+        offset = row["file_offset"]
+        row = None
     elif ns.kind in human_authority.KINDS:
         try:
             canonical = human_authority.canonical(ns.kind, fields, gate_bundle_hash=gate.hash)

@@ -2,7 +2,7 @@ import argparse
 import json
 from decimal import Decimal
 
-from cairn import claims, dispatch, hunt, ladder
+from cairn import claims, dispatch, human_authority, hunt, ladder
 
 
 class ReportRefused(ValueError):
@@ -24,6 +24,19 @@ def assertion_line(text, statement_hash=None, tag="untagged", evidence_hash=None
 
 def _json(value):
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+
+def _withdrawals(sub, statement_hash):
+    rows = sub.conn.execute(
+        "SELECT canonical, record_digest FROM human_authority_records WHERE kind = ? ORDER BY rowid",
+        (human_authority.STATEMENT_WITHDRAWAL,),
+    ).fetchall()
+    found = []
+    for row in rows:
+        payload = human_authority._decode(human_authority.STATEMENT_WITHDRAWAL, bytes(row["canonical"]))
+        if payload["statement_hash"] == statement_hash:
+            found.append((payload, row["record_digest"]))
+    return found
 
 
 def _statement(sub, digest):

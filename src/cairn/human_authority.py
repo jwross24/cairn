@@ -13,7 +13,8 @@ OPERATOR_SESSION = "operator_session"
 STATEMENT_RATIFICATION = "statement_ratification"
 YANK_RULING = "yank_ruling"
 SALT_ISSUANCE = "salt_issuance"
-KINDS = (OPERATOR_SESSION, STATEMENT_RATIFICATION, YANK_RULING, SALT_ISSUANCE)
+STATEMENT_WITHDRAWAL = "statement_withdrawal"
+KINDS = (OPERATOR_SESSION, STATEMENT_RATIFICATION, YANK_RULING, SALT_ISSUANCE, STATEMENT_WITHDRAWAL)
 TABLE = "human_authority_records"
 DEFAULT_SESSION_MAX_DURATION_S = 3600
 HASH_RE = re.compile(r"[0-9a-f]{64}\Z")
@@ -60,6 +61,19 @@ RECORDS = {
             Field("gate_bundle_hash", NON_EMPTY_STR),
             Field("class_key", NON_EMPTY_STR),
             Field("salt", NON_EMPTY_STR),
+            Field("issued_by", NON_EMPTY_STR),
+            Field("at", NON_EMPTY_STR),
+        ],
+    ),
+    STATEMENT_WITHDRAWAL: Struct(
+        STATEMENT_WITHDRAWAL,
+        [
+            Field("kind", NON_EMPTY_STR),
+            Field("gate_bundle_hash", NON_EMPTY_STR),
+            Field("statement_hash", NON_EMPTY_STR),
+            Field("hunt_run_hash", NON_EMPTY_STR),
+            Field("skeptic_dispatch_id", NON_EMPTY_STR),
+            Field("reason", NON_EMPTY_STR),
             Field("issued_by", NON_EMPTY_STR),
             Field("at", NON_EMPTY_STR),
         ],
@@ -138,6 +152,10 @@ def _validate(kind, payload):
     elif kind == YANK_RULING:
         _hash(payload["skill_identity_hash"], "skill_identity_hash")
         _reach_json(payload["reach_predicate"])
+        _timestamp(payload["at"], "at")
+    elif kind == STATEMENT_WITHDRAWAL:
+        _hash(payload["statement_hash"], "statement_hash")
+        _hash(payload["hunt_run_hash"], "hunt_run_hash")
         _timestamp(payload["at"], "at")
     else:
         _timestamp(payload["at"], "at")
