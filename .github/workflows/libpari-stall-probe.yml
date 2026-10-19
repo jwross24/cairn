@@ -17,12 +17,12 @@ jobs:
     timeout-minutes: 15
     env:
       PROBE_WAIT: "60"
+      # cypari2 2.2.4 does not build on the CPython 3.15 that macos-latest resolves.
+      UV_PYTHON: "3.14"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - uses: astral-sh/setup-uv@e92bafb6253dcd438e0484186d7669ea7a8ca1cc  # v6.4.3
-      - run: |
-          brew untap aws/tap || true
-          brew install pari
+      - uses: ./.github/actions/install-pari
       - run: uv sync --frozen
       - name: Probe
         run: |

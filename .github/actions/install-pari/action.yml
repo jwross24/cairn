@@ -1,26 +1,50 @@
 name: Install PARI/GP
-description: The PARI/GP 2.17.4 arm64_tahoe Homebrew bottle, fetched by digest, at /opt/homebrew.
+description: PARI/GP 2.17.4 built from the official source with Homebrew's configuration, linked into /opt/homebrew.
 runs:
   using: composite
   steps:
-    - name: Install PARI/GP
+    - name: Restore the PARI/GP build
+      id: pari-cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+      with:
+        path: ~/.cache/cairn-pari-2.17.4
+        key: pari-2.17.4-02651d99c391007d384b3fadbc20abc6916b77036f9e496c99e9ce8688ca4b53-${{ runner.os }}-${{ runner.arch }}
+
+    - name: Build PARI/GP
+      if: steps.pari-cache.outputs.cache-hit != 'true'
       shell: bash
       env:
         # Homebrew's stable pari is 2.19.0, which changes the 60-bit curve draws and the
-        # point-counting PRNG consumption the goldens hold; the pin is the 2.17.4
-        # arm64_tahoe bottle the machines that write this repo pour, fetched by digest.
-        PARI_VERSION: "2.17.4"
-        PARI_BOTTLE_SHA256: "4a86a32a47d544444b4d6bd72bbc39e9231c748d0be5b85883f49fb6985bb65c"
+        # point-counting PRNG consumption the goldens hold, and brew will not pour a bottle
+        # file outside a tap. The checksum is the one the 2.17.4 formula carries; -O1 and the
+        # Configure flags are that formula's, and the result reproduces the bottle byte for byte.
+        PARI_SHA256: "02651d99c391007d384b3fadbc20abc6916b77036f9e496c99e9ce8688ca4b53"
       run: |
         set -euo pipefail
-        # The runner image ships aws/tap untrusted, so Homebrew warns on every
-        # invocation. pari comes from homebrew/core; nothing here wants that tap.
         brew untap aws/tap || true
         brew install gmp readline
         work="$(mktemp -d)"
-        bottle="$work/pari--$PARI_VERSION.arm64_tahoe.bottle.tar.gz"
-        curl -fsSL -H "Authorization: Bearer QQ==" -o "$bottle" \
-          "https://ghcr.io/v2/homebrew/core/pari/blobs/sha256:$PARI_BOTTLE_SHA256"
-        echo "$PARI_BOTTLE_SHA256  $bottle" | shasum -a 256 -c -
-        brew install "$bottle"
-        test "$(/opt/homebrew/bin/gp --version-short)" = "$PARI_VERSION"
+        curl -fsSL -o "$work/pari-2.17.4.tar.gz" https://pari.math.u-bordeaux.fr/pub/pari/unix/pari-2.17.4.tar.gz
+        echo "$PARI_SHA256  $work/pari-2.17.4.tar.gz" | shasum -a 256 -c -
+        tar -xzf "$work/pari-2.17.4.tar.gz" -C "$work"
+        cd "$work/pari-2.17.4"
+        CFLAGS="-O1" ./Configure --prefix="$HOME/.cache/cairn-pari-2.17.4" \
+          --with-gmp="$(brew --prefix gmp)" --with-readline="$(brew --prefix readline)" \
+          --graphic=ps --mt=pthread
+        make -j"$(sysctl -n hw.ncpu)" all
+        make install
+
+    - name: Link PARI/GP into /opt/homebrew
+      shell: bash
+      run: |
+        set -euo pipefail
+        brew untap aws/tap || true
+        brew install gmp readline
+        prefix="$HOME/.cache/cairn-pari-2.17.4"
+        mkdir -p /opt/homebrew/bin /opt/homebrew/lib /opt/homebrew/include /opt/homebrew/share
+        ln -sfn "$prefix"/bin/* /opt/homebrew/bin/
+        ln -sfn "$prefix"/lib/libpari* /opt/homebrew/lib/
+        ln -sfn "$prefix/lib/pari" /opt/homebrew/lib/pari
+        ln -sfn "$prefix/include/pari" /opt/homebrew/include/pari
+        ln -sfn "$prefix/share/pari" /opt/homebrew/share/pari
+        test "$(/opt/homebrew/bin/gp --version-short)" = "2.17.4"
