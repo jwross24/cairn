@@ -1,9 +1,37 @@
 from fractions import Fraction
+from pathlib import Path
 
 import pytest
 
-from cairn import hunt
+from cairn import hunt, hunt_attempt, hunt_record
 from cairn import small_numbers_floor as floor
+from cairn.substrate import blob_hash
+
+HUNT_MODULES = (hunt, hunt_record, hunt_attempt)
+
+
+def _framed(paths):
+    framed = bytearray()
+    for path in paths:
+        name = Path(path).name.encode()
+        content = Path(path).read_bytes()
+        framed += len(name).to_bytes(8, "big") + name + len(content).to_bytes(8, "big") + content
+    return blob_hash(bytes(framed))
+
+
+def test_the_sampler_identity_covers_every_hunt_module():
+    assert tuple(module.__file__ for module in HUNT_MODULES) == floor.SAMPLER_SOURCES
+    assert floor.sampler_identity() == _framed(floor.SAMPLER_SOURCES)
+
+
+@pytest.mark.parametrize("module", HUNT_MODULES, ids=lambda module: module.__name__)
+def test_a_one_byte_change_to_any_hunt_module_moves_the_sampler_identity(tmp_path, monkeypatch, module):
+    before = floor.sampler_identity()
+    changed = tmp_path / Path(module.__file__).name
+    changed.write_bytes(Path(module.__file__).read_bytes() + b"\n")
+    sources = tuple(str(changed) if path == module.__file__ else path for path in floor.SAMPLER_SOURCES)
+    monkeypatch.setattr(floor, "SAMPLER_SOURCES", sources)
+    assert floor.sampler_identity() != before
 
 
 @pytest.mark.parametrize(

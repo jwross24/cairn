@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from fractions import Fraction
 from pathlib import Path
 
-from cairn import bundle, hunt, keys, ladder, repro, runner
+from cairn import bundle, hunt, hunt_attempt, hunt_record, keys, ladder, repro, runner
 from cairn.profile import Evaluation
 from cairn.substrate import EDGE_INPUT, SubstrateError, blob_hash
 
@@ -82,8 +82,16 @@ def _write(sub, kind, value, parents=()):
     return digest
 
 
+SAMPLER_SOURCES = (hunt.__file__, hunt_record.__file__, hunt_attempt.__file__)
+
+
 def sampler_identity():
-    return blob_hash(Path(hunt.__file__).read_bytes())
+    framed = bytearray()
+    for source in SAMPLER_SOURCES:
+        name = Path(source).name.encode()
+        content = Path(source).read_bytes()
+        framed += len(name).to_bytes(8, "big") + name + len(content).to_bytes(8, "big") + content
+    return blob_hash(bytes(framed))
 
 
 @dataclass(frozen=True)
