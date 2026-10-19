@@ -175,7 +175,14 @@ def register_protocol(sub, protocol, plan):
     return _write(sub, PROTOCOL_KIND, protocol.value(), (plan.hash, plan.hypothesis_key, protocol.study_hash))
 
 
-def validate_protocol(sub, protocol, plan):
+def _names_a_floor_run(sub, commitment):
+    rows = sub.conn.execute(
+        "SELECT child_hash FROM lineage WHERE parent_hash = ? AND edge_kind = ?", (commitment.hash, EDGE_INPUT)
+    ).fetchall()
+    return any((node := sub.get_node(row["child_hash"])) is not None and node["kind"] == RUN_KIND for row in rows)
+
+
+def validate_protocol(sub, protocol, plan, *, in_flight_nonce=None):
     _validate_plan(protocol, plan)
     if _read(sub, protocol.hash, PROTOCOL_KIND) != protocol.value():
         raise FloorRefused("stored protocol differs")
@@ -185,10 +192,12 @@ def validate_protocol(sub, protocol, plan):
         position, commitment = ladder.commitment_for(sub, row["nonce"])
         if commitment is None or ladder.sequence_position(sub, protocol.hash) >= position:
             raise FloorRefused("protocol must precede every entropy draw for this hypothesis")
+        if row["nonce"] != in_flight_nonce and not _names_a_floor_run(sub, commitment):
+            raise FloorRefused("a non-floor entropy draw precedes this floor run")
 
 
 def register_run(sub, protocol, plan, commitment):
-    validate_protocol(sub, protocol, plan)
+    validate_protocol(sub, protocol, plan, in_flight_nonce=commitment.nonce)
     checked = ladder.check_order(sub, hypothesis_hash=plan.hypothesis_key, nonce=commitment.nonce)
     if checked != commitment or ladder.sequence_position(sub, protocol.hash) >= ladder.sequence_position(
         sub, commitment.hash

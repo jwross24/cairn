@@ -133,14 +133,13 @@ def run_hunt(sub, plan, executor: Callable, verifier: Callable, *, run_id=None, 
     population, statement = _scope(sub, plan)
     run_id = run_id or secrets.token_hex(16)
     floor_registration = None
-    if floor_protocol is None:
-        nonce_record = instances.draw_nonce(sub, plan.hypothesis_key, run_id)
-    else:
-        from cairn import ladder, small_numbers_floor
+    from cairn import ladder, small_numbers_floor
 
+    if floor_protocol is not None:
         small_numbers_floor.validate_protocol(sub, floor_protocol, plan)
-        commitment, nonce_record = ladder.commit_entropy(sub, hypothesis_hash=plan.hypothesis_key, run_id=run_id)
-        ladder.check_order(sub, hypothesis_hash=plan.hypothesis_key, nonce=nonce_record.nonce)
+    commitment, nonce_record = ladder.commit_entropy(sub, hypothesis_hash=plan.hypothesis_key, run_id=run_id)
+    ladder.check_order(sub, hypothesis_hash=plan.hypothesis_key, nonce=nonce_record.nonce)
+    if floor_protocol is not None:
         floor_registration = small_numbers_floor.register_run(sub, floor_protocol, plan, commitment)
     nonce = nonce_record.nonce
     contexts = []

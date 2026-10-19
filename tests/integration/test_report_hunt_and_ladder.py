@@ -20,6 +20,7 @@ from cairn import (
     dispatch,
     hunt,
     instances,
+    ladder,
     ladderplan,
     laddertable,
     report,
@@ -204,6 +205,7 @@ def test_every_run_on_hypothesis_is_rendered_oldest_first(tmp_path):
         first = hunt.run_hunt(sub, plan, executor, verifier, run_id="z-first")
         second = hunt.run_hunt(sub, plan, executor, verifier, run_id="a-second")
         instances.draw_nonce(sub, plan.hypothesis_key, "unfinished-third")
+        commitments = [ladder.commitment_for(sub, run.record.nonce)[1].hash for run in (first, second)]
     finally:
         sub.close()
     text = report.document(db_path=tmp_path / "substrate.sqlite", kind="run", statement_hash=statement.hash)
@@ -214,7 +216,9 @@ def test_every_run_on_hypothesis_is_rendered_oldest_first(tmp_path):
     assert first.run_hash in records and second.run_hash in records
     assert "verdict: none recorded; unfinished run" in records
     assert "has a nonce but no hunt record; its outcome is unavailable" in text
-    assert text.count("entropy commitment: none recorded") >= 3
+    for commitment in commitments:
+        assert f"entropy commitment: {commitment}; append position:" in text
+    assert "entropy commitment: none recorded" not in text
 
 
 @pytest.mark.parametrize("reference", ["execution_evidence", "stdout"])
