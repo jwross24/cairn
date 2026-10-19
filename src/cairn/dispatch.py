@@ -17,8 +17,6 @@ lg = log.get("dispatch")
 ROLE_CONFIG = "worker_roles"
 REQUEST_BYTES_UNAVAILABLE = "sdk-query-does-not-expose-provider-bytes"
 SKEPTIC_HUNT_TEMPLATE = roles.SKEPTIC_HUNT
-ROLE_FIELDS = frozenset({"template", "tools", "model", "max_turns", "timeout_s"})
-THINKING_MODES = ("adaptive", "disabled")
 
 
 class DispatchRefused(ValueError):
@@ -104,30 +102,12 @@ def _prepare(sub, gate_bundle, *, role, node_ids):
     registry = pinned.object(ROLE_CONFIG)
     if not isinstance(role, str) or not isinstance(registry, dict) or role not in registry:
         raise DispatchRefused("role is absent from the pinned worker_roles object")
-    config = registry[role]
-    if not isinstance(config, dict) or not ROLE_FIELDS <= set(config) <= ROLE_FIELDS | {"thinking"}:
-        raise DispatchRefused(
-            "worker role fields must be template, tools, model, max_turns, timeout_s and optionally thinking"
-        )
-    thinking = config.get("thinking", "disabled")
-    if not isinstance(thinking, str) or thinking not in THINKING_MODES:
-        raise DispatchRefused("worker thinking must be adaptive or disabled")
-    if not isinstance(config["template"], str) or not config["template"].strip():
-        raise DispatchRefused("worker role needs a role-template name")
     try:
-        template, _ = roles.load(pinned, config["template"])
-    except roles.RoleTemplateError as exc:
+        config = roles.validate_config(registry[role], worker.TOOLS)
+        template, _ = roles.load(pinned, config.template)
+    except (roles.RoleConfigError, roles.RoleTemplateError) as exc:
         raise DispatchRefused(str(exc)) from None
-    tools = config["tools"]
-    if not isinstance(tools, list) or any(not isinstance(t, str) or t not in worker.TOOLS for t in tools):
-        raise DispatchRefused("worker tool is outside the dispatch tool registry")
-    if len(set(tools)) != len(tools):
-        raise DispatchRefused("duplicate worker tool")
-    if not isinstance(config["model"], str) or not re.fullmatch(r"claude-[a-zA-Z0-9-]+", config["model"]):
-        raise DispatchRefused("worker model must be a Claude model identifier")
-    for name in ("max_turns", "timeout_s"):
-        if type(config[name]) is not int or config[name] <= 0:
-            raise DispatchRefused(f"worker {name} must be a positive integer")
+    tools = config.tools
     if not isinstance(node_ids, (tuple, list)) or any(not isinstance(n, str) for n in node_ids):
         raise DispatchRefused("node_ids must be a sequence of node hashes")
     handed = []
@@ -156,14 +136,14 @@ def _prepare(sub, gate_bundle, *, role, node_ids):
         node_ids=tuple(node_ids),
         prompt=json.dumps(handed, ensure_ascii=True, sort_keys=True, separators=(",", ":")),
         template=template,
-        tools=tuple(tools),
-        model=config["model"],
-        max_turns=config["max_turns"],
-        timeout_s=config["timeout_s"],
+        tools=tools,
+        model=config.model,
+        max_turns=config.max_turns,
+        timeout_s=config.timeout_s,
         bundle_hash=pinned.hash,
         role_config=pinned.raw(ROLE_CONFIG),
         skeptic_handle=handle,
-        thinking=thinking,
+        thinking=config.thinking,
     )
 
 
@@ -338,7 +318,7 @@ def skeptic_record(sub, dispatch_id, statement_hash):
     if selected.get("template") != SKEPTIC_HUNT_TEMPLATE:
         return None
     if (
-        not ROLE_FIELDS <= set(selected) <= ROLE_FIELDS | {"thinking"}
+        not roles.has_role_fields(selected)
         or selected.get("tools") != list(sent.tool_allow_list)
         or selected.get("model") != sent.model
     ):

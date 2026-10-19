@@ -7,6 +7,7 @@ the bundle store the orchestrator opens read-only: a different checklist is a di
 """
 
 import re
+from dataclasses import dataclass
 
 from cairn import log
 from cairn.bundle import BundleError
@@ -20,10 +21,61 @@ SKEPTIC_HUNT = "skeptic_hunt_checklist"
 PROVER = "prover_brief"
 NAMES = (PROVER, SKEPTIC, SKEPTIC_HUNT)
 CLAIM_HASH = re.compile(r"\b[0-9a-fA-F]{32,}\b")
+ROLE_FIELDS = frozenset({"template", "tools", "model", "max_turns", "timeout_s"})
+OPTIONAL_ROLE_FIELDS = frozenset({"thinking"})
+THINKING_MODES = ("adaptive", "disabled")
 
 
 class RoleTemplateError(BundleError):
     pass
+
+
+class RoleConfigError(ValueError):
+    pass
+
+
+@dataclass(frozen=True)
+class RoleConfig:
+    template: str
+    tools: tuple[str, ...]
+    model: str
+    max_turns: int
+    timeout_s: int
+    thinking: str
+
+
+def has_role_fields(config):
+    return isinstance(config, dict) and ROLE_FIELDS <= set(config) <= ROLE_FIELDS | OPTIONAL_ROLE_FIELDS
+
+
+def validate_config(config, tool_registry):
+    if not has_role_fields(config):
+        raise RoleConfigError(
+            "worker role fields must be template, tools, model, max_turns, timeout_s and optionally thinking"
+        )
+    thinking = config.get("thinking", "disabled")
+    if not isinstance(thinking, str) or thinking not in THINKING_MODES:
+        raise RoleConfigError("worker thinking must be adaptive or disabled")
+    if not isinstance(config["template"], str) or not config["template"].strip():
+        raise RoleConfigError("worker role needs a role-template name")
+    tools = config["tools"]
+    if not isinstance(tools, list) or any(not isinstance(t, str) or t not in tool_registry for t in tools):
+        raise RoleConfigError("worker tool is outside the dispatch tool registry")
+    if len(set(tools)) != len(tools):
+        raise RoleConfigError("duplicate worker tool")
+    if not isinstance(config["model"], str) or not re.fullmatch(r"claude-[a-zA-Z0-9-]+", config["model"]):
+        raise RoleConfigError("worker model must be a Claude model identifier")
+    for name in ("max_turns", "timeout_s"):
+        if type(config[name]) is not int or config[name] <= 0:
+            raise RoleConfigError(f"worker {name} must be a positive integer")
+    return RoleConfig(
+        template=config["template"],
+        tools=tuple(tools),
+        model=config["model"],
+        max_turns=config["max_turns"],
+        timeout_s=config["timeout_s"],
+        thinking=thinking,
+    )
 
 
 def templates(gate_bundle):
