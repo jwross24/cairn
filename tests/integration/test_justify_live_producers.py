@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import factories
 import pytest
 from _justify_live_helpers import (
@@ -134,7 +132,7 @@ def test_a_store_built_before_the_column_fails_loud_rather_than_falling_back(tmp
 
     from cairn import substrate
 
-    schema = (Path(substrate.__file__).with_name("schema.sql")).read_text()
+    schema = substrate.schema_text()
     old = schema.replace(
         "    attempt_id TEXT,\n    verdict TEXT NOT NULL CHECK (verdict IN ('KEEP'",
         "    verdict TEXT NOT NULL CHECK (verdict IN ('KEEP'",

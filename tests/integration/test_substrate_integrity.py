@@ -147,7 +147,7 @@ def build_store(path, schema_text):
 
 
 def schema_without(trigger):
-    shipped = substrate.SCHEMA_PATH.read_text()
+    shipped = substrate.schema_text()
     kept = [line for line in shipped.splitlines() if f"CREATE TRIGGER IF NOT EXISTS {trigger} " not in line]
     assert len(kept) == len(shipped.splitlines()) - 1
     return "\n".join(kept) + "\n"
@@ -184,7 +184,7 @@ def last_droppable_column(conn, table):
 
 def test_a_store_missing_the_newest_shipped_column_is_refused_by_name(tmp_path):
     db = tmp_path / "narrow.sqlite"
-    build_store(db, substrate.SCHEMA_PATH.read_text())
+    build_store(db, substrate.schema_text())
     conn = sqlite3.connect(str(db), autocommit=True)
     column = last_droppable_column(conn, "ladder_tables")
     conn.execute(f"ALTER TABLE ladder_tables DROP COLUMN {column}")
@@ -196,7 +196,7 @@ def test_a_store_missing_the_newest_shipped_column_is_refused_by_name(tmp_path):
 
 def test_a_store_carrying_a_column_the_shipped_schema_lacks_is_refused_by_name(tmp_path):
     db = tmp_path / "wide.sqlite"
-    build_store(db, substrate.SCHEMA_PATH.read_text())
+    build_store(db, substrate.schema_text())
     conn = sqlite3.connect(str(db), autocommit=True)
     conn.execute("ALTER TABLE ladder_tables ADD COLUMN unshipped_column TEXT")
     conn.close()
@@ -207,7 +207,7 @@ def test_a_store_carrying_a_column_the_shipped_schema_lacks_is_refused_by_name(t
 
 def test_a_store_carrying_a_table_and_trigger_the_shipped_schema_never_named_still_opens(tmp_path):
     db = tmp_path / "instrumented.sqlite"
-    build_store(db, substrate.SCHEMA_PATH.read_text())
+    build_store(db, substrate.schema_text())
     conn = sqlite3.connect(str(db), autocommit=True)
     conn.executescript(
         "CREATE TABLE observer (seen TEXT);"
@@ -237,7 +237,7 @@ def test_a_reader_refuses_a_store_that_holds_no_schema_at_all(tmp_path):
 
 def test_a_store_built_from_the_shipped_schema_opens_and_reopens(tmp_path):
     db = tmp_path / "shipped.sqlite"
-    build_store(db, substrate.SCHEMA_PATH.read_text())
+    build_store(db, substrate.schema_text())
     before = master_of(db)
 
     for role in ("writer", "reader", "writer"):
@@ -278,7 +278,7 @@ def test_a_refused_open_leaves_the_stores_journal_mode_alone(tmp_path):
 )
 def test_a_shipped_object_that_drifted_is_refused_by_name(tmp_path, drift, statements, expected):
     db = tmp_path / f"{drift}.sqlite"
-    build_store(db, substrate.SCHEMA_PATH.read_text())
+    build_store(db, substrate.schema_text())
     conn = sqlite3.connect(str(db), autocommit=True)
     for statement in statements:
         conn.execute(statement)
@@ -290,7 +290,7 @@ def test_a_shipped_object_that_drifted_is_refused_by_name(tmp_path, drift, state
 
 def test_a_column_that_kept_its_name_but_changed_its_type_is_refused(tmp_path):
     db = tmp_path / "retyped.sqlite"
-    shipped = substrate.SCHEMA_PATH.read_text()
+    shipped = substrate.schema_text()
     retyped = shipped.replace("    verdict_predicate TEXT NOT NULL,", "    verdict_predicate BLOB NOT NULL,")
     assert retyped != shipped
     build_store(db, retyped)

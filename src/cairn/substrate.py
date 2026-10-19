@@ -94,8 +94,15 @@ __all__ = [
 
 lg = log.get("substrate")
 
-SCHEMA_PATH = Path(__file__).with_name("schema.sql")
+SCHEMA_PATHS = tuple(
+    Path(__file__).with_name(name) for name in ("schema.sql", "schema_claims.sql", "schema_governance.sql")
+)
 BUSY_TIMEOUT_MS = 5000
+
+
+def schema_text():
+    return "".join(path.read_text() for path in SCHEMA_PATHS)
+
 
 _WRITER = None
 _SHIPPED_SCHEMA = None
@@ -106,7 +113,7 @@ def _shipped_schema():
     if _SHIPPED_SCHEMA is None:
         conn = sqlite3.connect(":memory:")
         try:
-            conn.executescript(SCHEMA_PATH.read_text())
+            conn.executescript(schema_text())
             _SHIPPED_SCHEMA = _schema_objects(conn)
         finally:
             conn.close()
@@ -153,7 +160,7 @@ class Substrate(SubstrateAttemptWrites):
                 conn.execute("PRAGMA synchronous=NORMAL")
                 conn.execute("PRAGMA foreign_keys=ON")
                 if fresh:
-                    conn.executescript(SCHEMA_PATH.read_text())
+                    conn.executescript(schema_text())
             except BaseException:
                 conn.close()
                 raise

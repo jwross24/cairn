@@ -18,7 +18,7 @@ def _snapshot(path):
 
 @pytest.mark.parametrize("role", ["reader", "writer"])
 def test_prior_ladder_column_definition_is_refused_without_mutating_the_store(tmp_path, role):
-    shipped = substrate.SCHEMA_PATH.read_text()
+    shipped = substrate.schema_text()
     prior = shipped.replace("    gate_ops INTEGER,", "    gate_ops INTEGER NOT NULL,")
     assert prior != shipped
     database = tmp_path / "prior-ladder.sqlite"
