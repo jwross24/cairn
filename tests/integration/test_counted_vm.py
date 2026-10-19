@@ -61,6 +61,19 @@ def _inf_or_text(point):
     return "inf" if point is None else f"{point[0]} {point[1]}"
 
 
+def test_the_input_command_loads_no_runner_stack():
+    probe = (
+        "import sys, cairn.countedvm\n"
+        "heavy = ('cairn.runner', 'cairn.bundle', 'cairn.verifier', 'cairn.pari', 'cairn.claims', 'cairn.lean',"
+        " 'cairn.container', 'cypari2')\n"
+        "print(sorted(m for m in heavy if m in sys.modules))"
+    )
+    completed = subprocess.run(
+        [sys.executable, "-c", probe], capture_output=True, text=True, cwd=REPO_ROOT, timeout=120, check=True
+    )
+    assert completed.stdout.strip() == "[]"
+
+
 def test_the_fixture_enumerates_the_whole_group():
     assert len(POINTS) == N
     assert int(pari.ellcard(CURVE)) == N

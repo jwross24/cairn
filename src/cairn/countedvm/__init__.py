@@ -10,7 +10,6 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
-from cairn import runner
 from cairn.substrate import blob_hash
 
 SOURCE = Path(__file__).resolve().with_name("vm.c")
@@ -274,6 +273,9 @@ def launch(
     wall_cap_s=None,
     instruction_set="plain/1",
 ):
+    # The --input command path spawns once per VM run and never launches; it must not pay for the runner stack.
+    from cairn import runner
+
     binary = Path(binary)
     binary_digest = file_digest(binary)
     if binary_digest != expected_binary_digest:
