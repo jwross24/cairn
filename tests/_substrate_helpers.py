@@ -28,6 +28,12 @@ def open_writer(tmp_path, name="substrate.sqlite"):
     return Substrate.open(tmp_path / name, role="writer")
 
 
+def certify(sub, bundle, transcript_hash=TRANSCRIPT_HASH):
+    identity = sub.put_identity_bundle(bundle)
+    cert = sub.put_certificate(identity, transcript_hash, ENV_MANIFEST_HASH, SELFTEST_SUMMARY)
+    return identity, cert
+
+
 def store_artifacts(sub, payloads):
     return {name: (sub.put_blob(data), len(data)) for name, data in payloads.items()}
 
