@@ -175,11 +175,27 @@ def register_protocol(sub, protocol, plan):
     return _write(sub, PROTOCOL_KIND, protocol.value(), (plan.hash, plan.hypothesis_key, protocol.study_hash))
 
 
+def _binds_floor_run(sub, digest, commitment):
+    node = sub.get_node(digest)
+    if node is None or node["kind"] != RUN_KIND:
+        return False
+    value = _read(sub, digest, RUN_KIND)
+    if not isinstance(value, dict) or (
+        value.get("commitment_hash"),
+        value.get("nonce"),
+        value.get("hypothesis_hash"),
+        value.get("run_id"),
+    ) != (commitment.hash, commitment.nonce, commitment.hypothesis_hash, commitment.run_id):
+        return False
+    protocol = sub.get_node(value.get("protocol_hash") or "")
+    return protocol is not None and protocol["kind"] == PROTOCOL_KIND
+
+
 def _names_a_floor_run(sub, commitment):
     rows = sub.conn.execute(
         "SELECT child_hash FROM lineage WHERE parent_hash = ? AND edge_kind = ?", (commitment.hash, EDGE_INPUT)
     ).fetchall()
-    return any((node := sub.get_node(row["child_hash"])) is not None and node["kind"] == RUN_KIND for row in rows)
+    return any(_binds_floor_run(sub, row["child_hash"], commitment) for row in rows)
 
 
 def validate_protocol(sub, protocol, plan, *, in_flight_nonce=None):

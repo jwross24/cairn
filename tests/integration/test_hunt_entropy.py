@@ -27,6 +27,20 @@ def test_a_plain_draw_after_the_protocol_refuses_the_later_floor_run(tmp_path):
         sub.close()
 
 
+@pytest.mark.parametrize("forged", ["empty", "foreign_commitment"])
+def test_a_forged_floor_run_record_does_not_excuse_a_plain_draw(tmp_path, forged):
+    sub, plan, protocol, adapter, _ = _setup(tmp_path)
+    try:
+        plain = hunt.run_hunt(sub, plan, adapter.executor, adapter.verifier)
+        _, commitment = ladder.commitment_for(sub, plain.record.nonce)
+        value = {} if forged == "empty" else {"commitment_hash": "0" * 64, "hypothesis_hash": plan.hypothesis_key}
+        floor._write(sub, floor.RUN_KIND, value, (commitment.hash,))
+        with pytest.raises(floor.FloorRefused, match="a non-floor entropy draw precedes this floor run"):
+            hunt.run_hunt(sub, plan, adapter.executor, adapter.verifier, floor_protocol=protocol)
+    finally:
+        sub.close()
+
+
 def test_a_floor_run_after_an_earlier_floor_run_is_admitted(tmp_path):
     sub, plan, protocol, adapter, _ = _setup(tmp_path)
     try:
