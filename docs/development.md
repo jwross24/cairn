@@ -180,6 +180,25 @@ files remain in place; retries require a different absent destination. The comma
 not replace a deployment, create a substrate, run a campaign, certify an evaluator, or
 issue an operator session, statement ratification, or review verdict.
 
+A spec whose verifier names a self-test skill (`skill` and `skill_identity_hash`) runs only
+against a substrate holding that verifier's certificate. Run `cairn selftest <skill>` with the
+same `--db`, `--bundle` and `--pin` before the campaign; an uncertified verifier refuses with
+exit 2 before any record is written or any nonce is drawn. The run checks the verifier's
+certificate, not the executor's. `--plan-only` checks neither certification nor runtime readiness.
+
+`module_dir` resolves against the working directory. For a skill-backed spec it must name the
+installed checkout's `src`, so `"module_dir": "src"`, run from the checkout root, serves every
+snapshot on one machine whose identity sources are byte-identical, with one spec file and one
+spec hash; an absolute path ties the spec to one snapshot. The spec pins the source digest and
+the skill identity hash, and the identity also folds in the machine's gp binary and environment
+manifest, so a spec carries to another snapshot or machine only when all of these match.
+
+A run touches every point its executor evaluates, whatever its deployment. A pre-registration
+that calls a range untouched holds only when no earlier run drew from it: put a negative or a
+rehearsal on a disjoint range, or run it after the registered draw. Separate deployments keep
+separate substrates and do not see each other's draws, so no gate checks this; the run report
+lists each trial's point for the record.
+
 ## Lean prerequisites
 
 The Lean integration suite requires the comparator and exporter pinned in
@@ -264,7 +283,8 @@ an explicit manual exception described below.
 - `solution-library-finite-point`: the finite-point library challenge-gate case.
 - `solution-library-binding`: the stale formal statement binding refusal case.
 - `solution-plan-exact`: the successful ordered-plan case, approved-dev artifact tag case, and
-  the 21 slope skill certification cases in `tests/integration/test_slope_weight_selftest.py`.
+  the 23 slope skill certification and campaign cases in
+  `tests/integration/test_slope_weight_selftest.py`.
 - `solution-plan-refusals`: the `sorry` and replay-timeout ordered-plan cases with shared setup.
 - `container`: Linux hashing, preparation, compilation, axiom, dependency-cache, and lifecycle tests.
 - `container-replay-exact`: successful Linux fresh replay and exact closure comparison.
