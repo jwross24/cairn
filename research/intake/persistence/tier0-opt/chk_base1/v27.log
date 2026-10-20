@@ -1,4 +1,0 @@
-vertex 27: 2 multisets, 2 within budget, total patterns 6.096e+03
-  M=(3, 9) patterns=1.73e+03 CLOSED sols=[] 0s
-  M=(3, 3, 3) patterns=4.37e+03 CLOSED sols=[] 0s
-VERTEX 27: 2/2 multisets run; open patterns 0; children [] known []

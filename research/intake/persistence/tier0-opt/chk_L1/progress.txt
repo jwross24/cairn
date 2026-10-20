@@ -1,7 +1,0 @@
-v4 rc=0 load averages: 28.83 34.73 35.21
-v14 rc=0 load averages: 28.83 34.73 35.21
-v27 rc=0 load averages: 28.83 34.73 35.21
-v98 rc=0 load averages: 28.83 34.73 35.21
-v189 rc=0 load averages: 28.83 34.73 35.21
-v294 rc=0 load averages: 28.83 34.73 35.21
-v72 rc=0 load averages: 28.83 34.73 35.21

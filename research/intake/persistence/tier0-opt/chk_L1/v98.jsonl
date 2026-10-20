@@ -1,2 +1,0 @@
-{"s": 98, "M": [2, 7, 7], "npat": 11232, "open": 0, "sols": [], "bounds": [], "exceptional": [], "c_stats": {"patterns": 11232, "zero": 3941, "prefilter-dead": 7092, "(a,pattern)": 153, "tail-dead": 153, "open": 0, "exact": 0}, "levels": [[12, 11232, 0, {}]], "secs": 0}
-{"vertex": 98, "done": 1, "total": 1, "open_patterns": 0, "children": [], "known": [], "complete": true}
