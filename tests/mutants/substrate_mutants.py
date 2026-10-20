@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 
-from cairn import substrate
+from cairn import substrate, substrate_reads
 
 
 @contextmanager
@@ -15,19 +15,19 @@ def _swap(owner, name, replacement):
 
 @contextmanager
 def serve_ignores_disowned():
-    with _swap(substrate, "SERVE_SQL", substrate.serve_sql(exclude_disowned=False)):
+    with _swap(substrate_reads, "SERVE_SQL", substrate.serve_sql(exclude_disowned=False)):
         yield
 
 
 @contextmanager
 def serve_ignores_missing_blob():
-    with _swap(substrate, "SERVE_SQL", substrate.serve_sql(require_blobs=False)):
+    with _swap(substrate_reads, "SERVE_SQL", substrate.serve_sql(require_blobs=False)):
         yield
 
 
 @contextmanager
 def serve_ignores_status():
-    with _swap(substrate, "SERVE_SQL", substrate.serve_sql(require_ok=False)):
+    with _swap(substrate_reads, "SERVE_SQL", substrate.serve_sql(require_ok=False)):
         yield
 
 
