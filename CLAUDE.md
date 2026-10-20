@@ -30,7 +30,11 @@ Facts below hold only under Claude Code on this machine; each was established by
   `GIT_ALTERNATE_OBJECT_DIRECTORIES`: `git -C` sets the directory but not the repository, so the
   bare `git -C "$AUDIT_DIR" add -A` inherits the committing repository from the pre-commit hook's
   environment and stages all of `beads_compliance_audit/` into that commit's index under `passes/`,
-  which `.gitignore` excludes and which breaks every bead-closing commit in the tree. `score-bead.py` renders a dimension the policy
+  which `.gitignore` excludes and which breaks every bead-closing commit in the tree. The same helper
+  sets `GIT_CEILING_DIRECTORIES` to the archive's parent: an archive whose `.git` is unreadable
+  (an iCloud-evicted `HEAD`) is not recognized as a repository, and without the ceiling git searches
+  upward into cairn and `add -A` stages its whole untracked tree into the bead-closing commit, which
+  happened in 906325f (undone in 03e39ed). `score-bead.py` renders a dimension the policy
   excluded as `—` rather than at full weight, and states the exclusion in the stub-mode banner and
   the TOTAL row, so the table, banner and denominator agree with the arithmetic; it owns a synthesis
   finding by the row's subject bead rather than by every id the row names, because being cited by
