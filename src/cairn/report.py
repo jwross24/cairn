@@ -81,9 +81,9 @@ def render(sub, *, kind, statement_hash=None, ladder_table_hash=None, attest_pat
                 *(
                     line(
                         f"withdrawal reason: {payload['reason']}; hunt run: {payload['hunt_run_hash']}; "
-                        f"issued by: {payload['issued_by']} at {payload['at']}; record digest: {digest}"
+                        f"issued by: {payload['issued_by']} at {payload['at']}; record digest: {digest}; {checked}"
                     )
-                    for payload, digest in _withdrawals(sub, statement_hash)
+                    for payload, digest, checked in _withdrawals(sub, statement_hash, attest_path)
                 ),
             ],
         )

@@ -3,8 +3,10 @@ import json
 from cairn import bundle, dispatch, substrate
 
 
-def add_skeptic(path, statement_hash, *, role="skeptic", result_present=True, status="success", text=None):
-    source = path.parent / "skeptic-fixture"
+def add_skeptic(
+    path, statement_hash, *, role="skeptic", result_present=True, status="success", text=None, name="skeptic-fixture"
+):
+    source = path.parent / name
     source.mkdir()
     config = {
         "template": dispatch.SKEPTIC_HUNT_TEMPLATE,
@@ -15,7 +17,7 @@ def add_skeptic(path, statement_hash, *, role="skeptic", result_present=True, st
     }
     (source / "worker_roles.json").write_text(json.dumps({role: config}))
     (source / "role_templates.json").write_text(json.dumps({dispatch.SKEPTIC_HUNT_TEMPLATE: "1. Offline fixture"}))
-    bundle_path, pin = path.parent / "skeptic-bundle.sqlite", path.parent / "skeptic-bundle.pin"
+    bundle_path, pin = path.parent / f"{name}-bundle.sqlite", path.parent / f"{name}-bundle.pin"
     pin.write_text(bundle.build(source, bundle_path) + "\n")
     gate = bundle.GateBundle.open(bundle_path, pin)
     with substrate.Substrate.open(path) as sub:

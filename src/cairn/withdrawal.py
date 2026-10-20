@@ -5,7 +5,7 @@ of the orchestrator, and it erases no gate outcome. It concludes one SURVIVED hu
 on the strength of a typed Skeptic record, refuses a statement any hunt killed, and moves no tag.
 """
 
-from cairn import canon, claims, dispatch, human_authority, hunt, log
+from cairn import canon, claims, dispatch, human_authority, hunt, log, report_records
 
 lg = log.get("withdrawal")
 
@@ -54,12 +54,29 @@ def check(sub, fields, *, gate_bundle_hash):
         raise WithdrawalRefused(str(exc)) from None
     if skeptic is None:
         raise WithdrawalRefused("missing skeptic_record")
+    try:
+        report_records._skeptic_records(sub, statement_hash)
+    except (report_records.ReportRefused, dispatch.DispatchRefused) as exc:
+        raise WithdrawalRefused(str(exc)) from None
+
+
+def attested(sub, attest_path, statement_hash):
+    return [
+        record
+        for record in human_authority.visible_records(sub, human_authority.STATEMENT_WITHDRAWAL, attest_path)
+        if record["statement_hash"] == statement_hash
+    ]
 
 
 def withdraw(sub, attest_path, fields, *, gate_bundle_hash):
     check(sub, fields, gate_bundle_hash=gate_bundle_hash)
-    row = human_authority.append(
-        sub, attest_path, human_authority.STATEMENT_WITHDRAWAL, fields, gate_bundle_hash=gate_bundle_hash
+    earlier = attested(sub, attest_path, fields["statement_hash"])
+    row = (
+        earlier[0]
+        if earlier
+        else human_authority.append(
+            sub, attest_path, human_authority.STATEMENT_WITHDRAWAL, fields, gate_bundle_hash=gate_bundle_hash
+        )
     )
     claims.transition_status(sub, fields["statement_hash"], "withdrawn")
     lg.info("withdraw", statement_hash=fields["statement_hash"], record_digest=row["record_digest"])
