@@ -112,7 +112,9 @@ installer, and the project's own rules forbid the others.
 
 Development tests also require pinned Lean/mathlib tools and Docker. See
 [Development and verification](docs/development.md) for provisioning, test commands,
-cache setup, diagnostic retention, and formalization adapter details.
+cache setup, diagnostic retention, and formalization adapter details. An existing substrate
+moves to a newer schema only through the operator procedure in
+[Substrate migrations](docs/development-substrate-migrations.md).
 
 ### Deploy
 

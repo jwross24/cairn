@@ -46,6 +46,7 @@ COMMAND_MODULES = [
     "cairn.justify",
     "cairn.m0",
     "cairn.doctor",
+    "cairn.migrate",
     "cairn.status",
 ]
 _SUBCOMMANDS = {}
@@ -438,14 +439,18 @@ def main(argv=None):
         import sqlite3
 
         from cairn import pari
+        from cairn.substrate_errors import NeedsMigration
 
         if isinstance(exc, pari.GpMissing):
             code = exits.ENVIRONMENT
+        elif isinstance(exc, NeedsMigration):
+            code = exits.NEEDS_MIGRATION
         elif isinstance(exc, sqlite3.OperationalError) and "locked" in str(exc):
             code = exits.CONFLICT
         else:
             code = exits.BACKEND
-        err = CliError(code, f"{type(exc).__name__}: {exc}", next_command="cairn doctor")
+        following = f"cairn substrate migrate plan --db {ns.db}" if code == exits.NEEDS_MIGRATION else "cairn doctor"
+        err = CliError(code, f"{type(exc).__name__}: {exc}", next_command=following)
         lg.debug("traceback", text=traceback.format_exc())
         return _render_error(err, lg)
 

@@ -28,3 +28,7 @@ class WriterAlreadyOpen(SubstrateError):
 
 class SchemaMismatch(SubstrateError):
     pass
+
+
+class NeedsMigration(SchemaMismatch):
+    pass

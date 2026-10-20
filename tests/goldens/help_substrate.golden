@@ -1,0 +1,22 @@
+usage: cairn substrate [-h] [--db PATH] [--bundle PATH] [--pin PATH]
+                       [--attest PATH] [--log LEVEL] [--json]
+                       GROUP ...
+
+substrate maintenance: migrate plan | apply | undo (explicit, additive, backed
+up; never run on open)
+
+positional arguments:
+  GROUP
+    migrate        move an older store to the shipped schema
+
+options:
+  -h, --help       show this help message and exit
+  --db PATH        substrate SQLite file
+  --bundle PATH    gate bundle SQLite file
+  --pin PATH       gate-bundle pin file
+  --attest PATH    attestation file
+  --log LEVEL      log level for the JSON records on stderr
+  --json, --robot  emit exactly one JSON document on stdout
+
+Structured output: add --json to any read-side command. Contract: cairn
+capabilities --json. Agent handbook: cairn robot-docs.

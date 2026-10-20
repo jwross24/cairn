@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
 
-from cairn import log
+from cairn import log, migrate_catalog
 from cairn.substrate_attempts import SubstrateAttemptWrites
 from cairn.substrate_codec import (
     EDGE_CERTIFIES,
@@ -40,6 +40,7 @@ from cairn.substrate_errors import (
     GradeError,
     HashCollision,
     HashMismatch,
+    NeedsMigration,
     SchemaMismatch,
     SubstrateError,
     UnknownAttempt,
@@ -69,6 +70,7 @@ __all__ = [
     "GradeError",
     "HashCollision",
     "HashMismatch",
+    "NeedsMigration",
     "SchemaMismatch",
     "Served",
     "Substrate",
@@ -120,20 +122,49 @@ def _shipped_schema():
     return _SHIPPED_SCHEMA
 
 
+def shipped_objects():
+    return _shipped_schema()
+
+
+def migration_command(path):
+    return f"cairn substrate migrate plan --db {path}"
+
+
+def _migration_note(conn, path=None):
+    state = migrate_catalog.classify(conn, _shipped_schema())
+    if state.kind != "migratable":
+        return state, None
+    path = path or conn.execute("PRAGMA database_list").fetchone()[2]
+    steps = ", ".join(step.id for step in state.steps)
+    return state, f"needs migration (steps {steps}): run {migration_command(path)}"
+
+
 def schema_mismatches(conn):
     actual = _schema_objects(conn)
-    return ["the store holds no schema at all"] if not actual else _schema_mismatches(_shipped_schema(), actual)
+    if not actual:
+        return ["the store holds no schema at all"]
+    reasons = _schema_mismatches(_shipped_schema(), actual)
+    if reasons:
+        _, note = _migration_note(conn)
+        if note:
+            reasons.insert(0, note)
+    return reasons
 
 
 def _require_shipped_schema(conn, path):
     reasons = schema_mismatches(conn)
     if reasons:
+        state, note = _migration_note(conn, path)
+        if note:
+            raise NeedsMigration(
+                f"{path} was created by an older shipped schema (fingerprint {state.fingerprint[:12]}) and is "
+                f"untouched; {note}"
+            )
         shown = "; ".join(reasons[:8])
         if len(reasons) > 8:
             shown += f"; and {len(reasons) - 8} more"
-        raise SchemaMismatch(
-            f"{path} was not created by the shipped schema and this project ships no migration: {shown}"
-        )
+        kind = "a known older schema with no migration path" if state.kind == "historical" else "an unknown schema"
+        raise SchemaMismatch(f"{path} was not created by the shipped schema and holds {kind}: {shown}")
 
 
 class Substrate(SubstrateAttemptWrites):

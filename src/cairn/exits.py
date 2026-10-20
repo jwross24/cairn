@@ -4,6 +4,7 @@ GATE_REFUSED = 2
 ENVIRONMENT = 3
 BACKEND = 4
 CONFLICT = 5
+NEEDS_MIGRATION = 6
 
 CLI = {
     OK: "OK",
@@ -12,6 +13,7 @@ CLI = {
     ENVIRONMENT: "ENVIRONMENT: a required binary, stack, file or database is missing or wrongly shaped (gp absent, PARI stack, bundle/pin/attestation file, substrate, EPERM on a flagged file)",
     BACKEND: "BACKEND: a subprocess the command needed died, timed out or returned malformed output outside any gate's classification, or an unexpected exception",
     CONFLICT: "CONFLICT: a second writer holds the substrate (database is locked after the busy timeout)",
+    NEEDS_MIGRATION: "NEEDS_MIGRATION: the substrate was created by an older shipped schema; nothing opened it or changed it; the error names the migrate command",
 }
 
 DOCTOR_HEALTHY = 0

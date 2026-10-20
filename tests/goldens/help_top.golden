@@ -42,6 +42,8 @@ positional arguments:
                         INTERRUPTED before any new launch
     status              observe bundle, substrate and command preconditions in
                         one read-only document
+    substrate           substrate maintenance: migrate plan | apply | undo
+                        (explicit, additive, backed up; never run on open)
 
 options:
   -h, --help            show this help message and exit

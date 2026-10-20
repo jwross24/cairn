@@ -1,3 +1,6 @@
+from cairn.sql_lex import normalize_sql
+
+
 def _schema_objects(conn):
     objects = {}
     for row in conn.execute("SELECT type, name, tbl_name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'"):
@@ -8,7 +11,7 @@ def _schema_objects(conn):
                 (c[1], (c[2] or "").upper(), int(c[3]), c[4], int(c[5]))
                 for c in conn.execute("SELECT * FROM pragma_table_info(?)", (name,))
             )
-        objects[(kind, name)] = (tbl_name, " ".join(sql.split()), columns)
+        objects[(kind, name)] = (tbl_name, normalize_sql(sql), columns)
     return objects
 
 

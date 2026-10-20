@@ -1,0 +1,20 @@
+{
+  "migrations": [
+    {
+      "id": "0001",
+      "file": "0001_key_charges.sql",
+      "from": "348684bf22de11347a7322274562928a90dcdcf6917a5d377dc4a3c900f619d9",
+      "to": "72b380977c7a226b6688ddd70968e16b7405daa78db57ff8522742a1186cb8cc",
+      "sql_sha256": "69441d73888083d40388bd07fc46b05d894b591a8e3cb1d8fcc14d9de6852bcd",
+      "trigger_review_required": true
+    },
+    {
+      "id": "0002",
+      "file": "0002_schema_migrations.sql",
+      "from": "72b380977c7a226b6688ddd70968e16b7405daa78db57ff8522742a1186cb8cc",
+      "to": "d92ce648bfbc832fef4ba3e8469caae81310629cad0a6da961501253f6701561",
+      "sql_sha256": "e7a87c9abfb138d2fd7b9894ec423b4533d7dbb0debec6096e74551788d6b856",
+      "trigger_review_required": true
+    }
+  ]
+}
