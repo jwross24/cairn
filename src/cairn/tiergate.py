@@ -1,7 +1,20 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 
-from cairn import canon, claims, cli, human_authority, keys, ladderplan, log, nogo, prefilter, scrutiny, ticketlattice
+from cairn import (
+    canon,
+    claims,
+    cli,
+    human_authority,
+    keycharge,
+    keys,
+    ladderplan,
+    log,
+    nogo,
+    prefilter,
+    scrutiny,
+    ticketlattice,
+)
 from cairn.profile import ProfileUndeclared
 
 lg = log.get("tiergate")
@@ -17,6 +30,7 @@ YANKED = "yanked"
 BUDGET = "budget"
 TICKET_BUNDLE_MISMATCH = "ticket-bundle-mismatch"
 OPERATOR_SESSION_ABSENT = "operator-session-absent"
+CUMULATIVE_EDGE = "cumulative-edge"
 
 REASON_ORDER = (
     PROFILE_UNDECLARED,
@@ -62,6 +76,11 @@ class Launch:
     declared_tier: int
     statement_hash: str | None = None
     target_attack: bool = False
+    origin: str = keycharge.ORIGIN_WORKER
+
+    def __post_init__(self):
+        if self.origin not in keycharge.ORIGINS:
+            raise ValueError(f"unknown launch origin {self.origin!r}")
 
 
 @dataclass(frozen=True)
@@ -72,6 +91,7 @@ class Admitted:
     cost_tier: int
     gate_run_hash: str
     reasons: tuple = ()
+    charge_id: int | None = None
 
 
 @dataclass(frozen=True)
@@ -94,6 +114,10 @@ def tier_for_cost(boundary_table, core_s):
 
 def ordered_reasons(reasons):
     return tuple(r for r in REASON_ORDER if r in reasons)
+
+
+def with_edge_reason(reasons, edge_crossed):
+    return (*reasons, CUMULATIVE_EDGE) if edge_crossed else reasons
 
 
 def predicate_reasons(
@@ -267,6 +291,29 @@ class TierGate:
         ).fetchall()
         return dict(rows[-1]) if rows else None
 
+    def _charge_origin(self, launch):
+        if launch.origin != keycharge.ORIGIN_WORKER:
+            return launch.origin
+        if launch.declared_tier != LADDER_RUNG_TIER:
+            return keycharge.ORIGIN_WORKER
+        try:
+            on_plan = ticketlattice.rung_role(self.bundle, launch.inputs) is not None
+        except ladderplan.LadderPlanInvalid:
+            on_plan = False
+        return keycharge.ORIGIN_GATE_OWNED if on_plan else keycharge.ORIGIN_WORKER
+
+    def _edge_crossed(self, launch, evaluation, ticket_tier):
+        edge = keycharge.edge_from(self.bundle.tiers)
+        if edge is None or evaluation is None or self._charge_origin(launch) in keycharge.EXEMPT_ORIGINS:
+            return False
+        if ticket_tier != HYPOTHESIS_TICKET_TIER:
+            return False
+        best = self._selected_ticket(replace(launch, declared_tier=TIER_THREE_TICKET_TIER + 1))
+        if best is None or best[0] != HYPOTHESIS_TICKET_TIER:
+            return False
+        metered = keycharge.metered(self.sub, launch.hypothesis_key, HYPOTHESIS_TICKET_TIER)
+        return keycharge.crosses(edge, metered, evaluation.expected_core_s)
+
     def admit(self, launch):
         try:
             evaluation = launch.cost_profile.evaluate(launch.inputs)
@@ -308,6 +355,7 @@ class TierGate:
             nogo_accepted=nogo_flag is not None and nogo_flag.accepted,
             scrutiny_unmet=read.unmet,
         )
+        reasons = with_edge_reason(reasons, self._edge_crossed(launch, evaluation, ticket_tier))
 
         run = claims.GateRun(
             gate="tier_gate",
@@ -340,14 +388,17 @@ class TierGate:
             reminted = self._mint(launch, selected) if stale else None
             return TierRefused(launch, reasons, ticket_tier, run.hash, refusal_ids, reminted)
 
-        if cost_tier is None:
+        if cost_tier is None or evaluation is None:
             raise RuntimeError("admitted launch has no derived cost tier")
         minted = (
             self._mint(launch, selected)
             if selected is not None and recorded is None
             else (recorded["ticket_hash"] if recorded else None)
         )
-        return Admitted(launch, minted, ticket_tier, cost_tier, run.hash)
+        charge_id = keycharge.accrue(
+            self.sub, launch.hypothesis_key, ticket_tier, self._charge_origin(launch), evaluation.expected_core_s
+        )
+        return Admitted(launch, minted, ticket_tier, cost_tier, run.hash, charge_id=charge_id)
 
     def _mint(self, launch, selected):
         tier, kind, node_hash = selected
