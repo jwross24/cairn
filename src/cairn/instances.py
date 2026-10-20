@@ -13,7 +13,7 @@ engine's; this module records what it is handed.
 import secrets
 from dataclasses import dataclass
 
-from cairn import cli, keycharge, keys, log, runner, substrate, ticketlattice, tiergate
+from cairn import cli, keys, log, runner, substrate, ticketlattice, tiergate
 from cairn.skills import instance_maker
 
 LOG_STEP = "instances"
@@ -268,7 +268,6 @@ def launch_trial(
         budget_remaining=budget_remaining - evaluation.expected_verification_core_s,
         attest_path=attest_path,
     )
-    keycharge.settle_launch(sub, admission.charge_id, attempt)
     bind_admission(sub, gate_bundle, admission, attempt.attempt_id, record.hypothesis_key, method_identity)
     if attempt.status != runner.STATUS_OK or attempt.parsed is None or attempt.parsed.document is None:
         return attempt, None
