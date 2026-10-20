@@ -181,3 +181,35 @@ def test_a_retry_after_a_failed_status_change_reuses_the_attested_withdrawal(tmp
         visible = human_authority.visible_records(sub, human_authority.STATEMENT_WITHDRAWAL, attestations)
         assert len(visible) == 1
     assert Path(attestations).read_bytes() == log_after_failure
+
+
+def test_a_different_request_while_a_withdrawal_is_pending_refuses_and_the_pending_one_still_completes(
+    tmp_path, clear_flags, monkeypatch
+):
+    database, statement, result = _survived(tmp_path)
+    sent = add_skeptic(database, statement.hash)
+    attestations = _attestations(tmp_path, clear_flags)
+    pending = _fields(statement, result, sent)
+    other = _fields(statement, result, sent, reason="a different reason for the same statement")
+    real = claims.transition_status
+
+    def fail_once(*args):
+        monkeypatch.setattr(claims, "transition_status", real)
+        raise RuntimeError("status change interrupted")
+
+    monkeypatch.setattr(claims, "transition_status", fail_once)
+    with substrate.Substrate.open(database) as sub:
+        with pytest.raises(RuntimeError, match="status change interrupted"):
+            withdrawal.withdraw(sub, attestations, pending, gate_bundle_hash=GATE_HASH)
+        log_after_failure = Path(attestations).read_bytes()
+        with pytest.raises(withdrawal.WithdrawalRefused, match="pending"):
+            withdrawal.withdraw(sub, attestations, other, gate_bundle_hash=GATE_HASH)
+        assert claims.get_claim_statement(sub, statement.hash)["status"] == "open"
+        assert Path(attestations).read_bytes() == log_after_failure
+        row = withdrawal.withdraw(sub, attestations, pending, gate_bundle_hash=GATE_HASH)
+        assert claims.get_claim_statement(sub, statement.hash)["status"] == "withdrawn"
+    digest = substrate.blob_hash(
+        human_authority.canonical(human_authority.STATEMENT_WITHDRAWAL, pending, gate_bundle_hash=GATE_HASH)
+    )
+    assert row["record_digest"] == digest
+    assert attest.attestation_record_matches(attestations, row["file_offset"], digest)

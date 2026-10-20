@@ -6,6 +6,7 @@ on the strength of a typed Skeptic record, refuses a statement any hunt killed, 
 """
 
 from cairn import canon, claims, dispatch, human_authority, hunt, log, report_records
+from cairn.substrate import blob_hash
 
 lg = log.get("withdrawal")
 
@@ -70,10 +71,20 @@ def attested(sub, attest_path, statement_hash):
 
 def withdraw(sub, attest_path, fields, *, gate_bundle_hash):
     check(sub, fields, gate_bundle_hash=gate_bundle_hash)
+    digest = blob_hash(
+        human_authority.canonical(human_authority.STATEMENT_WITHDRAWAL, fields, gate_bundle_hash=gate_bundle_hash)
+    )
     earlier = attested(sub, attest_path, fields["statement_hash"])
+    same = [record for record in earlier if record["record_digest"] == digest]
+    if earlier and not same:
+        pending = earlier[0]
+        raise WithdrawalRefused(
+            f"a different attested withdrawal of this statement is pending (record_digest {pending['record_digest']}"
+            f" at offset {pending['file_offset']}); resubmit that record to complete it"
+        )
     row = (
-        earlier[0]
-        if earlier
+        same[0]
+        if same
         else human_authority.append(
             sub, attest_path, human_authority.STATEMENT_WITHDRAWAL, fields, gate_bundle_hash=gate_bundle_hash
         )
