@@ -141,14 +141,7 @@ def isolation_guard():
     """
 
 
-@pytest.fixture
-def scratch(tmp_path: Path) -> ScratchRepo:
-    repo = tmp_path / "repo"
-    origin = tmp_path / "origin.git"
-    home = tmp_path / "home"
-    for directory in (repo, home):
-        directory.mkdir(parents=True)
-
+def _scratch_env(home: Path) -> dict[str, str]:
     env: dict[str, str] = {
         **os.environ,
         "HOME": str(home),
@@ -170,6 +163,18 @@ def scratch(tmp_path: Path) -> ScratchRepo:
     env.pop("CAIRN_FD_CEILING_SKIP", None)
     env.pop("GIT_DIR", None)
     env.pop("GIT_INDEX_FILE", None)
+    return env
+
+
+@pytest.fixture(scope="session")
+def scratch_template(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    root = tmp_path_factory.mktemp("scratch-template")
+    repo = root / "repo"
+    origin = root / "origin.git"
+    home = root / "home"
+    for directory in (repo, home):
+        directory.mkdir(parents=True)
+    env = _scratch_env(home)
 
     subprocess.run(["git", "init", "--bare", "-b", "main", str(origin)], check=True, capture_output=True, env=env)
     subprocess.run(["git", "init", "-b", "main", str(repo)], check=True, capture_output=True, env=env)
@@ -179,7 +184,6 @@ def scratch(tmp_path: Path) -> ScratchRepo:
     sysctl = bin_dir / "sysctl"
     sysctl.write_text("#!/usr/bin/env bash\nprintf '320\\n400\\n'\n")
     sysctl.chmod(0o755)
-    env["PATH"] = f"{bin_dir}:{env['PATH']}"
 
     shutil.copytree(ROOT / ".githooks", repo / ".githooks")
     for entry in (repo / ".githooks").iterdir():
@@ -206,4 +210,19 @@ def scratch(tmp_path: Path) -> ScratchRepo:
     scratch_repo.git("add", "-A")
     scratch_repo.commit("base", "--no-verify")
     scratch_repo.git("push", "-q", "origin", "main")
+    return root
+
+
+@pytest.fixture
+def scratch(tmp_path: Path, scratch_template: Path) -> ScratchRepo:
+    repo = tmp_path / "repo"
+    origin = tmp_path / "origin.git"
+    home = tmp_path / "home"
+    shutil.copytree(scratch_template / "repo", repo, symlinks=True)
+    shutil.copytree(scratch_template / "origin.git", origin, symlinks=True)
+    home.mkdir()
+    env = _scratch_env(home)
+    env["PATH"] = f"{repo / 'bin'}:{env['PATH']}"
+    scratch_repo = ScratchRepo(path=repo, origin=origin, env=env)
+    scratch_repo.git("remote", "set-url", "origin", str(origin))
     return scratch_repo

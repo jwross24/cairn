@@ -3,6 +3,7 @@ import hashlib
 import importlib
 import json
 import math
+import subprocess
 import sys
 from pathlib import Path
 
@@ -25,6 +26,7 @@ FLOOR_GOLDEN = "bsgs_floor"
 CERTIFICATE_GOLDEN = "bsgs_certificate"
 FRESH_INSTANCES = 20
 FRESH_BITS = 40
+FRESH_WORKER = Path(__file__).resolve().parents[1] / "_bsgs_fresh.py"
 
 
 def _run(argv, capsys):
@@ -118,11 +120,20 @@ def test_the_postcondition_arms_wrong_draw_is_refused(tmp_path, pinned_bundle, m
 
 @pytest.mark.timeout(900)
 def test_twenty_fresh_forty_bit_instances_drawn_by_postcondition_are_recovered():
-    for seed in range(1, FRESH_INSTANCES + 1):
-        inst = instance_maker.run(FRESH_BITS, 1000 + seed)
-        out = bsgs.run(FRESH_BITS, seed, inst.p, inst.a, inst.b, inst.n, inst.P, inst.Q)
-        assert out.x == inst.x and out.status == "OK" and out.cross_check["result"] == "untested"
-        assert out.memory["entries"] == math.isqrt(inst.n - 1)
+    completed = subprocess.run(
+        [sys.executable, str(FRESH_WORKER)],
+        input=json.dumps([FRESH_BITS, FRESH_INSTANCES]),
+        capture_output=True,
+        text=True,
+        timeout=800,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    rows = json.loads(completed.stdout)
+    assert [row["seed"] for row in rows] == list(range(1, FRESH_INSTANCES + 1))
+    for row in rows:
+        assert row["recovered"] and row["status"] == "OK" and row["cross_check"] == "untested"
+        assert row["entries"] == row["entries_expected"]
 
 
 @pytest.mark.parametrize("bits", [20, 24, 28, 30])
