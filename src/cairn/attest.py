@@ -12,7 +12,6 @@ from cairn.substrate import blob_hash
 lg = log.get("attest")
 
 LENGTH_BYTES = 8
-MAX_TORN_FILL = 1 << 24
 FIXTURE_WAIVER_EXPIRES = "9999-12-31T23:59:59Z"
 KINDS = ("review_verdict", "waiver", "acknowledgment", "nogo_review", "expert_signoff")
 
@@ -54,15 +53,16 @@ def frame(canonical):
     return canon.length_prefix(bytes(canonical))
 
 
-def _torn_tail_fill(fd):
+def _torn_tail(fd):
     size = os.fstat(fd).st_size
     offset = 0
     while offset < size:
         prefix = os.pread(fd, LENGTH_BYTES, offset)
-        if len(prefix) < LENGTH_BYTES:
-            return LENGTH_BYTES - len(prefix) + int.from_bytes(prefix + bytes(LENGTH_BYTES - len(prefix)), "little")
-        offset += LENGTH_BYTES + int.from_bytes(prefix, "little")
-    return offset - size
+        end = offset + LENGTH_BYTES + int.from_bytes(prefix, "little")
+        if len(prefix) < LENGTH_BYTES or end > size:
+            return offset, size - offset
+        offset = end
+    return None
 
 
 def append_record(path, canonical):
@@ -72,18 +72,20 @@ def append_record(path, canonical):
         try:
             reader = os.open(path, os.O_RDONLY)
             try:
-                fill = _torn_tail_fill(reader)
+                torn = _torn_tail(reader)
             finally:
                 os.close(reader)
-            if fill > MAX_TORN_FILL:
+            if torn is not None:
+                start, present = torn
+                lg.warning("torn_frame_refused", path=str(path), offset=start, present=present)
                 raise AttestationError(
-                    f"attestation file {path} ends in a torn frame claiming {fill} more bytes; refusing to append"
+                    f"attestation file {path} ends in a torn frame at offset {start} ({present} bytes present);"
+                    " a record appended after it is hidden from enumeration and completing it can forge one,"
+                    " so the log takes no append until an operator repairs its tail"
                 )
-            if fill:
-                lg.warning("torn_frame_completed", path=str(path), fill=fill)
             fh.seek(0, os.SEEK_END)
-            offset = fh.tell() + fill
-            remaining = memoryview(bytes(fill) + framed)
+            offset = fh.tell()
+            remaining = memoryview(framed)
             while remaining:
                 written = fh.write(remaining)
                 if not written:
