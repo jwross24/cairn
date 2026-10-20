@@ -8,6 +8,7 @@
 *-fsqlite-ns-use
 *.vacuum-wal-cert*
 *.fsqlite-migration-state
+.br-wal-index-*/
 
 # Lock files
 *.lock

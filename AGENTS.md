@@ -1,7 +1,6 @@
 # AGENTS.md
 
-Project law for every agent in this repository, whichever harness runs it; harness-specific mechanics
-live in that harness's own file (`CLAUDE.md` imports this one). Reread this file after any compaction.
+Project law for every agent in this repository, whichever harness runs it (`CLAUDE.md` imports this file). Reread this file after any compaction.
 
 ## RULE 0: THE FUNDAMENTAL OVERRIDE PREROGATIVE
 
@@ -57,28 +56,14 @@ so the protocol holds on its own. A guard's refusal is a safety mechanism, never
 ## Branch and Commit Policy
 
 - All work lands on `main`. No feature branches, worktrees or PRs unless the user asks.
-- Arm the repository hooks once per clone: `git config core.hooksPath .githooks`. An unarmed clone
-  commits with no gate at all.
-- Stage only the files you changed: `git add <exact paths>`. Never `git add -A`, `git add .` or
+- Arm the repository hooks once per clone: `git config core.hooksPath .githooks`.- Stage only the files you changed: `git add <exact paths>`. Never `git add -A`, `git add .` or
   `git commit -a`. Files in `git status` you did not touch belong to another session; leave them alone.
   Never restore a file from an older copy to fix a failing check; fix it in place.
 - `.githooks/pre-commit` runs `scripts/check.sh --fast --paths <the commit's staged paths>`,
   `scripts/bead-test-plan.sh` for each bead the commit closes, then the compliance audit. The gates
-  see the index, not the working tree, so a file the commit does not stage cannot refuse it; the
-  tree-wide run belongs to CI, which calls `scripts/check.sh --ci-lane python`,
-  `--ci-lane python-integration`, `--ci-lane m0-lineage`,
-  `--ci-lane m0-replay`, `--ci-lane m0-transcript`, `--ci-lane m0-boundaries`,
-  `--ci-lane gateplan`, `--ci-lane lean-core`, `--ci-lane lean-replay`, `--ci-lane solution`,
-  `--ci-lane solution-library-dlp`, `--ci-lane solution-library-finite-point`,
-  `--ci-lane solution-library-binding`,
-  `--ci-lane solution-plan-exact`, `--ci-lane solution-plan-refusals`,
-  `--ci-lane container`, `--ci-lane container-replay-exact`,
-  `--ci-lane container-replay-refusals`, `--ci-lane container-plan-exact`,
-  `--ci-lane container-plan-proven`,
-  and `--ci-lane container-plan-refusals`. An index that
-  stages nothing takes the tree-wide form. `.githooks/post-commit` pushes a bead-closing commit and
-  only such a commit, logging `PUSHED`, `SKIP` or `DENY` to `.check.log`; a failed push is loud and
-  leaves the commit local. Bypass, logged: `CAIRN_PUSH_SKIP='<reason>'`.
+  see the index, not the working tree; the tree-wide run belongs to CI. An index that stages nothing
+  takes the tree-wide form. `.githooks/post-commit` pushes a bead-closing commit and only such a
+  commit, logging `PUSHED`, `SKIP` or `DENY` to `.check.log`; a failed push leaves the commit local. Bypass, logged: `CAIRN_PUSH_SKIP='<reason>'`.
 - A bead is not done until its closing commit is pushed and `git status` is up to date with `origin/main`.
 - Identity-bearing files, skill revision: `src/cairn/__init__.py`, `src/cairn/ec.py`,
   `src/cairn/instances.py`, `src/cairn/log.py`,
@@ -107,163 +92,104 @@ so the protocol holds on its own. A guard's refusal is a safety mechanism, never
   `lean/vendor/formal_conjectures/FormalConjecturesUtil/Linters/StubLinter.lean`.
 - Any edit to a file on either list, a formatting pass included, moves the goldens and every
   deployed pin; regenerate the golden in the same attributed commit after reviewing its diff.
-  `tests/unit/test_identity_sources.py` holds both lists against the code, so a skill that
-  gains an identity source, or a gate bundle that gains an object, fails a gate here rather
-  than later as a stale golden in CI.
+  `tests/unit/test_identity_sources.py` holds both lists against the code.
 
 ## Toolchain: Python 3.14 and uv
 
 We use **uv** for everything. Never `pip`, `poetry`, `conda` or an ad-hoc `python -m venv`. Manifest is
 `pyproject.toml` exclusively; the lockfile is `uv.lock`. Run Python as `uv run python ...`, never bare
-`python` or `python3`: the interpreter on PATH is Homebrew's and lacks the project's packages.
+`python` or `python3`.
 
-- `requires-python = ">=3.14"` in `pyproject.toml`, mirrored in `[tool.ty.environment]`; change the pin
-  there, nowhere else. The same file pins the PyPI index (`[[tool.uv.index]]`, `default = true`) because
-  `~/.config/uv/uv.toml` points at a corporate Artifactory that times out off-network. Keep it.
-- Runtime dependencies: `blake3` (content addressing), `claude-agent-sdk` (agent execution),
-  `cypari2` (PARI arithmetic), and `gmpy2` (independent integer arithmetic). Dev group:
-  `pytest`, `pytest-timeout`, `hypothesis`, `ruff`, `ty`, `codespell`. Add a dependency with `uv add`.
+- `requires-python = ">=3.14"` in `pyproject.toml`, mirrored in `[tool.ty.environment]`; change the pin there, nowhere else. Keep the PyPI index pin (`[[tool.uv.index]]`, `default = true`). Add a dependency with `uv add`.
+  Before changing a dependency, the pin or the index, read `docs/agents/toolchain.md`.
 
 ## Code Editing Discipline
 
 - Never run a script that rewrites source files; make code changes by hand. The one scripted write is a
   bead body over 20k characters: a script reads the field, applies a `str.replace` with a uniqueness
-  assertion and writes it back, because a body that long cannot be retyped into an argument safely.
+  assertion and writes it back.
 - Revise existing files in place. Never create `_v2`, `_improved` or `_enhanced` variants.
 - Zero explanatory comments by default. A comment survives only when it states a non-obvious invariant
   the code cannot express: no docstrings on tests or self-evident helpers, no banner headers, no
   narration of what the code does or how it came to be. Docs describe the current state only.
-- American English spelling in identifiers, prose, commit messages and bead bodies (`randomize`,
-  `normalize`, `behavior`, `canceled`). `codespell` runs with `en-GB_to_en-US` in every check.
-- Logic lives in Python, not shell: `tests/conftest.py` refuses a `bash` subprocess, so a decision in a
-  `.sh` file is one no test can reach. The shell files under `scripts/` are thin dispatchers.
+- American English spelling in identifiers, prose, commit messages and bead bodies.
+  `codespell` runs with `en-GB_to_en-US` in every check.
+- Logic lives in Python, not shell: `tests/conftest.py` refuses a `bash` subprocess. The shell files
+  under `scripts/` are thin dispatchers.
 
 - Backwards compatibility: early development, no downstream users (M0). No shims, no wrappers for
   deprecated interfaces; a changed skill interface or gate bundle is a new revision with a fresh golden.
+  Substrate stores are the exception, because they hold research records that cannot be rebuilt: every substrate schema change ships an additive, forward-only migration under `src/cairn/migrations/`, planned with `cairn substrate migrate plan` and applied only with `cairn substrate migrate apply` after a verified backup; never migrate on open. `cairn substrate migrate undo` restores the verified backup and quarantines the current store without deleting it; it never runs a down-migration. A
+  change that cannot be additive is a new store, never a rewrite of an existing one (`cairn-ecij`).
 
 - Documentation placement: README covers purpose, installation, user entry points, and limitations.
-  Detailed test setup, CI/cache mechanics, scratch retention, and internal adapter notes belong in
+  Detailed test setup, CI/cache mechanics, scratch retention, and adapter notes belong in
   `docs/development.md`, with a short README link. Per-slice progress belongs in beads.
-
 ## Quality Checks (CRITICAL)
 
-`scripts/check.sh` is the one place that says what green means; the pre-commit hook and CI both call it.
+`scripts/check.sh` is the one place that says what green means.
 `--paths <path> ...` scopes every gate to that list and is the form the hook uses; with no `--paths`
-each gate has the scope it always had. CI runs `--ci-lane python`, `--ci-lane python-integration`,
-`--ci-lane m0-lineage`,
-`--ci-lane m0-replay`, `--ci-lane m0-transcript`, `--ci-lane m0-boundaries`,
-`--ci-lane gateplan`, `--ci-lane lean-core`, `--ci-lane lean-replay`, `--ci-lane solution`,
-`--ci-lane solution-library-dlp`, `--ci-lane solution-library-finite-point`,
-`--ci-lane solution-library-binding`,
-`--ci-lane solution-plan-exact`, `--ci-lane solution-plan-refusals`,
-`--ci-lane container`, `--ci-lane container-replay-exact`,
-`--ci-lane container-replay-refusals`, `--ci-lane container-plan-exact`,
-`--ci-lane container-plan-proven`,
-and `--ci-lane container-plan-refusals`; their test sets are disjoint and exhaustive.
-With no lane argument, the local check runs all 21 sets and requires Docker for the container tests.
-The local aggregate `--ci-lane m0` runs the four M0 lanes; `--ci-lane lean` combines the core
-and fresh-replay cases; and `--ci-lane solution-library` runs all three library cases.
-The local aggregate `--ci-lane solution-plan` runs all three ordered-plan cases in sequence.
-The local aggregate `--ci-lane container-replay` runs both container replay lanes.
-The local aggregate `--ci-lane container-plan` runs all three container ordered-plan and PROVEN lanes.
-During development, run the fast checks and the tests covering the changed behavior:
+each gate has the scope it always had. CI runs one
+`--ci-lane <lane>` per lane declared in `tests/_ci_lanes.py`; their test sets are disjoint and
+exhaustive. With no lane argument, the local check runs every set and requires Docker.
+Before choosing a local CI lane or aggregate, or editing CI lanes, `scripts/check.sh` lane wiring, or `.github/workflows/ci.yml` test jobs, read `docs/agents/ci-lanes.md`.
+During development, run `scripts/check.sh --fast` and `uv run pytest -q tests/<affected-test-module>.py`.
+Choose tests from the changed behavior and its callers, including a positive case and a refusal.
+If the affected scope is unclear, run the relevant CI lane locally. CI supplies broad regression coverage on the pushed commit; a full local `scripts/check.sh` is for a named cross-suite risk or investigation, not an automatic prerequisite to every commit or bead close.
+Run local-only checks when CI cannot exercise the affected behavior. Report exclusions explicitly; a skipped test is not passed. Shared fixture or collection changes
+require their contract tests and all affected CI lanes. Record the tested revision and scope; edits invalidate evidence for the behavior they change, not unrelated results.
+Mathematical verification under RULE 2 always runs as required and is never replaced by developer
+checks or cached verdicts.
+Before deciding which checks to run, or interpreting a bypass or exclusion, read `docs/agents/quality-checks.md`.
 
-```bash
-scripts/check.sh --fast
-uv run pytest -q tests/<affected-test-module>.py
-```
-
-Choose tests from the changed behavior and its callers, including a positive case and a refusal
-where applicable. If the affected scope is unclear, run the relevant CI lane locally. CI supplies
-broad regression coverage on the pushed commit; a full local `scripts/check.sh` is for a named
-cross-suite risk or investigation, not an automatic prerequisite to every commit or bead close.
-Run local-only checks when CI cannot exercise the affected behavior. Report exclusions explicitly;
-a skipped test is not passed. Shared fixture or collection changes require their contract tests
-and all affected CI lanes. Record the tested revision and scope; edits invalidate evidence for
-the behavior they change, not unrelated results. Mathematical verification under RULE 2 always
-runs as required and is never replaced by developer checks or cached verdicts.
-
-The fast form is the first five gates; the full form adds pytest under a session deadline. Fix findings
-the right way: read enough context, never suppress a rule or delete a module to get green. A gate whose
+Fix findings the right way: never suppress a rule or delete a module to get green. A gate whose
 tool is missing denies; it never passes quietly. Bypass, logged to `.check.log`: `CAIRN_CHECK_SKIP='<reason>'`.
 A verdict that must be read goes to a file (`cmd > "$out" 2>&1; tail -1 "$out"`), since a pipeline reports
 only its last command's exit code; byte-equality is settled in Python with lengths and a `hashlib.sha256` digest.
 
-- zsh does not word-split an unquoted variable. `P="--db X --pin Y"; cmd $P` passes one argument, and
-  the command fails in a way that reads as a defect in the code. Build argument lists as arrays, or
-  write the flags out. `cmd | tail -1` reports `tail`'s status, so capture `${PIPESTATUS[1]}` or
-  redirect instead of piping when the exit code is the evidence.
-- Nesting `uv run` inside `$(...)` under an outer `uv run` pipeline yields empty output. Capture to a
-  file and parse it in a second command.
+- zsh does not word-split an unquoted variable: build argument lists as arrays. Never nest `uv run`
+  inside `$(...)` under an outer `uv run` pipeline. Capture to a file and parse it in a second command.
+  Before writing a shell one-liner whose exit code is the evidence, or when a command's output is empty, read `docs/agents/shell-pitfalls.md`.
 
 ## Testing
 
-- Layout under `tests/`: `unit/`, `integration/`, `e2e/`, `conformance/`, `planted/`, `mutants/`,
-  `hook_contract/`, plus `fixtures/`, `goldens/`, `vectors/`, `fuzz_corpus/`. Tests write only into temp
-  dirs the fixtures own. Each layer covers happy path, edge cases and error conditions; integration
-  tests use the real substrate and real PARI, with no mocks of storage or arithmetic.
-- The substrate holds one writer per process: `Substrate.open(path, role="writer")` raises
-  `WriterAlreadyOpen` while an earlier writer is unclosed, and a leaked writer fails every later
-  writer-opening test in the run. Close in `finally` or use the `writer` fixture.
-- `cairn.pari.ellcard`, `ellsea` and `ellorder` are bounded by `cairn.pari.CALL_BOUND_S` (60 s) via
-  cysignals' alarm and raise `PariStall`, a `KeyboardInterrupt` subclass; after the bound fires libpari is
-  unusable in that process and the suite stops at exit 124. Never install a Python `SIGALRM` handler; it
-  displaces cysignals'. `tests/unit/test_pari_module.py` holds the planted loop proving the chain intact.
+- Tests write only into temp dirs the fixtures own. Each layer covers happy path, edge cases and error
+  conditions; integration tests use the real substrate and real PARI, with no mocks of storage or arithmetic.
+- Close a substrate writer in `finally` or use the `writer` fixture (one writer per process).
+  Before adding a test layer, a fixture that opens the substrate, or a test that writes files, read `docs/agents/testing.md`.
+- Never install a Python `SIGALRM` handler; it displaces cysignals' alarm that bounds `cairn.pari` calls.
 - A red, zero-test, filtered, skipped or unrun lane blocks a close. Skipped is not passed; a green gate
   proves only what it covers; an empty result after a timed-out analysis proves nothing.
 - Do not regenerate goldens without reviewing the diff; commit code and golden together.
-- Libraries: when not 100% sure how to use one, fetch the documentation for the installed version rather
-  than guessing. A stack fact no probe under `research/grounding/` has executed is CONJECTURE (PLAN §16).
-- **`cairn.pari` pins libpari to one thread in both processes**: `default(nbthreads,1)` at import and
-  `-D nbthreads=1` in `gp_argv`, so every gp spawn through `run_gp` carries it. The 60-bit toy_curve
-  rows, `curve60_seed1.json`, the grounding brief's 60-bit row, `gate_plan.json`'s curve60 fixture and
-  `measure.RHO60_ORDER` are single-thread values; a scratch run at another count draws different 60-bit
-  curves while sizes at or below 50 bits are unchanged. A gp script run outside `run_gp` inherits the
-  host's core count and will not reproduce those rows.
+- Libraries: when not 100% sure how to use one, fetch the installed version's documentation; never guess. A stack fact no probe under `research/grounding/` has executed is CONJECTURE (PLAN §16).
+- **`cairn.pari` pins libpari to one thread in both processes**, and the 60-bit toy_curve rows and
+  fixtures are single-thread values. Before touching `cairn.pari`, 60-bit fixtures or `gp` invocations, or writing a test that can hit the PARI call bound, read `docs/agents/pari.md`.
 
 ## Cairn: This Project
 
-A harness for running AI agents on open mathematics problems, built so that fabricating a result is
-mechanically harder than reporting an honest negative. Persistence lives at the program level;
-honesty lives at the claim level. Status and milestones: `README.md`. Honest ECDLP baseline: `HANDOFF.md`.
-`MAP.md` is the system as one tower (layer, authority language, identity primitive, record kinds,
-verbs, refusals); read it between this file and `PLAN.md`. PLAN.md section map:
-§0 principle 15 · §1 prompt⊂harness 30 · §2 skills 40 · §3 substrate 122 · §4 components 288 ·
-§5 tiers 533 · §6 ladder 709 · §7 epistemics 921 · §8 no-go 1153 · §9 never-give-up 1179 ·
-§10 problem selection 1192 · §11 compounding 1279 · §12 research-software 1306 ·
-§13 build order 1348 · §14 outcomes 1614 · §15 deferred 1625 · §16 evidence/defaults 1685.
+A harness for running AI agents on open mathematics problems. Honest ECDLP baseline: `HANDOFF.md`. `MAP.md` is the system as one tower; read it between this file and `PLAN.md`.
 `research/SESSION-PROMPTS.md` holds openers for the five session types; research modes require M1.
+Before starting a research session or implementing a Cairn skill or worker role template, or when locating a PLAN section or distinguishing skill types, read `docs/agents/plan-map.md`.
 
 ### Planning versus research decomposition
 
 - Convert the HARNESS ENGINEERING into beads (tasks with dependency edges).
-- Do NOT pre-decompose the RESEARCH into a static task graph. The branch/research tree is
-  built and rewritten at runtime by the orchestrator (PLAN.md; milestone M3). Forcing it
-  into beads up front contradicts the architecture.
+- Do NOT pre-decompose the RESEARCH into a static task graph: the orchestrator builds and rewrites the
+  branch/research tree at runtime (PLAN.md; milestone M3).
 
-### "Skill" means three different things here
-
-- **A Cairn skill** is a deterministic Python capability under `src/cairn/skills/`, run as
-  `uv run python -m cairn.skills.<name>` with canonical JSON on stdin and stdout, content-addressed by
-  its identity bundle and shipped with a known-answer corpus, golden certificate and byte-equal double run.
-- **A worker role template** (the Skeptic's checklist, PLAN §4) is read-only, claim-agnostic prompt
-  text pinned in the gate bundle, not loaded from a skills directory.
-- **An agent skill** (Claude Code or Codex: `beads-workflow`, `optimal-tests`, `beads-br`) builds Cairn
-  and never runs inside it. A prompt is non-deterministic, so it cannot be content-addressed or cached
-  by recipe key; an agent skill can never be a Cairn skill.
+- **A Cairn skill** is a deterministic Python capability under `src/cairn/skills/`, run as `uv run python -m cairn.skills.<name>` with canonical JSON on stdin and stdout, content-addressed by its identity bundle and shipped with a known-answer corpus, golden certificate and byte-equal double run.
+- **A worker role template** (the Skeptic's checklist, PLAN §4) is read-only, claim-agnostic prompt text pinned in the gate bundle, not loaded from a skills directory.
+- An agent skill (Claude Code or Codex) builds Cairn and never runs inside it. A prompt is non-deterministic, so it cannot be content-addressed or cached by recipe key; an agent skill can never be a Cairn skill.
 
 ## Issue Tracking (br)
 
 The beads tracker is the single source of truth for status, priority and dependencies. `.beads/` is
-committed (`.gitignore` re-includes it against the global ignore). `br` never runs git.
+committed. `br` never runs git.
 
 - Flow: `br ready --json` -> `br update <id> --status in_progress` -> work -> `br close <id> --reason "..."`
   -> `br sync --flush-only` -> `git add .beads/ <exact code paths>` -> commit.
 - Text arguments starting with `-` need the `=` form (`--description=`, `--notes=`, `--design=`,
-  `--acceptance-criteria=`). `br create` takes `--description`/`-d` only; acceptance criteria are set
-  afterward with `br update <id> --acceptance-criteria=...`.
-- `br show --json` returns an array (index `.[0]`); `br list --json` returns `{"issues": [...],
-  "has_more": ...}` and omits closed beads without `--all`. Tombstones appear only in `issues.jsonl`.
+  `--acceptance-criteria=`). `br create` takes `--description`/`-d` only; acceptance criteria are set afterward with `br update <id> --acceptance-criteria=...`.
 - `br doctor` is the first move on any `br` failure; `sqlite3 .beads/beads.db "PRAGMA integrity_check"`
   is the real health check. `beads.db` is derived state: move it aside and `br sync --import-only` rebuilds it.
 - A closing bead's body carries an ARTIFACTS block with backticked paths; `.githooks/pre-commit`
@@ -271,33 +197,26 @@ committed (`.gitignore` re-includes it against the global ignore). `br` never ru
   Close on outcomes, not tooling: a bead naming a run closes only with the artifact path and source SHA.
   Never close under a cycle with hedge text; resolve the dependency first.
 - Bead comments and bodies go through a file, never a shell argument: `br comments add <id> "$(cat "$note")"`.
-- A `br` run outside a repo fails `NOT_INITIALIZED` and creates nothing. br walks upward for a
-  workspace, so a command run while the repo's `.beads` is absent, or from another directory such as
-  the vault, binds to whatever store sits on that path. An empty schema-10 store is parked at
-  `~/.beads.stale-2026-09-02`; a `br` error naming schema 17 against 10 means such a store is on the
-  walk-up path again.
-- `br` is 0.6.0 with tracker schema 19, and `ci.yml` carries the matching `BR_VERSION`. The asset
-  name has changed across release lines: 0.2 and 0.6 publish `br-<version>-<os>_<arch>.tar.gz` with
-  `arm64`, 0.5 published `beads_rust-` with `aarch64` on Linux, so a version bump that leaves the
-  asset name alone 404s. `br show --json` is identical in shape and value between 0.5.7 and 0.6.0.
-  A schema-17 store is migrated with `br doctor migrate-schema plan`, then `apply --plan-token`;
-  ordinary commands refuse it with `SCHEMA_MISMATCH`. `scripts/beads_doctor_gate.py`'s benign-value
-  allowlist accepts 0.6.0's output: 59 `ok`, 2 `warn`, `workspace_health: healthy`, verdict advisory.
+- Run `br` only from inside this repo; elsewhere it binds to whatever store sits on the walk-up path.
+- `br` is 0.7.6 with tracker schema 19, and `ci.yml` carries the matching `BR_VERSION`. Every `br` on
+  the machine and in CI runs the same version: a 0.6.0 and a 0.7.x writer on one tracker can leave the
+  JSONL export refused until `br sync --flush-only`. The release asset is
+  `br-<version>-<os>_<arch>.tar.gz` (`darwin_arm64`, `linux_arm64`, `linux_amd64`). The doctor gate
+  accepts benign statuses `ok`/`warn`, labels `healthy`/`degraded` and an advisory verdict with no
+  blocking findings, and hard-codes no counts. A schema-17 store is migrated with `br doctor migrate-schema plan`, then `apply --plan-token`; ordinary commands refuse it with `SCHEMA_MISMATCH`.
+- Before using `br` JSON, creating or recovering beads, upgrading `br`, editing `BR_VERSION` or `scripts/beads_doctor_gate.py`, or handling a schema or asset error, read `docs/agents/br.md`.
 
 ## Tool Etiquette
 
 - Never launch an interactive TUI from an agent session. Bare `bv` and bare `cass` block the session.
-  `bv --robot-plan` ranks work by what a completion unblocks; take the highest-`unblocks` **leaf**,
-  since an epic wins on PageRank by construction and is not workable.
+  Take the highest-`unblocks` leaf from `bv --robot-plan`, never an epic.
 - Bug scan before every commit: `ubs $(git diff --name-only --cached)`. Exit 0 is safe; exit 3 (nothing
   scanned) is not a pass; any other nonzero means verify the finding is real, fix the root cause, re-run.
-- Prior sessions: `cass search "<question>" --robot --limit 5` before re-solving a problem another
-  session handled; `cm context "<task>" --json` before non-trivial work, with inline
-  `// [cass: helpful <rule-id>] - reason` feedback in the session and never `cm mark`.
+- Run `cass search "<question>" --robot --limit 5` before re-solving a problem another session handled and `cm context "<task>" --json` before non-trivial work, with inline `// [cass: helpful <rule-id>] - reason` feedback in the session; never `cm mark`.
 - Search by question shape: `rg` for literals, semantic search for "how does X work". Never `rg` for codemods.
-- Classify bead scope with `uv run python scripts/route.py <bead-id>`; the router emits the class, path floor, reasons, and judge status. Fleet routing owns model assignments.
-- `slb`, `ntm` and `agent-mail` are installed but unused: this is a single-agent repository, and no
-  reservation or swarm protocol applies until a second agent works the tree. `rch`, `xf`, `ms`: not installed.
+- Classify bead scope with `uv run python scripts/route.py <bead-id>`. Fleet routing owns model assignments.
+- `slb`, `ntm` and `agent-mail` are installed but unused: this is a single-agent repository, and no reservation or swarm protocol applies until a second agent works the tree.
+- Before using `cass`, `cm`, `bv`, `ubs`, `rg` or `scripts/route.py`, or on any mention of `slb`, `ntm` or `agent-mail`, read `docs/agents/tools.md`.
 
 ## Landing the Plane (Session Completion)
 
@@ -305,9 +224,9 @@ committed (`.gitignore` re-includes it against the global ignore). `br` never ru
 2. Run `scripts/check.sh --fast` and affected tests under Quality Checks. Verify pushed CI before
    declaring shipped; retain relevant local-only evidence and name any unverified scope.
 3. Update bead status; a close carries its ARTIFACTS block. `br sync --flush-only`, then stage `.beads/`
-   beside the exact code paths. Batch tracker evidence and closes with useful implementation or
-   documentation changes when their acceptance is met; pending verification keeps the bead open.
-   A separate bookkeeping-only commit is not a required work step.
+   beside the exact code paths. Batch tracker evidence and closes with implementation or documentation
+   changes when acceptance is met; pending verification keeps the bead open. A separate
+   bookkeeping-only commit is not a required work step.
 4. `git status` -> `git add <exact files>` -> `git commit` -> confirm the post-commit push landed or push
    by hand -> `git status` shows up to date.
 5. Hand off: what changed, gates run and their results, remaining risks, concrete next steps.

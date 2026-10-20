@@ -26,7 +26,7 @@ jobs:
     timeout-minutes: 41
     env:
       CAIRN_SESSION_DEADLINE: "1080"
-      BR_VERSION: "0.6.0"
+      BR_VERSION: "0.7.6"
       PYTEST_ADDOPTS: "-vv"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -194,9 +194,9 @@ jobs:
       # local default is higher; nothing meters a local run.
       CAIRN_SESSION_DEADLINE: ${{ matrix.lane == 'solution-plan-exact' && '1962' || '1080' }}
       # The artifact-block gate parses `br show <id> --json`, so this matches the br the
-      # machines that write the beads carry; it is the install-br cache key. The 0.6 line
-      # names its asset `br-` with `arm64`; the 0.5 line used `beads_rust-` with `aarch64`.
-      BR_VERSION: "0.6.0"
+      # machines that write the beads carry; it is the install-br cache key. The 0.6 and 0.7
+      # lines name the asset `br-` with `arm64`; the 0.5 line used `beads_rust-` with `aarch64`.
+      BR_VERSION: "0.7.6"
       # The elan release that resolves the Lean toolchain `lean/lean-toolchain` names; the
       # release publishes no checksum beside its archive, so the pin is the tag alone.
       ELAN_VERSION: "4.2.3"
