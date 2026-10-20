@@ -1,5 +1,6 @@
 import json
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -234,20 +235,31 @@ def _root_conftest(pytestconfig):
     )
 
 
+@pytest.fixture(scope="module")
+def config_repo_template(tmp_path_factory, pytestconfig):
+    conftest = _root_conftest(pytestconfig)
+    allowed = conftest._allowed_argv0
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(conftest, "_allowed_argv0", lambda: {*allowed(), "git"})
+        root = tmp_path_factory.mktemp("config-repo-template") / "repo"
+        root.mkdir()
+        git(root, "init", "-b", "main")
+        git(root, "config", "core.hooksPath", "/dev/null")
+        git(root, "config", "user.name", "Audit Test")
+        git(root, "config", "user.email", "audit@example.test")
+        (root / "tracked.txt").write_text("baseline\n")
+        git(root, "add", "tracked.txt")
+        git(root, "commit", "-m", "baseline")
+    return root
+
+
 @pytest.fixture
-def config_repo(tmp_path, monkeypatch, pytestconfig):
+def config_repo(config_repo_template, tmp_path, monkeypatch, pytestconfig):
     conftest = _root_conftest(pytestconfig)
     allowed = conftest._allowed_argv0
     monkeypatch.setattr(conftest, "_allowed_argv0", lambda: {*allowed(), "git"})
     root = tmp_path / "repo"
-    root.mkdir()
-    git(root, "init", "-b", "main")
-    git(root, "config", "core.hooksPath", "/dev/null")
-    git(root, "config", "user.name", "Audit Test")
-    git(root, "config", "user.email", "audit@example.test")
-    (root / "tracked.txt").write_text("baseline\n")
-    git(root, "add", "tracked.txt")
-    git(root, "commit", "-m", "baseline")
+    shutil.copytree(config_repo_template, root, symlinks=True)
     return root
 
 
