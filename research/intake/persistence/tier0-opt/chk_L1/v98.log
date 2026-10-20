@@ -1,0 +1,3 @@
+vertex 98: 1 multisets, 1 within budget, total patterns 1.123e+04
+  M=(2, 7, 7) patterns=1.12e+04 CLOSED sols=[] 0s
+VERTEX 98: 1/1 multisets run; open patterns 0; children [] known []

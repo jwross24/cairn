@@ -1,0 +1,1 @@
+./golden_run.sh golden_raw 4  2.20s user 0.63s system 52% cpu 5.427 total

@@ -1,0 +1,4 @@
+vertex 189: 2 multisets, 2 within budget, total patterns 7.315e+04
+  M=(3, 7, 9) patterns=2.07e+04 CLOSED sols=[] 0s
+  M=(3, 3, 3, 7) patterns=5.24e+04 CLOSED sols=[] 0s
+VERTEX 189: 2/2 multisets run; open patterns 0; children [] known []
