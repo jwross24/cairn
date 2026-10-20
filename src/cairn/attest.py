@@ -12,6 +12,7 @@ from cairn.substrate import blob_hash
 lg = log.get("attest")
 
 LENGTH_BYTES = 8
+MAX_TORN_FILL = 1 << 24
 FIXTURE_WAIVER_EXPIRES = "9999-12-31T23:59:59Z"
 KINDS = ("review_verdict", "waiver", "acknowledgment", "nogo_review", "expert_signoff")
 
@@ -53,14 +54,36 @@ def frame(canonical):
     return canon.length_prefix(bytes(canonical))
 
 
+def _torn_tail_fill(fd):
+    size = os.fstat(fd).st_size
+    offset = 0
+    while offset < size:
+        prefix = os.pread(fd, LENGTH_BYTES, offset)
+        if len(prefix) < LENGTH_BYTES:
+            return LENGTH_BYTES - len(prefix) + int.from_bytes(prefix + bytes(LENGTH_BYTES - len(prefix)), "little")
+        offset += LENGTH_BYTES + int.from_bytes(prefix, "little")
+    return offset - size
+
+
 def append_record(path, canonical):
     framed = frame(canonical)
     with Path(path).open("ab", buffering=0) as fh:
         fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
         try:
+            reader = os.open(path, os.O_RDONLY)
+            try:
+                fill = _torn_tail_fill(reader)
+            finally:
+                os.close(reader)
+            if fill > MAX_TORN_FILL:
+                raise AttestationError(
+                    f"attestation file {path} ends in a torn frame claiming {fill} more bytes; refusing to append"
+                )
+            if fill:
+                lg.warning("torn_frame_completed", path=str(path), fill=fill)
             fh.seek(0, os.SEEK_END)
-            offset = fh.tell()
-            remaining = memoryview(framed)
+            offset = fh.tell() + fill
+            remaining = memoryview(bytes(fill) + framed)
             while remaining:
                 written = fh.write(remaining)
                 if not written:
