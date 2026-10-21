@@ -1,0 +1,309 @@
+import os
+import re
+import socket
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+from cairn import allowlist, bundle
+from cairn.substrate import blob_hash
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import _substrate_helpers as helpers
+
+INTERPRETER = re.compile(r"\Apython3\.\d+\Z")
+BACKEND = os.path.realpath(sys.executable)
+METHOD = """
+import os, socket, subprocess, sys
+scratch, action, outside, backend = sys.argv[1:5]
+if action == "honest":
+    with open(os.path.join(scratch, "trial.json"), "w") as fh:
+        fh.write('{"answer": %d}' % pow(3, 41, 2**61 - 1))
+elif action == "outside_write":
+    with open(outside, "w") as fh:
+        fh.write("exfiltrated")
+elif action == "network":
+    s = socket.socket(); s.settimeout(5); s.connect(("1.1.1.1", 80)); s.close()
+elif action == "undeclared_exec":
+    subprocess.run(["/bin/echo", "spawned"], check=True)
+elif action == "declared_exec":
+    subprocess.run([backend, "-c", "pass"], check=True)
+sys.stdout.write("METHOD_COMPLETED")
+"""
+
+
+def _hypothesis(**claimed):
+    return {
+        "target_family": "toy_curve",
+        "claimed": {"model": "c_ln_p_tries", **claimed},
+        "method_identity": {"interface_version": "toy_curve/1", "params": {}},
+        "declared_parameter_ranges": {"bits": [40, 40]},
+        "sampling_distribution": None,
+    }
+
+
+@pytest.fixture
+def shipped(pinned_bundle):
+    return bundle.GateBundle.open(*pinned_bundle())
+
+
+@pytest.fixture
+def writer(tmp_path):
+    sub = helpers.open_writer(tmp_path)
+    yield sub
+    sub.close()
+
+
+@pytest.fixture
+def confined(shipped, tmp_path):
+    def make(**kwargs):
+        scratch = tmp_path / "scratch"
+        scratch.mkdir(exist_ok=True)
+        value = allowlist.instantiate(
+            shipped,
+            hypothesis=kwargs.pop("hypothesis", _hypothesis()),
+            counted_object=BACKEND,
+            scratch_dir=scratch,
+            **kwargs,
+        )
+        profile = allowlist.write_profile(value, tmp_path / f"{value.profile_hash[:16]}.sb")
+        return value, scratch, profile
+
+    return make
+
+
+def _run(value, profile, scratch, action, outside):
+    argv = allowlist.argv_for(value, profile, [BACKEND, "-c", METHOD, str(scratch), action, str(outside), BACKEND])
+    done = subprocess.run(argv, capture_output=True)
+    return done.returncode, done.stdout, done.stderr
+
+
+def test_the_honest_method_completes_and_its_allow_list_matches_the_bundle_template(shipped, confined, tmp_path):
+    value, scratch, profile = confined()
+    rc, out, err = _run(value, profile, scratch, "honest", tmp_path / "outside.txt")
+    assert (rc, out) == (0, b"METHOD_COMPLETED"), err
+    assert (scratch / "trial.json").read_text() == '{"answer": 1885351238965377138}'
+    assert allowlist.check_instantiation(value, shipped) is True
+    entry = allowlist.template(shipped)
+    assert value.template_hash == blob_hash(shipped.raw(allowlist.BUNDLE_KIND))
+    assert (value.bundle_hash, value.network_egress) == (shipped.hash, entry["network_egress"])
+    assert value.mechanism in entry["mechanisms"]
+    assert value.exec_paths == BACKEND_EXECS
+    assert allowlist.detect_violation(rc, err, value) is None
+
+
+def test_a_write_outside_the_scratch_path_is_confined_and_named(confined, tmp_path):
+    value, scratch, profile = confined()
+    outside = tmp_path / "outside.txt"
+    rc, out, err = _run(value, profile, scratch, "outside_write", outside)
+    assert rc != 0
+    assert out == b""
+    assert not outside.exists()
+    assert b"Operation not permitted" in err
+    assert allowlist.detect_violation(rc, err, value) == "outside_write"
+
+
+def test_the_same_write_inside_a_permitting_writable_root_completes(shipped, tmp_path):
+    inside = tmp_path / "widened"
+    inside.mkdir()
+    value = allowlist.instantiate(shipped, hypothesis=_hypothesis(), counted_object=BACKEND, scratch_dir=inside)
+    profile = allowlist.write_profile(value, tmp_path / "widened.sb")
+    target = inside / "outside.txt"
+    rc, out, err = _run(value, profile, inside, "outside_write", target)
+    assert (rc, out) == (0, b"METHOD_COMPLETED"), err
+    assert target.read_text() == "exfiltrated"
+    assert allowlist.detect_violation(rc, err, value) is None
+
+
+def test_a_network_socket_is_confined_and_named(confined, tmp_path):
+    value, scratch, profile = confined()
+    rc, out, err = _run(value, profile, scratch, "network", tmp_path / "outside.txt")
+    assert rc != 0
+    assert out == b""
+    assert allowlist.detect_violation(rc, err, value) == "network_egress"
+    with socket.socket() as control:
+        control.settimeout(10)
+        control.connect(("1.1.1.1", 80))
+
+
+def test_an_undeclared_subprocess_is_confined_and_named(confined, tmp_path):
+    value, scratch, profile = confined()
+    rc, out, err = _run(value, profile, scratch, "undeclared_exec", tmp_path / "outside.txt")
+    assert rc != 0
+    assert out == b""
+    assert b"/bin/echo" in err
+    assert allowlist.detect_violation(rc, err, value) == "undeclared_exec"
+
+
+def test_the_same_spawn_declared_as_a_backend_completes(confined, tmp_path):
+    declared, scratch, profile = confined(
+        hypothesis=_hypothesis(uncounted_backends="gp"), backend_paths={"gp": "/bin/echo"}
+    )
+    assert set(declared.exec_paths) == {*BACKEND_EXECS, "/bin/echo"}
+    rc, out, err = _run(declared, profile, scratch, "undeclared_exec", tmp_path / "outside.txt")
+    assert (rc, out) == (0, b"spawned\nMETHOD_COMPLETED"), err
+    assert allowlist.detect_violation(rc, err, declared) is None
+
+
+def test_a_declared_backend_is_admitted_on_the_declaration_alone_and_is_recorded(confined, writer, tmp_path):
+    hypothesis = _hypothesis(uncounted_backends="gp")
+    value, scratch, profile = confined(hypothesis=hypothesis, backend_paths={"gp": BACKEND})
+    rc, out, err = _run(value, profile, scratch, "declared_exec", tmp_path / "outside.txt")
+    assert (rc, out) == (0, b"METHOD_COMPLETED"), err
+    assert value.declared_backends == ("gp",)
+    digest = allowlist.record(writer, value)
+    assert allowlist.read(writer, digest) == value
+    assert allowlist.read(writer, digest).declared_backends == ("gp",)
+
+
+def test_a_withheld_root_survives_the_record_round_trip(confined, writer, tmp_path):
+    value, _, _ = confined(withheld_roots=[tmp_path / "substrate.sqlite"])
+    assert value.withheld_roots == (os.path.realpath(tmp_path / "substrate.sqlite"),)
+    assert allowlist.read(writer, allowlist.record(writer, value)) == value
+
+
+def test_a_stored_record_lacking_withheld_roots_is_refused_and_could_not_address_itself(confined, writer):
+    value, _, _ = confined()
+    stored = {key: field for key, field in value.as_dict().items() if key != "withheld_roots"}
+    digest = writer.put_node(
+        allowlist.RECORD_KIND, bundle.canonical_bytes(allowlist.RECORD_KIND, stored), replay_grade="AuditOnly"
+    )
+    assert allowlist.AllowList(**stored).hash != digest
+    with pytest.raises(allowlist.AllowListRefused, match="does not carry the allow-list fields"):
+        allowlist.read(writer, digest)
+
+
+def test_the_same_method_without_the_declaration_is_confined(confined, tmp_path):
+    value, scratch, profile = confined()
+    assert value.declared_backends == ()
+    argv = allowlist.argv_for(
+        value, profile, [BACKEND, "-c", METHOD, str(scratch), "declared_exec", str(tmp_path / "o.txt"), "/bin/echo"]
+    )
+    done = subprocess.run(argv, capture_output=True)
+    assert done.returncode != 0
+    assert done.stdout == b""
+    assert b"Operation not permitted" in done.stderr
+
+
+def test_the_profile_the_gate_wrote_is_the_one_the_allow_list_addresses(confined):
+    value, _, profile = confined()
+    assert blob_hash(Path(profile).read_bytes()) == value.profile_hash
+    assert Path(profile).stat().st_mode & 0o222 == 0
+
+
+def _app_binary(path):
+    versions = Path(path).parent.parent
+    framework = versions.parent.parent
+    if Path(path).parent.name != "bin" or not framework.name.endswith(".framework"):
+        return None
+    name = framework.name.removesuffix(".framework")
+    target = versions / "Resources" / f"{name}.app" / "Contents" / "MacOS" / name
+    return target if target.is_file() and os.access(target, os.X_OK) else None
+
+
+def _framework_interpreters():
+    found = []
+    discovered = (os.path.realpath(p) for p in Path("/opt/homebrew/bin").glob("python3.*") if INTERPRETER.match(p.name))
+    for candidate in [BACKEND, *discovered]:
+        if _app_binary(candidate) is not None and candidate not in found:
+            found.append(candidate)
+    return found
+
+
+FRAMEWORK_INTERPRETERS = _framework_interpreters()
+BACKEND_EXECS = tuple(sorted({BACKEND} | ({str(_app_binary(BACKEND))} if _app_binary(BACKEND) else set())))
+
+
+@pytest.mark.skipif(not FRAMEWORK_INTERPRETERS, reason="no framework-build interpreter on this host")
+@pytest.mark.parametrize("interpreter", FRAMEWORK_INTERPRETERS)
+def test_a_framework_interpreter_runs_the_honest_method_and_still_names_a_violation(shipped, tmp_path, interpreter):
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    value = allowlist.instantiate(shipped, hypothesis=_hypothesis(), counted_object=interpreter, scratch_dir=scratch)
+    assert str(_app_binary(interpreter)) in value.exec_paths
+    profile = allowlist.write_profile(value, tmp_path / f"{value.profile_hash[:16]}.sb")
+    outside = tmp_path / "outside.txt"
+
+    def run(action):
+        argv = allowlist.argv_for(
+            value, profile, [interpreter, "-c", METHOD, str(scratch), action, str(outside), interpreter]
+        )
+        done = subprocess.run(argv, capture_output=True)
+        return done.returncode, done.stdout, done.stderr
+
+    rc, out, err = run("honest")
+    assert (rc, out, err) == (0, b"METHOD_COMPLETED", b"")
+
+    rc, out, err = run("network")
+    assert out == b""
+    assert allowlist.detect_violation(rc, err, value) == "network_egress"
+
+    rc, out, err = run("outside_write")
+    assert out == b""
+    assert not outside.exists()
+    assert allowlist.detect_violation(rc, err, value) == "outside_write"
+
+
+SECRET = b"SECRET-X-918273645"
+READER = "import sys; sys.stdout.write('X=' + ('SECRET' if sys.argv[2].encode() in open(sys.argv[1], 'rb').read() else 'absent'))"
+
+
+def _substrate_holding_the_answer(tmp_path):
+    sub = helpers.open_writer(tmp_path)
+    sub.put_blob(SECRET)
+    sub.close()
+    return tmp_path / "substrate.sqlite"
+
+
+def _read_as_method(value, profile, target):
+    argv = allowlist.argv_for(value, profile, [BACKEND, "-c", READER, str(target), SECRET.decode()])
+    done = subprocess.run(argv, capture_output=True)
+    return done.returncode, done.stdout, done.stderr
+
+
+def test_a_method_cannot_read_the_substrate_that_holds_the_answer(confined, tmp_path):
+    substrate = _substrate_holding_the_answer(tmp_path)
+    value, _, profile = confined(withheld_roots=[substrate])
+    rc, out, err = _read_as_method(value, profile, substrate)
+    assert rc != 0
+    assert out == b""
+    assert b"Operation not permitted" in err
+    assert value.withheld_roots == (os.path.realpath(substrate),)
+    assert allowlist.detect_violation(rc, err, value) == "withheld_read"
+
+
+def test_the_same_read_without_a_withheld_root_still_succeeds(confined, tmp_path):
+    substrate = _substrate_holding_the_answer(tmp_path)
+    value, _, profile = confined()
+    assert _read_as_method(value, profile, substrate)[:2] == (0, b"X=SECRET")
+
+
+def test_a_symlink_to_a_withheld_substrate_is_refused(confined, tmp_path):
+    substrate = _substrate_holding_the_answer(tmp_path)
+    value, scratch, profile = confined(withheld_roots=[substrate])
+    alias = scratch / "alias.sqlite"
+    alias.symlink_to(substrate)
+    rc, out, err = _read_as_method(value, profile, alias)
+    assert rc != 0
+    assert out == b""
+    assert b"Operation not permitted" in err
+    assert allowlist.detect_violation(rc, err, value) == "withheld_read"
+
+
+def test_an_alias_spelling_of_a_withheld_root_is_refused_too(confined, tmp_path):
+    substrate = _substrate_holding_the_answer(tmp_path)
+    spelled = Path(str(substrate).replace("/private/var", "/var", 1))
+    value, _, profile = confined(withheld_roots=[spelled])
+    for target in (spelled, substrate):
+        rc, out, err = _read_as_method(value, profile, target)
+        assert rc != 0
+        assert allowlist.detect_violation(rc, err, value) == "withheld_read"
+
+
+def test_the_honest_method_still_completes_beside_a_withheld_root(confined, tmp_path):
+    substrate = _substrate_holding_the_answer(tmp_path)
+    value, scratch, profile = confined(withheld_roots=[substrate])
+    rc, out, err = _run(value, profile, scratch, "honest", tmp_path / "outside.txt")
+    assert (rc, out) == (0, b"METHOD_COMPLETED"), err

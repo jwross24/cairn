@@ -11,259 +11,126 @@ arm's seed is fixed before the method sees the instance and no two arms share a 
 import dataclasses
 import importlib
 import json
-from dataclasses import asdict, dataclass, field
 from decimal import Decimal
 from pathlib import Path
-from uuid import uuid4
 
-from cairn import (
-    allowlist,
-    bundle,
-    canon,
-    claims,
-    cli,
-    escrow,
-    instances,
-    keys,
-    ladderplan,
-    laddertable,
-    ledger,
-    log,
-    runner,
-    substrate,
-    tiergate,
-    verifier,
-    yank,
+from cairn import canon, claims, cli, instances, keys, ladderplan, laddertable, ledger, log, verifier, yank
+from cairn.ladder_arm import (
+    RUNG_TIER,
+    SECONDS_PLACES,
+    ArmTrial,
+    RunBudget,
+    _admit,
+    _quantize,
+    _receipt_scratch,
+    _recipe,
+    run_arm,
 )
-from cairn.substrate import node_hash_for
+from cairn.ladder_commit import (
+    COMMITMENT_KIND,
+    COMMITMENT_SCHEMA,
+    Commitment,
+    _hypothesis,
+    check_order,
+    commit_entropy,
+    commitment_for,
+    method_seed,
+    sequence_position,
+)
+from cairn.ladder_dispatch import (
+    BASELINE,
+    BASELINE_AA,
+    CLAIMANT,
+    KIND,
+    TABLE,
+    Dispatch,
+    _allow_list,
+    check_dispatch,
+    dispatches_for,
+    expected_identity,
+    write_dispatch,
+)
+from cairn.ladder_refusal import (
+    ALLOW_LIST_UNBOUND,
+    ARM_UNKNOWN,
+    ARMS_MISSING,
+    BASELINE_REVISION_MISMATCH,
+    COMMITMENT_ABSENT,
+    HYPOTHESIS_ABSENT,
+    HYPOTHESIS_AFTER_ENTROPY,
+    INSTANCE_FAILED,
+    METHOD_IDENTITY_MISMATCH,
+    NONCE_ABSENT,
+    NONCE_FOREIGN,
+    NONCE_PUBLISHED,
+    PRE_SPAWN_REASONS,
+    SUBSTRATE_READABLE,
+    TIER_REFUSED,
+    UNCERTIFIED_REVISION,
+    YANKED_REVISION,
+    RunRefused,
+)
+
+__all__ = [
+    "ALLOW_LIST_UNBOUND",
+    "ARMS_MISSING",
+    "ARM_UNKNOWN",
+    "BASELINE",
+    "BASELINE_AA",
+    "BASELINE_REVISION_MISMATCH",
+    "CLAIMANT",
+    "COMMITMENT_ABSENT",
+    "COMMITMENT_KIND",
+    "COMMITMENT_SCHEMA",
+    "HYPOTHESIS_ABSENT",
+    "HYPOTHESIS_AFTER_ENTROPY",
+    "INSTANCE_FAILED",
+    "KIND",
+    "LOG_STEP",
+    "METHOD_IDENTITY_MISMATCH",
+    "NONCE_ABSENT",
+    "NONCE_FOREIGN",
+    "NONCE_PUBLISHED",
+    "PRE_SPAWN_REASONS",
+    "RUNG_TIER",
+    "SECONDS_PLACES",
+    "SUBSTRATE_READABLE",
+    "TABLE",
+    "TIER_REFUSED",
+    "UNCERTIFIED_REVISION",
+    "YANKED_REVISION",
+    "ArmTrial",
+    "Commitment",
+    "Dispatch",
+    "RunBudget",
+    "RunRefused",
+    "_admit",
+    "_allow_list",
+    "_hypothesis",
+    "_quantize",
+    "_receipt_scratch",
+    "_recipe",
+    "_rung_row",
+    "_table_evidence_nodes",
+    "_trial_row",
+    "arms_for",
+    "check_dispatch",
+    "check_order",
+    "commit_entropy",
+    "commitment_for",
+    "dispatch",
+    "dispatches_for",
+    "expected_identity",
+    "method_seed",
+    "run",
+    "run_arm",
+    "sequence_position",
+    "write_dispatch",
+]
 
 lg = log.get("ladder")
 
 LOG_STEP = "ladder"
-KIND = "ladder_dispatch"
-COMMITMENT_KIND = "ladder_entropy_commitment"
-TABLE = "ladder_dispatches"
-
-CLAIMANT = ladderplan.ARMS[0]
-BASELINE = ladderplan.ARMS[1]
-BASELINE_AA = ladderplan.ARMS[2]
-RUNG_TIER = tiergate.LADDER_RUNG_TIER
-COMMITMENT_SCHEMA = canon.Map(canon.STR, canon.STR)
-
-HYPOTHESIS_ABSENT = "hypothesis-absent"
-COMMITMENT_ABSENT = "entropy-commitment-absent"
-HYPOTHESIS_AFTER_ENTROPY = "hypothesis-after-entropy"
-NONCE_ABSENT = "nonce-absent"
-NONCE_FOREIGN = "nonce-names-another-hypothesis"
-NONCE_PUBLISHED = "nonce-published"
-ARM_UNKNOWN = "arm-unknown"
-METHOD_IDENTITY_MISMATCH = "method-identity-mismatch"
-BASELINE_REVISION_MISMATCH = "baseline-revision-mismatch"
-UNCERTIFIED_REVISION = "uncertified-revision"
-YANKED_REVISION = "yanked-revision"
-ALLOW_LIST_UNBOUND = "allow-list-unbound"
-PRE_SPAWN_REASONS = (
-    HYPOTHESIS_ABSENT,
-    COMMITMENT_ABSENT,
-    HYPOTHESIS_AFTER_ENTROPY,
-    NONCE_ABSENT,
-    NONCE_FOREIGN,
-    NONCE_PUBLISHED,
-    ARM_UNKNOWN,
-    METHOD_IDENTITY_MISMATCH,
-    BASELINE_REVISION_MISMATCH,
-    UNCERTIFIED_REVISION,
-    YANKED_REVISION,
-    ALLOW_LIST_UNBOUND,
-)
-
-ARMS_MISSING = "arms-missing"
-TIER_REFUSED = "tier-refused"
-INSTANCE_FAILED = "instance-failed"
-
-SECONDS_PLACES = Decimal("0.000001")
-
-
-class RunRefused(substrate.SubstrateError):
-    def __init__(self, reason, detail):
-        self.reason = reason
-        self.detail = detail
-        super().__init__(f"{reason}: {detail}")
-
-
-def method_seed(nonce, hypothesis_key, arm, bits, trial):
-    return instances.trial_seed(nonce, f"{hypothesis_key}/{arm}", bits, trial)
-
-
-def sequence_position(sub, node_hash):
-    row = sub.conn.execute("SELECT rowid FROM nodes WHERE hash = ?", (node_hash,)).fetchone()
-    return None if row is None else row["rowid"]
-
-
-@dataclass(frozen=True)
-class Commitment:
-    run_id: str
-    hypothesis_hash: str
-    nonce: str
-    at: str
-
-    def as_dict(self):
-        return asdict(self)
-
-    @property
-    def hash(self):
-        return node_hash_for(COMMITMENT_KIND, bundle.canonical_bytes(COMMITMENT_KIND, self.as_dict()))
-
-
-def commit_entropy(sub, *, hypothesis_hash, run_id, nonce=None, at=None):
-    """Write the run's entropy commitment, then draw the nonce it names."""
-    value = Commitment(
-        run_id=run_id,
-        hypothesis_hash=hypothesis_hash,
-        nonce=instances.fresh_nonce() if nonce is None else nonce,
-        at=cli.now_iso() if at is None else at,
-    )
-    canonical = bundle.canonical_bytes(COMMITMENT_KIND, value.as_dict())
-    with sub._tx():
-        sub._put_node(COMMITMENT_KIND, canonical, value.hash, "Replayable", None)
-    record = instances.commit_nonce(sub, hypothesis_hash, run_id, value.nonce, at=value.at)
-    lg.info("commit_entropy", run_id=run_id, hypothesis_hash=hypothesis_hash, commitment=value.hash)
-    return value, record
-
-
-def commitment_for(sub, nonce):
-    rows = sub.conn.execute(
-        "SELECT rowid, canonical FROM nodes WHERE kind = ? ORDER BY rowid", (COMMITMENT_KIND,)
-    ).fetchall()
-    for row in rows:
-        data = canon.decode(COMMITMENT_SCHEMA, bytes(row["canonical"]))
-        if data["nonce"] == nonce:
-            return row["rowid"], Commitment(**data)
-    return None, None
-
-
-@dataclass(frozen=True)
-class Dispatch:
-    run_id: str
-    arm: str
-    nonce: str
-    hypothesis_hash: str
-    method_identity: dict
-    skill: str
-    implementation_revision: str
-    identity_bundle: dict
-    identity_bundle_hash: str
-    allow_list: dict
-    allow_list_hash: str
-    gate_bundle_hash: str
-    plan_hash: str
-    at: str
-
-    def __post_init__(self):
-        for name in ("method_identity", "identity_bundle", "allow_list"):
-            object.__setattr__(self, name, claims.jsonable(getattr(self, name)))
-
-    def as_dict(self):
-        return asdict(self)
-
-    @property
-    def hash(self):
-        return node_hash_for(KIND, bundle.canonical_bytes(KIND, self.as_dict()))
-
-    @property
-    def module(self):
-        return importlib.import_module(self.skill)
-
-
-def expected_identity(plan, arm, hypothesis):
-    if arm == CLAIMANT:
-        return hypothesis["method_identity"]
-    if arm in (BASELINE, BASELINE_AA):
-        return plan.baseline.method_identity
-    raise RunRefused(ARM_UNKNOWN, f"{arm!r} is no arm of {tuple(ladderplan.ARMS)}")
-
-
-def _hypothesis(sub, hypothesis_hash):
-    row = sub.get_node(hypothesis_hash)
-    if row is None or row["kind"] != "hypothesis_object":
-        raise RunRefused(HYPOTHESIS_ABSENT, f"no hypothesis object {hypothesis_hash[:12]} is recorded")
-    return canon.decode(keys.HYPOTHESIS_OBJECT, bytes(row["canonical"]))
-
-
-def check_order(sub, *, hypothesis_hash, nonce):
-    """The hypothesis object precedes the run's entropy commitment in the substrate's append order."""
-    _hypothesis(sub, hypothesis_hash)
-    position = sequence_position(sub, hypothesis_hash)
-    committed_at, commitment = commitment_for(sub, nonce)
-    if commitment is None:
-        raise RunRefused(COMMITMENT_ABSENT, f"nonce {nonce[:12]} carries no entropy commitment record")
-    if commitment.hypothesis_hash != hypothesis_hash:
-        raise RunRefused(NONCE_FOREIGN, f"nonce {nonce[:12]} commits hypothesis {commitment.hypothesis_hash[:12]}")
-    if position >= committed_at:
-        raise RunRefused(
-            HYPOTHESIS_AFTER_ENTROPY,
-            f"hypothesis {hypothesis_hash[:12]} sits at record {position}, the commitment at {committed_at}",
-        )
-    record = instances.get_nonce(sub, nonce)
-    if record is None:
-        raise RunRefused(NONCE_ABSENT, f"no nonce {nonce[:12]} is recorded")
-    if record.hypothesis_key != hypothesis_hash:
-        raise RunRefused(NONCE_FOREIGN, f"nonce {nonce[:12]} is drawn for {record.hypothesis_key[:12]}")
-    if not record.withheld:
-        raise RunRefused(NONCE_PUBLISHED, f"nonce {nonce[:12]} is published at {record.published_at}")
-    return commitment
-
-
-def _allow_list(dispatch):
-    data = dispatch.allow_list
-    return allowlist.AllowList(
-        template_name=data["template_name"],
-        template_hash=data["template_hash"],
-        bundle_hash=data["bundle_hash"],
-        mechanism=data["mechanism"],
-        counted_object=data["counted_object"],
-        declared_backends=tuple(data["declared_backends"]),
-        exec_paths=tuple(data["exec_paths"]),
-        network_egress=data["network_egress"],
-        writable_root=data["writable_root"],
-        profile_hash=data["profile_hash"],
-        withheld_roots=tuple(data["withheld_roots"]),
-    )
-
-
-def check_dispatch(sub, gate_bundle, dispatch, plan, *, attest_path=None):
-    """Every refusal this dispatch can earn, before a trial spawns anything."""
-    hypothesis = _hypothesis(sub, dispatch.hypothesis_hash)
-    check_order(sub, hypothesis_hash=dispatch.hypothesis_hash, nonce=dispatch.nonce)
-    expected = expected_identity(plan, dispatch.arm, hypothesis)
-    if dispatch.method_identity != expected:
-        raise RunRefused(
-            METHOD_IDENTITY_MISMATCH,
-            f"arm {dispatch.arm} dispatches {dispatch.method_identity} against registered {expected}",
-        )
-    if dispatch.arm != CLAIMANT and dispatch.implementation_revision != plan.baseline.implementation_revision:
-        raise RunRefused(
-            BASELINE_REVISION_MISMATCH,
-            f"arm {dispatch.arm} runs revision {dispatch.implementation_revision[:12]}, "
-            f"the plan registers {plan.baseline.implementation_revision[:12]}",
-        )
-    if dispatch.identity_bundle_hash != keys.identity_bundle_hash(dispatch.identity_bundle):
-        raise RunRefused(UNCERTIFIED_REVISION, "the dispatched identity bundle does not hash to its named hash")
-    if dispatch.identity_bundle["implementation_revision"] != dispatch.implementation_revision:
-        raise RunRefused(UNCERTIFIED_REVISION, "the dispatched identity bundle names another implementation revision")
-    if not sub.certified(dispatch.identity_bundle_hash):
-        raise RunRefused(
-            UNCERTIFIED_REVISION, f"skill identity {dispatch.identity_bundle_hash[:12]} carries no certificate"
-        )
-    if sub.yanked(dispatch.identity_bundle_hash, attest_path=attest_path):
-        raise RunRefused(YANKED_REVISION, f"skill identity {dispatch.identity_bundle_hash[:12]} is yanked")
-    if dispatch.allow_list.get("bundle_hash") != gate_bundle.hash:
-        raise RunRefused(ALLOW_LIST_UNBOUND, "the instantiated allow-list names another gate bundle")
-    if _allow_list(dispatch).hash != dispatch.allow_list_hash:
-        raise RunRefused(ALLOW_LIST_UNBOUND, "the instantiated allow-list differs from its recorded hash")
-    if not allowlist.check_instantiation(_allow_list(dispatch), gate_bundle):
-        raise RunRefused(ALLOW_LIST_UNBOUND, "the instantiated allow-list does not match the bundle template")
-    return dispatch
 
 
 def dispatch(
@@ -304,231 +171,6 @@ def dispatch(
     )
     check_dispatch(sub, gate_bundle, value, plan, attest_path=attest_path)
     return write_dispatch(sub, value)
-
-
-def write_dispatch(sub, value):
-    canonical = bundle.canonical_bytes(KIND, value.as_dict())
-    with sub._tx():
-        sub._put_node(KIND, canonical, value.hash, "Replayable", None)
-        sub.conn.execute(
-            f"INSERT INTO {TABLE} (dispatch_id, record_hash, run_id, arm, nonce, hypothesis_hash,"
-            " implementation_revision, allow_list_hash, gate_bundle_hash, plan_hash, record_json)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (
-                str(uuid4()),
-                value.hash,
-                value.run_id,
-                value.arm,
-                value.nonce,
-                value.hypothesis_hash,
-                value.implementation_revision,
-                value.allow_list_hash,
-                value.gate_bundle_hash,
-                value.plan_hash,
-                json.dumps(value.as_dict(), sort_keys=True, separators=(",", ":")),
-            ),
-        )
-        sub._add_root("ledger_row", value.hash)
-    lg.info("dispatch", run_id=value.run_id, arm=value.arm, record=value.hash)
-    return value
-
-
-def dispatches_for(sub, run_id):
-    rows = sub.conn.execute(f"SELECT record_json FROM {TABLE} WHERE run_id = ? ORDER BY rowid", (run_id,)).fetchall()
-    return {d.arm: d for d in (Dispatch(**json.loads(row["record_json"])) for row in rows)}
-
-
-def _recipe(value, seed, salt):
-    identity = value.identity_bundle
-    return {
-        "skill_identity_hash": value.identity_bundle_hash,
-        "inputs": {},
-        "seed": seed,
-        "tool_versions": dict(identity["tool_digests"]),
-        "container_digest": identity["container_digest"],
-        "salt": salt,
-    }
-
-
-def _quantize(value, places):
-    return str(Decimal(value).quantize(places))
-
-
-@dataclass(frozen=True)
-class ArmTrial:
-    arm: str
-    bits: int
-    trial: int
-    seed: int
-    status: str
-    recovered: bool
-    output_complete: bool
-    reported_ops: int | None
-    gate_ops: laddertable.OpsObservation
-    cpu_seconds: str
-    wall_seconds: str
-    peak_rss_bytes: int
-    scratch_bytes: int
-    reported_memory_bytes: int
-    replay_grade: str
-    measurement_scope: str
-    attempt_id: str
-    instance_hash: str
-    allow_list_hash: str | None = None
-    writable_root: str | None = None
-
-
-def _receipt_scratch(sub, attempt):
-    if attempt.receipt_hash is None:
-        return 0
-    row = sub.get_receipt(attempt.receipt_hash)
-    return 0 if row is None else int(row["scratch_bytes_written"])
-
-
-@dataclass
-class RunBudget:
-    granted_core_s: float
-    attempt_ids: list[str] = field(default_factory=list)
-
-    def snapshot(self, sub):
-        production = 0.0
-        verification = 0.0
-        for attempt_id in self.attempt_ids:
-            attempt = sub.get_attempt(attempt_id)
-            receipt = sub.get_receipt(attempt["receipt_hash"])
-            reservation = escrow.reservation(sub, attempt_id)
-            if receipt is None or reservation is None:
-                raise substrate.SubstrateError(f"run budget cannot reconcile attempt {attempt_id}")
-            production += receipt["cpu_user_s"] + receipt["cpu_sys_s"]
-            if reservation["released_at"] is None:
-                verification += reservation["reserved"]
-        return {
-            "granted_core_s": self.granted_core_s,
-            "production_core_s": production,
-            "verification_core_s": verification,
-            "budget_remaining_core_s": self.granted_core_s - production - verification,
-        }
-
-    def remaining(self, sub):
-        return self.snapshot(sub)["budget_remaining_core_s"]
-
-
-def _admit(sub, gate_bundle, value, *, bits, seed, budget_remaining, attest_path):
-    launch = tiergate.Launch(
-        cost_profile=value.module.COST_PROFILE,
-        inputs={"bits": bits, "seed": seed},
-        budget_remaining=budget_remaining,
-        hypothesis_key=value.hypothesis_hash,
-        method_identity=value.method_identity,
-        skill_identity_hash=value.identity_bundle_hash,
-        declared_tier=RUNG_TIER,
-    )
-    decision = tiergate.TierGate(sub, gate_bundle, attest_path=attest_path).admit(launch)
-    if isinstance(decision, tiergate.TierRefused):
-        raise RunRefused(TIER_REFUSED, f"arm {value.arm} at {bits} bits: {', '.join(decision.reasons)}")
-    return decision
-
-
-def run_arm(
-    sub,
-    gate_bundle,
-    value,
-    *,
-    plan,
-    instance,
-    instance_hash,
-    bits,
-    trial,
-    scratch_root,
-    budget_remaining,
-    attest_path=None,
-    backend_paths=None,
-):
-    module = value.module
-    recorded_dispatch = sub.get_node(value.hash)
-    if recorded_dispatch is None or recorded_dispatch["kind"] != KIND:
-        raise RunRefused(ALLOW_LIST_UNBOUND, "the launch does not name a recorded dispatch")
-    recorded_policy = _allow_list(value)
-    if recorded_policy.hash != value.allow_list_hash:
-        raise RunRefused(ALLOW_LIST_UNBOUND, "the launch allow-list differs from its recorded hash")
-    policy = runner.MethodPolicy(
-        gate_bundle=gate_bundle,
-        hypothesis=_hypothesis(sub, value.hypothesis_hash),
-        allow_list=recorded_policy,
-        dispatch_hash=value.hash,
-        scratch_root=Path(recorded_policy.writable_root),
-        backend_paths=dict(backend_paths or {}),
-    )
-    seed = method_seed(value.nonce, value.hypothesis_hash, value.arm, bits, trial)
-    _admit(
-        sub,
-        gate_bundle,
-        value,
-        bits=bits,
-        seed=seed,
-        budget_remaining=budget_remaining,
-        attest_path=attest_path,
-    )
-    fields = instance.as_dict()
-    document = {"bits": bits, "seed": seed, **{name: str(fields[name]) for name in ("p", "a", "b", "n")}}
-    document["P"] = [str(c) for c in fields["P"]]
-    document["Q"] = [str(c) for c in fields["Q"]]
-    if module.INPUTS is not None and any(f.name == "negation_map" for f in module.INPUTS.fields):
-        document["negation_map"] = False
-    evaluation = module.COST_PROFILE.evaluate(bits)
-    attempt = runner.launch(
-        sub,
-        value.skill,
-        _recipe(value, seed, f"ladder/{value.run_id}/{value.arm}/{bits}/{trial}"),
-        bundle_hash=gate_bundle.hash,
-        evaluation=evaluation,
-        ceiling_multiplier=plan.patience_multiplier,
-        wall_cap_multiplier=gate_bundle.tiers["wall_cap_multiplier"],
-        wall_cap_floor_s=gate_bundle.tiers["wall_cap_floor_s"],
-        subprocess_startup_ms=gate_bundle.tiers["subprocess_startup_ms"],
-        tool_digests=value.identity_bundle["tool_digests"],
-        scratch_root=scratch_root,
-        replay=module.REPLAY_GRADE,
-        skip_cache_lookup=True,
-        do_not_cache=True,
-        budget_remaining=budget_remaining - evaluation.expected_verification_core_s,
-        stdin_document=document,
-        attest_path=attest_path,
-        method_policy=policy,
-        require_method_policy=True,
-    )
-    launch = attempt.launch
-    parsed = attempt.parsed.document if attempt.parsed is not None else {}
-    output_complete = bool(parsed) and "x" in parsed
-    reported = parsed.get("ops")
-    reported_ops = reported if isinstance(reported, int) and not isinstance(reported, bool) and reported >= 0 else None
-    solved = int(parsed["x"]) if output_complete else None
-    recovered = False
-    if solved is not None:
-        recovered = verifier.Verifier(gate_bundle.verifier_config()).run(instance, solved).accepted
-    memory = parsed.get("memory") or {}
-    return ArmTrial(
-        arm=value.arm,
-        bits=bits,
-        trial=trial,
-        seed=seed,
-        status=attempt.status,
-        recovered=recovered,
-        output_complete=output_complete,
-        reported_ops=reported_ops,
-        gate_ops=laddertable.OpsObservation(laddertable.OPS_UNKNOWN, None),
-        cpu_seconds=_quantize(str(launch.cpu_user_s + launch.cpu_sys_s), SECONDS_PLACES) if launch else "0",
-        wall_seconds=_quantize(str(launch.wall_s), SECONDS_PLACES) if launch else "0",
-        peak_rss_bytes=launch.peak_rss_bytes if launch else 0,
-        scratch_bytes=_receipt_scratch(sub, attempt),
-        reported_memory_bytes=int(memory.get("table_bytes", 0)),
-        replay_grade=module.REPLAY_GRADE,
-        measurement_scope=launch.measurement_scope if launch else runner.SCOPE_UNSAMPLED,
-        attempt_id=attempt.attempt_id,
-        instance_hash=instance_hash,
-        allow_list_hash=attempt.allow_list_hash,
-        writable_root=attempt.writable_root,
-    )
 
 
 def _rung_row(plan, rung, module, trials):

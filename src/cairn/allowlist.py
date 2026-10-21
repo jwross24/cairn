@@ -163,6 +163,17 @@ def _resolved(label, path):
     return text
 
 
+STORE_SUFFIXES = ("", "-wal", "-shm", "-journal")
+
+
+def store_roots(store_path):
+    return tuple(_resolved("substrate", f"{store_path}{suffix}") for suffix in STORE_SUFFIXES)
+
+
+def unwithheld_store_roots(value, store_path):
+    return tuple(r for r in store_roots(store_path) if not any(within(r, w) for w in value.withheld_roots))
+
+
 def within(path, root):
     return path == root or path.startswith(root + os.sep)
 
