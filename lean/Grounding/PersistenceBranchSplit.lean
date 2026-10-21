@@ -1,6 +1,7 @@
 import Grounding.RepunitCongruence
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Data.Nat.ModEq
+import Mathlib.Data.Int.ModEq
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.NormNum.Prime
 
@@ -82,5 +83,42 @@ theorem exponent_zero_of_not_dvd_three {a b c : ℕ} (h : ¬ 3 ∣ 2 ^ a * 3 ^ b
 theorem exponent_zero_of_not_dvd_seven {a b c : ℕ} (h : ¬ 7 ∣ 2 ^ a * 3 ^ b * 7 ^ c) : c = 0 := by
   by_contra hc
   exact h (Dvd.dvd.mul_left (dvd_pow_self 7 hc) _)
+
+/-- **Mod-7 dependence.** Agreement of `ν` and each `e_j` modulo `6` fixes the pattern value
+modulo `7`. -/
+theorem value_modEq_seven_of_modEq_six {q : ℕ} (d : Fin q → ℕ) {ν ν' : ℕ} {e e' : Fin q → ℕ}
+    (hν : ν ≡ ν' [MOD 6]) (he : ∀ j, e j ≡ e' j [MOD 6]) :
+    R ν + ∑ j, (d j - 1) * 10 ^ e j ≡ R ν' + ∑ j, (d j - 1) * 10 ^ e' j [MOD 7] :=
+  (R_modEq_seven hν).add (sum_modEq _ fun j _ => (pow_ten_modEq_seven (he j)).mul_left _)
+
+/-- **Mod-3 dependence.** Only `ν` modulo `3` matters; the positions `e_j` do not. -/
+theorem value_modEq_three_of_modEq_three {q : ℕ} (d : Fin q → ℕ) {ν ν' : ℕ} {e e' : Fin q → ℕ}
+    (hν : ν ≡ ν' [MOD 3]) :
+    R ν + ∑ j, (d j - 1) * 10 ^ e j ≡ R ν' + ∑ j, (d j - 1) * 10 ^ e' j [MOD 3] :=
+  (R_modEq_three hν).add (sum_modEq _ fun j _ =>
+    ((pow_ten_modEq_three (e j)).trans (pow_ten_modEq_three (e' j)).symm).mul_left _)
+
+theorem sum_modEq_int {ι : Type*} {n : ℤ} (s : Finset ι) {f g : ι → ℤ}
+    (h : ∀ i ∈ s, f i ≡ g i [ZMOD n]) : ∑ i ∈ s, f i ≡ ∑ i ∈ s, g i [ZMOD n] := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simp [Int.ModEq.refl]
+  | insert a s ha ih =>
+    rw [sum_insert ha, sum_insert ha]
+    exact (h a (mem_insert_self a s)).add (ih fun i hi => h i (mem_insert_of_mem hi))
+
+/-- **Mod-3 value with ordinary subtraction.** Over `ℤ`, with no condition on the digits,
+`R_ν + Σ (d_j - 1) · 10^(e_j) ≡ ν + Σ (d_j - 1) (mod 3)`. For `d_j ≥ 1` this is the natural-number
+statement `value_modEq_three`. -/
+theorem value_modEq_three_int {q : ℕ} (d : Fin q → ℕ) (ν : ℕ) (e : Fin q → ℕ) :
+    (R ν : ℤ) + ∑ j, ((d j : ℤ) - 1) * 10 ^ e j ≡ ν + ∑ j, ((d j : ℤ) - 1) [ZMOD 3] := by
+  have h10 : ∀ n : ℕ, (10 : ℤ) ^ n ≡ 1 [ZMOD 3] := fun n => by
+    simpa using (show (10 : ℤ) ≡ 1 [ZMOD 3] by decide).pow n
+  have hR : (R ν : ℤ) ≡ ν [ZMOD 3] := by
+    have := sum_modEq_int (n := 3) (range ν) (f := fun i => (10 : ℤ) ^ i) (g := fun _ => 1)
+      fun i _ => h10 i
+    simpa [R] using this
+  refine hR.add (sum_modEq_int _ fun j _ => ?_)
+  simpa using (h10 (e j)).mul_left ((d j : ℤ) - 1)
 
 end PersistenceBranchSplit
