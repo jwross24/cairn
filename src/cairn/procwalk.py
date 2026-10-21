@@ -5,6 +5,7 @@ from pathlib import Path
 
 PROC_PIDTBSDINFO = 3
 PROC_ALL_CAP = 8192
+PROC_CHILD_CAP = 1024
 
 
 class BsdInfo(ctypes.Structure):
@@ -45,6 +46,8 @@ def _load_libproc():
     lib.proc_listallpids.restype = ctypes.c_int
     lib.proc_pidinfo.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_uint64, ctypes.c_void_p, ctypes.c_int]
     lib.proc_pidinfo.restype = ctypes.c_int
+    lib.proc_listchildpids.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_int]
+    lib.proc_listchildpids.restype = ctypes.c_int
     return lib
 
 
@@ -59,23 +62,52 @@ def _darwin_lister(lib, cap):
     return lister
 
 
+def _darwin_row(lib, pid, info, size):
+    if lib.proc_pidinfo(pid, PROC_PIDTBSDINFO, 0, ctypes.byref(info), size) != size:
+        return None
+    return (info.ppid, info.pgid, (info.start_sec, info.start_usec))
+
+
+def _darwin_full_table(lib):
+    pids = (ctypes.c_int * PROC_ALL_CAP)()
+    count = lib.proc_listallpids(ctypes.byref(pids), ctypes.sizeof(pids))
+    if count < 0:
+        raise OSError(ctypes.get_errno(), "proc_listallpids")
+    info = BsdInfo()
+    size = ctypes.sizeof(info)
+    rows = {}
+    for i in range(count):
+        pid = pids[i]
+        row = _darwin_row(lib, pid, info, size) if pid > 0 else None
+        if row is not None:
+            rows[pid] = row
+    return rows
+
+
 def _darwin_table(lib):
-    def table():
-        pids = (ctypes.c_int * PROC_ALL_CAP)()
-        count = lib.proc_listallpids(ctypes.byref(pids), ctypes.sizeof(pids))
-        if count < 0:
-            raise OSError(ctypes.get_errno(), "proc_listallpids")
-        rows = {}
+    def table(leader):
+        children = (ctypes.c_int * PROC_CHILD_CAP)()
+        child_bytes = ctypes.sizeof(children)
         info = BsdInfo()
-        for i in range(count):
-            pid = pids[i]
-            if pid <= 0:
-                continue
-            if lib.proc_pidinfo(pid, PROC_PIDTBSDINFO, 0, ctypes.byref(info), ctypes.sizeof(info)) != ctypes.sizeof(
-                info
-            ):
-                continue
-            rows[pid] = (info.ppid, info.pgid, (info.start_sec, info.start_usec))
+        size = ctypes.sizeof(info)
+        rows = {}
+        seen = {leader}
+        pending = [leader]
+        while pending:
+            pid = pending.pop()
+            row = _darwin_row(lib, pid, info, size)
+            if row is not None:
+                rows[pid] = row
+            written = lib.proc_listchildpids(pid, ctypes.byref(children), child_bytes)
+            if written < 0:
+                raise OSError(ctypes.get_errno(), "proc_listchildpids")
+            if written >= PROC_CHILD_CAP:
+                return _darwin_full_table(lib)
+            for i in range(written):
+                child = children[i]
+                if child > 0 and child not in seen:
+                    seen.add(child)
+                    pending.append(child)
         return rows
 
     return table
@@ -104,7 +136,7 @@ def _linux_lister():
     return lister
 
 
-def _linux_table():
+def _linux_table(_leader):
     rows = {}
     for entry in Path("/proc").iterdir():
         if not entry.name.isdigit():
@@ -136,7 +168,7 @@ class EscapeWatch:
     def tick(self):
         if self.table is None or self.escaped:
             return bool(self.escaped)
-        rows = self.table()
+        rows = self.table(self.leader)
         children = {}
         for pid, (ppid, _, _) in rows.items():
             children.setdefault(ppid, []).append(pid)

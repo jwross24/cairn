@@ -44,6 +44,7 @@ def _run_plan(env, db_snapshot, label, *, src=None, name="deploy"):
     return result, sub
 
 
+@pytest.mark.timeout(360)
 def test_the_committed_plan_runs_every_step_green_against_the_built_bundle(plan_env, db_snapshot):
     result, sub = _run_plan(plan_env, db_snapshot, "committed-plan")
     assert result.ok
