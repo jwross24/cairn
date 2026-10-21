@@ -32,6 +32,7 @@ RULE2_PATHS = frozenset(
         "src/cairn/tiergate.py",
         "src/cairn/verifier.py",
         "src/cairn/solutionchecks.py",
+        "src/cairn/solutionreplay.py",
         "src/cairn/solutionplan.py",
         "src/cairn/statement_prefilters.py",
         "src/cairn/challenge.py",

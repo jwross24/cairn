@@ -1,9 +1,11 @@
 import re
+import shutil
+from pathlib import Path
 
 import factories
 import pytest
 
-from cairn import bundle, container, lean, log
+from cairn import bundle, challenge, container, lean, log, solutionchecks, solutionplan, solutionreplay
 
 lg = log.get("test")
 COMPARATOR_PROJECTS = "/home/cairn/comparator/tests/projects"
@@ -184,3 +186,68 @@ def test_the_chattr_probe_inside_the_container_is_recorded(pinned_bundle):
     assert "Operation not permitted" in as_root.stderr
     assert "-----a" in with_cap.stdout
     assert "second" in with_cap.stdout
+
+
+MINIMAL_PRELUDE = b"set_option autoImplicit false\n"
+HELLO_FORMAL = "theorem challenge_hello : True := by\n  sorry\n"
+HELLO_PROOF = "theorem challenge_hello : True := trivial\n"
+PLANTED_CHECKER = ".lake/build/bin/leanchecker"
+PLANT_CHECKER = (
+    "#eval show IO Unit from do\n"
+    '  IO.FS.createDirAll ".lake/build/bin"\n'
+    f'  IO.FS.writeFile "{PLANTED_CHECKER}" "#!/bin/sh\\necho ran >> /project/.lake/planted.log\\nexit 0\\n"\n'
+    f'  let _ ← IO.Process.output {{cmd := "chmod", args := #["755", "{PLANTED_CHECKER}"]}}\n\n'
+)
+
+
+@pytest.fixture
+def replay_world(tmp_path, monkeypatch):
+    source = tmp_path / "bundle-src"
+    shutil.copytree(lean.REPO_ROOT / "bundle", source)
+    prelude = source / "challenge_prelude.lean"
+    prelude.write_bytes(MINIMAL_PRELUDE)
+    monkeypatch.setattr(challenge, "PRELUDE_PATH", prelude)
+    database, pin = tmp_path / "gate.sqlite", tmp_path / "gate.pin"
+    bundle.build(source, database)
+    bundle.write_pin(database, pin)
+    gate = bundle.GateBundle.open(database, pin)
+    image = container.build(_gold_arm(), gate.container_identity)
+    statement = factories.claim_statement(seed=11, formal_source=HELLO_FORMAL)
+    prepared = solutionchecks.prepare_container(
+        gate, image, statement, ("challenge_hello",), root=tmp_path / "prepared"
+    )
+
+    def replay(name, body):
+        compilation = solutionchecks.compile_container(
+            gate,
+            image,
+            statement,
+            challenge.Submission(solution_module=body.encode(), formal_statement_hash=prepared.formal_statement_hash),
+            ("challenge_hello",),
+            prepared=prepared,
+            root=tmp_path / name,
+        )
+        lean.require_success(compilation.result)
+        project = Path(compilation.project.root)
+        observed = solutionchecks.observe_container_replay(gate, compilation, work_dir=tmp_path / f"{name}-axioms")
+        return observed, project
+
+    return replay
+
+
+@pytest.mark.timeout(3600)
+def test_an_honest_solution_replays_through_the_images_own_checker(replay_world):
+    observed, project = replay_world("honest", HELLO_PROOF)
+    assert observed[:2] == (solutionplan.EXPECT_REPLAYED, ())
+    assert not (project / PLANTED_CHECKER).exists()
+
+
+@pytest.mark.timeout(3600)
+def test_a_checker_planted_by_the_candidate_build_is_never_the_replay(replay_world):
+    observed, project = replay_world("planted", PLANT_CHECKER + HELLO_PROOF)
+    assert (project / PLANTED_CHECKER).is_file()
+    assert observed[:2] == (
+        solutionplan.OBSERVED_REFUSED,
+        (f"{solutionreplay.REPLAY_CHECKER_FOREIGN_PREFIX}/project/{PLANTED_CHECKER}",),
+    )
+    assert not (project / ".lake/planted.log").exists()
