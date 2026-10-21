@@ -65,13 +65,14 @@ so the protocol holds on its own. A guard's refusal is a safety mechanism, never
   takes the tree-wide form. `.githooks/post-commit` pushes a bead-closing commit and only such a
   commit, logging `PUSHED`, `SKIP` or `DENY` to `.check.log`; a failed push leaves the commit local. Bypass, logged: `CAIRN_PUSH_SKIP='<reason>'`.
 - A bead is not done until its closing commit is pushed and `git status` is up to date with `origin/main`.
-- Identity-bearing files, skill revision: `src/cairn/__init__.py`, `src/cairn/ec.py`,
-  `src/cairn/instances.py`, `src/cairn/log.py`,
-  `src/cairn/pari.py`, `src/cairn/skills/bsgs.py`, `src/cairn/skills/bsgs_corpus.json`,
-  `src/cairn/skills/instance_maker.py`, `src/cairn/skills/instance_maker_corpus.json`,
+- Identity-bearing files, skill revision: `src/cairn/__init__.py`, `src/cairn/canon.py`,
+  `src/cairn/ec.py`, `src/cairn/env.py`,
+  `src/cairn/instances.py`, `src/cairn/keys.py`, `src/cairn/log.py`,
+  `src/cairn/pari.py`, `src/cairn/profile.py`, `src/cairn/skills/__init__.py`, `src/cairn/skills/bsgs.py`, `src/cairn/skills/bsgs_corpus.json`,
+  `src/cairn/skills/bsgs_schema.py`, `src/cairn/skills/instance_maker.py`, `src/cairn/skills/instance_maker_corpus.json`,
   `src/cairn/skills/order_bsgs_gmpy2.py`,
   `src/cairn/skills/rho_dp.py`, `src/cairn/skills/rho_dp_corpus.json`,
-  `src/cairn/skills/slope_weight_a.py`, `src/cairn/skills/slope_weight_a_corpus.json`,
+  `src/cairn/skills/rho_dp_schema.py`, `src/cairn/skills/slope_weight_a.py`, `src/cairn/skills/slope_weight_a_corpus.json`,
   `src/cairn/skills/slope_weight_b.py`, `src/cairn/skills/slope_weight_b_corpus.json`,
   `src/cairn/slopemodel/__init__.py`, `src/cairn/slopemodel/slopemodel_a.py`,
   `src/cairn/slopemodel/slopemodel_b.py`,
@@ -200,10 +201,8 @@ committed. `br` never runs git.
 - Run `br` only from inside this repo; elsewhere it binds to whatever store sits on the walk-up path.
 - `br` is 0.7.6 with tracker schema 19, and `ci.yml` carries the matching `BR_VERSION`. Every `br` on
   the machine and in CI runs the same version: a 0.6.0 and a 0.7.x writer on one tracker can leave the
-  JSONL export refused until `br sync --flush-only`. The release asset is
-  `br-<version>-<os>_<arch>.tar.gz` (`darwin_arm64`, `linux_arm64`, `linux_amd64`). The doctor gate
-  accepts benign statuses `ok`/`warn`, labels `healthy`/`degraded` and an advisory verdict with no
-  blocking findings, and hard-codes no counts. A schema-17 store is migrated with `br doctor migrate-schema plan`, then `apply --plan-token`; ordinary commands refuse it with `SCHEMA_MISMATCH`.
+  JSONL export refused until `br sync --flush-only`. Asset names and the doctor gate's accepted
+  statuses are in `docs/agents/br.md`. A schema-17 store is migrated with `br doctor migrate-schema plan`, then `apply --plan-token`; ordinary commands refuse it with `SCHEMA_MISMATCH`.
 - Before using `br` JSON, creating or recovering beads, upgrading `br`, editing `BR_VERSION` or `scripts/beads_doctor_gate.py`, or handling a schema or asset error, read `docs/agents/br.md`.
 
 ## Tool Etiquette

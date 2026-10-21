@@ -101,7 +101,7 @@ def test_certified_true_for_well_formed_row_false_for_unknown_and_tampered(write
     identity, cert = certify(writer, IDENTITY_A)
     assert writer.certified(identity) is True
     assert writer.certified(keys.identity_bundle_hash(IDENTITY_B)) is False
-    assert cert == substrate.certificate_hash(identity, TRANSCRIPT_HASH, ENV_MANIFEST_HASH)
+    assert cert == substrate.certificate_hash(identity, TRANSCRIPT_HASH, ENV_MANIFEST_HASH, SELFTEST_SUMMARY)
     assert writer.get_node(cert)["kind"] == "skill_certificate"
     assert writer.is_root("certificate", cert)
     assert writer.lineage_of(cert) == [{"child_hash": cert, "parent_hash": identity, "edge_kind": "certifies"}]
@@ -274,7 +274,7 @@ def test_recertifying_an_identity_raises_and_leaves_no_orphan_certificate(writer
     before = db_snapshot(writer.conn, "certified-once")
     with pytest.raises(sqlite3.IntegrityError, match="UNIQUE"):
         writer.put_certificate(identity, "99" * 32, ENV_MANIFEST_HASH, SELFTEST_SUMMARY)
-    other_cert = substrate.certificate_hash(identity, "99" * 32, ENV_MANIFEST_HASH)
+    other_cert = substrate.certificate_hash(identity, "99" * 32, ENV_MANIFEST_HASH, SELFTEST_SUMMARY)
     assert db_snapshot(writer.conn, "recertify-refused") == before
     assert writer.get_node(other_cert) is None
     assert writer.lineage_of(other_cert) == []

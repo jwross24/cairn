@@ -1,625 +1,126 @@
 import dataclasses
-import importlib
-import inspect
 import json
-import re
-import shutil
-from collections.abc import Callable, Mapping
-from dataclasses import dataclass, field
 from pathlib import Path
 
-from cairn import keys, log, profile, runner, selftest, selftest_skills, substrate
-
-LOG_STEP = "conformance"
-MUST = "MUST"
-SHOULD = "SHOULD"
-PASS = "PASS"
-FAIL = "FAIL"
-XFAIL = "XFAIL"
-NA = "NA"
-LEVELS = (MUST, SHOULD)
-STATUSES = (PASS, FAIL, XFAIL, NA)
-ORIGIN_VOCABULARY = ("upstream_vendored", "independent_oracle", "randomized_postcondition", "author_supplied")
-LEDGER_VOCABULARY = ("pass", "intentional_non_goal", "known_gap")
-AXES = ("implementation", "algorithm")
-IDENTITY_FIELDS = (
-    "interface_version",
-    "implementation_revision",
-    "tool_digests",
-    "container_digest",
-    "numeric_profile",
+from skill_contract_axes import (
+    AxisDeclarationError,
+    _axis_probes,
+    _axis_records,
+    _check_declared_axes,
+    _emits_float,
+    check_axis_declaration,
+    check_numeric_profile,
+    check_postcondition_arm,
 )
-INTERFACE_VERSION_RE = re.compile(r"^[a-z][a-z0-9_]*/[0-9]+$")
-SUBSTRATE_ENV_RE = re.compile(r"CAIRN_DB")
-SUBSTRATE_PATH_MARK = ".sqlite"
-# The harness measures conformance, never speed, so the ceiling only has to be
-# generous enough that a loaded machine does not kill a subject mid-run. toy_curve
-# declares 0.13s at 40 bits; under the full suite, which keeps several PARI
-# processes busy, 8x that is not enough and the child is SIGTERMed with an empty
-# stdout.
-CEILING_MULTIPLIER = 60
-
-
-@dataclass(frozen=True)
-class Verdict:
-    clause_id: str
-    level: str
-    status: str
-    reason: str
-
-
-@dataclass(frozen=True)
-class Clause:
-    id: str
-    level: str
-    text: str
-    check: Callable
-
-
-@dataclass(frozen=True)
-class Context:
-    sub: substrate.Substrate
-    config: object
-    bundle_hash: str
-    scratch_root: Path
-    fixtures_path: str
-    repo_root: Path
-    workspace: Path
-    cache: dict = field(default_factory=dict)
-
-
-@dataclass(frozen=True)
-class SkillSubject:
-    name: str
-    module: str
-    corpus_path: Path
-    floor_golden: str
-    inputs: Mapping
-    out_of_range_inputs: Mapping
-    conforming: bool
-    certify: Callable
-    transcript: Callable
-    postcondition: Callable | None = None
-    expected_must_failures: frozenset = field(default_factory=frozenset)
-    cross_check_inputs: Mapping = field(default_factory=dict)
-
-
-def imported(subject):
-    return importlib.import_module(subject.module)
-
-
-def certified(subject, ctx):
-    key = ("certify", subject.name)
-    if key not in ctx.cache:
-        ctx.cache[key] = subject.certify(subject, ctx)
-    return ctx.cache[key]
-
-
-def _corpus(subject):
-    return json.loads(Path(subject.corpus_path).read_text())
-
-
-def _recipe(subject, seed, salt=""):
-    module = imported(subject)
-    identity = module.identity_bundle()
-    return {
-        "skill_identity_hash": keys.identity_bundle_hash(identity),
-        "inputs": {},
-        "seed": seed,
-        "tool_versions": {"cypari2": identity["tool_digests"]["cypari2"]},
-        "container_digest": identity["container_digest"],
-        "salt": salt,
-    }
-
-
-def _launch(subject, ctx, *, module=None, inputs=None, salt="", env_extra=None, seed=None):
-    document = dict(subject.inputs if inputs is None else inputs)
-    evaluation = imported(subject).COST_PROFILE.evaluate(document["bits"])
-    extra = {"PYTHONPATH": ctx.fixtures_path}
-    extra.update(env_extra or {})
-    return runner.launch(
-        ctx.sub,
-        subject.module if module is None else module,
-        _recipe(subject, document["seed"] if seed is None else seed, salt),
-        stdin_document=document,
-        bundle_hash=ctx.bundle_hash,
-        evaluation=evaluation,
-        ceiling_multiplier=CEILING_MULTIPLIER,
-        tool_digests=imported(subject).identity_bundle()["tool_digests"],
-        scratch_root=ctx.scratch_root,
-        env_extra=extra,
-        skip_cache_lookup=True,
-    )
-
-
-class LaunchFailed(RuntimeError):
-    pass
-
-
-def _stdout_bytes(ctx, attempt):
-    return (Path(ctx.scratch_root) / attempt.attempt_id / "stdout").read_bytes()
-
-
-def _document(ctx, attempt):
-    """The subject's output document, or a refusal that names what the launch did.
-
-    An empty stdout parses as a JSONDecodeError, which reads as a defect in the
-    subject and is the wrong verdict entirely: the launch was killed, so the clause
-    was never measured.
-    """
-    raw = _stdout_bytes(ctx, attempt)
-    if not raw.strip():
-        killed = attempt.launch is not None and attempt.launch.timed_out
-        detail = "was killed at its ceiling" if killed else "wrote nothing to stdout"
-        raise LaunchFailed(f"the launch {detail} with status {attempt.status}, so the clause was not measured")
-    return json.loads(raw)
-
-
-def _stderr_bytes(ctx, attempt):
-    return (Path(ctx.scratch_root) / attempt.attempt_id / "stderr").read_bytes()
-
-
-def check_typed_interface(subject, ctx):
-    module = imported(subject)
-    version = getattr(module, "INTERFACE_VERSION", None)
-    if not isinstance(version, str) or not INTERFACE_VERSION_RE.match(version):
-        return Verdict("S2-01", MUST, FAIL, f"INTERFACE_VERSION {version!r} is not <name>/<int>")
-    for name in ("run", "main"):
-        if not callable(getattr(module, name, None)):
-            return Verdict("S2-01", MUST, FAIL, f"{subject.module}.{name} is not callable")
-    kinds = {p.kind for p in inspect.signature(module.run).parameters.values()}
-    if kinds & {inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD}:
-        return Verdict("S2-01", MUST, FAIL, "run() takes *args or **kwargs, so its interface is not fixed")
-    bundle = module.identity_bundle()
-    missing = [name for name in IDENTITY_FIELDS if name not in bundle]
-    if missing:
-        return Verdict("S2-01", MUST, FAIL, f"identity_bundle() omits {missing}")
-    moved = _revision_moves_with_content(module, ctx)
-    if moved is not None:
-        return Verdict("S2-01", MUST, FAIL, moved)
-    return Verdict("S2-01", MUST, PASS, f"{version}, five identity fields, revision derived from IDENTITY_SOURCES")
-
-
-def _revision_moves_with_content(module, ctx):
-    root = ctx.workspace / f"revision-{module.__name__.rsplit('.', 1)[-1]}"
-    if root.exists():
-        shutil.rmtree(root)
-    for rel in module.IDENTITY_SOURCES:
-        target = root / rel
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy(Path(ctx.repo_root) / rel, target)
-    if module.implementation_revision(root) != module.implementation_revision(ctx.repo_root):
-        return "implementation_revision differs for a byte-identical copy of IDENTITY_SOURCES"
-    edited = root / module.IDENTITY_SOURCES[0]
-    edited.write_bytes(edited.read_bytes() + b"\n")
-    if module.implementation_revision(root) == module.implementation_revision(ctx.repo_root):
-        return f"implementation_revision does not move when {module.IDENTITY_SOURCES[0]} changes"
-    return None
-
-
-def check_content_addressed_io(subject, ctx):
-    attempt = _launch(subject, ctx, salt="s2-02")
-    if attempt.parsed is None or not attempt.parsed.well_formed:
-        return Verdict("S2-02", MUST, FAIL, f"stdout is not one JSON object: {attempt.parsed}")
-    raw = _stdout_bytes(ctx, attempt)
-    document = json.loads(raw)
-    canonical = (json.dumps(document, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
-    if raw != canonical:
-        return Verdict("S2-02", MUST, FAIL, "stdout is not canonical JSON: it does not round-trip byte-identically")
-    if attempt.output_manifest_hash is None:
-        return Verdict("S2-02", MUST, FAIL, "no output manifest was recorded")
-    recomputed = _manifest_from_child_bytes(ctx, attempt, raw)
-    if recomputed != attempt.output_manifest_hash:
-        return Verdict(
-            "S2-02", MUST, FAIL, f"the declared manifest {attempt.output_manifest_hash[:12]} is not {recomputed[:12]}"
-        )
-    if ctx.sub.get_blob(substrate.blob_hash(raw)) != raw:
-        return Verdict("S2-02", MUST, FAIL, "the stdout bytes are not stored under their own content hash")
-    return Verdict("S2-02", MUST, PASS, f"canonical JSON in and out; manifest {recomputed[:12]} rebuilds from stdout")
-
-
-def _manifest_from_child_bytes(ctx, attempt, raw):
-    artifacts = {"output.json": (substrate.blob_hash(raw), len(raw))}
-    scratch = Path(ctx.scratch_root) / attempt.attempt_id / "scratch"
-    for path in sorted(scratch.rglob("*")):
-        if path.is_symlink() or not path.is_file():
-            continue
-        data = path.read_bytes()
-        artifacts[str(path.relative_to(scratch))] = (substrate.blob_hash(data), len(data))
-    return substrate.output_manifest_hash(artifacts)
-
-
-def check_captured_seed(subject, ctx):
-    document = dict(subject.inputs)
-    if "seed" not in document:
-        return Verdict("S2-03", MUST, FAIL, "seed is not an input field")
-    first_attempt = _launch(subject, ctx, salt="s2-03-a")
-    _document(ctx, first_attempt)
-    first = _stdout_bytes(ctx, first_attempt)
-    again = _stdout_bytes(ctx, _launch(subject, ctx, salt="s2-03-b"))
-    if first != again:
-        return Verdict("S2-03", MUST, FAIL, "two runs under one seed are not byte-equal")
-    other = dict(document, seed=document["seed"] + 1)
-    differing = _stdout_bytes(ctx, _launch(subject, ctx, inputs=other, salt="s2-03-c", seed=other["seed"]))
-    if _without_seed(differing) == _without_seed(first):
-        return Verdict("S2-03", MUST, FAIL, "a second seed changes only the echoed seed, so nothing is drawn from it")
-    return Verdict("S2-03", MUST, PASS, f"seed {document['seed']} replays byte-equal; seed {other['seed']} draws apart")
-
-
-def _without_seed(raw):
-    document = json.loads(raw)
-    document.pop("seed", None)
-    return json.dumps(document, sort_keys=True, separators=(",", ":"))
-
-
-def check_corpus_origins(subject, ctx):
-    doc = _corpus(subject)
-    cases = doc.get("cases") or []
-    if not cases:
-        return Verdict("S2-04", MUST, FAIL, f"{subject.corpus_path.name} vendors no cases")
-    for case in cases:
-        for name, entry in case["fields"].items():
-            origin = entry.get("origin")
-            if origin not in ORIGIN_VOCABULARY:
-                return Verdict("S2-04", MUST, FAIL, f"case {case['id']} field {name} declares origin {origin!r}")
-    return Verdict("S2-04", MUST, PASS, f"{len(cases)} vendored cases, every field carries a declared origin")
-
-
-def check_ledger_and_floor(subject, ctx):
-    doc = _corpus(subject)
-    cases = doc.get("cases") or []
-    for case in cases:
-        if case.get("ledger") not in LEDGER_VOCABULARY:
-            return Verdict("S2-05", MUST, FAIL, f"case {case['id']} declares ledger {case.get('ledger')!r}")
-    floor = doc.get("pass_floor")
-    if not isinstance(floor, int) or isinstance(floor, bool) or floor < 1 or floor > len(cases):
-        return Verdict("S2-05", MUST, FAIL, f"pass_floor {floor!r} is not an integer in [1, {len(cases)}]")
-    return Verdict("S2-05", MUST, PASS, f"{len(cases)} ledgered cases with a committed pass_floor of {floor}")
-
-
-def check_floor_is_attributed(subject, ctx):
-    doc = _corpus(subject)
-    floor = doc.get("pass_floor")
-    result = certified(subject, ctx)
-    if floor > result["passes"]:
-        return Verdict("S2-06", MUST, FAIL, f"pass_floor {floor} exceeds the measured {result['passes']} passes")
-    row = ctx.sub.get_certificate(result["identity_bundle_hash"])
-    recorded = json.loads(row["selftest_summary"])["floor"]
-    if recorded != floor:
-        return Verdict("S2-06", MUST, FAIL, f"the certificate records floor {recorded}, the corpus commits {floor}")
-    golden = json.loads((ctx.repo_root / "tests" / "goldens" / f"{subject.floor_golden}.golden").read_text())
-    if golden["floor"] != floor:
-        return Verdict("S2-06", MUST, FAIL, f"the committed golden holds floor {golden['floor']}, the corpus {floor}")
-    return Verdict("S2-06", MUST, PASS, f"floor {floor} <= {result['passes']} measured, and matches row and golden")
-
-
-def check_golden_certificate(subject, ctx):
-    result = certified(subject, ctx)
-    identity_hash = result["identity_bundle_hash"]
-    row = ctx.sub.get_certificate(identity_hash)
-    if row is None:
-        return Verdict("S2-07", MUST, FAIL, f"no skill_certificates row for {identity_hash[:12]}")
-    if not ctx.sub.certified(identity_hash):
-        return Verdict("S2-07", MUST, FAIL, f"certified() is false for {identity_hash[:12]}")
-    recomputed = substrate.certificate_hash(
-        row["identity_bundle_hash"], row["transcript_hash"], row["env_manifest_hash"]
-    )
-    if recomputed != row["cert_hash"]:
-        return Verdict("S2-07", MUST, FAIL, f"cert_hash {row['cert_hash'][:12]} does not recompute from the row")
-    return Verdict("S2-07", MUST, PASS, f"cert {row['cert_hash'][:12]} recomputes from its own row and is certified")
-
-
-def check_byte_equal_double_run(subject, ctx):
-    first = subject.transcript(subject, ctx)
-    second = subject.transcript(subject, ctx)
-    if first != second:
-        return Verdict("S2-08", MUST, FAIL, f"transcript bytes differ across two runs: {len(first)} vs {len(second)}")
-    digest = selftest.transcript_digest(first)
-    return Verdict("S2-08", MUST, PASS, f"{len(first)} transcript bytes, byte-equal twice, digest {digest[:12]}")
-
-
-def check_declared_cost_profile(subject, ctx):
-    module = imported(subject)
-    cost = getattr(module, "COST_PROFILE", None)
-    if not isinstance(cost, profile.CostProfile):
-        return Verdict("S2-09", MUST, FAIL, f"COST_PROFILE is {type(cost).__name__}, not a CostProfile")
-    if not isinstance(cost.tier, int) or isinstance(cost.tier, bool):
-        return Verdict("S2-09", MUST, FAIL, f"tier {cost.tier!r} is not an integer")
-    if not cost.production.per_size or not cost.verification.grade:
-        return Verdict("S2-09", MUST, FAIL, "the profile declares no production sizes or no verification component")
-    sizes = cost.declared_sizes()
-    evaluation = cost.evaluate(sizes[0])
-    fields = (evaluation.expected_wall_s, evaluation.expected_core_s, evaluation.expected_verification_core_s)
-    if not all(isinstance(v, float) and v > 0 for v in fields):
-        return Verdict("S2-09", MUST, FAIL, f"evaluate({sizes[0]}) returned {fields}")
-    undeclared = max(sizes) + 1
-    try:
-        cost.evaluate(undeclared)
-    except profile.ProfileUndeclared:
-        return Verdict("S2-09", MUST, PASS, f"tier {cost.tier}, sizes {list(sizes)}, ProfileUndeclared at {undeclared}")
-    return Verdict("S2-09", MUST, FAIL, f"evaluate({undeclared}) did not raise ProfileUndeclared")
-
-
-def _declared_seam(module):
-    seam = getattr(module, "SEAM", None)
-    return seam if isinstance(seam, str) and "." in seam else None
-
-
-def _launch_with_planted_seam(subject, ctx, salt):
-    return _launch(
-        subject,
-        ctx,
-        module="skills.harness_child",
-        salt=salt,
-        env_extra={"CAIRN_HARNESS_SUBJECT": subject.module, "CAIRN_HARNESS_MODE": "seam"},
-    )
-
-
-def check_disagree_semantics(subject, ctx):
-    module = imported(subject)
-    seam = _declared_seam(module)
-    if seam is None:
-        declared = getattr(module, "SEAM", None)
-        return Verdict("S2-10", MUST, FAIL, f"the subject declares no seam for its cross-check: {declared!r}")
-    attempt = _launch_with_planted_seam(subject, ctx, "s2-10")
-    document = _document(ctx, attempt)
-    if document.get("status") != runner.STATUS_DISAGREE:
-        return Verdict("S2-10", MUST, FAIL, f"a planted disagreement at {seam} still returned {document.get('status')}")
-    transcripts = document.get("transcripts")
-    if not isinstance(transcripts, list) or len(transcripts) < 2:
-        return Verdict("S2-10", MUST, FAIL, f"DISAGREE carries {transcripts!r} rather than both transcripts")
-    digests = [t.get("digest") for t in transcripts]
-    if len(set(digests)) != len(digests):
-        return Verdict("S2-10", MUST, FAIL, "the two transcripts share a digest, so neither records a disagreement")
-    stored = ctx.sub.get_blob(substrate.blob_hash(_stdout_bytes(ctx, attempt)))
-    if stored is None or not all(d and d.encode() in stored for d in digests):
-        return Verdict("S2-10", MUST, FAIL, "the transcript digests do not reach a substrate node")
-    if ctx.sub.serve(attempt.recipe_key) is not None:
-        return Verdict("S2-10", MUST, FAIL, "a DISAGREE attempt is served from cache")
-    return Verdict(
-        "S2-10", MUST, PASS, f"{seam} planted: DISAGREE, digests {digests[0][:8]}/{digests[1][:8]}, never served"
-    )
-
-
-def check_no_substrate_handle(subject, ctx):
-    attempt = _launch(
-        subject,
-        ctx,
-        module="skills.harness_child",
-        salt="s2-11",
-        env_extra={"CAIRN_HARNESS_SUBJECT": subject.module, "CAIRN_HARNESS_MODE": "env-dump"},
-    )
-    dump = json.loads(_stderr_bytes(ctx, attempt).splitlines()[0])
-    leaked = sorted(k for k in dump["environ"] if k.startswith(runner.SCRUB_PREFIX))
-    if leaked:
-        return Verdict("S2-11", MUST, FAIL, f"the child environment holds {leaked}")
-    carrying = sorted(k for k, v in dump["environ"].items() if SUBSTRATE_PATH_MARK in str(v))
-    if carrying:
-        return Verdict("S2-11", MUST, FAIL, f"the child environment carries a substrate path in {carrying}")
-    if any(SUBSTRATE_PATH_MARK in str(arg) for arg in dump["argv"]):
-        return Verdict("S2-11", MUST, FAIL, f"argv carries a substrate path: {dump['argv']}")
-    source = Path(str(inspect.getsourcefile(imported(subject)))).read_text()
-    if SUBSTRATE_ENV_RE.search(source):
-        return Verdict("S2-11", MUST, FAIL, f"{subject.module} reads a {runner.SCRUB_PREFIX}* variable of its own")
-    return Verdict("S2-11", MUST, PASS, f"{len(dump['environ'])} child variables, none a substrate handle; argv clean")
-
-
-def check_axis_declaration(subject, ctx):
-    module = imported(subject)
-    if hasattr(module, "CROSS_CHECKS"):
-        return _check_declared_axes(subject, ctx, module.CROSS_CHECKS)
-    axis = getattr(module, "CROSS_CHECK_AXIS", None)
-    if axis not in AXES:
-        return Verdict("S2-12", MUST, FAIL, f"cross_check.axis {axis!r} is not one of {list(AXES)}")
-    declared = getattr(module, "INDEPENDENT_RANGE", None)
-    if not isinstance(declared, Mapping) or not declared:
-        return Verdict("S2-12", MUST, FAIL, f"independent_range {declared!r} is not an interval record")
-    for name, interval in declared.items():
-        if name not in subject.inputs:
-            return Verdict("S2-12", MUST, FAIL, f"independent_range names {name!r}, which is not an input field")
-        if not (isinstance(interval, (list, tuple)) and len(interval) == 2 and interval[0] <= interval[1]):
-            return Verdict("S2-12", MUST, FAIL, f"independent_range[{name!r}] = {interval!r} is not an interval")
-    outside = _document(ctx, _launch(subject, ctx, inputs=subject.out_of_range_inputs, salt="s2-12"))
-    if outside["cross_check"]["result"] != "untested":
-        return Verdict(
-            "S2-12", MUST, FAIL, f"outside {declared} the cross-check reports {outside['cross_check']['result']!r}"
-        )
-    summary = certified(subject, ctx)["summary"]["cross_check"]
-    if set(summary) != {"axis", "independent_range"}:
-        return Verdict("S2-12", MUST, FAIL, f"the ledger's cross_check block claims more than an axis: {summary}")
-    seam = _declared_seam(module)
-    if seam is None:
-        return Verdict(
-            "S2-12", MUST, FAIL, "the subject declares no seam, so its in-range result answers to no second opinion"
-        )
-    inside = _document(ctx, _launch(subject, ctx, salt="s2-12-inside"))["cross_check"]["result"]
-    planted = _document(ctx, _launch_with_planted_seam(subject, ctx, "s2-12-seam"))["cross_check"]["result"]
-    if planted == inside:
-        return Verdict(
-            "S2-12",
-            MUST,
-            FAIL,
-            f"in range the cross-check reports {inside!r} whether or not {seam} is planted, "
-            "so it compares nothing and S2-12 carries no evidence that a cross-check exists",
-        )
-    return Verdict(
-        "S2-12",
-        MUST,
-        PASS,
-        f"axis {axis}, range {dict(declared)}, untested outside it and in the ledger; "
-        f"in range {inside!r} moves to {planted!r} when {seam} is planted, so S2-12 itself "
-        "carries the evidence that a comparison runs",
-    )
-
-
-class AxisDeclarationError(ValueError):
-    pass
-
-
-def _axis_records(records, declarations, *, ledger):
-    keys_required = {"axis", "independent_range"} if ledger else {"axis", "independent_range", "result"}
-    label = "ledger" if ledger else "output"
-    if not isinstance(records, list):
-        raise AxisDeclarationError(f"{label} cross_check is not a list of per-axis records")
-    indexed = {}
-    for record in records:
-        if not isinstance(record, Mapping):
-            raise AxisDeclarationError(f"{label} cross_check contains a non-record: {record!r}")
-        axis = record.get("axis")
-        if not isinstance(axis, str) or axis not in declarations or axis in indexed:
-            raise AxisDeclarationError(f"{label} cross_check axis {axis!r} is undeclared or repeated")
-        if set(record) != keys_required:
-            raise AxisDeclarationError(
-                f"axis {axis}: {label} cross_check has keys {sorted(record)}, expected {sorted(keys_required)}"
-            )
-        if record["independent_range"] != declarations[axis]["independent_range"]:
-            raise AxisDeclarationError(f"axis {axis}: {label} independent_range differs from its declaration")
-        indexed[axis] = record
-    missing = declarations.keys() - indexed.keys()
-    if missing:
-        raise AxisDeclarationError(f"{label} cross_check omits axes {sorted(missing)}")
-    return indexed
-
-
-def _axis_probes(subject, axis, declared):
-    probes = subject.cross_check_inputs.get(axis)
-    if not isinstance(probes, Mapping) or set(probes) != {"inside", "outside"}:
-        raise AxisDeclarationError(f"axis {axis}: no complete inside/outside probe pair")
-    for kind, inputs in probes.items():
-        if not isinstance(inputs, Mapping) or not subject.inputs.keys() <= inputs.keys():
-            raise AxisDeclarationError(f"axis {axis}: {kind} probe omits input fields")
-        try:
-            in_range = all(interval[0] <= inputs[name] <= interval[1] for name, interval in declared.items())
-        except TypeError:
-            raise AxisDeclarationError(f"axis {axis}: {kind} probe cannot be compared to its intervals") from None
-        if in_range != (kind == "inside"):
-            raise AxisDeclarationError(f"axis {axis}: {kind} probe is on the wrong side of {dict(declared)}")
-        try:
-            imported(subject).COST_PROFILE.evaluate(inputs["bits"])
-        except profile.ProfileUndeclared:
-            raise AxisDeclarationError(
-                f"axis {axis}: {kind} probe size {inputs['bits']!r} has no declared cost"
-            ) from None
-    return probes
-
-
-def _check_declared_axes(subject, ctx, records):
-    try:
-        if not isinstance(records, (list, tuple)) or not records:
-            raise AxisDeclarationError("CROSS_CHECKS is not a nonempty list or tuple of declarations")
-        declarations = {}
-        for record in records:
-            if not isinstance(record, Mapping) or set(record) != {"axis", "independent_range", "seam"}:
-                raise AxisDeclarationError(
-                    f"cross-check declaration is not exactly axis, independent_range and seam: {record!r}"
-                )
-            axis = record["axis"]
-            if not isinstance(axis, str) or axis not in AXES:
-                raise AxisDeclarationError(f"cross_check.axis {axis!r} is not one of {list(AXES)}")
-            if axis in declarations:
-                raise AxisDeclarationError(f"axis {axis}: repeated declaration")
-            declared = record["independent_range"]
-            if not isinstance(declared, Mapping) or not declared:
-                raise AxisDeclarationError(f"axis {axis}: independent_range {declared!r} is not an interval record")
-            for name, interval in declared.items():
-                if name not in subject.inputs:
-                    raise AxisDeclarationError(
-                        f"axis {axis}: independent_range names {name!r}, which is not an input field"
-                    )
-                valid = isinstance(interval, (list, tuple)) and len(interval) == 2
-                try:
-                    valid = valid and interval[0] <= interval[1]
-                except TypeError:
-                    valid = False
-                if not valid:
-                    raise AxisDeclarationError(
-                        f"axis {axis}: independent_range[{name!r}] = {interval!r} is not an interval"
-                    )
-            declarations[axis] = dict(
-                record, independent_range={name: list(interval) for name, interval in declared.items()}
-            )
-        evidence = []
-        for axis, record in declarations.items():
-            declared = record["independent_range"]
-            probes = _axis_probes(subject, axis, declared)
-            outside = _document(ctx, _launch(subject, ctx, inputs=probes["outside"], salt=f"s2-12-{axis}-outside"))
-            result = _axis_records(outside.get("cross_check"), declarations, ledger=False)[axis]["result"]
-            if result != "untested":
-                raise AxisDeclarationError(f"axis {axis}: outside {declared} the cross-check reports {result!r}")
-            summary = certified(subject, ctx)["summary"].get("cross_check")
-            _axis_records(summary, declarations, ledger=True)
-            seam = record["seam"]
-            if not isinstance(seam, str) or "." not in seam:
-                raise AxisDeclarationError(f"axis {axis}: the subject declares no seam for its in-range result")
-            inside_doc = _document(ctx, _launch(subject, ctx, inputs=probes["inside"], salt=f"s2-12-{axis}-inside"))
-            inside = _axis_records(inside_doc.get("cross_check"), declarations, ledger=False)[axis]["result"]
-            planted_doc = _document(
-                ctx,
-                _launch(
-                    subject,
-                    ctx,
-                    module="skills.harness_child",
-                    inputs=probes["inside"],
-                    salt=f"s2-12-{axis}-seam",
-                    env_extra={
-                        "CAIRN_HARNESS_SUBJECT": subject.module,
-                        "CAIRN_HARNESS_MODE": "seam",
-                        "CAIRN_HARNESS_AXIS": axis,
-                    },
-                ),
-            )
-            planted = _axis_records(planted_doc.get("cross_check"), declarations, ledger=False)[axis]["result"]
-            if planted == inside:
-                raise AxisDeclarationError(
-                    f"axis {axis}: in range the cross-check reports {inside!r} whether or not {seam} is planted, "
-                    "so it compares nothing and S2-12 carries no evidence that a cross-check exists"
-                )
-            evidence.append(
-                f"axis {axis}, range {dict(declared)}, {inside!r} moves to {planted!r} when {seam} is planted"
-            )
-    except AxisDeclarationError as exc:
-        return Verdict("S2-12", MUST, FAIL, str(exc))
-    return Verdict(
-        "S2-12", MUST, PASS, "; ".join(evidence) + "; every axis untested outside its range and exact in the ledger"
-    )
-
-
-def check_numeric_profile(subject, ctx):
-    module = imported(subject)
-    numeric = module.identity_bundle()["numeric_profile"]
-    document = _document(ctx, _launch(subject, ctx, salt="s2-13"))
-    if not _emits_float(document):
-        if numeric is None:
-            return Verdict("S2-13", SHOULD, NA, "the subject emits no floats, so no numeric profile is owed")
-        return Verdict("S2-13", SHOULD, PASS, f"numeric_profile {numeric!r} declared although no float is emitted")
-    if numeric is None:
-        return Verdict("S2-13", SHOULD, FAIL, "the subject emits floats and declares no numeric profile")
-    return Verdict("S2-13", SHOULD, PASS, f"numeric_profile {numeric!r} declared for a float-emitting subject")
-
-
-def _emits_float(value):
-    if isinstance(value, float):
-        return True
-    if isinstance(value, Mapping):
-        return any(_emits_float(v) for v in value.values())
-    if isinstance(value, list):
-        return any(_emits_float(v) for v in value)
-    return False
-
-
-def check_postcondition_arm(subject, ctx):
-    tier = imported(subject).COST_PROFILE.tier
-    if tier != 0:
-        return Verdict("S2-14", SHOULD, NA, f"tier {tier} is not the Tier-0 arithmetic case")
-    if subject.postcondition is None:
-        return Verdict("S2-14", SHOULD, FAIL, "a Tier-0 subject declares no postcondition arm")
-    held, refused = subject.postcondition(subject, ctx)
-    if not held:
-        return Verdict("S2-14", SHOULD, FAIL, "the postcondition refused the subject's own answer")
-    if not refused:
-        return Verdict("S2-14", SHOULD, FAIL, "the postcondition accepted a planted wrong answer")
-    return Verdict("S2-14", SHOULD, PASS, "the postcondition holds on the real answer and refuses a planted one")
-
+from skill_contract_base import (
+    AXES,
+    CEILING_MULTIPLIER,
+    FAIL,
+    IDENTITY_FIELDS,
+    INTERFACE_VERSION_RE,
+    LEDGER_VOCABULARY,
+    LEVELS,
+    LOG_STEP,
+    MUST,
+    NA,
+    ORIGIN_VOCABULARY,
+    PASS,
+    SHOULD,
+    STATUSES,
+    SUBSTRATE_ENV_RE,
+    SUBSTRATE_PATH_MARK,
+    XFAIL,
+    Clause,
+    Context,
+    LaunchFailed,
+    SkillSubject,
+    Verdict,
+    _corpus,
+    _document,
+    _launch,
+    _recipe,
+    _stderr_bytes,
+    _stdout_bytes,
+    certified,
+    imported,
+)
+from skill_contract_checks import (
+    _declared_seam,
+    _launch_with_planted_seam,
+    _manifest_from_child_bytes,
+    _revision_moves_with_content,
+    _without_seed,
+    check_byte_equal_double_run,
+    check_captured_seed,
+    check_content_addressed_io,
+    check_corpus_origins,
+    check_declared_cost_profile,
+    check_disagree_semantics,
+    check_floor_is_attributed,
+    check_golden_certificate,
+    check_ledger_and_floor,
+    check_no_substrate_handle,
+    check_typed_interface,
+)
+
+from cairn import log, selftest, selftest_skills
+
+__all__ = [
+    "AXES",
+    "CEILING_MULTIPLIER",
+    "FAIL",
+    "IDENTITY_FIELDS",
+    "INTERFACE_VERSION_RE",
+    "LEDGER_VOCABULARY",
+    "LEVELS",
+    "LOG_STEP",
+    "MUST",
+    "NA",
+    "ORIGIN_VOCABULARY",
+    "PASS",
+    "SHOULD",
+    "STATUSES",
+    "SUBSTRATE_ENV_RE",
+    "SUBSTRATE_PATH_MARK",
+    "XFAIL",
+    "AxisDeclarationError",
+    "Clause",
+    "Context",
+    "LaunchFailed",
+    "SkillSubject",
+    "Verdict",
+    "_axis_probes",
+    "_axis_records",
+    "_check_declared_axes",
+    "_corpus",
+    "_declared_seam",
+    "_document",
+    "_emits_float",
+    "_launch",
+    "_launch_with_planted_seam",
+    "_manifest_from_child_bytes",
+    "_recipe",
+    "_revision_moves_with_content",
+    "_stderr_bytes",
+    "_stdout_bytes",
+    "_without_seed",
+    "certified",
+    "check_axis_declaration",
+    "check_byte_equal_double_run",
+    "check_captured_seed",
+    "check_content_addressed_io",
+    "check_corpus_origins",
+    "check_declared_cost_profile",
+    "check_disagree_semantics",
+    "check_floor_is_attributed",
+    "check_golden_certificate",
+    "check_ledger_and_floor",
+    "check_no_substrate_handle",
+    "check_numeric_profile",
+    "check_postcondition_arm",
+    "check_typed_interface",
+    "imported",
+]
 
 CLAUSES = [
     Clause(

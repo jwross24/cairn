@@ -234,6 +234,8 @@ project_theater_patterns:
     exempt_paths:
       - path: tests/conformance/test_skill_contract.py
         matches: 1
+      - path: tests/integration/_toy_curve_support.py
+        matches: 1
       - path: tests/integration/test_bsgs_selftest.py
         matches: 1
       - path: tests/integration/test_gate_bundle.py
@@ -245,8 +247,6 @@ project_theater_patterns:
       - path: tests/integration/test_instance_maker_substrate.py
         matches: 1
       - path: tests/integration/test_rho_dp_selftest.py
-        matches: 1
-      - path: tests/integration/test_toy_curve_selftest.py
         matches: 1
 
 # Only meaningful on the parallel path; the pre-commit hook runs no subagents.

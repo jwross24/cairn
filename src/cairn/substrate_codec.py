@@ -64,23 +64,25 @@ def node_hash_for(kind, canonical):
     return keys.node_hash(kind, canonical)
 
 
-def certificate_canonical(identity_bundle_hash, transcript_hash, env_manifest_hash):
+def certificate_canonical(identity_bundle_hash, transcript_hash, env_manifest_hash, selftest_summary):
     return canon.encode(
         SELFTEST_CERT,
         {
             "identity_bundle_hash": identity_bundle_hash,
             "transcript_hash": transcript_hash,
             "env_manifest_hash": env_manifest_hash,
+            "selftest_summary": keys.selftest_summary_text(selftest_summary),
         },
     )
 
 
-def certificate_hash(identity_bundle_hash, transcript_hash, env_manifest_hash):
+def certificate_hash(identity_bundle_hash, transcript_hash, env_manifest_hash, selftest_summary):
     return keys.selftest_cert_hash(
         {
             "identity_bundle_hash": identity_bundle_hash,
             "transcript_hash": transcript_hash,
             "env_manifest_hash": env_manifest_hash,
+            "selftest_summary": keys.selftest_summary_text(selftest_summary),
         }
     )
 

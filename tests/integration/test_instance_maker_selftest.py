@@ -98,7 +98,10 @@ def test_the_certificate_is_the_digest_of_its_three_inputs_and_the_double_run_is
     recomputed = canon.digest(
         keys.TAG_SELFTEST_CERT,
         substrate.certificate_canonical(
-            result["identity_bundle_hash"], result["transcript_hash"], keys.env_manifest_digest(env.manifest())
+            result["identity_bundle_hash"],
+            result["transcript_hash"],
+            keys.env_manifest_digest(env.manifest()),
+            result["summary"],
         ),
     )
     assert recomputed == result["certificate"] and result["transcript_hash"] == first["transcript_hash"]

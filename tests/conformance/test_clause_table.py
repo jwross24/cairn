@@ -22,7 +22,8 @@ def test_clause_ids_are_unique_and_ordered():
 def test_no_must_clause_carries_a_stub_check():
     for clause in CLAUSES:
         source = inspect.getsource(clause.check)
-        assert getattr(clause.check, "__module__", "") == "skill_contract", clause.id
+        module = getattr(clause.check, "__module__", "")
+        assert module in {"skill_contract", "skill_contract_checks", "skill_contract_axes"}, clause.id
         assert len(source.splitlines()) > 3, f"{clause.id} check is a one-liner, so it cannot discriminate"
         assert clause.id in source, f"{clause.id} check does not name its own clause id"
 

@@ -163,7 +163,10 @@ def test_implementation_revision_changes_when_one_byte_of_a_source_changes(tmp_p
     assert toy_curve.implementation_revision(root) == base and len(base) == 64
     path = root / rel
     data = bytearray(path.read_bytes())
-    data[len(data) // 2] ^= 0x01
+    if data:
+        data[len(data) // 2] ^= 0x01
+    else:
+        data.append(0x01)
     path.write_bytes(bytes(data))
     assert toy_curve.implementation_revision(root) != base
     assert pari_spy == []

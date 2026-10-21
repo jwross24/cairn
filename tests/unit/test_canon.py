@@ -55,7 +55,12 @@ ENV = {
     "gp_binary_sha256": "ff" * 32,
 }
 INSTANCE = {"p": 5, "a": 2, "b": 1, "n": 7, "P": [0, 1], "Q": [3, 3]}
-SELFTEST_CERT = {"identity_bundle_hash": "dd" * 32, "transcript_hash": "ee" * 32, "env_manifest_hash": "ff" * 32}
+SELFTEST_CERT = {
+    "identity_bundle_hash": "dd" * 32,
+    "transcript_hash": "ee" * 32,
+    "env_manifest_hash": "ff" * 32,
+    "selftest_summary": '{"floor":4,"must_fail_witnesses":1,"pass":4}',
+}
 SELFTEST_CERT_TRANSPLANTED = {**SELFTEST_CERT, "identity_bundle_hash": "aa" * 32}
 TRIAL_SEED = {"nonce": "ab" * 32, "hypothesis_key": "cd" * 32, "bits": 40, "trial": 7}
 TRIAL_SEED_NEXT = {**TRIAL_SEED, "trial": 8}

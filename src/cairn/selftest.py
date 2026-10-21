@@ -202,12 +202,13 @@ def arm_seed(implementation_revision):
     return int.from_bytes(blake3.blake3(material).digest()[:8], "big")
 
 
-def certificate_hash(identity_bundle_hash, transcript_hash, env_manifest_hash):
+def certificate_hash(identity_bundle_hash, transcript_hash, env_manifest_hash, selftest_summary):
     return keys.selftest_cert_hash(
         {
             "identity_bundle_hash": identity_bundle_hash,
             "transcript_hash": transcript_hash,
             "env_manifest_hash": env_manifest_hash,
+            "selftest_summary": keys.selftest_summary_text(selftest_summary),
         }
     )
 
@@ -428,7 +429,6 @@ def certify(sub, config, *, doc=None, root=None):
     identity_hash = keys.identity_bundle_hash(identity)
     env_hash = keys.env_manifest_digest(env.manifest())
     transcript_hash = first["transcript_hash"]
-    cert = certificate_hash(identity_hash, transcript_hash, env_hash)
     summary = {
         "corpus_origins": first["origins"],
         "randomized_arm": True,
@@ -437,6 +437,7 @@ def certify(sub, config, *, doc=None, root=None):
         "floor": first["floor"],
         "must_fail_witnesses": first["arms"]["verifier"]["fail"],
     }
+    cert = certificate_hash(identity_hash, transcript_hash, env_hash, summary)
     existing = sub.get_certificate(identity_hash)
     if existing is not None:
         if existing["cert_hash"] != cert:

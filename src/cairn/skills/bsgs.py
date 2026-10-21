@@ -25,8 +25,20 @@ from pathlib import Path
 import blake3
 
 from cairn import canon, ec, env, keys, log, pari
-from cairn.canon import INT, STR, CanonError, Field, List, Map, Optional, Struct
+from cairn.canon import CanonError
 from cairn.profile import CostProfile, MemoryProfile, Production, SizeCost, Verification
+from cairn.skills.bsgs_schema import (
+    BIG_FIELDS,
+    CROSS_CHECK,
+    INPUTS,
+    MEMORY,
+    OUTPUT,
+    POINT_FIELDS,
+    TRANSCRIPT,
+    TRANSCRIPT_BODY,
+)
+
+__all__ = ["CROSS_CHECK", "MEMORY", "TRANSCRIPT"]
 
 INTERFACE_VERSION = "bsgs/1"
 SEAM = "cairn.skills.rho_dp.discrete_log"
@@ -37,10 +49,20 @@ REPLAY_GRADE = "Replayable"
 DO_NOT_CACHE = False
 REPO_ROOT = Path(__file__).resolve().parents[3]
 IDENTITY_SOURCES = (
+    "src/cairn/__init__.py",
+    "src/cairn/canon.py",
     "src/cairn/ec.py",
+    "src/cairn/env.py",
+    "src/cairn/keys.py",
+    "src/cairn/log.py",
+    "src/cairn/pari.py",
+    "src/cairn/profile.py",
+    "src/cairn/skills/__init__.py",
     "src/cairn/skills/bsgs.py",
     "src/cairn/skills/bsgs_corpus.json",
+    "src/cairn/skills/bsgs_schema.py",
     "src/cairn/skills/rho_dp.py",
+    "src/cairn/skills/rho_dp_schema.py",
 )
 STATUS_OK = "OK"
 STATUS_DISAGREE = "DISAGREE"
@@ -76,61 +98,6 @@ COST_PROFILE = CostProfile(
         measured_maxrss_bytes={28: 81412096, 30: 81510400, 40: 163397632, 50: 949764096},
     ),
 )
-
-INPUTS = Struct(
-    "bsgs_inputs",
-    [
-        Field("bits", INT),
-        Field("seed", INT),
-        Field("p", INT),
-        Field("a", INT),
-        Field("b", INT),
-        Field("n", INT),
-        Field("P", List(INT)),
-        Field("Q", List(INT)),
-    ],
-)
-TRANSCRIPT_BODY = Struct("dlp_transcript_body", [Field("call", STR), Field("curve", List(INT)), Field("result", INT)])
-TRANSCRIPT = Struct(
-    "dlp_transcript", [Field("call", STR), Field("curve", List(INT)), Field("result", INT), Field("digest", STR)]
-)
-CROSS_CHECK = Struct(
-    "cross_check", [Field("axis", STR), Field("independent_range", Map(STR, List(INT))), Field("result", STR)]
-)
-MEMORY = Struct(
-    "bsgs_memory",
-    [
-        Field("model", STR),
-        Field("entries", INT),
-        Field("key_bytes", INT),
-        Field("slot_bytes", INT),
-        Field("slots", INT),
-        Field("table_bytes", INT),
-    ],
-)
-OUTPUT = Struct(
-    "bsgs_output",
-    [
-        Field("bits", INT),
-        Field("seed", INT),
-        Field("p", INT),
-        Field("a", INT),
-        Field("b", INT),
-        Field("n", INT),
-        Field("P", List(INT)),
-        Field("Q", List(INT)),
-        Field("x", INT),
-        Field("offset", INT),
-        Field("giant_steps", INT),
-        Field("ops", INT),
-        Field("memory", MEMORY),
-        Field("cross_check", CROSS_CHECK),
-        Field("status", STR),
-        Field("transcripts", Optional(List(TRANSCRIPT))),
-    ],
-)
-BIG_FIELDS = ("p", "a", "b", "n", "x")
-POINT_FIELDS = ("P", "Q")
 
 
 class InputError(ValueError):

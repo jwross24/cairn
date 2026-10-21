@@ -78,7 +78,7 @@ def test_cli_certifies_real_pair_and_records_origins(certified_pair, which):
 
 @pytest.mark.parametrize("which", SKILLS)
 def test_transcript_floor_and_certificate_goldens(certified_pair, which):
-    _, _, bundle_path, pin, documents = certified_pair
+    _, db, bundle_path, pin, documents = certified_pair
     config = bundle.GateBundle.open(bundle_path, pin).verifier_config()
     first = selftest_skills.run_once(which, config)
     second = selftest_skills.run_once(which, config)
@@ -89,8 +89,12 @@ def test_transcript_floor_and_certificate_goldens(certified_pair, which):
     )
     module = selftest_skills.module_for(which)
     identity = module.skill_identity_hash()
+    with substrate.Substrate.open(db, role="reader") as sub:
+        stored_summary = sub.get_certificate(identity)["selftest_summary"]
     assert (
-        selftest.certificate_hash(identity, first["transcript_hash"], keys.env_manifest_digest(env.manifest()))
+        selftest.certificate_hash(
+            identity, first["transcript_hash"], keys.env_manifest_digest(env.manifest()), stored_summary
+        )
         == documents[which]["certificate"]
     )
     stem = which.replace("-", "_")

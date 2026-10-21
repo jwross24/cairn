@@ -72,7 +72,7 @@
     "skill": "rho_dp",
     "method_identity": {"interface_version": "rho_dp/1", "params": {"variant": "plain", "r": "32"}},
     "identity_bundle_hash": "c75ff97f442eaa39cc3183742d22b010d90879eb7d7b518b6e1c111c1c472347",
-    "implementation_revision": "b86f96145df8d6d2db7f50f2b06fa7e1df8e9a18cf075e2cce7dd9b993f941b2"
+    "implementation_revision": "688db5241c375950dcbd63940304342b9b703cb4d46f8c078873af69d8b62eb9"
   },
   "patience_ceiling": {"multiplier": 4, "basis": "declared_profile_mean_per_trial"},
   "shape_departure_tolerance": "0.25",

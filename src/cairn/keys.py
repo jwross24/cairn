@@ -1,3 +1,5 @@
+import json
+
 from cairn import canon
 from cairn.canon import BLOBREF, INT, NON_EMPTY_STR, STR, Field, List, Map, Optional, Struct
 
@@ -6,7 +8,7 @@ TAG_HYPOTHESIS_KEY = "cairn/hypothesis-key/v1"
 TAG_NODE = "cairn/node/v1"
 TAG_IDENTITY_BUNDLE = "cairn/identity-bundle/v1"
 TAG_ENV_MANIFEST = "cairn/env-manifest/v1"
-TAG_SELFTEST_CERT = "cairn/selftest-cert/v1"
+TAG_SELFTEST_CERT = "cairn/selftest-cert/v2"
 TAG_GATE_BUNDLE = "cairn/gate-bundle/v1"
 TAG_INSTANCE = "cairn/instance/v1"
 TAG_CHAIN = "cairn/chain/v1"
@@ -86,6 +88,7 @@ SELFTEST_CERT = Struct(
         Field("identity_bundle_hash", STR),
         Field("transcript_hash", STR),
         Field("env_manifest_hash", STR),
+        Field("selftest_summary", STR),
     ],
 )
 
@@ -135,6 +138,12 @@ def hypothesis_key(hypothesis):
 
 def instance_hash(instance):
     return canon.hash_object(TAG_INSTANCE, INSTANCE, instance)
+
+
+def selftest_summary_text(summary):
+    if isinstance(summary, str):
+        return summary
+    return json.dumps(summary, sort_keys=True, separators=(",", ":"))
 
 
 def selftest_cert_hash(cert):

@@ -27,7 +27,14 @@ REPLAY_GRADE = "Replayable"
 DO_NOT_CACHE = False
 REPO_ROOT = Path(__file__).resolve().parents[3]
 IDENTITY_SOURCES = (
+    "src/cairn/__init__.py",
+    "src/cairn/canon.py",
+    "src/cairn/env.py",
+    "src/cairn/keys.py",
+    "src/cairn/log.py",
     "src/cairn/pari.py",
+    "src/cairn/profile.py",
+    "src/cairn/skills/__init__.py",
     "src/cairn/skills/order_bsgs_gmpy2.py",
     "src/cairn/skills/toy_curve.py",
     "src/cairn/skills/toy_curve_corpus.json",

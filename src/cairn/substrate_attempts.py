@@ -1,4 +1,3 @@
-import json
 import uuid
 
 from cairn import canon, keys, log
@@ -139,9 +138,8 @@ class SubstrateAttemptWrites(SubstrateNodeWrites):
         lg.info("write", table="grade_history", hash=node_hash, status=f"{current}->{to}", reason=reason)
 
     def put_certificate(self, identity_bundle_hash, transcript_hash, env_manifest_hash, selftest_summary, *, at=None):
-        if not isinstance(selftest_summary, str):
-            selftest_summary = json.dumps(selftest_summary, sort_keys=True, separators=(",", ":"))
-        canonical = certificate_canonical(identity_bundle_hash, transcript_hash, env_manifest_hash)
+        selftest_summary = keys.selftest_summary_text(selftest_summary)
+        canonical = certificate_canonical(identity_bundle_hash, transcript_hash, env_manifest_hash, selftest_summary)
         cert_hash = canon.digest(keys.TAG_SELFTEST_CERT, canonical)
         with self._tx():
             if self.get_node(identity_bundle_hash) is None:

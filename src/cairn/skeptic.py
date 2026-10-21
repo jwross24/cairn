@@ -138,7 +138,8 @@ def _store_certificate(sub, records, identity_bundle_hash):
     if certificate["identity_bundle_hash"] != identity_bundle_hash:
         _refuse(f"certificate {cert_hash!r} names another identity bundle")
     if any(
-        row[field] != certificate[field] for field in ("identity_bundle_hash", "transcript_hash", "env_manifest_hash")
+        row[field] != certificate[field]
+        for field in ("identity_bundle_hash", "transcript_hash", "env_manifest_hash", "selftest_summary")
     ):
         _refuse(f"certificate {cert_hash!r} companion references differ from its canonical bytes")
     _store(

@@ -76,13 +76,16 @@ class SubstrateReads(SubstrateBase):
 
     def certified(self, identity_bundle_hash):
         row = self.conn.execute(
-            "SELECT cert_hash, transcript_hash, env_manifest_hash FROM skill_certificates WHERE identity_bundle_hash = ?",
+            "SELECT cert_hash, transcript_hash, env_manifest_hash, selftest_summary FROM skill_certificates WHERE identity_bundle_hash = ?",
             (identity_bundle_hash,),
         ).fetchone()
         if row is None:
             return False
         return (
-            certificate_hash(identity_bundle_hash, row["transcript_hash"], row["env_manifest_hash"]) == row["cert_hash"]
+            certificate_hash(
+                identity_bundle_hash, row["transcript_hash"], row["env_manifest_hash"], row["selftest_summary"]
+            )
+            == row["cert_hash"]
         )
 
     def yanked(self, identity_bundle_hash, *, attest_path=None):

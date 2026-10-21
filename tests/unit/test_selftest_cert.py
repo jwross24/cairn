@@ -23,6 +23,7 @@ def _cert(vector):
         field["identity_bundle_hash"],
         field["transcript_hash"],
         field["env_manifest_hash"],
+        field["selftest_summary"],
     )
 
 
@@ -96,7 +97,7 @@ def test_swapping_the_identity_hash_changes_the_certificate(load_vector):
 
 @pytest.mark.parametrize(
     "swap",
-    ["identity_bundle_hash", "transcript_hash", "env_manifest_hash"],
+    ["identity_bundle_hash", "transcript_hash", "env_manifest_hash", "selftest_summary"],
 )
 def test_every_certificate_field_is_load_bearing(load_vector, swap):
     field = dict(_vector(load_vector("canon_kat.json"), "selftest_cert")["input"])

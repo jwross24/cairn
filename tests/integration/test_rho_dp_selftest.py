@@ -107,7 +107,10 @@ def test_the_double_run_is_byte_equal_and_the_certificate_recomputes(tmp_path, p
     recomputed = canon.digest(
         keys.TAG_SELFTEST_CERT,
         substrate.certificate_canonical(
-            result["identity_bundle_hash"], result["transcript_hash"], keys.env_manifest_digest(env.manifest())
+            result["identity_bundle_hash"],
+            result["transcript_hash"],
+            keys.env_manifest_digest(env.manifest()),
+            result["summary"],
         ),
     )
     assert recomputed == result["certificate"]

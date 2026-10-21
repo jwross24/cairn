@@ -35,10 +35,18 @@ REPLAY_GRADE = "Replayable"
 DO_NOT_CACHE = True
 REPO_ROOT = Path(__file__).resolve().parents[3]
 IDENTITY_SOURCES = (
+    "src/cairn/__init__.py",
+    "src/cairn/canon.py",
     "src/cairn/ec.py",
+    "src/cairn/env.py",
     "src/cairn/instances.py",
+    "src/cairn/keys.py",
+    "src/cairn/log.py",
     "src/cairn/pari.py",
+    "src/cairn/profile.py",
+    "src/cairn/skills/__init__.py",
     "src/cairn/skills/bsgs.py",
+    "src/cairn/skills/bsgs_schema.py",
     "src/cairn/skills/instance_maker.py",
     "src/cairn/skills/instance_maker_corpus.json",
     "src/cairn/skills/order_bsgs_gmpy2.py",
