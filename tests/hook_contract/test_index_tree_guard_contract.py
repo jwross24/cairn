@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pytest
-from conftest import SKILL_REL
+from conftest import ROOT, SKILL_REL
 
 STAGING_AUDIT = "#!/usr/bin/env bash\nprintf 'stray\\n' > stray.txt\ngit add stray.txt\nexit 0\n"
 REWRITING_AUDIT = "#!/usr/bin/env bash\nprintf 'rewritten\\n' > evidence.txt\ngit add evidence.txt\nexit 0\n"
@@ -79,6 +79,4 @@ def test_a_missing_guard_script_denies_rather_than_skipping(scratch):
 
 @pytest.mark.parametrize("marker", ["index_tree_guard.py capture", "index_tree_guard.py check --before"])
 def test_the_hook_wires_both_halves(marker):
-    from conftest import ROOT
-
     assert marker in (ROOT / ".githooks" / "pre-commit").read_text()

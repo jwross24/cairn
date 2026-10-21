@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from conftest import ROOT
 
 FAILING_CHECK = "#!/usr/bin/env bash\nexit 1\n"
 
@@ -63,8 +64,6 @@ def test_a_missing_pre_commit_hook_denies_the_merge(scratch):
 
 @pytest.mark.parametrize("name", ["pre-commit", "pre-merge-commit"])
 def test_both_hooks_ship_executable(name):
-    from conftest import ROOT
-
     hook = ROOT / ".githooks" / name
     assert hook.is_file()
     assert hook.stat().st_mode & 0o111
