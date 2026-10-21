@@ -41,6 +41,7 @@ HOOK_SCRIPTS = (
     "audit_attribution.py",
     "scorecard_coherence.py",
     "audit_missing_items.py",
+    "index_tree_guard.py",
 )
 
 SKILL_REL = ".claude/skills/beads-compliance-and-completion-verification"

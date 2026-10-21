@@ -160,12 +160,8 @@ FORK_MISSING=""
 if [ -z "$FORK_MISSING" ] && ! grep -q "sync-rubric-from-policy.py" "$SKILL/scripts/bootstrap-audit.sh"; then
   FORK_MISSING="the sync call in scripts/bootstrap-audit.sh"
 fi
-# br 0.2.22 exits 1 for any check that is not "ok", and reports a malformed page
-# as status "error" with an anomaly of severity "recoverable". The upstream health
-# gate keys on "fail" and "error", so it reads a corrupt store as clean; the fork
-# keys on the benign values instead. Reverting it restores a gate that refuses
-# every workspace carrying an advisory WARN and passes one whose pages are gone,
-# and neither symptom names itself.
+# Upstream's health gate keys on "fail" and "error", so it reads a corrupt store as
+# clean and refuses an advisory WARN; the fork keys on the benign values instead.
 if [ -z "$FORK_MISSING" ] && ! grep -q "def corrupting:" "$SKILL/scripts/bootstrap-audit.sh"; then
   FORK_MISSING="the corruption predicate in scripts/bootstrap-audit.sh"
 fi
@@ -235,6 +231,10 @@ fi
 
 # Invoked through bash: the skill ships this asset without the executable bit,
 # and a hook that dies on EACCES is a gate that silently stopped running.
+INDEX_BEFORE="$(uv run python scripts/index_tree_guard.py capture)" || {
+  echo "[pre-commit] BLOCKED: the index tree could not be recorded before the audit." >&2
+  exit 1
+}
 PASS_BEFORE="$(ls -1d beads_compliance_audit/passes/*/ 2>/dev/null | sed 's|.*/passes/||; s|/$||' | sort | tail -1)"
 bash "$SKILL/assets/pre-commit-hook.sh"
 AUDIT_RC=$?
@@ -294,14 +294,9 @@ else
   printf '%s SCORECARD-NO-PASS no audit pass directory to check\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .beads_hook.log
 fi
 
-# gather-evidence.sh performs no search at all for a test item whose id ends in
-# `primary`, for an item in migrations, feature_flags or telemetry, and for a code
-# artifact carrying no expected_path_hints; score-bead.py lists every one of them under
-# `## Missing items (verbatim)`, and remediate.sh reads that section verbatim into a
-# minted completion-debt bead's acceptance criteria. A silence travels as a finding.
-# The corrector separates the two and refuses a false-closed verdict every one of
-# whose items is unmeasured. Each of its outcomes reaches .check.log under its own name,
-# including the ones where an input could not be read at all.
+# gather-evidence.sh searches for nothing on some items, yet score-bead.py lists them
+# under `## Missing items (verbatim)` and remediate.sh turns that section into debt
+# beads. The corrector refuses a false-closed verdict whose items are all unmeasured.
 if [ -n "$NEWEST_PASS" ] && [ -d "${NEWEST_PASS}beads" ]; then
   uv run python scripts/audit_missing_items.py "${NEWEST_PASS}beads" > /tmp/cairn-missing-items.out 2>&1
   MISSING_RC=$?
@@ -361,6 +356,11 @@ if [ -n "$NEWEST_PASS" ] && [ -d "${NEWEST_PASS}beads" ]; then
   esac
 else
   printf '%s MISSING-ITEMS-NO-PASS no audit pass directory to separate\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> .beads_hook.log
+fi
+
+if ! uv run python scripts/index_tree_guard.py check --before "$INDEX_BEFORE"; then
+  echo "[pre-commit] BLOCKED: a step after the gates changed the index; see .check.log" >&2
+  exit 1
 fi
 
 if [ "$AUDIT_RC" -eq 0 ]; then

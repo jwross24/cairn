@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# git runs this, not pre-commit, for a merge commit. The index holds the merge result,
+# which is what pre-commit gates. Bypass: git merge --no-verify, or pre-commit's own
+# named variables.
+set -uo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT" || exit 1
+
+say() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$1" >> "$ROOT/.check.log"; }
+
+if [ ! -x "$ROOT/.githooks/pre-commit" ]; then
+  say "DENY pre-merge-commit: .githooks/pre-commit is missing or not executable"
+  echo "[pre-merge-commit] BLOCKED: .githooks/pre-commit is missing or not executable; the merge result has no gate." >&2
+  exit 1
+fi
+
+if "$ROOT/.githooks/pre-commit" "$@"; then
+  say "ALLOW pre-merge-commit: gates passed over the merge result"
+  exit 0
+fi
+
+say "DENY pre-merge-commit: pre-commit gates refused the merge result"
+echo "[pre-merge-commit] BLOCKED: the merge result failed the pre-commit gates; see the output above." >&2
+exit 1
