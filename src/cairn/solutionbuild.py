@@ -385,6 +385,12 @@ def assert_dependencies(gate, assembled):
             raise SolutionRefused("dependency-overrides-refused")
 
 
+def dependency_names(gate, assembled):
+    if MANIFEST_NAME not in assembled.inputs:
+        return ()
+    return tuple(entry["name"] for entry in gate.lake_manifest["packages"])
+
+
 def build(gate, assembled, *, timeout_s=lean.DEFAULT_TIMEOUT_S):
     pins = gate.lean
     assert_unchanged(assembled)

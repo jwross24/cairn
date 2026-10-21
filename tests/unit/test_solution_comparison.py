@@ -343,9 +343,41 @@ def test_an_edited_checker_command_refuses_the_plan_before_any_file_or_subproces
     assert not (tmp_path / "work").exists()
 
 
+EDITED_IMAGE_COMMANDS = {
+    "image-replay-through-lake": ("replay_fresh", ["lake", "env", "leanchecker", "--fresh", "-v", "{module}"]),
+    "image-replay-loses-fresh": ("replay_fresh", ["/home/cairn/lean/bin/leanchecker", "-v", "{module}"]),
+    "image-axioms-through-lake": ("axioms", ["lake", "env", "{executable}", "{module}"]),
+    "image-sysroot-in-the-project": ("sysroot", "/project"),
+}
+
+
+@pytest.mark.parametrize("dispatcher", ["gold", "dev"])
+@pytest.mark.parametrize("edit", sorted(EDITED_IMAGE_COMMANDS))
+def test_an_edited_image_command_refuses_the_plan_before_any_file_or_subprocess(
+    pinned_bundle, tmp_path, popen_spy, edit, dispatcher
+):
+    key, value = EDITED_IMAGE_COMMANDS[edit]
+    pins = lean.source_pins()
+    pins["image_checker"][key] = value
+    source = tmp_path / "bundle-source"
+    shutil.copytree(bundle.REPO_ROOT / "bundle", source)
+    (source / "lean.json").write_text(json.dumps(pins))
+    gate = bundle.GateBundle.open(*pinned_bundle(src=source))
+    popen_spy.clear()
+    with pytest.raises(solutionchecks.CheckerCommandRefused) as refused:
+        _run_container(gate, tmp_path) if dispatcher == "gold" else _run_dev(gate, tmp_path)
+    refused_key = "replay_fresh" if key == "sysroot" else key
+    assert refused.value.reason == f"{solutionchecks.CHECKER_COMMAND_NOT_PINNED_PREFIX}image_checker.{refused_key}"
+    assert popen_spy == []
+    assert not (tmp_path / "root").exists()
+
+
 def test_the_pinned_checker_commands_are_the_shipped_bundle_commands(gate):
     for key, command in solutionchecks.PINNED_CHECKER_COMMANDS.items():
         assert tuple(gate.lean["checker"][key]) == command
+    for key, command in container.PINNED_IMAGE_COMMANDS.items():
+        assert tuple(gate.lean["image_checker"][key]) == command
+    assert gate.lean["image_checker"]["sysroot"] == container.IMAGE_SYSROOT
     solutionchecks.assert_checker_commands(gate)
 
 

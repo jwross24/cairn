@@ -16,7 +16,6 @@ from cairn.solutionreplay import (
     _head,
     _observe_axiom_step,
     _observe_fresh_replay,
-    _replay_command,
     assert_checker_commands,
 )
 from cairn.solutionreplay import (
@@ -348,9 +347,7 @@ def run_container(gate, image, statement, submission, theorem_names, plan_rows, 
             if step.kind == solutionplan.KIND_AXIOMS:
                 return _observe_axiom_step(gate, compilation, work_dir=work_dir, timeout_s=step.timeout_s, start=start)
             if step.kind == solutionplan.KIND_KERNEL_REPLAY:
-                return _observe_fresh_replay(
-                    gate, compilation, _replay_command(gate), timeout_s=step.timeout_s, start=start
-                )
+                return _observe_fresh_replay(gate, compilation, timeout_s=step.timeout_s, start=start)
             return observe_container_comparison(gate, compilation, timeout_s=step.timeout_s)
         except solutionbuild.SolutionRefused as exc:
             return solutionplan.OBSERVED_REFUSED, (exc.reason,), _elapsed_ms(start)

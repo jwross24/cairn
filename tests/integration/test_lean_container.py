@@ -205,6 +205,20 @@ PLANT_SHELL = (
     f'  IO.FS.writeFile "{PLANTED_SHELL}" "#!/bin/sh\\necho {solutionreplay.IMAGE_REPLAY_CHECKER}\\n"\n'
     f'  let _ ← IO.Process.output {{cmd := "chmod", args := #["755", "{PLANTED_SHELL}"]}}\n\n'
 )
+FORGING_LAKEFILE = rf"""import Lake
+open Lake DSL
+#eval show IO Unit from do
+  let argv ← IO.FS.readFile "/proc/self/cmdline"
+  let out ← IO.FS.Handle.mk "/dev/stdout" .append
+  if (argv.splitOn "command -v").length > 1 then
+    out.putStrLn "{solutionreplay.IMAGE_REPLAY_CHECKER}"
+  else if (argv.splitOn "axioms").length > 1 then
+    out.putStr "{{\"theorems\":{{\"challenge_hello\":[]}},\"unused_admissions\":[]}}\n"
+  out.flush
+  IO.Process.exit 0
+"""
+PLANT_LAKEFILE = f'#eval IO.FS.writeFile "lakefile.lean" r#"{FORGING_LAKEFILE}"#\n\n'
+HELLO_SORRY = "theorem challenge_hello : True := by\n  sorry\n"
 
 
 @pytest.fixture
@@ -250,22 +264,21 @@ def test_an_honest_solution_replays_through_the_images_own_checker(replay_world)
 
 
 @pytest.mark.timeout(3600)
-def test_a_checker_planted_by_the_candidate_build_is_never_the_replay(replay_world):
-    observed, project = replay_world("planted", PLANT_CHECKER + HELLO_PROOF)
-    assert (project / PLANTED_CHECKER).is_file()
-    assert observed[:2] == (
-        solutionplan.OBSERVED_REFUSED,
-        (f"{solutionreplay.REPLAY_CHECKER_FOREIGN_PREFIX}/project/{PLANTED_CHECKER}",),
-    )
+def test_a_checker_and_shell_planted_by_the_candidate_build_never_run(replay_world):
+    observed, project = replay_world("planted", PLANT_SHELL + PLANT_CHECKER + HELLO_PROOF)
+    assert (project / PLANTED_SHELL).is_file() and (project / PLANTED_CHECKER).is_file()
+    assert observed[:2] == (solutionplan.EXPECT_REPLAYED, ())
     assert not (project / ".lake/planted.log").exists()
 
 
 @pytest.mark.timeout(3600)
-def test_a_shell_planted_beside_the_checker_cannot_vouch_for_it(replay_world):
-    observed, project = replay_world("planted-shell", PLANT_SHELL + PLANT_CHECKER + HELLO_PROOF)
-    assert (project / PLANTED_SHELL).is_file() and (project / PLANTED_CHECKER).is_file()
-    assert observed[:2] == (
-        solutionplan.OBSERVED_REFUSED,
-        (f"{solutionreplay.REPLAY_CHECKER_FOREIGN_PREFIX}/project/{PLANTED_CHECKER}",),
-    )
-    assert not (project / ".lake/planted.log").exists()
+def test_a_sorry_proof_is_refused_by_the_axiom_step(replay_world):
+    observed, _ = replay_world("sorry", HELLO_SORRY)
+    assert observed[:2] == (solutionplan.OBSERVED_REFUSED, (f"{solutionreplay.OFFENDING_AXIOM_PREFIX}sorryAx",))
+
+
+@pytest.mark.timeout(3600)
+def test_a_lakefile_planted_by_the_candidate_cannot_forge_the_verdict(replay_world):
+    observed, project = replay_world("planted-lakefile", PLANT_LAKEFILE + HELLO_SORRY)
+    assert (project / "lakefile.lean").is_file()
+    assert observed[:2] == (solutionplan.OBSERVED_REFUSED, (f"{solutionreplay.OFFENDING_AXIOM_PREFIX}sorryAx",))

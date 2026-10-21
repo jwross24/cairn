@@ -72,6 +72,8 @@ SOLUTION_LIBRARY_LANES = (
 )
 CONTAINER_TEST_PATHS = (
     "tests/integration/test_container_statement_hash.py",
+    "tests/integration/test_container_candidate_steps.py",
+    "tests/integration/test_container_challenge_hash.py",
     "tests/integration/test_lean_container.py",
     "tests/integration/test_proven_derivation.py",
 )

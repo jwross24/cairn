@@ -26,6 +26,15 @@ CLEANUP_TIMEOUT_S = 60.0
 ARG_RE = re.compile(r"^ARG ([A-Z0-9_]+)=(\S+)$", re.MULTILINE)
 FROM_RE = re.compile(r"^FROM (\S+)@(sha256:[0-9a-f]{64})$", re.MULTILINE)
 IMAGE_ID_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
+IMAGE_SYSROOT = "/home/cairn/lean"
+PROJECT_GUEST = "/project"
+# Run against the candidate's project after its build, so no step may load the workspace's Lake
+# configuration: a candidate-written lakefile.lean is code that runs in place of the named command.
+PINNED_IMAGE_COMMANDS = {
+    "replay_fresh": (f"{IMAGE_SYSROOT}/bin/leanchecker", "--fresh", "-v", "{module}"),
+    "axioms": ("{executable}", "{module}"),
+}
+IMAGE_COMMAND_NOT_PINNED_PREFIX = "image-command-not-pinned:"
 
 lg = log.get("container")
 
@@ -216,6 +225,33 @@ def run(
         raise
 
 
+def assert_image_command(gate, key):
+    checker = gate.lean.get("image_checker")
+    command = checker.get(key) if isinstance(checker, dict) else None
+    if (
+        not isinstance(command, list)
+        or tuple(command) != PINNED_IMAGE_COMMANDS[key]
+        or checker.get("sysroot") != IMAGE_SYSROOT
+    ):
+        lg.info("image_command_refused", key=key, command=command)
+        raise ContainerError(f"{IMAGE_COMMAND_NOT_PINNED_PREFIX}{key}")
+    return command
+
+
+def image_command(gate, key, **fields):
+    return [part.format(**fields) for part in assert_image_command(gate, key)]
+
+
+def image_search_env(packages):
+    roots = [PROJECT_GUEST, *(f"{PROJECT_GUEST}/.lake/packages/{name}" for name in packages)]
+    return (
+        ("HOME", PROJECT_GUEST),
+        ("LEAN_SYSROOT", IMAGE_SYSROOT),
+        ("LEAN_PATH", ":".join(f"{root}/.lake/build/lib/lean" for root in roots)),
+        ("LD_LIBRARY_PATH", f"{IMAGE_SYSROOT}/lib/lean:{IMAGE_SYSROOT}/lib"),
+    )
+
+
 def host_user():
     uid = os.getuid()
     if uid == 0:
@@ -240,21 +276,21 @@ def assert_pinned(gate, image, *, timeout_s=RUN_TIMEOUT_S):
         raise ContainerError(f"statement-hasher-target-mismatch:{observed['target']}")
 
 
-def check_axioms(gate, image, module, theorem_names, *, project_dir, work_dir, timeout_s=RUN_TIMEOUT_S):
+def check_axioms(gate, image, module, theorem_names, *, project_dir, work_dir, packages=(), timeout_s=RUN_TIMEOUT_S):
     if not theorem_names:
         raise lean.LeanRejected("empty-theorem-names")
+    executable = "/axiom-tool/.lake/build/bin/axioms"
+    axioms_argv = [*image_command(gate, "axioms", executable=executable, module=module), *theorem_names]
     assert_pinned(gate, image, timeout_s=timeout_s)
     pins = gate.lean
     root = lean.write_axiom_tool(gate, work_dir)
-    project_mount = (project_dir, "/project", "readonly=false")
+    project_mount = (project_dir, PROJECT_GUEST, "readonly=false")
 
     def invoke(name, cwd, mounts, **fields):
         tool, *arguments = pins["checker"][name]
         if tool not in lean.TOOLS:
             raise ContainerError(f"axiom-checker-tool-unknown:{tool}")
         argv = [tool, f"+{pins['toolchain']}", *(part.format(**fields) for part in arguments)]
-        if name == "axioms":
-            argv.extend(theorem_names)
         return run(
             image.context,
             image.image_id,
@@ -267,13 +303,16 @@ def check_axioms(gate, image, module, theorem_names, *, project_dir, work_dir, t
         )
 
     lean.require_success(invoke("build", "/axiom-tool", ((root, "/axiom-tool", "readonly=false"),), module="axioms"))
-    lean.require_success(invoke("build", "/project", (project_mount,), module=module))
-    result = invoke(
-        "axioms",
-        "/project",
-        (project_mount, (root, "/axiom-tool", "readonly=true")),
-        module=module,
-        executable="/axiom-tool/.lake/build/bin/axioms",
+    lean.require_success(invoke("build", PROJECT_GUEST, (project_mount,), module=module))
+    result = run(
+        image.context,
+        image.image_id,
+        axioms_argv,
+        user=host_user(),
+        mounts=((project_dir, PROJECT_GUEST, "readonly=true"), (root, "/axiom-tool", "readonly=true")),
+        workdir=PROJECT_GUEST,
+        env=image_search_env(packages),
+        timeout_s=timeout_s,
     )
     record = lean.axiom_result(result, theorem_names, pins["permitted_axioms"])
     lg.info("axiom_check", module=module, record=record, image_id=image.image_id, result=result.__dict__)

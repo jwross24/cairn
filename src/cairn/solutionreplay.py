@@ -14,10 +14,7 @@ AXIOM_STEP_ERROR_PREFIX = "axiom-step-error:"
 STDERR_HEAD_CHARS = 200
 BUILD = "build"
 REPLAY_CHECKER = "leanchecker"
-IMAGE_REPLAY_CHECKER = "/home/cairn/lean/bin/leanchecker"
-REPLAY_CHECKER_FOREIGN_PREFIX = "replay-checker-not-image:"
-REPLAY_CHECKER_UNRESOLVED = "replay-checker-unresolved"
-CHECKER_RESOLVE_TIMEOUT_S = 120.0
+IMAGE_REPLAY_CHECKER = container.PINNED_IMAGE_COMMANDS[REPLAY_FRESH][0]
 # The bundle is content-addressed under the operator pin, so an edited lean.json is refused at open;
 # these forms keep a re-pinned bundle from swapping the kernel replay or the build for another command.
 PINNED_CHECKER_COMMANDS = {
@@ -51,6 +48,7 @@ def check_container_axioms(gate, compilation, *, work_dir, timeout_s=container.R
         project.theorem_names,
         project_dir=project.root,
         work_dir=work_dir,
+        packages=solutionbuild.dependency_names(gate, project),
         timeout_s=timeout_s,
     )
     solutionbuild.assert_unchanged(project)
@@ -84,6 +82,11 @@ def _replay_command(gate):
 def assert_checker_commands(gate):
     _build_command(gate)
     _replay_command(gate)
+    for key in container.PINNED_IMAGE_COMMANDS:
+        try:
+            container.assert_image_command(gate, key)
+        except container.ContainerError:
+            raise CheckerCommandRefused(f"{CHECKER_COMMAND_NOT_PINNED_PREFIX}image_checker.{key}") from None
 
 
 def _elapsed_ms(start):
@@ -111,49 +114,23 @@ def _observe_axiom_step(gate, compilation, *, work_dir, timeout_s, start):
     return solutionplan.OBSERVED_REFUSED, reasons, _elapsed_ms(start)
 
 
-def _run_in_project(gate, compilation, argv, timeout_s):
+def _observe_fresh_replay(gate, compilation, *, timeout_s, start):
     project, image = compilation.project, compilation.image
+    argv = container.image_command(gate, REPLAY_FRESH, module=project.solution_module)
     try:
-        return container.run(
+        result = container.run(
             image.context,
             image.image_id,
             argv,
             user=container.host_user(),
-            mounts=((project.root, "/project", "readonly=false"),),
-            workdir="/project",
-            env=(("HOME", "/project"),),
+            mounts=((project.root, container.PROJECT_GUEST, "readonly=true"),),
+            workdir=container.PROJECT_GUEST,
+            env=container.image_search_env(solutionbuild.dependency_names(gate, project)),
             timeout_s=timeout_s,
         )
-    except lean.LeanTimeout:
+    except lean.LeanTimeout as exc:
         solutionbuild.assert_unchanged(project)
         solutionbuild.assert_dependencies(gate, project)
-        raise
-
-
-def _foreign_checker(gate, compilation, tool):
-    argv = [tool, f"+{gate.lean['toolchain']}", "env", "/bin/sh", "-c", f"command -v {REPLAY_CHECKER}"]
-    resolved = _run_in_project(gate, compilation, argv, CHECKER_RESOLVE_TIMEOUT_S)
-    path = resolved.stdout.strip()
-    if resolved.rc != 0 or not path:
-        return REPLAY_CHECKER_UNRESOLVED
-    if path != IMAGE_REPLAY_CHECKER:
-        return f"{REPLAY_CHECKER_FOREIGN_PREFIX}{path}"
-    return None
-
-
-def _observe_fresh_replay(gate, compilation, command, *, timeout_s, start):
-    tool, arguments = command
-    project, image = compilation.project, compilation.image
-    argv = [tool, f"+{gate.lean['toolchain']}", *(part.format(module=project.solution_module) for part in arguments)]
-    try:
-        foreign = _foreign_checker(gate, compilation, tool)
-        if foreign is not None:
-            solutionbuild.assert_unchanged(project)
-            solutionbuild.assert_dependencies(gate, project)
-            lg.info("container_kernel_replay_refused", module=project.solution_module, reason=foreign)
-            return solutionplan.OBSERVED_REFUSED, (foreign,), _elapsed_ms(start)
-        result = _run_in_project(gate, compilation, argv, timeout_s)
-    except lean.LeanTimeout as exc:
         raise solutionplan.StepTimeout(solutionplan.KIND_KERNEL_REPLAY, exc.timeout_s) from None
     solutionbuild.assert_unchanged(project)
     solutionbuild.assert_dependencies(gate, project)
@@ -169,8 +146,8 @@ def observe_container_replay(
     gate, compilation, *, work_dir, timeout_s=lean.DEFAULT_TIMEOUT_S, axiom_timeout_s=container.RUN_TIMEOUT_S
 ):
     start = time.monotonic()
-    command = _replay_command(gate)
+    assert_checker_commands(gate)
     axioms = _observe_axiom_step(gate, compilation, work_dir=work_dir, timeout_s=axiom_timeout_s, start=start)
     if axioms[0] != solutionplan.EXPECT_NO_OFFENDING_AXIOM:
         return axioms
-    return _observe_fresh_replay(gate, compilation, command, timeout_s=timeout_s, start=start)
+    return _observe_fresh_replay(gate, compilation, timeout_s=timeout_s, start=start)

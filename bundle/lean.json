@@ -11,5 +11,10 @@
     "replay_fresh": ["lake", "env", "leanchecker", "--fresh", "-v", "{module}"],
     "statement_hash": ["lake", "env", "{executable}", "{module}"],
     "axioms": ["lake", "env", "{executable}", "{module}"]
+  },
+  "image_checker": {
+    "sysroot": "/home/cairn/lean",
+    "replay_fresh": ["/home/cairn/lean/bin/leanchecker", "--fresh", "-v", "{module}"],
+    "axioms": ["{executable}", "{module}"]
   }
 }
