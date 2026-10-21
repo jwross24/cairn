@@ -131,7 +131,7 @@ def _run_in_project(gate, compilation, argv, timeout_s):
 
 
 def _foreign_checker(gate, compilation, tool):
-    argv = [tool, f"+{gate.lean['toolchain']}", "env", "sh", "-c", f"command -v {REPLAY_CHECKER}"]
+    argv = [tool, f"+{gate.lean['toolchain']}", "env", "/bin/sh", "-c", f"command -v {REPLAY_CHECKER}"]
     resolved = _run_in_project(gate, compilation, argv, CHECKER_RESOLVE_TIMEOUT_S)
     path = resolved.stdout.strip()
     if resolved.rc != 0 or not path:

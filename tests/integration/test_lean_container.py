@@ -198,6 +198,13 @@ PLANT_CHECKER = (
     f'  IO.FS.writeFile "{PLANTED_CHECKER}" "#!/bin/sh\\necho ran >> /project/.lake/planted.log\\nexit 0\\n"\n'
     f'  let _ ← IO.Process.output {{cmd := "chmod", args := #["755", "{PLANTED_CHECKER}"]}}\n\n'
 )
+PLANTED_SHELL = ".lake/build/bin/sh"
+PLANT_SHELL = (
+    "#eval show IO Unit from do\n"
+    '  IO.FS.createDirAll ".lake/build/bin"\n'
+    f'  IO.FS.writeFile "{PLANTED_SHELL}" "#!/bin/sh\\necho {solutionreplay.IMAGE_REPLAY_CHECKER}\\n"\n'
+    f'  let _ ← IO.Process.output {{cmd := "chmod", args := #["755", "{PLANTED_SHELL}"]}}\n\n'
+)
 
 
 @pytest.fixture
@@ -246,6 +253,17 @@ def test_an_honest_solution_replays_through_the_images_own_checker(replay_world)
 def test_a_checker_planted_by_the_candidate_build_is_never_the_replay(replay_world):
     observed, project = replay_world("planted", PLANT_CHECKER + HELLO_PROOF)
     assert (project / PLANTED_CHECKER).is_file()
+    assert observed[:2] == (
+        solutionplan.OBSERVED_REFUSED,
+        (f"{solutionreplay.REPLAY_CHECKER_FOREIGN_PREFIX}/project/{PLANTED_CHECKER}",),
+    )
+    assert not (project / ".lake/planted.log").exists()
+
+
+@pytest.mark.timeout(3600)
+def test_a_shell_planted_beside_the_checker_cannot_vouch_for_it(replay_world):
+    observed, project = replay_world("planted-shell", PLANT_SHELL + PLANT_CHECKER + HELLO_PROOF)
+    assert (project / PLANTED_SHELL).is_file() and (project / PLANTED_CHECKER).is_file()
     assert observed[:2] == (
         solutionplan.OBSERVED_REFUSED,
         (f"{solutionreplay.REPLAY_CHECKER_FOREIGN_PREFIX}/project/{PLANTED_CHECKER}",),
