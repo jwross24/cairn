@@ -1,5 +1,3 @@
-import fcntl
-import os
 import sqlite3
 from pathlib import Path
 
@@ -109,7 +107,6 @@ def schema_text():
 
 
 _WRITER = None
-WRITER_LOCK_SUFFIX = ".writer-lock"
 _SHIPPED_SCHEMA = None
 
 
@@ -170,17 +167,6 @@ def _require_shipped_schema(conn, path):
         raise SchemaMismatch(f"{path} was not created by the shipped schema and holds {kind}: {shown}")
 
 
-def _lock_for_writer(path):
-    real = Path(os.path.realpath(path))
-    fd = os.open(real.with_name(real.name + WRITER_LOCK_SUFFIX), os.O_RDWR | os.O_CREAT, 0o644)
-    try:
-        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except OSError:
-        os.close(fd)
-        raise WriterAlreadyOpen(f"another process holds the writer on {path}") from None
-    return fd
-
-
 class Substrate(SubstrateAttemptWrites):
     @classmethod
     def open(cls, path, role="writer"):
@@ -193,9 +179,7 @@ class Substrate(SubstrateAttemptWrites):
                 raise WriterAlreadyOpen(f"a writer is already open on {_WRITER.path}")
             conn = sqlite3.connect(str(path), timeout=BUSY_TIMEOUT_MS / 1000, autocommit=True)
             conn.row_factory = sqlite3.Row
-            lock_fd = None
             try:
-                lock_fd = _lock_for_writer(path)
                 # the refusal reads the store before any pragma writes to it
                 fresh = not _schema_objects(conn)
                 if not fresh:
@@ -210,11 +194,8 @@ class Substrate(SubstrateAttemptWrites):
                     conn.executescript(schema_text())
             except BaseException:
                 conn.close()
-                if lock_fd is not None:
-                    os.close(lock_fd)
                 raise
             self = cls(conn, path, role)
-            self._lock_fd = lock_fd
             _WRITER = self
         else:
             conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=BUSY_TIMEOUT_MS / 1000, autocommit=True)
@@ -234,10 +215,6 @@ class Substrate(SubstrateAttemptWrites):
             return
         self.conn.close()
         self.closed = True
-        lock_fd = getattr(self, "_lock_fd", None)
-        if lock_fd is not None:
-            self._lock_fd = None
-            os.close(lock_fd)
         if _WRITER is self:
             _WRITER = None
         lg.info("close", path=str(self.path), role=self.role)

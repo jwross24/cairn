@@ -1,8 +1,13 @@
+import fcntl
 import os
 import stat
+from contextlib import contextmanager
 from pathlib import Path
 
 from cairn import escrow, log
+from cairn.substrate_errors import WriterAlreadyOpen
+
+HARNESS_LOCK_SUFFIX = ".harness-lock"
 
 
 def running_attempts(sub):
@@ -12,7 +17,29 @@ def running_attempts(sub):
     return [row["attempt_id"] for row in rows]
 
 
-def startup_scan(sub, *, at=None, dry_run=False):
+@contextmanager
+def harness_lock(sub):
+    real = Path(os.path.realpath(sub.path))
+    fd = os.open(real.with_name(real.name + HARNESS_LOCK_SUFFIX), os.O_RDWR | os.O_CREAT, 0o644)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        os.close(fd)
+        raise WriterAlreadyOpen(f"a live harness holds the attempts of {sub.path}") from None
+    try:
+        yield
+    finally:
+        os.close(fd)
+
+
+def startup_scan(sub, *, at=None, dry_run=False, locked=False):
+    if dry_run or locked:
+        return _scan(sub, at, dry_run)
+    with harness_lock(sub):
+        return _scan(sub, at, dry_run)
+
+
+def _scan(sub, at, dry_run):
     from cairn import runner
 
     interrupted = running_attempts(sub)

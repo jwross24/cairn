@@ -11,8 +11,8 @@ from cairn import allowlist, bundle, canon, cli, escrow, exits, keys, log, procw
 from cairn.errors import CliError
 from cairn.runner_store import artifacts as _artifacts
 from cairn.runner_store import diverged as _diverged
+from cairn.runner_store import harness_lock, startup_scan
 from cairn.runner_store import running_attempts as running_attempts
-from cairn.runner_store import startup_scan
 from cairn.substrate import blob_hash
 
 LOG_STEP = "runner"
@@ -292,7 +292,12 @@ class Attempt:
     writable_root: str | None = None
 
 
-def launch(
+def launch(sub, *args, **kwargs):
+    with harness_lock(sub):
+        return _launch(sub, *args, **kwargs)
+
+
+def _launch(
     sub,
     skill_module,
     recipe,
@@ -332,7 +337,7 @@ def launch(
             backend_paths=method_policy.backend_paths,
             withheld_roots=method_policy.allow_list.withheld_roots,
         )
-    startup_scan(sub)
+    startup_scan(sub, locked=True)
     ceiling_s = ceiling_for(evaluation.expected_wall_s, ceiling_multiplier, subprocess_startup_ms)
     wall_cap_s = wall_cap_for(ceiling_s, wall_cap_multiplier, wall_cap_floor_s)
     ceiling_core_s = ceiling_for(evaluation.expected_core_s, ceiling_multiplier, subprocess_startup_ms)
@@ -531,7 +536,7 @@ def _run(ns):
         )
     dry_run = getattr(ns, "dry_run", False)
     try:
-        with substrate.Substrate.open(ns.db, role="reader" if dry_run else "writer") as sub:
+        with substrate.Substrate.open(ns.db) as sub:
             interrupted = startup_scan(sub, dry_run=dry_run)
     except substrate.WriterAlreadyOpen as exc:
         raise CliError(

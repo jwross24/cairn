@@ -256,11 +256,16 @@ Preserving the existing data or choosing a fresh substrate is an operator decisi
 
 ### `WriterAlreadyOpen` on a substrate call
 
-`Substrate.open(path, role="writer")` allows exactly one writer per store, across processes
-(a lock on `<store>.writer-lock`). This fires when an earlier writer was left unclosed, or
-another process holds the store: close it in a `finally` block, or use the `writer` fixture
-in tests. A leaked writer fails every later writer-opening test in the
+`Substrate.open(path, role="writer")` allows exactly one writer per process. This fires when
+an earlier writer was left unclosed in the same run: close it in a `finally` block, or use
+the `writer` fixture in tests. A leaked writer fails every later writer-opening test in the
 same run, which reads as many failures from one root cause.
+
+The same error from `startup-scan` or `runner.launch` means a live harness in another process
+owns the store's RUNNING attempts (a lock on `<store>.harness-lock`, held for the length of a
+launch). Other processes may still open writers on the store, as an operator yank does; only
+a non-dry-run startup scan or a second launch is refused. Wait for the harness, or run
+`startup-scan --dry-run`, which does not take the lock.
 
 ### `PariStall` / the suite exits 124
 
