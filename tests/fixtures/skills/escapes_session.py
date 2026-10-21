@@ -14,7 +14,8 @@ open(sys.argv[1], "w").write(str(time.process_time() - start))
 def main():
     sys.stdin.read()
     scratch = sys.argv[1]
-    subprocess.Popen([sys.executable, "-c", BURN, scratch + "/burned"], start_new_session=True)
+    descendant = subprocess.Popen([sys.executable, "-c", BURN, scratch + "/burned"], start_new_session=True)
+    descendant.wait()
     sys.stdout.write('{"status":"OK"}\n')
     return 0
 

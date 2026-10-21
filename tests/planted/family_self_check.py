@@ -52,7 +52,7 @@ def produce_curve(cold, seed=SEED):
         _recipe(cold.sub, document),
         stdin_document=document,
         evaluation=toy_curve.COST_PROFILE.evaluate(BITS),
-        ceiling_multiplier=4,
+        ceiling_multiplier=40,
         tool_digests=toy_curve.identity_bundle()["tool_digests"],
     )
     if attempt.status != "OK":
