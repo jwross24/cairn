@@ -15,7 +15,7 @@ from hypothesis import settings
 pytest_plugins = ["pytester", "_session_deadline", "_libpari_stall", "_unit_tier", "_ci_lanes", "_test_logging"]
 
 BEAD_STORE_CONSUMER_MODULES = frozenset(
-    {"test_bead_artifact_block.py", "test_br_lookup.py", "test_theater_patterns.py"}
+    {"test_bead_artifact_block.py", "test_br_lookup.py", "test_theater_patterns_cli.py"}
 )
 
 

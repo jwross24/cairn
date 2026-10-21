@@ -95,7 +95,7 @@ def test_report_without_killed_witness_does_not_turn_certification_into_verifica
         assert "outcome: VERIFIER_UNVERIFIED" in text
 
 
-def test_legacy_killed_report_with_missing_must_fail_count_marks_owner_rule_unavailable(tmp_path):
+def test_legacy_killed_report_with_stripped_must_fail_count_grades_the_verifier_uncertified(tmp_path):
     sub, plan, executor, verifier, statement = _setup(tmp_path, bounds=(40, 40), trials=2, certified=True)
     try:
         result = hunt.run_hunt(sub, plan, executor, verifier)
@@ -116,10 +116,8 @@ def test_legacy_killed_report_with_missing_must_fail_count_marks_owner_rule_unav
     with closing(sqlite3.connect(legacy_path)) as conn:
         conn.executescript("\n".join(statements))
     text = _read_only_report(legacy_path, statement.hash, result.evidence_hash)
-    assert "computed verifier owner rule: unavailable; reason:" in text
-    assert "carries no must_fail_witnesses count; re-certify the verifier before grading a witness" in text
+    assert "computed verifier owner rule: AuditOnly; reason: verifier-uncertified" in text
     assert "computed verifier owner rule: Verifiable" not in text
-    assert "computed verifier owner rule: AuditOnly" not in text
     assert "certificate: recorded" in text
     assert "stored evidence replay grade: Replayable" in text
     assert "recorded statement survival standing: false" in text

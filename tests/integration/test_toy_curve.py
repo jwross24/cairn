@@ -332,11 +332,13 @@ def test_identity_hash_moves_with_the_implementation_revision(tmp_path):
         target.write_bytes(source.read_bytes())
     base = toy_curve.skill_identity_hash(root=tmp_path)
     assert base == toy_curve.skill_identity_hash()
-    path = tmp_path / toy_curve.IDENTITY_SOURCES[0]
-    data = bytearray(path.read_bytes())
-    data[len(data) // 2] ^= 0x01
-    path.write_bytes(bytes(data))
-    assert toy_curve.skill_identity_hash(root=tmp_path) != base
+    for rel in toy_curve.IDENTITY_SOURCES:
+        path = tmp_path / rel
+        original = path.read_bytes()
+        path.write_bytes(original + b"\n")
+        assert toy_curve.skill_identity_hash(root=tmp_path) != base, rel
+        path.write_bytes(original)
+    assert toy_curve.skill_identity_hash(root=tmp_path) == base
 
 
 def test_env_manifest_refuses_a_missing_gp_binary(monkeypatch):
