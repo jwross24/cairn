@@ -356,7 +356,7 @@ def run_hunt(sub, plan, executor: Callable, verifier: Callable, *, run_id=None, 
     run_hash = sub.put_node("hunt_run", run_canonical(record), producer_identity="gate:hunt")
     if floor_registration is not None:
         sub.add_lineage(run_hash, floor_registration, EDGE_INPUT)
-    for parent in (plan.hash, plan.distribution.hash):
+    for parent in (plan.hash, plan.distribution.hash, commitment.hash):
         sub.add_lineage(run_hash, parent, EDGE_INPUT)
     for trial in trials:
         for evidence_hash in (trial.execution_evidence, trial.verifier_evidence):
@@ -382,8 +382,11 @@ def run_hunt(sub, plan, executor: Callable, verifier: Callable, *, run_id=None, 
             raise HuntError("KILLED hunt has no counterexample trial")
         point = trials[counterexample_trial].point
         derivation = justify.derive_tag(sub, plan.statement_hash, attest_path)
-        if derivation.refuted_by != evidence_hash:
-            raise HuntError("hunt KILLED but justify did not derive a refutation")
+        if not any(
+            row["hash"] == evidence_hash and isinstance(judgment, justify.Refutation)
+            for row, judgment in derivation.results
+        ):
+            raise HuntError("hunt KILLED but justify did not judge its own evidence a refutation")
         ledger_hash = ledger.write(
             sub,
             hypothesis_key=plan.hypothesis_key,
