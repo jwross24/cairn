@@ -531,7 +531,7 @@ def _run(ns):
         )
     dry_run = getattr(ns, "dry_run", False)
     try:
-        with substrate.Substrate.open(ns.db) as sub:
+        with substrate.Substrate.open(ns.db, role="reader" if dry_run else "writer") as sub:
             interrupted = startup_scan(sub, dry_run=dry_run)
     except substrate.WriterAlreadyOpen as exc:
         raise CliError(

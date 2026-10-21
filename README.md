@@ -256,9 +256,10 @@ Preserving the existing data or choosing a fresh substrate is an operator decisi
 
 ### `WriterAlreadyOpen` on a substrate call
 
-`Substrate.open(path, role="writer")` allows exactly one writer per process. This fires when
-an earlier writer was left unclosed in the same run: close it in a `finally` block, or use
-the `writer` fixture in tests. A leaked writer fails every later writer-opening test in the
+`Substrate.open(path, role="writer")` allows exactly one writer per store, across processes
+(a lock on `<store>.writer-lock`). This fires when an earlier writer was left unclosed, or
+another process holds the store: close it in a `finally` block, or use the `writer` fixture
+in tests. A leaked writer fails every later writer-opening test in the
 same run, which reads as many failures from one root cause.
 
 ### `PariStall` / the suite exits 124
