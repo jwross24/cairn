@@ -1,18 +1,18 @@
 import contextlib
-import ctypes
-import ctypes.util
 import json
 import os
-import signal
-import stat
-import subprocess
+import subprocess as subprocess
 import sys
-import time
+import time as time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from cairn import allowlist, bundle, canon, cli, escrow, exits, keys, log, yank
+from cairn import allowlist, bundle, canon, cli, escrow, exits, keys, log, procwalk, yank
 from cairn.errors import CliError
+from cairn.runner_store import artifacts as _artifacts
+from cairn.runner_store import diverged as _diverged
+from cairn.runner_store import running_attempts as running_attempts
+from cairn.runner_store import startup_scan
 from cairn.substrate import blob_hash
 
 LOG_STEP = "runner"
@@ -171,57 +171,19 @@ def scope_is_verified_complete(scope):
     return scope == SCOPE_TREE
 
 
-def _load_pgrp_lister():
-    if sys.platform == "darwin":
-        path = ctypes.util.find_library("proc")
-        if path is None:
-            return None
-        lib = ctypes.CDLL(path, use_errno=True)
-        fn = lib.proc_listpgrppids
-        fn.argtypes = [ctypes.c_uint32, ctypes.c_void_p, ctypes.c_int]
-        fn.restype = ctypes.c_int
-
-        def darwin(pgid):
-            buf = (ctypes.c_uint32 * PGRP_SAMPLE_CAP)()
-            written = fn(pgid, ctypes.byref(buf), ctypes.sizeof(buf))
-            if written < 0:
-                raise OSError(ctypes.get_errno(), "proc_listpgrppids")
-            return frozenset(buf[i] for i in range(written))
-
-        return darwin
-    if sys.platform.startswith("linux"):
-
-        def linux(pgid):
-            found = set()
-            for entry in Path("/proc").iterdir():
-                if not entry.name.isdigit():
-                    continue
-                try:
-                    stat_line = (entry / "stat").read_text()
-                except OSError:
-                    continue
-                fields = stat_line[stat_line.rfind(")") + 2 :].split()
-                if len(fields) > 2 and fields[2] == str(pgid):
-                    found.add(int(entry.name))
-            return frozenset(found)
-
-        return linux
-    return None
+_PGRP_LISTER, _PROCESS_TABLE = procwalk.load_probes(PGRP_SAMPLE_CAP)
 
 
-_PGRP_LISTER = _load_pgrp_lister()
+def measurement_scope(*, sampled_extra, survivors, killed, sampled, escaped=False):
+    """Classify what an os.wait4 figure covers, from observed process membership.
 
-
-def measurement_scope(*, sampled_extra, survivors, killed, sampled):
-    """Classify what an os.wait4 figure covers, from observed process-group membership.
-
-    Membership sampling misses a descendant born and reaped inside one tick, so a
-    sampled-extra or survivor observation is sound and SCOPE_TREE is the claim the
-    sampling interval bounds.
+    Sampling misses a descendant born and reaped inside one tick, and a descendant
+    reparented between two ticks after leaving the group, so an observation is sound
+    and SCOPE_TREE is the claim the sampling interval bounds.
     """
     if not sampled:
         return SCOPE_UNSAMPLED
-    if killed or survivors:
+    if killed or survivors or escaped:
         return SCOPE_TRUNCATED
     if sampled_extra:
         return SCOPE_REAPED_DESCENDANTS
@@ -277,103 +239,19 @@ def spawn_and_wait(
             grace=grace,
             is_yanked=is_yanked,
         )
-    lg = log.get(LOG_STEP)
-    lg.debug("spawn", argv=list(argv), stdin_digest=blob_hash(stdin_bytes))
-    stdin_path = Path(out_path).with_name("stdin")
-    Path(stdin_path).write_bytes(stdin_bytes)
-    handle_out = Path(out_path).open("wb", buffering=0)
-    handle_err = Path(err_path).open("wb", buffering=0)
-    handle_in = stdin_path.open("rb")
-    try:
-        start = time.monotonic()
-        proc = subprocess.Popen(
-            list(argv),
-            stdin=handle_in,
-            stdout=handle_out,
-            stderr=handle_err,
-            env=env,
-            start_new_session=True,
-            close_fds=True,
-        )
-        pgid = proc.pid
-        sampled = _PGRP_LISTER is not None
-        sampled_extra = False
-        survivors = frozenset()
-        reaped = False
-        terminated_at = None
-        timed_out = False
-        skill_yanked = False
-        status = 0
-        usage = None
-        try:
-            while True:
-                pid, status, usage = os.wait4(proc.pid, os.WNOHANG)
-                if pid == proc.pid:
-                    reaped = True
-                    break
-                if sampled and not sampled_extra:
-                    sampled_extra = bool(_PGRP_LISTER(pgid) - {proc.pid})
-                if is_yanked is not None and is_yanked():
-                    skill_yanked = True
-                elapsed = time.monotonic() - start
-                if terminated_at is None and (skill_yanked or (wall_cap_s is not None and elapsed >= wall_cap_s)):
-                    terminated_at = elapsed
-                    timed_out = not skill_yanked
-                    _signal_group(pgid, proc.pid, signal.SIGTERM)
-                elif terminated_at is not None and elapsed >= terminated_at + grace:
-                    _signal_group(pgid, proc.pid, signal.SIGKILL)
-                remaining = tick if wall_cap_s is None else min(tick, max(0.0, wall_cap_s - elapsed))
-                time.sleep(remaining or tick)
-        finally:
-            if not reaped:
-                _signal_group(pgid, proc.pid, signal.SIGKILL)
-                _, status, usage = os.wait4(proc.pid, 0)
-        if sampled:
-            survivors = _PGRP_LISTER(pgid) - {proc.pid}
-            sampled_extra = sampled_extra or bool(survivors)
-        _signal_group(pgid, proc.pid, signal.SIGKILL)
-        end = time.monotonic()
-        proc.returncode = os.waitstatus_to_exitcode(status)
-    finally:
-        handle_out.close()
-        handle_err.close()
-        handle_in.close()
-    launch = Launch(
-        exit_status=proc.returncode,
-        start_mono=start,
-        end_mono=end,
-        wall_s=end - start,
-        cpu_user_s=usage.ru_utime,
-        cpu_sys_s=usage.ru_stime,
-        peak_rss_bytes=maxrss_bytes(usage.ru_maxrss),
-        timed_out=timed_out,
-        skill_yanked=skill_yanked,
-        argv=tuple(argv),
-        measurement_scope=measurement_scope(
-            sampled_extra=sampled_extra,
-            survivors=survivors,
-            killed=terminated_at is not None,
-            sampled=sampled,
-        ),
+    from cairn import runner_spawn
+
+    return runner_spawn.spawn_and_wait(
+        argv,
+        out_path,
+        err_path,
+        wall_cap_s=wall_cap_s,
+        env=env,
+        stdin_bytes=stdin_bytes,
+        tick=tick,
+        grace=grace,
+        is_yanked=is_yanked,
     )
-    lg.info(
-        "exit",
-        rc=launch.exit_status,
-        wall_ms=round(launch.wall_s * 1000, 3),
-        cpu_s=round(launch.cpu_user_s + launch.cpu_sys_s, 6),
-        rss=launch.peak_rss_bytes,
-        timed_out=timed_out,
-        skill_yanked=skill_yanked,
-    )
-    if terminated_at is not None:
-        lg.warning(
-            "kill",
-            wall_cap_s=wall_cap_s,
-            terminated_at_s=round(terminated_at, 6),
-            wall_s=round(launch.wall_s, 6),
-            rc=launch.exit_status,
-        )
-    return launch
 
 
 class RunnerError(Exception):
@@ -412,61 +290,6 @@ class Attempt:
     diverged: tuple = ()
     allow_list_hash: str | None = None
     writable_root: str | None = None
-
-
-def running_attempts(sub):
-    rows = sub.conn.execute(
-        "SELECT attempt_id FROM attempts WHERE status = 'RUNNING' AND ended_at IS NULL ORDER BY rowid"
-    ).fetchall()
-    return [row["attempt_id"] for row in rows]
-
-
-def startup_scan(sub, *, at=None, dry_run=False):
-    interrupted = running_attempts(sub)
-    if not dry_run:
-        for attempt_id in interrupted:
-            sub.close_attempt(attempt_id, STATUS_INTERRUPTED, ended_at=at)
-            escrow.settle_on_close(sub, attempt_id, STATUS_INTERRUPTED, at=at)
-    log.get(LOG_STEP).info(
-        "startup_scan",
-        interrupted=interrupted,
-        count=len(interrupted),
-        dry_run=dry_run,
-    )
-    return interrupted
-
-
-def _artifacts(sub, stdout_bytes, scratch_dir):
-    lg = log.get(LOG_STEP)
-    artifacts = {"output.json": (sub.put_blob(stdout_bytes), len(stdout_bytes))}
-    root = Path(scratch_dir)
-    for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
-        for name in sorted(dirnames + filenames):
-            path = Path(dirpath) / name
-            if not stat.S_ISREG(os.lstat(path).st_mode):
-                lg.warning(
-                    "artifact_skipped",
-                    path=str(path.relative_to(root)),
-                    reason="not a regular file",
-                )
-                continue
-            artifact_name = str(path.relative_to(root))
-            if artifact_name == "output.json":
-                raise RunnerError("scratch artifact output.json collides with captured stdout")
-            data = path.read_bytes()
-            artifacts[artifact_name] = (sub.put_blob(data), len(data))
-    return artifacts
-
-
-def _diverged(sub, recipe_key):
-    rows = sub.conn.execute(
-        "SELECT output_manifest_hash FROM attempts WHERE recipe_key = ? AND status = 'OK' AND disowned_at IS NULL AND replay_grade = 'Replayable'",
-        (recipe_key,),
-    ).fetchall()
-    manifests = {r["output_manifest_hash"] for r in rows if r["output_manifest_hash"]}
-    if len(manifests) < 2:
-        return ()
-    return tuple(sub.mark_non_reproducible(recipe_key))
 
 
 def launch(

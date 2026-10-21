@@ -15,7 +15,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from cairn import log, runner
+from cairn import log, procwalk, runner
 
 SOURCE = Path(__file__).with_name("rss_reporter.c")
 COMPILER = Path("/usr/bin/cc")
@@ -327,6 +327,7 @@ def spawn_and_wait(argv, out_path, err_path, *, wall_cap_s, env, stdin_bytes, ti
             reports = Reports(proc.pid)
             sampled = runner._PGRP_LISTER is not None
             sampled_extra = False
+            watch = None
             terminated_at = None
             timed_out = False
             skill_yanked = False
@@ -345,6 +346,10 @@ def spawn_and_wait(argv, out_path, err_path, *, wall_cap_s, env, stdin_bytes, ti
                     final_at = elapsed
                 if sampled and worker is not None and not sampled_extra and not acknowledged:
                     sampled_extra = bool(runner._PGRP_LISTER(worker) - {worker})
+                if sampled and worker is not None and not acknowledged:
+                    if watch is None:
+                        watch = procwalk.EscapeWatch(worker, worker, runner._PROCESS_TABLE)
+                    watch.tick()
                 if reports.eof:
                     try:
                         proc.wait(timeout=PROTOCOL_TIMEOUT_S)
@@ -389,7 +394,11 @@ def spawn_and_wait(argv, out_path, err_path, *, wall_cap_s, env, stdin_bytes, ti
         skill_yanked=skill_yanked,
         argv=tuple(argv),
         measurement_scope=runner.measurement_scope(
-            sampled_extra=sampled_extra, survivors=survivors, killed=terminated_at is not None, sampled=sampled
+            sampled_extra=sampled_extra,
+            survivors=survivors,
+            killed=terminated_at is not None,
+            sampled=sampled,
+            escaped=watch is not None and bool(watch.escaped),
         ),
     )
     lg.info(
