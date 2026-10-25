@@ -20,6 +20,8 @@ binaries=$(git diff --cached --numstat --diff-filter=ACMR -z | tr '\0' '\n' | aw
 over=""
 count=0
 while IFS= read -r -d '' path; do
+	# research/intake holds ledgers and records pinned by md5 elsewhere; splitting them breaks those references.
+	case "$path" in research/intake/*) continue ;; esac
 	is_lockfile "$path" && continue
 	grep -qxF -- "$path" <<<"$binaries" && continue
 	is_generated "$path" && continue

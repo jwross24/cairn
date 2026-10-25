@@ -3,7 +3,7 @@
 #
 #   git config core.hooksPath .githooks
 #
-# 0. file-token-limit.sh — no staged file over 5,000 tokens (bytes / 4), no bypass.
+# 0. file-token-limit.sh — no staged file over 5,000 tokens (bytes / 4) outside research/intake, no bypass.
 # 1. scripts/check.sh --fast — format, lint and spelling on the staged paths only;
 #    the tree-wide run is CI's (.github/workflows/ci.yml).
 # 2. The beads compliance audit, for any bead this commit closes.

@@ -7,3 +7,10 @@ research/grounding/paired-rate-ratio-*.json linguist-generated
 research/grounding/deployed-rate-ratio-*.json linguist-generated
 research/grounding/deployed-cpu-ratio-*.json linguist-generated
 research/grounding/test-architecture-2026-09-29/pilot-runs/run-*/profile.json linguist-generated
+research/intake/persistence/**/*.out linguist-generated
+research/intake/persistence/**/*.tsv linguist-generated
+research/intake/persistence/**/*.jsonl linguist-generated
+research/intake/persistence/**/*.json linguist-generated
+research/intake/persistence/**/*.log linguist-generated
+research/intake/persistence/**/*.err linguist-generated
+research/intake/persistence/**/*.gz linguist-generated
