@@ -1,0 +1,25 @@
+enumerated in 923.2s
+gate real: PASSED
+gate planted negative (total+1): GATE REFUSED: node count 440640 != expected 440641
+gate planted negative (family[3]+1): GATE REFUSED: family counts [93312, 46656, 93312, 82944, 41472, 82944] != expected [93312, 46656, 93312, 82945, 41472, 82944] (as multisets)
+enumerated 440640 nodes in 0.0s
+selected 200, already done 0
+processed 50/200 elapsed 2s {'certified': 50}
+processed 100/200 elapsed 4s {'certified': 100}
+processed 150/200 elapsed 6s {'certified': 150}
+processed 200/200 elapsed 7s {'certified': 200}
+DONE processed 200 {'certified': 200} elapsed 7s
+{"max_t": 0.0387, "mean_t": 0.019491, "mean_t_verify": 0.017266, "p50_t": 0.019, "p95_t": 0.0274, "projected_core_hours_A_only": 2.3856984000000003, "projected_core_hours_A_plus_verify_all": 4.4990568, "rows": 200, "sizes": [14, 20], "sum_t": 3.8982, "verdicts": {"certified": 200}, "verified_false": 0, "verified_true": 200}
+node idx 33086 words 6 total 6 certified 0
+node idx 61823 words 6 total 12 certified 0
+node idx 70445 words 6 total 18 certified 0
+node idx 133729 words 6 total 24 certified 0
+node idx 235662 words 6 total 30 certified 0
+node idx 259750 words 6 total 36 certified 0
+node idx 298426 words 6 total 42 certified 0
+node idx 398963 words 6 total 48 certified 0
+node idx 400437 words 6 total 54 certified 0
+node idx 420617 words 6 total 60 certified 0
+PLANTED words=60 refused=60 certified=0 nodes=10
+PLANTED GATE PASSED: every planted word refused
+MARGINS {"D5@246.0183": {"certified": 20}, "D5@255.0": {"certified": 20}, "D5@265.0": {"refused": 20}, "D5@275.0": {"refused": 20}, "D5@281.51": {"refused": 20}, "D6@281.51": {"certified": 20}}

@@ -1,0 +1,9 @@
+secs 846 peak traced MB 211 snapshot MB 211
+/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/base8mem/../../tier0/engine_b.py:436: size=103 MiB, count=1035248, average=104 B
+/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/base8mem/../../tier0/engine_b.py:498: size=71.1 MiB, count=1035170, average=72 B
+/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/base8mem/../../tier0/engine_b.py:500: size=32.0 MiB, count=3, average=10.7 MiB
+/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/base8mem/../../tier0/engine_b.py:122: size=1208 KiB, count=38654, average=32 B
+<frozen importlib._bootstrap_external>:511: size=1162 KiB, count=7512, average=158 B
+/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/base8mem/../../tier0/engine_b.py:442: size=578 KiB, count=5687, average=104 B
+/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/base8mem/../../tier0/engine_b.py:210: size=496 KiB, count=11542, average=44 B
+/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/base8mem/../../tier0/engine_b.py:550: size=400 KiB, count=5685, average=72 B

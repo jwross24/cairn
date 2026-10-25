@@ -1,0 +1,1108 @@
+                                                   ADDITIVE ENERGY OF POLYNOMIAL IMAGES
+
+
+
+
+arXiv:2306.10677v1 [math.NT] 19 Jun 2023
+                                                BRYCE KERR, ALI MOHAMMADI, AND IGOR E. SHPARLINSKI
+
+                                                  Abstract. Given a monic polynomial f (X) ∈ Zm [X] over a
+                                                  residue ring Zm modulo an integer m ⩾ 2 and a discrete inter-
+                                                  val I = {1, . . . , H} of H ⩽ m consecutive integers, considered
+                                                  as elements of Zm , we obtain a new upper bound for the addi-
+                                                  tive energy of the set f (I), where f (I) denotes the image set
+                                                  f (I) = {f (u) : u ∈ I} . We give an application of our bounds to
+                                                  multiplicative character sums, improving some previous result of
+                                                  Shkredov and Shparlinski (2018).
+
+
+
+
+                                                                            Contents
+                                             1. Introduction                                                            2
+                                             1.1. Background                                                            2
+                                             1.2. Main Results                                                          3
+                                             1.3. Application to character sums                                         4
+                                             1.4. Notation                                                              4
+                                             2. Preliminaries                                                           4
+                                             2.1. A general form of the Vinogradov mean value theorem                   4
+                                             2.2. Background on geometry of numbers                                     5
+                                             2.3. Additive equations with polynomials                                   7
+                                             2.4. Small fractional parts of linear forms                               10
+                                             2.5. Bilinear character sums and energy                                   11
+                                             3. Proofs of Main Results                                                 12
+                                             3.1. Proof of Theorem 1.1                                                 12
+                                             3.2. Proof of Theorem 1.2                                                 14
+                                             3.3. Proof of Theorem 1.3                                                 18
+                                             3.4. Proof of Theorem 1.4                                                 23
+                                             Acknowledgements                                                          23
+                                             References                                                                23
+
+
+                                              2010 Mathematics Subject Classification. 11B30, 11B83, 11D72.
+                                              Key words and phrases. Polynomial image, residue ring, Vinogradov mean value
+                                           theorem, multiplicative character sum.
+                                                                                 1
+2           B. KERR, A. MOHAMMADI, AND I. E. SHPARLINSKI
+
+                           1. Introduction
+1.1. Background. Given a polynomial
+(1.1)          f (X) = ad X d + . . . + a1 X + a0 ∈ Zm [X]
+of degree d ⩾ 2 over a residue ring Zm and a discrete interval
+(1.2)                        I = {1, . . . , H}
+of H ⩽ m consecutive integers we consider the image set
+                     f (I) = {f (u) : u ∈ I} ⊆ Zm
+of I , where all calculations are carried-out in Zm .
+   The combinatorial structure of the set f (I) has been studied in a
+number of work. For example, Castro and Chang [4, Theorem 1.1] have
+estimated the multiplicative energy
+              ×
+             Ef,m (I) = #{(v, w, x, y) ∈ f (I)4 : vw = xy}
+(for highly composite square-free moduli m), while Shkredov and Sh-
+parlinski [17, Corollary 2.12] obtained upper bounds on the additive
+energy
+           +
+          Ef,m (I) = #{(v, w, x, y) ∈ f (I)4 : v + w = x + y}
+(for prime moduli m).
+   We also note that since we work in a ring rather than a field, the
+standard trivial bound
+                             #f (I) ⩾ d−1 H
+generally speaking cannot be asserted for highly composite moduli m
+(see [12,13] about the number of solutions to polynomial congruences).
+In fact, it is more convenient to work with a slightly different quantity
+    Tf,m (I) = #{(x, y, z, w) ∈ I 4 :
+                              f (x) + f (y) ≡ f (z) + f (w) mod m}
+for which we have
+                            +
+                           Ef,m (I) ⩽ Tf,m (I)
+                                              +
+and is of the same order of magnitude as Ef,m    (I) for a prime m = p.
+In fact
+                          +
+                        Ef,p (I) ⩾ d−4 Tf,p (I).
+Furthermore, if |I| ⩽ m1/d, it follows from work of Konyagin and
+                  +
+Steger [13] that Ef,m (I) and Tf,m (I) are the same order of magnitude.
+  We note that at least for a prime m, the upper bound on the additive
+energy from Shkredov and Shparlinski [17, Corollary 2.12] implies a
+lower bound on # (f (I) + f (I)). However, here we use a different
+              ADDITIVE ENERGY OF POLYNOMIAL IMAGES                        3
+
+approach, which originates from [6], and allows one to obtain a stronger
+bound.
+   There are also several previous works studying combinatorial proper-
+ties of f (I). In particular, intersections of f (I) with other structural
+sets, such as a discrete interval or a multiplicative subgroup of Z∗m are
+considered in [5–8, 10, 11, 14, 18]. Similar problems in finite fields have
+also been studied in [15, 16].
+1.2. Main Results. Our first bound is nontrivial as long as H ⩽ m1−ε
+where ε > 0 can be arbitrary.
+Theorem 1.1. Let f ∈ Zm [X] be a polynomial of degree d ⩾ 2 as
+in (1.1) with gcd(ad , m) = 1 and let I be an interval as in (1.2).
+Then                                 
+              Tf,m (I) ⩽ H 3+o(1) min (m/H)−αd , H −βd ,
+where
+                          2                         2
+(1.3)          αd = 2                and    βd =       .
+                      d +d−2                      d+2
+  For smaller intervals we obtain a sharper bound which generalises
+the estimate into the setting of the energy of f (I) with an arbitrary
+set. Recall that for two sets A, B
+       E(A, B) = #{a1 , a2 ∈ A, b1 , b2 ∈ B : a1 + b1 = a2 + b2 }.
+Theorem 1.2. Let f ∈ Zm [X] be a polynomial of degree d ⩾ 2 as
+in (1.1) with gcd(ad , m) = 1 and let I an interval as in (1.2). Then
+for any Z ⊆ Zm of cardinality #Z = Z we have
+                                                 
+                              H 2Z 2
+            E(Z, f (I)) ⩽     2/d(d+1)
+                                       + Z(H + Z) H o(1) .
+                             m
+   Considering Tf,m (I) as a special case of E(Z, f (I)) with Z = f (I)
+in Theorem 1.2, we obtain a sharper bound for longer intervals I .
+Theorem 1.3. Let f ∈ Zm [X] be a polynomial of degree d ⩾ 2 as
+in (1.1) with gcd(ad , m) = 1 and let I be an interval as in (1.2). We
+have                                         
+                                 H4
+                 Tf,m (I) ⩽              + H H o(1) .
+                                            2
+                               m4/d(d+1)
+  In particular, if
+                         H ⩽ m2/d(d+1) ,
+then the bound of Theorem 1.2 becomes
+                           Tf,m (I) ⩽ H 2+o(1)
+which is optimal up to the factor H o(1) .
+4             B. KERR, A. MOHAMMADI, AND I. E. SHPARLINSKI
+
+1.3. Application to character sums. Let χ denote a non-principal mul-
+tiplicative character modulo a prime p. As an application of Theo-
+rem 1.3, we prove the following bounds on character sums over primes,
+which improve on results from [17, Theorem 1.7].
+
+Theorem 1.4. Let f ∈ Zp [X] be a polynomial of degree d ⩾ 2. For
+any Q = pζ+o(1) and R = pξ+o(1) with some fixed positive ζ and ξ ⩽
+min{1/2, 2 − 2ζ} satisfying
+
+        ζ + ξ > 1/2,         ξ > 1/2 − 2/d(d + 1),            ζ + 5ξ/2 > 1,
+
+there exists some δ > 0 such that
+
+
+     X       X                          X       X
+                      χ(f (q) + r) ,                     χ(f (q) + r) ⩽ QRp−δ .
+      q⩽Q     r⩽R                        r⩽R     q⩽Q
+    q prime r prime                    r prime q prime
+
+
+   We note that [17, Theorem 1.7] gives the same result under the
+condition 5ζ/4 + 2ξ > 1 for d = 2 and (1 + 2−d+1 )ζ + 2ξ > 1 for d ≥ 3
+in place of the conditions ξ > 1/2 − 2/d(d + 1) and ξ + ζ > 1/2 in
+Theorem 1.4 (the conditions ξ ⩽ min{1/2, 2 − 2ζ} and ζ + 5ξ/2 > 1
+are the same in all results). For example, if ζ = 1/4, for for d = 2
+and d = 3 we now have a nontrivial result if ξ > 3/10 and ξ > 1/3,
+respectively while [17, Theorem 1.7] is nontrivial only for ξ ⩾ 11/32
+(for both values of d).
+
+
+1.4. Notation. We recall that the notations U = O(V ), U ≪ V and
+V ≫ U are equivalent to |U| ⩽ c|V | for some positive constant c,
+which throughout the paper may depend on the degree d of f , the
+integer parameter s ⩾ 1, and the real parameter ε > 0.
+   We denote the cardinality of a finite set S by #S .
+   For a real number z , define e(z) = exp(2πiz).
+
+
+
+                               2. Preliminaries
+2.1. A general form of the Vinogradov mean value theorem. The fol-
+lowing is a consequence of results of Bourgain, Demeter and Guth [2,
+Theorem 4.1] and of Wooley [20, Theorem 1.1].
+               ADDITIVE ENERGY OF POLYNOMIAL IMAGES                                          5
+
+Lemma 2.1. Let d be an integer, s a positive real number with s ⩽
+d(d + 1)/2 and (an )n∈Z a sequence of complex numbers. We have
+                                                   2s
+    Z        X
+                     an e(α1 n + . . . + αd nd )        dα1 . . . dαd
+      [0,1)d |n|⩽H
+                                                                                    s
+                                                                        X
+                                                        ≪ H o(1)               |an |2  .
+                                                                        |n|⩽H
+
+  Let X ⊆ [1, H] ∩ Z be an arbitrary set. For integers d and s we let
+Jk,s(X ) denote the number of solutions to the system of equations
+            xj1 + . . . + xjs = xjs+1 + . . . + xj2s ,           1 ⩽ j ⩽ d,
+with variables satisfying
+                                  x1 , . . . , x2s ∈ X .
+  The following is an immediate corollary of Lemma 2.1.
+Lemma 2.2. For s ⩽ d(d + 1)/2, for and set X ⊆ [1, H] ∩ Z of cardi-
+nality X
+                       Jd,s (X ) ≪ X s H o(1) .
+2.2. Background on geometry of numbers. We next recall some facts
+from the geometry of numbers. Given a lattice L ⊆ Rn and a sym-
+metric convex body D ⊆ Rn , define the i-th successive minimum of L
+with respect to D by
+    λi = inf{λ : L ∩ λD contains i linearly independent points}.
+  The following basis is known as a Mahler basis, see [19, Theorem
+3.34, Corollary 3.35].
+Lemma 2.3. Given a lattice L ⊆ Rn and a convex body B ⊆ Rn , let
+λ1 , . . . , λn denote the successive minima of L with respect to B . There
+exists a basis w1 , . . . , wn of L such that
+                                     nλj
+                                   wj ∈  · B,
+                                      2
+and each b ∈ L ∩ B can be expressed in the form
+                                              1
+         b = b1 w1 + . . . + bn wn ,     bj ≪ , j = 1, . . . , n.
+                                              λj
+  The following is Minkowski’s second theorem, for a proof see [19,
+Theorem 3.30].
+6            B. KERR, A. MOHAMMADI, AND I. E. SHPARLINSKI
+
+
+Lemma 2.4. Given a lattice L ⊆ Rn and a symmetric convex body
+D ⊆ Rn , let λ1 , . . . , λn denote the successive minima of L with respect
+to D . We have
+                         µ(D)            1          µ(D)
+                                ≪               ≪          ,
+                     µ(Rn /L)       λ1 . . . λn   µ(Rn /L)
+where µ denotes the Lebesgue measure.
+  We may bound the number of lattice points # (L ∩ D) in terms of
+the successive minima, see for example [19, Exercise 3.5.6].
+Lemma 2.5. Given a lattice L ⊆ Rn and a symmetric convex body
+D ⊆ Rn , let λ1 , . . . , λn denote the successive minima of L with respect
+to D . We have
+                                       Yn             
+                                                    1
+                         # (L ∩ D) ≪       max 1,        .
+                                       j=1
+                                                   λ j
+
+    Define the dual lattice L∗ by
+(2.1)           L∗ = {y ∈ Rn : hy, zi ∈ Z for all z ∈ L},
+and the dual body D ∗ by
+(2.2)           D ∗ = {y ∈ Rn : hy, zi ⩽ 1 for all z ∈ D },
+where h·, ·i denotes the Euclidean inner product.
+  The successive minima of a lattice with respect to a convex body
+and the successive minima of the dual lattice with respect to the dual
+body are related through the following estimates, see for example [1].
+Lemma 2.6. Given a lattice L ⊆ Rn and a symmetric convex body
+D ⊆ Rn , let λ1 , . . . , λn denote the successive minima of L with respect
+to D and let λ∗1 , . . . , λ∗n denote the successive minima of the dual lattice
+L∗ with respect to the dual body D ∗ . For each 1 ⩽ j ⩽ n we have
+                               λj λ∗n−j+1 ≪ 1.
+  We also require the following generalisation of Siegel’s Lemma due
+to Bombieri and Vaaler [3, Theorem 2].
+                    Pd
+Lemma 2.7. Let        i=1 vj,i wi = 0, j = 1, . . . , d0 be a system of d0 lin-
+early independent equations in d > d0 unknowns, with rational integer
+coefficients vj,i . Then, there are d − d0 linearly independent integral
+solutions w̃j = (wj,1, . . . , wj,d), 1 ⩽ j ⩽ d − d0 , with
+             d−d
+             Y0                        p                 1/(d−d0 )
+                   max |wj,i | ⩽ D −1 | det(MM T )|                  ,
+                   i
+             j=1
+               ADDITIVE ENERGY OF POLYNOMIAL IMAGES                              7
+
+where M denotes the d0 × d matrix M = (vj,i ) and D is the greatest
+common divisor of determinants of all d0 × d0 minors of M .
+2.3. Additive equations with polynomials.
+Lemma 2.8. Let f ∈ Z[X] be a polynomial of degree d ⩾ 2. For any
+w 6= 0, the number of solutions to the equation
+(2.3)               f (n) − f (m) = w,      1 ⩽ n, m ⩽ H,
+is bounded by w o(1) .
+Proof. By Taylor’s formula, it follows that
+                          f (x) − f (y) = (x − y)g(x, y),
+where for any t, the polynomial Gt (x) = g(x, x + t) is not constant.
+  For any solution n, m to (2.3), there exists d1 , d2 satisfying
+                                    d1 d2 = w,
+and
+(2.4)                     n − m = d1 ,    g(n, m) = d2 .
+Let R count the number of solutions to (2.3). The well known bound
+on the divisor function (see, for example, [9, Equation (1.81)]) implies
+that
+   R ⩽ w o(1) max #{1 ⩽ n, m ⩽ H : n − m = d1 , g(n, m) = d2 }.
+              d1 ,d2 ∈Z
+
+If n, m satisfy (2.4), then
+                               g(d1 + m, m) = d2 ,
+for which there are O(1) solutions in variable m. For each such m,
+there exists at most one solution in remaining variable n. This estab-
+lishes the desired result.                                          ⊔
+                                                                    ⊓
+  We now immediately derive the following.
+Corollary 2.9. Let f ∈ Z[X] be a polynomial of degree d ⩾ 2 with
+coefficients bounded by X . For any H ⩾ 1, we have
+ #{1 ⩽ x, y, z, w ⩽ H : f (x) + f (y) = f (z) + f (w)} ⩽ H 2 (HX)o(1) .
+Proof. The result follows from Lemma 2.8 after noting
+   #{1 ⩽ x, y, z, w ⩽ H : f (x) + f (y) = f (z) + f (w)}
+                                                                X
+                                                       ≪ H2 +          r(w)2 ,
+                                                                w6=0
+
+where
+              r(w) = #{1 ⩽ x, y ⩽ H : f (x) − f (y) = w}.
+8            B. KERR, A. MOHAMMADI, AND I. E. SHPARLINSKI
+
+In particular, since if r(w) 6= 0 then |w| ≪ XH d and hence by
+Lemma 2.8
+            X                    X
+                r(w)2 ⩽ (XH)o(1)    r(w) ⩽ H 2 (XH)o(1) .
+             w6=0                      w6=0
+
+                                                                            ⊔
+                                                                            ⊓
+    We next prove an analogue of Lemma 2.8 for congruences.
+Lemma 2.10. Let m be an integer, f a polynomial of degree d ⩾ 2
+with leading coefficient ad coprime to m. There exists a constant cd
+depending only on d such that if
+(2.5)                        H ⩽ cd m2/d(d+1)
+then for any λ 6≡ 0 mod m the number of solutions to
+(2.6)           f (n) − f (m) ≡ λ mod m,            1 ⩽ m, n ⩽ H
+is bounded by H o(1) .
+Proof. Let W count the number of solutions to (2.6).
+  Suppose f is given by
+                                       d
+                                       X
+                             f (x) =          aj xj .
+                                        j=1
+
+Since (ad , m) = 1, by modifying λ if necessary we may assume that
+ad = 1.
+  Define the lattice
+L = {(n1 , . . . , nd ) ∈ Zd : ∃ℓ such that aj ℓ ≡ nj     mod m 1 ⩽ j ⩽ d},
+and convex body
+                    n                             m o
+                                         d
+           B = (x1 , . . . , xd ) ∈ R : |xj | ⩽         .
+                                                100dH j
+By Lemma 2.4 and the condition (2.5)
+                                 L ∩ B 6= {0}.
+Let (b1 , . . . , bd ) ∈ L ∩ B/{0} and choose ℓ 6≡ 0 mod m to satisfy
+(2.7)                aj ℓ ≡ bj    mod m,        1 ⩽ j ⩽ d.
+Multiplying the congruence (2.6) by ℓ, using (2.7) and the fact that
+(b1 , . . . , bd ) ∈ B , we see that there exists an integer w such that W is
+bounded by the number of solutions to
+          d
+          X               
+(2.8)           bj nj − mj = w         and          f (m) 6≡ f (n) mod m,
+          j=1
+               ADDITIVE ENERGY OF POLYNOMIAL IMAGES                         9
+
+with variables satisfying 1 ⩽ m, n ⩽ H . Note the condition f (m) 6≡
+f (n) mod m follows from (2.6) and the fact that λ 6≡ 0 mod m. If
+W 6= 0 then we may assume w 6= 0, since if W 6= 0 and w = 0 then
+from (2.8), there exists some pair (m, n) satisfying
+                d
+                X
+           0≡         bj (nj − mj ) ≡ f (n) − f (m) 6≡ 0 mod m,
+                j=1
+
+giving a contradiction.
+  Define
+                     M = {(n, m) : (2.8) holds}.
+Fix some (n0 , m0 ) ∈ M and consider
+               n                   d                 o
+       M∗ = ni − mi − (ni0 − mi0 i=1 ∈ Zd : (n, m) ∈ M .
+Let V denote the vector space over Q generated by M∗ . Note that
+                                    dim V < d,
+since every point of V is orthogonal to (b1 , . . . , bd ). Define d0 by
+                                   dim V = d0 .
+For each 1 ⩽ j ⩽ d0 choose nonzero points
+                                            d
+                ṽj = nij − mij − (ni0 − mi0 i=1 ∈ M∗ ,
+such that ṽ1 , . . . , ṽd0 are linearly independent over Q and generate V as
+a vector space. Let M denote the matrix whose columns are ṽ1 , . . . , ṽd0
+and consider the orthogonal complement
+                V ∗ = {x = (x1 , . . . , xd ) ∈ Qd : xM = 0}.
+  By Lemma 2.7, we see that V ∗ has a basis w̃1 , . . . , w̃d−d0 which
+satisfies
+(2.9)              w̃j = (wj,1, . . . , wj,d),    wj,i = H O(1) ,
+and
+                  d
+                  X                         d
+                                            X
+                              i       i
+(2.10)                  wj,i (n − m ) =           wj,i (ni0 − mi0 ),
+                  i=1                       i=1
+
+for each (n, m) ∈ M and 1 ⩽ j ⩽ d − d0 . We next show there exists
+some 1 ⩽ j ⩽ d − d0 such that
+                            d
+                            X
+                                  wj,i (ni0 − mi0 ) 6= 0.
+                            i=1
+10             B. KERR, A. MOHAMMADI, AND I. E. SHPARLINSKI
+
+Since (b1 , . . . , bd ) ∈ V ∗ , there exists λ1 , . . . , λd−d0 ∈ Q such that
+                                                         d−d
+                                                         X0
+                                  (b1 , . . . , bd ) =         λj w̃j .
+                                                         j=1
+
+Hence
+                 d
+                 X                              d−d
+                                                X0          d
+                                                            X
+                       bi (ni0 − mi0 ) =               λj         wj,i (ni0 − mi0 ).
+                 i=1                            j=0         i=1
+
+Since (m0 , n0 ) ∈ M, we have
+                                                d
+                                                X
+                              0 6= w =                bi (ni0 − mi0 ),
+                                                i=1
+
+which combined with the above implies that
+                                        d
+                                        X
+                           w =∗
+                                              wj0 ,i (ni0 − mi0 ) 6= 0,
+                                        i=1
+
+for some 1 ⩽ j0 ⩽ d − d0 . From (2.10), we see that each pair (m, n) ∈
+M satisfies
+                       Xd
+(2.11)                     wj0 ,i (ni − mi ) = w ∗ .
+                                  i=1
+
+By (2.9), we have w ∗ = H O(1) and the result follows from Lemma 2.8
+provided wj0,i 6= 0 for some i ⩾ 2. If wj0,i = 0 for all i ⩾ 2 then (2.11)
+implies that each pair (m, n) ∈ M satisfies
+(2.12)                                   n = m + w ∗∗ ,
+for some w ∗∗ ∈ N. Substituting (2.12) into (2.8), and recalling that
+by (2.7) bd 6= 0, we obtain that W = O(1) which completes the
+proof.                                                             ⊔
+                                                                   ⊓
+2.4. Small fractional parts of linear forms.
+Lemma 2.11. Let d be an integer and mi,j , 1 ⩽ i, j ⩽ d, be a sequence
+of integers such that the matrix M with (i, j)-th entry mi,j satisfies
+                                              det M 6= 0.
+For any ε1 , . . . , εd > 0
+                                                                                    
+ µ {(t1 , . . . , td ) ∈ [0, 1]d : {m1,j t1 + . . . + md,j td } ⩽ εj , 1 ⩽ j ⩽ d}
+                                                                         ≪ ε1 . . . εd ,
+where µ denotes the Lebesgue measure.
+                 ADDITIVE ENERGY OF POLYNOMIAL IMAGES                                     11
+
+Proof. For each 1 ⩽ j ⩽ d, let fj be a 1-periodic function satisfying
+                                  fj (x) ≫ 1,               |x| ⩽ εj ,
+with Fourier expansion
+                                                X
+                                  fj (x) =                 aj,ℓ e(ℓx),
+                                                ℓ∈Z
+
+and aj,ℓ satisfying
+                                                  X
+(2.13)                         aj,0 ≪ εj ,                  |aj,ℓ | < ∞.
+                                                       ℓ
+
+Define
+S = {(t1 , . . . , td ) ∈ [0, 1]d : {m1,j t1 + . . . + md,j td } ⩽ εj , 1 ⩽ j ⩽ d},
+so that
+                           Z    d
+                                Y
+          µ(S) ≪                        fj (m1,j t1 + . . . + md,j td )dt1 . . . dtd .
+                           [0,1]d j=1
+
+Expand each fj into a Fourier series to get
+                                   Z    d       d
+                                                           !
+           X                           X        X
+ µ(S) ≪          a1,ℓ1 . . . ad,ℓd   e     tr (   mr,j ℓj ) dt1 . . . dtd .
+           ℓ1 ,...,ℓd ∈Z                      [0,1]d          r=1        j=1
+
+Since each mi,j ∈ Z, by orthogonality of the exponential function
+                              X
+                  µ(S) ≪              |a1,ℓ1 . . . ad,ℓd |.
+                                         ℓ ,...,ℓd ∈Z
+                                        Pd 1
+                                         j=1 mr,j ℓj =0
+                                            1⩽r⩽d
+
+Using the assumption det M 6= 0, the only term in the above sum
+corresponds to (ℓ1 , . . . , ℓd ) = 0 and the result follows from (2.13). ⊔
+                                                                          ⊓
+
+2.5. Bilinear character sums and energy. To prove Theorem 1.4, we
+require the bound of [17, Corollary 1.3] on the bilinear multiplicative
+character sums
+                                  XX
+               Wχ (I, S; α, β) :=        αs βx χ(s + x),
+                                                 s∈S x∈I
+
+where I = [1, H] ⊂ Zp , S ⊆ Zp is an arbitrary set of cardinality
+#S = S , and α = {αs }s∈S , β = {βx }x∈I are sequence of complex
+weights with
+(2.14)           |αs | ⩽ 1,        s ∈ S,                  and      |βx | ⩽ 1,   x ∈ I.
+12            B. KERR, A. MOHAMMADI, AND I. E. SHPARLINSKI
+
+
+Lemma 2.12. Given an interval I = [1, H] of length H < p and a set
+S ⊆ Z∗p of size #S = S with
+(2.15)                 S 2 H ⩽ p2         and           H < p1/2
+and complex weights α = {αs }s∈S and β = {βx }x∈I satisfying (2.14),
+for any fixed integer r ⩾ 1 such that H ⩾ p1/r , we have
+ Wχ (I, S; α, β)
+                                              1/4r
+                E(S)p(r+1)/r p(r+2)/r p(r+2)/r
+      ≪ SH                  +        + 2 2           po(1) + S 1/2 H .
+                  S 4H 2      SH 5/2   S H
+
+                       3. Proofs of Main Results
+3.1. Proof of Theorem 1.1. For an integer s ⩾ 1 we denote by Ts the
+number of solutions to the congruence
+(3.1)       f (x1 ) + . . . + f (xs ) ≡ f (xs+1 ) + . . . + f (x2s )   mod m,
+with variables satisfying x1 . . . , x2s ∈ I, so that
+                                    Tf,m (I) = T2 .
+     Now we define K ⩾ 1 by the equation
+(3.2)                               T2 = H 3 /K.
+     Let
+              R(λ) = #{(x1 , x2 ) ∈ I 2 : f (x1 ) + f (x2 ) = λ}.
+Using that                   X                    X
+                     H2 =           R(λ) =                    R(λ),
+                             λ∈Zm             λ∈f (I)+f (I)
+
+by the Cauchy–Schwarz inequality, we derive from (3.2) that
+                                  X
+         H 4 ⩽ # (f (I) + f (I))        R(λ)2
+                                        λ∈f (I)+f (I)
+
+               = # (f (I) + f (I)) T2 = # (f (I) + f (I)) H 3 /K.
+Therefore, we have
+(3.3)                       # (f (I) + f (I)) ⩾ HK.
+We now obtain a lower bound on K .
+  It has been shown in [17, Equation (2.26)] that expressing Ts via
+exponential sums and using the Hölder inequality, for any integer s ⩾ 2
+we have
+                  T2s−1 ⩽ Ts (#f (I))s−2 ≪ H s−2Ts .
+                ADDITIVE ENERGY OF POLYNOMIAL IMAGES                                      13
+
+Hence from (3.2) we derive
+(3.4)                            Ts ≫ H 2s−1 /K s−1 .
+  From now on the proof essentially follows that of [7, Theorem 1].
+Namely, writing
+(3.5)       λj = xj1 + . . . + xjs − xjs+1 − . . . − xj2s ,          j = 1, . . . , d,
+we see that λj ∈ [−sH j , sH j ]. We also see that for any solution to (3.1)
+we have the linear congruence
+                        ad λd + . . . + a1 λ1 ≡ 0 mod m
+For each of O(H d(d−1)/2 ) choices of
+            (λ1 , . . . , λd−1 ) ∈ [−sH, sH] × . . . [−sH d−1 , sH d−1 ],
+we see that for any solution to (3.1) we have
+                                 ad λd ≡ ξ      mod m
+for some ξ depending only on λ1 , . . . , λd−1 . Since gcd(ad , m) = 1, we
+conclude that λd can take O(H d/m + 1) possible values. We now see
+that for some integers µ1 , . . . , µd
+                                  
+(3.6)       Ts ≪ H d /m + 1 H d(d−1)/2 Jd,s (µ1 , . . . , µd ; H),
+where Id,s (λ1 , . . . , λd ; H) is the number of solutions to the system of
+equations (3.5) in variables 1 ⩽ x1 . . . , x2s ⩽ H . As in [7, Equa-
+tion (13)], a standard argument shows that
+(3.7)      Id,s (λ1 , . . . , λd ; H) ⩽ Id,s (0, . . . , 0; H) = Jd,s ({1, . . . , H}).
+     Thus, combining (3.6) and (3.7), we derive
+              Ts ≪ (H d /m + 1)H d(d−1)/2+1 Jd,s ({1, . . . , H}).
+Hence, Lemma 2.2, taken with
+                s = d(d + 1)/2            and        X = {1, . . . , H}
+yields
+(3.8)      Ts ⩽ (H d /m + 1)H 2s−d+1+o(1) = H 2s+o(1) /m + H 2s−d+o(1) .
+Combining (3.4) and (3.8) we obtain
+                   K −s+1 H 2s−1 ⩽ H 2s+o(1) /m + H 2s−d+o(1)
+or
+                 K −s+1 ⩽ H 1+o(1) /m + H −d+1+o(1) .
+With the above choice of s, we obtain
+                           
+                 K ⩾ min (m/H)αd , H βd H o(1) ,
+14            B. KERR, A. MOHAMMADI, AND I. E. SHPARLINSKI
+
+where αd and βd are given by (1.3), which together with (3.3) concludes
+the proof.
+
+3.2. Proof of Theorem 1.2. Define ρ(w) to be the number of solutions
+to the congruence
+                   w ≡u−v        mod m,         u, v ∈ f (I).
+     Let r(w) denote the number of solutions
+(3.9)            w ≡ f (x) − f (y) mod m,               x, y ∈ I,
+and let Xw denote the set of x ∈ I such that there exists y ∈ I
+satisfying the above congruence. Trivially, for w 6≡ 0 mod m we have
+(3.10)                     f (x) 6≡ f (y) mod m
+for each solution (x, y) to (3.9). It is clear that ρ(w) ⩽ r(w) for all
+w ∈ Zm and
+                                            m−1
+                                            X
+(3.11)             E+ (Z, f (I)) = HZ +           R(w)ρ(w),
+                                            w=1
+
+where R(w) counts the number of solutions to
+                        z1 − z2 = w,       z1 , z2 ∈ Z.
+  Note that by Lemma 2.10, if H ⩽ mcd for some constant cd then
+r(w) = H o(1) , so that (3.11) implies
+                                                      m−1
+                                                      X
+                                               o(1)
+                   E+ (Z, f (I)) = HZ + H                   R(w)
+                                                   w=1
+                                               o(1) 2
+                                 = HZ + H             Z .
+It is sufficient to assume H ⩾ mcd and hence establish that
+                                                   
+                                 H 2Z 2
+              E+ (Z, f (I)) =             + Z(H + Z) mo(1) .
+                                m2/d(d+1)
+Assume without loss of generality, that
+                        ad = 1       and       a0 = 0.
+     Fix 1 ⩽ w ⩽ m − 1 and consider r(w).
+     Let s = d(d + 1)/2. We define the intervals
+                   Ij = [−sH j , sH j ],      j = 1, . . . , d,
+and consider the set
+                         Sw ⊆ I1 × . . . × Id ⊆ Zd ,
+                 ADDITIVE ENERGY OF POLYNOMIAL IMAGES                                     15
+
+of all the d-tuples
+(3.12)              x = (x1 + . . . + xs , . . . , xd1 + . . . + xds ),
+such that xi ∈ Xw .
+  For each x we let I(x) count the number of representations of x in
+the form (3.12) with variables x1 , . . . , xs ∈ X . Thus
+                           X
+                                I(x) = Xws ,
+                                   x∈Sw
+
+where
+                                       Xw = #Xw
+and                            X
+                                      I(x)2 = Jd,s (Xw ) ,
+                              x∈Sw
+with Jd,s (Xw ) is as in Section 2.1. By Lemma 2.2 we have,
+                          X
+                               I(x)2 ⩽ Xws H o(1) ,
+                               x∈Sw
+
+and from the Cauchy–Schwarz inequality
+                                                                    !1/2
+                           X                          X
+                  Xws =           I(x) ⩽     #Sw            I(x)2          ,
+                           x∈Sw                      x∈Sw
+
+we see that
+(3.13)                            #Sw ⩾ Xws H o(1) .
+  Define the lattice
+           
+       L = (v1 , . . . , vd , w1 , . . . , wd ) ∈ Z2d :
+                                           d
+                                           X                                
+                                                 ai (vi − wi ) ≡ 0     mod m ,
+                                           i=1
+
+where a1 , . . . , ad are non-constant coefficients of f in (1.1) and the
+convex body
+ D = {(g1 , . . . , gd , h1 , . . . , hd ) ∈ R2d : |gi |, |hi | ⩽ sH i , i = 1, . . . , d}.
+  It follows from (3.13) that
+(3.14)                        Xws ≪ # (L ∩ D) H o(1) .
+ Let λ1 , . . . , λ2d denote the successive minima of L with respect to
+D.
+ We consider two cases depending on if λ2d < 1 or not.
+16              B. KERR, A. MOHAMMADI, AND I. E. SHPARLINSKI
+
+     First consider the case
+                                           λ2d < 1.
+By Lemmas 2.4 and 2.5
+                                                      H d(d+1)
+                                 # (L ∩ D) ≪                   ,
+                                                         m
+and hence by (3.14) we have
+                                                 H 2+o(1)
+                                      Xw ⩽                ,
+                                                  m1/s
+which by (3.14) implies
+                                            H 2+o(1)
+                                     ρ(w) ⩽          .
+                                             m1/s
+     Consider next when
+(3.15)                                     λ2d ⩾ 1.
+Recalling (2.1) and (2.2), we see that the dual lattice L∗ and the dual
+body D ∗ are given by
+         1n
+  L∗ =       (u1, . . . , ud , z1 , . . . , zd ) ∈ Z2d :
+         m                                                                 o
+                                   ai ud ≡ −zi ≡ ui mod m, i = 1, . . . , d ,
+
+and
+            (                                               d
+                                                                                        )
+                                                            X
+     D∗ =    (g1 , . . . , gd , h1 , . . . , hd ) ∈ R2d :         sH i (|hi | + |gi |) ⩽ 1 .
+                                                            i=1
+
+     If λ∗1 denotes the first successive minimum of L∗ with respect to D ∗ ,
+then by (3.15) and Lemma 2.6 there exists some constant c depending
+only on d such that
+                              λ∗1 ⩽ c
+which in turn implies
+                                       L∗ ∩ cD ∗ 6= ∅.
+Hence there exist u1 , . . . , ud ∈ Z such that
+(3.16)                             ai ud ≡ ui       mod m,
+and
+                                          m
+(3.17)                          |ui | ≪      ,      1 ⩽ i ⩽ d.
+                                          Hi
+              ADDITIVE ENERGY OF POLYNOMIAL IMAGES                   17
+
+Recalling (3.10), we now see that
+                 
+       r(w) ⩽ # x, y ∈ I : fe(x) − fe(y) ≡ µ mod m,
+                                            f (x) 6≡ f (y) mod m ,
+
+where µ ≡ ud w mod m, 0 ⩽ µ < m, and
+
+                    fe(x) = u1 x + u2 x2 + . . . + ud xd .
+
+  Recalling (3.16), we obtain
+
+                         fe(x) − fe(y) = µ + tm,
+
+for some t ∈ Z.
+   If x, y ∈ I , we see from (3.17) that
+
+                            f (x) − f (y) ≪ m
+
+and thus t takes only O(1) possible values. Hence there exists some
+integer µ0 such that
+             n                                                  o
+   r(w) ≪ # x, y ∈ I : fe(x) − fe(y) = µ0 , f (x) 6≡ f (y) mod m .
+
+Note if µ0 = 0 then the conditions f (x) 6≡ f (y) mod m and 1 ⩽ ud ⩽
+m − 1 imply that r(w) = 0. Hence we may suppose µ0 6= 0.
+  It follows from Lemma 2.8 and the inequality H ⩽ m that
+
+(3.18)             r(w) ⩽ w o(1) ⩽ (mH)o(1) = mo(1) .
+
+Combining (3.18) with (3.11) and using
+                             m−1
+                             X
+                                   R(w) ⩽ Z 2 ,
+                             w=1
+
+gives
+                                                   m−1
+                                                     X
+                                     H2         o(1)
+           E+ (Z, f (I)) = HZ +          + 1   m         R(w)
+                                    m1/s             w=1
+                                                   
+                              H 2Z 2
+                         =             + Z(H + Z) mo(1) ,
+                             m2/d(d+1)
+
+which concludes the proof.
+18             B. KERR, A. MOHAMMADI, AND I. E. SHPARLINSKI
+
+3.3. Proof of Theorem 1.3. As in the proof of Theorem 1.2, we may
+suppose H ⩾ mcd for some constant cd and that
+                                  ad = 1,       a0 = 0.
+Consider the lattice
+               (                                d
+                                                                        )
+                                                X
+                                         d
+            L=       (v1 , . . . , vd ) ∈ Z :         ai vi ≡ 0   mod m ,
+                                                i=1
+
+and the convex body
+             D = {(g1 , . . . , gd ) ∈ Rd : |gi | ⩽ H i , i = 1, . . . , d}.
+Let λ1 , . . . , λd denote the successive minima of L with respect to D .
+We consider two cases depending on whether
+(3.19)                                   λd > 1
+or
+(3.20)                                   λd ⩽ 1.
+  If (3.19) holds, then there exists a constant c depending only on d
+such that for the dual lattice and body we have
+                                    L∗ ∩ cD ∗ 6= 0.
+Arguing as in the proof of Theorem 1.2, we obtain a polynomial
+                             g(x) = u1 x + . . . + udxd ,
+with ud 6= 0 and coefficients bounded by m such that
+      Tf,m (I) ≪ #{1 ⩽ x, y, z, w ⩽ H : g(x) − g(y) = g(w) − g(z)}.
+Hence from Corollary 2.9
+                                Tf,m (I) ⩽ H 2 mo(1) .
+     Consider next (3.20). By Lemma 2.3, there exists a basis
+                         vj = (v1,j , . . . , vd,j ) ∈ L ∩ λj D,
+such that each b ∈ L ∩ D can be expressed in the form
+                                             1
+(3.21)       b = b1 v1 + . . . + bd vd , bj ≪ , j = 1, . . . , d.
+                                             λj
+     For an integer x we use x
+                             e to denote the following vector
+                                 e = (x, x2 , . . . , xd ).
+                                 x
+     Let ϕ be a smooth function with support
+                                  supp ϕ ⊆ [−2, 2]
+               ADDITIVE ENERGY OF POLYNOMIAL IMAGES                                     19
+
+and satisfying
+                          ϕ(x) ≫ 1, |x| ⩽ 1.
+Let K be a large integer to be determined later. Using orthogonality
+of exponential functions, it follows that for a constant c, depending on
+the implied constants in (3.21), and hence only on d,
+               X            X Y      d
+           1
+Tf,m (I) ≪ d                            ϕ(cλj hj )
+          K h ,...,h ∈Z x ,...,x ⩽H j=1
+                 1      d       1   4
+                 Z                                                   d
+                                                                                    !
+                                                                     X
+                                e he    e2 − x
+                                   x1 + x    e3 − x
+                                                  e4 , yi +                hj hvj , yi dy,
+                     y∈[0,K]d                                        j=1
+
+where, as in the above h∗, ∗i denotes the Euclidean inner product and
+                     y = (y1 , . . . , yd),   ej = (xj , . . . , xdj )
+                                              x
+(as in the above convention).
+   Note that we have used periodicity of the exponential function to
+integrate over the large cube [0, K]d . Our next step is to reduce the
+above to a counting problem involving a fundamental domain for L∗
+and having such a large range of integration simplifies some technical
+issues.
+   Consider first summation over h1 , . . . , hd . By Poisson summation
+        X                                1 X
+             ϕ(cλj hj ) e(hj hvj , yi) ≪         |ϕ
+                                                  b ((hvj , yi − h) /λj )| .
+        h ∈Z
+                                         λ j
+                                             h∈Z
+          j
+
+Repeated integration by parts shows that for any small ε > 0 and large
+constant C
+                                   1
+                    ϕb (x/λj ) ≪ 2 C unless |x| ⩽ λj mε .
+                                 xm
+Since λ1 , . . . , λd ⩽ 1, this implies
+                                        (
+     X                                   λ−1 if {hvj , yi} ⩽ λj mε ,
+                                          j
+          ϕ (cλj hj ) e (hj hvj , yi) ≪
+     h ∈Z
+                                         m−C otherwise
+      j
+
+
+where {ξ} denotes the fractional part of ξ ∈ R.
+  Define the set
+                 
+(3.22)     V ∗ = y ∈ [0, K]d : {hvj , yi} ⩽ λj mε , j = 1, . . . , d ,
+and let µ denote the Lebesgue measure in Rd . The above implies
+                                  Z       X
+                                                        4
+                       1       1
+        Tf,m (I) ≪                                x, yi) dµ (y)
+                                               e(he
+                   λ1 . . . λd K d y∈V ∗ 1⩽x⩽H
+20             B. KERR, A. MOHAMMADI, AND I. E. SHPARLINSKI
+
+and hence by Hölder’s inequality, we have
+                       1       µ(V ∗ )1−4/d(d+1)
+      Tf,m (I) ≪
+                   λ1 . . . λd        Kd
+                                                                   
+                              Z                               d(d+1) 4/d(d+1)
+                                        X
+                                                x, yidµ (y))
+                                              e(he                           .
+                             [0,K]d 1⩽x⩽H
+
+By Lemma 2.1 and the fact that
+   Z     X
+                              d(d+1)
+
+                 x, yidµ (y))
+              e(he
+       [0,K]d 1⩽x⩽H
+
+                                           Z        X
+                                                                              d(d+1)
+                                       d
+                                 =K                            x, yidµ (y))
+                                                            e(he                       ,
+                                             [0,1]d 1⩽x⩽H
+
+we derive
+                                    1      µ(V ∗ )1−4/d(d+1) 2+o(1)
+(3.23)             Tf,m (I) ⩽                               H       .
+                                λ1 . . . λd K d(1−4/d(d+1))
+We next estimate the measure µ(V ∗ ). By Lemma 2.3, we may choose
+a basis v1∗ , . . . , vd∗ for L∗ satisfying
+                                               dλ∗j ∗
+(3.24)                               vj∗ ∈         D .
+                                                2
+Consider the fundamental domain
+(3.25)          Rd /L∗ = {t1 v1∗ + . . . + td vd∗ : 0 ⩽ t1 , . . . , td < 1}.
+We have
+                                                      1    1
+(3.26)                 µ(Rd /L∗ ) = det L∗ =              = .
+                                                    det L  m
+Let L∗0 denote the set
+(3.27)             L∗0 = {b ∈ L∗ : b + Rd /L∗ ∩ [0, K]d 6= ∅}.
+     By (3.24) and the fact that
+                                     d h
+                                 ∗
+                                    Y    c0 c0 i
+                                D ⊆     − j, j
+                                    j=1
+                                         H H
+
+for some absolute constant c0 . It follows from (3.25) that
+                               Yd                   
+                      d  ∗             c0 λ∗d c0 λ∗d
+                    R /L ⊆          − j , j ,
+                               j=1
+                                        H      H
+                ADDITIVE ENERGY OF POLYNOMIAL IMAGES                             21
+
+which by Lemma 2.6 implies
+                                  Yd                 
+                                d       ∗c1     c1
+                           R /L ⊆     −       ,         ,
+                                  j=1
+                                        λ1 H j λ1 H j
+
+for some constant c1 depending only on d. Since
+                                            L ∩ λ1 D 6= {0},
+it follows that
+                                                        1
+                                               λ1 ≫        ,
+                                                        Hd
+which implies
+                                             d
+                                             Y
+                            d       ∗
+                                                                       
+                          R /L ⊆                    −c2 H d−j , c2 H d−j .
+                                             j=1
+
+Recall (3.27) and note that if b ∈ L∗0 then
+                                    b ∈ [0, K]d − Rd /L∗ .
+Hence
+                     L∗0 ⊆ [−c0 H d , K + c0 H d ]d ,
+for some constant c2 depending only on d. Choosing
+                                               K = emH ,
+we see that
+                                          
+    #L∗0 ⩽ # [−C log K, K + C log K]d ∩ L∗ = m(1 + o(1))K d ,
+as K → ∞.
+  Note that each x ∈ Rd has a unique expression in the form
+                        x = ℓ+e
+                              t,                    ℓ ∈ L∗ ,   e
+                                                               t ∈ Rd /L∗ ,
+and hence                                   X
+                         µ(V ∗ ) =                 µ(V ∗ ∩ (ℓ + Rd /L∗ )).
+                                            ℓ∈L0
+                  ∗
+For any ℓ ∈ L
+                      µ(V ∗ ∩ (ℓ + Rd /L∗ )) = µ(V ∗ ∩ (Rd /L∗ )),
+so that the above implies
+                  µ(V ∗ ) ⩽ (1 + o(1))mK d µ(V ∗ ∩ (Rd /L∗ )).
+Combining with (3.23)
+                            H 2+o(1) 1−4/d(d+1)
+(3.28)    Tf,m (I) ⩽                    m       µ(V ∗ ∩ (Rd /L∗ ))1−4/d(d+1) .
+                            λ1 . . . λd
+22              B. KERR, A. MOHAMMADI, AND I. E. SHPARLINSKI
+
+Recall (3.25) and (3.22). If
+                                  z ∈ V ∗ ∩ (Rd /L∗ )
+then
+(3.29)                      {hvj , zi} ⩽ λj mε , 1 ⩽ j ⩽ d
+and there exists 0 ⩽ t1 , . . . , td ⩽ 1 such that
+                               z = t1 v1∗ + . . . + td vd∗ .
+     Let V ∗∗ denote the set of all 0 ⩽ t1 , . . . , td ⩽ 1 such that
+                  ( d                 )
+                    X
+                        tk hvj , vk∗ i ⩽ λj mε , 1 ⩽ j ⩽ d.
+                      k=1
+
+Combining (3.29) with a linear change of variables, and then recall-
+ing (3.26), we see that
+                                                         µ(V ∗∗ )
+(3.30)            µ V ∗ ∩ (Rd /L∗) = µ(V ∗∗ )µ(Rd /L∗ ) =          .
+                                                            m
+Let M denote the matrix with (j, k)-th entry
+                                   mj,k = hvj , vk∗ i.
+Note that
+                                       mj,k ∈ Z.
+Let L denote the matrix whose rows correspond to vj and L∗ denote
+the matrix whose rows correspond to vk∗ , so that
+                                      M = LL∗ .
+Since v1 , . . . , vd form a basis for L and v1∗ , . . . , vd∗ form a basis for L∗ ,
+the above implies
+                                   det M 6= 0.
+Hence by Lemma 2.11
+                               µ(V ∗∗ ) ≪ λ1 . . . λd mdε ,
+which combined with (3.30) implies
+                                           λ1 . . . λd
+                        µ V ∗ ∩ (Rd /L∗ ) ≪             .
+                                             m1−εd
+The result follows from (3.28) and Lemma 2.4, after taking ε suffi-
+ciently small.
+               ADDITIVE ENERGY OF POLYNOMIAL IMAGES                             23
+
+3.4. Proof of Theorem 1.4. Since both sums are bounded similarly, we
+only deal with the first sum. As observed in [17], we may write
+
+               X       X
+                                χ(f (q) + r) = dWχ (I, S; α, β),
+                q⩽Q     r⩽R
+              q prime r prime
+
+where S = {f (q) : q ⩽ Q, q prime}, I = [1, R],
+                       1   X
+                  αs =           eiψq     s ∈ S,
+                       d
+                                q⩽Q, f (q)=s
+                                  q prime
+
+with 0 ⩽ ψq < 2π denoting the argument of the inner sum above for
+each q , and βx is the characteristic function of primes in I . Writing
+J = [1, Q] and noting that E(S) ⩽ E(f (J )) ⩽ d−4 Tf,p (J ) and the
+fact that condition (2.14) holds for our choice of weights, we may use
+Theorem 1.3 and Lemma 2.12 to bound Wχ (I, S; α, β).
+  The size restrictions in (2.15) impose the condition
+                            ξ ⩽ min{1/2, 2 − 2ζ}
+and, for sufficiently large r , to ensure that the second and third terms
+in the bound on Wχ (I, S; α, β) are non-trivial we need the conditions
+ζ + 5ξ/2 > 1 and ζ + ξ > 1/2 respectively. The first term is non-trivial
+for ξ > 1/2 − 2/d(d + 1) and ξ + ζ > 1/2.
+   The other sum can be estimate similarly after writing it as a bilinear
+sums.
+   This gives the desired bound for sufficiently large p. Adjusting the
+value of δ > 0, we can make sure it holds for all p.
+                           Acknowledgements
+  During the preparation of this work, B. Kerr was supported by the
+ARC Grant DE220100859 and A. Mohammadi and I. E. Shparlinski
+by the ARC Grant DP200100355.
+
+                                  References
+   [1] W. Banaszczyk, ‘Inequalities for convex bodies and polar reciprocal lattices
+       in Rn ’, Discrete Comput. Geom., 13 (1995), 217–231. 6
+   [2] J. Bourgain, C. Demeter and L. Guth, ‘Proof of the main conjecture in
+       Vinogradov’s mean value theorem for degrees higher than three’, Ann. Math.
+       184 (2016), 633–682. 4
+   [3] E. Bombieri and J. Vaaler, ‘On Siegel’s Lemma’, Invent. Math., 73 (1983),
+       11–32. 6
+   [4] K. Castro and M.-C. Chang, ‘Multiplicative energy of polynomial images of
+       intervals modulo q ’, Rev. Mat. Iberoam., 34 (2018), 1093–1101. 2
+24               B. KERR, A. MOHAMMADI, AND I. E. SHPARLINSKI
+
+      [5] M.-C. Chang, ‘Sparsity of the intersection of polynomial images of an inter-
+          val’, Acta Arith., 165 (2014), 243–249. 3
+      [6] M.–C. Chang, J. Cilleruelo, M. Z. Garaev, J. Hernández, I. E. Shparlinski
+          and A. Zumalacárregui, ‘Points on curves in small boxes and applications’,
+          Michigan Math. J., 63 (2014), 503–534. 3
+      [7] J. Cilleruelo, M. Z. Garaev, A. Ostafe and I. E. Shparlinski, ‘On the con-
+          centration of points of polynomial maps and applications’, Math. Zeit., 272
+          (2012), 825–837. 3, 13
+      [8] D. Gómez-Pérez and I. E. Shparlinski, ‘Subgroups generated by rational
+          functions in finite fields’, Monat. Math., 176 (2015), 241–253. 3
+      [9] H. Iwaniec and E. Kowalski, Analytic number theory, Amer. Math. Soc.,
+          Providence, RI, 2004. 7
+     [10] G. Ivanyos, M. Karpinski, M. Santha, N. Saxena and I. E. Shparlinski,
+          ‘Polynomial interpolation and identity testing from high powers over finite
+          fields’, Algorithmica, 80 (2018), 560–575. 3
+     [11] B. Kerr and A. Mohammadi, ‘Points on polynomial curves in small boxes
+          modulo an integer’, J. Number Theory, 223 (2021), 64–78. 3
+     [12] S. V. Konyagin, ‘On the number of solutions of an nth degree congruence
+          with one unknown’, Matem. Sbornik 109 (1979), 171–187 (in Russian). 2
+     [13] S. V. Konyagin and T. Steger, ‘On the number of solutions of polynomial
+          congruences’, Matem. Zametki, 55 (1994), no. 1, 73–79 (in Russian). 2
+     [14] L. Mérai and I. E. Shparlinski, ‘Sparsity of curves and additive and mul-
+          tiplicative expansion of rational maps over finite fields’, Acta Arith., 188
+          (2019), 401–411. 3
+     [15] A. Ostafe, ‘Polynomial values in affine subspaces over finite fields’, J.
+          D’Analyse Math. 138 (2019), 49–81. 3
+     [16] O. Roche-Newton and I. E. Shparlinski, ‘Polynomial values in subfields and
+          affine subspaces of finite fields’, Quart. J. Math., 66 (2015), 693–706. 3
+     [17] I. D. Shkredov and I. E. Shparlinski, ‘Double character sums over intervals
+          and arbitrary sets’, Trudy Matem Instituta Steklov , 303 (2018), 258–278;
+          translation in Proc. Steklov Math. Inst., 303 (2018), 239–258. 2, 4, 11, 12,
+          23
+     [18] I. E. Shparlinski, ‘Polynomial values in small subgroups of finite fields’, Rev.
+          Mat. Iberoam., 32 (2016), 1127–1136. 3
+     [19] T. Tao and V. Vu, Additive combinatorics, Cambridge Stud. Adv. Math.,
+          105, Cambridge University Press, Cambridge, 2006. 5, 6
+     [20] T. D. Wooley, ‘Nested efficient congruencing and relatives of Vinogradov’s
+          mean value theorem’, Proc. London Math. Soc. 118 (2019), 942–1016. 4
+             ADDITIVE ENERGY OF POLYNOMIAL IMAGES                25
+
+  B.K.: School of Science, University of New South Wales, Canberra,
+ACT 2610, Australia
+  Email address: bryce.kerr@unsw.edu.au
+
+ A.M.: Department of Pure Mathematics, University of New South
+Wales, Sydney, NSW 2052, Australia
+ Email address: ali.mohammadi.np@gmail.com
+
+ IES: Department of Pure Mathematics, University of New South
+Wales, Sydney, NSW 2052, Australia
+ Email address: igor.shparlinski@unsw.edu.au
+

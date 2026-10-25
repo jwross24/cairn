@@ -1,0 +1,11 @@
+--- /private/tmp/persist-pydesc/gatev2x/gv_lib.py	2026-10-20 18:28:58
++++ /private/tmp/persist-patterns/gatev2x/gv_lib.py	2026-10-20 21:12:46
+@@ -60,7 +60,7 @@
+ def setup_work(work):
+     for d in ('src', 'ref', 'cache', 'cfg', 'tmp', 'pipes', 'cov', 'mut'):
+         os.makedirs(os.path.join(work, d), exist_ok=True)
+-    for f in glob.glob(os.path.join(TIER0, '*.py')):
++    for f in glob.glob(os.path.join(TIER0, '*.py')) + glob.glob(os.path.join(TIER0, '*.dylib')):
+         dst = os.path.join(work, 'src', os.path.basename(f))
+         if not os.path.exists(dst) or md5file(dst) != md5file(f):
+             shutil.copy2(f, dst)

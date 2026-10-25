@@ -1,0 +1,35 @@
+{"agreement": 21, "digits": [4, 7, 8, 8, 8], "independent_drop": 17, "independent_keep": 4, "open_tested": 21, "tested": 21, "vertex": 14336}
+{"agreement": 410, "digits": [2, 2, 7, 8, 8, 8], "independent_drop": 391, "independent_keep": 19, "open_tested": 410, "tested": 410, "vertex": 14336}
+{"agreement": 775, "digits": [2, 4, 4, 7, 8, 8], "independent_drop": 728, "independent_keep": 47, "open_tested": 775, "tested": 775, "vertex": 14336}
+{"agreement": 75, "digits": [4, 4, 4, 4, 7, 8], "independent_drop": 66, "independent_keep": 9, "open_tested": 75, "tested": 75, "vertex": 14336}
+{"agreement": 6388, "digits": [2, 2, 2, 4, 7, 8, 8], "independent_drop": 6037, "independent_keep": 351, "open_tested": 6388, "tested": 6388, "vertex": 14336}
+{"agreement": 6596, "digits": [2, 2, 4, 4, 4, 7, 8], "independent_drop": 6143, "independent_keep": 453, "open_tested": 6596, "tested": 6596, "vertex": 14336}
+{"agreement": 617, "digits": [2, 4, 4, 4, 4, 4, 7], "independent_drop": 561, "independent_keep": 56, "open_tested": 617, "tested": 617, "vertex": 14336}
+{"agreement": 10114, "digits": [2, 2, 2, 2, 2, 7, 8, 8], "independent_drop": 9550, "independent_keep": 564, "open_tested": 10114, "tested": 10114, "vertex": 14336}
+{"agreement": 42567, "digits": [2, 2, 2, 2, 4, 4, 7, 8], "independent_drop": 40324, "independent_keep": 2243, "open_tested": 42567, "tested": 42567, "vertex": 14336}
+{"agreement": 13313, "digits": [2, 2, 2, 4, 4, 4, 4, 7], "independent_drop": 12564, "independent_keep": 749, "open_tested": 13313, "tested": 13313, "vertex": 14336}
+{"agreement": 67867, "digits": [2, 2, 2, 2, 2, 2, 4, 7, 8], "independent_drop": 64287, "independent_keep": 3580, "open_tested": 67867, "tested": 67867, "vertex": 14336}
+{"agreement": 60565, "digits": [2, 2, 2, 2, 2, 4, 4, 4, 7], "independent_drop": 57580, "independent_keep": 2985, "open_tested": 60565, "tested": 60565, "vertex": 14336}
+{"agreement": 40279, "digits": [2, 2, 2, 2, 2, 2, 2, 2, 7, 8], "independent_drop": 38186, "independent_keep": 2093, "open_tested": 40279, "tested": 40279, "vertex": 14336}
+{"agreement": 102918, "digits": [2, 2, 2, 2, 2, 2, 2, 4, 4, 7], "independent_drop": 97901, "independent_keep": 5017, "open_tested": 102918, "tested": 102918, "vertex": 14336}
+{"agreement": 113852, "digits": [2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 7], "independent_drop": 108185, "independent_keep": 5667, "open_tested": 113852, "tested": 113852, "vertex": 14336}
+{"agreement": 37224, "digits": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 7], "independent_drop": 35288, "independent_keep": 1936, "open_tested": 37224, "tested": 37224, "vertex": 14336}
+{"agreement": 3, "digits": [7, 8, 8, 8, 8], "independent_drop": 1, "independent_keep": 2, "open_tested": 3, "tested": 3, "vertex": 28672}
+{"agreement": 407, "digits": [2, 4, 7, 8, 8, 8], "independent_drop": 376, "independent_keep": 31, "open_tested": 407, "tested": 407, "vertex": 28672}
+{"agreement": 169, "digits": [4, 4, 4, 7, 8, 8], "independent_drop": 156, "independent_keep": 13, "open_tested": 169, "tested": 169, "vertex": 28672}
+{"agreement": 2602, "digits": [2, 2, 2, 7, 8, 8, 8], "independent_drop": 2465, "independent_keep": 137, "open_tested": 2602, "tested": 2602, "vertex": 28672}
+{"agreement": 12228, "digits": [2, 2, 4, 4, 7, 8, 8], "independent_drop": 11583, "independent_keep": 645, "open_tested": 12228, "tested": 12228, "vertex": 28672}
+{"agreement": 3546, "digits": [2, 4, 4, 4, 4, 7, 8], "independent_drop": 3344, "independent_keep": 202, "open_tested": 3546, "tested": 3546, "vertex": 28672}
+{"agreement": 88, "digits": [4, 4, 4, 4, 4, 4, 7], "independent_drop": 80, "independent_keep": 8, "open_tested": 88, "tested": 88, "vertex": 28672}
+{"agreement": 35414, "digits": [2, 2, 2, 2, 4, 7, 8, 8], "independent_drop": 33667, "independent_keep": 1747, "open_tested": 35414, "tested": 35414, "vertex": 28672}
+{"agreement": 47866, "digits": [2, 2, 2, 4, 4, 4, 7, 8], "independent_drop": 45300, "independent_keep": 2566, "open_tested": 47866, "tested": 47866, "vertex": 28672}
+{"agreement": 8148, "digits": [2, 2, 4, 4, 4, 4, 4, 7], "independent_drop": 7675, "independent_keep": 473, "open_tested": 8148, "tested": 8148, "vertex": 28672}
+{"agreement": 32412, "digits": [2, 2, 2, 2, 2, 2, 7, 8, 8], "independent_drop": 30774, "independent_keep": 1638, "open_tested": 32412, "tested": 32412, "vertex": 28672}
+{"agreement": 168692, "digits": [2, 2, 2, 2, 2, 4, 4, 7, 8], "independent_drop": 160235, "independent_keep": 8457, "open_tested": 168692, "tested": 168692, "vertex": 28672}
+{"agreement": 66160, "digits": [2, 2, 2, 2, 4, 4, 4, 4, 7], "independent_drop": 62729, "independent_keep": 3431, "open_tested": 66160, "tested": 66160, "vertex": 28672}
+{"agreement": 213697, "digits": [2, 2, 2, 2, 2, 2, 2, 4, 7, 8], "independent_drop": 203189, "independent_keep": 10508, "open_tested": 213697, "tested": 213697, "vertex": 28672}
+{"agreement": 208689, "digits": [2, 2, 2, 2, 2, 2, 4, 4, 4, 7], "independent_drop": 198143, "independent_keep": 10546, "open_tested": 208689, "tested": 208689, "vertex": 28672}
+{"agreement": 96772, "digits": [2, 2, 2, 2, 2, 2, 2, 2, 2, 7, 8], "independent_drop": 91819, "independent_keep": 4953, "open_tested": 96772, "tested": 96772, "vertex": 28672}
+{"agreement": 288517, "digits": [2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 7], "independent_drop": 274626, "independent_keep": 13891, "open_tested": 288517, "tested": 288517, "vertex": 28672}
+{"agreement": 247543, "digits": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 7], "independent_drop": 235413, "independent_keep": 12130, "open_tested": 247543, "tested": 247543, "vertex": 28672}
+{"agreement": 79165, "digits": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 7], "independent_drop": 75123, "independent_keep": 4042, "open_tested": 79165, "tested": 79165, "vertex": 28672}

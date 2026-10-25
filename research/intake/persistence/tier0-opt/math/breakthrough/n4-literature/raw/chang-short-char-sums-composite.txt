@@ -1,0 +1,1642 @@
+ Short character sums for composite moduli ∗†
+                          Mei-Chu Chang‡
+                    Department of Mathematics
+               University of California, Riverside
+                                mcc@math.ucr.edu
+
+
+                                     Abstract
+We establish new estimates on short character sums for arbitrary composite
+moduli with small prime factors. Our main result improves on the Graham-
+Ringrose bound for square free moduli  and also on the result due to Gallagher
+and Iwaniec when the core q = p|q p of the modulus q satisfies log q 0 ∼ log q.
+                            0
+                                Q
+Some applications to zero free regions of Dirichlet L-functions and the Pólya
+and Vinogradov inequalities are indicated.
+
+Introduction.
+In this paper we will discuss short character sums for moduli with small prime
+factors. In particular, we will revisit the arguments of Graham-Ringrose and
+Postnikov. Our main result is an estimate valid for general moduli, which
+improves on the known estimates in certain situations.
+    It is well known that non-trivial estimates on short character sums are im-
+portant to many number theoretical issues. In particular, they are relevant in
+establishing density free regions for the corresponding Dirichlet L-functions.
+      More specifically, we prove the following.
+    Let χ be a primitive multiplicative character   to the modulus q, and let
+                                                            log q
+p be the largest prime divisor of q, q 0 = p|q p and K = log
+                                           Q
+                                                               q0
+                                                                  . Let I be an
+interval of size |I| = N . We will denote various constants by C.
+  ∗
+    2000 Mathematics Subject Classification. 11L40, 11M06.
+  †
+    Key words. character sums, zero free regions
+  ‡
+    Research partially financed by the National Science Foundation.
+
+
+                                          1
+Theorem 5. Assume q > N > pC and
+                            9           log q 0
+          log N > (log q) 10 + C                  log 2K             (1)
+                                      log log q 0
+Then                 X                      √
+                           χ(x) < N e− log N .                       (2)
+                     x∈I
+
+
+
+    Note that assumption (1) of Theorem 5 is implied by the stronger and
+friendlier assumption
+                                       log q 
+                    log N > C log p +           .           (3)
+                                      log log q
+Assumption (3) is weaker than Graham-Ringrose’s condition
+                                         log q 
+                      log N > C log p + √          .
+                                         log log q
+(The Graham-Ringrose estimate was established only for square free moduli.)
+Also, condition (1) is weaker than Postnikov-Gallagher-Iwaniec’s assumption
+                          2
+log N  log q 0 + (log q) 3 + in certain cases, namely when log q 0 becomes
+comparable with log q.
+
+    Many techniques used in the paper are just elaborations of known argu-
+ments. What differs from methods previously used on similar problems is the
+use of a (new) mixed character sum estimate in conjunction with Postnikov’s
+argument for powerful moduli, whose usual treatment exploits Vinogradov’s
+exponential sum estimate at the end. This allows us to combine efficiently
+the methods introduced by Graham-Ringrose and Postnikov and obtain non-
+trivial bounds under less restrictive conditions for a large class of moduli.
+
+   Next, we turn to some (routine) consequences of Theorem 5.
+                                  9             0
+Theorem 8. Let M = (log q) 10 + logloglogq q0 log 2K + log p. Then
+                           X                √ p     √
+                                 χ(n)       q log q M .
+                           n<x
+
+
+
+
+                                            2
+   If q is square free, then the bound in Theorem 8 is
+                                                    
+                      √        log q     p     p
+                         q √            + log q log p .
+                              log log q
+It gives an improvement on Goldmakher’s result. (See [G], Theorem 1.)
+
+   Theorem 5 implies the following zero-free regions for the corresponding
+Dirichlet L-functions.
+
+Theorem 11. Let
+                         1        log log q 0          1       
+                 θ = c min     ,                 ,                .
+                          log p (log q 0 ) log 2K (log qT )9/10
+Then the Dirichlet L-function L(s, χ) = n χ(n)n−s , s = ρ + it has no zeros
+                                            P
+in ρ > 1 − θ, |t| < T except for possible Siegel zeros.
+
+   In certain ranges, this improves upon Iwaniec’s condition [ I ]
+                                                                
+                                          1                1
+                θ = min c              2               1 ,         .
+                             (log qT ) 3 (log log qT ) 3 log q 0
+
+   Using the zero-free region above and the result from [HB2] on the effect of
+a possible Siegel zero, we obtain the following. (cf. the discussion in [HB1])
+
+Corollary 12. Assume q satisfies that log p = o(log q) for p|q. If (a, q) = 1,
+                                                    12
+then there is a prime P ≡ a(mod q) such that P < q 5 +O(1) .
+
+Notation and Convention.
+   1. e(θ) = e2πiθ , ep (θ) = e( pθ ).
+   2. ω(q) = the number of prime divisors of q.
+   3. τ (q) = the number of divisors of q.
+   4. q 0 = p|q p, the core of q.
+            Q
+
+   5. When there is no ambiguity, p ε = [p ε ] ∈ Z.
+   6. Modulus p (or q) is always sufficiently large.
+   7. For polynomials f (x) and g(x), the degree of fg(x)
+                                                      (x)
+                                                          is deg f (x)+deg g(x).
+   8. c, C = various constants.
+
+
+                                         3
+1      Mixed character sums.
+The following theorem is from [C1] for prime modulus.
+
+Theorem 1. Let P (x) ∈ R[X] be an arbitrary polynomial of degree d ≥ 1, p
+a sufficiently large prime, I ⊂ [1, p] an interval of size
+                                               1
+                                      |I| > p 4 +κ                            (1.1)
+
+(for some κ > 0) and χ a nontrivial multiplicative character (mod p). Then
+                                                      2 −2
+                          X
+                                χ(n)eiP (n) < |I| p−c κ d .                   (1.2)
+                          n∈I
+
+
+    In the proof of Theorem 1, the assumption p being prime is only used
+in order to apply Weil’s bound on complete exponential sums. (For Weil’s
+bound, see Theorem 11.23 in [IK])
+
+   Let f ∈ Z[x] be a polynomial of degree d and let χ be a multiplicative
+character (mod q) and of order r > 1.
+
+Weil’s Theorem. Let q = p be prime. Suppose f (mod p) is not a r-th
+power. Then we have
+                       p
+                      X              √
+                         χ(f (x)) ≤ d p.
+                                x=1
+
+
+   For q = p1 · · · pk square free, since | qx=1 χ(f (x))| ≤ ki=1 | px=1
+                                           P                Q      Pi
+                                                                         χi (f (x))|,
+where χi is a multiplicative character (mod pi ), we have the following version
+of Weil’s estimate.
+Weil’s Theorem’. Let q be square free and let q1 |q be such that for any
+prime p|q1 , f (mod p) has a simple root or a simple pole. Then
+                            q
+                            X                        q
+                                χ(f (x)) ≤ d ω(q1 ) √ .
+                            x=1
+                                                      q1
+
+
+    Therefore, we have the following.
+
+
+                                           4
+Theorem 1’. Let P (x) ∈ R[X] be an arbitrary polynomial of degree d ≥ 1,
+q ∈ Z square free and sufficiently large, I ⊂ [1, q] an interval of size
+                                                  1
+                                    |I| > q 4 +κ                          (1.3)
+
+(for some κ > 0) and χ a nontrivial multiplicative character (mod q). Then
+                                           2 −2             −2
+                 X
+                    χ(n)eiP (n) < |I| q −cκ d τ (q)4(log d)d .        (1.4)
+                  n∈I
+
+
+
+
+2      Postnikov’s Theorem.
+An immediate application is obtained by combining Theorem 1’ with Post-
+nikov’s method (See [P], [Ga], [ I ], and [IK] §12.6).
+
+Postnikov’s Theorem. Let χ be a primitive multiplicative character (mod q),
+q = q0m . Then
+                     χ(1 + q0 u) = eq F (q0 u)).
+Here F (x) ∈ Z[X] is a polynomial of the form
+                                                   0
+                                      x2        xm 
+                        F (x) = BD x −    + ··· ± 0                       (2.1)
+                                       2         m
+with                               Y
+                            D=               k,       m0 = 2m
+                                  k≤m0
+                                 (k,q0 )=1
+
+and B ∈ Z, (B, q0 ) = 1 .
+
+           [IK] the above theorem was proved for χ(1 + q 0 u) = eq (F (q 0 u)),
+Remark. In Q
+       0
+where q = p|q p is the core of q. That argument works verbatim for our
+case.
+Theorem 2. Let q = q0m q1 with (q0 , q1 ) = 1 and q1 square free.
+    Assume I ⊂ [1, q] an interval of size
+                                                  1
+                                                      +κ
+                                  |I| > q0 q14             .              (2.2)
+
+                                             5
+Let χ be a multiplicative character (mod q) of the form
+
+                                              χ = χ0 χ1
+
+with χ0 (mod q0m ) arbitrary and χ1 (mod q1 ) primitive. Then
+                                                       2    −2               −2
+                          X
+                                  χ(n)  |I|q1−cκ m τ (q1 )c(log m)m .                       (2.3)
+                          n∈I
+
+
+Proof. For a ∈ [1, q0 ], (a, q0 ) = 1 fixed, using Postnikov’s Theorem, we write
+                                                                       
+          χ0 (a + q0 x) = χ0 (a)χ0 (1 + q0 āx) = χ0 (a)eq0m F (q0 āx) ,  (2.4)
+
+where
+                                       aā = 1 (mod q0m ).
+Hence
+               X                    X        X                            
+                      χ(n) ≤                               eq0m F (q0 āx) χ1 (a + q0 x) .   (2.5)
+                n∈I               (a,q0 )=1 a+q0 x∈I
+
+
+Writing χ1 (a + q0 x) = χ1 (q0 )χ1 (aq̄0 + x), q0 q̄0 ≡ 1(mod q1 ), the inner sum in
+(2.5) is a sum over an interval J = Ja of size ∼ |I|  q0
+                                                         and Theorem 1’ applies.
+
+
+
+
+3        Graham-Ringrose Theorem.
+As a warm up, in this section we will reproduce Graham-Ringrose’s argument.
+With some careful counting of the bad set,√ we are able to improve their
+condition on the size of the interval from q 1/ log log q to q C/ log log q .
+
+Theorem 3. Let q ∈ Z be square free, χ a primitive multiplicative character
+(mod q), and N < q. Assume
+                                   1
+    1. For all p|q, p < N 10 .
+
+    2. log N > C logloglogq q .
+
+
+
+                                                   6
+Then
+                                            N
+                                            X                        √
+                                                   χ(x) < N e− log N .
+                                            x=1
+
+
+   We will prove the following stronger and more technically stated theorem.
+
+Theorem 3’ Assume q = q1 . . . qr with (qi , qj ) = 1 for i 6= j, and qr square
+free. Factor
+                             χ = χ1 . . . χr ,
+where χi (mod qi ) is arbitrary for i < r, and primitive for i = r. We further
+assume
+                          √
+   (i). For all p|qr , p > log q.
+                                       1
+   (ii). For all i, qi < N 3 .
+   (iii). r < c log log q.
+Then
+                                            N
+                                            X                        √
+                                                   χ(x) < N e− log qr .
+                                            x=1
+
+
+Remark 3.1. To see that Theorem 3’ implies Theorem 3, we write
+
+                                           q = p̄1 · · · p̄` · p1 · p2 · · · ,
+where                              p                                                 p
+             p̄1 , . . . , p̄` <    log q,             and p1 > p2 > · · · ≥          log q.
+Hence
+                                             `            √               1
+                                             Y
+                                                   p̄i < e log q < q 10 .                      (3.1)
+                                             i=1
+                Qk
+   Let qr =       i=1 pi such that k is the maximum subject to the condition
+            1
+that qr < N 3
+                                   1                             1    1          1
+   Therefore, p1 qr > N 3 . By (1), qr > N 3 − 10 > N 5 .
+   We repeat this process on
+                                                           q
+                                                           qr
+
+                                                           7
+                               1                       1
+to get qr−1 such that N 3 > qr−1 > N 5 . Then, we repeat it on qr qqr−1 etc.
+After re-indexing, we have
+                                                                 1
+                                    qr , qr−1 , . . . , q2 > N 5 .
+               1   r−1
+Hence q > N 5             , which together with (2) give (iii).                   
+
+     Under the assumption of Theorem 3’, we give the following
+                                     √
+Definition. For q̄|qr satisfying q̄ > qr , and f ∈ Z[x] of degree d, the pair
+(f, q̄) is called admissible if
+                      Y                        q̄                                10
+                                     p     >       ,       where τ =                    ,
+                                               qrτ                           log log qr
+                     p|q̄
+             f mod p satisfies (*)
+
+
+and (*) means
+
+       (*)   (The polynomial) has a simple root or a simple pole.
+
+Remark 3.2. If (f, q̄) is admissible, χ primitive mod q̄ and
+
+                                               1   log log qr
+                                    log d <      =                                          (3.2)
+                                               τ       10
+then
+                                   q̄
+                                                                     3
+                                                             7           τ
+                                   X
+                                         χ(f (x)) < (q̄) 10 qr10 .
+                                   x=1
+
+
+Proof of Remark 3.2. We say p is
+                               √ good, if f mod p satisfies (*). For p|q̄|qr ,
+assumption (i) implies that p > log q. In particular, (3.2) implies
+
+                                    p1/5 > (log q)1/10 > d.                                 (3.3)
+
+Weil’s estimate gives
+                                q̄
+                                X                  q̄
+                                       χ(f (x)) < √ d ω(q1 )                                (3.4)
+                                   x=1
+                                                    q1
+
+
+
+                                                  8
+where q1 is the product of the good primes p. Using (3.3), we bound the
+character sum above by
+                                Y d     Y             −3/10
+                           q̄    √ < q̄   p−3/10 = q̄q1     .
+                                   p
+                                p|q1          p|q1
+
+
+Since (f, q̄) is admissible, we have
+                           q̄
+                                                         −3           7   3
+                                                                              τ
+                           X
+                                   χ(f (x)) < q̄q1 10 < (q̄) 10 qr10 .
+                           x=1
+
+                                             √     
+Proof of Theorem 3’. Take M =                     N . Shifting the interval [1, N ] by yqi
+for any 1 ≤ y ≤ M , we get
+                     n
+                     X                 n
+                                       X
+                           χ(x) −            χ(x + yq1 ) ≤ 2yq1 . M q1 .
+                     x=1               x=1
+
+Averaging over the shifts gives
+                N              N   M                        
+             1 X           1 X X                        M q1
+                   χ(x) ≤             χ(x + yq1 ) + O          .                     (3.5)
+             N x=1        N M x=1 y=1                    N
+
+Let
+                                         χ01 = χ2 · · · χr .
+
+    Using the q1 -periodicity of χ1 and Cauchy-Schwarz on the double sum in
+(3.5), we have
+
+      N   M
+                           "        M      N                   #1/2
+  1 X X                        1   X      X         x + q 1 y
+             χ(x + yq1 ) ≤                    χ01                     . (3.6)
+ N M x=1 y=1                     2
+                             N M y, y0 =1 x=1       x + q1 y 0
+
+      For given (y, y 0 ), we consider
+                                                         x + q1 y
+                                       fy,y0 (x) =
+                                                         x + q1 y 0
+and distinguish among the pairs (fy,y0 , qr ) by whether or not they are admis-
+sible. Note that if (fy,y0 , qr ) is not admissible, then the product of bad prime
+
+                                                     9
+factors of qr is at least qrτ . We will estimate the size of the set of bad (y, y 0 )
+and use trivial bound for the inner sum in (3.6).
+
+                   (y, y 0 ) ∈ [1, M ]2 : (fy,y0 , qr ) is not admissible
+                 
+                 X 
+              ≤            (y, y 0 ) ∈ [1, M ]2 : Q| y − y 0
+                  Q|qr
+                  Q>qrτ                                                                     (3.7)
+                  X M      2                  2
+                                           M                7
+                                                   2 − log log M
+                                                                          7
+                                                                     2 − 10 τ
+              ≤                < 2ω(qr )       < M  q r          = M  q r     .
+                          Q                qrτ
+                  Q|qr
+                  Q>qrτ
+
+(For the second inequality, we note that M > Q.)
+   Hence (3.6) is bounded by
+                                                  N        1
+                                −7τ         1 X 0          2
+                               qr 20 +           χ (f1 (x)) ,                               (3.8)
+                                            N x=1 1
+where f1 is the fy,y0 with the maximal character sum among all admissible
+pairs. i.e.
+              N
+              X                                                  N
+                                                                 X
+                    χ01 (f1 (x))   =           max                     χ01 (fy,y0 (x)) .    (3.9)
+                                               fy,y0
+              x=1                                                x=1
+                                       (fy,y0 ,qr ) admissible
+
+Thus, there exists q̄1 |qr , q̄1 > qr1−τ and for any p|q̄1 , f1 mod p has property
+(*).
+   We will use induction to bound the second term in (3.8). After s steps,
+we reduce the problem to bounding the character sum
+                                       N
+                                    1 X 0
+                                         χ (fs (x)) ,                                      (3.10)
+                                    N x=1 s
+where χ0s = χs+1 · · · χr , fs ∈ Z[x] with deg fs = 2s . Since (fs , q̄s−1 ) is admis-
+sible, there is q̄s |qr such that q̄s > qr1−sτ and ∀p|q̄s is good.
+   As before, the qs+1 -periodicity of χs+1 and Cauchy-Schwarz give a bound
+on (3.10) by
+              "          M      N                           #1/2
+                  1     X      X          f s (x + q s+1 y)
+                                   χ0                              .  (3.11)
+                N M 2 y, y0 =1 x=1 s+1 fs (x + qs+1 y 0 )
+
+                                                  10
+Set
+                                                     fs (x + qs+1 y)
+                                      fs+1 (x) =                        ,
+                                                     fs (x + qs+1 y 0 )
+where (y, y 0 ) is chosen as in (3.9), such that the inner character sum in (3.11)
+is the maximum.
+      We want to bound the set of bad (y, y 0 ). For p|q̄s ,
+                            Y
+          fs (x) = (x − a)±1 (x − bj )cj , where a 6= bj .                           mod p
+                                          j
+
+Hence
+                                                         ±1 Y                         cj
+                                  x + qs+1 y − a                     x + qs+1 y − bj
+              fs+1 (x) =                                                                       .
+                                  x + qs+1 y 0 − a              j
+                                                                     x + qs+1 y 0 − bj
+
+For y 6= y 0 mod p, if a − qs+1 y is not a simple root or pole, then
+
+                              a − qs+1 y = bj − qs+1 y 0 ,                  mod p
+
+for some j. Therefore,
+
+            (y, y 0 ) ∈ [1, M ]2 : (fy,y0 , q̄s ) is not admissible
+              
+           X 
+         ≤        (y, y 0 ) ∈ [1, M ]2 : ∀p|Q, fy,y0 mod p satisfies (*)
+             Q|q̄s
+             Q>qrτ                                                                                 (3.12)
+                                      X 2s ω(Q)
+                                          
+             X M2
+                          s ω(Q)    2
+                           
+         ≤               2       =M             .
+                     Q                    Q
+             Q|q̄s                               Q|q̄s
+             Q>qrτ                               Q>qrτ
+
+
+By assumptions (i) and (iii),
+                              ω(Q)
+                         2s               Y 2r            Y 1   1   −τ
+                                      ≤              <     √ = √ < qr 2 ,                          (3.13)
+                              Q                  p           p   Q
+                                          p|Q             p|Q
+
+
+and (3.12) is bounded by
+
+                                                2ω(qr )
+                                       M2         τ /2
+                                                          < M 2 qr−τ /5 .
+                                                qr
+
+                                                          11
+      At the last step, we are bounding
+                                        N
+                                        X
+                                              χr (fr−1 (x)) ,                           (3.14)
+                                        x=1
+
+where fr−1 ∈ Z[x] with deg fr−1 = 2r−1 and there is q̄r−1 |qr such that q̄r−1 >
+ 1−(r−1)τ  √
+qr        > q r and ∀p|q̄r−1 is good. In particular, (fr−1 , q̄r−1 ) is admissible
+and Remark 3.2 applies. (Recall that qr < N 1/3 .) Hence, we have
+                          N
+                                                               −1     −1
+                          X
+                                χr (fr−1 (x)) < N q̄r−1 4 < N qr 8 ,
+                          x=1
+
+and we reach the final bound
+                        N                 1/2r−1        1/2r−1
+                     1 X         
+                           χ(x) . qr−τ /5        + qr−1/8
+                     N x=1
+                                                   2           1
+                                             −           ·
+                                      . qr log log qr 2c log log qr
+                                                    log qr
+                                      = e− log log qr (log qr )c
+                                              √
+                                      < e− log qr
+
+
+
+      The proof of Theorem 3’ also gives an argument for the following theorem.
+Theorem 3” Assume q = q1 . . . qr with (qi , qj ) = 1 for i 6= j, and qr square
+free. Factor χ = χ1 . . . χr , where χi (mod qi ) is arbitrary for i < r, and
+primitive for i = r.
+We further assume
+                           √
+    (i). For all p|qr , p > log q.
+      (ii). For all i, qi < N 1/3 .
+      (iii). r < c log log q.
+Let                      Y                                                 X
+               f (x) =      (x − bj )cj ,     c1 = ±1, d = deg f =             |cj |.
+                          j
+
+Suppose that (f, qr ) is admissible (as defined after the statement of Theorem
+3’). Furthermore, assume
+
+                                                  12
+                            1
+    (iv). d = deg f < log qr 8 .
+Then
+                            N
+                            X                           √
+                                  χ(f (x)) < N e− log qr .
+                            x=1
+
+
+
+Remark 3.3. To modify the proof of Theorem 3’, one only needs to multiply
+M2
+ Q
+    by dω(Q) in (3.7) and replaced 2s (respectively, 2r ) by 2s−1 d (resp. 2r−1 d)
+in (3.12) (resp. (3.13)). Assumptions (i) and (iii) imply 2r < p1/4 , while
+assumptions (i) and (iv) imply d < p1/4 .
+
+
+4      Graham-Ringrose for mixed character sums.
+The technique used to prove Theorem 1’ may be combined with the method
+of Graham-Ringrose for Theorem 3’ to bound short mixed character sums
+with highly composite modulus (see also [IK] p. 330–334).
+    Let q = q1 . . . qr with (qi , qj ) = 1 for i 6= j, and qr square free, such that
+(i) and (iii) of Theorem 3’ hold .
+    Let
+                                    χ = χ1 . . . χr ,
+where χi (mod qi ) is arbitrary for i < r, and primitive for i = r.
+   Let I ⊂ [1, q] be an interval of size N < q, and let f (x) = αd xd +· · ·+α0 ∈
+R[x] be an arbitrary polynomial of degree d.
+    Assuming (ii) of Theorem 3’ and an appropriate assumption on d, we
+establish a bound on         X
+                                 χ(x)eif (x) .                    (4.1)
+                                    x∈I
+
+    The case f = 0 corresponds to Theorem 3’. The main idea to bound
+(4.1) is as follows. First, we repeat part of the proof of Theorem 1 in order
+to remove the factor eif (x) at the cost of obtaining a character sum with
+polynomial argument. Next, we invoke Theorem 3” to estimate these sums.
+    Write q = q1 Q1 with Q1 = q2 . . . qr , and denote Y1 = χ2 . . . χr .
+
+
+                                           13
+   Choose M ∈ Z such that
+                                                                 √
+                       M · max qi < N,            and       M<       N.                  (4.2)
+Using shifted product method as in (3.5), we have
+       X                  1 X
+            χ(x)eif (x) =       χ(x + q1 y)eif (x+q1 y) + O(q1 M ),                      (4.3)
+       x∈I
+                          M x∈I
+                                  0≤y<M
+   1    X                                     1     X
+               χ(x + q1 y)eif (x+q1 y) =                    χ1 (x)Y1 (x + q1 y)eif (x+q1 y)
+   M     x∈I
+                                              M      x∈I
+       0≤y<M                                       0≤y<M
+                                              1 X X
+                                          ≤               Y1 (x + q1 y)eif (x+q1 y) .
+                                              M x∈I 0≤y<M
+                                                                                         (4.4)
+Next, we write
+                  f (x + q1 y) = f0 (x) + f1 (x)y + · · · + fd (x)y d .
+Fix θ = θ(q) > 0 and subdivide Td+1 in cells Uα = B ξα , Mθ d ⊂ Td+1 .
+                                                             
+
+   Denote
+                                                    
+                Ωα = {x ∈ I : f0 (x), . . . , fd (x) ∈ Uα mod 1}.
+Hence, for x ∈ Ωα
+                 f (x + q1 y) = ξα,0 + ξα,1 y + · · · + ξα,d y d + O(θ)
+                                                    d
+                   eif (x+q1 y) = ei(ξα,0 +···+ξα,d y ) + O(θ)                           (4.5)
+
+   The number of cells is
+
+                                           M d d+1
+                                     ∼                  .                                (4.6)
+                                              θ
+Substituting (4.5) in (4.4) gives
+
+                 1 X X
+                             Y1 (x + q1 y)eif (x+q1 y)
+                 M x∈I 0≤y<M
+                                                                                         (4.7)
+                 1 XX X
+               =                  Cα (y)Y1 (x + q1 y) + O(θN ),
+                 M α x∈Ω 0≤y≤M
+                              α
+
+
+
+                                              14
+where |Cα (y)| = 1.
+   Next, applying Hölder to the triple sum in (4.7) with k ∈ Z+ , we have
+                                                                                                                     1
+XX               X                                               1
+                                                                     XX            X                          2k  2k
+                       Cα (y)Y1 (x+q1 y) ≤ N 1− 2k                                         Cα (y)Y1 (x+q1 y)             .
+ α x∈Ωα      0≤y≤M                                                   α       x∈I   0≤y≤M
+
+
+Therefore, up to an error of O(θN ), (4.7) is bounded by
+         
+               1
+                       
+                           Md
+                                d+1        X                X       (x + q y ) · · · (x + q y )   2k1
+                                                                              1 1              1 k
+     N                                                           Y1
+             N M 2k        θ           0≤y1 ,...y2k <M       x∈I
+                                                                     (x + q  y
+                                                                            1 k+1 ) · · · (x + q 1 y2k )
+
+
+                       d+1                                                                    1
+                 Md
+                                                                           
+                         2k       1         X        X                       2k
+   =N                                                    Y1 Ry1 ,...,y2k (x)     ,                     (4.8)
+                 θ              N M 2k 0≤y ,...,y <M x∈I
+                                              1    2k
+
+
+   where
+                                               (x + q1 y1 ) · · · (x + q1 yk )
+                         Ry1 ,...,y2k (x) =                                      .
+                                              (x + q1 yk+1 ) · · · (x + q1 y2k )
+
+     To bound the double sum in (4.8), we apply Theorem 3” with f (x) =
+Ry1 ,...,y2k (x) for those tuplets (y1 , . . . , y2k ) ∈ {0, . . . , M − 1}2k for which
+(Ry1 ,...,y2k , qr ) is admissible. For the other tuplets, we use the trivial bound.
+If (Ry1 ,...,y2k , qr ) is not admissible, then there is a divisor Q|qr , Q > qrτ , such
+that for each p|Q, the set {πp (y1 ), · · · , πp (y2k )} has at most k elements. Here
+πp is the natural projection from Z to Z/pZ. We distinguish the tuplets
+(y1 , . . . , y2k ) in the following contributions.
+                                                  √
+(a). Suppose that there is p|Q with p > M .
+   Then the number of p-bad tuplets (y1 , . . . , y2k ) is bounded by
+                  
+                   2k     k k
+                                  M k                    3
+                        M k 1+              < (4k)k M 2 k ,
+                    k               p
+
+and summing over the prime divisors of qr gives
+                                                             3           7
+                                     ω(qr )(4k)k M 2 k < M 4 k ,                                       (4.9)
+
+provided
+                                                                 1
+                                                  k < M 5,                                            (4.10)
+
+                                                        15
+and
+                                          log qr < M.                                 (4.11)
+                               √
+(b). Suppose Q > M and p ≤ M for each p|Q.
+                         √
+    Take Q1 |Q such that M < Q1 < M . The number of tuplets (y1 , . . . , y2k )
+that are p-bad for each p|Q1 is at most
+              M 2k Y 2k 
+                                pk k k
+               Q1          k
+                          p|Q1
+                  M 2k Y                                     M 2k   M 2k     11
+           <                     (4kp)k < (ck)kω(Q1 )            k
+                                                                    <   k  < M 6 k,
+                  Q1                                           Q1     Q3
+                          p|Q1                                             1
+
+provided
+                                                          1
+                                          k < min p 3 .                               (4.12)
+                                                  p|qr
+
+
+    Summing over all Q1 as above gives the contribution
+                                          11                  15
+                                        M 6 k+1 < M 8 k .                             (4.13)
+
+(c). Suppose qrτ < Q < M .
+  The number of tuplets (y1 , . . . , y2k ) that are p-bad for all p|Q is at most
+     k
+  2k
+M /Q 3 and summation over these Q gives the contribution
+
+                                              M 2k        M 2k
+                                    2ω(qr )      k    <            1   .              (4.14)
+                                               Q3         qr 4 kτ
+
+   Hence, in summary, the number of (y1 , . . . , y2k ) for which (Ry1 ,...,y2k , qr ) is
+not admissible is at most
+                                                  k       − 1 kτ
+                                     M 2k (M − 8 + qr 4 ).
+
+From (4.3)-(4.4) and (4.7)-(4.8) we obtain the estimate
+                                               d+1                           i 2k1
+                                   Md
+                                                2k h                 √
+                                                         k    − 1 kτ
+           X
+                 χ(x)e if (x)
+                                <N                   M − 8 + qr 4 + e− log qr
+           x∈I
+                                   θ
+
+
+                                                  16
+using Theorem 3” for the contribution of good tuplets (y1 , . . . , y2k ). Here we
+need to assume                            1
+                             2k < log qr 8 ,                                (4.15)
+which also implies (4.10) and (4.12), under assumption (i) and if (4.11) holds.
+   Take θ = M1 , k = 50d2 , assuming
+
+                                            1         161
+                                      d<       log qr       ,                                        (4.16)
+                                            10
+(which implies (4.15),) then
+                                                                                    √
+                                               (d+1)2
+                X                                                1                     log qr
+                                                                                                 
+                             if (x)                             − 16            −
+                      χ(x)e           < NM       2k         M          +e                2k
+
+                x∈I
+                                                   (d+1)2  1 2 
+                                              1     M        100d
+                                      < N M − 20 +   √             .
+                                                    e log qr
+
+   Choose                              √log q  i
+                                        h
+                                              r
+                              M = exp             .
+                                       2(d + 1)2
+(So (4.11) is also satisfied.) We have
+                                                                 √
+                              X                                    log qr
+                                            if (x)          −
+                                      χ(x)e          < Ne         200d2     .
+                              x∈I
+
+
+   Thus we proved
+Theorem 4. Assume q = q1 . . . qr with (qi , qj ) = 1 for i 6= j, and qr square
+free. Factor χ = χ1 . . . χr , where χi (mod qi ) is arbitrary for i < r, and
+primitive for i = r.
+   We further assume
+                             √
+   (i). For all p|qr , p >       log q.
+   (ii). For all i, qi < N 1/3 .
+   (iii). r < c log log q.
+   Let f (x) ∈ R[x] be an arbitrary polynomial of degree d. Assume
+                                            1         161
+                                      d<       log qr       .
+                                            10
+                                                17
+Then                                                               √
+                              X                                     log qr
+                                        if (n)                 −
+                                    e            χ(n) < CN e       200d2     ,   (4.17)
+                              n∈I
+
+where I is an interval of size N .
+
+   Combined with Postnikov (as in the proof of Theorem 2), Theorem 4 then
+implies
+
+Theorem 4’ Suppose q = q0 . . . qr with (qi , qj ) = 1 for i 6= j, and qr square
+free. Assume q̄0 |q0 and q0 |(q̄0 )m for some m ∈ Z+ , and
+                                        1         161
+                                 m<        log qr       .
+                                       20
+Factor χ = χ0 . . . χr , where χi (mod qi ) is arbitrary for i < r, and primitive
+for i = r.
+    We further assume
+                              √
+    (i). For all p|qr , p >log q.
+                                1/3
+    (ii). For all i, qi < N/q̄0      .
+    (iii). r < c log log q.
+    Then                                                     √
+                                  X                           log qr
+                                                         −
+                                          χ(n) < CN e        800m2     ,         (4.18)
+                                  n∈I
+
+where I is an interval of size N .
+   Note that for Theorem 4’ to provide a nontrivial estimate, we should
+assume at least
+                            r . log log qr
+and
+                                        log m . log log qr .
+
+
+5      The main theorem.
+Theorem 4’ as a consequence of Theorem 4 was stated mainly for expository
+reason. (cf. Proposition 7.) Our goal is to develop this approach further in
+order to prove the following stronger result.
+
+                                                    18
+Theorem 5. Assume N satisfies
+                                                                  3
+                                     q > N > max p10                     (5.1)
+                                                        p|q
+
+
+and                                       log q  log q 0
+               log N > (log q)1−c + C log 2                   ,          (5.2)
+                                            log q 0 log log q
+where C, c > 0 are some constants, and q 0 = p|q p.
+                                             Q
+
+    Let χ be primitive (mod q) and I an interval of size N . Then
+                                   X                          √
+                                         χ(x) < N e− log N .             (5.3)
+                                   x∈I
+
+
+
+   We will prove Theorem 5 in the next section. In this section, we will set
+up the proof and discuss the implication of assumption (5.2).
+Claim. We may assume the following
+                1
+(1.) q 0 > N 100
+                                                                         (5.4)
+(2.) q = Q qr = Q1 · · · Qr−1 qr , where (Qi , Qj ) = (Qi , qr ) = 1,
+                                           log Q0
+                                                 
+                              r = 1 + 10            ,                    (5.5)
+                                           log N
+and
+                                 qr = q0m , q0 square free               (5.6)
+with                                           3                  1
+                                   e(log N ) 4 < q0 < N 10 ,             (5.7)
+                                         m ≤ (log N )3κ ,                (5.8)
+where κ > 0 a sufficiently small constant (e.g. ∼ 10−3 ). Also, the core of Qs
+satisfies
+                               1
+                       Q0s < N 5 for s = 1, . . . , r − 1.               (5.9)
+
+(3.) There exist q1 , · · · , qr−1 , (qi , qj ) = (qi , qr ) = 1,
+
+                                         max qi < N 1/2 ,               (5.10)
+                                           i
+
+
+                                                   19
+such that
+                                                                                 m
+                                    q = Q1 · · · Qr−1 qr | q1m1 · · · qr−1
+                                                                         r−1
+                                                                             qr ,                      (5.11)
+with                                                              
+                                                            log Qs
+                                                   ms = 10           .                                 (5.12)
+                                                            log N
+
+Proof of Claim.
+   The validity of Assumption (1) follows from Theorem 12.16 in [IK], which
+gives a bound
+                                                1− c
+                       X
+                          χ(x) < C r log log r N r2 log r             (5.13)
+                                        x∈I
+                 log q
+with r =         logN
+                       ,    assuming that q 0100 < N . This gives a nontrivial result
+                                         3
+provided log N & (log q) 4 + .
+   To see Assumption (2), we first note that
+                                      −3κ            1−κ        1
+                 Y
+                        p < q (log N )    < e(log N )    < q 0 100 ,                                   (5.14)
+                           νp   >(log N )3κ
+
+where νp is the exponent of p in the prime factorization of q.
+   From
+                                              (log N )3κ
+                                                                        99
+                                                  Y           Y 
+                                                               p > q 0 100 ,
+                                                  m=1      νp =m
+
+there exists m ≤ (log N )3κ such that
+                                              1                     1                            3
+                                                        −3κ                  1−3κ
+                     Y
+                                 p > (q 0 ) 2 (log N )        > e 200 (log N )       > e(log N ) 4 .
+                    νp =m
+
+
+Therefore, there exists qr satisfies (5.6)-(5.8).
+   Write q = Q qr , and
+                Y
+            Q=       pνi i ,                      where υi := νpi and ν1 ≥ ν2 ≥ · · · .
+
+Let Q0 =
+            Q
+                 νi ≥1 pi and factor
+
+                                                                                         log Q0
+                                                                                               
+                                                    1
+            0
+        Q       = Q01 · · · Q0r−1 such that Q0s < N 5                     and r = 1 + 10         .
+                                                                                         log N
+
+                                                               20
+                                          νp                               ν̄p
+                            Q                                Q
+For each s, define Qs =         p|Q0s p        and qs =          p|Q0s p         as follows
+                                  ( 
+                                    νp
+                                        ms
+                                               + 1, if νp > ms
+                        ν̄p =                                                                 (5.15)
+                                     1,        otherwise
+
+Denote
+                                                     log Qs
+                                     ms = 10                .
+                                                     log N
+                                                       2
+                                                                  1
+It follows that Qs |(qs )ms and qs < Q0s Qsms < N 2 , which are (5.10)-(5.11).
+
+Remark 5.1. Assumption (5.2) can be reformulated as
+                                                 log N q 0
+                               log q 10 log N
+                            3                   < (log N )c .                                 (5.16)
+                              log q 0 N
+
+Remark 5.2. Using (5.4), (5.16) and the inequality of arithmetic and geo-
+metric means, one can show that
+                                  r−1
+                                  Y                  1
+                                          mi < log q0 75 .                                    (5.17)
+                                  i=1
+
+
+Remark 5.3. It is easy to check that (5.2) and (5.7) imply
+
+                                   r < 10−3 log log q0 .                                      (5.18)
+
+Remark 5.4. If log q 0 ≤ log N , (5.16) becomes
+
+                                   log N > (log q)1−c ,
+
+which is similar to Theorem 12 in [IK].
+Remark 5.5. If q = q 0 (i.e. q is square free), condition (5.16) becomes
+
+                                     log q
+                                             < c log N.
+                                   log log q
+
+This is slightly better than Corollary 12.15 in [IK] and essentially optimal in
+view of the Graham-Ringrose argument.
+
+                                                 21
+6     The proof of Theorem 5.
+The proof will use the technique from the previous sections. The following
+lemma is the technical part of the inductive step.
+
+Lemma 6. Assume
+(a). q = q1m q 0 , where q 0 = q 00 qr , with q1 , q 00 , qr mutually coprime.
+(b). χ = χ1 χ0 , with χ1 (mod q1m ) and χ0 (mod q 0 ).
+               β
+               Y                     X
+(c). f (x) =       (x−aα )dα , d =        |dα |, with aα ∈ Z distinct and dα ∈ Z\{0}.
+               α=1
+                                              √
+(d). q̄|qr such that for each p|q̄, p >           log q and f mod p satisfies (∗) (i.e.
+has a simple zero or a simple pole).
+                                                                                 1
+(e). I an interval of length N , q12 < N < q, 1440 · m2 d < (log N ) 10 .
+                                              1
+(f ). M ∈ Z, log N + log q̄ < M < N 10 , M < q̄ τ .
+    Then
+                                                            1
+            1 X              −1/12
+                                       1
+                                       60 1 X 0          60m 2
+                  χ f (x) < M       +M          χ f1 (x)        ,                    (6.1)
+            N x∈I                         N x∈I
+
+where f1 (x) is of the form
+                              Qk                    β0
+                             ν=1 f (x + q1 tν )
+                                                   Y
+                  f1 (x) = Q2k                   =      (x − bα0 )dα0                (6.2)
+                            ν=k+1 f (x + q1 tν )   α0 =1
+
+with bα0 , dα0 ∈ Z, 2k = 60m2 and
+                                 X
+                           d1 :=   | dα0 |≤ 60 d m2 .                                (6.3)
+
+Furthermore, (f1 , q̄) is admissible.
+Proof. Take t ∈ [1, M ]. Clearly,
+                                                     
+                                f (x + tq1 ) − f (x) 0              
+ χ f (x + tq1 ) = χ1 f (x) χ1 1 +                       χ f (x + tq1 ) . (6.4)
+                                         f (x)
+
+                                             22
+Hence, as in the proof of Theorem 2,
+
+                                                 m−1
+                                                     X              
+                                                       Qj (x) q1j tj ,
+                                0
+       χ f (x + tq1 ) = χ1 f (x) χ f (x + tq1 ) eq1m                           (6.5)
+                                                        j=1
+
+where
+                              1 dj n  f (x + t) − f (x) o
+                   Qj (x) =          F                                         (6.6)
+                              j! dtj         f (x)          t=0
+
+with
+                            2m
+                            X          1
+                  F (x) =       (−1)s−1 xs      (up to a factor).              (6.7)
+                            s=1
+                                       s
+
+    By the same technique as used in the proof of Theorem 4 (See (4.3)-(4.8)),
+after averaging and summing over t ∈ M and x ∈ I, we remove the last factor
+in (6.5). Thus, our goal is to show that after t = (t1 , · · · , t2k ) ∈ [1, M ]2k is
+chosen for (6.2) such that f1 maximizes the character sum in (6.1) among all
+admissible (f1 , q̄), the first term in (6.1) accounts for those t for which f1 is
+not q̄-admissible. The zeros or poles of f1 (x) are of the form
+
+                        bα0 = aα − tν q1 with tν ∈ [1, M ].                    (6.8)
+
+   Here, while applying Hölder, we take k ∈ Z+ satisfying
+                                     1
+                         48kd < log N 10 and k > 30                            (6.9)
+
+    To count the set of bad t, we fix p|q̄. By assumption on f1 , we may also
+assume d1 = 1 and a1 6= aα (mod p) for any α > 1. Recalling (6.8), assume
+that none of the a1 − tν q1 , 1 ≤ ν ≤ 2k, is simple (mod p). This means that
+for each ν there is a pair (α(ν), σ(ν)) in {1, . . . , β} × {1, . . . , 2k} such that
+α(ν) 6= 1, σ(ν) 6= ν and
+
+                       a1 − tν q1 ≡ aα(ν) − tσ(ν) q1 (mod p).                 (6.10)
+
+The important point is that σ(ν) 6= ν for all ν, by assumption on a1 . One
+may therefore obtain a subset S ⊂ {1, . . . , 2k} with |S| = k such that there
+exists S1 ⊂ S with |S1 | = k2 and
+
+                              S1 = {ν ∈ S : σ(ν) ∈
+                                                 / S1 }                       (6.11)
+
+                                         23
+(The existence of S and S1 satisfying this property is justified in Fact 6.1
+following the proof of this lemma.)
+   Specifying the values of tν 0 for those ν 0 ∈ K \ S1 , equations (6.10) will
+determine the remaining values, after specification of α(ν) and σ(ν). An easy
+count shows that
+      {πp (t) : f1 (mod p) does not satisfy (*) }
+                     k2   k2                                        (6.12)
+       2k       k    3         β           3k        k       3k
+    ≤           k      k             M ∧ p 2 < (48kd) 2 M ∧ p 2 .
+        k       2    2         2
+
+The first factor counts the number of sets S, the second the number of sets
+S1 , and the third and the forth the numbers of maps σ|S1 and α|S1 .
+   Applying assumptions (d)-(f) to (6.12), we obtain
+                                                            8k
+         {πp (t) : f1 (mod p) does not satisfy (*) } < M ∧ p 5 .            (6.13)
+
+   If (f1 , q̄) is not admissible, there is some Q|q̄, Q > qrτ > q̄ τ such that for
+each p|Q, f1 is p-bad. As in the proof of Theorem 4, we distinguish several
+cases.
+(a). There is p|Q with p > M .
+                                                          8
+     Hence, {t ∈ [1, M ]2k : f1 is p-bad } < M 5 k and summing over p gives
+                    8
+the contribution M 5 k log q̄.
+      √
+(a0 ). M < max p < M.
+              p|Q
+
+
+Then
+                      {t ∈ [1, M ]2k : f1 is p-bad }
+                     M        2k
+                    ≤     +1       {πp (t) : f1 is p-bad }
+                       p
+                     M        2k 8            p − 25 k         9
+                    ≤     + 1 p 5 k < M 2k                 < (4M ) 5 k .
+                       p                         32
+                                                      9
+Summing over p gives the contribution (4M ) 5 k log q̄.
+            √
+(b). max p ≤ M and Q > M.
+       p|Q
+
+
+
+                                            24
+                           √
+Take Q1 |Q such that           M < Q1 < M . Then
+
+                  {t ∈ [1, M ]2k : f1 is p-bad for each p|Q1 }
+                 M        2k
+                ≤     +1       {πQ1 (t) : f1 is p-bad for each p|Q1 }
+                   Q1
+                 M                              − 15 k
+                                             2k Q1
+                           2k Y 8                                9
+                                       k
+                ≤     +1            p <M
+                                     5                    < (4M ) 5 k .
+                   Q1                             32
+                                    p|Q1
+
+                                                           9
+Summing over Q1 gives the contribution (4M ) 5 k+1 .
+    Summing up cases (a)-(b) and recalling assumption (f), we conclude that
+
+                      {t ∈ [1, M ]2k : (f1 , q̄) is not admissible }
+                               k       −τ k                                                    (6.14)
+                    < M 2k M − 6 + q̄ 5
+
+    Taking d = m − 1 in (4.8), by assumption (f), we show that
+       1 X          
+             χ f (x)
+       N x∈I
+                   q M                         M m−1 m 1 X                      2k1       (6.15)
+                      1               − k6                            0
+                                                                                
+    < O(θ) + O               + M             +                       χ f1 (x)               .
+                      N                             θ     N    x∈I
+
+
+    We obtain (6.1) by letting θ = M1 in (6.15).               
+
+Fact 6.1. Let K = {1, · · · , 2k} and σ : K → K be a function such that
+σ(ν) 6= ν for all ν ∈ K. Then there exist subsets S1 ⊂ S ⊂ K with |S1 | =
+k
+2
+  , |S| = k and σ(ν) 6∈ S1 for any ν ∈ S1 .
+Proof. Since the subset of elements of K with more than one pre-image of σ
+has size ≤ k, there exist S ⊂ K with |S| = k, and every ν ∈ S has at most one
+pre-image. Therefore, σ −1 makes sense on S. To construct S1 ⊂ S, we choose
+νi for S1 inductively, such that νi 6∈ {ν1 , . . . , νi−1 , σ(ν1 ), . . . , σ(νi−1 ), σ −1 (ν1 ),
+. . . , σ −1 (νi−1 )} and σ(νi ) 6∈ S1 . 
+
+Proof of Theorem 5.
+    Choose a sequence M1 < M2 < · · · < Mr−1 of M values and iterate (6.1)
+in Lemma 6.
+
+                                                  25
+   Since                                    Y                  √
+                                                      p < e log q ,
+                                            √
+                                          p< log q
+
+we use trivial bound for small p and we may assume Assumption (d). In
+order to satisfy Assumption (e), we assume
+                                                r
+                                          r−1
+                                                Y               1
+                           1440 · 60              (m2i ) < log N 10 ,                                           (6.16)
+                                                i=1
+
+which follows from (5.17) and (5.18).
+                              PN
+   By (6.1) and iteration, N1   x=1 χ(x) is bounded by
+
+                  1             1            1
+      1  1  −              1         −
+   − 12       12·60m2        602 m2    12·602 m2 m2
+  M1 + M1 M2
+         60         1
+                      + M1 M2
+                          60      1
+                                    M3         1 2
+                                                    + ···
+                             1                     1                             1
+                   1                                                −
+                          602 m2            60r−2 m2 ···m2              12·60r−2 m2 ···m2
+            +M1 M260           1
+                                   · · · Mr−2      1     r−3
+                                                                Mr−1               1    r−2                     (6.17)
+                                                1                       1                       1
+                                     1                           60r−1 m2 ···m2
+                                             602 m2                     1     r−2        60r−1 m2 ···m2
+                              +M1 M2 60           1
+                                                      · · · Mr−1                     S          1     r−1   ,
+
+where S is of the form
+                                           N
+                                        1 X
+                                     S=       χr (g(x)) ,                                                       (6.18)
+                                        N x=1
+
+with χr primitive modulo qr , and
+                                          β
+                                          Y
+                            g(x) =            (x − aα )dα , aα , dα ∈ Z,
+                                          α=1
+                                      X
+                               d= | dα |< 60r m21 . . . m2r ,                                                   (6.19)
+                                            √
+and (g, q̄) admissible for some q̄|qr , q̄ > qr .
+   Take Ms , for s = 1, · · · , r − 1 such that
+                                                                               −1
+                                                                           M1 12 =M −1
+            1
+                    1                     1
+                                                           −            1                                       (6.20)
+                 602 m2            60s−1 m2 ···m2
+                                          1     s−2
+                                                               12·60s−1 m2 ···m2
+                                                                          1    s−1     −1
+        M1 M2
+           60         1
+                          · · · Ms−1                   Ms                            =M1 12
+
+to ensure that each of the r − 1 fist terms in (6.17) is bounded by M1 .
+
+                                                      26
+    One checks recursively that
+                                              s−1 ·12s m2 ···m2
+                            Ms < M 6                    1     s−1        (6.21)
+
+and hence (6.17) implies
+                   N                                  1
+                1 X          r−1       6 r−1      r−1 2   2
+                      χ(x) <     + M ( 5 ) −1 S 60 m1 ···mr−1 .          (6.22)
+                N x=1         M
+
+   In order to satisfy the last condition in Assumption (f) of Lemma 6, we
+impose
+                                                                    10
+                                 r    2   2
+                       M (6·12) m1 ···mr−1 < qrτ = qrlog log qr .        (6.23)
+
+    The above holds, if we take
+                                                      9/10
+                                     M = e(log qr )          ,           (6.24)
+
+and assume
+                           r−1
+                           X                     1
+                                 log mi <           log log qr .         (6.25)
+                           i=1
+                                                 40
+(Clearly, this follows from (5.17).)
+    We will prove the theorem by distinguishing two cases in the next section.
+
+
+
+7     The two cases.
+To finish the proof of Theorem 5, we need to bound S in (6.22).
+Case 1. m = 1.
+  Since (g, q̄) is admissible and q̄ is square free, S may be bounded by
+Remark 3.2.                               3
+                                     3      τ   −1
+                            S < q̄ − 10 qr10 < qr 7 ,               (7.1)
+and by (6.22)
+             N                              −          1
+          1 X          r−1    ( 65 )r−1 −1    7·60r−1 m2 ···m2
+                                                        1    r−1
+                                                                   r
+                χ(x) <     +M              qr                    <   .    (7.2)
+          N x=1         M                                          M
+
+                                               27
+The last inequality is by Remark 5.2 and (6.23).
+   Now we obtain (5.3) by combining (6.24), (7.2) and (5.18).                  
+
+   We state the above case as a proposition for its own interest.
+                                                   m
+Proposition 7. Assume q = q1m1 . . . qr−1
+                                        r−1
+                                            qr with (qi , qj ) = 1 for i 6= j, qr
+square free and
+                       r−1
+                       Y                     751
+                           mi < log qr             .                        (7.3)
+                                   i=1
+
+Factor χ = χ1 . . . χr , where χi (mod qimi ) is arbitrary for i < r, and primitive
+for i = r.
+   We further assume
+                             √
+   (i). For all p|qr , p >       log q.
+   (ii). For all i, qi2 < N < q.
+   (iii). r < 10−3 log log qr .
+   Then
+                                                           4/5
+                                 X
+                                       χ(x) < N e−(log qr )      ,                 (7.4)
+                                 x∈I
+
+where I is an interval of size N .
+
+Case 2. m > 1.
+    In this situation, we follow the analysis in the proof of Lemma 6. (Par-
+ticularly, see (6.4)-(6.7).) To bound S in (6.17), We will use Postnikov and
+Vinogradov rather than Weil. Recall
+                                       N
+                                    1 X
+                                 S=       χr (f (n)) ,
+                                    N n=1
+
+with χr primitive modulo qr , and
+                         β
+                         Y
+               f (x) =       (x − aα )dα       with d =< 60r m21 . . . m2r .
+                         α=1
+
+
+
+
+                                              28
+    Write n ∈ [1, N ] as n = x + tq0 , with 1 ≤ x ≤ q0 and 1 ≤ t ≤ qN0 . Then
+as in (6.4) and (6.6),
+                            q0 N/q0
+                            X  X                m−1
+                                                    X              
+                   N ·S =             χr f (x) eq0m   Qj (x)q0j tj
+                            x=1 t=1                         j=1
+                                                                                           (7.5)
+                             q0   N/q0           m−1                  
+                            X      X              X
+                        ≤                eq0m           Qj (x)q0j tj       .
+                            x=1    t=1            j=1
+
+
+   We assume that f (x) satisfies the following property.
+                                                                               Q
+For each prime divisor p of q0 , there is α such that |dα | = 1 and                β6=α (aα −aβ )
+relative prime to p.
+    This will provide some information on the coefficients Qj in (6.5). Assume
+α = 1 in f (x) and aα = 0 (which we may). Thus 0 is a simple zero or pole
+of f ; replacing f by f1 (which we may by replacement of χ by χ̄), we can
+assume                              Y
+                  f (x) = xg(x) = x    (x − aα )dα     mod p              (7.6)
+                                         aα 6=0
+
+with g(0) defined and non-vanishing (mod p).
+   From (6.6), (6.7), and (7.6), we have
+             X                  1     dj                          s 
+  j!Qj (x) =  (−1)s−1                      (x + t)g(x + t) − xg(x)          . (7.7)
+               s
+                            s(xg(x))s dtj                               t=0
+
+
+Clearly only the terms s ≤ j contribute and Qj has a pole at 0 of order j,
+
+                                                  1   Aj (x)
+                              C · Qj (x) =          +                                      (7.8)
+                                                  xj Bj (x)
+
+with Aj (x), Bj (x) ∈ Z[X] and Bj (x) = xk B̂j (x), k < j, B̂j (0) 6= 0 and hence
+
+                                  B̂j (0) 6= 0(mod p)                                      (7.9)
+
+since Bj (x) is a product of monomials of the form x − aα and aα 6= 0(mod p)
+for α 6= 1. Thus
+                                           Pj (x)
+                             C · Qj (x) =                              (7.10)
+                                          xj B̂j (x)
+
+                                            29
+where Pj (x) ∈ Z[X] is of degree at most dj, Pj (0) 6= 0 (mod p). It follows
+that
+                  {1 ≤ x ≤ p : Qj (x) ≡ 0 (mod p)} ≤ dj.              (7.11)
+and
+                                                             q0
+                   {1 ≤ x ≤ q0 : Qj (x) ≡ 0 (mod q̄0 )} ≤ (dj)ω(q̄0 )
+                                                                 .    (7.12)
+                                                             q¯0
+whenever q̄0 |q0 . Taking j = m − 1 and fixing x, we will apply Vinogradov’s
+lemma ([Ga], Lemma 4) to bound
+                                        N/q0           m−1                  
+                                        X               X
+                                               eq0m           Qj (x)q0j tj       .
+                                        t=1            j=1
+
+
+Lemma (Vinogradov). Let f (t) = a1 t + · · · + ak tk ∈ R[t], k ≥ 2 and P ∈ Z+
+large.
+Assume ak rational, ak = ab , (a, b) = 1 such that
+
+                                           2 < P ≤ b ≤ P k−1                                         (7.13)
+Then
+                                                                     2   1− 2 c
+                                  X
+                                        e(f (n)) < C k(log k) P              k log k                 (7.14)
+                                  n∈I
+
+for any interval I of size P (c, C are constants).
+
+       Write Qm−1 (x) ≡ q̄0 ā ∈ Z(mod q0m0 ), q̄0 |q0 and (ā, q0 ) = 1.
+                √
+       If q̄0 ≤ q0 , then the coefficient of tm−1 in (7.5) is am−1 = Qm−1 q0m
+                                                                              (x) m−1
+                                                                                 q0   =
+  ā          ¯   q0    √
+q̄¯0
+     , with q̄0 = q̄0 > q0 .
+   Applying (7.14) with P = q0 gives
+                   N/q0           m−1                                                            c
+                   X             X                                                 2   −   2
+                          eq0m          Qj (x)q0j tj          < N C m(log m) q0 m (log m) .          (7.15)
+                   t=1            j=1
+
+It remains to estimate the contribution of those 1 ≤ x ≤ q0 such that Qj (x) ≡
+                             √
+0 in Z/q̄0 Z for some q̄0 > q0 . This number is by (7.12) at most
+        X                q0                   √            2 log q0 √
+              (dm)ω(q̄0 ) < 2ω(q0 ) (dm)ω(q0 ) q0 < (2dm) log log N q0  (7.16)
+                         q̄0
+          q̄0 |q
+              √0
+       q̄0 > q0
+
+
+                                                         30
+                                                              1
+since all prime divisors of q0 are at least (log N ) 2 . Note that the degree d of
+f (x) is bounded by (6.19). Applying (5.8) and (5.17), we have
+                                  2        3κ         15κ
+                   dm < 60r log qr 75 log N     < log N      .                 (7.17)
+
+                                                                      3/4
+    In particular, (7.17) will ensure that (7.16) is bounded by q0          and hence
+                        N                                         c
+                        X                             2   −   2
+                              χ(f (x)) < C m(log m) q0 m (log m) N.            (7.18)
+                        x=1
+
+This gives a bound on S in (6.22). 
+
+
+8     Applications.
+Following Goldmakher’s argument [G] (based on work of Granville and Soundarara-
+jan [GS]), and applying Theorem 5 instead of the character sum estimates
+developed by Graham-Ringrose [GR] and Iwaniec [ I ], we obtain the following
+improvement of the Pólya and Vinogradov bound.
+
+Theorem 8. Let χ be a multiplicative character     with modulus q, and let
+                                                          log q
+p be the largest prime divisor of q, q 0 = p|q p and K = log
+                                          Q
+                                                             q0
+                                                                . Let M =
+        9                     0
+(log q) 10 + (log 2K) logloglogq q0 + log p. Then
+                                  X              √ p     √
+                                        χ(n)     q log q M .                   (8.1)
+                                  n<x
+
+
+
+Remark 8.1. If q is square free, then the bound in (8.1) becomes
+                                                      
+                     √ p          p           log q
+                      q      log q log p + √            .
+                                             log log q
+This slightly improves on the corollary to Theorem 1 in Goldmakher’s paper
+[G].
+   Repeating the argument in deducing Theorem 4 from Theorem 3, we
+obtain the following mixed character sum estimate from the proof of Theorem
+5.
+
+                                             31
+Theorem 9. Under the assumptions of Theorem 5,
+                     X                     √
+                         χ(x)eif (x) < N e− log N                                (8.2)
+                             x∈I
+
+for f (x) ∈ R[X] of degree at most (log N )c .
+
+Corollary 10. Assume N satisfies
+                                                        3
+                                   q > N > max p10
+                                                 p|q
+
+
+and q satisfies
+                                               log q  log q 0
+                  log N > (log qT )1−c + C log 2                   .             (8.3)
+                                                 log q 0 log log q
+Then for χ non-principal, we have
+                          X                √
+                             χ(n)nit < N e− log N                                (8.4)
+                               n∈I
+
+
+
+   Following [Ga] and [ I ], (See in particular, Lemma 11 in [ I ]), this implies
+
+Theorem 11. Let χ be a Q   non-principal character (mod q), p the largest
+                        0
+prime divisor of q and q = p|q p.
+   Let                      1         log log q                  1        
+              θ = c min          ,                  log q
+                                                           .             0   .   (8.5)
+                            log p (log q 0 )(log 2 log q0
+                                                          ) (log qT )1−c
+If L(s, χ), s = ρ + it, has a zero for ρ > 1 − θ, |t| < T , it has to be unique,
+simple and real. Moreover χ is real.
+   It follows in particular that θ · log QT → ∞, if log p
+                                                    log q
+                                                          → 0.
+   This allows us to state Corollary 12.
+
+Acknowledgement. The author would like to thank I. Shparlinski for helpful
+comments and the mathematics department of University of California at
+Berkeley for hospitality.
+
+
+                                            32
+References
+[C1]    M.-C. Chang, An Estimate of Incomplete Mixed Character Sums ,
+        Duke Math. J. 145, No. 3 (2008), 409–442.
+
+[Ga]    P.X. Gallagher, Primes in progressions to prime-power modulus,
+        Invent. Math. 16 (1972), 191-201.
+
+[Go]    L. Goldmakher, Character sums to smooth moduli are small, Can
+        J. Math. 62 (2010), 1099.
+
+[GR]    S.W. Graham, C.J. Ringrose, Lower bounds for least quadratic non-
+        residues, In: Analytic number theory (Allerton Park, IL, 1989),
+        Progr. Math., 85, Birkhauser, Boston, MA, (1990), 269-309.
+
+[GS]    A. Granville, K. Soundararajan, Large Character Sums: Preten-
+        tious Characters and the Plya-Vinogradov Theorem, J. Amer. Math.
+        Soc. 20 (2007), 357-384.
+
+[HB1]   D. R. Heath-Brown, Zero-free regions for Dirichlet L-functions, and
+        the least prime in an arithmetic progression, Proc. London Math.
+        Soc. (3) 64, no. 2 (1992), 265338.
+
+[HB2]   D. R. Heath-Brown, Siegel zeros and the least prime in an arith-
+        metic progression, Quart. J. Math. Oxford Ser. (2), 41 (1990), 405-
+        418.
+
+[IK]    H. Iwaniec, E. Kowalski, Analytic number theory, Amer. Math. Soc.,
+        Providence RI, (2004).
+
+[I]     H. Iwaniec, On zeros of Dirichlets L series, Invent. Math. 23 (1974),
+        97-104.
+
+[P]     A.G. Postnikov, On Dirichlet L-series with the character modulus
+        equal to the power of a prime number, J. Indian Math. Soc. (N.S.)
+        20 (1956), 217-226.
+
+
+
+                                    33
+

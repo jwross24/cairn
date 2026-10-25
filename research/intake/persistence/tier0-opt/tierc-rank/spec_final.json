@@ -1,0 +1,5 @@
+[
+ {"rank": 0, "mode": "exact", "path": "r0_all.out"},
+ {"rank": 1, "mode": "hybrid", "prefix": "r1_prefix.out", "sample": "r1_suffix_sample.out", "suffix_pairs": 98447},
+ {"rank": 2, "mode": "sample", "path": "s2_40k.out"}
+]

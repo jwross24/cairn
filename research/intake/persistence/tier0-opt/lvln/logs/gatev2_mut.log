@@ -1,0 +1,38 @@
+[17:06:29] gate v2: 520 equations, 39 plants, jobs=3, logs /private/tmp/persist-lvln/gatev2out_mut
+[17:08:33] mutant m_lvlN_L1_crt_coeff: KILLED (1.0s) lvlN differential / rc: exit codes ref=[0] cand=[5]; cand stderr: ['dlog verify failed p=9
+[17:08:33] mutant m_lvlN_L1_no_verify_bsgs_shift: KILLED (0.5s) lvlN differential / rc: exit codes ref=[0] cand=[5]; cand stderr: ['dlog verify failed p=7
+[17:08:34] mutant m_lvlN_L2_offset_sign: KILLED (0.6s) lvlN differential / counters: stderr counters differ
+[17:09:30] mutant m_lvlN_L2_skip_lin_dead: SURVIVED (56.2s) no difference in any stage
+[17:09:31] mutant m_lvlN_L2_wrong_factor: KILLED (0.7s) lvlN differential / counters: stderr counters differ
+[17:09:31] mutant m_lvlN_L3_zero_not_counted: KILLED (0.4s) lvlN differential / counters: stderr counters differ
+[17:10:30] mutant m_lvlN_L4_redc_no_sub: SURVIVED (59.0s) no difference in any stage
+[17:10:38] mutant m_lvlN_L5_prefix_filter_drop_mark: KILLED (7.4s) lvlN differential / counters: stderr counters differ
+[17:10:38] mutant m_lvlN_L5_prefix_overkill: KILLED (0.5s) lvlN differential / counters: stderr counters differ
+[17:10:39] mutant m_lvlN_L6_ycur_not_undone: KILLED (0.4s) lvlN differential / counters: stderr counters differ
+[17:10:39] mutant m_lvlN_L7_dsum_swapped: KILLED (0.5s) lvlN differential / counters: stderr counters differ
+[17:10:46] mutant m_lvlN_L7_pattern_has_off: KILLED (7.3s) lvlN differential / counters: stderr counters differ
+[17:10:47] mutant m_lvlN_L8_drop_last_lane: KILLED (0.4s) lvlN differential / rc: exit codes ref=[0] cand=[4]; cand stderr: ['subgroup lookup failed
+[17:10:47] mutant m_lvlN_L8_memo_wrong_lane: KILLED (0.5s) lvlN differential / counters: stderr counters differ
+[17:10:48] mutant m_lvlN_L8_no_final_flush: KILLED (0.4s) lvlN differential / counters: stderr counters differ
+[17:10:48] mutant table:
+  m_lvlN_L1_crt_coeff               lvlN  KILLED                             lvlN differential / rc: exit codes ref=[0] cand=[5]; cand stderr: ['dlog verify failed p=99990001']
+  m_lvlN_L1_no_verify_bsgs_shift    lvlN  KILLED                             lvlN differential / rc: exit codes ref=[0] cand=[5]; cand stderr: ['dlog verify failed p=75118313082
+  m_lvlN_L2_offset_sign             lvlN  KILLED                             lvlN differential / counters: stderr counters differ
+  m_lvlN_L2_skip_lin_dead           lvlN  SURVIVED (equivalent, expected)    no difference in any stage
+  m_lvlN_L2_wrong_factor            lvlN  KILLED                             lvlN differential / counters: stderr counters differ
+  m_lvlN_L3_zero_not_counted        lvlN  KILLED                             lvlN differential / counters: stderr counters differ
+  m_lvlN_L4_redc_no_sub             lvlN  SURVIVED (equivalent, expected)    no difference in any stage
+  m_lvlN_L5_prefix_filter_drop_mark lvlN  KILLED                             lvlN differential / counters: stderr counters differ
+  m_lvlN_L5_prefix_overkill         lvlN  KILLED                             lvlN differential / counters: stderr counters differ
+  m_lvlN_L6_ycur_not_undone         lvlN  KILLED                             lvlN differential / counters: stderr counters differ
+  m_lvlN_L7_dsum_swapped            lvlN  KILLED                             lvlN differential / counters: stderr counters differ
+  m_lvlN_L7_pattern_has_off         lvlN  KILLED                             lvlN differential / counters: stderr counters differ
+  m_lvlN_L8_drop_last_lane          lvlN  KILLED                             lvlN differential / rc: exit codes ref=[0] cand=[4]; cand stderr: ['subgroup lookup failed p=9999000
+  m_lvlN_L8_memo_wrong_lane         lvlN  KILLED                             lvlN differential / counters: stderr counters differ
+  m_lvlN_L8_no_final_flush          lvlN  KILLED                             lvlN differential / counters: stderr counters differ
+[17:10:48] 
+STAGE                        VERDICT  DETAIL
+-------------------------------------------------------------------
+branch coverage (reference)  PASS     lvl12: lines 98.8% (84/85), branches 96.6% (143/148), regions 97.4%; lvlN: lines 99.3% (141/142), branches 93.4% (241/258), regions 95.9%; unreached sides {'DEAD-LIFT': 7, 'DEAD12': 4, 'DEFENSIVE': 6, 'RARE': 1, 'STRUCTURAL': 4} (see coverage.txt)
+mutation runner              PASS     13 killed, 2 survived, 0 skipped of 15
+[17:10:48] GATE v2: PASS

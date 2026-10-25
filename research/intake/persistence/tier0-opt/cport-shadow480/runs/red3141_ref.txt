@@ -1,0 +1,4 @@
+s=18144    M=22333467     a=0 y=60761421    k=8 log10 U=66.0 reps=5 words=4 -> CLOSED-sandwich bound 10^(10^264.06 (w=3,T=2,G=434,compat=6,chain=6,win=27,alive=27) (w=1,T=2,G=414,compat=1,chain=1,win=1,alive=1) alive=28 [0s]
+s=28672    M=2227888      a=0 y=78121827    k=7 log10 U=61.8 reps=1 words=2 -> CLOSED-sandwich bound 10^(10^264.24 (w=2,T=2,G=341,compat=2,chain=2,win=2,alive=2) alive=2 [0s]
+
+2 of 2 patterns closed by the level-480 step; discrete logs 8 [0s]

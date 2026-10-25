@@ -1,0 +1,13 @@
+tierc pattern: y=7626831723 a=0 b=3 c=10 k=31 nu=2 log10 U''=246.0183
+PLANT-MITM 1 target=27038592902566421 solutions=1 planted_found=1 (space 2.398e+16, bloom candidates 174359)
+PLANT-MITM 2 target=33255650267677384 solutions=1 planted_found=1 (space 2.398e+16, bloom candidates 173306)
+PLANT-MITM 3 target=47187743587919461 solutions=2 planted_found=1 (space 2.398e+16, bloom candidates 173417)
+PLANT-MITM 4 target=60869548849392380 solutions=2 planted_found=1 (space 2.398e+16, bloom candidates 173523)
+PLANT-MITM 5 target=126764906720764047 solutions=3 planted_found=1 (space 2.398e+16, bloom candidates 174011)
+PLANT-MITM 6 target=75107698000839164 solutions=2 planted_found=1 (space 2.398e+16, bloom candidates 174130)
+PLANT-MITM 7 target=122112262596118164 solutions=2 planted_found=1 (space 2.398e+16, bloom candidates 173936)
+PLANT-MITM 8 target=24053981852544218 solutions=1 planted_found=1 (space 2.398e+16, bloom candidates 173455)
+rep0: words=6 (notappl=0 taubad=0) T=7 units=15 space=2.398e+16 |G|=1 shadow=1 compat(word,child)=6 notshadow_compat=0 passchain=3 windows=3 alive=3 wordsalive=3 notshadow_alive=0 win_budget=0
+min nn=312884813607185182894582010157162378381231979401295740024789... (606 digits)
+VERDICT CLOSED-sandwich bound 10^(10^302.28 log10 U''=246.0183 [32s]
+bound log10(digits) = 302.28 vs log10 U'' = 246.0183

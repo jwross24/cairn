@@ -1,0 +1,192 @@
+14336 47888 0 7411887 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=0.8+0.0
+14336 47888 0 7411887 rep 0 D 2 E 1 bases 1 sub 2 2 nn_eq True cnt_eq True nodes 3 inexact 0 exactsys True t=0.8+0.3
+DONE 14336 47888 0 7411887
+28672 78888 2 1411788 rep 0 D 1 E 1 bases 1 sub 2 2 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=0.1+0.0
+28672 78888 2 1411788 rep 0 D 2 E 2 bases 2 sub 4 4 nn_eq True cnt_eq True nodes 4 inexact 0 exactsys True t=1.2+0.6
+DONE 28672 78888 2 1411788
+14336 227888 0 78121827 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=1.6+0.0
+14336 227888 0 78121827 rep 0 D 2 E 1 bases 1 sub 2 2 nn_eq True cnt_eq True nodes 3 inexact 0 exactsys True t=1.8+0.3
+DONE 14336 227888 0 78121827
+27216 266679 0 85766121 rep 0 D 1 E 1 bases 2 sub 2 2 nn_eq True cnt_eq True nodes 4 inexact 0 exactsys True t=1.7+0.1
+27216 266679 0 85766121 rep 0 D 2 E 1 bases 2 sub 6 6 nn_eq True cnt_eq True nodes 9 inexact 0 exactsys True t=2.1+0.8
+DONE 27216 266679 0 85766121
+28672 247888 0 7411887 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=1.2+0.0
+28672 247888 0 7411887 rep 0 D 2 E 1 bases 1 sub 4 4 nn_eq True cnt_eq True nodes 5 inexact 0 exactsys True t=1.5+0.4
+DONE 28672 247888 0 7411887
+28672 444788 0 7411887 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=1.4+0.0
+28672 444788 0 7411887 rep 0 D 2 E 1 bases 1 sub 3 3 nn_eq True cnt_eq True nodes 3 inexact 0 exactsys True t=1.2+0.3
+DONE 28672 444788 0 7411887
+32928 446777 1 57177414 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=0.8+0.0
+32928 446777 1 57177414 rep 0 D 2 E 2 bases 2 sub 2 2 nn_eq True cnt_eq True nodes 4 inexact 0 exactsys True t=1.3+0.6
+32928 446777 1 57177414 rep 0 D 3 E 2 bases 2 sub 3 3 nn_eq True cnt_eq True nodes 5 inexact 0 exactsys True t=1.3+2.4
+DONE 32928 446777 1 57177414
+42336 366778 0 1361367 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=1.2+0.0
+42336 366778 0 1361367 rep 0 D 2 E 1 bases 1 sub 2 2 nn_eq True cnt_eq True nodes 3 inexact 0 exactsys True t=1.2+0.3
+DONE 42336 366778 0 1361367
+28672 2227888 0 78121827 rep 0 D 1 E 1 bases 2 sub 2 2 nn_eq True cnt_eq True nodes 4 inexact 0 exactsys True t=2.5+0.1
+28672 2227888 0 78121827 rep 0 D 2 E 1 bases 2 sub 6 6 nn_eq True cnt_eq True nodes 7 inexact 0 exactsys True t=2.7+0.6
+28672 2227888 0 78121827 rep 0 D 3 E 2 bases 6 sub 12 12 nn_eq True cnt_eq True nodes 20 inexact 0 exactsys True t=4.7+8.1
+DONE 28672 2227888 0 78121827
+28672 2244788 0 330812181 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=2.4+0.0
+28672 2244788 0 330812181 rep 0 D 2 E 1 bases 1 sub 8 8 nn_eq True cnt_eq True nodes 5 inexact 0 exactsys True t=2.3+0.3
+28672 2244788 0 330812181 rep 0 D 3 E 2 bases 8 sub 27 27 nn_eq True cnt_eq True nodes 33 inexact 0 exactsys True t=4.4+9.1
+DONE 28672 2244788 0 330812181
+28672 2244788 0 78121827 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=2.2+0.0
+28672 2244788 0 78121827 rep 0 D 2 E 1 bases 1 sub 3 3 nn_eq True cnt_eq True nodes 3 inexact 0 exactsys True t=2.0+0.3
+28672 2244788 0 78121827 rep 0 D 3 E 2 bases 2 sub 7 7 nn_eq True cnt_eq True nodes 6 inexact 0 exactsys True t=3.0+2.3
+DONE 28672 2244788 0 78121827
+42336 2246779 2 777924 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=0.5+0.0
+42336 2246779 2 777924 rep 0 D 2 E 2 bases 3 sub 3 3 nn_eq True cnt_eq True nodes 6 inexact 0 exactsys True t=1.3+0.7
+42336 2246779 2 777924 rep 0 D 3 E 2 bases 3 sub 7 7 nn_eq True cnt_eq True nodes 10 inexact 0 exactsys True t=1.3+3.3
+DONE 42336 2246779 2 777924
+42336 2336778 2 19131876 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=0.5+0.0
+42336 2336778 2 19131876 rep 0 D 2 E 2 bases 2 sub 2 2 nn_eq True cnt_eq True nodes 4 inexact 0 exactsys True t=1.0+0.5
+42336 2336778 2 19131876 rep 0 D 3 E 2 bases 2 sub 3 3 nn_eq True cnt_eq True nodes 5 inexact 0 exactsys True t=1.2+2.4
+DONE 42336 2336778 2 19131876
+49392 2247779 2 777924 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=0.6+0.0
+49392 2247779 2 777924 rep 0 D 2 E 2 bases 3 sub 3 3 nn_eq True cnt_eq True nodes 6 inexact 0 exactsys True t=1.7+1.7
+49392 2247779 2 777924 rep 0 D 3 E 2 bases 3 sub 7 7 nn_eq True cnt_eq True nodes 10 inexact 0 exactsys True t=4.0+9.9
+DONE 49392 2247779 2 777924
+8192 2224488 0 330812181 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=4.4+0.0
+8192 2224488 0 330812181 rep 0 D 2 E 1 bases 1 sub 4 4 nn_eq True cnt_eq True nodes 4 inexact 0 exactsys True t=5.7+1.3
+8192 2224488 0 330812181 rep 0 D 3 E 2 bases 4 sub 9 9 nn_eq True cnt_eq True nodes 12 inexact 0 exactsys True t=6.4+7.4
+DONE 8192 2224488 0 330812181
+8192 2244448 0 330812181 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=2.4+0.0
+8192 2244448 0 330812181 rep 0 D 2 E 1 bases 1 sub 3 3 nn_eq True cnt_eq True nodes 3 inexact 0 exactsys True t=2.1+0.4
+8192 2244448 0 330812181 rep 0 D 3 E 2 bases 2 sub 7 7 nn_eq True cnt_eq True nodes 6 inexact 0 exactsys True t=3.5+3.4
+DONE 8192 2244448 0 330812181
+14112 22233477 1 2722734 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=3.4+0.0
+14112 22233477 1 2722734 rep 0 D 2 E 2 bases 3 sub 3 3 nn_eq True cnt_eq True nodes 6 inexact 0 exactsys True t=5.7+1.0
+14112 22233477 1 2722734 rep 0 D 3 E 2 bases 3 sub 7 7 nn_eq True cnt_eq True nodes 10 inexact 0 exactsys True t=5.1+6.7
+DONE 14112 22233477 1 2722734
+14336 22224478 0 330812181 rep 0 D 1 E 1 bases 1 sub 2 2 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=9.7+0.0
+14336 22224478 0 330812181 rep 0 D 2 E 1 bases 1 sub 12 12 nn_eq True cnt_eq True nodes 5 inexact 0 exactsys True t=4.3+0.5
+14336 22224478 0 330812181 rep 0 D 3 E 2 bases 6 sub 42 42 nn_eq True cnt_eq True nodes 23 inexact 0 exactsys True t=8.3+10.6
+DONE 14336 22224478 0 330812181
+148176 22366777 0 1361367 rep 1 D 1 E 1 bases 1 sub 2 2 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=2.4+0.0
+148176 22366777 0 1361367 rep 1 D 2 E 1 bases 1 sub 12 12 nn_eq True cnt_eq True nodes 5 inexact 0 exactsys True t=2.5+0.3
+148176 22366777 0 1361367 rep 1 D 3 E 2 bases 6 sub 42 42 nn_eq True cnt_eq True nodes 23 inexact 0 exactsys True t=8.8+12.1
+DONE 148176 22366777 0 1361367
+148176 22366777 2 69177612 rep 1 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=1.3+0.0
+148176 22366777 2 69177612 rep 1 D 2 E 2 bases 3 sub 3 3 nn_eq True cnt_eq True nodes 6 inexact 0 exactsys True t=2.8+1.5
+148176 22366777 2 69177612 rep 1 D 3 E 2 bases 3 sub 7 7 nn_eq True cnt_eq True nodes 14 inexact 0 exactsys True t=2.7+4.2
+DONE 148176 22366777 2 69177612
+148176 23346777 0 60761421 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=2.3+0.0
+148176 23346777 0 60761421 rep 0 D 2 E 1 bases 1 sub 8 8 nn_eq True cnt_eq True nodes 9 inexact 0 exactsys True t=3.0+0.5
+148176 23346777 0 60761421 rep 0 D 3 E 2 bases 6 sub 39 39 nn_eq True cnt_eq True nodes 35 inexact 0 exactsys True t=5.7+8.9
+DONE 148176 23346777 0 60761421
+148176 23346777 2 69177612 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=0.9+0.0
+148176 23346777 2 69177612 rep 0 D 2 E 2 bases 6 sub 6 6 nn_eq True cnt_eq True nodes 12 inexact 0 exactsys True t=2.5+1.7
+148176 23346777 2 69177612 rep 0 D 3 E 2 bases 6 sub 21 21 nn_eq True cnt_eq True nodes 28 inexact 0 exactsys True t=3.0+10.4
+DONE 148176 23346777 2 69177612
+18144 22333467 0 60761421 rep 0 D 1 E 1 bases 1 sub 3 3 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=3.8+0.0
+18144 22333467 0 60761421 rep 0 D 2 E 1 bases 1 sub 27 27 nn_eq True cnt_eq True nodes 5 inexact 0 exactsys True t=3.9+0.3
+18144 22333467 0 60761421 rep 0 D 3 E 2 bases 6 sub 147 147 nn_eq True cnt_eq True nodes 34 inexact 0 exactsys True t=9.5+10.3
+18144 22333467 0 60761421 rep 1 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=2.1+0.0
+18144 22333467 0 60761421 rep 1 D 2 E 1 bases 1 sub 5 5 nn_eq True cnt_eq True nodes 4 inexact 0 exactsys True t=2.4+0.4
+18144 22333467 0 60761421 rep 1 D 3 E 2 bases 3 sub 21 21 nn_eq True cnt_eq True nodes 11 inexact 0 exactsys True t=5.0+3.4
+DONE 18144 22333467 0 60761421
+18144 22333467 1 2722734 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=3.7+0.0
+18144 22333467 1 2722734 rep 0 D 2 E 2 bases 3 sub 3 3 nn_eq True cnt_eq True nodes 6 inexact 0 exactsys True t=3.3+0.7
+18144 22333467 1 2722734 rep 0 D 3 E 2 bases 3 sub 7 7 nn_eq True cnt_eq True nodes 13 inexact 0 exactsys True t=2.5+5.6
+DONE 18144 22333467 1 2722734
+23328 23333466 0 60761421 rep 0 D 1 E 1 bases 1 sub 3 3 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=2.4+0.0
+23328 23333466 0 60761421 rep 0 D 2 E 1 bases 1 sub 27 27 nn_eq True cnt_eq True nodes 5 inexact 0 exactsys True t=2.3+0.2
+23328 23333466 0 60761421 rep 0 D 3 E 2 bases 6 sub 147 147 nn_eq True cnt_eq True nodes 27 inexact 0 exactsys True t=11.7+9.7
+DONE 23328 23333466 0 60761421
+28672 22224788 0 330812181 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=4.0+0.1
+28672 22224788 0 330812181 rep 0 D 2 E 1 bases 1 sub 12 12 nn_eq True cnt_eq True nodes 5 inexact 0 exactsys True t=5.8+0.3
+28672 22224788 0 330812181 rep 0 D 3 E 2 bases 8 sub 63 63 nn_eq True cnt_eq True nodes 39 inexact 0 exactsys True t=6.5+15.9
+DONE 28672 22224788 0 330812181
+34992 23333389 3 1134213192 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 3 inexact 0 exactsys True t=1.6+0.0
+34992 23333389 3 1134213192 rep 0 D 2 E 2 bases 8 sub 12 12 nn_eq True cnt_eq True nodes 16 inexact 0 exactsys True t=4.6+2.1
+34992 23333389 3 1134213192 rep 0 D 3 E 2 bases 8 sub 63 63 nn_eq True cnt_eq True nodes 36 inexact 0 exactsys True t=4.7+9.0
+DONE 34992 23333389 3 1134213192
+42336 22234779 3 1134213192 rep 0 D 1 E 1 bases 1 sub 2 2 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=4.0+0.0
+42336 22234779 3 1134213192 rep 0 D 2 E 2 bases 2 sub 4 4 nn_eq True cnt_eq True nodes 4 inexact 0 exactsys True t=3.5+0.5
+42336 22234779 3 1134213192 rep 0 D 3 E 2 bases 2 sub 6 6 nn_eq True cnt_eq True nodes 5 inexact 0 exactsys True t=3.0+2.7
+DONE 42336 22234779 3 1134213192
+42336 22334677 1 3281116734 rep 0 D 1 E 1 bases 2 sub 2 2 nn_eq True cnt_eq True nodes 4 inexact 0 exactsys True t=2.3+0.0
+42336 22334677 1 3281116734 rep 0 D 2 E 2 bases 12 sub 12 12 nn_eq True cnt_eq True nodes 25 inexact 0 exactsys True t=5.4+5.7
+42336 22334677 1 3281116734 rep 0 D 3 E 2 bases 12 sub 36 36 nn_eq True cnt_eq True nodes 45 inexact 0 exactsys True t=6.5+13.8
+DONE 42336 22334677 1 3281116734
+8192 22222488 0 330812181 rep 0 D 1 E 1 bases 1 sub 3 3 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=3.2+0.1
+8192 22222488 0 330812181 rep 0 D 2 E 1 bases 1 sub 18 18 nn_eq True cnt_eq True nodes 4 inexact 0 exactsys True t=4.2+0.4
+8192 22222488 0 330812181 rep 0 D 3 E 2 bases 4 sub 63 63 nn_eq True cnt_eq True nodes 15 inexact 0 exactsys True t=10.2+5.2
+8192 22222488 0 330812181 rep 1 D 1 E 1 bases 1 sub 3 3 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=2.2+0.0
+8192 22222488 0 330812181 rep 1 D 2 E 1 bases 1 sub 36 36 nn_eq True cnt_eq True nodes 6 inexact 0 exactsys True t=2.3+0.3
+8192 22222488 0 330812181 rep 1 D 3 E 2 bases 8 sub 189 189 nn_eq True cnt_eq True nodes 40 inexact 0 exactsys True t=11.5+14.7
+DONE 8192 22222488 0 330812181
+14336 222222478 0 330812181 rep 0 D 1 E 1 bases 1 sub 6 6 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=3.7+0.1
+14336 222222478 0 330812181 rep 0 D 2 E 1 bases 1 sub 54 54 nn_eq True cnt_eq True nodes 6 inexact 0 exactsys True t=4.0+0.3
+14336 222222478 0 330812181 rep 0 D 3 E 2 bases 6 sub 294 294 nn_eq True cnt_eq True nodes 40 inexact 0 exactsys True t=24.6+5.9
+14336 222222478 0 330812181 rep 1 D 1 E 1 bases 1 sub 6 6 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=4.6+0.1
+14336 222222478 0 330812181 rep 1 D 2 E 1 bases 1 sub 108 108 nn_eq True cnt_eq True nodes 12 inexact 0 exactsys True t=4.9+0.5
+14336 222222478 0 330812181 rep 1 D 3 E 2 bases 12 sub 882 882 nn_eq True cnt_eq True nodes 117 inexact 0 exactsys True t=32.5+12.8
+DONE 14336 222222478 0 330812181
+148176 222336777 2 2333772 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=1.2+0.0
+148176 222336777 2 2333772 rep 0 D 2 E 2 bases 3 sub 3 3 nn_eq True cnt_eq True nodes 6 inexact 0 exactsys True t=1.8+0.8
+148176 222336777 2 2333772 rep 0 D 3 E 2 bases 3 sub 7 7 nn_eq True cnt_eq True nodes 15 inexact 0 exactsys True t=1.9+2.9
+148176 222336777 2 2333772 rep 0 D 4 E 3 bases 7 sub 13 13 nn_eq True cnt_eq True nodes 22 inexact 0 exactsys True t=13.9+19.9
+DONE 148176 222336777 2 2333772
+18144 222333347 1 44471322 rep 0 D 1 E 1 bases 1 sub 2 2 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=1.3+0.0
+18144 222333347 1 44471322 rep 0 D 2 E 2 bases 4 sub 8 8 nn_eq True cnt_eq True nodes 8 inexact 0 exactsys True t=4.7+1.6
+18144 222333347 1 44471322 rep 0 D 3 E 2 bases 4 sub 18 18 nn_eq True cnt_eq True nodes 13 inexact 0 exactsys True t=5.0+4.2
+18144 222333347 1 44471322 rep 0 D 4 E 3 bases 9 sub 32 32 nn_eq True cnt_eq True nodes 25 inexact 0 exactsys True t=26.5+30.8
+DONE 18144 222333347 1 44471322
+27216 223333347 1 2722734 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=3.1+0.0
+27216 223333347 1 2722734 rep 0 D 2 E 2 bases 2 sub 4 4 nn_eq True cnt_eq True nodes 4 inexact 0 exactsys True t=3.7+0.9
+27216 223333347 1 2722734 rep 0 D 3 E 2 bases 2 sub 13 13 nn_eq True cnt_eq True nodes 7 inexact 0 exactsys True t=6.9+3.7
+27216 223333347 1 2722734 rep 0 D 4 E 3 bases 4 sub 34 34 nn_eq True cnt_eq True nodes 12 inexact 0 exactsys True t=20.4+11.4
+DONE 27216 223333347 1 2722734
+28672 222224478 0 330812181 rep 0 D 1 E 1 bases 1 sub 4 4 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=8.4+0.1
+28672 222224478 0 330812181 rep 0 D 2 E 1 bases 1 sub 48 48 nn_eq True cnt_eq True nodes 8 inexact 0 exactsys True t=5.5+0.3
+28672 222224478 0 330812181 rep 0 D 3 E 2 bases 12 sub 252 252 nn_eq True cnt_eq True nodes 87 inexact 0 exactsys True t=17.0+17.1
+DONE 28672 222224478 0 330812181
+34992 233333346 0 60761421 rep 0 D 1 E 1 bases 1 sub 3 3 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=5.8+0.1
+34992 233333346 0 60761421 rep 0 D 2 E 1 bases 1 sub 36 36 nn_eq True cnt_eq True nodes 4 inexact 0 exactsys True t=5.8+0.5
+34992 233333346 0 60761421 rep 0 D 3 E 2 bases 4 sub 273 273 nn_eq True cnt_eq True nodes 16 inexact 0 exactsys True t=14.4+5.7
+DONE 34992 233333346 0 60761421
+14336 2222222278 0 330812181 rep 0 D 1 E 1 bases 1 sub 3 3 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=4.7+0.0
+14336 2222222278 0 330812181 rep 0 D 2 E 1 bases 1 sub 72 72 nn_eq True cnt_eq True nodes 6 inexact 0 exactsys True t=6.8+0.5
+14336 2222222278 0 330812181 rep 0 D 3 E 2 bases 8 sub 819 819 nn_eq True cnt_eq True nodes 52 inexact 0 exactsys True t=35.3+17.2
+14336 2222222278 0 330812181 rep 0 D 4 E 2 bases 8 sub 5304 5304 nn_eq True cnt_eq True nodes 170 inexact 0 exactsys True t=26.4+40.3
+DONE 14336 2222222278 0 330812181
+148176 2222333777 1 44471322 rep 1 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=2.9+0.0
+148176 2222333777 1 44471322 rep 1 D 2 E 2 bases 6 sub 9 9 nn_eq True cnt_eq True nodes 12 inexact 0 exactsys True t=6.8+2.1
+148176 2222333777 1 44471322 rep 1 D 3 E 2 bases 6 sub 49 49 nn_eq True cnt_eq True nodes 29 inexact 0 exactsys True t=5.9+9.5
+148176 2222333777 1 44471322 rep 1 D 4 E 3 bases 28 sub 169 169 nn_eq True cnt_eq True nodes 116 inexact 0 exactsys True t=86.1+109.4
+DONE 148176 2222333777 1 44471322
+18144 2222233337 1 44471322 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=2.9+0.0
+18144 2222233337 1 44471322 rep 0 D 2 E 2 bases 12 sub 12 12 nn_eq True cnt_eq True nodes 24 inexact 0 exactsys True t=5.8+3.5
+18144 2222233337 1 44471322 rep 0 D 3 E 2 bases 12 sub 63 63 nn_eq True cnt_eq True nodes 66 inexact 0 exactsys True t=6.6+17.5
+18144 2222233337 1 44471322 rep 0 D 4 E 3 bases 63 sub 208 208 nn_eq True cnt_eq True nodes 260 inexact 0 exactsys True t=110.6+258.7
+DONE 18144 2222233337 1 44471322
+18144 2222233337 2 133923132 rep 1 D 1 E 1 bases 1 sub 2 2 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=7.9+0.1
+18144 2222233337 2 133923132 rep 1 D 2 E 2 bases 8 sub 16 16 nn_eq True cnt_eq True nodes 16 inexact 0 exactsys True t=17.7+4.9
+18144 2222233337 2 133923132 rep 1 D 3 E 2 bases 8 sub 54 54 nn_eq True cnt_eq True nodes 28 inexact 0 exactsys True t=12.6+13.4
+18144 2222233337 2 133923132 rep 1 D 4 E 3 bases 27 sub 128 128 nn_eq True cnt_eq True nodes 94 inexact 0 exactsys True t=111.5+107.3
+DONE 18144 2222233337 2 133923132
+27216 2222333337 1 44471322 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=3.0+0.0
+27216 2222333337 1 44471322 rep 0 D 2 E 2 bases 8 sub 12 12 nn_eq True cnt_eq True nodes 16 inexact 0 exactsys True t=6.6+2.4
+27216 2222333337 1 44471322 rep 0 D 3 E 2 bases 8 sub 63 63 nn_eq True cnt_eq True nodes 38 inexact 0 exactsys True t=5.4+9.8
+27216 2222333337 1 44471322 rep 0 D 1 E 1 bases 1 sub 1 1 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=2.1+0.0
+27216 2222333337 1 44471322 rep 0 D 2 E 2 bases 8 sub 12 12 nn_eq True cnt_eq True nodes 16 inexact 0 exactsys True t=4.3+1.7
+27216 2222333337 1 44471322 rep 0 D 3 E 2 bases 8 sub 63 63 nn_eq True cnt_eq True nodes 38 inexact 0 exactsys True t=4.7+7.7
+27216 2222333337 1 44471322 rep 0 D 4 E 3 bases 36 sub 208 208 nn_eq True cnt_eq True nodes 134 inexact 0 exactsys True t=60.4+87.3
+DONE 27216 2222333337 1 44471322
+28672 2222222478 0 330812181 rep 0 D 1 E 1 bases 1 sub 6 6 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=6.3+0.1
+28672 2222222478 0 330812181 rep 0 D 2 E 1 bases 1 sub 108 108 nn_eq True cnt_eq True nodes 12 inexact 0 exactsys True t=9.7+0.4
+28672 2222222478 0 330812181 rep 0 D 3 E 2 bases 12 sub 882 882 nn_eq True cnt_eq True nodes 93 inexact 0 exactsys True t=35.1+11.2
+28672 2222222478 0 330812181 rep 0 D 4 E 2 bases 12 sub 4056 4056 nn_eq True cnt_eq True nodes 679 inexact 0 exactsys True t=36.3+44.4
+28672 2222222478 0 330812181 rep 1 D 1 E 1 bases 1 sub 6 6 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=4.7+0.0
+28672 2222222478 0 330812181 rep 1 D 2 E 1 bases 1 sub 216 216 nn_eq True cnt_eq True nodes 26 inexact 0 exactsys True t=4.7+0.2
+28672 2222222478 0 330812181 rep 1 D 3 E 2 bases 24 sub 2646 2646 nn_eq True cnt_eq True nodes 310 inexact 0 exactsys True t=45.0+21.2
+28672 2222222478 0 330812181 rep 1 D 4 E 2 bases 24 sub 16224 16224 nn_eq True cnt_eq True nodes 2292 inexact 0 exactsys True t=44.3+65.1
+DONE 28672 2222222478 0 330812181
+28672 22222222278 0 330812181 rep 0 D 1 E 1 bases 1 sub 6 6 nn_eq True cnt_eq True nodes 2 inexact 0 exactsys True t=4.5+0.0
+28672 22222222278 0 330812181 rep 0 D 2 E 1 bases 1 sub 216 216 nn_eq True cnt_eq True nodes 14 inexact 0 exactsys True t=4.4+0.2
+28672 22222222278 0 330812181 rep 0 D 3 E 2 bases 12 sub 3822 3822 nn_eq True cnt_eq True nodes 115 inexact 0 exactsys True t=68.9+10.9
+28672 22222222278 0 330812181 rep 0 D 4 E 2 bases 12 sub 34476 34476 nn_eq True cnt_eq True nodes 800 inexact 0 exactsys True t=44.7+43.9
+DONE 28672 22222222278 0 330812181
+checked 16 mismatches 0

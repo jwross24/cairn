@@ -1,0 +1,8 @@
+{"vertex": 14336, "equations": 16, "ref_open": 503581, "cand_open": 25773, "bsdrop": 477808, "exact": 0, "py_dropped": 477808, "mismatches": 0, "secs": 8.6}
+rc=0
+{"vertex": 28672, "equations": 19, "ref_open": 1512118, "cand_open": 75420, "bsdrop": 1436698, "exact": 0, "py_dropped": 1436698, "mismatches": 0, "secs": 26.4}
+rc=0
+{"vertex": 8192, "equations": 21, "ref_open": 289508, "cand_open": 15207, "bsdrop": 274301, "exact": 0, "py_dropped": 274301, "mismatches": 0, "secs": 9.1}
+rc=0
+{"vertex": 10800, "equations": 17, "ref_open": 306561, "cand_open": 16087, "bsdrop": 290474, "exact": 0, "py_dropped": 290474, "mismatches": 0, "secs": 11.1}
+rc=0

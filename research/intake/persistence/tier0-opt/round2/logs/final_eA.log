@@ -1,0 +1,5 @@
+ref            n=4.906e+07 ns/pat med= 52.15 q25= 51.86 min= 49.75 max= 52.82 load1m(med)=14.9
+opt            n=4.906e+07 ns/pat med= 11.48 q25= 11.04 min= 10.57 max= 12.18 load1m(med)=14.9
+R2             n=4.906e+07 ns/pat med=  2.90 q25=  2.80 min=  2.65 max=  3.14 load1m(med)=14.9
+ratio ref/opt: med=4.567 min=4.285 max=4.810  of-minima=4.705
+ratio ref/R2: med=17.844 min=16.268 max=19.807  of-minima=18.754

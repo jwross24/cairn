@@ -1,0 +1,2 @@
+{"digest_list_sha256": "6ddc36517db35f1735af907f6b990e890b900f50dfc725ece08905367f19d4c3", "distinct_digests": 440640, "distinct_equals_total": true, "families_first_appearance": [93312, 46656, 93312, 82944, 41472, 82944], "families_sorted": [41472, 46656, 82944, 82944, 93312, 93312], "multiset_match": true, "ordered_match": true, "seconds": 972.0, "sum_families": 440640, "total": 440640}
+GATE PASSED: N_3 = 440640, families [93312, 46656, 93312, 82944, 41472, 82944]

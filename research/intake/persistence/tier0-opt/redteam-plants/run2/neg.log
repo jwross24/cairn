@@ -1,0 +1,28 @@
+ARTIFACTS /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/redteam-plants/run2/neg/persistence-plants-xtu1uxb3
+RUN command-0000 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12
+FAIL G0/native-lvl12/bs=False: plant has neither matching OPEN nor EXACT
+RUN command-0001 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12
+FAIL G0/native-lvl12/bs=True: plant has neither matching OPEN nor EXACT
+N/A G0/late-anchor-closure: checked exact child is exempt from late cuts
+RUN command-0002 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+FAIL G1/native-lift-24: lift lost the exact child and its coset
+N/A G1/late-anchor-closure: checked exact child is exempt from late cuts
+N/A G24/late-anchor-closure: checked exact child is exempt from late cuts
+UNSUPPORTED S288/native-C: arbitrary starting coset has no CLI representation; function fixture only
+{
+  "failures": [
+    "G0/native-lvl12/bs=False",
+    "G0/native-lvl12/bs=True",
+    "G1/native-lift-24"
+  ],
+  "errors": [],
+  "artifacts": "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/redteam-plants/run2/neg/persistence-plants-xtu1uxb3",
+  "excluded": [
+    "libpydesc acceleration",
+    "G132 native enumeration and two-adic A-bound",
+    "S288 native anchored interfaces",
+    "S384 windows beyond depth 4",
+    "tighter U2/Uprime bounds",
+    "native C survivor-by-survivor membership"
+  ]
+}

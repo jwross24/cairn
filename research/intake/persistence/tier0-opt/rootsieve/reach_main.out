@@ -1,0 +1,9 @@
+modulus 27 patterns with the needed divisibility tested 400 zero reachable 400 mean reachable-set fraction 0.333
+modulus 81 patterns with the needed divisibility tested 400 zero reachable 400 mean reachable-set fraction 0.333
+modulus 243 patterns with the needed divisibility tested 400 zero reachable 400 mean reachable-set fraction 0.333
+modulus 729 patterns with the needed divisibility tested 400 zero reachable 400 mean reachable-set fraction 0.333
+modulus 49 patterns with the needed divisibility tested 400 zero reachable 400 mean reachable-set fraction 0.143
+modulus 343 patterns with the needed divisibility tested 400 zero reachable 400 mean reachable-set fraction 0.143
+modulus 27*49 patterns with the needed divisibility tested 400 zero reachable 400 mean reachable-set fraction 0.048
+modulus 81*343 patterns with the needed divisibility tested 400 zero reachable 400 mean reachable-set fraction 0.048
+negative control (3 does not divide x), modulus 27: tested 400, zero reachable 0

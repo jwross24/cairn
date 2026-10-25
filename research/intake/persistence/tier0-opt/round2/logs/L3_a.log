@@ -1,0 +1,11 @@
+== gate a: tag=L3 bin=/private/tmp/persist-lvl12-r2/bin/L3.gated sha=8722e8e94a0545a6 load=18.26 17.47 14.38
+SAME eq6.jsonl
+SAME v14.jsonl
+SAME v189.jsonl
+SAME v27.jsonl
+SAME v294.jsonl
+SAME v4.jsonl
+SAME v72.jsonl
+SAME v98.jsonl
+SAME c_oracle.jsonl
+rc=0

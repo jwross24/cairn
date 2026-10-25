@@ -1,0 +1,776 @@
+{
+ "short_exact": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "4ee2aa712151",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 2 2 0 0 0 12"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "4ee2aa712151",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 2 2 0 0 0 12"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 0,
+   "sha": "e3b0c44298fc",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 0 exact 0",
+   "lines": []
+  }
+ },
+ "short_exact_kt3": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "4ee2aa712151",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 2 2 0 0 0 12"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "4ee2aa712151",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 2 2 0 0 0 12"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 0,
+   "sha": "e3b0c44298fc",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 0 exact 0",
+   "lines": []
+  }
+ },
+ "short_exact_kt2": {
+  "join24": {
+   "rc": 0,
+   "nl": 2,
+   "sha": "50fdb2dcda7a",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 1 exact 1",
+   "lines": [
+    "EXACT 0 2 2 0 0 0 12",
+    "OPEN 0 2 2 0 0 0"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 2,
+   "sha": "50fdb2dcda7a",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 4 zero 0 dead 1 tail-dead 0 open 1 exact 1",
+   "lines": [
+    "EXACT 0 2 2 0 0 0 12",
+    "OPEN 0 2 2 0 0 0"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 2,
+   "sha": "50fdb2dcda7a",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 1 exact 1",
+   "lines": [
+    "EXACT 0 2 2 0 0 0 12",
+    "OPEN 0 2 2 0 0 0"
+   ]
+  }
+ },
+ "k_lt1": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "4e4426e7b41f",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 2 2 0 0 0"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "4e4426e7b41f",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 4 zero 0 dead 3 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 2 2 0 0 0"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "4e4426e7b41f",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 2 2 0 0 0"
+   ]
+  }
+ },
+ "a0_21": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "d3bff811275f",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 0 2 1 0 0 21"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "d3bff811275f",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 4 zero 0 dead 3 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 0 2 1 0 0 21"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 0,
+   "sha": "e3b0c44298fc",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 0 exact 0",
+   "lines": []
+  }
+ },
+ "a0_21_k0": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "98ab171dfb5a",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 2 1 0 0"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "98ab171dfb5a",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 4 zero 0 dead 3 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 2 1 0 0"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "98ab171dfb5a",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 2 1 0 0"
+   ]
+  }
+ },
+ "a0_27": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "720d2a075c37",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 8 zero 0 dead 0 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 0 2 1 0 0 0 27"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "720d2a075c37",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 8 zero 1 dead 6 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 0 2 1 0 0 0 27"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "720d2a075c37",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 8 zero 0 dead 0 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 0 2 1 0 0 0 27"
+   ]
+  }
+ },
+ "a0_63": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "1ba189d2ae21",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 8 zero 0 dead 0 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 0 2 0 1 0 0 63"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "1ba189d2ae21",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 8 zero 0 dead 7 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 0 2 0 1 0 0 63"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "1ba189d2ae21",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 8 zero 0 dead 0 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 0 2 0 1 0 0 63"
+   ]
+  }
+ },
+ "a0_189": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "6e432508e0f3",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 8 zero 0 dead 0 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 0 3 1 0 0 0 189"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "6e432508e0f3",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 8 zero 0 dead 7 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 0 3 1 0 0 0 189"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "6e432508e0f3",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 8 zero 0 dead 0 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 0 3 1 0 0 0 189"
+   ]
+  }
+ },
+ "short_exact_a1_18": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "9475a7aff6a8",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 1 2 0 0 0 18"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "9475a7aff6a8",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 1
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 0 exact 1",
+   "lines": [
+    "EXACT 0 1 2 0 0 0 18"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 0,
+   "sha": "e3b0c44298fc",
+   "kinds": {
+    "OPEN": 0,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 4 zero 0 dead 0 tail-dead 0 open 0 exact 0",
+   "lines": []
+  }
+ },
+ "long_multi_k0": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "792a41abc4db",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 512 zero 0 dead 14 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 2 5 10 3 6 7 4 1 0 0"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "792a41abc4db",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 512 zero 4 dead 507 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 2 5 10 3 6 7 4 1 0 0"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "792a41abc4db",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 512 zero 0 dead 14 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 2 5 10 3 6 7 4 1 0 0"
+   ]
+  }
+ },
+ "long_multi_k4": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "792a41abc4db",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 512 zero 0 dead 14 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 2 5 10 3 6 7 4 1 0 0"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "792a41abc4db",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 512 zero 1 dead 126 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 2 5 10 3 6 7 4 1 0 0"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "792a41abc4db",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 512 zero 0 dead 4 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 2 5 10 3 6 7 4 1 0 0"
+   ]
+  }
+ },
+ "long_multi_k12": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "792a41abc4db",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 512 zero 0 dead 14 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 2 5 10 3 6 7 4 1 0 0"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "792a41abc4db",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 512 zero 4 dead 507 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 2 5 10 3 6 7 4 1 0 0"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "792a41abc4db",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 512 zero 0 dead 14 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 2 5 10 3 6 7 4 1 0 0"
+   ]
+  }
+ },
+ "long_rep_k0": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 3 dead 328 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 259 dead 12028 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 3 dead 328 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  }
+ },
+ "long_rep_k4": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 3 dead 328 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 39 dead 2008 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 1 dead 60 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  }
+ },
+ "long_rep_k12": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 3 dead 328 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 259 dead 12028 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 3 dead 328 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  }
+ },
+ "long_both_k0": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 3 dead 328 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 259 dead 12028 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 3 dead 328 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  }
+ },
+ "long_both_k4": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 3 dead 328 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 39 dead 2008 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 1 dead 60 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  }
+ },
+ "long_both_k12": {
+  "join24": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 3 dead 328 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  },
+  "blind": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 259 dead 12028 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  },
+  "BEST": {
+   "rc": 0,
+   "nl": 1,
+   "sha": "607d4739a0c2",
+   "kinds": {
+    "OPEN": 1,
+    "EXACT": 0
+   },
+   "err": "parents 1 children 12288 zero 3 dead 328 tail-dead 0 open 1 exact 0",
+   "lines": [
+    "OPEN 0 0 13 6 12 0 7 9 11 1 8 10 5 2 4 3 0 0"
+   ]
+  }
+ }
+}

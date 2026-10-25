@@ -1,0 +1,67 @@
+import gmpy2
+from gmpy2 import mpfr, mpz
+
+gmpy2.get_context().precision = 400
+gmpy2.get_context().emax = 1 << 40
+gmpy2.get_context().emin = -(1 << 40)
+
+
+def lg(x):
+    return gmpy2.log(mpfr(x))
+
+
+def params(D, alphas, rho, m, L, chi):
+    a = [(rho - 1) * la + 2 * D * h for (la, h) in alphas]
+    a1, a2, a3 = a
+    omega = a1 * a2 * a3
+    amin = min(a)
+    K = m * L * omega
+    c1 = max(mpfr(2) ** (mpfr(1) / 3), (chi * m * L) ** (mpfr(2) / 3), gmpy2.sqrt(2 * m * L / amin))
+    c2 = (m * L) ** (mpfr(2) / 3)
+    c3 = (3 * m * m) ** (mpfr(1) / 3) * L
+    R = [c * a2 * a3 for c in (c1, c2, c3)]
+    S = [c * a1 * a3 for c in (c1, c2, c3)]
+    T = [c * a1 * a2 for c in (c1, c2, c3)]
+    return a, omega, K, (c1, c2, c3), R, S, T
+
+
+def slack(D, alphas, bsz, rho, m, L, chi):
+    a, omega, K, cs, R, S, T = params(D, alphas, rho, m, L, chi)
+    a1, a2, a3 = a
+    Rt, St, Tt = sum(R) + 1, sum(S) + 1, sum(T) + 1
+    N = K * (K + 1) * L / 2
+    g = mpfr(1) / 4 - N / (12 * Rt * St * Tt)
+    b1, b2, b3 = bsz
+    logb = lg(((Rt - 1) * b3 + (Tt - 1) * b1) / 2) + lg(((St - 1) * b2 + (Tt - 1) * b3) / 2) - 2 * lg(K) + mpfr(11) / 3
+    lhs = (K * L / 2 + L / 2 - mpfr("0.37") * K - 2) * lg(rho)
+    rhs = (D + 1) * lg(N) + g * L * (a1 * Rt + a2 * St + a3 * Tt) + 2 * D * (K - 1) * logb / 3
+    return lhs - rhs, K
+
+
+def min_L(D, alphas, bsz, rho, m, chi, lo=5, hi=10 ** 9):
+    s, _ = slack(D, alphas, bsz, rho, m, mpfr(hi), chi)
+    if s <= 0:
+        return None
+    while hi - lo > 1:
+        mid = (lo + hi) // 2
+        s, _ = slack(D, alphas, bsz, rho, m, mpfr(mid), chi)
+        if s > 0:
+            hi = mid
+        else:
+            lo = mid
+    return hi
+
+
+def bound(D, alphas, bsz, grid=None):
+    best = None
+    for chi in (mpfr("0.5"), mpfr("0.75"), mpfr(1), mpfr("1.25"), mpfr("1.5")):
+        for rho in (4, 5, 6, 7, 8, 9, 10, 11, 12, 14):
+            for m in (1, 2, 3, 4, 5, 6, 7, 8, 9, 12):
+                L = min_L(D, alphas, bsz, mpfr(rho), mpfr(m), chi)
+                if L is None:
+                    continue
+                a, omega, K, cs, R, S, T = params(D, alphas, mpfr(rho), mpfr(m), mpfr(L), chi)
+                val = K * L * lg(rho) + lg(K * L)
+                if best is None or val < best[0]:
+                    best = (val, rho, m, L, chi, omega, K)
+    return best

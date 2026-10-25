@@ -1,0 +1,4 @@
+REPFILE y=10167463313316 a=2 b=26 c=0 k=31 nu=7
+VERDICT NOTAPPL no U'' row for (k=31, a=2) [0s]
+
+0 of 1 representations closed [0s]

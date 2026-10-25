@@ -1,0 +1,6 @@
+words checked by category {'dead96': 459, 'alive480': 53, 'alive96_dead384': 199}
+agreement (level, same?) -> {(96, True): 711, (192, True): 711, (384, True): 711, (480, True): 711}
+disagreements 0 []
+z-form identity held on 711 words
+reference seconds per call {96: 0.00025, 192: 0.00066, 384: 0.00255, 480: 0.00445} calls {96: 711, 192: 711, 384: 711, 480: 711}
+seconds 10.7

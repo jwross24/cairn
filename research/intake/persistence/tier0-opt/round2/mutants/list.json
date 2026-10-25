@@ -1,0 +1,82 @@
+[
+ {
+  "name": "m01_skip_9901_lookup",
+  "desc": "SIMD filter drops the p=9901 lookup"
+ },
+ {
+  "name": "m02_skip_37_lookup",
+  "desc": "SIMD filter drops the p=37 lookup (zero flag only)"
+ },
+ {
+  "name": "m03_lane_offset",
+  "desc": "upper-half lane load offset 4->3"
+ },
+ {
+  "name": "m04_movemask_shift",
+  "desc": "upper-half movemask shift 4->3"
+ },
+ {
+  "name": "m05_valid_mask",
+  "desc": "valid mask admits residue start-1"
+ },
+ {
+  "name": "m06_zero_count_unmasked",
+  "desc": "zero count ignores valid mask"
+ },
+ {
+  "name": "m07_c_field_accept",
+  "desc": "Z5 field accepts 6 instead of 5"
+ },
+ {
+  "name": "m08_no_final_flush",
+  "desc": "final queue flush removed"
+ },
+ {
+  "name": "m09_queue_advance",
+  "desc": "queue skips single-survivor batches"
+ },
+ {
+  "name": "m10_amask_leaf",
+  "desc": "leaf residue 0 omitted from allowed-digit mask"
+ },
+ {
+  "name": "m11_tmax",
+  "desc": "a0 trip count short by one"
+ },
+ {
+  "name": "m12_feas_count",
+  "desc": "digit-count feasibility off by one"
+ },
+ {
+  "name": "m13_cr_v2_mod",
+  "desc": "v2 residue mod 99"
+ },
+ {
+  "name": "m14_pt16_index",
+  "desc": "3^b table index shifted"
+ },
+ {
+  "name": "m15_alive_eps",
+  "desc": "alive replay writes wrong last residue"
+ },
+ {
+  "name": "m16_kk",
+  "desc": "k mod 100 off by one"
+ },
+ {
+  "name": "m17_zero_mask",
+  "desc": "zero-flag bits dropped from the pass mask"
+ },
+ {
+  "name": "m18_c_test_off",
+  "desc": "order-5 field test skipped"
+ },
+ {
+  "name": "m19_ent32_decode",
+  "desc": "component index decode uses 242"
+ },
+ {
+  "name": "m20_survivor_branch_cond",
+  "desc": "tail-dead counted for invalid a0"
+ }
+]

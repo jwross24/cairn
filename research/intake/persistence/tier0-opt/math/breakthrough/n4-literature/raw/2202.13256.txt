@@ -1,0 +1,277 @@
+                                                                          ON TWO CONJECTURES CONCERNING THE
+                                                                           TERNARY DIGITS OF POWERS OF TWO
+                                                                                                     ROBERT I. SAYE∗
+
+                                               Abstract. Erdős conjectured that 1, 4, and 256 are the only powers of two whose ternary representations consist solely of
+                                           0s and 1s. Sloane conjectured that, except for {20 , 21 , 22 , 23 , 24 , 215 }, every other power of two has at least one 0 in its ternary
+                                           representation. In this paper, numerical results are given in strong support of these conjectures. In particular, we verify both
+                                           conjectures for all 2n with n ≤ 2 · 345 ≈ 5.9 × 1021 . Our approach makes use of a simple recursive construction of numbers 2n
+                                           having prescribed patterns in their trailing ternary digits.
+
+
+
+
+arXiv:2202.13256v2 [math.NT] 23 Mar 2022
+                                               Key words. powers of two, ternary expansion, conjectures in number theory, exponential Diophantine equations
+
+                                               AMS subject classifications. 11A63 (primary), 11Y55, 11D61, 11Y50
+
+
+                                                1. Introduction. Circa 1978, Erdős [2] conjectured that the only powers of two which do not have
+                                           a 2 anywhere in their ternary representation are the numbers 20 , 22 , and 28 . Gupta [3] verified this to be
+                                           the case for every 2n with n ≤ 4373. Extending this bound, a numerical study of Vardi [6] confirmed no
+                                           counterexamples exist for n ≤ 2 · 320 ≈ 7 × 109 . The conjecture remains open; see the additional references
+                                           and analysis of Lagarias [4]; see also Dimitrov & Howe [1] who study a closely related question and prove
+                                           that the only powers of two whose ternary representation contains no 2 and at most twenty-five 1s are the
+                                           aforementioned numbers, 20 , 22 , and 28 .
+                                                Similar in spirit, Sloane [5] conjectured that, except for the numbers {20 , 21 , 22 , 23 , 24 , 215 }, every other
+                                           power of two contains a 0 somewhere in its ternary representation. Along the same lines, one may conjecture
+                                           that, for all but finite number of cases, every power of two contains a 1 somewhere in its ternary representation—
+                                           however, it is straightforward to show this is essentially equivalent to the conjecture of Erdős (the exceptional
+                                           cases being replaced by 21 , 23 , and 29 ).
+                                                One may summarize all three conjectures to say that, except for a handful of small, easily predictable
+                                           cases, every power of two has every possible digit somewhere in its ternary representation. Heuristically,
+                                           we anticipate this to be the case because the ternary digits of powers of two are expected to be essentially
+                                           random, implying that the chances of omitting a particular digit becomes vanishingly small as the overall digit
+                                           count increases. However, this is far from a proof; indeed, the conjectures represent examples of exponential
+                                           Diophantine equations for which few methods of attack have been found [1, 4].
+                                                In this note, numerical results are given in strong support of these conjectures. In particular, we
+                                           significantly extend prior verification bounds and confirm that the ternary representation of 2n contains
+                                           every possible ternary digit, for all 16 ≤ n ≤ 2 · 345 ≈ 5.9 × 1021 . Our approach focuses on examining the
+                                           trailing ternary digits of 2n , which can be efficiently calculated even for massive exponents. In particular, we
+                                           develop a recursive algorithm to construct numbers 2n having prescribed patterns in their trailing ternary
+                                           digits. For example, to find a potential counterexample to Erdős’s conjecture, one may directly enumerate
+                                           in increasing order the numbers 2n whose trailing digits are some combination of 0s and 1s. We note the
+                                           recursive algorithm shares some aspects with the sieving method of Gupta [3].
+                                                As part of our analysis, we also compute the smallest power of two which has no 0 in the last k digits
+                                           of its ternary expansion, for k = 1, 2, . . . (and similarly for trailing digits excluding 1 and 2). The results
+                                           agree very well with what one may expect supposing that the ternary digits of 2n are essentially rolls of a
+                                           three-sided die.
+                                                   2. Notation. It is convenient to define a shorthand notation for the purposes of examining the trailing
+                                           ternary digits of a number: for integers a, b and k a positive integer, a ≡k b means a ≡ b (mod 3k ). In
+                                           addition, dk (a) P  is defined as the k th ternary digit of a, with d1 (a) being the least significant digit: more
+                                                                  n
+                                           precisely, if a = i=0 ai 3i is the ternary representation of a, then dk (a) := ak−1 . As a final piece of notation,
+                                           (· · · )3 indicates the digits in the ternary expansion of a number, e.g., 28 = (100111)3 .
+                                               3. Method. A simple recursive construction of numbers 2n , having prescribed patterns in their trailing
+                                           ternary digits, is made possible via the results of the following lemma; its proof is elementary, and shares
+
+                                              ∗ Lawrence Berkeley National Laboratory, Berkeley, California, USA (rsaye@lbl.gov)
+
+
+
+                                                                                                               1
+some aspects with the method of Gupta [3]. A self-contained proof of the lemma is deferred to the appendix
+so as to simplify the presentation.
+    Lemma 3.1. For a positive integer k, define1 uk := 2 · 3k−1 . Then
+   (i) uk is the smallest positive integer such that 2uk ≡k 1;
+  (ii) if i, j ∈ N and 2i ≡k 2j , then i and j differ by a multiple of uk ;
+ (iii) if i, j ∈ N, the (k + 1)st ternary digit of 2iuk +j is related to that of 2j via
+
+                                       dk+1 (2iuk +j ) ≡ dk+1 (2j ) + i · d1 (2j )   (mod 3).
+
+     We demonstrate the recursive construction process by means of a generic five-digit example. (There is
+nothing special about the digit count of five.) Suppose we have constructed a positive integer j < u5 such
+that the last five ternary digits of 2j is abcde, for some fixed a, . . . , d ∈ {0, 1, 2} and e ∈ {1, 2}. Then, for
+i ∈ {0, 1, 2}, we claim the numbers ji := iu5 + j are such that 2ji are the smallest possible powers of two
+whose last six ternary digits are 0abcde, 1abcde, and 2abcde. (The order of these six-digit combinations, as i
+iterates from 0 to 2, depends on e.) To see why, note that:
+ • Applying part (i) of the lemma with k = 5, observe that 2ji = (2u5 )i 2j ≡5 2j , and so the last five digits
+   are preserved.
+ • For i held fixed, suppose that ` is a positive integer such that ` < ji and 2` matches the last six digits of
+   2ji . Then, by part (ii) of the lemma, ji − ` is a positive multiple of u6 , but this is impossible because
+   ji = iu5 + j < 2u5 + u5 = u6 . Therefore, no such ` exists and consequently 2ji is the smallest possible
+   power of two whose trailing six digits match those of 2ji .
+ • Last, by part (iii), the sixth ternary digit of 2ji is equal (modulo 3) to the sixth digit of 2j plus 0, 1,
+   or 2 multiples of the last digit of 2j . The latter digit is either 1 or −1 (modulo 3), which means that,
+   irrespective of what the sixth digit of 2j is, we shall always obtain some arrangement of 0abcde, 1abcde,
+   and 2abcde for the last six digits of 2ji , as i iterates over {0, 1, 2}.
+     In general, we observe that adding multiples of uk to a number j < uk allow us to explicitly construct
+powers of two whose last k digits match those of 2j and whose (k + 1)st digit is controlled; moreover, the
+recursive approach builds powers of two in the smallest order possible. As an example application, we may
+then use this approach to test the conjecture of Erdős, by starting with 20 (whose least significant digit is 1),
+then generate the smallest powers of two whose trailing two digits are 01 and 11, then generate the smallest
+powers of two whose trailing three digits are 001, 101, 011, and 111, etc. If any of these powers of two end
+up containing solely 0s and 1s in their ternary representation, then a counterexample to the conjecture has
+been discovered (provided it is not one of the trivial cases, of course); moreover, any such counterexample
+must be constructable by this process.
+     An algorithm implementing this strategy is given in Algorithm 1. The input is k, the number of so-far-
+constructed trailing digits, the unit uk defined by Lemma 3.1 and its corresponding power of two, along
+with an integer j and its corresponding power of two. The parameter χ specifies the digit controlling the
+recursive construction: if χ = 2 (resp., χ = 0), then Algorithm 1 generates powers of two whose trailing
+k digits contain only 0s and 1s (resp., only 1s and 2s), thereby examining the conjecture of Erdős (resp.,
+Sloane). In particular, for χ = 2, the recursion is initiated with the first power of two having k = 1 valid
+digits, i.e., G2 (k = 1, uk = 2, 2uk = 4, j = 0, 2j = 1). Meanwhile, for χ = 0, the recursion is initiated via
+two base cases, G0 (k = 1, uk = 2, 2uk = 4, j = 0, 2j = 1) and G0 (k = 1, uk = 2, 2uk = 4, j = 1, 2j = 2). By
+construction, the recursive algorithm is depth-first, with a maximum depth controlled by the user-defined
+parameter K. A straightforward calculation shows that the total number of powers of two constructed by
+the recursive algorithm is Θ(2K ), and that every such power is less than 2uK . On the other hand, the total
+number of powers of two less than 2uK is Θ(3K ). In that sense, and in the context of testing the conjectures,
+the recursive approach exponentially reduces the search space versus the more elementary method of simply
+testing every power of two in increasing order.
+     Our implementation of Algorithm 1 includes the following aspects, mainly targeting its efficient execution:
+
+   1 In fact, u = ϕ(3k ), where ϕ is the Euler totient function; Euler’s theorem implies that auk ≡ 1 (mod 3k ) for any positive
+               k
+integer a coprime to 3.
+
+                                                               2
+                                 Algorithm 1 Gχ (k, uk , 2uk , j, 2j ).
+                                  1: Determine the first occurrence of digit χ in 2j .
+                                  2: if digit χ not found and j > 16 then
+                                  3:     output j (nontrivial counterexample found)
+                                  4: if dk (2j ) = χ then
+                                  5:     return
+                                  6: if k ≥ K then
+                                  7:     return
+                                  8: Compute 2uk+1 = (2uk )3 .
+                                  9: Execute Gχ k + 1, 3uk , 2uk+1 , j, 2j .
+                                                                          
+                                                              uk+1
+                                                                   , j + uk , 2j · 2uk .
+                                                                                      
+                                 10: Execute Gχ k + 1, 3uk , 2
+                                 11: Execute Gχ k + 1, 3uk , 2uk+1 , j + 2uk , 2j · (2uk )2 .
+                                                                                           
+
+
+    Fig. 1. Recursive generation of powers of two whose trailing k ternary digits are required to satisfy particular
+    conditions.
+
+ • Except for line 1, all powers of two are computed in the cyclic group modulo 3κ for a fixed κ. In particular,
+   we have used a tailor-made, fixed precision integer type representing a κ = 54 digit ternary number. It
+   is implemented as a three-digit number in base 318 , with each such digit represented by a conventional
+   32-bit unsigned integer (uint32_t in C++). This approach is particularly fast at computing the cubes
+   and multiplications in Algorithm 1.
+ • On line 1, we first query for the occurrence of digit χ in the fixed-precision 54-ternary digit number
+   representing 2j . (Here, the “first occurrence” essentially means min{i : di (j) = χ}.) Although sufficiently
+   rare, it can happen that no such digit occurs in these 54 digits, in which case we switch over to an
+   alternative algorithm. The alternative algorithm computes 2j (via exponentiation-by-squaring) in the
+   cycling group modulo 3` (using a similar ternary digit implementation as above), in progressively increasing
+   lengths `, until χ is found. In essence, this method tries to compute as few of the trailing digits of
+   2j as possible in order to find the digit χ; owing to the nature of the distribution of ternary digits of
+   powers of two, it is usually the case that not many additional digits are required. (We note that a
+   nontrivial counterexample to the conjectures would require ` to reach the full digit length of the ternary
+   representation of 2j , however this circumstance never occurred in our computational study.)
+    4. Results. Running on a modest 64-core compute server for a few days, the computational study in
+this work applied a maximum recursion depth of K = 46. This corresponds to testing the conjectures of
+Erdős and Sloane against all powers 2n such that n ≤ u46 = 2 · 346−1 ≈ 5.9 × 1021 . No counterexamples were
+found.
+    As part of this study, trailing digit count “record breakers” were tracked. Specifically, for χ ∈ {0, 1, 2},
+we define ρχ : N → N such that
+
+          ρχ (k) = min{n ∈ N : 2n ≥ 3k−1 and χ occurs nowhere in the last k ternary digits of 2n }.
+
+(In particular, the powers of two must have at least k ternary digits, i.e., 2n ≥ 3k−1 .) As an example,
+ρ2 (100) = 710982592620911336; the last 110 ternary digits of 2710982592620911336 are
+
+                 0102020002100100100110011100110101011111010101010110010
+                                                                        ←-     
+                        1000111001000101110010101011111010001110110001110111011 3 .
+
+As another example, ρ0 (100) = 388128961376647359; the last 110 digits of 2388128961376647359 are
+
+                 2021120020121121111112111222212121111112222122221212212
+                                                                        ←-     
+                        1122111112221212212211111121221222222111222122221212122 3 .
+
+It is straightforward to show that ρ1 (k) = ρ2 (k) + 1 for all k. This is because 2n ends in a sequence of 0s and
+2s if and only if 2n−1 ends in a sequence of 0s and 1s; moreover, the maximal number of trailing non-1 digits
+(for the former) and non-2 digits (for the latter) are exactly the same. As a result, we only consider ρ0 and
+ρ2 in the following analysis.
+
+                                                              3
+    Fig. 2. Plots of ρ0 (resp., ρ2 ), defined as the smallest integer n such that the digit 0 (resp., 2) occurs nowhere
+    in the last k ternary digits of 2n . The arrow points to the instance where ρ2 (k) = 201015414581294 for all
+    82 ≤ k ≤ 98.
+
+
+
+
+    Fig. 3. Length of the ternary representation of 2ρχ (being approximately ρχ log3 2) as a fraction of the expected
+    number of rolls of three-sided die required to generate an uninterrupted sequence of k non-χ digits (that average
+    roll count being 3( 32 )k − 3).
+
+
+     Fig. 2 plots ρ0 and ρ2 as a function of k. We observe that ρχ (k) grows approximately exponentially
+with k. The longer horizontal steps correspond to the record breakers which have, roughly speaking, an
+uncharacteristic number of trailing non-χ digits. One notable example is n = 201015414581294, which
+corresponds to the smallest power of two having 82 trailing non-2 digits; this same example has, in fact, 98
+trailing non-2 digits. On the other hand, the total number of ternary digits of this power of two is about
+1.3 × 1014 , far exceeding this 98 digit count.
+     An alternative analysis comes from the heuristic that the ternary digits of powers of two are essentially
+random. Imagining the digits of 2n , reading from right-to-left, are a random number generator implementing
+the rolls of a three-sided die, we may ask how many rolls are necessary to generate an uninterrupted sequence
+of k non-χ digits. Each non-χ digit has a probability of 23 , and a routine calculation shows that we need, on
+average, 3( 32 )k − 3 total rolls to generate such a sequence. Of course, this is only an approximation given
+that the digits of powers of two are entirely deterministic; in particular, the first and last digit of 2n is never
+a 0, so this heuristic analysis could be slightly improved. Nevertheless, the expected roll count serves as an
+estimate of what the total ternary digit length is expected to be. Corresponding to the record breakers, Fig. 3
+plots the ternary digit length of 2n (being approximately n log3 2) as a fraction of the expected roll count. We
+observe that, within zero to four of orders of magnitude, the digit counts of record breakers roughly match
+the expected roll count. The example of n = 201015414581294, mentioned in the previous paragraph, is
+uncharacteristic in the sense that for k = 98, we expect to require about 5.4 × 1017 rolls, yet 2201015414581294
+has only 1.3 × 1014 ternary digits. Nevertheless, we observe in Fig. 3 that there is no reasonable indication of
+finding any counterexamples to the conjectures: even the outlier record breakers are nowhere close to having
+the entire string of digits devoid of χ.
+    5. Conclusions. By way of a recursive algorithm and extensive computation, we studied here the two
+conjectures of Erdős and Sloane. These conjectures essentially state that, except for small number of trivial
+cases, every power of two has all possible digits somewhere in its ternary representation. The recursive
+
+                                                            4
+algorithm explicitly constructs powers of two such that their trailing digits satisfy a certain requirement, e.g.,
+consist solely of 0s and 1s. Testing these conjectures against all powers 2n with n ≤ 2 · 345 ≈ 5.9 × 1021 , no
+counterexamples were found. This extends an earlier study by Vardi [6] which considered n ≤ 2 · 320 ≈ 7 × 109 .
+As part of the analysis, two “record breaking” integer sequences were defined: these record the smallest
+powers of two having no 0 (resp., 2) in the last k digits of its ternary representation, for k = 1, 2, . . .. These
+integer sequences have been entered into the OEIS as A351927 and A351928.
+    Appendix A. Proof of Lemma 3.1. We begin with a few elementary observations:
+ (a) Suppose the last k ≥ 2 ternary digits of an integer x are (a[0]k−2 1)3 with a ∈ {0, 1, 2}. (Here and in
+     the following, the notation [ · ]` means ` copies of the indicated digit.) Then, for some exponent i ∈ N,
+     we have that xi ≡ (a · 3k−1 + 1)i ≡ ai · 3k−1 + 1 (mod 3k ), as shown by a simple application of the
+     binomial theorem.
+ (b) For a positive integer k, the last k + 1 ternary digits of 2uk are (1[0]k−1 1)3 . A simple inductive proof is
+     as follows. Suppose the result holds for some k ≥ 2 (the base cases with k ∈ {1, 2} are trivial to verify).
+     Then 2uk − 1 = (3x + 1)3k for some non-negative integer x, and so
+                                                   3
+                  2uk+1 = (2uk )3 = (2uk − 1) + 1 = (2uk − 1)3 + 3(2uk − 1)2 + 3(2uk − 1) + 1
+                          ≡ 3k+1 + 1      (mod 3k+2 ),
+
+      as required.
+Applying these observations, the proof of Lemma 3.1 is as follows.
+   (i) For k ≥ 2, assume by induction that uk−1 is the smallest positive integer j such that 2j ≡k−1 1, and let
+       ` be the smallest positive integer such that 2` ≡k 1. This number clearly satisfies 2` ≡k−1 1, and so if
+       ` = auk−1 + b with a, b ∈ N and 0 ≤ b < uk−1 , we see that (2uk−1 )a 2b ≡k−1 1. This linear congruence
+       problem has a unique solution, namely 2b ≡k−1 1, which by the inductive hypothesis implies b = 0,
+       and so ` is a multiple of uk−1 . By observation (b) above, ` cannot equal uk−1 because the k th digit of
+       2uk−1 is 1. Further, ` cannot equal 2uk−1 because the square of 2uk−1 has k th digit equal to 2. The
+       next multiple of uk−1 satisfies all requirements, and so ` = 3uk−1 = uk , as claimed. (Note: the base
+       cases of the inductive argument trivially hold by elementary computation.)
+  (ii) Suppose i, j ∈ N are such that 2i ≡k 2j . Without loss of generality, suppose i < j. Then 2i 2j−i = 2j
+       yields a linear congruence (2i mod 3k )(2j−i mod 3k ) ≡ 2j (mod 3k ). Since the gcd of (2i mod 3k ) and
+       3k is unity, there is exactly one solution to the linear congruence, namely 2j−i ≡k 1. Now suppose
+       j − i = auk + b with a, b ∈ N and 0 ≤ b < uk ; since 2j−i = (2uk )a 2b ≡k 1 and 2uk ≡k 1, again by
+       uniqueness of the linear congruence problem, we find that 2b ≡k 1. Part (i) then implies b = 0, and so i
+       and j differ by a multiple of uk , as claimed.
+ (iii) Suppose i, j ∈ N. Note that 2iuk +j ≡k+1 (2uk mod 3k+1 )i 2j (mod 3k+1). By observations (a) and (b),
+       the trailing k + 1 ternary digits of the first term are [i mod 3][0]k−1 1 3 . It is then a straightforward
+       application of long multiplication to show that, modulo three, the (k + 1)st digit of 2iuk +j is equal to
+       the sum of the (k + 1)st digit of 2j plus i times the first digit of 2j , as claimed.
+     Acknowledgements. The author thanks an anonymous reviewer for suggesting refinements to the
+proof of Lemma 3.1. Some computations used resources made possible by the Applied Mathematics Program
+of the U.S. Department of Energy Office of Advanced Scientific Computing Research under contract number
+DE-AC02-05CH11231.
+
+                                                     REFERENCES
+
+[1] V. S. Dimitrov and E. W. Howe, Powers of 3 with few nonzero bits and a conjecture of Erdős, preprint, 2021. Available
+        at https://arxiv.org/abs/2105.06440.
+[2] P. Erdős, Some unconventional problems in number theory, Math. Mag., 52 (1979), pp. 67–70.
+[3] H. Gupta, Powers of 2 and sums of distinct powers of 3, Univ. Beograd Publ. Elecktrotehn, 602–633 (1978), pp. 151–158.
+[4] J. C. Lagarias, Ternary expansions of powers of 2, J. Lond. Math. Soc., 79 (2009), pp. 562–588, https://doi.org/10.1112/
+        jlms/jdn080.
+[5] N. J. A. Sloane, The persistence of a number, J. Recreational Math., 6 (1973), pp. 97–98.
+[6] I. Vardi, Computational Recreations in Mathematica, Addison Wesley Longman Publishing Co., Inc., 1991.
+
+                                                             5
+

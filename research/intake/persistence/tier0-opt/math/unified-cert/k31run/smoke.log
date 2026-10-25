@@ -1,0 +1,21 @@
+enumerated in 942.7s
+gate real: PASSED
+gate planted negative (total+1): GATE REFUSED: node count 440640 != expected 440641
+gate planted negative (family[3]+1): GATE REFUSED: family counts [93312, 46656, 93312, 82944, 41472, 82944] != expected [93312, 46656, 93312, 82945, 41472, 82944] (as multisets)
+Traceback (most recent call last):
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/unified-cert/k31run/runA.py", line 338, in <module>
+    main()
+    ~~~~^^
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/unified-cert/k31run/runA.py", line 334, in main
+    {'gate': cmd_gate, 'run': cmd_run, 'planted': cmd_planted, 'margins': cmd_margins, 'summary': cmd_summary, 'smoke': cmd_smoke}[args.cmd](args)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/unified-cert/k31run/runA.py", line 295, in cmd_smoke
+    cmd_run(run_a, nodes)
+    ~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/unified-cert/k31run/runA.py", line 153, in cmd_run
+    U = load_utable(args.utable)[(31, 0)]
+        ~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/unified-cert/ucert/env.py", line 52, in load_utable
+    for l in open(path):
+             ~~~~^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/unified-cert/ucert/utable_u2_k31.txt'

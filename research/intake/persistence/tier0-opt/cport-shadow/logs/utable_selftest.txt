@@ -1,0 +1,4 @@
+k=6 a=0: certified log10 52.5718; 0.99 of it refused: True
+k=11 a=1: certified log10 80.5948; 0.99 of it refused: True
+k=31 a=0: certified log10 246.0183; 0.99 of it refused: True
+k=31 a=40: certified log10 233.4949; 0.99 of it refused: True

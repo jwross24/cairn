@@ -1,0 +1,5 @@
+vertex 72 vcmp rc=1
+vertex 224 vcmp rc=1
+vertex 8192 vcmp rc=1
+vertex 14336 vcmp rc=1
+vertex 28672 vcmp rc=0

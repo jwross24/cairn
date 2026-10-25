@@ -1,0 +1,69 @@
+  32928 done [287s]
+  8192 done [289s]
+  8192 done [291s]
+  8192 done [293s]
+  14112 done [295s]
+  49392 done [295s]
+  14336 done [296s]
+  14336 done [297s]
+  14336 done [301s]
+  14336 done [304s]
+  14336 done [306s]
+  28672 done [307s]
+  28672 done [308s]
+  28672 done [309s]
+  28672 done [310s]
+  28672 done [312s]
+  28672 done [314s]
+  28672 done [317s]
+  28672 done [323s]
+  28672 done [327s]
+  28672 done [332s]
+  27216 done [333s]
+  27216 done [336s]
+  27216 done [338s]
+  18144 done [340s]
+  18144 done [342s]
+  18144 done [345s]
+  18144 done [348s]
+  18144 done [349s]
+  34992 done [350s]
+  34992 done [353s]
+  42336 done [354s]
+  42336 done [355s]
+  42336 done [355s]
+  42336 done [357s]
+  42336 done [359s]
+  148176 done [361s]
+  148176 done [361s]
+  148176 done [363s]
+  148176 done [364s]
+  148176 done [365s]
+  148176 done [367s]
+  23328 done [369s]
+74 words; per prime: observed shadow pass rate vs predicted |im Λ'|/|im Λ_96|
+  level 384 p=3457           observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 384 p=12289          observed  38/74 =  0.51   predicted 0.500   
+  level 384 p=418725889      observed  31/74 =  0.42   predicted 0.250   
+  level 384 p=1265011073     observed  74/74 =  1.00   predicted 0.059   
+  level 480 p=31             observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=41             observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=61             observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=211            observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=241            observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=271            observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=2161           observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=3541           observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=9091           observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=27961          observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=177601         observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=1634881        observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=1676321        observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=2906161        observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=4188901        observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=5070721        observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=18453761       observed  38/74 =  0.51   predicted 0.500   
+  level 480 p=39526741       observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=1132716961     observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=5964848081     observed  74/74 =  1.00   predicted 1.000   AUTO
+  level 480 p=947147262401   observed  74/74 =  1.00   predicted 1.000   AUTO

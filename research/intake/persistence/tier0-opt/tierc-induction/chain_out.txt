@@ -1,0 +1,35 @@
+T6 reproduction (log10 n bound = min_m [K0(1+K)^(m-1) + Z0(1+Y)^(k-m)], K=10^16.7, Y=10^18.2, K0=Z0=10^14.7):
+  k=31: 281.90 at m=17  (theta NOTES T6 quotes 396.9 at k=44)
+  k=44: 396.90 at m=23  (theta NOTES T6 quotes 396.9 at k=44)
+log10(6885) = 3.838; the bottom-end floor log10 Z0 = 14.7 exceeds it by 10.86 orders
+  k=31: iterations from the corpus to log10 U=281.5 at 10^16.7 per step: 16.63 -> 17
+  k=44: iterations from the corpus to log10 U=402.1 at 10^18.2 per step: 21.88 -> 22
+Baker separation length G* (distinct S-units share fewer than G* leading digits), Matveev n=3 and n=4 (D=1, A_i = log of 2,3,7[,5]):
+  C(3)=1.432e+11  C(3)*A=2.122e+11   C(4)=1.568e+13  C(4)*A=3.739e+13
+  k=31: ln B=648.9  G*(3 logs)=10^13.78  G*(4 logs)=10^16.02  exceptional scale 4 log10 B=1126 (10^3.05)
+  k=44: ln B=926.6  G*(3 logs)=10^13.93  G*(4 logs)=10^16.18  exceptional scale 4 log10 B=1608 (10^3.21)
+per-prefix verification (T8) trade: verify all prefixes to depth j0 by lattice reduction, Baker above.
+  gap after a non-exceptional prefix <= 4 log10 B (taken as Gne); patterns per level 8*Gne; cost log10 = j0*log10(8*Gne).
+  k=31, Gne=1126, log10 patterns/level=3.95
+    j0= 0: cost 10^0.0 reductions, log10 U = 281.9
+    j0= 1: cost 10^4.0 reductions, log10 U = 270.3
+    j0= 2: cost 10^7.9 reductions, log10 U = 269.5
+    j0= 3: cost 10^11.9 reductions, log10 U = 254.0
+    j0= 5: cost 10^19.8 reductions, log10 U = 237.6
+    j0=10: cost 10^39.5 reductions, log10 U = 196.7
+    j0=20: cost 10^79.1 reductions, log10 U = 105.7
+    j0=30: cost 10^118.6 reductions, log10 U = 21.2
+    j0=31: cost 10^122.6 reductions, log10 U = 14.7
+  k=44, Gne=1608, log10 patterns/level=4.11
+    j0= 0: cost 10^0.0 reductions, log10 U = 396.9
+    j0= 1: cost 10^4.1 reductions, log10 U = 387.3
+    j0= 2: cost 10^8.2 reductions, log10 U = 378.7
+    j0= 3: cost 10^12.3 reductions, log10 U = 371.1
+    j0= 5: cost 10^20.5 reductions, log10 U = 354.6
+    j0=10: cost 10^41.1 reductions, log10 U = 305.9
+    j0=20: cost 10^82.2 reductions, log10 U = 221.6
+    j0=30: cost 10^123.3 reductions, log10 U = 138.3
+    j0=44: cost 10^180.8 reductions, log10 U = 14.7
+T9 requirement (S1=10^14.7 to target): per-gap multiplier Y max:
+  k=31 depth-1 target 10^72: one-ended 10^1.91, two-ended 10^3.82; Matveev/Yu 10^16.7/10^18.2 -> shortfall 10^12.9 to 10^14.4 (two-ended)
+  k=44 depth-1 target 10^72: one-ended 10^1.33, two-ended 10^2.67; Matveev/Yu 10^16.7/10^18.2 -> shortfall 10^14.0 to 10^15.5 (two-ended)

@@ -1,0 +1,3 @@
+L8             n=4.906e+07 ns/pat med=  2.82 q25=  2.45 min=  2.32 max=  3.39 load1m(med)=15.3
+L9             n=4.906e+07 ns/pat med=  2.59 q25=  2.34 min=  2.19 max=  3.02 load1m(med)=15.3
+ratio L8/L9: med=1.046 min=0.945 max=1.456  of-minima=1.056

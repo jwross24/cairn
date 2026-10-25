@@ -1,0 +1,9 @@
+LP optimum vs min_m [K0 (1+K)^(m-1) + Z0 (1+Y)^(k-m)]: 60 random parameter sets (k 3..14), worst relative error 9.89e-16, witnesses feasible 60/60
+example k=8 K=Y=20: optimum 2.03742e+06, formula 2.03742e+06, one-sided Baker chain K0 (1+K)^(k-1) = 1.80109e+10
+  witness gaps g_0..g_{k-1}, E_k: ['10', '200', '4200', '8.82e+04', '1.852e+06', '8.82e+04', '4200', '200', '10']
+planted negative: LP optimum is above half the formula, so a claimed bound of half the formula is refuted by the witness: True
+k=44, K=10^16.7, Y=10^18.2: class-optimal bound 10^396.9 at m=23
+k=44, K=10^3.0, Y=10^3.0: class-optimal bound 10^80.7 at m=22
+explicit closed-form witness (exact rational arithmetic, no LP): feasible and n = min_m F(m) in 300 of 300 random parameter sets
+planted negative: inflating one gap of the witness breaks feasibility: True
+EXPLICIT FAILURES: 0

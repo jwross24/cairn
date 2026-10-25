@@ -1,0 +1,1 @@
+{"prefix": "r1_prefix.out", "sample": "r1_suffix_sample.out", "suffix_pairs": 98447, "kind": "auto", "samples": {"w0": "r1w0_pat.jsonl", "other": "r1other_pat.jsonl"}}

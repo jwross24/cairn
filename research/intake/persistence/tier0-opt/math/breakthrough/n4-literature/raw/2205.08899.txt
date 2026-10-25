@@ -1,0 +1,2476 @@
+                                                         A KIT FOR LINEAR FORMS IN THREE LOGARITHMS
+
+
+
+
+arXiv:2205.08899v3 [math.NT] 29 Sep 2023
+                                                 MAURICE MIGNOTTE AND PAUL VOUTIER, WITH AN APPENDIX BY MICHEL LAURENT
+
+
+                                                   Abstract. We provide a technique to obtain explicit bounds for problems that can be reduced
+                                                   to linear forms in three complex logarithms of algebraic numbers. This technique can produce
+                                                   bounds significantly better than general results on lower bounds for linear forms in logarithms.
+                                                   We give worked examples to demonstrate both the use of our technique and the improvements
+                                                   it provides. Publicly shared code is also available.
+
+
+
+
+                                                                                        1. Introduction
+                                           1.1. Background. Many problems in number theory can be reduced to linear forms in the log-
+                                           arithms of algebraic numbers which have a very small absolute value (exponentially small in the
+                                           coefficients of the linear form) (see [8] for a broad selection of examples). So, lower bounds for
+                                           these linear forms that exceed the upper bounds and with all the constants involved being explicit
+                                           reduce such problems to a finite amount of computation. For example, it is in this way (along
+                                           with the use of reduction techniques as in [30] and [7] to handle the remaining computation) that
+                                           the solution of Thue equations is now routine, included as a function in PARI/GP [23] and other
+                                           mathematical software.
+                                               Lower bounds for linear forms in two or three logarithms have proven to have especially broad
+                                           and important applications. In the case of linear forms in three logarithms, such applications
+                                           include Baker’s solution [2] of the conjecture of Gauss that there are only nine imaginary quadratic
+                                           fields with class number 1; Tijdeman’s proof [29] that there are at most finitely many solutions
+                                           of Catalan’s equation; and the result of Shorey & Stewart [28], and independently Pethő [24],
+                                           that there are only finitely many perfect powers in any binary recurrence sequence. The use of
+                                           effectively computable lower bounds for linear forms in three logarithms gives rise to effectively
+                                           computable upper bounds for each of these problems.
+                                               In this paper, we present a method, our “kit”, that can be used to get good upper bounds on
+                                           quantities associated to such problems. The present paper has its origins in earlier versions of
+                                           our kit due to the first author in [9] and [10]. In fact, [9] and [10] provide good examples of how
+                                           somewhat weaker versions of our kit were used to solve completely some important number theory
+                                           problems.
+                                               Our method is the method of interpolation determinants introduced by Michel Laurent in [15],
+                                           [16] and [17]. In the case of three logarithms, this method was used by C.D. Bennett et al. [4].
+                                           But the present paper brings some progress when compared to [4]: we treat the general case of
+                                           algebraic numbers (not only multiplicatively independent rational integers, as in [4]) and many
+                                           important technical details have been improved, including new zero lemmas.
+                                               Our aim, suggested by the title “A kit. . . ”, is to explain how to obtain results for problems that
+                                           reduce to the study of linear forms in three logarithms of algebraic numbers.
+
+                                             Date: October 2, 2023.
+                                             2020 Mathematics Subject Classification. Primary 11D61, 11J86, Secondary 11Y50.
+                                             Key words and phrases. linear forms in logarithms, Diophantine equations.
+                                                                                                  1
+2                             MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+1.2. Steps of the kit. The process contains five steps.
+(1) obtain an upper bound for a linear form in logs associated with our problem.
+(2) combining the upper bound in step (1) with a general estimate of Matveev, we obtain an upper
+bound, B1 , for the maximum of the absolute values of the coefficients of the linear form.
+(3) supposing the linear form in three logs is non-degenerate, we use the upper bound B1 to obtain
+a second upper bound, B2 . If B2 is smaller than B1 we proceed to step (4).
+(4) supposing the linear form in three logs is degenerate, we consider it as a linear form in two
+logarithms and we apply the results of Laurent [19] to this linear form, along with the upper bound
+B1 , to get a third upper bound B3 .
+At this point the quantity we have bounded above by min {B1 , max {B2 , B3 }}.
+(5) repeat steps (3) and (4) as often as desired to make the upper bound as small as possible.
+   In our experience, there is very little further improvement after 3 iterations (see the tables at
+the end of each example subsection in Section 6 for details).
+
+
+1.3. Uses for the kit. Our kit is most suited to the case when at least one of the algebraic numbers
+in the linear form is a variable. If all three are fixed algebraic numbers, it is much better to first
+use Matveev’s result stated below and then apply a reduction technique like the LLL-algorithm
+[21] or variants of the Baker-Davenport reduction technique [3], like that of Dujella-Pethő [12].
+
+
+1.4. Numerical results. In the first example in Section 6, we are able to reduce the upper bound
+on the quantity p from about 2 · 1012 obtained by Matveev’s result to 18 · 106 . In the second
+example there, we do even better, reducing the upper bound on p from about 3 · 1013 to 25 · 106 .
+In our experience, these are typical of the improvements that can be expected from our kit.
+   To help readers use the kit, code written in Pari, along with examples for how to use it, is
+available from the authors at https://github.com/PV-314/lfl3-kit. We encourage readers to
+use this code for their applications of the kit, using the examples and documentation as a guide.
+This code has now been applied to previously published uses of the kit ([5, 6, 9, 10] – the code
+for these is available in the above github repository) and several new problems shared with us by
+researchers. Support is available from the second author and we warmly welcome questions and
+suggestions from users.
+   Another feature of our work, and the above code, is the quality of the results. It is reasonable
+to believe that the degenerate case should play no part in Theorem 2.1 below and that only (2.8)
+should matter (see the proofs in Chapter 7 of [31], for example). In the case of “imaginary” linear
+forms in logs (see their definition at the start of Section 3 below) we are able to attain such optimal
+bounds with our code above, while for “real” linear forms in logs, our code produces bounds that
+are at most 50% larger than the optimal bounds.
+
+
+1.5. Future work. We highlight here three areas where further work would lead to significant im-
+provements in the results, as well as being of considerable theoretical interest for other diophantine
+and transcendence problems.
+(1) Adopting Waldschmidt’s approach for the degenerate case. See Remark 3.14 for more infor-
+mation. This could reduce the bounds by a factor of approximately 1.5, but more importantly
+simplify the statement of Theorem 2.1, eliminating the need for conditions (2.9) and (2.10).
+(2) Improving the multiplicity estimates in Lemma 3.6. Calculations suggest that the estimate
+there should be roughly Θ (2K, |I|) instead of Θ (K, |I|). The main term on the left-hand side of
+                         A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                   3
+
+
+(2.8) would then become KL, rather than KL/2. This would improve the bounds obtained by a
+factor of roughly 5.
+(3) Improving the zero estimate in Proposition 3.11. Conjecturally, the constants on the right-hand
+sides of (3.17)–(3.19) should all be 1. The most important of these inequalities for our work is
+(3.19). Replacing 3K 2 L by K 2 L would lead to a further reduction by a factor of roughly 2 in the
+bounds obtained.
+1.6. Structure of this article. In Section 2, we first provide some conventions and notations
+that will be used throughout this paper and then present our main result for linear forms in three
+logs in Theorem 2.1. Section 3 contains the lemmas required to prove it, along with Matveev’s
+result which we use in step (2). Section 4 contains the proof of Theorem 2.1.
+   Section 5 provides information on the choice of the parameters in Theorem 2.1. This simplifies
+the use of Theorem 2.1, reducing the selection of the required parameters to the choice of four
+parameters. The best choice of these four parameters can be found by a quick and easy brute force
+search.
+   To demonstrate both the usage of our kit and its benefits, we provide two examples in Section 6,
+revisiting the linear forms in [9] and [10]. We obtain significant improvements in both examples.
+The second example also corrects the use of the kit in [10].
+   Lastly, we include a zero estimate due to Michel Laurent in Appendix A. This is the unpublished
+zero estimate [18] used in [10], as well as in an earlier version of this paper. In fact, Laurent’s
+result was responsible for the original kit, as it allowed improvements over [4]. It is also applicable
+more generally than our situation here, so it will be of interest to other researchers of diophantine
+and transcendence problems.
+1.7. Acknowledgements. Foremost, our thanks go to Michel Waldschmidt. He first proposed
+investigating linear forms in three logarithms to the second author nearly 30 years ago. Since
+then, he has been very supportive and encouraging to both authors in many ways. Similarly,
+Michel Laurent has been very generous to this project and to both authors over the years. Damien
+Roy and Patrice Philippon thoughtfully answered our many questions about zero estimates. Mike
+Bennett and Yann Bugeaud also deserve our thanks as they were instrumental in bringing both
+authors together to complete this work. Lastly, we thank the referee for their very careful reading
+of our paper and their helpful comments.
+
+                                             2. Results
+2.1. Conventions. We start by presenting the type of linear forms in three logarithms that we
+shall study. We consider three distinct non-zero algebraic numbers α1 , α2 and α3 , positive rational
+integers b1 , b2 , b3 with gcd (b1 , b2 , b3 ) = 1, and the linear form
+(2.1)                         Λ = b1 log α1 + b2 log α2 − b3 log α3 6= 0.
+  We restrict our study to the following two cases:
+    • the real case: α1 , α2 and α3 are real numbers greater than 1, and the logarithms of
+      the αi ’s are all real and positive. Furthermore, we assume that α1 , α2 and α3 are multi-
+      plicatively independent over Q. Of course, then the log αj ’s are Q-linearly independent.
+      For many applications, this last assumption holds, so in practice this should cause little
+      restriction.
+    • the imaginary case: α1 , α2 and α3 are complex numbers 6= 1 of modulus one, and
+      the logarithms of the αi are arbitrary determinations of the logarithm (then any of these
+      determinations is purely imaginary). Similar to the previous case, here we will assume
+      that at least two of these α’s are multiplicatively independent over Q and the third one,
+4                                  MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+         if not multiplicatively independent of the other two, is a root of unity. We shall see later
+         (see Lemma 3.16) that in this case, the log αj ’s are again Q–linearly independent. Once
+         again, in practical examples, this last condition holds.
+    In practice, these restrictions do not cause any inconvenience since
+                                          |Λ| ≥ max {|Re(Λ)| , |Im(Λ)|} .
+   After possibly rearranging the terms and possibly replacing some logarithms by their negatives
+in the imaginary case, we may assume that
+                                  b3 |log α3 | = b1 |log α1 | + b2 |log α2 | ± |Λ| .
+   Notice that this introduces an important assymmetry between the roles of the coefficients b1 ,
+b2 and b3 .
+
+   Like the authors of [4], we use Laurent’s method (see [15, 16]), and consider a suitable interpo-
+lation determinant, ∆. However, our interpolation determinant differs from the one in [4] (which
+was also used in [9, 10]). We follow the construction of Waldschmidt in Section 7.4 of [31]. In
+examples, this change improves the bounds we obtain by a factor of roughly 4–5.
+
+2.2. Notation. We collect here some of the notation that we will use throughout this paper.
+   N will denote the set of non-negative rational integers.
+   • K, L, R, S, T are positive rational integers with K ≥ 3 and L ≥ 5.
+   • Put N = K(K + 1)L/2 and we assume that RST ≥ N .
+   • Let i be an index from 1 to N such that (ki , mi , ℓi ) runs through all triples of integers with
+ki ≥ 0, mi ≥ 0, ki +mi ≤ K −1 and 0 ≤ ℓi ≤ L−1. So each 0 ≤ ki ≤ K −1 occurs (K − ki ) L times,
+and similarly each mi occurs (K − mi ) L times, and each number 0, . . . , L − 1 occurs K(K + 1)/2
+times as an ℓi .
+   This is the main difference with the construction in [4], where the conditions 0 ≤ ki , mi ≤ K − 1
+are used instead.
+   • Put
+                     1        N             N LR             N LS            N LT
+(2.2)            g= −              , G1 =            g, G2 =       g, G3 =          g.
+                     4 12RST                    2              2                2
+   • With d1 = gcd (b1 , b3 ) and d2 = gcd (b2 , b3 ), put
+(2.3)       b1 = d1 b′1 , b2 = d2 b′′2 , b3 = d1 b′3 = d2 b′′3 , β1 = b1 /b3 = b′1 /b′3 , β2 = b2 /b3 = b′′2 /b′′3 .
+    • Let
+                              L−1                 R−1      T −1                    S−1      T −1
+(2.4)            λi = ℓi −        ,       η0 =        + β1      ,           ζ0 =       + β2      .
+                               2                   2         2                      2         2
+    • Let
+                                                          K−1
+                                                                         !− K(K−1)(K+1)
+                                                                                12
+                                                          Y
+(2.5)                          b = (b′3 η0 ) (b′′3 ζ0 )            K−k
+                                                                (k!)                      .
+                                                          k=1
+
+Similar to the b in Théorème 1 of [20], this quantity arises naturally in our proof – see the end of
+the proof of Proposition 3.7.
+   The expression involving the product of factorials here is also different from that in [4], due to
+our different construction.
+   • Now we define the interpolation determinant that we shall use to prove our results,
+                                ′               ′′                              
+                                  rj b3 + tj b′1   sj b3 + tj b′′2 ℓi rj ℓi sj ℓi tj
+(2.6)                 ∆ = det                                      α1 α2 α3            ,
+                                        ki              mi
+                            A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                           5
+
+
+where 1 ≤ i, j ≤ N , rj , sj and tj are non-negative integers less than R, S and T , respectively, such
+that (rj , sj , tj ) runs over N distinct triples.
+   • Lastly, with rj , sj and tj as above in the definition of our interpolation determinant, we let
+                                  N                             N                           N
+                         L−1 X                          L−1 X                       L−1 X
+                  M1 =          rj ,            M2 =           sj ,          M3 =          tj .
+                          2 j=1                          2 j=1                       2 j=1
+
+   Here, and throughout, by αβ , we mean exp (β log α) for any complex numbers α and β with
+α 6= 0 and some determination of the logarithm.
+2.3. Main Theorem. With the above conventions and notation, we can present our main result.
+Theorem 2.1. Let α1 , α2 and α3 be three distinct non-zero algebraic numbers which, along with
+their logarithms, satisfy one of the two conditions at the start of this section. Also let b1 , b2 , b3
+and Λ be as there. Assume that
+                                                0 < |Λ| < 2π/w,
+where w is the maximal order of a root of unity belonging to the number field Q (α1 , α2 , α3 ) 1.
+   Let R1 , R2 , R3 , S1 , S2 , S3 , T1 , T2 , T3 be positive rational integers with
+(2.7)               R > R1 + R2 + R3 ,          S > S1 + S2 + S3 and T > T1 + T2 + T3 .
+   Let ρ ≥ 2 be a real number. Suppose that
+                            
+        KL L                                                                 2D(K − 1) log b
+(2.8)       + − 0.37K − 2 log ρ ≥ (D + 1) log N + gL (a1 R + a2 S + a3 T ) +                 .
+         2     2                                                                  3
+where
+                 ai ≥ ρ |log αi | − log |αi | + 2D h (αi ) for i = 1, 2, 3.
+          p
+   Put V = (R1 + 1) (S1 + 1) (T1 + 1). If, for some positive real number χ,
+(2.9)          (R1 + 1) (S1 + 1) (T1 + 1) > K max {R1 + S1 + 1, S1 + T1 + 1, R1 + T1 + 1, χV} ,
+                    
+(2.10)         Card αr1 αs2 αt3 : 0 ≤ r ≤ R1 , 0 ≤ s ≤ S1 , 0 ≤ t ≤ T1 > L,
+                    
+(2.11)         Card αr1 αs2 αt3 : 0 ≤ r ≤ R2 , 0 ≤ s ≤ S2 , 0 ≤ t ≤ T2 > 2KL,
+(2.12)         (R2 + 1) (S2 + 1) (T2 + 1) > K 2 and
+(2.13)         (R3 + 1) (S3 + 1) (T3 + 1) > 3K 2 L
+all hold, then either
+                                            LT eLT |Λ|/(2b3 )
+                                      Λ′ := |Λ| ·             > ρ−KL
+                                                 2 |b3 |
+or at least one of the following conditions (2.14) or (2.15) holds:
+(2.14)          |b1 | ≤ max {R1 , R2 }    and       |b2 | ≤ max {S1 , S2 }   and    |b3 | ≤ max {T1 , T2 } ,
+
+(2.15)     there exist u1 , u2 , u3 ∈ Z such that u1 b1 + u2 b2 + u3 b3 = 0, with gcd (u1 , u2 , u3 ) = 1,
+          (S1 + 1)(T1 + 1)           (R1 + 1)(T1 + 1)                                    (R1 + 1)(S1 + 1)
+     |u1 | ≤               , |u2 | ≤                     and                   |u3 | ≤                     ,
+         M − max{S1 , T1 }           M − max{R1 , T1 }                                   M − max{R1 , S1 }
+where M = max {R1 + S1 + 1, S1 + T1 + 1, R1 + T1 + 1, χV}.
+   1 If D is the degree of this number field, then ϕ(w) ≤ D, where ϕ is the Euler totient function. Using [27,
+Theorem 15] and some calculation for small w, we see that ϕ(w) ≥ (w/2)0.63 , which implies w < 2D 1.6 . Hence
+0 < |Λ| < 2π/w is satisfied if 0 < |Λ| ≤ πD −1.6 and then Λ 6∈ iπQ. Obviously, Λ 6∈ iπQ is also satisfied when Λ is
+real and non-zero.
+6                                 MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+                                              3. Preliminaries
+3.1. Matveev’s theorem for three logarithms. We will need the special case of three loga-
+rithms of the theorem of E. M. Matveev. So we quote his result in this case here.
+Theorem 3.1 (Matveev). Let α1 , α2 and α3 be three distinct non-zero algebraic numbers, let
+log α1 , log α2 and log α3 be Q–linearly independent logarithms of these algebraic numbers and let
+b1 , b2 and b3 be rational integers with b1 6= 0. Put
+                                    Λ = b1 log α1 + b2 log α2 + b3 log α3 .
+    Let
+                        D = [Q (α1 , α2 , α3 ) : Q]         and    χ = [R (α1 , α2 , α3 ) : R] .
+    Let A1 , A2 and A3 be positive real numbers, which satisfy
+                               Aj ≥ max {D h (αj ) , |log αj |}          (1 ≤ j ≤ 3),
+where h is the absolute logarithmic Weil height.
+  Assume that
+                                B ≥ max {|bj | Aj /A1 : 1 ≤ j ≤ 3} .
+    Also define
+                                                           χ
+                              5 · 165 3                3e                               
+                      C1 =           e (7 + 2χ)                   26.25 + log D2 log(eD) .
+                                6χ                     2
+Then
+                             log |Λ| > −C1 D2 A1 A2 A3 log (1.5eDB log(eD)) .
+Proof. This is a very slight simplification of Theorem 2.1 of [22] applied with n = 3. Our only
+change is to note that |bj | Aj /A1 ≥ 1 for j = 1, so the outer max in Matveev’s inequality B ≥
+max {1, max {|bj | Aj /A1 : 1 ≤ j ≤ 3}} is not needed.                                        
+
+   It is because the log αj ’s are Q–linearly independent in both of the cases that we present in
+Subsection 2.1 that we can use Theorem 2.1 of [22] in this work.
+   Note that it is also possible to use the results of Aleksentsev [1] in place of Matveev’s result.
+This would give a slightly smaller upper bound in Step (2), but make no difference to the final
+results obtained from the kit.
+
+3.2. Some combinatorial inequalities. This subsection contains some results used in the esti-
+mates of the interpolation determinant.
+Lemma 3.2. Let K, L, N , R, S, T , G1 and M1 be as above. Put
+                                            
+                                    2(n − 1)
+                            ℓn =               , 1 ≤ n ≤ N,
+                                    K(K + 1)
+and (r1 , . . . , rN ) ∈ {0, 1, . . . , R − 1}N . Suppose that for each r ∈ {0, 1, . . . , R − 1} there are at most
+ST indices j such that rj = r. Then
+                                             N
+                                             X
+                                                   ℓn rn − M1 ≤ G1 .
+                                             n=1
+
+Proof. Apply Lemme 4 in [20] with K there set to K(K + 1)/2.                                                    
+                                    A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                     7
+
+
+   As in [4, Section 1.3] or [31, p. 192], for (k, m) ∈ N2 , we put k(k, m)k = k + m. And for any
+I, K0 ∈ N, we put
+(3.1)                               Θ (K0 , I) = min {k (k1 , m1 ) k + · · · + k (kI , mI ) k} ,
+where the minimum is taken over all the sets of I pairs (k1 , m1 ), . . . , (kI , mI ) ∈ N2 which are
+pairwise distinct and satisfy m1 , . . . , mI ≤ K0 . Then, we have
+Lemma 3.3. Let K0 and I be positive integers with I ≥ K0 (K0 + 1) /2. Then
+                                                                          
+                         I2            (K0 − 1)(K0 + 1) K0 (K0 + 2)(K0 + 1)2
+       Θ (K0 , I) ≥                1+                   −                      .
+                      2(K0 + 1)                I                   12I 2
+Remark. This is an improvement of the Lemma 1.4 of [4]. If I ≡ 0 mod (K0 + 1) and K0 even,
+then this result is best possible. In the worst cases, the difference between the left and right sides
+is at most roughly K0 /8.
+Proof. We follow more or less the proof of Lemma 1.4 of [4], the main difference being the intro-
+duction of the term r in the expression for I below.
+   The smallest value for the sum k (k1 , m1 ) k + · · · + k (kI , mI ) k is reached when we choose suc-
+cessively, for each integer n = 0, 1, . . . all the points in the domain
+                                 
+                           Dn = (k, m) ∈ N2 : m ≤ K0 and k + m = n ,
+and stop when the total number of points is I. Moreover,
+                                           (
+                                             n + 1,   if n ≤ K0 ,
+                            Card (Dn ) =
+                                             K0 + 1, if n ≥ K0 .
+  Hence, for A ≥ K0 , the number of points in D0 ∪ · · · ∪ DA−1 is
+    K0
+    X  −1                    A−1
+                             X                                                                      
+                                               K0 (K0 + 1)                                        K0
+              (n + 1) +             (K0 + 1) =             + (A − K0 ) (K0 + 1) =              A−      (K0 + 1).
+        n=0
+                                                    2                                             2
+                             n=K0
+
+  Letting A be the largest integer such that Card (D0 ∪ · · · ∪ DA−1 ) ≤ I, we can write
+                                     
+                                   K0
+                        I = A−          (K0 + 1) + r with 0 ≤ r ≤ K0 ,
+                                    2
+provided that I ≥ K0 (K0 + 1) /2. Then
+                                                  K0
+                                                  X  −1                A−1
+                                                                       X
+                                   Θ (K0 , I) =           n(n + 1) +          n(K0 + 1) + rA.
+                                                   n=0                 n=K0
+
+  Here
+                    K
+                    X 0 −1                  A−1
+                                            X
+                             n(n + 1) +           n(K0 + 1)
+                    n=0                    n=K0
+                  (K0 − 1)K0 (2K0 − 1) (K0 − 1)K0      K0 + 1
+                =                     +             +         (A(A − 1) − K0 (K0 − 1))
+                           6                  2           2
+                  (K0 − 1)K0 (2K0 + 2) K0 + 1               (K0 − 1)K0 (K0 + 1)
+                =                     +         A(A − 1) −
+                          6                2                      2
+                  K0 + 1              K0 (K0 − 1)
+                =         A(A − 1) −
+                    2                      3
+8                              MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+and we get
+                                                                    
+                                    K0 + 1               K0 (K0 − 1)
+(3.2)                  Θ (K0 , I) =           A(A − 1) −               + rA.
+                                      2                       3
+    We can write
+                                              K0     I −r
+                                          A=     +         .
+                                               2    K0 + 1
+    So using (3.2) and then this expression for A in terms of r, we have
+         ∂Θ   K0 + 1          ∂A      ∂A    2A − 1       r     1   r
+            =        (2A − 1)    +A+r    =−        +A−        = −       ,
+         ∂r     2             ∂r      ∂r      2        K0 + 1  2 K0 + 1
+which shows that the minimum of Θ is reached either for r = 0 or r = K0 . It is easy to verify
+that Θ takes the same value for r = 0 and r = K0 + 1 (which is indeed out of the range of r), this
+implies that the minimum is reached for r = 0. It follows that
+                                                           
+           2Θ(K0 , I)     K0        I       K0        I           K0 (K0 − 1)
+                      ≥        +                +          −1 −
+            K0 + 1         2     K0 + 1      2     K0 + 1              3
+                        K02        I2         K0 I      K0      I      K02   K0
+                      =      +          2
+                                          +          −     −         −     +
+                         4      (K0 + 1)    K0 + 1      2     K0 + 1    3     3
+                             I2       (K0 − 1)I    K02     K0
+                      =            +            −       −
+                        (K0 + 1)2       K0 + 1      12     6
+                                 2                                              
+                              I            (K0 − 1)(K0 + 1) K0 (K0 + 2)(K0 + 1)2
+                      =                1+                     −                      .
+                          K0 + 1                   I                   12I 2
+    This proves the lemma.                                                                              
+
+Lemma 3.4. Let K, L and N be as in Subsection 2.2 with the additional assumptions that K ≥ 3
+and L ≥ 5. Also let 0 ≤ I ≤ N be an integer and Θ (K0 , I) be as defined in (3.1). Then
+                                                                          
+                                                N2         2     6      1
+                   KL(N − I) + Θ (K − 1, I) ≥        1+ −            −       .
+                                                2K         L KL 3L2
+Proof. Suppose that I ≤ N/2. Then
+                                               KLN    N2    3 N2
+                               KL(N − I) ≥         =      =      ,
+                                                2    K +1   2 2K
+                                                                  
+since K ≥ 3. Since L ≥ 5, we have 1 + 2/L − 6/(KL) − 1/ 3L2 < 1 + 2/L < 3/2. Since
+Θ(K − 1, I) ≥ 0, the result follows in this case.
+   We now consider I > N/2. This and L ≥ 5 implies that I ≥ (5/4)K 2 , so we can apply
+Lemma 3.3 with K0 = K − 1 to get
+                                                                                     
+                                                  I2     (K − 2)K   (K − 1)(K + 1)K 2
+     KL(N − I) + Θ(K − 1, I) ≥ KL(N − I) +            1+          −                     .
+                                                  2K        I             12I 2
+    The derivative of the right-hand side with respect to I is
+                                         2I − 2K 2 L + K 2 − 2K
+                                                                 .
+                                                   2K
+  This is linear in I and the coefficient of I is positive, so once the derivative is positive, it remains
+positive for all larger values of I. It equals 0 at I = K 2 L − K 2 /2 + K. We can write
+                                                                        
+                 K 2 L − K 2 /2 + K = K(K + 1)L/2 + K 2 /2 − K/2 (L − 1) + K/2.
+                           A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                              9
+
+                                                                            
+   For K ≥ 2, we have K 2 /2−K/2 ≥ 1 and since L ≥ 1, we have K 2 /2 − K/2 (L−1)+K/2 ≥ 1/2.
+So this critical value of I is larger than N . Hence the minimum value of the above lower bound
+for KL(N − I) + Θ(K − 1, I) occurs at I = N . Thus
+                                                                 
+                                           N2       2     6    1        2K + 18L
+            KL(N − I) + Θ(K − 1, I) ≥           1+ −         −      +               ,
+                                           2K       L KL 3L2          3K(K + 1)L2
+where the equality was obtained by using Maple. This implies that the lemma holds for all I. 
+
+Lemma 3.5. (a) Let K > 1 be an integer, then
+                      K−1
+                                  !12/(K(K−1)(K+1))
+                      Y
+                              K−k
+(3.3)             log     (k!)                      ≥ 2 log(K) − 11/3.
+                             k=1
+
+(b) With b, d1 , d2 , K, R, S and T as defined in Subsection 2.2, we have
+                               (R − 1)b3 + (T − 1)b1       (S − 1)b2 + (T − 1)b3
+                  log b ≤ log                        + log
+                                        2d1                         2d2
+                            − 2 log(K) + 11/3.
+
+Proof. Our proof is a variant of the proof of Lemme 8 of [20], which itself is based on the proof of
+Lemma 9 in [17].
+  From the inequality k! ≥ (k/e)k , we have
+                    K−1
+                    X                           K−1
+                                                X
+                          (K − k) log(k!) ≥            (K − k)k(log(k) − 1)
+                    k=0                         k=1
+                                                K−1
+                                                X                               K−1
+                                                                                X
+                                            =          (K − k)k log(k) −              (K − k)k.
+                                                k=1                             k=0
+
+  The last term is easily shown to be K(K + 1)(K − 1)/6, so that
+                  K−1
+                  X                         K−1
+                                            X                             K(K + 1)(K − 1)
+                         (K − k) log k! ≥         k(K − k) log k −                        .
+                                                                                6
+                   k=1                      k=1
+
+  We now estimate the remaining sum, which we break into two sums:
+                                         K−1
+                                         X                   K−1
+                                                             X
+                                     K          k log k −          k 2 log k.
+                                         k=1                 k=1
+
+   We use the Euler-Maclaurin summation formula to estimate these sums. We shall use the
+formulation of the Euler-Maclaurin summation formula in equation (7.2.4) p. 303 of [11] with
+r = 1:                                Z n
+                                                    f (1) + f (n) f ′ (n) + f ′ (1)
+              f (1) + · · · + f (n) =     f (x)dx +              +                  + R1 ,
+                                       1                  2              12
+where                                                  Z n
+                                                 1
+                                      R1 ≤                   f (3) (x) dx.
+                                                2π 2    1
+   From this point onward in the proof, we use Maple extensively to perform the integrations and
+algebraic manipulations.
+10                                   MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+   In this way, with n = K −1 and f (n) = x log(x), we have f ′ (x) = log(x)+1 and f (3) (x) = −x−2 ,
+            R K−1 −2                            
+so 1/ 2π 2 1       x dx = (K − 2)/ 2π 2 (K − 1) and
+              K−1
+              X                 Z K−1
+                                                       (K − 1) log(K − 1) log(K − 1) + 2   1
+                    k log k ≥           x log(x)dx +                     +               − 2.
+                                 1                              2               12        2π
+              k=1
+
+  With n = K − 1 and f (n) = x2 log(x), we have f ′ (x) = 2x log(x) + x and f (3) (x) = 2x−1 , so
+        R K−1 −1
+1/ 2π 2 1     2x dx = log(K − 1)/π 2 and
+K−1
+X                   Z K−1
+        2                                    (K − 1)2 log(K − 1) 2(K − 1) log(K − 1) + K log(K − 1)
+      k log k ≤             x2 log(x)dx +                       +                       +           .
+                      1                               2                     12               2π 2
+k=1
+
+     Combining these two estimates, along with
+           Z K−1
+                               log(K − 1) 2 K 2                   K   log(K − 1)
+                  x log(x)dx =            K −    − K log(K − 1) +   +
+            1                       2          4                  2        2
+and
+Z K−1
+                            log(K − 1) 3 K 3                 K2              K log(K − 1) 2
+            x2 log(x)dx =             K −    −log(K −1)K 2 +    +log(K −1)K − −          + ,
+ 1                              3         9                  3               3      3     9
+we obtain
+K−1
+X                                                                   
+                     log(K − 1)K 3 11K 3 K 2 log(K − 1)K     7   1        log(K − 1) 2
+      k(K−k) log k ≥              −     +   −            +     −       K−           − .
+                           6        36    6       12         12 2π 2          2π 2   9
+k=1
+
+   Subtracting (2 log(K) − 11/3) K(K − 1)(K + 1)/12, we obtain
+                                                                    
+         log(1 − 1/K) 3 K 2          log K 2 /(K − 1)          5    1     log(K − 1) 2
+(3.4)                   K +        +                   K+         − 2 K−             − .
+                6               6            12               18 2π           2π 2    9
+                                                                                          
+   From the series expansion of log(1−x), we find that log(1−1/K) > −1/K −1/ 2K 2 −2/ 3K 3
+for K ≥ 2, so (3.4) is larger than
+                                                 
+                           log(K)        7      1         log(K − 1) 1
+                                   K+       − 2 K−                   −
+                              12         36 2π                2π 2     3
+for K ≥ 2.                                                                          
+                                                                            7
+   This expression is positive for K ≥ 3, since 3/12 > 1/ 2π 2 and 36         − 2π1 2 > 1/3. So part (a)
+holds for K ≥ 3.
+   Part (a) also holds for K = 2, since the left-hand side of (3.3) is 0 for K = 2, while the right-hand
+side is −2.28 . . ..
+
+     (b) Using the definitions of b, η0 , ζ0 , β1 and β3 , we have
+
+                                                                    K−1
+                                                                                   !− K(K−1)(K+1)
+                                                                                          12
+
+                         R−1       T −1        S−1        T −1          Y
+                 b = b′3     + b′1        b′′3     + b′′2                     k!                    .
+                          2          2          2           2
+                                                                        k=1
+
+     Applying the relationships in (2.3), part (b) follows immediately.                                 
+                              A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                             11
+
+
+3.3. An upper bound for |∆|. In this subsection, we prove the result below, Proposition 3.7,
+an upper bound for |∆| (also see [9, Proposition 12.5]). We start with an estimate for the zero
+multiplicity of a certain function, the determinant of a particular matrix, at x = 0. We closely
+follow Section 7.2 of [31].
+   Let K and N be positive integers, η1 , . . . , ηN , ζ1 , . . . , ζN elements of C, f1 , . . . , fN analytic
+functions in C, θ1 and θ2 non-zero complex numbers and p1 , . . . , pN polynomials in C [z1 , z2 ] of
+total degree at most K. We define, for 1 ≤ i ≤ N ,
+                                       φi (z1 , z2 ) = pi (z1 , z2 ) fi (θ1 z1 + θ2 z2 ) .
+   Let I be a subset of {1, . . . , N }. We define an N × N matrix with entries
+                                           
+                                              φi (xηj , xζj ) ,      if i ∈ I,
+                              ΦI (x)i,j =
+                                              δi,j φi (xηj , xζj ) , if i 6∈ I,
+where δi,j are complex numbers and let ΨI (x) = det (ΦI (x)).
+Lemma 3.6. The function ΨI (x) has a zero at x = 0 of multiplicity at least Θ (K, |I|), where |I|
+is the number of elements in I.
+Proof. This is Lemma 7.2 of [31] in the case of n = 2, since the total degree of each of the
+polynomials, p1 , . . . , pN is at most K.                                                
+    Returning to our specific situation here, let K, L, N , R, S and T , along with the rj ’s, sj ’s and
+tj ’s be as defined in Subsection 2.2.
+    Recalling our definition of the λi ’s in (2.4), we have
+                                  N                             L−1
+                                  X             K(K + 1) X
+                                         λi =                (i − (L − 1)/2) = 0
+                                  i=1
+                                                   2     i=0
+and the following slight variation of equation (2.1) in [4] (our Λ′ is slightly different from theirs)
+          λ r    λ s   λ t       λ (rj +tj β1 ) λi (sj +tj β2 ) λi tj Λ/b3    λ (r +t β ) λ (s +t β )
+(3.5)    α1 i j α2 i j α3 i j = α1 i           α2              e           = α1 i j j 1 α2 i j j 2 (1 + θi,j Λ′ ),
+where
+                                                               eλi tj Λ/b3 − 1
+                                                   θi,j =
+                                                                       Λ′
+and
+                                                               LT eLT |Λ|/(2b3 )
+(3.6)                                           Λ′ = |Λ| ·                       .
+                                                                    2b3
+   Let
+                                                           k     m
+                                                       b′3 i b′′3 i ki mi λi η λi ζ
+(3.7)                                    φi (η, ζ) =               η ζ α1 α2 ,
+                                                         ki ! mi !
+for any i = 1, . . . , N , and
+                                                     (
+                                                         φi (xηj , xζj ) ,        if i ∈ I,
+                                       ΦI (x)i,j =
+                                                         θi,j φi (xηj , xζj ) ,   if i 6∈ I,
+for any subset I of N = {1, . . . , N } and j = 1, . . . , N .
+                                                                                       b′ ki b′′ mi
+  In our notation before Lemma 3.6, here we put pi (z1 , z2 ) = 3ki ! m3 i ! z1ki z2mi , fi (z) = exp (λi z)
+and θi,j = δi,j . Hence we can write α1λi z1 α2λi z2 = exp (λi (log (α1 ) z1 + log (α2 ) z2 )) = fi (θ1 z1 + θ2 z2 )
+with θ1 = log (α1 ) and θ2 = log (α2 ).
+   We put MI = (ΦI (1)i,j ), ΨI (x) = det (ΦI (x)i,j ),
+(3.8)                                                    ∆I = ΨI (1)
+12                                   MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+and
+                                                  JI = ordx=0 (ΨI (x)) .
+Proposition 3.7. Suppose K and L are two integers satisfying K ≥ 3 and L ≥ 5. If
+(3.9)                                                     Λ′ < ρ−KL
+holds for some real number ρ ≥ 2, then
+                        3
+                        X                        3
+                                                 X                                           N (K − 1)
+            log |∆| <         Mi log |αi | + ρ         Gi |log αi | + log(N !) + N log 2 +             log b
+                        i=1                      i=1
+                                                                                                 3
+                                                        
+                          N2          2   2   1    16
+                        −         1−    −   −   −          log ρ + 0.001.
+                          2K         3L 3KL 3L2   3K 2 L
+Proof. We start by proving that |θi,j | ≤ 1.
+  Since b3 , L and |Λ| are all positive, 0 ≤ tj ≤ T , and |λi | ≤ L/2, we have
+                                                 ex − 1                    LT |Λ|
+                                     |θi,j | ≤              where x =             > 0.
+                                                  xex                       2b3
+                                                                                                                  
+  Observe that (ex − 1) / (xex ) is a decreasing function for x > 0, since its derivative is (1 + x − ex ) / x2 ex .
+                                                                                  −1
+By L’Hôpital’s rule, we find that limx→0+ (ex − 1) / (xex ) = limx→0+ (1 + x) = 1. Hence,
+                                                          |θi,j | ≤ 1.
+     Let
+                             ηj = rj + tj β1 − η0           and   ζj = sj + tj β2 − ζ0 ,
+so |ηj | ≤ η0 and |ζj | ≤ ζ0 . Since,
+            ′               ′                        k
+            rj b3 + tj b′1          b (ηj + η0 )       b′ i
+                              = 3                    = 3 ηj ki + terms in ηj of degree less than ki ,
+                  ki                    ki              ki !
+                          ′′    ′′ 
+and similarly for sj b3m+ti j b2 , using the multilinearity of determinants we obtain the formula
+                                                                                  !
+                                              k      m
+                                           b′3 i b′′3 i ki mi ℓi rj ℓi sj ℓi tj
+                               ∆ = det                 ηj ζj α1 α2         α3       .
+                                             ki ! mi !
+     Combining this with (3.5), along with the definitions of λi , M1 , M2 and M3 , it follows that
+                                                                                                       !
+                                         k      m
+                 M1    M2   M3        b′3 i b′′3 i ki mi λi (rj +tj β1 ) λi (sj +tj β2 )        ′
+          ∆ = α1 α2 α3 det                          η ζ α               α2                (1 + Λ θi,j ) .
+                                        ki ! mi ! j j 1
+          P
+     Since i λi = 0, we deduce from this and the definitions of ηj and ζj that
+                                                                                              !
+                                                k      m
+                       M1 M2 M3              b′3 i b′′3 i ki mi λi ηj λi ζj             ′
+                 ∆ = α1 α2 α3 det                        ηj ζj α1 α2 (1 + Λ θi,j ) .
+                                               ki ! mi !
+     Expanding this determinant, we obtain
+                                                                  X
+(3.10)                                ∆ = α1 M1 α2 M2 α3 M3              (Λ′ )N −|I| ∆I ,
+                                                                  I⊆N
+
+where I runs over all subsets of N = {1, . . . , N } and ∆I is defined in (3.8).
+  From Schwarz’ Lemma (see, for example, Lemma 2.3 on page 37 of [31]), we have
+(3.11)                                     |ΨI (1)| ≤ ρ−JI · max |ΨI (x)| ,
+                                                                  |x|=ρ
+
+recalling that JI = ordx=0 (ΨI (x)).
+                                  A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                                                              13
+
+
+   Since |θi,j | ≤ 1, expanding the determinant ΨI shows that
+                                                                           N
+                                                                           Y                                
+                                     |ΨI (x)| ≤ N ! max                          φi xησ(i) , xζσ(i)              ,
+                                                               σ∈S(N )
+                                                                           i=1
+
+where S(N ) is the group of all permutations of N . For any σ ∈ S(N ) and any x satisfying |x| ≤ ρ,
+we also have
+                                                P           P
+         N
+         Y                                          ki ′′       mi             P             P          P                            P
+                                          b′3        b3                           ki             mi            λi ησ(i) x               λi ζσ(i) x
+               φi xησ(i) , xζσ(i)        ≤ Q              Q           (ρη0 )            (ρζ0 )         α1                     · α2                    ,
+         i=1
+                                                   ki !        mi !
+
+since |ηj | ≤ η0 and |ζj | ≤ ζ0 .
+   Note that all the sums and products on right-hand side are for i = 1, . . . , N . This will also be
+the case for all sums and products that follow which have i as the index, but without explicit lower
+and upper bounds on i.
+   Since |exp(z)| ≤ exp (|z|), it follows that
+                                               P           P
+                                                   ki ′′       mi          P                P
+                                  b′3                b3                        k                 m
+(3.12)           max |ΨI (x)| ≤N ! Q                  Q
+                                                      (ρη0 ) i (ρζ0 )     i
+
+                 |x|=ρ                      ki ! mi !
+                                                  n X                           X                   o
+                                         × max exp ρ        λi ησ(i) |log α1 | +   λi ζσ(i) |log α2 | .
+                                             σ∈S(N )
+
+                               PN
+   Using the relation             i=1 λi = 0, we get
+
+                         N
+                         X                   N
+                                             X                                 
+                               λi ησ(i) =          λi rσ(i) + tσ(i) β1
+                         i=1                 i=1
+                                             N 
+                                             X                                             N 
+                                                                                            X                          
+                                                          L−1                                             L−1
+                                         =           ℓi −                  rσ(i) + β1                ℓi −                    tσ(i)
+                                             i=1
+                                                           2                                i=1
+                                                                                                           2
+                                             N
+                                             X                                   N
+                                                                                 X
+                                         =         ℓi rσ(i) − M1 + β1                    ℓi tσ(i) − β1 M3 .
+                                             i=1                                 i=1
+
+   Thus, from Lemma 3.2,
+                                                     N
+                                                     X
+                                                              λi ησ(i) ≤ G1 + β1 G3 .
+                                                      i=1
+
+   In a similar way,
+                                                      N
+                                                      X
+                                                              λi ζσ(i) ≤ G2 + β2 G3 .
+                                                      i=1
+
+   Recalling that b3 |log α3 | = b1 |log α1 | + b2 |log α2 | ± |Λ|, it follows that
+                          n X                             X                      o
+(3.13)               exp ρ           λi ησ(i) |log α1 | +      λi ζσ(i) |log α2 |
+                         ≤ exp {ρ ((G1 + β1 G3 ) |log α1 | + (G2 + β2 G3 ) |log α2 |)}
+                                                                                     
+                                                                                    |Λ|
+                         ≤ exp ρ G1 |log α1 | + G2 |log α2 | + G3 |log α3 | +               .
+                                                                                     b3
+14                                     MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+     Recalling (3.9) and applying the definitions for the quantities that arise, we have
+
+
+            |Λ|      N LT |Λ|    ρgK(K + 1)L      Λ′          ρgK(K + 1)LΛ′   ρK(K + 1)LΛ′
+      ρG3       = ρg          =                             ≤               ≤
+             b3       b3 2            2      eLT |Λ|/(2b3 )        2               8
+                  ρK(K + 1)L
+                <              .
+                      8ρKL
+
+
+   By looking at the partial derivatives of this last expression with respect to ρ, K and L, we see
+that it is a non-increasing function in each of these provided that KL log(ρ) ≥ 2 and KL ≥ 1.
+               hold for K ≥ 3, L ≥ 5 and ρ ≥ 2. For K = 3, L = 5 and ρ = 2, we find that
+These conditions
+ρK 2 L/ 4ρKL < 0.0005. Hence
+
+
+                                                                |Λ|
+(3.14)                                                   ρG3        < 0.001.
+                                                                 b3
+
+
+  Combining, (3.10), (3.11), (3.12), (3.13) and (3.14), we find that condition (3.9) implies the
+upper bound
+
+                       3
+                       X                        3
+                                                X                                                   X
+           log |∆| <         Mi log |αi | + ρ         Gi |log αi | + log(N !) + N log(2) + log(ρ)       (ki + mi )
+                       i=1                      i=1                                                 i
+                                        P               P                      !
+                                            k               m
+                                 (b′3 η0 ) i (b′′3 ζ0 )   i
+                                                                |Λ′ |N −|I|
+                       + log         Q            Q         max                    + 0.001.
+                                        ki !         mi ! I⊆N      ρJ I
+
+
+     Under condition (3.9), we have
+
+
+                                                |Λ′ |N −|I|
+(3.15)                                                      ≤ ρ−KL(N −|I|)−JI
+                                                   ρJ I
+
+
+(note that if N = |I|, then we need ≤ here, rather than the < in (3.9)).
+   From Lemma 3.6, we obtain JI ≥ Θ (K − 1, |I|). Note that our matrix is not of exactly the
+same form as used in Lemma 3.6, as we have functions in the entries, ΨI (x)i,j when i 6∈ I, rather
+than complex numbers. But since the φi ’s are the product of polynomials and analytic functions
+we can write them as power series (some possibly truncated). Since ΨI (x) is a determinant, it is
+multilinear, these entries cannot reduce JI (see the proof of Lemma 7.2 of [31] for more details).
+  So applying equation (3.15), Lemma 3.4 and using the relations
+
+     N                        K−1    K−1−k
+                                                        !        K−1
+     X                        X       X                          X      (K − 1 + k)(K − k)   KL(K + 1)(K − 1)
+           (ki + mi ) = L                       k+m         =L                             =
+     i=1                               m=0
+                                                                                2                  3
+                               k=0                                k=0
+                             2N (K − 1)
+                       =                ,
+                                 3
+                                A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                             15
+
+
+we obtain
+                                    X                                 
+                                                           |Λ′ |N −|I|
+                          log(ρ)    (ki + mi ) + log max
+                                 i
+                                                      I⊆N     ρJ I
+                                                                        
+                                     2N (K − 1)
+                          ≤ log(ρ)                 − KL(N − |I|) − JI
+                                          3
+                                                                                  
+                                     2N (K − 1)
+                          ≤ log(ρ)                 − KL(N − |I|) − Θ (K − 1, |I|)
+                                          3
+                                                                              
+                                     2N (K − 1) N 2             2      6    1
+                          ≤ log(ρ)                 −      1+ −            −
+                                          3          2K        L KL 3L2
+                                                                           
+                                     N2          2      2        1       16
+                          = − log(ρ)       1−       −       −       −         .
+                                     2K         3L 3KL 3L2 3K 2 L
+   Also note that
+                        N
+                        X              K−1
+                                       X                       K(K − 1)(K + 1)L   N (K − 1)
+(3.16)                        ki = L         (K − k)k =                         =           .
+                        i=1
+                                                                      6               3
+                                       k=0
+
+   So using the definition of b in (2.5), we see that
+                                                                                     K−1
+                                                                                                    !−2L
+                                                 N (K−1)/3 ′′     N (K−1)/3
+                                                                                     Y
+                    b   N (K−1)/3
+                                     = (b′3 η0 )          (b3 ζ0 )                            K−k
+                                                                                           (k!)
+                                                                                     k=1
+                                                 P                  P
+                                                     k                  m
+                                      (b′ η0 ) i (b′′3 ζ0 )   i
+
+                                     = 3Q             Q         .
+                                            ki !         mi !
+   This completes the proof of the proposition.                                                                        
+
+3.4. A lower bound for |∆|. Liouville’s inequality is the key tool that we need to obtain a lower
+bound for |∆|. The version of Liouville inequality that we use is the same as in [20] (p. 298–299)
+(also see Exercises 3.3(a) and 3.5 on pages 106–107 of [31]).
+Lemma 3.8. Let α1 , α2 and α3 be non-zero algebraic numbers and a polynomial f ∈ Z [X1 , X2 , X3 ]
+such that f (α1 , α2 , α3 ) 6= 0, then
+                                             d       d          d
+  |f (α1 , α2 , α3 )| ≥ |f |−D+1 (α∗1 ) 1 (α∗2 ) 2 (α∗3 ) 3 × exp {−D (d1 h (α1 ) + d2 h (α2 ) + d3 h (α3 ))} ,
+                                   
+where D = [Q (α1 , α2 , α3 ) : Q] [R (α1 , α2 , α3 ) : R],
+            di = degXi f, i = 1, 2, 3,                   |f | = max {|f (z1 , z2 , z3 )| : |zi | ≤ 1, i = 1, 2, 3} ,
+and h(α) is the absolute logarithmic height of the algebraic number α, and α∗ = max{1, |α|}.
+   Using Lemma 3.8, we get the following lemma – also see Proposition 12.6 in [9].
+Proposition 3.9. If ∆ 6= 0, then
+                                                   X3                            X3
+                                   D−1
+                log |∆| ≥ −            N log(N ) +     (Mi + Gi ) log |αi | − 2D     Gi h (αi )
+                                    2              i=1                           i=1
+                                   D−1
+                               −       (K − 1)N log(b).
+                                    3
+16                                    MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+Proof. From (2.6), we have ∆ = P (α1 , α2 , α3 ) where P ∈ Z [X1 , X2 , X3 ] is given by
+                       X        YN                                                 !
+                                      rσ(i) b′3 + tσ(i) b′1   sσ(i) b′′3 + tσ(i) b′′2     n      n      n
+   P (X1 , X2 , X3 ) =   sg(σ)                                                           X1 r,σ X2 s,σ X3 t,σ ,
+                                i=1
+                                                ki                      m i
+                         σ∈SN
+
+where sg(σ) is the signature of the permutation, σ,
+                              N
+                              X                                N
+                                                               X                                     N
+                                                                                                     X
+                     nr,σ =         ℓi rσ(i) ,     ns,σ =            ℓi sσ(i)      and     nt,σ =          ℓi tσ(i) .
+                              i=1                              i=1                                   i=1
+     By Lemma 3.2,
+                                        degXi P − Mi ≤ Gi ,                     for i = 1, 2, 3.
+     Let
+                              Vi = ⌊Mi + Gi ⌋,                 Ui = ⌈Mi − Gi ⌉,            i = 1, 2, 3,
+then                                                                            
+                                         ∆ = αV1 1 αV2 2 αV3 3 Pe α−1   −1   −1
+                                                                   1 , α2 , α3    ,
+where
+                                            degXi Pe ≤ Vi − Ui ,                i = 1, 2, 3.
+     By our Liouville estimate
+                                                                                         3
+                                                                                         X
+                                                   
+                  log Pe α−1   −1   −1
+                          1 , α2 , α3                   ≥ −(D − 1) log Pe − D                   (Vi − Ui ) h (αi ) ,
+                                                                                          i=1
+                                                                                                              ∗
+recalling from our assumptions at the start of Section 2 that |αi | ≥ 1, and hence α−1                    i      = 1, for
+i = 1, 2, 3.
+   Now we have to find an upper bound for Pe (or for |P |, which is equal to Pe ). By the
+multilinearity of the determinant, for all η, ζ ∈ C,
+                                                                                                         !
+                                                          k                         m
+                                     (rj b′3 + tj b′1 − η) i (sj b′′3 + tj b′′2 − ζ) i ℓi rj ℓi sj ℓi tj
+             P (z1 , z2 , z3 ) = det                                                  z1 z2 z3              .
+                                               ki !                     mi !
+     Choose
+                              (R − 1)b′3 + (T − 1)b′1         (S − 1)b′′3 + (T − 1)b′′2
+                         η=                           , ζ=                               .
+                                         2                                   2
+    Notice that, for 1 ≤ j ≤ N ,
+                                                 k                                                        mi
+                     k      (R − 1)b3 + (T − 1)b1 i                             k      (S − 1)b3 + (T − 1)b2
+|rj b′3 + tj b′1 − η| i ≤                              , |sj b′′3 + tj b′′2 − ζ| i ≤
+                                     2d1                                                        2d2
+and recall from (3.16) that
+                                               N
+                                               X              N
+                                                              X            N (K − 1)
+                                                       ki =         mi =             .
+                                                 i=1          i=1
+                                                                               3
+     So Hadamard’s inequality implies
+                                                (K−1)N/3                        (K−1)N/3
+                        (R − 1)b3 + (T − 1)b1                (S − 1)b3 + (T − 1)b2
+          |P | ≤N N/2
+                                  2d1                                 2d2
+                     N
+                             ! −1  N
+                                           !−1
+                    Y             Y
+                ×       ki !          mi !     .
+                       i=1               i=1
+     Recalling the definition of b, we get
+                                                       |P | ≤ N N/2 b(K−1)N/3 .
+                                A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                             17
+
+
+    Collecting all the above estimates, we find
+                                   (K − 1)N           X3                       X3
+                                N/2
+    log |∆| ≥ −(D − 1) log N         +          log b − D     (Vi − Ui ) h (αi ) +     Vi log |αi | .
+                                             3            i=1                      i=1
+
+    The inequalities D h (αi ) ≥ log |αi | ≥ 0 imply
+                       Vi log |αi | − D (Vi − Ui ) h (αi ) ≥ (Mi + Gi ) log |αi | − 2DGi h (αi )
+and the result follows.                                                                                                
+
+3.5. Synthesis. Here we combine the upper and lower bounds for |∆| that we obtained in the two
+previous subsections.
+Proposition 3.10. With the previous notation, if K ≥ 3, L ≥ 5, ρ ≥ 2, and if ∆ 6= 0 then
+                                                           Λ′ ≥ ρ−KL
+provided that
+                      
+     KL L                                                                  2D(K − 1)
+          + − 0.37K − 2 log ρ ≥ (D + 1) log N + gL (a1 R + a2 S + a3 T ) +           log b,
+      2     2                                                                 3
+where the ai are positive real numbers which satisfy
+                             ai ≥ ρ |log αi | − log |αi | + 2D h (αi )           for i = 1, 2, 3.
+Proof. Under the hypotheses of the Propositions 3.7 and 3.9 (which include the hypothesis that
+Λ′ < ρ−KL from (3.9)), we get
+                               X3                            X3
+               D−1                                                            D−1
+           −       N log(N ) +     (Mi + Gi ) log |αi | − 2D     Gi h (αi ) −     (K − 1)N log(b)
+                2              i=1                           i=1
+                                                                               3
+           3
+           X                        3
+                                    X                                            N
+       <         Mi log |αi | + ρ         Gi |log αi | + log(N !) + N log 2 +      (K − 1) log b
+           i=1                      i=1
+                                                                                 3
+                                         
+             N2          2   2   1   16
+           −         1−    −   −   −        log ρ + 0.001.
+             2K         3L 3KL 3L2 3K 2 L
+     After combining like terms, we obtain
+                                         
+    N2         2     2       1       16
+          1−     −       −       −          log ρ
+    2K        3L 3KL 3L2           3K 2 L
+                  X3
+    D−1                                                                                 K −1
+<       N log N +     Gi (ρ |log αi | − log |αi | + 2D h (αi )) + log(N !) + N log(2) +      DN log(b) + 0.001.
+     2            i=1
+                                                                                          3
+
+  Applying N ! < N (N/e)N (which holds for N ≥ 7), then dividing both sides by N/2, it follows
+that
+                                                   
+        KL L          1   1       2     3    1      8
+            + −         +     K− −        −    −        log ρ
+         2     2      3 6L        3 K       6L 3K 2
+                                          3
+                                          X                                                   2 log(N )
+       <(D + 1) log N + (2/N )                  Gi (ρ |log αi | − log |αi | + 2D h (αi )) +             − 2 log(e/2)
+                                          i=1
+                                                                                                  N
+                 2(K − 1)D
+           +               log(b) + 0.002/N.
+                     3
+18                                MAURICE MIGNOTTE AND PAUL VOUTIER
+
+                                                                                                    
+   For K ≥ 3 and L ≥ 5, we have 1/3 + 1/(6L) = 0.366 . . . and 2/3 + 3/K + 1/(6L) + 8/ 3K 2 =
+1.9962 . . ., we have
+                                                      X 3
+    KL L
+          + − 0.37K − 2 log ρ <(D + 1) log N + (2/N )        Gi (ρ |log αi | − log |αi | + 2D h (αi ))
+     2        2                                          i=1
+                                             2 log(N )                2(K − 1)D
+                                         +             − 2 log(e/2) +           log(b) + 0.002/N.
+                                                 N                        3
+   The proof now follows from 2 log(N )/N − 2 log(e/2)+ 0.002/N < 0 for N ≥ 6 and the definitions
+of the Gi ’s in (2.2) and applying the contrapositive to show that the assumption that Λ′ < p−KL
+does not hold.                                                                                 
+
+3.6. A zero lemma. To use Proposition 3.9, we need to find conditions under which our de-
+terminant ∆ is non-zero, a so-called zero lemma. We use a zero lemma due to N. Gouillon (see
+[14, Théorème 2.1], which is a refinement of Théorème 1 of [13]. In fact, in our formulation be-
+low, we state Gouillon’s result not just for C, as he does, but for any algebraically closed field of
+characteristic zero – there are no changes required to his proof. Also Gouillon’s result applies to
+multiplicities. We ignore multiplicities of the zeroes here.
+   Let K be an algebraically closed field of characteristic zero and let d0 and d1 be two non-negative
+                                                                               d
+integers which are not both zero. We denote by G the group Kd0 × (K× ) 1 The group law on G
+will be written additively, hence its neutral element is denoted by 0G . When Σ1 , . . . , Σn are finite
+subsets of G, we define
+                        Σ1 + · · · + Σn = {σ1 + · · · + σn : σ1 ∈ Σ1 , . . . , σn ∈ Σn } .
+Proposition 3.11. Suppose that K and L are positive integers and that Σ1 , Σ2 and Σ3 are non-
+empty finite subsets of K2 × K× such that
+          (
+            Card {λx1 + µx2 : ∃y ∈ K× with (x1 , x2 , y) ∈ Σ1 } > K, ∀(λ, µ) ∈ K2 \ {(0, 0)},
+(3.17)           
+            Card y : ∃ (x1 , x2 ) ∈ K2 with (x1 , x2 , y) ∈ Σ1  > L,
+
+          (
+              Card {(λx1 + µx2 , y) : (x1 , x2 , y) ∈ Σ2 }            > 2KL,      ∀(λ, µ) ∈ K2 \ {(0, 0)},
+(3.18)
+              Card {(x1 , x2 ) : ∃y ∈ K× with (x1 , x2 , y) ∈ Σ2 }    > K 2,
+
+and
+(3.19)                                        Card (Σ3 ) > 3K 2 L.
+   Then the only polynomial P ∈ K [X1 , X2 , Y ] of total degree at most K in X1 and X2 and of
+degree at most L in Y which is zero on the set Σ1 + Σ2 + Σ3 is the zero polynomial.
+  The proof of this proposition is based on the following generalisation of a special case of a result
+due to Gouillon.
+Lemma 3.12. Let K and L be positive integers, K be an algebraically closed field of characteristic
+zero and Σ1 , Σ2 , Σ3 be non-empty finite subsets of K2 × K× .
+   Suppose that the following conditions are satisfied.
+   (1) For j = 1 and j = 2 and for all K-subspaces, W , of K2 of dimension at most 2 − j, we have
+                                                         
+                                          Σj + (W × K× )
+                                 Card                       > Kj.
+                                             W × K×
+                           A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                     19
+
+
+   (2) For each of j = 1, j = 2 and j = 3 and for all K-subspaces, W , of K2 of dimension at most
+3 − j, we have                                       
+                                      Σj + (W × {1})
+                               Card                      > jK j−1 L.
+                                         W × {1}
+   Then the only polynomial P ∈ K [X1 , X2 , Y ] of total degree at most K in X1 and X2 and of
+degree at most L in Y which is zero on the set Σ1 + Σ2 + Σ3 is the zero polynomial.
+Proof. This is based on Théorème 2.1 in [14] in the special case of m = 2 and T1 = · · · = Tm+1 = 0.
+The only difference is that he stated and proved his result only for C in place of our K. However,
+his proof only requires that the field be algebraically closed and of characteristic 0, rather than
+requiring any additional properties of C.
+   We have taken his T1 = · · · = Tm+1 = 0 since we are only concerned with the zeroes themselves,
+not their multiplicities. Also we have used the notation of Waldschmidt [31], which is itself based
+on the notation of Philippon [26], instead of Gouillon’s similar, but not identical, notation.      
+
+Proof of Proposition 3.11. We only show that case j = 1 of Gouillon’s condition (1) follows from
+the conditions in our proposition (the first part of condition (3.17) of our proposition, in particular),
+as the proofs of the others are very similar.
+   In this case, there exists a K-subspace, W , of K2 of dimension either 0 or 1.
+   If the dimension of W is 0, then
+                                      
+                      Σ1 + (W × K× )               
+(3.20)        Card               ×
+                                          = Card (x1 , x2 ) : ∃y ∈ K× with (x1 , x2 , y) ∈ Σ1 .
+                          W ×K
+  This is because (x1 , x2 , y)+({(0, 0)} × K× ) = (x1 , x2 , 1)+({(0, 0)} × K× ) for any (x1 , x2 , y) ∈ Σ1
+and each coset, (x1 , x2 , 1) + ({(0, 0)} × K× ), is distinct.
+  The first part of our condition (3.17) implies that the cardinality in (3.20) exceeds K.
+  If the dimension of W is 1, then this subspace is
+                                     
+                                       (x1 , x2 ) ∈ K2 : λx1 + µx2 = 0
+for some (λ, µ) ∈ K2 \{(0, 0)}.
+   For any (λ, µ) ∈ K2 \{(0, 0)}, there is a bijection between this set and the set in the first part of
+condition (3.17) of our proposition (note that all (x1 , x2 , y) ∈ Σ1 with x1 and x2 fixed map to the
+same element in the set in Gouillon’s condition (1) with j = 1). So the first part of condition (3.17)
+of our proposition ensures that Gouillon’s condition (1) holds for j = 1.
+   Continuing in a very similar way, we can show that the conditions in our proposition imply that
+Gouillon’s conditions hold. Hence our conclusion follows from his result.                             
+
+Remark. Equation (3.20) illustrates how the sets on the left-hand sides of (3.17)–(3.19) in Propo-
+sition 3.11 arise. They are related to sets of classes of the form (Σi + H) /H for various algebraic
+subgroups, H, of K2 × K× . Such algebraic subgroups, H, are the obstruction subgroups introduced
+to the study of zero estimates and multiplicity estimates by Philippon [26].
+   Also note that any algebraic subgroup of the product of an additive group by a multiplicative
+group is a product of a subgroup of the additive group and a subgroup of the multiplicative group.
+Remark 3.13. For j = 1, 2, 3, we shall consider finite sets Σj defined by
+                                               
+(3.21)      Σj = r + tβ1 , s + tβ2 , αr1 αs2 αt3 : 0 ≤ r ≤ Rj , 0 ≤ s ≤ Sj , 0 ≤ t ≤ Tj ,
+where Rj , Sj and Tj are positive integers, β1 = b1 /b3 = b′1 /b′3 and β2 = b2 /b3 = b′′2 /b′′3 are as in
+(2.3). This choice corresponds to the entries of the arithmetical matrix used in the definition of ∆
+in (2.6).
+20                               MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+3.7. Degeneracies. If the conditions in our zero lemma do not all hold, then there will be a linear
+dependence relation over Q that the bi ’s in our linear form satisfy (see conditions (2.14) and (C2)
+in Theorem 2.1). We refer to such cases as degeneracies and present results in this subsection for
+how we handle them.
+Remark 3.14. Note that there is an alternative approach due to Waldschmidt for handling the
+degenerate case (see the discussion at the end of Section 7.1 of [31, pp. 191–192]). This alternative
+approach is more efficient in its dependence on b (log2 (b) rather than log8/3 (b) as in Subsection 5.3).
+This would considerably simplify our treatment of the degenerate case as well as the statement of
+Theorem 2.1. Our attempts to apply it have yielded larger constants, and hence weaker results.
+But Waldschmidt’s approach certainly warrants further efforts.
+     Concerning the group, C2 × C× , the following elementary lemma is important.
+Lemma 3.15. The following conditions are equivalent.
+(a) The map
+                                                                               
+               ψ : Z3 → C2 × C× , (r, s, t) 7→ r + β1 t, s + β3 t, αr1 αs2 αt3
+is not one-to-one (not injective).
+(b) There exists some positive integer m such that
+                                             αmb
+                                              3
+                                                3
+                                                  = αmb
+                                                     1
+                                                       1 mb2
+                                                        α2 .
+(c) The number Λ = b1 log α1 + b2 log α2 − b3 log α3 belongs to the set iπQ.
+Proof. Clearly, without loss of generality, we may assume that gcd (b1 , b2 , b3 ) = 1.
+   Recall our notation from (2.3) with d1 = gcd (b1 , b3 ) and d2 = gcd (b2 , b3 ). Since gcd (b1 , b2 , b3 ) =
+1, we have gcd (d1 , d2 ) = 1. Thus
+
+                              b3 = d1 d2 be3 (say),   b′3 = d2 be3 ,   b′′3 = d1 be3 .
+   After these preliminaries, we prove the implication (a) ⇒ (b). Suppose that the map ψ is not
+injective. Then there exist rational integers r, s, t, not all zero, such that
+                                            ψ(r, s, t) = (0, 0, 1).
+     That is,
+                               r + tβ1 = 0,     s + tβ2 = 0,       αr1 αs2 αt3 = 1.
+   The first relation implies r = −kb′1 for some rational integer, k. In fact, we have k = t/b′3 .
+Thus t = kb′3 = kd2 be3 . Similarly, from the second relation we have s = −ℓb′′2 , where ℓ = t/b′′3 , so
+t = ℓb′′3 = ℓd1 be3 , for some rational integer ℓ. In particular, kd2 = ℓd1 , hence there exists m ∈ Z
+such that k = md1 and ℓ = md2 . Thus
+                                r = −mb1 ,     s = −mb2        and t = mb3 .
+     Since at least one of r, s and t is non-zero, it follows that m 6= 0. Thus the third relation gives
+                                             αmb
+                                              3
+                                                3
+                                                  = αmb
+                                                     1
+                                                       1 mb3
+                                                        α3 ,
+as wanted.
+   Clearly, (b) implies (c).
+   To show that (c) implies (a), we suppose that (c) holds, i.e. that mΛ belongs to 2iπZ for some
+positive rational integer m. Then it is clear that ψ (mb1 , mb2 , −mb3 ) = (0, 0, 1), proving that the
+map ψ is not injective.                                                                             
+                           A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                     21
+
+
+Lemma 3.16. If α1 , α2 and α3 are non-zero complex numbers such that (for example) α1 and α2
+are multiplicatively independent and α3 6= 1 is a root of unity, and if log αj is any determination
+of the logarithm of αj for j = 1, 2, 3, then the numbers log α1 , log α2 and log α3 are linearly
+independent over the rationals.
+   Furthermore, if b1 , b2 and b3 are rational integers with at least one of b1 and b2 non-zero, then
+the number b1 log α1 + b2 log α2 + b3 log α3 does not belong to the set iπQ.
+Proof. Suppose that
+                                 Λ = b1 log α1 + b2 log α2 − b3 log α3 = 0
+where b1 , b2 and b3 are rational integers not all equal to zero. Then αb33 = αb11 αb22 . Assume
+that αd3 = 1 with d > 1, then αdb 2
+                                    2
+                                      = α−db
+                                          1
+                                             1
+                                               , which implies b1 = b2 = 0 since α1 and α2 are
+multiplicatively independent. Since we assumed that b1 , b2 and b3 are not all equal to zero, it
+follows that b3 6= 0 and so Λ = b3 log α3 6= 0, since α3 6= 1. This contradiction proves the first
+claim.
+   Noting that log α3 = 2πim/n with n ∤ m, the second claim follows from the first one.         
+   The following very elementary lemma will be useful when investigating conditions (3.17) and
+(3.18) of Proposition 3.11.
+Lemma 3.17. Suppose that b1 , b2 and b3 are positive rational integers which are coprime. Let R,
+S and T be positive integers and consider the set
+                  e = {(r + tb1 /b3 , s + tb2 /b3 ) : 0 ≤ r ≤ R, 0 ≤ s ≤ S, 0 ≤ t ≤ T } .
+                  Σ
+   Then
+                                          e = (R + 1)(S + 1)(T + 1)
+                                     Card Σ
+unless
+                                  b1 ≤ R     and     b2 ≤ S   and   b3 ≤ T.
+Proof. With the same notation as above, suppose that the map
+          ψ : {(r, s, t) : 0 ≤ r ≤ R, 0 ≤ s ≤ S, 0 ≤ t ≤ T } → e
+                                                               Σ,     (r, s, t) 7→ (r + β1 t, s + β2 t)
+is not injective. Then there exist two different triples of rational integers (r, s, t) and (r′ , s′ , t′ ),
+with 0 ≤ r, r′ ≤ R, 0 ≤ s, s′ ≤ S and 0 ≤ t, t′ ≤ T such that ψ(r, s, t) = ψ(r′ , s′ , t′ ). That is,
+                       (r − r′ ) + (t − t′ )β1 = 0    and (s − s′ ) + (t − t′ )β3 = 0.
+   As in the proof that (a) implies (b) for Lemma 3.15, these two relations imply that
+                            r − r′ = mb1 ,    s − s′ = mb2 ,    s − s′ = −mb3 .
+  Thus −R ≤ mb1 ≤ R, −S ≤ mb2 ≤ S and −T ≤ mb3 ≤ T . Since m is non-zero and the bi ’s are
+positive, the conclusion follows.                                                       
+    The first subcondition of condition (3.17) in Proposition 3.11 is the most difficult to handle. For
+it, we will need the following lemmas, in particular, Lemma 3.21. These lemmas also bring some
+extra information to Proposition 3.1.1 of [4] (also see [31, Ex 6.4, pp. 184–185]).
+Lemma 3.18. Let A, B, C, D, X > 0, Y > 0 and Z > 0 be rational integers with gcd(A, B, C) = 1
+and ABC 6= 0. Put
+                      
+                  Σ = (x, y, z) ∈ Z3 : 0 ≤ x ≤ X, 0 ≤ y ≤ Y, 0 ≤ z ≤ Z
+and
+                            M = Card {(x, y, z) ∈ Σ : Ax + By + Cz = D} .
+22                              MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+(a) We have
+                                                                     
+                   X           Y                                   X           Z
+           M ≤ 1+       1+                           and   M ≤ 1+       1+            ,
+                   α         |C|/α                                 α         |B|/α
+where
+                                                α = gcd(B, C).
+(b) If we suppose that
+                            M ≥ max {X + Y + 1, Y + Z + 1, Z + X + 1}
+then
+                  (Y + 1)(Z + 1)              (X + 1)(Z + 1)                     (X + 1)(Y + 1)
+          |A| ≤                  ,    |B| ≤                       and    |C| ≤                  .
+                  M − max{Y, Z}               M − max{X, Z}                      M − max{X, Y }
+Remark 3.19. When we apply part (b) of this lemma, we will assume that M is (possibly) even
+larger. Let V = ((X + 1)(Y + 1)(Z + 1))1/2 and suppose that χ is a positive real number. We will
+assume that
+                      M ≥ max {X + Y + 1, Y + Z + 1, Z + X + 1, χV} .
+Proof. (a) Define                     
+                                  Π = (x, y, z) ∈ C3 : Ax + By + Cz = D .
+   If the image by the map (x, y, z) 7→ Ax + By + Cz of a point (x, y, z) ∈ Z3 belongs to the plane
+Π, then
+                                             Ax ≡ D (mod α),
+where A and α are coprime since gcd(A, B, C) = 1. This shows that the number of such x which
+satisfy 0 ≤ x ≤ X is at most 1 + ⌊X/α⌋.
+   Now let x be fixed, with 0 ≤ x ≤ X, and such that the images of two distinct elements (x, y, z)
+and (x, y ′ , z ′ ) of Σ also belong to Π. Then
+                                          B(y ′ − y) = C(z − z ′ ),
+where we suppose (as we may) that y is minimal (then y ′ > y). Hence there exists a positive
+integer k such that
+                            y ′ − y = k(|C|/α) and z − z ′ = ±k(|B|/α).
+   It follows that, for x fixed, the number of (x, y, z) ∈ Σ whose image belongs to Π is at most
+1 + ⌊Y /(|C|/α)⌋. Hence
+                                                           
+                                              X              Y
+(3.22)                            M ≤ 1+            1+              ,
+                                              α            |C|/α
+which proves the first upper bound for M in part (a) of the lemma.
+   The proof of the second upper bound for M is the same, except for fixed values of x, we bound
+the number of possible z-coordinates rather than the number of possible y-coordinates.
+
+     (b) We start with the upper bound for |C|.
+     For ξ ≥ 1, put                                           
+                                                    X        ξY
+                                      f (ξ) =    1+       1+       .
+                                                    ξ        |C|
+     From equation (3.22), it follows that
+                                                  M ≤ f (α).
+                                 ′′              3
+     Clearly, 1 ≤ α ≤ C. Since f (ξ) = 2X/ξ > 0, it follows that f (ξ) is convex and so
+                                      M ≤ f (α) ≤ max {f (1), f (C)} .
+                          A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                         23
+
+
+  If
+                                   XY        Y                            Y (X + 1)
+                 M ≤ f (1) = 1 +       +X +     ,      then     |C| ≤                .
+                                   |C|      |C|                          M − (X + 1)
+  If
+                                    XY     X                              X(Y + 1)
+                 M ≤ f (C) = 1 +        +     + Y,     then      |C| ≤               .
+                                    |C|   |C|                            M − (Y + 1)
+  Suppose finally that
+                           M ≥ max{X + Y + 1, Y + Z + 1, Z + X + 1}.
+  Since M − X ≥ Y + 1, we can write
+                                                                                     
+       Y (X + 1)           XY + Y            XY + Y          1          1
+                  =                        =         1+          +              + ···
+      M − (X + 1)   (M − X)(1 − 1/(M − X))   M −X         M −X     (M − X)2
+                                                                                   
+                                             XY + Y         1         1
+                                           ≤         1+         +          +  · · ·
+                                             M −X         Y + 1 (Y + 1)2
+                                             XY + Y Y + 1    (X + 1)(Y + 1)
+                                           =               =                .
+                                             M −X Y             M −X
+  Similarly,
+                                    X(Y + 1)     (X + 1)(Y + 1)
+                                               ≤                .
+                                   M − (Y + 1)      M −Y
+  Thus, we always have
+                                              (X + 1)(Y + 1)
+                                      |C| ≤                  .
+                                              M − max{X, Y }
+  The upper bounds for |A| and |B| are proved in the same way.                               
+
+Lemma 3.20. Let B, C, D, X > 0, Y > 0 and Z > 0 be rational integers with gcd(B, C) = 1
+and BC 6= 0.
+  Put
+                     
+                 Σ = (x, y, z) ∈ Z3 : 0 ≤ x ≤ X, 0 ≤ y ≤ Y, 0 ≤ z ≤ Z
+and
+                              M = Card {(x, y, z) ∈ Σ : By + Cz = D} .
+(a) We have
+                                                                       
+                                    Y                                     Z
+                 M ≤ (X + 1) 1 +                 and   M ≤ (X + 1) 1 +          .
+                                   |C|                                   |B|
+(b) Moreover, if we suppose that
+                                 M ≥ max{X + Y + 1, X + Z + 1},
+then
+                              (X + 1)(Z + 1)                   (X + 1)(Y + 1)
+                      |B| ≤                     and    |C| ≤                  .
+                                 M −X                             M −X
+Remark. As with Lemma 3.18(b) and noted in Remark 3.19, when we apply part (b) of this lemma,
+we will assume that M is (possibly) even larger. Let V = ((X + 1)(Y + 1)(Z + 1))1/2 and suppose
+that χ is a positive real number. We will assume that
+                         M ≥ max {X + Y + 1, Y + Z + 1, Z + X + 1, χV} .
+24                               MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+Proof. The proof is similar to that of Lemma 3.18, but simpler.
+  (a) Define the plane              
+                               Π = (x, y, z) ∈ C3 : By + Cz = D
+and consider the map (x, y, z) 7→ By + Cz defined on C3 .
+   Let x be fixed with 0 ≤ x ≤ X and such that the images of two distinct points (x, y, z) and
+(x, y ′ , z ′ ) in Σ belong to Π. Then
+                                           B(y ′ − y) = C(z − z ′ ),
+where we suppose (as we may) that y is minimal (then y ′ > y). Hence there exists a positive
+integer k such that
+                                 y ′ − y = k|C| and z − z ′ = ±k|B|.
+   Since y ′ − y = C(z − z ′ )/B and gcd(B, C) = 1, it must be the case that B|(z − z ′ ). This is why
+k is an integer.
+   It follows that, for x fixed, the number of (x, y, z) ∈ Σ whose image belongs to Π is at most
+1 + ⌊Y /|C|⌋. Hence
+                                                            
+                                                           Y
+(3.23)                                 M ≤ (1 + X) 1 +           ,
+                                                          |C|
+which proves the first upper bound for M in the lemma.
+   The proof of the second upper bound for M is the same, except for fixed values of x, we bound
+the number of possible z-coordinates rather than the number of possible y-coordinates.
+
+     (b) We turn now to the upper bounds for |B| and |C|, starting with the upper bound for |C|.
+     From equation (3.23), it follows that
+                                                          
+                                                        Y
+                                       M ≤ (1 + X) 1 +       .
+                                                       |C|
+     Thus
+                                                     Y (1 + X)
+                                             |C| ≤             .
+                                                     M −1−X
+     Suppose now
+                                 M ≥ max{X + Y + 1, X + Z + 1}.
+     As we saw in the proof of Lemma 3.18, M ≥ X + Y + 1 implies that
+                                          Y (1 + X)   (X + 1)(Y + 1)
+                                  |C| ≤             ≤                ,
+                                          M −1−X         M −X
+as required.
+   The remaining upper bound for |B| at the end of the lemma is proved in the same way.             
+Lemma 3.21. Let R1 , S1 and T1 be positive integers and consider the set
+              e 1 = {(x1 , x2 ) = (r + tβ1 , s + tβ2 ) : 0 ≤ r ≤ R1 , 0 ≤ s ≤ S1 , 0 ≤ t ≤ T1 } ,
+              Σ
+where β1 = b1 /b3 and β2 = b2 /b3 with b1 , b2 and b3 coprime non-zero rational integers, and assume
+that
+                                      e 1 = (R1 + 1) (S1 + 1) (T1 + 1) .
+                                 Card Σ
+   Put
+                                                                  1/2
+                                  V = ((R1 + 1) (S1 + 1) (T1 + 1)) .
+   For any (λ, µ) ∈ C2 \ {(0, 0)} and any complex number c, let Mc be the number of elements
+             e 1 such that λx1 + µx2 = c.
+(x1 , x2 ) ∈ Σ
+                              A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                               25
+
+
+(a) Let χ be a positive real number. If
+(3.24)                 Mc < M := max {R1 + S1 + 1, S1 + T1 + 1, R1 + T1 + 1, χV}
+does not hold, then there exist rational integers u1 , u2 and u3 , not all zero, such that
+                                               u1 b1 + u2 b2 + u3 b3 = 0,
+with gcd (u1 , u2 , u3 ) = 1 and
+             (S1 + 1)(T1 + 1)                        (R1 + 1)(T1 + 1)                            (R1 + 1)(S1 + 1)
+   |u1 | ≤                     ,           |u2 | ≤                             and     |u3 | ≤                     .
+             M − max{S1 , T1 }                       M − max{R1 , T1 }                           M − max{R1 , S1 }
+(b) If the upper bound (3.24) for Mc holds then, for all (λ, µ) ∈ C2 \ {(0, 0)}, we have
+            n                         o                (R1 + 1)(S1 + 1)(T1 + 1)
+                                    e1 ≥
+      Card λx1 + µx2 : (x1 , x2 ) ∈ Σ                                                     .
+                                          max {R1 + S1 + 1, S1 + T1 + 1, R1 + T1 + 1, χV}
+Remark. The introduction of χV here turns out to be very helpful to us. In many cases, χV is
+much larger than the other terms in the definition of M here. So its use here gives us much smaller
+upper bounds on the sizes of the ui ’s. This gives us better results from the kit.
+Proof. (a) Suppose that (3.24) does not hold for some triple (λ, µ, c). Let c be a complex number
+such that Mc is maximal and consider the associated values of λ and µ. We distinguish the following
+possibilities for µ and λ.
+   • µ = 0: suppose that (x1 , x2 ) ∈ Σ    e 1 satisfies λx1 + µx2 = λ (r + tβ1 ) = c. So b3 r + b1 t = cb3 /λ
+for some integers 0 ≤ r ≤ R1 and 0 ≤ t ≤ T1 (since µ = 0 here and also (µ, λ) 6= (0, 0), we have
+λ 6= 0).
+   We will now apply Lemma 3.20. Let (X, Y, Z) there be (S1 , R1 , T1 ) and (B, C, D) there be
+(b3 /d1 , b1 /d1 , cb3 / (λd1 )), where d1 = gcd (b1 , b3 ). Taking r and t here as y and z, respectively, in
+the definition of M in Lemma 3.20, the equation By + Cz = D in the definition of M becomes our
+(b3 /d1 ) r + (b1 /d1 ) t = cb3 / (d1 λ).
+   Using the map σ : Σ → Σ           e 1 defined by σ : (s, r, t) 7→ (r + tβ1 , s + tβ2 ), we show that the
+                             e
+cardinalities of Σ and Σ1 are equal. The map is clearly surjective. Suppose that
+              σ (s1 , r1 , t1 ) = (r1 + t1 β1 , s1 + t1 β2 ) = (r2 + t2 β1 , s2 + t2 β2 ) = σ (s2 , r2 , t2 ) .
+Then (r1 − r2 ) + (t1 − t2 ) β2 = (s1 − s2 ) + (t1 − t2 ) β2 = 0, so r1 − r2 = s1 − s2 . In this case, we
+can write r1 = r2 + k and s1 = s2 + k. Thus (r2 + k + t1 β1 , s2 + k + t1 β2 ) = (r2 + t2 β1 , s2 + t2 β2 ),
+which can only happen if k = 0. This proves that σ is injective too. Hence the cardinalities of Σ
+    e 1 are equal
+and Σ
+  Therefore, since (3.24) does not hold, the inequality for M in Lemma 3.20(b) holds and we have
+                                                (S1 + 1) (T1 + 1)   (S1 + 1) (T1 + 1)
+                            |b3 /d1 | = |B| ≤                     ≤
+                                                    M c − S1            M − S1
+and
+                                            (S1 + 1) (R1 + 1)    (S1 + 1) (R1 + 1)
+                           |b1 /d1 | = |C| ≤                  ≤                     .
+                                                 M c − S1             M − S1
+    We now use this information to obtain the linear relation we want between the bi ’s. We have the
+trivial relationship (b1 /d1 ) b3 − b1 (b3 /d1 ) = 0, so we can let u1 = −b3 /d1 , u2 = 0 and u3 = b1 /d1 .
+The upper bounds above on |b3 /d1 | and |b1 /d1 | establish our lemma in this case.
+    Now we assume µ 6= 0 and, to simplify the notation, we take µ = 1.
+    • λ = 0: by the same argument as for µ = 0, we have b3 (λx1 + µx2 ) = b3 µx2 = b3 (s + tβ2 ) =
+                                      e 1 . Here we apply Lemma 3.20 with (R1 , S1 , T1 ) for (X, Y, Z) and
+b3 s+tb2 = b3 c for some (x1 , x2 ) ∈ Σ
+26                                    MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+(b3 /d1 , b2 /d1 , b3 c/d1 ) for (B, C, D), where d1 = gcd (b2 , b3 ). As in the case of µ = 0, Lemma 3.20(b)
+gives us
+                                (R1 + 1) (T1 + 1)                              (R1 + 1) (S1 + 1)
+             |b3 /d1 | = |B| ≤                         and |b2 /d1 | = |C| ≤                     .
+                                      M − R1                                          M − S1
+    As in the case of µ = 0, we have the relationship u1 b1 + u2 b2 + u3 b3 = 0 with u1 = 0, u2 = b3 /d1
+and u3 = −b2 /d1 .
+    It remains to consider µλ 6= 0. We do so with two cases.
+    • λb1 + b2 = 0: we proceed in the same way as in the case of λ = 0. We have λx1 + µx2 =
+−b2 /b1 (r + tβ1 ) + s + tβ2 = c (recalling that we take µ = 1). Expanding this and simplifying it,
+we obtain −b2 r + b1 s = cb1 , so we use Lemma 3.20 with (0, −b2 /d2 , b1 /d2 , cb1 /d2 ) for (A, B, C, D),
+(t, r, s) for (x, y, z) and (T1 , R1 , S1 ) for (X, Y, Z), where d2 = gcd (b1 , b2 ). Here
+                              (S1 + 1) (T1 + 1)                           (T1 + 1) (R1 + 1)
+              |b2 /d2 | = |B| ≤                   and |b1 /d2 | = |C| ≤                     .
+                                  M − T1                                      M − T1
+   Notice the denominators here differ from those for the case of λ = 0. This explains why we need
+the max in our upper bounds in the lemma.
+   The desired relationship, u1 b1 + u2 b2 + u3 b3 = 0, holds if we take u1 = b2 /d2 , u2 = −b1 /d2 and
+u3 = 0.
+   • λµ (λb1 + b2 ) 6= 0: we will show that the desired relationship between the bi ’s holds here too.
+To proceed, we put
+                            
+                      E1 = (r, s, t) ∈ Z3 : 0 ≤ r ≤ R1 , 0 ≤ s ≤ S1 , 0 ≤ t ≤ T1 .
+   Since Mc > T1 + 1 (by our assumption that (3.24) does not hold), there exist two distinct triples
+(r1 , s1 , t0 ) and (r1′ , s′1 , t0 ) ∈ E1 such that
+                          λ (r1 + β1 t0 ) + (s1 + β2 t0 ) = λ (r1′ + β1 t0 ) + (s′1 + β2 t0 ) ,
+recalling our assumption (stated just before considering the case λ = 0) that µ = 1. This gives us
+a trivial linear relation between the bi ’s, but it does tell us that λ (r1′ − r1 ) = s1 − s′1 . Since λ 6= 0
+and at least one of r1 6= r1′ or s1 6= s′1 holds, it follows that both r1 6= r1′ and s1 6= s′1 hold. Put
+r1′′ = (r1′ − r1 ) / gcd (r1 − r1′ , s1 − s′1 ) and s′′1 = (s1 − s′1 ) / gcd (r1 − r1′ , s1 − s′1 ), then λ = s′′1 /r1′′ .
+     We now use this information about λ to obtain a non-trivial linear relation between the bi ’s
+whose coefficients we can bound.
+     We have λx1 + µx2 = s′′1 /r1′′ (r + tβ1 ) + s + tβ2 = c (recalling that we take µ = 1). Expanding
+this and simplifying it, we obtain
+                                      s′′1 b3 r + (s′′1 b1 + r1′′ b2 ) t + r1′′ b3 s = r1′′ b3 c,
+so we use Lemma 3.18(b) with (s′′1 b3 /δ1 , (s′′1 b1 + r1′′ b2 ) /δ1 , r1′′ b3 /δ1 , r1′′ b3 c/δ1 ) for (A, B, C, D), (r, t, s)
+for (x, y, z) and (R1 , T1 , S1 ) for (X, Y, Z), where
+                           δ1 = gcd (s′′1 b3 , s′′1 b1 + r1′′ b2 , r1′′ b3 ) = gcd (b3 , s′′1 b1 + r1′′ b2 )
+since r1′′ and s′′1 are coprime. Here
+                                                    (Y + 1) (Z + 1)   (S1 + 1) (T1 + 1)
+                          |s′′1 b3 /δ1 | = |A| ≤                    ≤                   ,
+                                                    M − max{Y, Z}     M − max{S1 , T1 }
+                                                           (X + 1) (Z + 1)   (R1 + 1) (S1 + 1)
+                    |(s′′1 b1 + r1′′ b2 ) /δ1 | = |B| ≤                    ≤
+                                                           M − max{X, Z}     M − max{R1 , S1 }
+and
+                                                   (X + 1) (Y + 1)   (R1 + 1) (T1 + 1)
+                         |r1′′ b3 /δ1 | = |C| ≤                    ≤                   .
+                                                   M − max{X, Y }    M − max{R1 , T1 }
+                             A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                           27
+
+
+Since δ1 divides s′′1 b1 + r1′′ b2 , we have s′′1 b1 + r1′′ b2 = k1 δ1 . Multiplying this by b3 /δ1 , we get a linear
+relation
+                                             u 1 b1 + u 2 b2 + u 3 b3 = 0
+with u1 = s′′1 b3 /δ1 , u2 = r1′′ b3 /δ1 and u3 = − (s′′1 b1 + r1′′ b2 ) /δ1 . Thus
+                                                         (S1 + 1) (T1 + 1)
+                              |u1 | = |s′′1 b3 /δ1 | ≤                      ,
+                                                        M − max{S1 , T1 }
+                                                         (R1 + 1) (T1 + 1)
+                              |u2 | = |r1′′ b3 /δ1 | ≤                         and
+                                                        M − max{R1 , T1 }
+                                                                    (R1 + 1) (S1 + 1)
+                              |u3 | = |(s′′1 b1 + r1′′ b2 ) /δ1 | ≤                   .
+                                                                    M − max{R1 , S1 }
+
+   (b) For (λ, µ) ∈ C2 \ {(0, 0)}, we consider the cardinality
+                                         n                           o
+                                                                 e1 .
+                               N = Card λx1 + µx2 : (x1 , x2 ) ∈ Σ
+                                                          
+   Putting M = maxc∈C Mc , we clearly have N ≥ Card Σ      e 1 /M , so part (b) of the lemma follows
+from the assumption in the lemma that
+                                          e 1 = (R1 + 1) (S1 + 1) (T1 + 1)
+                                     Card Σ
+and the assumption in part (b) that M ≤ M.                                                                        
+
+                                          4. Proof of Main Result
+    We start by showing that we can apply our zero lemma, Proposition 3.11, to ∆, so that we have
+∆ 6= 0. This will allow us to use Proposition 3.9 to obtain a lower bound for |∆|.
+    If the N = K(K + 1)L/2 rows of the matrix used to define the interpolation determinant, ∆, in
+(2.6) are linearly dependent, then there exists a polynomial, P (X1 , X2 , Y ), not exactly zero, with
+P (r + tβ1 , s + tβ2 , αr1 αs2 αt3 ) = 0 for all triples (r, s, t) with 0 ≤ r < R, 0 ≤ s < S and 0 ≤ t < T .
+Since this polynomial arises from a linear combination of the rows, the maximum exponent of
+r + tβ1 plus the maximum exponent of s + tβ2 is at most K − 1 and the maximum exponent of
+αr1 αs2 αt3 is at most L − 1, degX (P ) ≤ K − 1 and degY (P ) ≤ L − 1.
+    Using the definition of the Σj ’s in (3.21), along with the lower bounds for R, S and T in (2.7), we
+use that the set of all such triples (r, s, t) contains Σ1 +Σ2 +Σ3 . Therefore, if conditions (3.17), (3.18)
+and (3.19) in Proposition 3.11 hold, then we find that P (X1 , X2 , Y ) is the zero polynomial. This
+contradiction shows that the N = K(K + 1)L/2 rows of the matrix used to define the interpolation
+determinant, ∆, in (2.6) are not linearly dependent and hence the interpolation determinant, ∆,
+is not zero.
+    Thus, if we can show that conditions (2.9)–(2.13) in the theorem imply conditions (3.17), (3.18)
+and (3.19) in Proposition 3.11 (unless conditions (2.14) or (2.15) hold), then by Proposition 3.10,
+the lower bound for Λ′ in the theorem will hold (again, unless conditions (2.14) or (2.15) hold).
+
+   Condition (3.17) of Proposition 3.11 has two subconditions. The first subcondition is
+(4.1)                  Card {λx1 + µx2 : (x1 , x2 , y) ∈ Σ1 } > K,          ∀(λ, µ) 6= (0, 0).
+
+   Recalling the definition of Σ1 in (3.21) and of Σf1 in Lemma 3.17, we have
+                                                          n                          o
+                                                                                   e1 .
+            Card {λx1 + µx2 : (x1 , x2 , y) ∈ Σ1 } = Card λx1 + µx2 : (x1 , x2 ) ∈ Σ
+28                             MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+  By Lemma 3.17, we find that Card Σ  e 1 = (R1 + 1) (S1 + 1) (T1 + 1) holds unless condition (2.14)
+holds. So we may now assume that Card Σ  e 1 = (R1 + 1) (S1 + 1) (T1 + 1) holds. Thus, by Lemma 3.21(b),
+condition (2.9) of the theorem implies that
+                          n                           o
+                                                   e 1 > K, ∀(λ, µ) 6= (0, 0).
+                     Card λx1 + µx2 : (x1 , x2 ) ∈ Σ
+
+holds, unless the condition in Lemma 3.21(a) holds. This condition in Lemma 3.21(a) gives rise to
+condition (2.15).
+  The second subcondition of condition (3.17) of Proposition 3.11 is
+(4.2)                              Card {y : (x1 , x2 , y) ∈ Σ1 } > L.
+   Condition (2.10) in this theorem implies that this subcondition holds.
+   So we have shown that condition (3.17) of Proposition 3.11 follows from conditions (2.9) and
+(2.10) in this theorem, provided that conditions (2.14) and (2.15) do not hold.
+
+     We now consider condition (3.18) of Proposition 3.11.
+     It is also divided into two subconditions. We replace the first one by the stronger condition
+(4.3)                             Card {y : (x1 , x2 , y) ∈ Σ2 } > 2KL.
+     Condition (2.11) in this theorem implies that this subcondition holds.
+     The second subcondition of condition (3.18) of Proposition 3.11 is
+(4.4)                          Card {(x1 , x2 ) : (x1 , x2 , y) ∈ Σ2 } > K 2 .
+  By Lemma 3.17, Card {(x1 , x2 ) : (x1 , x2 , y) ∈ Σ2 } = (R2 + 1) (S2 + 1) (T2 + 1) holds unless
+condition (2.14) holds. So condition (2.12) in this theorem implies that this subcondition holds
+unless condition (2.14) holds.
+
+   Condition (3.19) of Proposition 3.11 is that Card Σ3 > 3K 2 L. From the definition of w, if
+Λ ∈ iπQ, then Λ = iπ2p/q where p 6= 0 and 0 < |q| ≤ w. So, from the assumption in this theorem
+that 0 < |Λ| < 2π/w, it follows that Λ 6∈ iπQ. Thus the map in Lemma 3.15(a) is injective, so
+hypothesis (2.13) of the theorem implies condition (3.19) of Proposition 3.11 holds. This finishes
+the proof.
+
+                                   5. How to use Theorem 2.1
+  We will first consider the multiplicative group generated by the three algebraic numbers α1 , α2
+and α3 , which we will denote by G.
+
+5.1. About the multiplicative group G. In practical examples, generally the following condi-
+tion holds:
+        (
+          either α1 , α2 and α3 are multiplicatively independent, or
+(5.1)
+          two of them are multiplicatively independent and the third is a root of unity 6= 1.
+
+  We now use hypothesis (5.1), which is clearly stronger than the standard hypothesis that the
+multiplicative group G is of rank at least two. We also notice that the order in C× of a root of
+unity 6= 1 is at least equal to 2, thus the condition (4.2) is satisfied if
+                                   2(R1 + 1)(S1 + 1)(T1 + 1)
+(5.2)                                                        > L,
+                                            W1 + 1
+                          A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                 29
+
+
+where                                 
+                                      
+                                        R1 , if α1 is a root of unity,
+                                      
+                                      S , if α is a root of unity,
+                                           1        2
+                                W1 =
+                                      
+                                        T 1 ,  if α3 is a root of unity,
+                                      
+                                      
+                                         1,     otherwise,
+and recalling the definition of the Σj ’s in (3.21). But see also the first remark after (5.3) below.
+  In the same way, we see that to satisfy the condition (4.3) it is enough to suppose that (when
+condition (5.1) holds)
+                                   (R2 + 1) (S2 + 1) (T2 + 1)
+(5.3)                                                         > KL,
+                                            W2 + 1
+where W2 is defined by                 
+                                       
+                                        R2 ,   if α1 is a root of unity,
+                                       
+                                       S ,
+                                           2    if α2 is a root of unity,
+                                  W2 =
+                                       
+                                        T 2,   if α3 is a root of unity,
+                                       
+                                       
+                                         1,     otherwise.
+Remark. When (for example) α3 is a root of unity of order ν, condition (5.2) above can be replaced
+by
+                                    ν (R1 + 1) (S1 + 1) > L
+(provided T1 ≥ ν − 1) and condition (5.3) can be replaced by
+                                       ν (R2 + 1) (S2 + 1) > KL
+(provided T2 ≥ ν − 1).
+Remark. Under a weaker condition, one can obtain similar (but slightly weaker) conclusions (see,
+for instance, [31, Ex. 7.5, p. 229]).
+5.2. The choice of parameters. Here we assume that condition (5.1) holds, then by Lemma 3.16
+above we know that Λ 6∈ iπQ.
+   To apply Theorem 2.1, we consider an integer L ≥ 5 and real parameters m > 0, ρ ≥ 2 and
+χ > 0. Note that having chosen ρ, we can set the values of the ai ’s too.
+   Now we put
+(5.4)                                     K = ⌊mLa1 a2 a3 ⌋.
+   The reason for this choice of K is as follows. The main term on the left-hand side of equa-
+tion (2.8) is KL log(ρ)/2, so it must be larger than D(K − 1) log(b). This suggests that we let L =           
+O (D log(b)/ log(ρ)). Thus our lower bound for log |Λ|, which is − log(ρ)KL, is O a1 a2 a3 D2 log2 (b)/ log(ρ) .
+This is our desired form and consistent with the bounds for linear forms in two logs that we obtain
+from this same technique (see, for example, [20, 19]).
+   We will also assume that
+                                  m ≥ 1 and Ω := a1 a2 a3 ≥ 2.
+   We define
+              R1 = ⌊c1 a2 a3 ⌋,             S1 = ⌊c1 a1 a3 ⌋,               T1 = ⌊c1 a1 a2 ⌋,
+(5.5)         R2 = ⌊c2 a2 a3 ⌋,             S2 = ⌊c2 a1 a3 ⌋,               T2 = ⌊c2 a1 a2 ⌋,
+              R3 = ⌊c3 a2 a3 ⌋,             S3 = ⌊c3 a1 a3 ⌋,               T3 = ⌊c3 a1 a2 ⌋,
+where the parameters c1 , c2 and c3 will be chosen so that conditions (2.9) through (2.13) of
+Theorem 2.1 are satisfied. The motivation for this choice of these quantities is so that all three
+30                              MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+terms in a1 R + a2 S + a3 T on the right-hand side of equation (2.8) are roughly the same size,
+O (a1 a2 a3 ), and so that the gL (a1 R + a2 S + a3 T ) term on the right-hand side of (2.8) is roughly
+the same size as the other main term on the right-hand side of (2.8), D(K − 1) log b.
+                                                                                                       1/2
+   We first consider condition (2.9) of Theorem 2.1. Recalling that V = ((R1 + 1) (S1 + 1) (T1 + 1)) ,
+                                                                           1/2
+we see that (R1 + 1) (S1 + 1) (T1 + 1) > KχV holds, if c31 (a1 a2 a3 )2          ≥ χma1 a2 a3 L. I.e.,
+c1 ≥ (χmL)2/3 .
+   Next we establish conditions for
+             (R1 + 1) (S1 + 1) (T1 + 1) > K · max {R1 + S1 + 1, S1 + T1 + 1, R1 + T1 + 1}
+to hold. We consider the special case a1 ≤ a2 ≤ a3 (the other cases are the same), then T1 ≤ S1 ≤
+R1 and we want to show that
+                             (R1 + 1) (S1 + 1) (T1 + 1) > K (R1 + S1 + 1) .
+     Using the expressions for these quantities, this inequality will hold if
+                           (R1 + 1) c21 a21 a2 a3 > mLa1 a2 a3 (R1 + 1 + c1 a1 a3 )
+holds. If ax > bx + c with a, b, c > 0 holds for x = x0 , then it holds for all x ≥ x0 . So it
+                       3 2 2 2                                                                   2 2 2 2
+                     c1 a1 a2 a3 ≥ mLa1 a2 a3 (c
+suffices to show that
+        2  −1    −1                            2
+                                                  1 a2 a3 + c1 a1 a3) holds. This will hold if c1 a1 a2 a3 ≥
+                                                         −1     −1
+2mLΩ a1 + a2          holds. That is, when c1 ≥ a1 + a2 mL holds. In the general case, the
+wanted condition holds if
+                       
+      c21 ≥ a−1 + a′−1 mL, where a = min {a1 , a2 , a3 } and a′ = min ({a1 , a2 , a3 } \ {a}) .
+   Condition (2.10) of Theorem 2.1 holds when 2c21 a1 a2 a3 · min {a1 , a2 , a3 } = 2c21 Ωa > L, provided
+that c1 > 21/3 (since Ω ≥ 2). This inequality arises from the second part of (5.1), with the factor
+of 2 on the left-hand side coming from the fact that the order of the root of unity is at least 2.
+The condition that c1 > 21/3 ensures that condition (2.10) also holds when the first part of (5.1)
+holds.
+   Thus, since we suppose m ≥ 1 and also Ω ≥ 2, we can take
+                                      (                         1/2 )
+                                        1/3         2/3    2mL
+(5.6)                       c1 = max 2 , (χmL) ,                         .
+                                                              a
+
+  Our treatment of condition (2.11)
+                                  p of Theorem 2.1 is very similar to that for condition (2.10).
+We want 2c22 Ω > 2KL. Thus c2 = m/a L.
+  To satisfy condition (2.12) of Theorem 2.1, we need
+                                    (R2 + 1) (S2 + 1) (T2 + 1) > K 2 .
+   Using our expressions above, this will hold if c32 > m2 L2 .
+   Combining these two expressions for c2 , we require
+                                           n            p       o
+(5.7)                            c2 = max (mL)2/3 , m/a L .
+
+Note we do not require c2 ≥ 21/3 here explicitly, since m ≥ 1 and L ≥ 5 ensures that (mL)2/3 >
+21/3 .
+   Finally, because of the hypothesis in (5.1), we have Λ 6∈ iπQ by Lemma 3.16. So, by Lemma 3.15,
+condition (2.13) of Theorem 2.1 holds for
+                                                     1/3
+(5.8)                                      c3 = 3m2       L.
+                          A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                     31
+
+
+Remark. When α1 , α2 , α3 are multiplicatively independent then it is enough to take c1 and c3 as
+above and
+(5.9)                                          c2 = (mL)2/3 .
+5.3. The degenerate case. In this subsection, we present some informal arguments for what
+happens in the degenerate case. We obtain
+                           log |Λ| ≫ −a1 a2 a3 min {a1 , a2 , a3 } (D log B)8/3 .
+Remark. It is this worse dependence on log B than in the non-degenerate case that leads to the de-
+generate case having an impact on the results obtained in practice. Fortunately, it is the constants
+that are important and our estimates should lead to good results when compared to published
+previously ones (e.g., [22]). See the examples in the next section for evidence of this.
+   From condition (2.14) in Theorem 2.1, we have
+                b1 ≤ max {R1 , R2 } ,    b2 ≤ max {S1 , S2 }      and     b3 ≤ max {T1 , T2 } .
+   We now focus our attention on condition (2.15). In the remainder of this subsection we put
+χ = 1. We have
+                                      u1 b1 + u2 b2 + u3 b3 = 0,
+with
+             (S1 + 1)(T1 + 1)              (R1 + 1)(T1 + 1)                  (R1 + 1)(S1 + 1)
+     |u1 | ≤                   , |u2 | ≤                         and |u3 | ≤
+             M − max{S1 , T1 }            M − max{R1 , T1 }                  M − max{R1 , S1 }
+where
+                       M = max {R1 + S1 + 1, S1 + T1 + 1, R1 + T1 + 1, χV} .
+   This essentially implies that
+                            √                 √                     √
+                     |u1 | ≤ c1 a1 /χ, |u2 | ≤ c1 a2 /χ and |u3 | ≤ c1 a3 /χ,
+                                                                                     3/2
+since R1 ≈ c1 a2 a3 , S1 ≈ c1 a1 a3 , T1 ≈ c1 a1 a2 and typically M = χV ≈ χc1 a1 a2 a3 .
+   Suppose we eliminate b1 . Then
+u1 Λ = u1 b1 log α1 +u1 b2 log α2 +u1 b3 log α3 = b2 (−u2 log α1 + u1 log α2 )+b3 (u1 log α3 − u3 log α1 ) .
+Applying [20] to this linear form in two logs we get
+                      − log |Λ| ≪ (|u1 | a2 + |u2 | a1 ) (|u1 | a3 + |u3 | a1 ) D2 log2 B,
+where (being somewhat pessimistic) B = max {|b1 | , |b2 | , |b3 |}, and the implied constant is an
+absolute constant. Using the upper bounds for the |u1 |’s, we get
+                        √              √
+           − log |Λ| ≪ ( c1 a1 a2 /χ) ( c1 a1 a3 /χ) D2 log2 B ≪ a21 a2 a3 L2/3 D2 log2 B/χ2 ,
+since we have c1 ≪ L2/3 . Recalling that L = O (D log B), we get
+                                     − log |Λ| ≪ a21 a2 a3 (D log B)8/3 ,
+where the implied constant is again absolute.
+   In the two remaining cases, where we eliminate b2 or b3 , the argument is identical and we obtain
+similar results:
+                                 − log |Λ| ≪ a1 a2 a3 ai (D log B)8/3 ,
+where we eliminate bi . This suggests eliminating bi where ai = min {a1 , a2 , a3 }. This choice works
+best in our examples below too.
+   Of course, one could use [22] (or any log B type lower bound) instead of [20]. This would lead
+to a lower bound for log |Λ| with (log B)5/3 instead of (log B)8/3 . However, it would also lead to
+32                            MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+a much larger constant and it is that constant that is more important than the dependence on B
+for our use here.
+
+                                           6. Examples
+   To demonstrate how to use our kit, we give two examples here, revisiting the linear forms in
+three logs that arose in [9] and [10].
+   These examples also provide comparison for readers. In both [9] and [10], the authors used
+earlier versions of our kit due to the first author (see Section 12 of [9] and Section 14 of [10]). In
+the first example [9], the authors showed that if y p = Fn , then p < 197 · 106 . Here we obtain
+p < 18 · 106 , roughly 11 times smaller than the bound in [9]. For the second example, we improve
+the upper bound in [10] as well as correct mistakes in [10].
+   We start with the following sharpening of Lemma 2.2 of [25] that we will use throughout this
+section and in our code. In fact, it is explicit in their proof. Roughly speaking, it removes the
+factor of 2h from their result, yielding bounds very close to the actual largest solution.
+                                              h
+Lemma 6.1. Let a ≥ 0, h ≥ 1 and b > (1/h) be real numbers and let x ∈ R be the largest solution
+of x = a + b (log x)h . Put c = hb1/h . Then,
+                               
+                                             log c  1/h               h
+                          x < c log c +              a   + c log log c     .
+                                          log(c) − 1
+Proof. This is the inequality on the second-last line of the proof of Lemma 2.2 of [25] with a weaker
+condition on b, so we reprove their lemma to justify this weaker condition.
+                                                1/h     1/h
+  Since h ≥ 1, we know that (z1 + z2 )1/h ≤ z1 + z2 for any positive real numbers, z1 and z2 .
+Applying this to our expression for x, we obtain
+                                                              
+                                     x1/h ≤ a1/h + c log x1/h ,
+
+where c = hb1/h , provided a > 0, c > 0 and x > 1. Put x1/h = (1 + y)c   log(c). We also have
+c log x1/h ≤ x1/h under these conditions. Hence c log(c) + c log log x1/h ≤ x1/h . So as long as
+x > eh and log(c) > 0, we have y > 0 above.
+    Thus
+                (1 + y)c log(c) = x1/h ≤ a1/h + c log(1 + y) + c log(c) + c log log(c)
+                               ≤ a1/h + cy + c log(c) + c log log(c).
+     Hence
+                                yc (log(c) − 1) < a1/h + c log log(c).
+  The upper bound for x in our lemma now follows, as in the proof of Lemma 2.2 of [25] except
+that the condition c > e2 is not needed here.                                              
+
+6.1. Example 1: y p = Fn .
+Theorem 6.2. If y p = Fn has a solution for an odd prime p and y > 1, then
+(6.1)                                       p < 18 · 106 .
+Proof. Following Section 13 of [9], we suppose that y p = Fn . From Proposition 10.1 of [9], we have
+(6.2)                                       log y > 1020 .
+                         A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                 33
+
+
+   Here we will suppose that p > 10 · 106 , rather than p > 2 · 108 in [9]. The reason for this weaker
+bound on p is to accommodate the improved upper bound we obtain here. We will also use the
+principal branch of the logarithm throughout the proof.
+Step (1): Linear form definition and upper bound
+
+  We now define the linear form in logs we will use and obtain an upper bound for it.
+  In Section 13 of [9], on page 1013, the authors consider
+                                                   √
+                                 Λ = n log(ω) − log 5 − p log(y),
+which they rewrite as
+                                                               √
+                               Λ = p log ω k /y − q log(ω) − log 5.
+Notice that −Λ is √
+                  in the form we consider in (2.1).
+   Here ω = 1 + 5 /2 and n = kp − q with 0 ≤ q < p. Note that if q = 0, then Λ is a linear
+form in two logs and we obtain a much better upper bound on p.
+   They also state (see the start of the proof of Proposition 11.1 on page 1000 or the start of
+Section 13 on page 1013) that
+(6.3)                                 log |Λ| < −2p log(y) + 1.
+
+Step (2): Matveev
+                                                                                      √
+   In the notation of Theorem 3.1, we have D = 2, α1 = ω k /y, α2 = ω, α3 = 5, b1 = p,
+b2 = −q > −p and b3 = 1.
+   Recall that Aj ≥ max {D h (αj ) , |log αj |}. Thus, we can take A2 = log(ω) and A3 = log(5). For
+A1 , we need a little more work.
+   From the first expression above for Λ and (6.3), we have
+                           √                                       √
+                       log 5      e       n                    log 5      e
+                              − 2p < log(ω) − log(y) <                − 2p .
+                          p      py        p                      p      py
+  Applying n = kp − q and using 0 ≤ q ≤ p − 1, we have
+       √                          √                                           √
+   log 5      e     q         log 5       e                      q        log 5    e
+0<        − 2p ≤ log(ω) +             − 2p < k log(ω) − log(y) < log(ω) +       + 2p
+      p     py      p            p      py                       p           p   py
+                                                                     √
+                                                       1         log 5     e           1
+                                             ≤ log(ω) − log(ω) +       + 2p ≤ log(ω) + .
+                                                       p            p    py           3p
+  Hence
+                                          
+(6.4)                        log ω k /y       = log ω k /y < log(ω) + 10−6 ,
+
+since p > 10 · 106 .                                  
+   The conjugate of ω k /y is ω −k /y < 1, so h ω k /y = (2 log(y)+k log(ω)−log(y))/2 = (k/2) log(ω)+
+(1/2) log(y) (the 2 log(y) is because we need a factor of y 2 to clear the denominator in the minimal
+polynomial of ω k /y). From (6.4), we have k log(ω) < log(ω) + log(y) + 10−6 , so
+                                             
+(6.5)                     h (α1 ) = h ω k /y < (1/2) log(ω) + log(y) + 10−6
+and A1 = 2 h (α1 ) < 2 log(y) + 0.4813. Thus max {|bj | Aj /A1 : 1 ≤ j ≤ 3} = p and we can take
+B = p.
+34                              MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+     Applying Matveev’s theorem (Theorem 3.1 above) with χ = 1 and the above quantities gives
+                  5 · 165 3
+       log |Λ| > −        · e · 9(3e/2) · (26.25 + log(4 log(2e))) · 4 · (2 log(y) + 0.4813) · log ω
+                     6
+                · log(5) · log (3ep log(2e))
+                                                                                                  
+             > − 7.10 · 1010 + 2.71 · 1010 log(p) + 2.96 · 1011 log(y) + 1.13 · 1011 log(y) log(p) .
+   Combining this lower bound for log |Λ| with the upper bound in (6.3), and dividing by 2 log(y),
+we obtain
+                                1.476 · 1011 + 5.62 · 1010 log(p) > p,
+using (6.2).
+   Applying Lemma 6.1 with a = 1.476 · 1011 , b = 5.62 · 1010 , h = 1 and x = p, so c = hb1/h = b
+and
+                                      log(b)
+(6.6)                p < b log(b) +            (a + b log(log(b))) < 1.74 · 1012 .
+                                    log(b) − 1
+   The reason we take this step is because we first need an upper bound on p to control simulta-
+neously the condition in (2.8) and the degenerate cases in our main theorem.
+Step (3): Non-degenerate case
+
+     Here we apply Theorem 2.1 to reduce our bound on p.
+     So that our linear form is in the form (2.1), we set
+                                   √
+                  α1 = ω, α2 = 5, α3 = ω k /y b1 = q,              b2 = 1    and     b3 = p
+and in what follows (Steps (3) and (4)), put
+                                                                          √               
+            Λ = b1 log α1 + b2 log α2 − b3 log α3 = q log (ω) + 1 · log     5 − p log ω k /y .
+This is −1 times the Λ considered above in Steps (1) and (2).
+    Recall that we take
+                                     ai ≥ ρ |log αi | − log |αi | + 2D h (αi )
+and here D = 2.
+    We have h(ω)√=log(ω)/2,    √ so we can take a1 = (ρ √   + 1) log(ω).
+    Similarly, h 5 = log 5 , so a2 = (ρ + 3) log 5 .
+    In Step (2), we saw that log |α3 | = log |α3 | (recall that α3 here was denoted by α1 there), so
+ρ |log α3 | − log |α3 | = (ρ − 1) log |α3 |. Applying (6.4), we obtain
+                           ρ |log α3 | − log |α3 | < (ρ − 1) log ω + (ρ − 1)10−6 .
+     Combining this with (6.5), we can take
+a3 = (ρ − 1) log(ω) + 2 log(ω) + 4 log(y) + (ρ + 3)10−6 = (ρ + 1) log(ω) + 4 log(y) + (ρ + 3)10−6 .
+   To apply Theorem 2.1, we need to select values for all the parameters there. I.e., the positive
+rational integers K, L, R, R1 , R2 , R3 , S, S1 , S2 , S3 , T , T1 , T2 and T3 , along with the real numbers
+ρ and χ.
+   We use the work in Section 5 to reduce the amount of choice involved here.
+   From (5.4), we see that K depends on a1 , a2 , a3 , L and a real number m ≥ 1.
+   From (5.5), we see that the Ri ’s, Si ’s and Ti ’s depend on a1 , a2 , a3 and three positive real
+parameters c1 , c2 and c3 . Furthermore, we put R = R1 + R2 + R3 + 1, S = S1 + S2 + S3 + 1 and
+T = T1 + T2 + T3 + 1.
+   From (5.6), (5.7), (5.8) and (5.9), we have values for c1 , c2 and c3 in terms of m, L, a1 , a2 , a3
+and χ. For our linear form, this just leaves m, L, ρ and χ as unspecified parameters.
+                            A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                         35
+
+
+   To apply Theorem 2.1, we do a brute force search. To minimise the effect of the degenerate
+case we will use Theorem 2 of [19]. But this also involves a search to obtain the best results, so we
+do not want to do such an additional search for every choice of m, L, ρ and χ that we consider.
+Instead we do the degenerate case only once for each value of χ.
+   For each of 20 equidistributed values of χ satisfying 0.5 ≤ χ ≤ 1.5, we proceed as follows. First,
+we search over integer values of L with 100 ≤ L ≤ 200, 20 values of each of m and ρ evenly
+distributed with 4 ≤ m ≤ 9 and 7 ≤ ρ ≤ 12 that lead to (2.8) being satisfied and so that KL log(ρ)
+is as small as possible. With such a minimal choice of parameters for Step 3 for each value of χ,
+we find the associated bound for Step 4 (the degenerate case) for this choice of parameters. The
+choice of χ that leads to the best bound for both Step 3 and Step 4 is the one we use.
+   There is nothing special about using 20 such values. It was only chosen to give a good balance
+between speed and finding small admissible values of KL log(ρ). The ranges on the parameters
+were found by experimentation.
+   This search led to the choice
+                             χ = 0.75,      L = 167,      m=6         and    ρ = 10.
+  We have
+                             K = ⌊Lma1 a2 a3 ⌋ = ⌊221, 945 log(y)⌋.
+                       ′
+  Since a = a1 and a = a2 , we put
+                           c1 = 82.65 . . . ,   c2 = 100.13 . . . ,   c3 = 795.28 . . . .
+  Using these values and the values of the Ri ’s in (5.5), we get
+               R1 = ⌊c1 a2 a3 ⌋ = ⌊3458.9 log(y)⌋,         R2 = ⌊c2 a2 a3 ⌋ = ⌊4190.2 log(y)⌋,
+and
+                                      R3 = ⌊c3 a2 a3 ⌋ = ⌊33280 log(y)⌋.
+  Further
+S1 = ⌊c1 a1 a3 ⌋ = ⌊1750.2 log(y)⌋,      S2 = ⌊c2 a1 a3 ⌋ = ⌊2120.2 log(y)⌋,        S3 = ⌊c3 a1 a3 ⌋ = ⌊16839 log(y)⌋
+and finally
+                             T1 = ⌊c1 a1 a2 ⌋ = 4577,      T2 = ⌊c2 a1 a2 ⌋ = 5544,
+and
+                                           T3 = ⌊c3 a1 a2 ⌋ = 44, 039.
+                                                 1/2
+  With V = ((R1 + 1) (S1 + 1) (T1 + 1)) , we have χV > 124, 000 log(y), while 5210 log(y) >
+R1 + S1 + 1 = max {R1 + S1 + 1, S1 + T1 + 1, R1 + T1 + 1}, since log(y) > 1020 , so M = χV.
+  With these choices, along with our lower bound for y and upper bound for p, we also find that
+               log (b′3 η0 ) < log ((20465 log(y) + 27080)p) < log log(y) + 38.11            and
+               log (b′′3 ζ0 ) < log ((10355 log(y) − 1/2)p + 27080) < log log(y) + 37.43.
+  Combining these estimates with Lemma 3.5(a) and our expression above for K, we obtain
+                                                log(b′ ) < 54.58.
+  As seen in Subsection 5.2, these choices imply that the conditions (2.9)–(2.13) of Theorem 2.1
+hold. Moreover, the above choices have been made so that condition (2.8) holds.
+  Thus we have
+                      log |Λ| ≥ −KL log ρ − log(KL) > −8.535 · 107 log(y).
+  Combining this with the upper bound from (6.3), we get
+                                                 p < 42.68 · 106 .
+36                               MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+
+
+Step (4): Degenerate case
+
+     Under condition (2.14) of Theorem 2.1, we obtain
+                                       p = b3 ≤ max {T1 , T2 } < 5600,
+which is excluded since we assume p > 10 · 106 .
+  So we now consider condition (2.15) of Theorem 2.1, where we have
+                                u 1 b1 + u 2 b2 + u 3 b3 = u 1 q + u 2 + u 3 p = 0
+with gcd (u1 , u2 , u3 ) = 1.
+   We put
+                (S1 + 1) (T1 + 1)         (R1 + 1)(T1 + 1)                           (R1 + 1) (S1 + 1)
+        U1 :=                     , U2 :=                             and U3 :=                        .
+                M − max{S1 , T1 }         M − max{R1 , T1 }                          M − max{R1 , S1 }
+     From the values of the relevant quantities in Step (3) and log(y) > 1020 , we obtain
+                 |u1 | ≤ ⌊U1 ⌋ = 65,   |u2 | ≤ U2 = 130      and |u3 | ≤ ⌊U3 ⌋ < 49.87 log(y).
+   We will use this linear relation between the bi ’s to reduce the linear form, Λ, to one in two
+logarithms. Let us make a remark here about how we choose which bi to eliminate.
+Remark. We can only eliminate a bi with Ui bounded above by a constant. Trying to eliminate a bi
+with Ui depending on some parameter (like U3 here depending on log y) leads to both the quantities
+a1 and a2 in Theorem 2 of [19] depending on that parameter, so we do not get an absolute upper
+bound on the quantity we are interested in (i.e., p here).
+   Here this means that we eliminate either b1 = q or b2 = 1. Since a1 < a2 here, our heuristic
+argument in Subsection 5.3 above suggests that we eliminate b1 .
+   In our Pari/GP code, we tried eliminating both possibilities (b1 and b2 ) and the best upper
+bound for p comes from eliminating b1 = q. As noted above, this is in keeping with our heuristic
+argument in Subsection 5.3. So we consider u1 Λ:
+                                              √                     
+                  u1 Λ = u1 q log(ω) + u1 log     5 − u1 p log ω k /y
+                                                          √                    
+                       = − (u2 q + u3 p) log (ω) + u1 log    5 − u1 p log ω k /y
+                             √ u1                         u1 u3 
+                       = log     5 · ω −u2 − p log ω k /y       ·ω      .
+  We will use Theorem
+                  √ u1 2 in [19] to obtain   lower bounds for this linear form.
+                                           u1
+  We put α′1 = 5 · ω −u2 , α′2 = ω k /y         · ω u3 , b1 = 1 and b2 = p. We use α′1 and α′2 here for
+α1 and α2 in [19] in order not to confuse it with our α1 and α2 above. As mentioned above, using
+Laurent’s Theorem 2 requires a search, here for the quantities that he labels as ̺ (which plays the
+analogous role for linear forms in two logs as our ρ) and µ. Once again, we do a brute force search
+over 20 equidistributed values of each parameter with 7 ≤ ̺ ≤ 11 and 0.5 ≤ µ ≤ 0.7. In this way,
+we take
+                ̺ = 10,      µ = 0.61,     a1 = 1368.2          and     a2 = 524 log(y).
+  We have
+                                        b1     b2
+                                            +      < 0.00074p.
+                                        a2    a1
+So 2 log(p) − 9.373 < h < log(p) − 2 log(p) − 9.372. Thus
+                                                                        2
+                                log |Λ| > 423, 900 (log(p) − 4.687) log(y).
+                         A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                  37
+
+
+  Combining this with the upper bound for Λ in (6.3), we get
+                                                 2
+                     −423, 900 (log(p) − 4.687) log(y) < −2p log(y) + log |e| .
+   Dividing both sides by 2 log(y), using log(y) > 1020 and again applying Lemma 6.1 with a =
+log(e)/ 2 · 1020 exp(4.687) < 10−6 , b = 423, 900/ (2 exp(4.687)), h = 2 and x = p/ exp(4.687), we
+get c < 88.41 and
+                                           p < 34.86 · 106 .
+   But we also have to consider the case that we cannot eliminate b1 . This is the case when u1 = 0.
+We proceed in the same way as we just did, but now eliminate b2 , since u2 is bounded above by a
+constant. Doing so gives us the upper bound p < 39 · 106 .
+   Combining this with the result of Step (3), we have proved that p ≤ 42.68 · 106 .
+Step (5): Iteration of Steps (3) and (4)
+
+   As in [9], we repeated Steps (3) and (4) a second time to obtain the improved upper bound
+p ≤ 19.4 · 106 .
+   We repeat this same search a third time with this further improved upper bound for p to obtain
+p < 17.92 · 106 .
+
+ iteration initial upper bound for p      L   m    ρ    χ   ̺   µ   new upper bound for p
+     1              1.8 · 1012           167  6    10 0.75 10 0.61         43 · 106
+     2               43 · 106            105 7.25 9.75 1.03 10 0.61       19.4 · 106
+     3              19.4 · 106           104 7.4 9.4 1.06 9.8 0.61       17.92 · 106
+   The three iterations took 180, 187 and 70 seconds on a Windows laptop with an Intel i7-9750H
+2.60GHz CPU and 16Gb of RAM.
+   The third iteration gives us the upper bound for p stated in the theorem.                  
+   From the table, one can see that little improvement is obtained after the second iteration.
+   If one could ignore the degenerate case, as we conjecture should be possible, and only consider
+the inequality (2.8) for the non-degenerate case, then one would obtain p < 12.4 · 106 instead. So
+we are within 50% of the best possible result that our transcendence argument can provide. Our
+kit should always provide such proximity to the optimal result when considering the real case for
+our linear forms in logs (as described in Subsection 2.1).
+6.2. Example 2: x2 + 7 = y p . This is the case D = 7 examined in detail in Section 15 of [10].
+There the authors claimed that p < 130 · 106 . Our work here suggests that the best possible bound
+they could have obtained was p < 156 · 106. While our result here is over 6 times smaller than this,
+our improvement here is not as large as for the previous example. The reason is because in [10],
+the zero estimate of Laurent [18], given in Appendix A below, was used. This was an improvement
+over the zero estimate used in [9].
+   So we take the opportunity here to correct the handling of D = 7 in that paper. In addition
+to the above, not all of the Ri ’s, Si ’s and Ti ’s can be constants as stated in Section 15 of [10]. A
+dependence on log(y) is required. See our correct choice of these parameters in Step (3) below.
+   One last note about our result here. The upper bound for p is the best possible one, given our
+inequality (2.8) for the non-degenerate case. The degenerate case does not adversely affect the
+results we obtain here. This turns out to always happen when, as here, we are considering the
+imaginary case for our linear forms in logs (as described in Subsection 2.1).
+Theorem 6.3. If x2 + 7 = y p has a solution for a prime p ≥ 3 with x, y ∈ Z, then
+(6.7)                                        p < 25 · 106 .
+38                             MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+Proof. We will assume that p > 20 · 106 and use the modular lower bound for y in equation (14)
+of [10]:
+                                       √       2
+(6.8)                            y ≥ ( p − 1) > 19.9 · 106 .
+   We will use the principal branch of the logarithm throughout the proof.
+Step (1): Linear form definition and upper bound
+
+     In Section 15 of [10], on page 56, the authors consider
+                               Λ = 2 log (ε1 α0 /α0 ) + p log (ε2 γ/γ) + iqπ,
+                                                                          √ 
+for some rational integer q with |q| < p, ε1 , ε2 = ±1, α0 = 1 + −7 /2 and γ is an algebraic
+               √ 
+integer in Q −7 with norm y such that
+                                        √ k
+                                     x − −7                    κ        p
+                                         √        = (α0 /α0 ) (±γ/γ) .
+                                     x + −7
+                                                                              √ 
+   This expression comes from Lemma 13.1 of [10] and its proof since Q −7 has class number 1,
+so k0 = 1 there. As a result, their κ = 2 and k = 1. They assert in the proof of their Lemma 13.4
+that this value of α0 is valid.
+   From their Lemma 13.3, we have
+                                               p                 √ 
+(6.9)                              log |Λ| < − log(y) + log 2.2 7 ,
+                                               2
+since D1 = 1 and D2 = 7.
+   This is the case (I) linear form that they consider there.
+Step (2): Matveev
+In the notation of Theorem 3.1, we have α1 = ε2 γ/γ, α2 = ε1 α0 /α0 , α3 = −1, b1 = p, b2 = 2 and
+b3 = q. So D = χ = 2.
+   Note that we have swapped the α1 term with the α2 term here with those in the case (I) linear
+form in [10]. This will result in A1 being the largest of the Ai ’s, Doing so lets us take B = p in
+Theorem 3.1.
+   Recall that Aj ≥ max {D h (αj ) , |log αj |}. Since the norm of γ is y, we have h (γ) = log(y)/2
+and since α1 is on the unit circle, by our choice of ε2 , we have |log α1 | < π/2. Thus, we can take
+A1 = log(y), since y > 20 · 106 (by (6.8)).
+   Similarly, for A2 , we have d = 2 by Lemma 13.1 and Table 4 of [10]. So from their Lemma 13.1,
+h (α2 ) = log(2)/2. Also, |log α2 | = 0.722734 . . ., so we can take A2 = 0.73.
+   Lastly, we can take A3 = π.
+   Applying Matveev’s theorem (Theorem 3.1 above) with the above quantities gives
+            5 · 165 3                                               
+log |Λ| > −        e (7 + 2 · 2)(3e/2)2 · 26.25 + log 22 log(2e) · 22 log(y)0.73π log (1.5e · 2p log(2e))
+              6·2
+        > −4.11 · 1011 log(y) log(13.81p).
+  Combining this lower bound for log |Λ| with the upper bound in (6.9), and dividing by log(y)/2,
+we obtain
+                                                                          √ 
+       8.21 · 1011 log(p) + 2.16 · 1012 > 8.21 · 1011 log(13.81p) + 2 log 2.2 7 / log(y) > p,
+using (6.8).
+   Applying Lemma 6.1 with a = 2.16 · 1012, b = 8.21 · 1011, h = 1 and x = p, so c = hb1/h = b and
+                                   log(b)
+(6.10)            p < b log(b) +             (a + b log(log(b))) < 2.76 · 1013 .
+                                 log(b) − 1
+                          A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                            39
+
+
+
+
+Step (3): Non-degenerate case
+Here we apply Theorem 2.1 to reduce our bound on p.
+   Recall that we take ai ≥ ρ |log αi | − log |αi | + 2D h (αi ) and here D = 1.
+   Using the values of h (αi ) and |log αi | that we found in Step (2), we can take a1 = ρπ/2 + log(y),
+a2 = 0.723ρ + log(2) and a3 = ρπ.
+   To apply Theorem 2.1, we do a brute force search in the same way as we did in the first
+example. For each of 20 equidistributed values of χ satisfying 0.04 ≤ χ ≤ 0.24, we proceed as
+follows. First, we search over integer values of L with 30 ≤ L ≤ 200, 20 values of each of m and
+ρ evenly distributed with 10 ≤ m ≤ 30 and 3 ≤ ρ ≤ 13 that lead to (2.8) being satisfied and so
+that KL log(ρ) is as small as possible. With such a minimal choice of parameters for Step 3 for
+each value of χ, we find the associated bound for Step 4 (the degenerate case) for this choice of
+parameters. The choice of χ that leads to the best bound for both Step 3 and Step 4 is the one
+we use.
+   This search led to the choice
+                         χ = 0.08,      L = 106,       m = 21.0       and     ρ = 5.5.
+  Since ⌊Lma1 a2 a3 ⌋ < ⌊300, 476 log(y)⌋, we put
+                                             K = ⌊231, 600 log(y)⌋.
+                          ′
+  We have a = a2 and a = a3 and put
+                        c1 = 33.46 . . . ,     c2 = 243.59 . . . ,   c3 = 1163.65 . . . .
+  Using these values and the values of the Ri ’s in (5.5), we get
+                         R1 = ⌊c1 a2 a3 ⌋ = 2299,         R2 = ⌊c2 a2 a3 ⌋ = 16, 737,
+and
+                                        R3 = ⌊c3 a2 a3 ⌋ = 79, 953.
+  Further,
+  S1 = ⌊c1 a1 a3 ⌋ = ⌊876 log y⌋,    S2 = ⌊c2 a1 a3 ⌋ = ⌊6373 log y⌋,        S3 = ⌊c3 a1 a3 ⌋ = ⌊30440 log y⌋
+and finally
+                   T1 = ⌊c1 a1 a2 ⌋ = ⌊202 log y⌋,        T2 = ⌊c2 a1 a2 ⌋ = ⌊1467 log y⌋,
+and
+                                      T3 = ⌊c3 a1 a2 ⌋ = ⌊7006 log y⌋.
+                                                1/2
+   With V = ((R1 + 1) (S1 + 1) (T1 + 1)) , we have χV > 1611 log(y), while 1100 log(y) > S1 +
+T1 + 1 = max {R1 + S1 + 1, S1 + T1 + 1, R1 + T1 + 1}, since log(y) > 17.4, so M = χV.
+   With these choices, along with our lower bound for y and upper bound for n, we also find that
+               log (b′3 η0 ) < log ((4337 log(y) + 49, 500) n) < log log(y) + 39.85          and
+               log (b′′3 ζ0 ) < log ((8680 + 18, 850n) log(y)) < log log(y) + 40.8.
+  Combining these estimates with Lemma 3.5(a) and our expression above for K, we obtain
+                                                 log(b′ ) < 59.6.
+  As seen above, these choices imply that the conditions (2.9)–(2.13) of Theorem 2.1 hold. More-
+over, the above choices have been made so that condition (2.8) holds.
+  Thus we have
+                      log |Λ| ≥ −KL log ρ − log(KL) > −4.185 · 107 log(y).
+40                                 MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+     Combining this with the upper bound from (6.3), we get
+                                                p < 83.69 · 106 .
+Step (4): Degenerate case
+Under condition (2.14) of Theorem 2.1, we obtain
+                                      p = b1 ≤ max {R1 , R2 } < 16, 800,
+which is excluded since we assume p > 20 · 106 .
+  So we now consider condition (2.15) of Theorem 2.1, where we have
+                                u 1 b1 + u 2 b2 + u 3 b3 = u 1 q + u 2 + u 3 p = 0
+with gcd (u1 , u2 , u3 ) = 1.
+   We put
+               (S1 + 1) (T1 + 1)         (R1 + 1)(T1 + 1)                            (R1 + 1) (S1 + 1)
+      U1 :=                      , U2 :=                              and U3 :=                        .
+             M − max{S1 , T1 }           M − max{R1 , T1 }                           M − max{R1 , S1 }
+     From the values of the relevant quantities in Step (3) and log(y) > 17.4, we obtain
+               |u1 | ≤ U1 < 239.64 log(y),     |u2 | ≤ ⌊U2 ⌋ = 328     and |u3 | ≤ ⌊U3 ⌋ = 2735.
+   Here we use this linear relation between the bi ’s to reduce the linear form, Λ, to one in two
+logarithms by eliminating b2 :
+               u2 Λ = 2u2 log (ε1 α0 /α0 ) + u2 p log (ε2 γ/γ) + u2 q log(−1)
+                    = − (u1 p + u3 q) log (ε1 α0 /α0 ) + u2 p log (ε2 γ/γ) + u2 q log(−1)
+                                                                                        
+                                      u               −u                         u
+                    = p log (ε2 γ/γ) 2 · (ε1 α0 /α0 ) 1 − q log (ε1 α0 /α0 ) 3 · (−1)−u2 .
+                               u                −u                         u
+  So we put α1 = (ε2 γ/γ) 2 · (ε1 α0 /α0 ) 1 , α2 = (ε1 α0 /α0 ) 3 · (−1)−u2 , b1 = p and b2 = q in
+Theorem 2 of [19]. In the same way as in Example 1, we take
+           ̺ = 180,      µ = 0.61,         a1 = 495.2 log(y) + 565.5           and      a2 = 2461.3.
+     We have
+                                       b1     b2
+                                          +      < 0.00052p,
+                                       a2     a1
+since D = 1, log(y) > 17.4 and p > 20 · 106 . So log(p) − 4.431 < h < log(p) − 4.185. Thus
+                                                                       2
+                                   log |Λ| > 28, 100 (log(p) − 4.185) log(y).
+     Combining this with the upper bound for Λ in (6.9), we get
+                                             2
+                                                                              √
+                    −28, 100 (log(p) − 4.185) log(y) < −(p/2) log(y) + log 2.2 7 .
+     Dividing both sides by −(1/2) log(y) and again applying Lemma 6.1 with
+                                                   √ 
+                                           log 2.2 7
+                            a=                                     < 0.0032,
+                                (1/2) log (19.9 · 106 ) exp(4.185)
+b = 28, 100/(0.5 exp(4.185)), h = 2 and x = p/ exp(4.185), we get c < 58.46 and
+                                      p < exp(4.185) · 3472 < 79.2 · 106 .
+   Similarly, when we consider the possibility that u2 = 0, we find that p < 54.2 · 106 .
+   Combining this with the result of Step (3), we have proved that p < 84 · 106 .
+Step (5): Iteration of Steps (3) and (4)
+As in [10], we repeated Steps (3) and (4) a second time using the improved upper bound p < 84·106 .
+                             A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                           41
+
+
+
+ iteration initial upper bound for p           L      m    ρ    χ   ̺   µ   new upper bound for p
+     1              2.76 · 1013               106    21.0 5.5 0.08 180 0.61        84 · 106
+     2               84 · 106                  59    18.0 6.0 0.1 180 0.61         29 · 106
+     3               29 · 106                  59    18.0 5.75 0.1 180 0.61       25.4 · 106
+     4              25.5 · 106                 57    19.0 5.75 0.1 180 0.61      24.94 · 106
+
+   The four iterations took 191, 188, 103 and 104 seconds on a Windows laptop with an Intel
+i7-9750H 2.60GHz CPU and 16Gb of RAM.
+   The fourth iteration gives us the upper bound for p stated in the theorem.            
+
+
+                                                  References
+[1] Y. M. Aleksentsev, The Hilbert polynomial and linear forms in the logarithms of algebraic numbers, Izv. Math.
+ 72 (2008), 1063–1110.
+[2] A. Baker, Linear forms in the logarithms of algebraic numbers. I, Mathematika 12 (1966), 204–216.
+[3] A. Baker, H. Davenport, The equations 3x2 − 2 = y 2 and 8x2 − 7 = z 2 , Quart. J. Math. Oxford Ser. (2) 20
+ (1969), 129–137.
+[4] C. D. Bennett, J. Blass, A. M. W. Glass, D. B. Meronk, R. P. Steiner, Linear forms in the logarithms of three
+ positive rational numbers, J. Théor. Nombres Bordeaux 9 (1997), 97–136.
+[5] M.A. Bennett, K. Győry, Mignotte, Á. Pintér, Binomial Thue equations and polynomial powers, Comp. Math.
+ 142 (2006), 1103–1121.
+[6] M.A. Bennett, S. Dahmen, Mignotte, S. Siksek, Shifted powers in binary recurrence sequences, Math. Proc.
+ Camb. Phil. Soc. 158 (2015), 305–329.
+[7] Yu. Bilu, G. Hanrot, Solving Thue Equations of High Degree, J. Number Theory 60 (1996), 373–392.
+[8] Y. Bugeaud, Linear Forms in Logarithms and Applications, European Mathematical Society, Zurich, 2018.
+[9] Y. Bugeaud, M. Mignotte, S. Siksek, Classical and modular approaches to exponential Diophantine equations I.
+ Fibonacci and Lucas perfect powers, Ann. Math. 163 (2006), 969–1018.
+[10] Y. Bugeaud, M. Mignotte, S. Siksek, Classical and Modular Approaches to Exponential Diophantine Equations
+ II. The Lebesgue–Nagell Equation, Comp. Math. 142 (2006), 31–62.
+[11] J. Dieudonné, Calcul infinitésimal (2nd ed), Hermann, Paris, 1980.
+[12] A. Dujella, A. Pethő, A generalization of a theorem of Baker and Davenport, Quart. J. Math. Oxford Ser. (2)
+ 49 (1998), 291–306.
+[13] N. Gouillon, Un lemme de zéros, Comptes Rendus Acad. Sci. Paris, Ser. I, 335 (2002), 167–170.
+[14] N. Gouillon, Minorations explicites de formes linéaires en deux logarithmes, Thèse de Docteur de l’université
+ de la Méditerranée - Aix-Marseille II, (2003) https://tel.archives-ouvertes.fr/tel-00003964.
+[15] M. Laurent, Sur quelques résultats récents de transcendance, Astérisque 198–200 (1991), 209–230.
+[16] M. Laurent, Hauteurs de matrices d’interpolation, Approximations diophantiennes et nombres transcendants,
+ Luminy (1990), ed. P. Philippon, de Gruyter (1992), 215–238.
+[17] M. Laurent, Linear forms in two logarithms and interpolation determinants, Acta Arith. 66 (1994), 181–199.
+[18] M. Laurent, Personal communication to M. Mignotte, Nov. 2003.
+[19] M. Laurent, Linear forms in two logarithms and interpolation determinants II, Acta Arith. 133 (2008), 325–
+ 348.
+[20] M. Laurent, M. Mignotte, Y. Nesterenko, Formes linéaires en deux logarithmes et déterminants d’interpolation,
+ J. Number Theory 55 (1995), 285–321.
+[21] A.K. Lenstra, H.W. Lenstra Jr., L. Lovász, Factoring polynomials with rational coefficients, Math. Ann. 261
+ (1982), 515–534.
+[22] E. M. Matveev, An explicit lower bound for a homogeneous rational linear form in logarithms of algebraic
+ numbers. II, Izv. Ross. Akad. Nauk Ser. Mat. 64 (2000), 125–180. English transl. in Izv. Math. 64 (2000), 1217–
+ 1269.
+[23] The PARI Group, PARI/GP version 2.14.0, Univ. Bordeaux, 2021, http://pari.math.u-bordeaux.fr/ .
+[24] A. Pethő, Perfect powers in second order linear recurrences, J. Number Theory 15 (1982), 5–13.
+[25] A. Pethő, B.M.M. de Weger, Products of Prime Powers in Binary Recurrence Sequences Part I: The hyperbolic
+ Case, with an Application to the generalized Ramanujan-Nagell equation, Math. Comp. 47 (1986), 713–727.
+[26] P. Philippon, Lemmes de zéros dans les groupes algébriques commutatifs, Bull. Soc. Math. France, 114 (1987),
+ 355–383. Errata et addenda, id., 115 (1987), 397–398.
+42                                MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+[27] J. B. Rosser, L. Schoenfeld, Approximate Formulas for Some Functions of Prime Numbers, Ill. J. Math. 6
+ (1962), 64–94.
+[28] T. N. Shorey, C. L. Stewart, On the Diophantine equation ax2t + bxt y + cy 2 = d and pure powers in recurrence
+ sequences, Math. Scand. 52 (1983), 24–36.
+[29] R. Tijdeman, On the equation of Catalan, Acta Arith. 29 (1976), 197–209.
+[30] N. Tzanakis, B. M. M. de Weger, On the practical solution of the Thue equation, J. Number Theory 31 (1989),
+ 99–132.
+[31] M. Waldschmidt, Diophantine Approximation on Linear Algebraic Groups, Springer, Berlin, 2000.
+
+                       Appendix A. A Zero Estimate by Michel Laurent
+    We revisit the original argument due to Masser [2], establishing zero lemmas in algebraic commu-
+tative groups. Starting with a hypersurface, his approach is based on the construction of complete
+intersections in successive codimensions 2, 3, . . . , using subsets of points Σ1 , Σ2 , . . . as translation
+operators. Compared with subsequent works, see [3] for instance, the process enables us to control
+efficiently the possible degeneracies at each step of the construction. We take advantage of this
+feature to minimise the size of the sets Σ1 , Σ2 and Σ3 occurring in the following proposition.
+Proposition A.1. Let K be an algebraically closed field of characteristic 0. Let K1 , K2 and L be
+non-negative integers and let Σ1 , Σ2 and Σ3 be finite subsets of the group G = K2 × K× (whose
+composition law is written additively). Assume that Σ1 , Σ2 and Σ3 contain the origin (0, 0, 1) of
+G and that
+(A.1)
+  (
+    Card {ax1 + bx2 : ∃y ∈ K× with (x1 , x2 , y) ∈ Σ1 } > max {K1 , K2 } , ∀(a, b) ∈ K2 \ {(0, 0)},
+         
+    Card y : ∃ (x1 , x2 ) ∈ K2 with (x1 , x2 , y) ∈ Σ1  > L,
+
+(A.2)
+ (
+   Card {(ax1 + bx2 , y) : (x1 , x2 , y) ∈ Σ2 }              > 2 max {K1 , K2 } L, ∀(a, b) ∈ K2 \ {(0, 0)},
+   Card {(x1 , x2 ) : ∃y ∈ K× with (x1 , x2 , y) ∈ Σ2 }      > 2K1 K2 ,
+and
+(A.3)                                        Card Σ3 > 6K1 K2 L.
+  Let s be a non-zero polynomial of K [X1 , X2 , Y ], whose partial degrees in the variables X1 , X2
+and Y are bounded by K1 , K2 and L, respectively. Then s does not vanish identically on the set
+Σ1 + Σ2 + Σ3 .
+   Notice that a similar result has been obtained by Gouillon [1] for polynomials s of total degree
+in X1 and X2 bounded by 2 max {K1 , K2 }, with a constant 12 instead of 6 in the above main
+condition (A.3) and where K = C.
+A.1. Geometrical preliminaries. We embed naturally the group G in the product
+                                       P = P1 (K) × P1 (K) × P1 (K).
+   For any closed irreducible subvarieties V ⊆ P of codimension 0 ≤ r ≤ 3, and any triple of
+integers (a, b, c) with
+                            a ∈ {0, 1}, b ∈ {0, 1}, c ∈ {0, 1} and a + b + c = r,
+we define the multidegrees δa,b,c (V ) as the intersection degree
+                                        
+                    δa,b,c (V ) = Card V ∩ π1−1 (La ) ∩ π2−1 (Lb ) ∩ π3−1 (Lc ) ,
+where La , Lb and Lc stand for generic linear subvarieties in P1 (K) with respective dimensions a, b
+and c (thus L1 = P1 (K) and L0 is a point) and where the maps πj : P → P1 (K) denote the three
+                          A KIT FOR LINEAR FORMS IN THREE LOGARITHMS                                   43
+
+
+canonical projections. We also extend to cycles (meaning formal linear combinations with integer
+coefficients of closed irreducible subvarieties of codimension r in P) the above definition of the
+multidegrees δa,b,c . Let Z be a cycle of codimension r ≤ 2 in P and let s ∈ K [X1 , U1 ; X2 , U2 ; Y, V ]
+be a non-zero polynomial which is homogeneous of respective degrees DX1 , DX2 , DY in each of the
+three pairs of variables (X1 , U1 ), (X2 , U2 ) and (Y, V ). Assume that s does not vanish identically
+on each component of Z. Then Bezout’s Theorem gives us the multidegrees of the intersection
+cycle Z · (s) of codimension r + 1 in P. For any a, b and c as above with a + b + c = r + 1, we have
+the equalities:
+(A.4)           δa,b,c (Z · (s)) = DX1 δa−1,b,c (Z) + DX2 δa,b−1,c (Z) + DY δa,b,c−1 (Z),
+where the multidegrees δ appearing on the right-hand side are understood to be zero whenever the
+indices a − 1 or b − 1 or c − 1 are negative.
+   Now the above Bezout equalities on P induce upper bounds on G in the following way. For any
+irreducible subvarieties V ⊆ G, we denote by δa,b,c (V ) the corresponding multidegree δa,b,c V of
+its Zariski closure V in P, and if Z is any cycle in G, that is to say some formal linear combination
+of irreducible subvarieties of G of the same codimension, we define δa,b,c (Z) by linearity.
+   Let s1 , s2 and s3 be three non-zero polynomials of K [X1 , X2 , Y ] with partial degrees in X1 ,
+X2 and Y respectively bounded by K1 , K2 and L. Denote by Z1 = (s1 ) the (eventually null)
+divisor of the zeroes of s1 on G and assume that s2 does not vanish identically on any component
+of Z1 . Let Z2 = Z1 · (s2 ) be the (eventually null) intersection cycle on G of codimension 2. Assume
+again that s3 does not vanish identically on any component of Z2 and put Z3 = Z2 · (s3 ). Notice
+that our assumptions mean equivalently that the sequence (s1 , s2 , s3 ) is a regular sequence in the
+local ring of any common zero of s1 , s2 and s3 on G. Then the above trihomogeneous version of
+Bezout’s theorem in equation (A.4) implies inductively the upper bounds for the multidegrees of
+the intersection cycles Z1 , Z2 and Z3 :
+(A.5)                   δ1,0,0 (Z1 ) ≤ K1 ,     δ0,1,0 (Z1 ) ≤ K2 ,    δ0,0,1 (Z1 ) ≤ L,
+
+(A.6)          δ1,1,0 (Z2 ) ≤ 2K1 K2 ,   δ0,1,1 (Z2 ) ≤ 2K2 L,        δ1,0,1 (Z2 ) ≤ 2K1 L and
+
+(A.7)                                         δ1,1,1 (Z3 ) ≤ 6K1 K2 L.
+A.2. Proof of Proposition A.1. Suppose on the contrary that there exists a non-zero polynomial
+s ∈ K [X1 , X2 , Y ] with partial degrees in X1 , X2 and Y bounded by K1 , K2 and L and vanishing
+on Σ1 + Σ2 + Σ3 . Then we plan to construct polynomials s1 , s2 and s3 as in Section A.1 and
+vanishing moreover respectively on the subsets Σ1 + Σ2 + Σ3 , Σ2 + Σ3 and Σ3 . Since
+                                          δ1,1,1 (Z3 ) ≥ Card Σ3 ,
+the assumption (A.3) of the proposition will contradict equation (A.7).
+   We start with s1 = s. Notice that the cycle Z1 = (s1 ) is non-zero since the points Σ1 + Σ2 + Σ3
+are contained in its support.
+   Let us construct s2 . Observe first that for any component V of Z1 , there exists a translated
+variety g + V , for some g ∈ Σ1 , which is not a component of Z1 . Otherwise by equation (A.5), we
+should have the upper bounds
+                           Card (Σ1 /H) δ1,0,0 (V ) ≤ δ1,0,0 (Z1 ) ≤ K1 ,
+                           Card (Σ1 /H) δ0,1,0 (V ) ≤ δ0,1,0 (Z1 ) ≤ K2         and
+                           Card (Σ1 /H) δ0,0,1 (V ) ≤ δ0,0,1 (Z1 ) ≤ L,
+where H = {g ∈ G : g + V = V } is the stabiliser of V . Clearly H is an algebraic subgroup of G
+and dim H ≤ 2.
+44                                MAURICE MIGNOTTE AND PAUL VOUTIER
+
+
+  When H = W × K× , where W is either {0} or a line aX1 + bX2 = 0 in K2 , at least one of the
+degrees δ1,0,0 (V ) or δ0,1,0 (V ) is positive and we get a contradiction with the first lower bound of
+(A.1).
+  When H = W × µ, with a finite multiplicative group µ, then δ0,0,1 (V ) ≥ Card(µ), and we
+deduce from the last upper bound
+              
+       Card y : ∃ (x1 , x2 ) ∈ K2 with (x1 , x2 , y) ∈ Σ1 ≤ Card (Σ1 /(W × {1}))
+                                                                ≤ Card (Σ1 /(W × µ)) Card(µ) ≤ L,
+which contradicts the second lower bound of (A.1).
+   Therefore, for some g ∈ Σ1 , the translated polynomial s1 ◦ τg does not vanish identically on V .
+Now a generic linear combination s2 of the polynomials s1 ◦ τg , g ∈ Σ1 has the required properties.
+   We construct s3 in a similar way, proving first that for any component V of Z2 = Z1 · (s2 ), the
+translated varieties g + V, g ∈ Σ2 , are not all components of Z2 . Otherwise we should deduce from
+(A.6) the upper bounds
+(A.8)                       Card (Σ2 /H) δ1,1,0 (V ) ≤ δ1,1,0 (Z2 ) ≤ 2K1 K2 ,
+                            Card (Σ2 /H) δ1,0,1 (V ) ≤ δ1,0,1 (Z2 ) ≤ 2K1 L      and
+                            Card (Σ2 /H) δ0,1,1 (V ) ≤ δ0,1,1 (Z2 ) ≤ 2K2 L,
+where H = {g ∈ G : g +V = V } is again the stabiliser of V . Now dim H ≤ 1. When H = {0}×K×,
+the curve V is some line (u, v, K× ) and δ1,1,0 (V ) = 1. Then the first upper bound in (A.8)
+contradicts the second lower bound of (A.2).
+   Suppose now that H = W × µ, where µ is a finite multiplicative group and W is either {0} or a
+line aX1 + bX2 = 0. The projection π1 × π2 restricted to V is then a finite map on to its image in
+K2 of degree ≥ Card(µ). Then at least one of the multidegrees δ1,0,1 (V ) or δ0,1,1 (V ) is ≥ Card(µ).
+Thus we find the upper bounds
+     Card {(ax1 + bx2 , y) : (x1 , x2 , y) ∈ Σ2 } ≤ Card (Σ2 /(W × {1}))
+                                                 ≤ Card (Σ2 /(W × µ)) Card(µ) ≤ 2 max {K1 , K2 } L,
+which contradict the first lower bound of (A.2).
+   Finally, we take for s3 a generic linear combination of the polynomials s1 ◦ τg and s2 ◦ τg , for
+g ∈ Σ2 .
+
+                                                 References
+[1] N. Gouillon, Un lemme de zéros, Comptes Rendus Acad. Sci. Paris, Ser. I, 335 (2002), 167–170.
+[2] D. W. Masser, On polynomials and exponential polynomials in several variables, Invent. Math. 63 (1981), 81–95.
+[3] P. Philippon, Lemmes de zéros dans les groupes algébriques commutatifs, Bull. Soc. Math. France, 114 (1987),
+ 355–383. Errata et addenda, id., 115 (1987), 397–398.
+
+  Maurice Mignotte, Université Louis Pasteur, U. F. R. de mathématiques, 7, rue René Descartes, 67084
+Strasbourg Cedex, France
+  Email address: mignotte@math.unistra.fr
+
+     Paul Voutier, London, UK
+     Email address: paul.voutier@gmail.com
+
+  Michel Laurent, Aix-Marseille Université, Institut de Mathématiques de Marseille, 163 Avenue de
+Luminy, Case 907, 13288 Marseille Cédex 9, France
+  Email address: michel-julien.laurent@univ-amu.fr
+

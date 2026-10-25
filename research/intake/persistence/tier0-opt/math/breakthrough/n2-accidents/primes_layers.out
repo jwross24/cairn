@@ -1,0 +1,25 @@
+prod(primes)*21 == R_96: True
+L=12 primes=5 P=5.2910e+09 |K|=8.9100e+06 rho_joint=2.0833e-03 prod_indep_density=5.0000e-01 loss=2.400e+02
+L=24 primes=8 P=5.2910e+21 |K|=3.3657e+13 rho_joint=8.0376e-09 prod_indep_density=1.6667e-01 loss=2.074e+07
+L=48 primes=11 P=5.2910e+45 |K|=2.0831e+30 rho_joint=5.2856e-16 prod_indep_density=4.1667e-02 loss=7.883e+13
+L=96 primes=20 P=5.2910e+93 |K|=2.8100e+56 rho_joint=7.2574e-38 prod_indep_density=3.4722e-03 loss=4.784e+34
+11 ord10 2 kappa 10 dens 1 lvl 12
+13 ord10 6 kappa 12 dens 1 lvl 12
+17 ord10 16 kappa 16 dens 1 lvl 48
+37 ord10 3 kappa 18 dens 0.5 lvl 12
+73 ord10 8 kappa 24 dens 0.3333 lvl 24
+97 ord10 96 kappa 96 dens 1 lvl 96
+101 ord10 4 kappa 100 dens 1 lvl 12
+137 ord10 8 kappa 136 dens 1 lvl 24
+353 ord10 32 kappa 352 dens 1 lvl 96
+449 ord10 32 kappa 448 dens 1 lvl 96
+641 ord10 32 kappa 640 dens 1 lvl 96
+1409 ord10 32 kappa 1408 dens 1 lvl 96
+9901 ord10 12 kappa 9900 dens 1 lvl 12
+69857 ord10 32 kappa 69856 dens 1 lvl 96
+206209 ord10 96 kappa 206208 dens 1 lvl 96
+5882353 ord10 16 kappa 1470588 dens 0.25 lvl 48
+99990001 ord10 24 kappa 99990000 dens 1 lvl 24
+66554101249 ord10 96 kappa 66554101248 dens 1 lvl 96
+75118313082913 ord10 96 kappa 6259859423576 dens 0.08333 lvl 96
+9999999900000001 ord10 48 kappa 9999999900000000 dens 1 lvl 48

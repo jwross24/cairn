@@ -1,0 +1,3 @@
+cases 550 rc!=0 0 reps with PT 550
+max PT 1.269e+17 bound 32P<2^64 needs P<5.765e+17 over 0
+distinct PT [126914857932442511]

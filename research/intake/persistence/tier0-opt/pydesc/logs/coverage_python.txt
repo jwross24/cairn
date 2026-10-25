@@ -1,0 +1,9 @@
+Name                    Stmts   Miss Branch BrPart  Cover
+---------------------------------------------------------
+cand8/export_cfg.py        65      5     18      3    90%
+cand8/export_level.py      60      3     18      1    95%
+cand8/pydesc.py           129     16     46     13    83%
+cand8/run_c.py            108     15     40      5    81%
+cand8/tier0v2.py          391     98    192     11    72%
+---------------------------------------------------------
+TOTAL                     753    137    314     33    78%

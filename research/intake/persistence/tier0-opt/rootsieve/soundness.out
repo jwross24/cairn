@@ -1,0 +1,24 @@
+== plants, production predicate
+items 1042 kept(keep=1 and open=1 at the recorded a) 1042 lost 0 dead 0 no a-line 0
+by rank (items, kept): {0: [10, 10], 1: [236, 236], 2: [796, 796]}
+== plants, mutant 1: 3-adic branch inverted
+items 1042 kept(keep=1 and open=1 at the recorded a) 100 lost 942 dead 0 no a-line 0
+by rank (items, kept): {0: [10, 10], 1: [236, 90], 2: [796, 0]}
+== plants, mutant 2: 7-adic branch inverted
+items 1042 kept(keep=1 and open=1 at the recorded a) 156 lost 886 dead 0 no a-line 0
+by rank (items, kept): {0: [10, 10], 1: [236, 146], 2: [796, 0]}
+== plants, mutant 3: b shifted by one
+items 1042 kept(keep=1 and open=1 at the recorded a) 942 lost 100 dead 0 no a-line 0
+by rank (items, kept): {0: [10, 0], 1: [236, 146], 2: [796, 796]}
+== open@96 items, production predicate
+items 137292 kept(keep=1 and open=1 at the recorded a) 137292 lost 0 dead 0 no a-line 0
+by rank (items, kept): {1: [29543, 29543], 2: [107749, 107749]}
+== open@96 items, mutant 1: 3-adic branch inverted
+items 137292 kept(keep=1 and open=1 at the recorded a) 5255 lost 132037 dead 0 no a-line 0
+by rank (items, kept): {1: [29543, 5255], 2: [107749, 0]}
+== open@96 items, mutant 2: 7-adic branch inverted
+items 137292 kept(keep=1 and open=1 at the recorded a) 24288 lost 113004 dead 0 no a-line 0
+by rank (items, kept): {1: [29543, 24288], 2: [107749, 0]}
+== open@96 items, mutant 3: b shifted by one
+items 137292 kept(keep=1 and open=1 at the recorded a) 132037 lost 5255 dead 0 no a-line 0
+by rank (items, kept): {1: [29543, 24288], 2: [107749, 107749]}

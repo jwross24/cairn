@@ -1,0 +1,24 @@
+samples 400000006
+rank 0 share of patterns 57.1435% [57.1386, 57.1483]
+rank 1 share of patterns 38.0950% [38.0902, 38.0997]
+rank 2 share of patterns 4.7616% [4.7595, 4.7637]
+hot-loop upper bound (rank-2 stream only): 21.00x [20.99, 21.01]
+residue survivors, rank filter                       8078656 -> 410269   cut 19.69x  [19.63, 19.75]
+residue survival rate 1/49.51
+tail-open patterns (any a<=118), rank filter         194238 -> 9529   cut 20.38x  [19.99, 20.79]
+(a,pattern) lines cap 60, rank filter                41066632 -> 1966361   cut 20.88x  [20.86, 20.91]
+tail-open lines cap 60, rank filter                  327872 -> 15897   cut 20.62x  [20.31, 20.94]
+(a,pattern) lines cap 118, rank filter               80114575 -> 3835718   cut 20.89x  [20.87, 20.91]
+tail-open lines cap 118, rank filter                 643157 -> 31202   cut 20.61x  [20.39, 20.84]
+(a,pattern) lines cap 160, rank filter               108388446 -> 5189496   cut 20.89x  [20.87, 20.90]
+tail-open lines cap 160, rank filter                 871224 -> 42113   cut 20.69x  [20.50, 20.88]
+share of final open&keep patterns outside rank 2: 203 of 9529 = 2.13% [1.86, 2.44]
+share of kept residue survivors outside rank 2: 26117 of 410269 = 6.37%
+rank 0: survivors kept by the rank filter 7 / 4617509 = 0.00000 [0.00000, 0.00000]
+rank 1: survivors kept by the rank filter 26110 / 3076995 = 0.00849 [0.00838, 0.00859]
+rank 2: survivors kept by the rank filter 384152 / 384152 = 1.00000 [0.99999, 1.00000]
+Tier C vertex: open&keep parent patterns 4.107e+14 [4.025e+14, 4.190e+14]
+chain pass 0.4786 [0.4686, 0.4887] -> cut 2.089x [2.046, 2.134]
+parents after chain 1.966e+14
+hot loop at 8 ns: 4370 core-years; rank-2 stream (1/21): 208
+lift floor at 1 ms per parent: before chain 13013 core-years, after chain 6229

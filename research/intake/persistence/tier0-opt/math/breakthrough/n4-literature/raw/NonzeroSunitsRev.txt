@@ -1,0 +1,500 @@
+                   On the digital representation of smooth numbers
+
+
+
+                                 Yann BUGEAUD and Hajime KANEKO
+
+
+
+
+          Abstract. Let b ≥ 2 be an integer. Among other results, we establish,
+          in a quantitative form, that any sufficiently large integer which is not
+          a multiple of b cannot simultaneously be divisible only by very small
+          primes and have very few nonzero digits in its representation in base b.
+
+
+
+                                   1. Introduction and results
+
+     Let a, b be positive, multiplicatively independent integers. Stewart [10] established
+that, for every sufficiently large integer n, the representation of an in base b has more
+than (log n)/(2 log log n) nonzero digits. His proof rests on a subtle application of Baker’s
+theory of linear forms in complex logarithms of algebraic numbers. This result addresses
+a very special case of the following general (and left intentionally vague) question, which
+was introduced and discussed in [5]:
+     Do there exist arbitrarily large integers which have only small prime factors and, at
+the same time, few nonzero digits in their representation in some integer base?
+      The expected answer is no and a very modest step in this direction has been made in
+[5], by using a combination of estimates for linear forms in complex and p-adic logarithms.
+In the present work, we considerably extend Corollary 1.3 of [5] and, more generally, we
+show in a quantitative form that the maximum of the greatest prime factor of an integer
+n and the number of nonzero digits in its representation in a given integer base tends to
+infinity as n tends to infinity.
+      Throughout this note, b always denotes an integer at least equal to 2. Following [5],
+                                           (k)
+for an integer k ≥ 2, we denote by (uj )j≥1 the sequence, arranged in increasing order, of
+all positive integers which are not divisible by b and have at most k nonzero digits in their
+                                                    (k)
+representation in base b. Said differently, (uj )j≥1 is the ordered sequence composed of
+the integers 1, 2, . . . , b − 1 and those of the form
+
+dk bnk + · · · + d2 bn2 + d1 ,    nk > · · · > n2 > 0,   d1 , . . . , dk ∈ {0, 1, . . . , b − 1},   d1 dk 6= 0.
+
+     2010 Mathematics Subject Classification : 11A63, 11J86.
+
+                                                   1
+We stress that, for the questions investigated in the present note, it is natural to restrict
+                                                                         (k)
+our attention to integers not divisible by b. Obviously, the sequence (uj )j≥1 depends on
+b, but, to shorten the notation, we have decided not to mention this dependence.
+                                                                    (k)
+     Theorem 1.1 of [5] implies that the greatest prime factor of uj tends to infinity as j
+tends to infinity. Its proof rests on the Schmidt Subspace Theorem and does not allow us
+to derive an estimate for the speed of divergence. Such an estimate has been established
+in [5], but only for k ≤ 3. Following the proof of our main result (Theorem 1.2 below), we
+are able to extend this estimate to arbitrary integers k.
+     For a positive integer n, let us denote by P [n] its greatest prime factor and by ω(n)
+the number of its distinct prime factors, with the convention that P [1] = 1. A positive
+real number B being given, a positive integer n is called B-smooth if P [n] ≤ B.
+Theorem 1.1. Let b ≥ 2, k ≥ 3 be integers. Let ε be a positive real number. Then, there
+exists an effectively computable positive number j0 , depending only on b, k, and ε, such
+that
+                                                              (k)
+                 (k)
+                         1      
+                                           (k)   log log log uj
+             P [uj ] >        − ε log log uj                    (k)
+                                                                    , for j > j0 .
+                         k−2                   log log log log u j
+In particular, there exists an effectively computable positive integer n0 , depending only on
+b, k, and ε, such that any integer n > n0 which is not divisible by b and is
+                        1                       log log log n
+                                − ε (log log n)                   -smooth
+                         k−2                    log log log log n
+has at least k + 1 nonzero digits in its b-ary representation.
+     Our main result asserts that, given an integer b ≥ 2, if the integer n is sufficiently
+large, then its greatest prime factor and the number of nonzero digits in its representation
+in base b cannot be simultaneously small.
+Theorem 1.2. Let b ≥ 2 and k ≥ 2 be integers. There exist an effectively computable real
+number c, depending at most on b, and an effectively computable, absolute real number C
+such that every sufficiently large positive integer n, which is not divisible by b and whose
+representation in base b has k nonzero digits, satisfies
+            log log n
+                      ≤ c + log k + ω(n)(C + log log P [n]) + log log(k log P [n]).
+                k
+    Taking k = 3 in Theorem 1.2, we get the second assertion of Theorem 1.3 of [5]. The
+main ingredients for the proofs of both theorems are estimates for linear forms in complex
+and p-adic logarithms of algebraic numbers. The novelty in the present note is a more
+subtle use of estimates for linear forms in p-adic logarithms, where p is a prime divisor of
+the base b. With our new approach, the number k of nonzero digits need not to be fixed
+and can be allowed to depend on n, provided that it is rather small compared to n.
+    Several easy consequences of the proof of Theorem 1.2 are pointed out below. We
+                                            (k)
+extend the definition of the sequences (uj )j≥1 as follows. For a positive real valued
+                                                                     (f )
+function f defined over the set of positive integers, we let (uj )j≥1 be the sequence,
+arranged in increasing order, of all positive integers n which are not divisible by b and
+have at most f (n) nonzero digits in their representation in base b.
+
+                                              2
+Theorem 1.3. Let b ≥ 2 be an integer. Let f be a positive real valued function defined
+over the set of positive integers such that
+
+                                        lim f (u) = +∞.
+                                        u→+∞
+
+Assume that there exists a real number δ satisfying 0 < δ < 1 and
+                                                       log log u
+                                 f (u) ≤ (1 − δ)                   ,                        (1.1)
+                                                     log log log u
+for any sufficiently large u, and set
+                                           log log u
+                               Ψf (u) :=             ,     for u ≥ 3.
+                                             f (u)
+Then, for an arbitrary positive real number ε, we have
+                                                                        (f ) 
+                            (f )                  (f )     log Ψf uj
+                        P [uj ] > (δ0 − ε)Ψf     uj                       (f ) 
+                                                                                   ,        (1.2)
+                                                           log log Ψf uj
+
+for any sufficiently large integer j, where
+                                                                                     
+                                                 log log u
+        δ0 = sup δ > 0 : f (u) ≤ (1 − δ)                     for every large integer u .
+                                               log log log u
+    We gather in the next statement three immediate consequences of Theorem 1.3 applied
+with an appropriate function f .
+Corollary 1.4. Let b ≥ 2 be an integer. There exists an effectively computable positive
+integer n0 , depending only on b, such that any integer n > n0 which is not divisible by b
+satisfies the following three assertions. If n is
+                      log log n
+                                     -smooth, then n has at least log log log n
+                 2 log log log log n
+nonzero digits in its representation in base b. If n is
+  s                                                            s
+                log log log n                                1               log log log n
+    log log n                   -smooth, then n has at least     log log n
+              log log log log n                              3             log log log log n
+
+nonzero digits in its representation in base b. If n is
+       1                 log log log log n                                   log log n
+         log log log n                       -smooth, then n has at least
+       2               log log log log log n                              2 log log log n
+nonzero digits in its representation in base b.
+     Let S be a finite, non-empty set of prime numbers. A rational integer is an integral
+S-unit if all its prime factors belong to S. We deduce from Theorem 1.2 lower bounds for
+the number of nonzero digits in the representation of integral S-units in an integer base.
+
+                                                 3
+Corollary 1.5. Let b ≥ 2 be an integer. Let S be a finite set of prime numbers. Then,
+for any positive real number ε, there exists an effectively computable positive integer n0 ,
+depending only on b, S, and ε, such that any integral S-unit n ≥ n0 which is not divisible
+by b has more than
+                                             log log n
+                                   (1 − ε)
+                                           log log log n
+nonzero digits in its representation in base b.
+     Let a ≥ 2, b ≥ 2 be coprime integers. By taking for S the set of prime divisors of a,
+Corollary 1.5 implies Stewart’s result mentioned in the introduction (for the case where a
+and b are multiplicatively independent and not coprime, the proof of Corollary 1.5 can be
+easily adapted) and both proofs are different. Observe, however, that Stewart obtained
+in [10] a more general result, namely that, for any multiplicatively independent positive
+integers b and b0 and any sufficiently large integer n, the number of nonzero digits in the
+representation of n in base b plus the number of nonzero digits in the representation of n
+in base b0 exceeds (log log n)/(2 log log log n).
+     Our results are established in Section 3, by means of lower estimates for linear forms
+in logarithms gathered in Section 2. We postpone to Section 4 comments and remarks.
+
+                        2. Lower estimates for linear forms in logarithms
+
+     The first assertion of Theorem 2.1 is an immediate consequence of a theorem of
+Matveev [8]. The second one is a slight simplification of the estimate given on page 190
+of Yu’s paper [12]. For a prime number p and a nonzero rational number z we denote by
+vp (z) the exponent of p in the decomposition of z in product of prime factors.
+Theorem 2.1. Let n ≥ 2 be an integer. Let x1 /y1 , . . . , xn /yn be nonzero rational num-
+bers. Let b1 , . . . , bn be integers such that (x1 /y1 )b1 · · · (xn /yn )bn 6= 1. Let A1 , . . . , An be
+real numbers with
+                                 Ai ≥ max{|xi |, |yi |, e}, 1 ≤ i ≤ n.
+
+Set B = max{3, |b1 |, . . . , |bn |}. Then, we have
+               x b1               x bn
+                   1                    n
+        log                  ···               − 1 > −8 × 30n+3 n9/2 log(eB) log A1 · · · log An .               (2.1)
+                  y1                   yn
+
+Let p be a prime number. Then, we have
+         x b1              x bn          
+              1                    n
+   vp                  ···                  −1 <
+          y1                  yn
+                                                                              p                                  (2.2)
+                                                    2(n+1) 5/2            2
+                                            (16e)        n       (log(2n))          log A1 · · · log An log B.
+                                                                           (log p)2
+
+
+
+
+                                                                    4
+                                                   3. Proofs
+
+     Below, the constants c1 , c2 , . . . are effectively computable and depend at most on b
+and the constants C1 , C2 , . . . are absolute and effectively computable. Let N be a positive
+integer and k the number of nonzero digits in its representation in base b. We assume that
+b does not divide N , thus k ≥ 2 and we write
+
+                                 N =: dk bnk + · · · + d2 bn2 + d1 bn1 ,
+
+where
+                    nk > · · · > n2 > n1 = 0,              d1 , . . . , dk ∈ {1, . . . , b − 1}.
+Let q1 , . . . , qs denote distinct prime numbers written in increasing order such that there
+exist non-negative integers r1 , . . . , rs with
+
+                                               N = q1r1 · · · qsrs .
+
+Observe that
+                                             bnk ≤ N < bnk +1 .                                    (3.1)
+Lemma 3.1. Keep the above notation and set k ∗ := max{k − 2, 1}. If
+                                                               8 log b k
+                                      log N ≥ 2(log b)                       ,                     (3.2)
+                                                                   log 2
+
+then we have
+                                                   s
+                                                   Y                            k ∗
+                          nk ≤        c1 C1s k ∗         log qi log(k log qs )           .         (3.3)
+                                                   i=1
+
+Proof. First we assume that nk ≥ 2nk−1 . This covers the case k = 2. Since
+                          s
+                         Y                                  k−1
+                                                              X
+                 Λa :=           qiri d−1
+                                       k  b −nk
+                                                − 1 = d−1 −nk
+                                                       k b        d h bn h
+                           i=1                                             h=1
+                                                                   1+nk−1 −nk
+                                                              ≤b                 ≤ b−(nk −2)/2 ,
+
+we get                                          n         
+                                                      k
+                                  log Λa ≤ −            − 1 log b.                                 (3.4)
+                                                     2
+Since rj log qj ≤ (nk + 1) log b for j = 1, . . . , s, we deduce from (2.1) that
+
+                          log Λa ≥ −c2 C2s (log q1 ) · · · (log qs )(log nk ).                     (3.5)
+
+Combining (3.4) and (3.5), we obtain
+                                                    s
+                                                   Y          
+                                 nk ≤ c3 C3s             log qi (log log qs ),
+                                                   i=1
+
+
+                                                          5
+which implies (3.3).
+     Now, we assume that nk < 2nk−1 . In particular, we have k ≥ 3. If there exists an
+                                         j/(k−2)
+integer j with 1 ≤ j ≤ k − 3 and n1+j ≥ nk       , then put
+
+                                                                         j/(k−2)
+                        ` := min{j : 1 ≤ j ≤ k − 3, n1+j ≥ nk                        }.
+
+Otherwise, set ` := k − 2. We see that
+
+                                       1 `/(k−2)                      (`−1)/(k−2)
+                          n`+1 ≥        n              and n` ≤ nk                   .                         (3.6)
+                                       2 k
+Let p be the smallest prime divisor of b. Put
+
+                    s
+                   Y              `
+                                 X             −1           k
+                                                              X                    `
+                                                                                  X                −1
+           Λu :=          qiri              nh
+                                         dh b          −1=            dh b   nh
+                                                                                          dh bnh
+                                                                                                           .
+                    i=1            h=1                        h=`+1                h=1
+
+
+We get by (3.6), (3.1), and (3.2) that
+
+                                  log b1+n`
+               vp (Λu ) ≥ n`+1 −
+                                     log p
+                           1 `/(k−2)           (`−1)/(k−2) log b
+                                                           
+                          ≥ nk        − 1 + nk                                                                 (3.7)
+                           2                                  log 2
+                           1 `/(k−2)       `/(k−2)      log b        1 `/(k−2)
+                          ≥ nk        − 2nk          1/(k−2)
+                                                                    ≥ nk       .
+                           2                       n         log 2   4
+                                                             k
+
+We deduce from (2.2) and (3.6) that
+                                                                  (`−1)/(k−2)
+                    vp (Λu ) ≤ c4 C4s (log q1 ) · · · (log qs )nk                  log nk .                    (3.8)
+
+By combining (3.7) and (3.8), we get
+                    1/(k−2)                                                        1/(k−2) 
+                   nk            ≤ c5 C5s (log q1 ) · · · (log qs )(k − 2) log nk                ,
+
+which implies (3.3) and completes the proof of Lemma 3.1.
+
+Proof of Theorem 1.1.
+    We keep the above notation. In particular, N denotes an integer not divisible by b
+and with exactly k nonzero digits in its representation in base b. In view of [5], we assume
+that k ≥ 3, thus k ∗ = k − 2. Note that (3.2) holds if N is large enough. Then, we deduce
+from (3.1) and (3.3) that
+                                                 s
+           log log N                            X
+                     ≤ c6 + C6 s + log(k − 2) +     log log qi + log log(k log qs ).                           (3.9)
+             k−2                                i=1
+
+
+                                                        6
+In particular, denoting by pj the j-th prime number for j ≥ 1 and defining s by ps = P [N ],
+inequality (3.9) applied with qj = pj for j = 1, . . . , s shows that
+        log log N
+                  ≤ c6 + C6 s + log(k − 2) + s log log P [N ] + log log(k log P [N ]).             (3.10)
+          k−2
+Let ε be a positive real number. By the Prime Number Theorem, there exists an effectively
+computable integer s0 (ε), depending only on ε, such that, if s ≥ s0 (ε), then
+                                                       P [N ]
+                                      s < (1 + ε)               .                                  (3.11)
+                                                     log P [N ]
+For s < s0 (ε/(2k − 4)), we derive from (3.10) an upper bound for N in terms of b, k, and
+ε. For s ≥ s0 (ε/(2k − 4)), it follows from (3.11) and the Prime Number Theorem that
+                                                             log log P [N ]
+                           log log N ≤ (k − 2 + ε)P [N ]                    ,
+                                                               log P [N ]
+provided that N is sufficiently large in terms of b, k, and ε. This implies Theorem 1.1.
+
+Proof of Theorem 1.2.
+     We assume that q1 , . . . , qs are the prime divisors of N , thus in particular we have
+s = ω(N ). If (3.2) is not satisfied, then log log N ≤ c7 k. Otherwise, by taking the
+logarithms of both sides of (3.3) and using (3.1), we get
+         log log N
+                   ≤ c8 + C7 ω(N ) + log k + ω(N ) log log P [N ] + log log(k log P [N ]).
+              k
+This establishes Theorem 1.2.
+Proof of Theorem 1.3.
+     We argue as in the proof of Theorem 1.1. Let ε be a positive real number with
+                                                                 (f )
+ε < δ0 /3. Suppose that j is sufficiently large and set N := uj . It follows from (1.1) that
+(3.2) holds if N is large enough. Then, (3.3) holds with an integer k at most equal to
+f (N ). By using (3.10), (3.11) and the Prime Number Theorem, we get
+                                                              log log P [N ] 
+                 log log N ≤ (1 + ε)f (N ) log f (N ) + P [N ]                  .
+                                                                 log P [N ]
+It then follows from the definition of the positive real number δ0 that
+                                                                                log log P [N ]
+             log log N < (1 − δ0 + 3ε) log log N + (1 + ε)f (N )P [N ]                         ,
+                                                                                  log P [N ]
+hence
+                                                               log log P [N ]
+                          (δ0 − 3ε)Ψf (N ) < (1 + ε)P [N ]                    .
+                                                                 log P [N ]
+Therefore, we have proved (1.2).
+
+
+
+                                                 7
+                                       4. Additional remarks
+
+                                                                                         (k)
+Remark 4.1. Arguing as Stewart did in [11], we can derive a lower bound for Q[uj ], where
+Q[n] denotes the greatest square-free divisor of a positive integer n, similar to the lower
+              (3)
+bound for Q[uj ] given in Theorem 4.1 of [5].
+Remark 4.2. Let a, b be integers such that a > b > 1 and gcd(a, b) ≥ 2. Perfect powers in
+the double sequence (am + bn + 1)m,n≥1 have been considered in [2, 3, 5, 7]. The method
+of the proof of Theorem 1.2 allows us to establish the following extension of Theorem 4.3
+of [5].
+Theorem 4.1. Let k ≥ 2 and a1 , . . . , ak be positive integers with gcd(a1 , . . . , ak ) ≥ 2.
+Let v = (vj )j≥1 denote the increasing sequence composed of all the integers of the form
+an1 1 + · · · + ank k + 1, with n1 , . . . , nk ≥ 1. Then, for every positive ε, we have
+                                       1                  log log log vj
+                       P [vj ] >           − ε log log vj                    ,
+                                       k−1                log log log log vj
+
+when j exceeds some effectively computable constant depending only on a1 , . . . , ak , and ε.
+
+Remark 4.3. Let n be a positive integer. Let S = {q1 , . . . , qs } be a finite, non-empty set of
+distinct prime numbers. Write n = q1r1 · · · qsrs M , where r1 , . . . , rs are non-negative integers
+and M is an integer relatively prime to q1 · · · qs . We define the S-part [n]S of n by
+
+                                            [n]S := q1r1 · · · qsrs .
+
+Theorem 1.1 of [5] asserts that, for every k ≥ 2 and every positive real number ε, we have
+
+                                                 (k)         (k)
+                                            [uj ]S < (uj )ε ,
+
+for every sufficiently large integer j. This implies that (and is a much stronger statement
+                                       (k)
+than) the greatest prime factor of uj tends to infinity as j tends to infinity. The proof
+uses the Schmidt Subspace Theorem and it is here essential that k is fixed. Moreover, this
+is an ineffective result.
+       The main goal of [5] was to establish an effective improvement of the trivial estimate
+   (3)       (3)               (3)        (3)
+[uj ]S ≤ uj of the form [uj ]S ≤ (uj )1−δ , for a small positive real number δ and for
+j sufficiently large. A key tool was a stronger version of Theorem 2.1 in the special case
+where |bn | is small. Unfortunately, for k > 3, the method of the proof of Theorem 1.2 does
+not seem to combine well with this stronger version of Theorem 2.1 to get an analogous
+result. We are only able to establish that, for any fixed integer k ≥ 4 and any given positive
+real number ε, the upper bound
+                             (k)           (k)                  (k)
+                                                 exp −(log uj )(1−ε)/(k−2)
+                                                                             
+                           [uj ]S ≤ uj
+
+holds for every sufficiently large integer j.
+
+                                                       8
+Remark 4.4. Instead of considering the number of nonzero digits in the representation of
+an integer in an integer base, we can focus on the number of blocks composed of the same
+digit in this representation, a quantity introduced by Blecksmith, Filaseta, and Nicol [4];
+see also [1, 6]. A straightforward adaptation of our proofs shows that analogous versions of
+Theorems 1.1 to 1.3 hold with ‘number of nonzero digits’ replaced by ‘number of blocks’.
+We omit the details.
+Remark 4.5. In the opposite direction of our results, it does not seem to be easy to confirm
+the existence of arbitrarily large integers with few digits in their representation in some
+integer base and only small prime divisors. A construction given in Theorem 13 of [9] and
+based on cyclotomic polynomials shows that there exist an absolute, positive real number
+c and arbitrarily large integers N of the form 2n + 1 such that
+
+                                  P [N ] ≤ N c/ log log log N .
+
+
+
+Acknowledgements.         The second author was supported by JSPS KAKENHI Grant
+Number 15K17505.
+
+
+
+
+                                        References
+
+
+  [1] G. Barat, R. F. Tichy, and R. Tijdeman, Digital blocks in linear numeration systems.
+      In: Number theory in progress, Vol. 2 (Zakopane-Kościelisko, 1997), 607–631, de
+      Gruyter, Berlin, 1999.
+  [2] M. A. Bennett, Y. Bugeaud, and M. Mignotte, Perfect powers with few binary digits
+      and related Diophantine problems, II, Math. Proc. Cambridge Philos. Soc. 153
+      (2012), 525–540.
+  [3] M. A. Bennett, Y. Bugeaud, and M. Mignotte, Perfect powers with few binary digits
+      and related Diophantine problems, Ann. Sc. Norm. Super. Pisa Cl. Sci. 12 (2013),
+      525–540.
+  [4] R. Blecksmith, M. Filaseta, and C. Nicol, A result on the digits of an , Acta Arith.
+      64 (1993), 331–339.
+  [5] Y. Bugeaud, On the digital representation of integers with bounded prime factors,
+      Osaka J. Math. To appear.
+  [6] Y. Bugeaud, M. Cipu, and M. Mignotte, On the representation of Fibonacci and
+      Lucas numbers in an integer base, Ann. Math. Qué. 37 (2013), 31–43.
+  [7] P. Corvaja and U. Zannier, S-unit points on analytic hypersurfaces, Ann. Sci. École
+      Norm. Sup. 38 (2005), 76–92.
+
+                                               9
+  [8] E. M. Matveev, An explicit lower bound for a homogeneous rational linear form
+      in logarithms of algebraic numbers. II, Izv. Ross. Acad. Nauk Ser. Mat. 64 (2000),
+      125–180 (in Russian); English translation in Izv. Math. 64 (2000), 1217–1269.
+  [9] A. Schinzel, On two theorems of Gelfond and some of their applications, Acta Arith.
+      13 (1967), 177–236.
+ [10] C. L. Stewart, On the representation of an integer in two different bases, J. reine
+      angew. Math. 319 (1980), 63–72.
+ [11] C. L. Stewart, On the greatest square-free factor of terms of a linear recurrence
+      sequence. In: Diophantine equations, 257–264, Tata Inst. Fund. Res. Stud. Math.,
+      20, Tata Inst. Fund. Res., Mumbai, 2008.
+ [12] K. Yu, p-adic logarithmic forms and group varieties. III, Forum Math. 19 (2007),
+      187–280.
+
+
+
+Yann Bugeaud
+Institut de Recherche Mathématique Avancée, U.M.R. 7501
+Université de Strasbourg et C.N.R.S.
+7, rue René Descartes
+67084 Strasbourg, FRANCE
+e-mail : bugeaud@math.unistra.fr
+
+
+
+Hajime Kaneko
+Institute of Mathematics, University of Tsukuba, 1-1-1, Tennodai
+Tsukuba, Ibaraki, 305-8571, JAPAN
+Center for Integrated Research in Fundamental Science and Engineering (CiRfSE)
+University of Tsukuba, 1-1-1, Tennodai
+Tsukuba, Ibaraki, 305-8571, JAPAN
+e-mail: kanekoha@math.tsukuba.ac.jp
+
+
+
+
+                                           10
+

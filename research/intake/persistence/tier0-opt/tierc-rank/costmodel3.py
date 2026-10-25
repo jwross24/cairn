@@ -1,0 +1,117 @@
+import sys, json, math, random
+sys.path.insert(0, "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/tierc-rank")
+from depth1d import analyze_rank
+from depth1c import v2
+from uppp import depth_for, exact_e
+from statlib import clopper_pearson, boot_total
+
+T_CERT = 0.02319973129992738
+T_VERIFY = 0.02166669526143791
+
+
+def load_cells(path):
+    n = 0
+    vals = []
+    w0 = []
+    for ln in open(path):
+        t = ln.split()
+        if not t:
+            continue
+        n += 1
+        T = int(t[-1].split(":")[1])
+        if T:
+            vals.append(T)
+            w0.append(int(t[1]) == 0)
+    return n, vals, w0
+
+
+def eval_patterns(path, kind, tag):
+    rows = [json.loads(l) for l in open(path)]
+    out = []
+    for r in rows:
+        w = [tuple(x) for x in r["words"]]
+        y = r["y"]
+        kd = kind
+        if kind == "auto":
+            kd = "b" if y % 3 == 0 else "c"
+        a = v2(y)
+        s1, _, nc = analyze_rank(y, w, 1, kd)
+        nodes = 0
+        E = None
+        if s1:
+            D, x = depth_for(len(w), a)
+            E = exact_e(D, a)
+            _, nodes, _ = analyze_rank(y, w, E, kd)
+        out.append({"wrap": r["k"], "s1": s1, "nodes": nodes, "E": E, "k": len(w), "a": a, "y": y})
+    return out
+
+
+def main():
+    cfg = json.load(open(sys.argv[1]))
+    rng = random.Random(5)
+    n_cells, vals, w0flags = load_cells(cfg["census_cells"])
+    pop_pairs = cfg["pairs_in_stratum"]
+    tot_all = sum(vals) * pop_pairs / n_cells
+    l, h, draws_tot = boot_total(vals, n_cells, pop_pairs, 4000, 3)
+    w0v = [v for v, f in zip(vals, w0flags) if f]
+    res = {"N_patterns": [l, tot_all, h]}
+    strata = {}
+    for name, path in cfg["samples"].items():
+        ev = eval_patterns(path, cfg["kind"], name)
+        strata[name] = ev
+    f0 = sum(w0v) / sum(vals)
+    res["wrap0_share"] = f0
+    f0_draws = []
+    for _ in range(2000):
+        mm = rng.binomialvariate(n_cells, len(vals) / n_cells)
+        idx = [rng.randrange(len(vals)) for _ in range(mm)]
+        tw = sum(vals[i] for i in idx)
+        t0 = sum(vals[i] for i in idx if w0flags[i])
+        f0_draws.append(t0 / tw if tw else 0)
+    f0_draws.sort()
+    res["wrap0_share_ci95"] = [f0_draws[50], f0_draws[1949]]
+
+    def stratum_stats(ev):
+        n = len(ev)
+        sv = [1.0 if e["s1"] else 0.0 for e in ev]
+        cs = [e["nodes"] * (T_CERT + T_VERIFY) for e in ev]
+        return n, sv, cs
+
+    names = list(strata)
+    stats = {nm: stratum_stats(strata[nm]) for nm in names}
+    for nm in names:
+        n, sv, cs = stats[nm]
+        lo, hi = clopper_pearson(int(sum(sv)), n)
+        res["stratum_" + nm] = {"n": n, "survivors": int(sum(sv)), "rate_cp95": [lo, sum(sv) / n, hi], "survivor_nodes": sorted(e["nodes"] for e in strata[nm] if e["s1"]), "survivor_E": [e["E"] for e in strata[nm] if e["s1"]]}
+    reps = 4000
+    surv_tot, cost_tot = [], []
+    for _ in range(reps):
+        i = rng.randrange(len(draws_tot))
+        n_tot = draws_tot[i]
+        f = f0_draws[rng.randrange(len(f0_draws))]
+        s_sum, c_sum = 0.0, 0.0
+        for nm, wt in (("w0", f), ("other", 1 - f)):
+            n, sv, cs = stats[nm]
+            ms = sum(sv[rng.randrange(n)] for _ in range(n)) / n
+            mc = sum(cs[rng.randrange(n)] for _ in range(n)) / n
+            s_sum += wt * ms
+            c_sum += wt * mc
+        surv_tot.append(n_tot * s_sum)
+        cost_tot.append(n_tot * c_sum / 86400)
+    surv_tot.sort()
+    cost_tot.sort()
+    pt_s = 0.0
+    pt_c = 0.0
+    for nm, wt in (("w0", f0), ("other", 1 - f0)):
+        n, sv, cs = stats[nm]
+        pt_s += wt * sum(sv) / n
+        pt_c += wt * sum(cs) / n
+    res["survivors_total"] = [surv_tot[100], tot_all * pt_s, surv_tot[3899]]
+    res["core_days_total_cert_verify"] = [cost_tot[100], tot_all * pt_c / 86400, cost_tot[3899]]
+    res["core_years_total"] = [x / 365.25 for x in res["core_days_total_cert_verify"]]
+    res["core_days_if_32s_per_survivor"] = [x * 32 / 86400 for x in res["survivors_total"]]
+    print(json.dumps(res, indent=1, default=str))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,15 @@
+LINE 999001 35 0 7 - - 
+  py: s=999001     M=35           a=0  y=7            reps=1   cases=3       CLOSED 
+   c: s=999001     M=35           a=0  y=7            reps=1   cases=3       bound 10^(10^-0.47) digits
+VERDICT 999001 35 0 7 - - True 0 3 3
+LINE 999001 55 0 9 - - 
+  py: s=999001     M=55           a=0  y=9            reps=1   cases=3       CLOSED 
+   c: s=999001     M=55           a=0  y=9            reps=1   cases=3       bound 10^(10^-0.17) digits
+VERDICT 999001 55 0 9 - - True 0 3 3
+LINE 999001 225 0 7 - - 
+  py: s=999001     M=225          a=0  y=7            reps=1   cases=4       CLOSED 
+   c: s=999001     M=225          a=0  y=7            reps=1   cases=4       bound 10^(10^-0.47) digits
+VERDICT 999001 225 0 7 - - True 0 4 4
+deepcut: python records finished 3, compared 3, rep(-depth) entries 3, mismatches 6; python-finished but absent from C output: 0
+exact nearest-norm integers (+ survivor-count lists for sandwich) compared: 0, equal: 0
+C records without a python reference (not compared): 0

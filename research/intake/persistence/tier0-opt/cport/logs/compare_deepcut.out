@@ -1,0 +1,4 @@
+patterns 679, reps compared 3665, mismatches 0
+survivor reps with exact nearest-norm integer compared: 47, equal: 47
+cut-stage CPU: python 1047.0s, C 0.410s, ratio 2552x (per-rep, excludes rep enumeration)
+python per-pattern total (rep enumeration + cuts, from pyref): 1047.0s over 679 patterns

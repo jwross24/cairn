@@ -1,0 +1,111 @@
+lattice: 20 primes, index 280999509749509611991995562563818636457519792000000000000
+CONTENT a=0  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=1  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=2  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=3  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=4  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=5  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=6  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=7  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=8  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=9  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=10 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=11 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=12 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=13 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=14 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=15 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=16 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=17 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=18 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=19 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=20 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=21 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=22 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=23 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=24 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=25 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=26 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=27 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=28 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=29 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=30 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=31 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=32 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=33 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=34 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=35 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=36 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=37 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=38 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=39 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=40 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=41 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=42 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=43 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=44 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=45 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=46 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=47 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=48 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=49 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=50 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=51 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=52 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=53 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=54 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=55 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=56 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=57 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=58 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=59 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=60 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=61 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=62 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=63 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT assertion over a = 0..63: 0 failures
+s=14336    M=47888        a=0 y=7411887     k=5 log10 U=45.3 reps=1 words=1 -> CLOSED-sandwich bound 10^(10^233.99 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=28672    M=78888        a=2 y=1411788     k=5 log10 U=39.9 reps=1 words=2 -> CLOSED-cut [(w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [0s]
+s=14336    M=227888       a=0 y=78121827    k=6 log10 U=52.6 reps=1 words=1 -> CLOSED-sandwich bound 10^(10^234.95 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=27216    M=266679       a=0 y=85766121    k=6 log10 U=52.6 reps=1 words=2 -> CLOSED-sandwich bound 10^(10^235.02 [(w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=2/2,full=2,fv=0)] full=2 fv=0 [0s]
+s=28672    M=247888       a=0 y=7411887     k=6 log10 U=52.6 reps=1 words=1 -> CLOSED-sandwich bound 10^(10^233.99 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=28672    M=444788       a=0 y=7411887     k=6 log10 U=52.6 reps=2 words=1 -> CLOSED-sandwich bound 10^(10^233.99 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=32928    M=446777       a=1 y=57177414    k=6 log10 U=47.3 reps=1 words=1 -> CLOSED-sandwich bound 10^(10^234.5 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=42336    M=366778       a=0 y=1361367     k=6 log10 U=52.6 reps=1 words=1 -> CLOSED-sandwich bound 10^(10^234.62 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=28672    M=2227888      a=0 y=78121827    k=7 log10 U=61.8 reps=1 words=2 -> CLOSED-sandwich bound 10^(10^233.73 [(w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=2/2,full=2,fv=0)] full=2 fv=0 [0s]
+s=28672    M=2244788      a=0 y=330812181   k=7 log10 U=61.8 reps=1 words=1 -> CLOSED-sandwich bound 10^(10^234.21 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=28672    M=2244788      a=0 y=78121827    k=7 log10 U=61.8 reps=2 words=1 -> CLOSED-sandwich bound 10^(10^234.95 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=42336    M=2246779      a=2 y=777924      k=7 log10 U=53.3 reps=3 words=1 -> CLOSED-cut [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [0s]
+s=42336    M=2336778      a=2 y=19131876    k=7 log10 U=53.3 reps=1 words=1 -> CLOSED-sandwich bound 10^(10^234.6 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=49392    M=2247779      a=2 y=777924      k=7 log10 U=53.3 reps=1 words=1 -> CLOSED-cut [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [0s]
+s=8192     M=2224488      a=0 y=330812181   k=7 log10 U=61.8 reps=1 words=1 -> CLOSED-sandwich bound 10^(10^234.53 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=8192     M=2244448      a=0 y=330812181   k=7 log10 U=61.8 reps=2 words=1 -> CLOSED-sandwich bound 10^(10^234.53 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=14112    M=22233477     a=1 y=2722734     k=8 log10 U=63.7 reps=1 words=1 -> CLOSED-sandwich bound 10^(10^234.9 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=14336    M=22224478     a=0 y=330812181   k=8 log10 U=66.0 reps=2 words=2 -> CLOSED-sandwich bound 10^(10^234.53 [(w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=2/2,full=2,fv=0)] full=2 fv=0 [0s]
+s=148176   M=22366777     a=0 y=1361367     k=8 log10 U=66.0 reps=4 words=2 -> CLOSED-sandwich bound 10^(10^234.62 [(w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=2/2,full=2,fv=0)] full=2 fv=0 [0s]
+s=148176   M=22366777     a=2 y=69177612    k=8 log10 U=63.7 reps=4 words=1 -> CLOSED-sandwich bound 10^(10^234.36 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=148176   M=23346777     a=0 y=60761421    k=8 log10 U=66.0 reps=4 words=1 -> CLOSED-sandwich bound 10^(10^234.56 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=148176   M=23346777     a=2 y=69177612    k=8 log10 U=63.7 reps=2 words=1 -> CLOSED-cut [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [0s]
+s=18144    M=22333467     a=0 y=60761421    k=8 log10 U=66.0 reps=5 words=4 -> CLOSED-sandwich bound 10^(10^234.56 [(w=3,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0) (w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=18144    M=22333467     a=1 y=2722734     k=8 log10 U=63.7 reps=1 words=1 -> CLOSED-sandwich bound 10^(10^234.9 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=23328    M=23333466     a=0 y=60761421    k=8 log10 U=66.0 reps=1 words=3 -> CLOSED-cut [(w=3,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [0s]
+s=28672    M=22224788     a=0 y=330812181   k=8 log10 U=66.0 reps=1 words=1 -> CLOSED-sandwich bound 10^(10^234.21 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=34992    M=23333389     a=3 y=1134213192  k=8 log10 U=63.7 reps=1 words=1 -> CLOSED-cut [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [0s]
+s=42336    M=22234779     a=3 y=1134213192  k=8 log10 U=63.7 reps=1 words=2 -> CLOSED-sandwich bound 10^(10^233.75 [(w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=2/2,full=2,fv=0)] full=2 fv=0 [0s]
+s=42336    M=22334677     a=1 y=3281116734  k=8 log10 U=63.7 reps=1 words=2 -> CLOSED-sandwich bound 10^(10^234.1 [(w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=8192     M=22222488     a=0 y=330812181   k=8 log10 U=66.0 reps=2 words=6 -> CLOSED-sandwich bound 10^(10^234.45 [(w=3,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0) (w=3,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=3/3,full=3,fv=0)] full=3 fv=0 [0s]
+s=14336    M=222222478    a=0 y=330812181   k=9 log10 U=78.3 reps=4 words=12 -> CLOSED-sandwich bound 10^(10^234.45 [(w=6,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0) (w=6,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=6/6,full=6,fv=0)] full=6 fv=0 [0s]
+s=148176   M=222336777    a=2 y=2333772     k=9 log10 U=66.8 reps=9 words=1 -> CLOSED-cut [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [0s]
+s=18144    M=222333347    a=1 y=44471322    k=9 log10 U=66.7 reps=2 words=2 -> CLOSED-cut [(w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [0s]
+s=27216    M=223333347    a=1 y=2722734     k=9 log10 U=66.7 reps=2 words=1 -> CLOSED-sandwich bound 10^(10^234.9 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/1,full=1,fv=0)] full=1 fv=0 [0s]
+s=28672    M=222224478    a=0 y=330812181   k=9 log10 U=78.3 reps=2 words=4 -> CLOSED-sandwich bound 10^(10^234.53 [(w=4,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=4/4,full=4,fv=0)] full=4 fv=0 [0s]
+s=34992    M=233333346    a=0 y=60761421    k=9 log10 U=78.3 reps=1 words=3 -> CLOSED-cut [(w=3,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [0s]
+s=14336    M=2222222278   a=0 y=330812181   k=10 log10 U=79.6 reps=2 words=3 -> CLOSED-sandwich bound 10^(10^234.45 [(w=3,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=3/3,full=3,fv=0)] full=3 fv=0 [0s]
+s=148176   M=2222333777   a=1 y=44471322    k=10 log10 U=80.3 reps=2 words=1 -> CLOSED-cut [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [0s]
+s=18144    M=2222233337   a=1 y=44471322    k=10 log10 U=80.3 reps=1 words=1 -> CLOSED-cut [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [0s]
+s=18144    M=2222233337   a=2 y=133923132   k=10 log10 U=80.3 reps=5 words=2 -> CLOSED-sandwich bound 10^(10^234.52 [(w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=2/2,full=2,fv=0)] full=2 fv=0 [0s]
+s=27216    M=2222333337   a=1 y=44471322    k=10 log10 U=80.3 reps=1 words=1 -> CLOSED-cut [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [0s]
+s=28672    M=2222222478   a=0 y=330812181   k=10 log10 U=79.6 reps=4 words=12 -> CLOSED-sandwich bound 10^(10^234.45 [(w=6,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0) (w=6,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=6/6,full=6,fv=0)] full=6 fv=0 [0s]
+s=28672    M=22222222278  a=0 y=330812181   k=11 log10 U=93.2 reps=2 words=6 -> CLOSED-sandwich bound 10^(10^234.45 [(w=6,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=6/6,full=6,fv=0)] full=6 fv=0 [0s]
+
+43 of 43 patterns closed by the shadow certificate; content failures 0, lattice mismatches 0, non-applicable words 0; discrete logs 790 [0s]

@@ -1,0 +1,26 @@
+research/intake/persistence/tier0-opt/tierc-r2bill/run_raised3.log:88:t347 ERROR 1445.4 142.934016
+research/intake/persistence/tier0-opt/tierc-r2bill/run_raised3.log:92:t348 ERROR 2580.6 186.515456
+research/intake/persistence/tier0-opt/tierc-r2bill/results_raised3.jsonl:90:{"id": "t347", "tag": "raised3", "stage": "raised", "label": "ERROR", "verdict": null, "budget_detail": null, "space": null, "cpu_s": 1445.4427819999999, "maxrss_mb": 142.934016, "killed": null, "cmd": "nice -n 10 /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/tierc-r2shadow/cport_r2c shadow480 --rep-file /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/tierc-r2bill/data/rep_t347.rep --lattice /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/tierc-r2shadow/data/lattice96.txt --levelprimes /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/tierc-r2shadow/data/levelprimes480.txt --utable data/utable_u2_k34.txt --mitm-space-cap 1e30 --mitm-right-cap 1e14"}
+research/intake/persistence/tier0-opt/tierc-r2bill/results_raised3.jsonl:92:{"id": "t348", "tag": "raised3", "stage": "raised", "label": "ERROR", "verdict": null, "budget_detail": null, "space": null, "cpu_s": 2580.6204, "maxrss_mb": 186.515456, "killed": null, "cmd": "nice -n 10 /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/tierc-r2shadow/cport_r2c shadow480 --rep-file /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/tierc-r2bill/data/rep_t348.rep --lattice /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/tierc-r2shadow/data/lattice96.txt --levelprimes /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/tierc-r2shadow/data/levelprimes480.txt --utable data/utable_u2_k34.txt --mitm-space-cap 1e30 --mitm-right-cap 1e14"}
+research/intake/persistence/tier0-opt/tierc-r2bill/data/survivors_meta_b3.tsv:348:t347	31	11	28342368844941312	6	3	497664	0
+research/intake/persistence/tier0-opt/tierc-r2bill/data/survivors_meta_b3.tsv:349:t348	31	6	133995176056631232	18	3	34504704	0
+research/intake/persistence/tier0-opt/tierc-r2bill/run_def3.log:348:t347 BUDGET 0.0 7.7824
+research/intake/persistence/tier0-opt/tierc-r2bill/run_def3.log:349:t348 BUDGET 0.2 8.02816
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/raised3_t347_def.txt:1:lattice: 20 primes, index 280999509749509611991995562563818636457519792000000000000
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/raised3_t347_def.txt:2:FATAL: mitm480: candidate list too large
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/raised3_t347_def.txt:3:REPFILE y=28342368844941312 a=11 b=24 c=2 k=31 nu=6 log10 U''=233.0976
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/def3_t348_def.txt:1:lattice: 20 primes, index 280999509749509611991995562563818636457519792000000000000
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/def3_t348_def.txt:2:REPFILE y=133995176056631232 a=6 b=2 c=17 k=31 nu=18 log10 U''=232.9677
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/def3_t348_def.txt:3:BUDGET detail: mitm space=1.59e+19 left=0 right=0 (limits: space 6e+16, right 5e+09, case budget 5000000) words=24
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/def3_t348_def.txt:4:rep0: wrap=0 words=24 (notappl=0 taubad=0) T=7 units=20 space=0 |G|=0 shadow=0 compat(word,child)=0 notshadow_compat=0 passchain=0 windows=0 alive=0 wordsalive=0 notshadow_alive=0 win_budget=0
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/def3_t348_def.txt:5:VERDICT BUDGET log10 U''=232.9677 [0s]
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/def3_t348_def.txt:7:0 of 1 representations closed [0s]
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/raised3_t348_def.txt:1:lattice: 20 primes, index 280999509749509611991995562563818636457519792000000000000
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/raised3_t348_def.txt:2:FATAL: mitm480: candidate list too large
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/raised3_t348_def.txt:3:REPFILE y=133995176056631232 a=6 b=2 c=17 k=31 nu=18 log10 U''=232.9677
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/def3_t347_def.txt:1:lattice: 20 primes, index 280999509749509611991995562563818636457519792000000000000
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/def3_t347_def.txt:2:REPFILE y=28342368844941312 a=11 b=24 c=2 k=31 nu=6 log10 U''=233.0976
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/def3_t347_def.txt:3:BUDGET detail: mitm space=3.297e+18 left=0 right=0 (limits: space 6e+16, right 5e+09, case budget 5000000) words=1
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/def3_t347_def.txt:4:rep0: wrap=0 words=1 (notappl=0 taubad=0) T=7 units=19 space=0 |G|=0 shadow=0 compat(word,child)=0 notshadow_compat=0 passchain=0 windows=0 alive=0 wordsalive=0 notshadow_alive=0 win_budget=0
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/def3_t347_def.txt:5:VERDICT BUDGET log10 U''=233.0976 [0s]
+research/intake/persistence/tier0-opt/tierc-r2bill/runs/def3_t347_def.txt:7:0 of 1 representations closed [0s]

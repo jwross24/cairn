@@ -1,0 +1,869 @@
+                                         Skolem Meets Schanuel
+                                         Yuri Bilu !
+                                         Institut de Mathématiques de Bordeaux, Université de Bordeaux and CNRS, Talence, France
+                                         Florian Luca
+                                         School of Mathematics, University of the Witwatersrand, Johannesburg, South Africa
+                                         Research Group in Algebraic Structures & Applications, King Abdulaziz University, Saudi Arabia
+                                         Joris Nieuwveld !
+                                         Max Planck Institute for Software Systems, Saarland Informatics Campus, Germany
+                                         Joël Ouaknine !
+                                         Max Planck Institute for Software Systems, Saarland Informatics Campus, Germany
+                                         David Purser
+                                         University of Warsaw, Poland
+
+
+
+
+arXiv:2204.13417v1 [cs.LO] 28 Apr 2022
+                                         James Worrell !
+                                         Department of Computer Science, University of Oxford, UK
+
+                                                Abstract
+                                         The celebrated Skolem-Mahler-Lech Theorem states that the set of zeros of a linear recurrence
+                                         sequence is the union of a finite set and finitely many arithmetic progressions. The corresponding
+                                         computational question, the Skolem Problem, asks to determine whether a given linear recurrence
+                                         sequence has a zero term. Although the Skolem-Mahler-Lech Theorem is almost 90 years old,
+                                         decidability of the Skolem Problem remains open. The main contribution of this paper is an
+                                         algorithm to solve the Skolem Problem for simple linear recurrence sequences (those with simple
+                                         characteristic roots). Whenever the algorithm terminates, it produces a stand-alone certificate that
+                                         its output is correct—a set of zeros together with a collection of witnesses that no further zeros
+                                         exist. We give a proof that the algorithm always terminates assuming two classical number-theoretic
+                                         conjectures: the Skolem Conjecture (also known as the Exponential Local-Global Principle) and
+                                         the p-adic Schanuel Conjecture. Preliminary experiments with an implementation of this algorithm
+                                         within the tool Skolem point to the practical applicability of this method.
+
+                                         2012 ACM Subject Classification Theory of computation → Logic and verification
+
+                                         Keywords and phrases Skolem Problem, Skolem Conjecture, Exponential Local-Global Principle,
+                                         p-adic Schanuel Conjecture
+
+                                         Funding Joël Ouaknine: Also affiliated with Keble College, Oxford as emmy.network Fellow.
+                                         DFG grant 389792660 as part of TRR 248 (see https://perspicuous-computing.science).
+
+
+                                          1      Introduction
+
+                                         1.1     The Skolem Problem
+                                         A linear recurrence sequence (LRS) u = hun i∞
+                                                                                     n=0 is a sequence of rational numbers satisfying
+                                         the equation
+
+                                              un+d = c1 un+d−1 + · · · + cd−1 un+1 + cd un                                               (1)
+
+                                         for all n ∈ N, where the coefficients c1 , . . . , cd are rational numbers and cd 6= 0. We say that
+                                         the above recurrence has order d. We moreover say that an LRS is simple if the characteristic
+                                         polynomial of its minimal-order recurrence has simple roots.
+                                             The celebrated theorem of Skolem, Mahler, and Lech (see [15]) describes the structure of
+                                         the set {n ∈ N : un = 0} of zero terms of an LRS as follows:
+2   Skolem Meets Schanuel
+
+
+    I Theorem 1. Given a linear recurrence sequence u = hun i∞    n=0 , the set of zero terms is a
+    union of finitely many arithmetic progressions, together with a finite set.
+
+        The statement of Theorem 1 can be refined by considering the notion of non-degeneracy of
+    an LRS. An LRS is non-degenerate if in its minimal recurrence the quotient of no two distinct
+    roots of the characteristic polynomial is a root of unity. A given LRS can be effectively
+    decomposed as an interleaving of finitely many non-degenerate sequences, some of which may
+    be identically zero. The core of the Skolem-Mahler-Lech Theorem is the fact that a non-zero
+    non-degenerate linear recurrence sequence has finitely many zero terms. Unfortunately, all
+    known proofs of this last assertion are ineffective: it is not known how to compute the finite
+    set of zeros of a given non-degenerate linear recurrence sequence. It is readily seen that the
+    existence of a procedure to do so is equivalent to the existence of a procedure to decide
+    whether an arbitrary given LRS has a zero term. The problem of deciding whether an LRS
+    has a zero term is variously known as the Skolem Problem or the Skolem-Pisot Problem.
+        Decidability of the Skolem Problem is known only for certain special cases, based on the
+    relative order of the absolute values of the characteristic roots. Say that a characteristic root
+    λ is dominant if its absolute value is maximal among all the characteristic roots. Decidability
+    is known in case there are at most 3 dominant characteristic roots, and also for recurrences
+    of order at most 4 [26, 34]. However for LRS of order 5 it is not currently known how to
+    decide the Skolem Problem.
+        The Skolem Problem, along with closely related questions such as the Positivity Problem,
+    is intimately connected to various fundamental topics in program analysis and automated
+    verification, such as the termination and model checking of simple while loops [3, 18, 27] or
+    the algorithmic analysis of stochastic systems [2, 1, 5, 13, 28]. It also appears in a variety of
+    other contexts, such as formal power series [29, 33] and control theory [9, 16]. The Skolem
+    Problem is often used as a reference to establish hardness of other open decision problems; in
+    addition to some of the previously cited papers, the articles [4, 14], for example, specifically
+    invoke hardness of the Skolem Problem for simple LRS of order 5. Thus far, the only known
+    complexity bound for the Skolem Problem is NP-hardness [10].
+
+
+    1.2    The Skolem Conjecture and the Bi-Skolem Problem
+    The notion of linear recurrence equally well makes sense for a bi-infinite sequence u =
+    hun i∞n=−∞ of rational numbers: one defines u to be a linear recurrent bi-sequence (LRBS)
+    if it satisfies the recurrence (1) for all n ∈ Z. Note that every LRS u extends uniquely to
+    an LRBS satisfying the same recurrence (one obtains such an extension by “running the
+    recurrence backwards”). The notions of simplicity and non-degeneracy carry over in the
+    obvious way to LRBS. We remark also that the Skolem-Mahler-Lech Theorem remains
+    valid for LRBS—a non-degenerate LRBS has finitely many zeros. The analog of the Skolem
+    Problem for LRBS is the Bi-Skolem Problem, which asks, for a given LRBS u = hun i∞            n=−∞ ,
+    whether there exists n ∈ Z with un = 0.
+         A major motivation to consider the Bi-Skolem Problem is the existence of the Exponential
+    Local-Global Principle, a conjecture introduced by Thoralf Skolem in 1937 [32]. To formulate
+    the conjecture we first make some observations about the value set of an LRBS. Given a
+    non-zero integer b, let Z[ 1b ] be the subring of Q obtained by adjoining 1b to Z. We note
+    that every rational LRBS takes values in Z[ 1b ] for some b. Indeed, if u = hun i∞     n=−∞ satisfies
+    recurrence (1) and Z[ 1b ] contains the coefficients c1 , . . . , cd , the reciprocal c−1
+                                                                                           d  of the last
+    coefficient, and the initial values u0 , . . . , ud−1 , then by running the recurrence forwards and
+    backwards from the initial values we see that un ∈ Z[ 1b ] for all n ∈ Z.
+Y. Bilu, F. Luca, J. Nieuwveld, J. Ouaknine, D. Purser, and J. Worrell                              3
+
+
+I Skolem Conjecture. Let u be a simple rational LRBS taking values in the ring Z[ 1b ] for
+some integer b. Then u has no zero iff, for some integer m ≥ 2 with gcd(b, m) = 1, we have
+that un 6≡ 0 mod m for all n ∈ Z.
+
+    In other words, the Skolem Conjecture asserts that if a simple LRBS fails to have a zero,
+then this is witnessed modulo m for some m. The truth of this conjecture immediately entails
+the existence of an algorithm to solve the Bi-Skolem Problem for simple LRBS: simply search
+in parallel either for a zero of the LRBS, or for a number m substantiating the absence of
+zeros. If the Skolem Conjecture holds, then the search must necessarily terminate in finite
+time.
+    There exists a substantial body of literature on the Skolem Conjecture, including proofs
+of a variety of special cases. In particular, the Skolem Conjecture has been shown to hold
+for simple LRBS of order 2 [6], and for certain families of LRBS of order 3 [30, 31]. In a
+different but related vein, Bertók and Hajdu have shown that, in some sense, the Skolem
+Conjecture is valid in “almost all” instances [7, 8].
+
+1.3    Main Results
+It is immediate that the Bi-Skolem Problem reduces to the Skolem Problem: an LRBS
+hun i∞                                                                                        ∞
+      n=−∞ has a zero term if and only if at least one of the one-way infinite sequences hun in=0
+            ∞
+and hu−n in=0 , both of which are LRS, has a zero term. However it is open whether there is a
+reduction in the other direction (equivalently, it is open whether an oracle for the Bi-Skolem
+Problem can be used to determine all the zeros of a non-degenerate LRBS). Indeed, an
+oracle for the Bi-Skolem Problem would appear to be of little utility in deciding the Skolem
+Problem for an LRS whose bi-completion happens to harbour a zero at a negative index. It
+is likewise not known (in spite of the similar nomenclature) whether the truth of the Skolem
+Conjecture implies decidability of the Skolem Problem.
+     Our first main result is as follows:
+
+I Theorem 2. The Skolem Problem reduces to the Bi-Skolem Problem subject to the weak
+p-adic Schanuel Conjecture.
+
+Schanuel’s Conjecture [21, Pages 30-31] is a unifying conjecture in transcendental number
+theory that plays a key role in the study of the exponential function over both the real and
+complex numbers. In particular, a celebrated paper of Macintyre and Wilkie [23] obtains
+decidability of the first-order theory of the structure (R; <, · , +, exp) assuming Schanuel’s
+Conjecture over R. A p-adic version of the Schanuel Conjecture, referring to the exponential
+function on the ring Zp of p-adic integers, was formulated in [12]. This conjecture was shown
+in [24] to imply decidability of the first-order theory of the structure (Zp ; <, · , +, exp).
+    Since the reduction in Theorem 2 specialises to simple LRBS we obtain:
+
+I Theorem 3. The Skolem Problem for simple LRS is decidable subject to the weak p-adic
+Schanuel Conjecture and the Skolem Conjecture.
+
+The proof of Theorem 3 gives an algorithm that computes the set of zeros of a non-degenerate
+simple LRBS. The algorithm moreover produces an unconditional certificate that its output
+is correct, i.e., that all zeros have been found. This certificate consists of a partition of the
+input LRBS into finitely many subsequences such that each subsequence contains at most
+one zero. For a subsequence with no zero, the algorithm finds an integer m such that the
+subsequence is non-zero modulo m; for a subsequence with a zero, the algorithm provides a
+prime p and a subsequence of this subsequence with exactly one zero as p divides the other
+4   Skolem Meets Schanuel
+
+
+    terms a well-described (bounded) number of times. The conjectural aspect of Theorem 3
+    solely concerns the proof that the algorithm terminates on all input sequences.
+        We have implemented our algorithm within the Skolem tool,1 which enumerates the set
+    of zeros of a given non-degenerate simple LRS, and produces an independent (conjecture-free)
+    certificate that all zeros have been found. Preliminary experiments, which we present in
+    Section 5, point to the practical applicability of our algorithm.
+
+
+    1.4         Related Work
+    The decidability of the Skolem Problem is generally considered to have been open since the
+    early 1930s, as the p-adic techniques underpinning the Skolem-Mahler-Lech Theorem were
+    well understood already at the time not to be effective. As noted earlier, a breakthrough
+    establishing decidability at order 4 occurred in the mid-1980s [26, 34], making key use of
+    Baker’s theorem on linear forms in logarithms of algebraic numbers. (It is perhaps worth
+    noting that the attendant algorithms are however unlikely to be implementable in practice,
+    as the constants involved are huge.) Very recently, we have shown that the Skolem Problem
+    is decidable at order 5 assuming only the Skolem Conjecture; and in the same paper we also
+    obtained unconditional decidability for reversible LRS2 of order 7 or less [22]. In the present
+    paper, we improve on the former result by establishing a Turing reduction from the Skolem
+    Problem at order 5 to the Bi-Skolem Problem for simple LRBS of order 5; this is the content
+    of Theorem 12.
+
+
+        2       Technical Background
+
+    2.1         Computation in Number Fields
+    A number field K is a finite-degree extension of Q. For computational purposes, such a field
+    can be represented in the form Q[X]/(g(X)), where g(X) is the minimal polynomial of a
+    primitive element of K. With such a representation it is straightforward to do arithmetic
+    in K, including solving systems of linear equations with coefficients in K. Moreover, given
+    a polynomial f (X) ∈ Q[X], one can compute a representation in the above form of the
+    splitting field K of f over Q, together with representations of the roots of f as elements of
+    K [20].
+         In addition to basic arithmetic and linear algebra in K, we wish to determine whether
+    some given elements λ1 , . . . , λs ∈ K are multiplicatively independent and, if not, to exhibit
+    a1 , . . . , as ∈ Z such that λa1 1 · · · λams = 1. For this we can use the following result, which shows
+    that if such a multiplicative relation exists then there exists one in which the exponents
+    a1 , . . . , am have absolute value at most B for some bound B computable from the height of
+    the λi and the degree of the number field K.
+
+    I Theorem 4 (Masser [25]). Let K be a number field of degree D over Q. For s ≥ 1 let
+    λ1 , . . . , λs be non-zero elements of K having height at most h over Q. Then the group of
+    multiplicative relations
+
+            L = {(k1 , . . . , ks ) ∈ Zs : λk11 · · · λks s = 1}                                         (2)
+
+
+    1
+        Skolem can be experimented with online at https://skolem.mpi-sws.org/ .
+    2
+        An integer LRS is reversible if its completion as an LRBS only takes on integer values.
+Y. Bilu, F. Luca, J. Nieuwveld, J. Ouaknine, D. Purser, and J. Worrell                                 5
+
+
+is generated (as an additive subgroup of Zs ) by a collection of vectors all of whose entries
+have absolute value at most
+                         (log(D + 2))3s−3
+     (csh)s−1 Ds−1                          ,
+                       (log log(D + 2))3s−4
+for some absolute constant c.
+
+2.2      p-adic Numbers
+Let p bea prime. Define the p-adic valuation vp : Q → Z ∪ {∞} by vp (0) = ∞ and
+vp pν · ab = ν for all a, b ∈ Z \ {0} such that gcd(ab, p) = 1. In other words, vp (x) gives
+the exponent of p as a divisor of x ∈ Q. The map vp determines an absolute value | · |p on
+Q, where |x|p := p−vp (x) (with the convention that |0|p = p−∞ = 0). Due to the fact that
+vp (a + b) ≥ min(vp (a), vp (b)), we have the strong triangle equality: |a + b|p ≤ max(|a|p , |b|p )
+for all a, b ∈ Q. In other words, | · |p is a non-Archimedean absolute value. The field
+Qp of p-adic numbers is the completion of Q with respect to | · |p . The absolute value
+| · |p extends to a non-Archimedean absolute value on Qp . The ring of p-adic integers is
+Zp := {x ∈ Qp : |x|p ≤ 1}. The ring Zp contains a unique maximal ideal pZp , with the
+quotient Zp /pZp being isomorphic to Fp (the finite field with p elements). When we refer to
+elements of Zp modulo p we refer to their image under this quotient map.
+                                                                          P∞
+     Given a sequence of numbers han i∞    n=0 in Zp , the infinite sum      n=0 an converges to
+an element of Zp if and only if |an |p → 0 (equivalently, vp (an ) → ∞) as n → ∞. It
+follows that given a sequence han i∞  n=0 in Zp with |an |p → 0, the corresponding power series
+          P∞
+f (X) = j=0 aj X j defines a function f : Zp → Zp .
+     Consider a monic polynomial g(X) ∈ Z[X] with non-zero discriminant ∆(g). Let p be a
+prime that does not divide ∆(g). Denote by g(X) ∈ Fp [X] the polynomial obtained from
+g by replacing each coefficient with its residue modulo p. It is well known that a sufficient
+condition for g to split completely over Zp is that g split over Fp . Indeed, in this situation
+one can use Hensel’s Lemma [17, Theorem 3.4.1] to “lift” each of the roots of g in Fp to a
+distinct root in Zp . Moreover, by the Chebotarev density theorem [19] there are infinitely
+many primes p for which g splits over Fp . Hence there are infinitely many primes p such
+that g splits over Zp . Note that the last statement holds even without the assumption that
+                                                            g
+∆(g) 6= 0, since g ∈ Z[X] splits over Zp whenever gcd(g,g     0 ) ∈ Z[X] splits over Zp (and the
+
+latter has non-zero discriminant).
+     Let p be an odd prime.3 The p-adic exponential is defined by the power series
+                ∞
+                X xk
+     exp(x) =               ,
+                       k!
+                k=0
+
+which converges for all x ∈ pZp . The p-adic logarithm is defined by the power series
+                ∞
+                X               (x − 1)k
+     log(x) =         (−1)k+1            ,
+                                   k
+                k=0
+
+which converges for all x ∈ 1 + pZp . For x, y ∈ pZp we have exp(x + y) = exp(x) exp(y) and
+for x, y ∈ 1 + pZp we have log(xy) = log(x) + log(y). Indeed we have that exp and log yield
+mutually inverse isomorphisms between the additive group pZp and multiplicative group
+1 + pZp .
+
+
+3
+    We omit the prime p = 2 to avoid special cases in the facts below.
+6   Skolem Meets Schanuel
+
+
+       Schanuel’s Conjecture for the complex numbers is a powerful unifying principle in
+    transcendence theory. We will need the following p-adic version of the weak form of Schanuel’s
+    Conjecture, which can be found, e.g., as [12, Conjecture 3.10].
+
+    I Conjecture 5. (Weak p-adic Schanuel Conjecture.) Let α1 , . . . , αs ∈ 1 + pZp be such that
+    log α1 , . . . , log αs are linearly independent over Q. Then log α1 , . . . , log αs are algebraically
+    independent over Q, that is, for every non-zero polynomial P ∈ Qp [X1 , . . . , Xs ] whose
+    coefficients are algebraic over Q, it holds that P (log α1 , . . . , log αs ) 6= 0.
+
+       A known special case of Conjecture 5 is the following result of Brumer [11], which is a
+    p-adic analog of Baker’s Theorem on linear independence of logarithms of algebraic numbers.
+
+
+    I Theorem 6. Let α1 , . . . , αs ∈ 1 + pZp be algebraic over Q and such that log α1 , . . . , log αs
+    are linearly independent over Q. Then β0 +β1 log α1 +· · ·+βs log αs 6= 0 for all β0 , . . . , βs ∈ Qp
+    that are algebraic over Q and not all zero.
+
+
+     3      p-adic Power-Series Representation of LRBS
+
+    Let u = hun i∞
+                 n=−∞ be an LRBS of rational numbers satisfying the linear recurrence
+
+
+         un+d = c1 un−d−1 + · · · + cd un          (n ∈ Z),
+
+    where cd 6= 0. For the purposes of computing the zeros of u we can assume without loss
+    of generality that the coefficients c1 , . . . , cd of the recurrence are integers. (It is easy to see
+    that for any integer ` such that `ci ∈ Z for i ∈ {1, . . . , d}, the scaled sequence h`n un i∞  n=−∞
+    satisfies an integer recurrence.) Write g(X) := X d − c1 X d−1 − · · · − cd for the characteristic
+    polynomial of the recurrence and write
+
+                        ···
+                                              
+                c1                cd−1     cd
+              1        ···         0      0
+         A :=  .
+                                              
+                                    ..      .. 
+               ..                   .       .
+                  0     ···        1       0
+
+    for the companion matrix. Setting
+                                                                             T
+         α := 0       ···     0    1       and β := ud−1      ···   u1   u0        ,
+
+    we have the matrix-exponential representation un = αAn β for all n ∈ Z.
+        The key tool in our approach—which also underlies the proof of the Skolem-Mahler-Lech
+                                                                                  P∞
+    Theorem—is the representation of the LRBS u in terms of a power series f (X) = j=0 aj X j
+    with coefficients in Zp . In defining f we work with an odd prime p such that (i) p does
+    not          constant term cd of the recurrence; (ii) p does not divide the discriminant
+       divide the
+                g
+    ∆ gcd(g,g      0 ) ; (iii) the characteristic polynomial g splits over Zp . As explained in Section 2.2,
+
+    there areinfinitely many such primes. Moreover, for a particular prime p that does not
+                         g
+    divide ∆ gcd(g,g         0 ) , we can easily verify whether g splits over Zp , since this is equivalent to
+         g
+    gcd(g,g 0 ) splitting over Fp .
+         Write λ1 , . . . , λs ∈ Zp for the distinct roots of g. Let K be the subfield of Qp generated by
+    λ1 , . . . , λs . Then K is a number field and thus we can compute symbolically in K as described
+Y. Bilu, F. Luca, J. Nieuwveld, J. Ouaknine, D. Purser, and J. Worrell                                7
+
+
+in Section 2.1. It is well known that the sequence u admits an exponential polynomial
+representation
+          s
+          X
+   un =         Qi (n)λni     (n ∈ Z) ,                                                        (3)
+          i=1
+
+where Qi ∈ K[X] has degree strictly less than the multiplicity of λi as a root of g. The
+coefficients of each polynomial Qi can be computed as the unique solution of the system of
+linear equations that arises by substituting n = 0, . . . , d − 1 in Equation (3) (where, recall, d
+is the order of the recurrence).
+    The companion matrix has determinant det(A) = ±cd , which is non-zero modulo p; hence
+A is invertible modulo p. Let L be the least positive integer such that AL ≡ I mod p. Being
+an eigenvalue of AL , λL   i ≡ 1 mod p for all i ∈ {1, . . . , s} and hence the p-adic logarithm
+log λL
+     i  is defined for all  i ∈ {1, . . . , s}. We thus obtain the following representation of the
+subsequence huLn i∞ n=−∞ in terms of the p-adic exponential and logarithm functions:
+           s
+           X                           s
+                                       X
+   uLn =         Qi (Ln)λLn
+                         i  =                Qi (Ln) exp(n log λL
+                                                                i ).
+           i=1                         i=1
+                                                    P∞            j
+Now consider the power series f (X) =                  j=0 aj X       such that
+              s
+              X
+   f (x) :=         Qi (Lx) exp(x log λL
+                                       i )                                                     (4)
+              i=1
+
+for all x ∈ Zp . Then we have uLn = f (n) for all n ∈ Z. Moreover, since aj = j!1 f (j) (0), by
+taking derivatives in (4) we obtain the following expression for the coefficients of f :
+              s   j  
+          1 XX j             (k)          j−k
+    aj =                Lk Qi (0) log λLi      .                                            (5)
+          j! i=1     k
+                    k=0
+
+    In the remainder of this section we give an alternative formula for the coefficients of f as
+p-adically convergent sums of rational numbers. This provides a simple method to compute
+vp (aj ) that avoids computing p-adic approximations of the characteristic roots, as would be
+needed if we were to directly use (5).
+    Recall that we have AL ≡ I mod p. Let us say that AL = I + pB for some integer matrix
+B. Then we have:
+   uLn    =      αALn β
+          =      α(I + pB)n β
+                  n  
+                 X    n k
+          =              p αB k β
+                      k
+                 k=0
+                  n
+                 X     n(n − 1) . . . (n − k + 1) k
+          =                                      p αB k β
+                                   k!
+                 k=0
+                  ∞
+                 X     n(n − 1) . . . (n − k + 1) k
+          =                                      p αB k β
+                                   k!
+                 k=0
+                  ∞ X∞
+                 X                    pk
+          =                 ck,j nj          for certain ck,j ∈ Z with ck,j = 0 for j > k
+                                      k!
+                 k=0 j=0
+                  ∞ X ∞
+                 X                    pk
+          =                 ck,j nj      .
+                 j=0 k=j
+                                      k!
+8   Skolem Meets Schanuel
+
+
+    It remains to see why one can reverse the order of summation in the last line above and why
+    the resulting sums converge in Zp . For this we can apply [17, Proposition 4.1.4], for which
+                                          k
+    we require that the summand ck,j nj pk! converge to 0 as j → ∞ and converge to 0 uniformly
+                                                                                 k
+    in j as k → ∞. But this precondition follows from the fact that vp (k!) < p−1   , from which
+                        k
+                           
+                      jp     (p−2)k
+    we have vp ck,j n k! ≥ p−1 for all k ≥ j.
+                                                P∞
+        Now consider the power series fe(X) :=        bj X j where
+                                                             j=0
+
+                 ∞
+                 X            pk
+         bj :=         ck,j      ∈ Zp .                                                             (6)
+                              k!
+                 k=j
+
+
+    By the above considerations we have that vp (bj ) ≥ (p−2)j
+                                                           p−1 and hence f converges on Zp and
+                                                                           e
+    satisfies fe(n) = uLn for all n ∈ Z. In particular, the power series f and fe agree on Z and
+    hence (e.g., by [17, Proposition 4.4.3]) are identical, i.e., aj = bj for all j ∈ N. Thus we can
+    use Equation (6) to exactly compute vp (aj ) for any j such that aj 6= 0.
+
+
+     4       Computing all the Zeros of an LRBS
+    In this section we show, assuming the weak p-adic Schanuel Conjecture, that the set of all
+    zeros of a non-degenerate LRBS is computable using an oracle for the Bi-Skolem Problem. In
+    particular, this gives a Turing reduction of the Skolem Problem to the Bi-Skolem Problem.
+
+    I Proposition 7. Let f : Zp → Zp be given by a convergent p-adic power series f (X) =
+    P∞        k
+      k=0 ak X , with coefficients in Zp . Suppose that ` is a positive integer such that a0 = · · · =
+    a`−1 = 0 and a` 6= 0. Then, writing ν := vp (a` ), we have f (pν+1 x) 6= 0 for all non-zero
+    x ∈ Zp .
+
+    Proof. Let x ∈ Zp be non-zero. For every m > ` we have
+         vp (a` (pν+1 x)` )      = ν + `(ν + 1) + vp (x` )
+                                 <   m(ν + 1) + vp (xm ) (since ` < m and x 6= 0)
+                                 ≤ vp (am (pν+1 x)m ) .
+    It follows that for all m ≥ `,
+             m
+                             !
+             X
+                     ν+1 k
+        vp      ak (p    x)    = vp (a` (pν+1 x)` ) .
+              k=0
+
+    Letting m tend to infinity, we have vp (f (pν+1 x)) = vp (a` (pν+1 x)` ) < ∞ and we conclude
+    that f (pν+1 x) 6= 0.                                                                     J
+
+    I Proposition 8. Let u = hun i∞   n=−∞ be a non-zero LRBS consisting of rational numbers.
+    Assuming the weak p-adic Schanuel Conjecture, one can compute a positive integer M such
+    that uM n 6= 0 for all n ∈ Z \ {0}.
+
+    Proof. As explained in Section 3, there exists a prime p and a positive integer L such that
+                                                                         P∞
+    uLn = f (n) for all n ∈ Z, for the p-adic power series f (X) = j=0 aj X j whose coefficients
+    are given by the formula (4). Recall that in this formula the λi are the characteristic roots
+    of u and the Qi are the coefficients appearing in the exponential polynomial formula (3).
+        Pick a maximal multiplicatively independent subset of characteristic roots. Without loss
+    of generality we can write this set as {λ1 , . . . , λt } for some t ≤ s. As discussed in Section 2,
+Y. Bilu, F. Luca, J. Nieuwveld, J. Ouaknine, D. Purser, and J. Worrell                                        9
+
+
+given the characteristic polynomial of the recurrence, we can compute such a set, as well as
+integers mi and ni,j for i ∈ {1, . . . , s} and j ∈ {1, . . . , t}, where the mi are non-zero, such
+that for all i ∈ {1, . . . , s} we have
+               n          n
+    λm
+     i
+       i
+         = λ1 i,1 · · · λt i,t .
+
+Raising the left- and right-hand sides in the above equation to the power L and then taking
+logs, we get that
+                   ni,1                ni,t
+    log λL
+         i =            log λL
+                             1 + ··· +      log λL
+                                                 t
+                   mi                  mi
+
+for all i ∈ {1, . . . , s}. In other words, for all i ∈ {1, . . . , s} we have that log λL            i =
+`i (log λL                L
+         1 , . . . , log λt ) for an effectively computable linear form `i (X1 , . . . , Xt ) with rational
+coefficients.
+     For j ∈ N, define Fj ∈ K[X1 , . . . , Xt ] by
+
+                                 s  j  
+                             1 XX j           (k)
+    Fj (X1 , . . . , Xt ) :=              Lk Qi (0)`i (X1 , . . . , Xt )j−k .
+                             j! i=1    k
+                                   k=0
+
+Then by Equation (5) we have
+
+    aj = Fj log λL                L
+                                    
+                 1 , . . . , log λt   .                                                                (7)
+
+We claim that aj 6= 0 if Fj is not identically zero. Since the coefficients of Fj are algebraic
+over Q and the set {log λ1 , . . . , log λt } is linearly independent over Q, the claim follows
+immediately from Equation 7 and the weak p-adic Schanuel Conjecture (Conjecture 5).
+    We can now use the following procedure to compute a positive integer M such that
+uM n 6= 0 for all n ∈ Z:
+ 1. Successively compute the polynomials F0 , F1 , . . . .
+ 2. Let j0 be the least index j such that Fj is not identically zero. Compute ν := vp (aj0 )
+    using the series (6). The weak p-adic Schanuel Conjecture implies that aj0 6= 0 and hence
+    the computation of vp (aj0 ) terminates.
+ 3. Set M := Lpν+1 . Applying Proposition 7, we have uM n 6= 0 for all non-zero integers n.
+
+   Note that j0 is well defined in Line 2, since if all the aj were zero, then u would be the
+identically zero sequence, contradicting our initial assumption.                           J
+
+    A couple of remarks about the proof of Proposition 8 are in order.
+I Remark 9. Observe that the p-adic Schanuel Conjecture is only required for termination of
+the procedure described at the end of the proof. If the procedure terminates then it is certain
+that aj0 is the first non-zero coefficient of the power series (6) and hence the outputted value
+of M is guaranteed to be such that uM n 6= 0 for all non-zero integers n.
+                                                                           (k)
+I Remark 10. Examining the expression (5) and noting that Qi (0) = 0 for k > deg(Qi ),
+we see that the sequence hj!aj i∞
+                                j=0 is given by an exponential polynomial corresponding to
+a (non-rational) LRS of order d and hence at least one of a0 , a1 , . . . , ad−1 is non-zero. This
+means that the index j0 in Line 2 of the above procedure is at most d − 1.
+
+I Theorem 11. Assuming the weak p-adic Schanuel Conjecture, there is a Turing reduction
+from the Skolem Problem to the Bi-Skolem Problem.
+10   Skolem Meets Schanuel
+
+
+     Proof. We present a recursive procedure that uses an oracle for the Bi-Skolem Problem to
+     compute all the zeros of a non-degenerate LRBS that is not identically zero.
+         Given a non-degenerate LRBS u = hun i∞        n=−∞ , we use the oracle for the Bi-Skolem
+     Problem to determine whether there exists n ∈ Z with un = 0. If the oracle outputs that
+     no such n exists then the procedure terminates. Otherwise one searches for n0 ∈ Z such
+     that un0 = 0; clearly the search is guaranteed to terminate. Having found n0 , by reindexing
+     the sequence u we can suppose that n0 = 0. Now we use Proposition 7 to compute a
+     positive integer M such that uM n 6= 0 for all n 6= 0. We then divide the sequence u into
+     M subsequences u(0) , . . . , u(M −1) , where for j ∈ {0, . . . , M − 1}, the j-th subsequence is
+                (j)
+     given by un = uM n+j for all n ∈ N. We know that n = 0 is the only zero of u(0) . We now
+     recursively call the procedure to find all zeros of the remaining subsequences u(1) , . . . , u(M −1) .
+     Observe that the computation must terminate since each recursive call involves discovering a
+     new zero of the original sequence u, and by the version of the Skolem-Mahler-Lech Theorem
+     for LRBS, there are only finitely many such zeros.                                                 J
+
+         If we restrict to recurrences of order at most 5 then we obtain an unconditional version
+     of Theorem 11.
+
+     I Theorem 12. There is a Turing reduction from the Skolem Problem for LRS of order at
+     most 5 to the Bi-Skolem Problem for simple LRBS of order at most 5.
+
+     Proof. As summarised in Appendix A, the Skolem Problem can be decided for all LRS
+                                                                                               P5
+     hun i∞
+          n=0 of order at most 5 except those that (after scaling) have a closed form un =
+                                                                                                         n
+                                                                                                 i=1 αi λi
+     satisfying the following three conditions, where λ1 , . . . , λ5 lie in the ring of integers OK of a
+     number field K:
+     1. α1 6= −α3 ;
+     2. λ1 λ2 = λ3 λ4 ;
+     3. there is a prime ideal p in OK that divides λ1 and λ3 but not λ2 , λ4 , λ5 .
+         The theorem at hand is proven using the procedure described in the proof of Theorem 11,
+     which uses as a subroutine the procedure described in Proposition 8. To avoid relying on the
+     weak p-adic Schanuel Conjecture, it suffices to give an unconditional proof of the termination
+     of the latter procedure when invoked on LRBS whose closed-form representation satisfies
+     the above conditions. In other words, we must show that for such LRBS one can compute a
+     positive integer M such that uM n 6= 0 for all n ∈ Z.
+         Let p be a prime such that there is an embedding of K into Qp . Recall from Section 3
+     that there exists a positive integer L such that uLn = f (n) for a p-adic power series
+               P∞         j
+                                             P5             L
+     f (X) =      j=0 aj X such that a1 =       i=1 αi log λi . The termination of the procedure
+     described in the proof of Proposition 8 will be assured if a1 6= 0. We claim that for an LRBS
+                                                            P5
+     satisfying the above three conditions, one has a1 = i=1 αi log λL   i 6= 0.
+                                                                P5
+         To prove the claim, suppose for a contradiction that i=1 αi log λL   i = 0. Raising to the
+     L-th power and then taking logarithms in Condition 2 above, we also have log λL            L
+                                                                                       1 + log λ2 −
+          L         L                                                             L
+     log λ3 − log λ4 = 0. Combining the two previous equations to cancel log λ1 we have
+
+        (α2 − α1 ) log λL                   L                   L           L
+                        2 + (α3 + α1 ) log λ3 + (α4 + α1 ) log λ4 + α5 log λ5 = 0 .                     (8)
+
+        From Condition 1 (α1 6= −α3 ), we have that the coefficient of log λL3 in Equation (8) is
+     non-zero. Applying Theorem 6, possibly several times, we eventually obtain an equation
+     P5            L
+       i=2 βi log λi = 0 such that the βi are integers and β3 6= 0. Equivalently, we have a
+     multiplicative relation among the characteristic roots that involves λ3 but not λ1 . But this
+     contradicts Condition 3 and the proof is concluded.                                        J
+Y. Bilu, F. Luca, J. Nieuwveld, J. Ouaknine, D. Purser, and J. Worrell                                 11
+
+
+I Theorem 13. The Skolem Problem for simple LRS is decidable assuming the Skolem
+Conjecture and the weak p-adic Schanuel Conjecture. The Skolem Problem for LRS of order
+at most 5 is decidable assuming the Skolem Conjecture.
+I Remark 14. Given that the Skolem Conjecture remains open in general, it is worth
+remarking that the proof of Theorem 13 sustains the following more general formulation:
+Consider a class C of simple LRBS that is closed under taking subsequences and under
+translations. If the Skolem Conjecture holds for C then, assuming the weak p-adic Schanuel
+Conjecture, the Skolem Problem is decidable over LRS in C.
+
+ 5      The Skolem Tool
+We implemented our algorithm in the Skolem tool, which finds all zeros (at both positive and
+negative indices) for simple integer LRS, and produces independent certificates guaranteeing
+that there are no further zeros. Even though we do not have complexity bounds, Skolem
+can efficiently handle many interesting examples, including several from the literature for
+which no proof technique was previously known to apply. Our tool is available online
+at https://skolem.mpi-sws.org and is accompanied by several examples which can be
+experimented with on the spot.
+    The implementation is written in Python, using the SageMath computer-algebra extension.
+This allows for the efficient and exact manipulation of mathematical objects, including
+elements of Zp . Python handles integers of arbitrary sizes seamlessly, making it especially
+suitable for our purposes, since even small examples can give rise to very large numbers
+within the inner workings of our algorithm.
+I Example 15. Consider the LRS from [22, Example 2.4]:
+
+     un+5 = 9un+4 − 10un+3 + 522un+2 − 4745un+1 + 4225un
+
+with initial values (for n = 0, 1, 2, 3, 4) of h−30, −27, 0, 469, 1762i. It is shown in [22] to have
+a unique zero at index 2 by being non-zero modulo 12625 at all indices larger than 2. The
+Skolem tool establishes this in a simpler way: after finding u2 = 0, the tool calculates that
+there are no zeros in hu2+14n i∞ n=−∞ for n 6= 0. Then the tool computes that huk+14n in=−∞
+                                                                                              ∞
+
+is non-zero modulo 29 for each even k 6= 2, and non-zero modulo 2 for each odd k (where
+0 ≤ k ≤ 13). Observe that the computed modulo classes, and thus the resulting certificate,
+is much smaller than those arising from 12625 as used in [22].
+I Example 16. Consider the LRS from [22, Example 2.5]:
+
+     un+6 = 6un+5 − 26un+4 + 66un+3 − 130un+2 + 150un+1 − 125un
+
+with initial values (for n = 0, 1, 2, 3, 4, 5) of h0, 3, 11, −12, −125, −177i, which was established
+at the time of writing to lie beyond the reach of existing known techniques. The Skolem
+tool is able to show using the methods developed in the present paper that there are indeed
+no further zeros (other than u0 = 0).
+I Example 17. Consider the reversible order-8 LRS from [22, Example 3.5]:
+
+     un+8 = 6un+7 − 25un+6 + 66un+5 − 120un+4 + 150un+3 − 89un+2 + 18un+1 − un
+
+with initial values (for n = 0, . . . , 7) of h0, 0, −48, −120, 0, 520, 624, −2016i, which likewise
+was established at the time to lie beyond the reach of existing techniques. Skolem shows
+that there are no zeros other than those lying at indices 0, 1, and 4.
+12   Skolem Meets Schanuel
+
+
+                            Timeout of 60 seconds                        Timeout of 60 · order seconds
+     Order    Total    Success Degen-   Not Timeout Timeout            Total Success Timeout Timeout
+                               erate simple                %                                           %
+     2         9250     8836     358      50        0  0.00%            1245   1200          0      0.00%
+     3         8995     8919      74       2        0  0.00%            1327   1322          0      0.00%
+     4         9195     9157      35       2        1  0.01%            1395   1392          0      0.00%
+     5         9188     8700      15       3      470  5.12%            1303   1290         11      0.84%
+     6         9172     4905      10       6    4251  46.35%            1318    952        366     27.77%
+     7         9213     1339      12       0    7862  85.34%            1328    310       1016     76.51%
+     8         9157      378      10       0    8769  95.76%            1249     73       1173     93.92%
+     9         9143       87       4       3    9049  98.97%            1330     18       1312     98.65%
+     10        9047       25       8       1    9013  99.62%            1294       7      1286     99.38%
+     Total    82360    42346      526       67    39415     47.86%    11789     6564      5164      43.80%
+        Table 1 Table showing the distribution of outcomes by order. The line between orders 6 and 7
+     shows the boundary beyond which more than 50% of runs timeout. The second experiment shows
+     the timeout rate when the timeout is increased to 60s · order (‘degenerate’ and ‘not-simple’ counts
+     omitted as the distribution is similar to the 60s timeout experiment and unaffected by the timeout).
+
+
+
+
+     5.1     Testing
+     The Skolem tool was tested on a suite of random LRS, with the order taken uniformly
+     between 2 and 10 and the coefficients taken uniformly at random between −20 and 20. Tests
+     were run for 48 hours using a 60-second timeout4 , generating 82367 test instances.5
+         The results are presented in Tables 1 and 2. In particular, from order 7 onwards the tool
+     is unable to handle more than half of the instances within one minute, with the timeout
+     percentage jumping significantly from order 6. Both degenerate and non-simple LRS instances
+     are very sparse, and as expected the higher the order the fewer such instances were randomly
+     produced.
+         The experiments were re-run using a timeout of 60 · order seconds (i.e., ranging from 2–10
+     minutes) in order to determine whether the 60-second timeout was too strict. The timeout
+     percentage does decrease, but the overall pattern shows that the vast majority of LRS of
+     order 7 and above could not be handled to completion before the timeout.
+         Table 2 presents statistical information. In the main experiment the average time is
+     below 9 seconds for order-6 examples that succeed within 60 seconds. However, the decrease
+     from order-8 onwards is explained by there being significantly fewer examples succeeding
+     within 60 seconds. On average there are very few zeros (as can be expected) and those that
+     do occur are almost always those occurring within the initial value (the largest zero is nearly
+     always at index less than the order).
+         The average maximum jump step used (i.e., M such that huM n i has no zeros for n 6= 0
+     and u0 = 0), is observed on average to grow with the order (except at order 10 with only 25
+     successful samples).
+
+
+     4
+       Testing was conducted using SageMath 9.5 in Docker on a Dell PowerEdge M620 blade equipped with
+       2× 3.3 GHz Intel Xeon E5-2667 v2 (2×8 cores, 32 with hyper-threading) and 256GB ram. Testing was
+       restricted to 16 parallel threads (50% of the computer’s resources) for institutional reasons.
+     5
+       7 instances were discarded: 6 happened to be the zero sequence, one resulted in an exception (outside
+       of the main tool code) which was later fixed.
+Y. Bilu, F. Luca, J. Nieuwveld, J. Ouaknine, D. Purser, and J. Worrell                                        13
+
+
+ Order        mean      mean          max      mean      max       mean        mean mean time
+               time count of count of           max      zero        tree       max     (seconds)
+          (seconds)     zeros        zeros      zero index         depth       jump 60s · order
+      2        0.03      0.06            1      0.63        6        1.06       5.11         0.03
+      3        0.05      0.08            3      1.03        5        1.08      13.56         0.06
+      4        0.19      0.10            3      1.58        7        1.10      37.05         0.22
+      5        4.82      0.11            2      2.05        6        1.11    107.39         10.07
+      6        8.95      0.20            2      2.58        7        1.20    254.12         55.36
+      7       11.72      0.30            2      2.80        9        1.30    482.34         70.19
+      8        8.07      0.35            2      3.51        8        1.35    533.92         68.21
+      9        7.38      0.38            1      4.24        8        1.38    689.33        138.40
+     10        5.71      0.40            1      5.20        9        1.40    249.60        112.11
+   Table 2 Table listing statistical information for successful runs, by order. Line between orders
+6 and 7 shows the boundary beyond which more than 50% of runs timeout, resulting in skewed
+analysis for the subsequent rows. For the second experiment, with timeout of 60 · order seconds,
+only the mean time is shown as there are fewer data points.
+
+
+
+
+ A        Hard Cases of the Skolem Problem at Order 5
+As explained in [22], the Skolem Problem is known to be decidable for all LRS of order at most
+5 except for those sequences u = hun i∞n=0 having an exponential-polynomial representation
+
+                         n                   n
+     un = α1 λn1 + α1 λ1 + α2 λn2 + α2 λ2 + α3 λn3                                                     (9)
+
+such that α1 , α2 , α3 , λ1 , λ2 , λ3 ∈ Q satisfy |λ1 | = |λ2 | > |λ3 | and λ1 , λ2 , λ3 are not all units.
+It is further shown in [22] that by scaling sequences of this form we can assume that there
+exists a prime ideal p in the ring of integers of the number field generated by λ1 , λ2 , λ3 such
+that p divides λ1 and λ2 , but not λ1 , λ2 and λ3 .
+    Here we make the further observation that for non-degenerate LRS of the form (9), under
+the assumption that |α1 | = |α2 |, there is a computable upper bound on n such that un = 0.
+    By scaling we can assume without loss of generality that |λ1 | = |λ2 | = 1 and |α1 | = |α2 | =
+1. Thus we can write λ1 = eiθ1 and λ2 = eiθ2 for θ1 , θ2 ∈ [0, 2π) and we can put α1 = eiφ1
+and α2 = eiφ2 for φ1 , φ2 ∈ [0, 2π). Then we have
+                             n                   n
+     un   =   α1 λn1 + α1 λ1 + α2 λn2 + α2 λ2 + α3 λn3
+          =  2 cos(nθ1 + φ1 ) + 2 cos(nθ2 + φ2 ) + α3 λn3
+                                                                      
+                      n(θ1 + θ2 ) + φ1 + φ2         n(θ1 − θ2 ) + φ1 − φ2
+         = 4 cos                              cos                            + α3 λn3 .
+                                2                             2
+                                                                                      
+    By non-degeneracy of u, the terms cos n(θ1 +θ22)+φ1 +φ2 and cos n(θ1 −θ22)+φ1 −φ2 are
+respectively zero for at most one value of n ∈ N. Furthermore, using Baker’s Theorem on
+linear forms in logarithms (see [26, 34] for details), each of these terms has a lower bound
+(when non-zero) of the form ncd for explicitly computable constants c and d. Since |λ3 | < 1 it
+follows that un 6= 0 for all n ≥ n0 for some effective threshold n0 .
+
+
+       References
+ 1     M. Agrawal, S. Akshay, B. Genest, and P. S. Thiagarajan. Approximate verification of the
+       symbolic dynamics of Markov chains. J. ACM, 62(1):2:1–2:34, 2015.
+14   Skolem Meets Schanuel
+
+
+      2   S. Akshay, T. Antonopoulos, J. Ouaknine, and J. Worrell. Reachability problems for Markov
+          chains. Inf. Process. Lett., 115(2):155–158, 2015.
+      3   S. Almagor, T. Karimov, E. Kelmendi, J. Ouaknine, and J. Worrell. Deciding ω-regular
+          properties on linear recurrence sequences. Proc. ACM Program. Lang., 5(POPL), 2021.
+      4   C. Baier, F. Funke, S. Jantsch, T. Karimov, E. Lefaucheux, F. Luca, J. Ouaknine, D. Purser,
+          M. A. Whiteland, and J. Worrell. The Orbit Problem for parametric linear dynamical systems.
+          In 32nd International Conference on Concurrency Theory, CONCUR 2021, volume 203 of
+          LIPIcs, pages 28:1–28:17. Schloss Dagstuhl - Leibniz-Zentrum für Informatik, 2021.
+      5   G. Barthe, C. Jacomme, and S. Kremer. Universal equivalence and majority of probabilistic
+          programs over finite fields. In LICS ’20: 35th Annual ACM/IEEE Symposium on Logic in
+          Computer Science, pages 155–166. ACM, 2020.
+      6   B. Bartolome, Y. Bilu, and F. Luca. On the exponential local-global principle. Acta Arith.,
+          159(2):101–111, 2013.
+      7   Cs. Bertók and L. Hadju. A Hasse-type principle for exponential Diophantine equations and
+          its applications. Math. Comput., 85:849–860, 2016.
+      8   Cs. Bertók and L. Hadju. A Hasse-type principle for exponential Diophantine equations over
+          number fields and its applications. Monatshefte Math., 187:425–436, 2018.
+      9   V. Blondel and J. Tsitsiklis. A survey of computational complexity results in systems and
+          control. Automatica, 36(9):1249–1274, 2000.
+     10   V. D. Blondel and N. Portier. The presence of a zero in an integer linear recurrent sequence is
+          NP-hard to decide. Linear Algebra and Its Applications, 351–352, 2002.
+     11   A. Brumer. On the units of algebraic number fields. Mathematika, 14:121–124, 1967.
+     12   F. Calegari and B. Mazur. Nearly ordinary Galois deformations over arbitrary number fields.
+          J. Inst. Math. Jussieu, 8(1):99–177, 2009.
+     13   K. Chatterjee and L. Doyen. Stochastic processes with expected stopping time. In 36th Annual
+          ACM/IEEE Symposium on Logic in Computer Science, LICS, pages 1–13. IEEE, 2021.
+     14   V. Chonev, J. Ouaknine, and J. Worrell. The Polyhedron-Hitting Problem. In Proceedings of
+          the Twenty-Sixth Annual ACM-SIAM Symposium on Discrete Algorithms, SODA 2015, pages
+          940–956. SIAM, 2015.
+     15   G. Everest, A. van der Poorten, I. Shparlinski, and T. Ward. Recurrence Sequences. American
+          Mathematical Society, 2003.
+     16   N. Fijalkow, J. Ouaknine, A. Pouly, J. Sousa Pinto, and J. Worrell. On the decidability of
+          reachability in linear time-invariant systems. In Proceedings of the 22nd ACM International
+          Conference on Hybrid Systems: Computation and Control, HSCC 2019, pages 77–86. ACM,
+          2019.
+     17   F. Gouvea. p-adic Numbers: An Introduction, Second Edition. Universitext. Springer, 1997.
+     18   T. Karimov, E. Lefaucheux, J. Ouaknine, D. Purser, A. Varonka, M. A. Whiteland, and
+          J. Worrell. What’s decidable about linear loops? Proc. ACM Program. Lang., 6(POPL), 2022.
+     19   J. C. Lagarias and A. M. Odlyzko. Effective versions of the chebotarev density theorem. pages
+          409–464, 1977.
+     20   Susan Landau. Factoring polynomials over algebraic number fields. SIAM Journal on
+          Computing, 14(1):184–195, 1985.
+     21   Serge Lang. Introduction to Transcendental Numbers. Addison-Wesley, 1966.
+     22   R. Lipton, F. Luca, J. Nieuwveld, J. Ouaknine, D. Purser, and J. Worrell. On the Skolem
+          Problem and the Skolem Conjecture. To appear, Proceedings of the 37th Annual ACM/IEEE
+          Symposium on Logic and Computer Science, LICS’22, 2022.
+     23   Angus Macintyre and Alex J. Wilkie. On the decidability of the real exponential field. In
+          Piergiorgio Odifreddi, editor, Kreiseliana. About and Around Georg Kreisel, pages 441–467. A
+          K Peters, 1996.
+     24   Nathanaël Mariaule. p-adic exponential ring, p-adic Schanuel’s conjecture and decidability.
+          PhD Thesis, University of Manchester, 2014.
+Y. Bilu, F. Luca, J. Nieuwveld, J. Ouaknine, D. Purser, and J. Worrell                              15
+
+
+25   D. W. Masser. Linear relations on algebraic groups. In New Advances in Transcendence
+     Theory. Cambridge University Press, 1988.
+26   M. Mignotte, T. N. Shorey, and R. Tijdeman. The distance between terms of an algebraic
+     recurrence sequence. Journal für die reine und angewandte Mathematik, 349, 1984.
+27   J. Ouaknine and J. Worrell. On linear recurrence sequences and loop termination. ACM
+     SIGLOG News, 2(2):4–13, 2015.
+28   J. Piribauer and C. Baier. On Skolem-hardness and saturation points in Markov decision
+     processes. In 47th International Colloquium on Automata, Languages, and Programming,
+     ICALP 2020, volume 168 of LIPIcs, pages 138:1–138:17. Schloss Dagstuhl - Leibniz-Zentrum
+     für Informatik, 2020.
+29   G. Rozenberg and A. Salomaa. Cornerstones of Undecidability. Prentice Hall, 1994.
+30   A. Schinzel. Abelian binomials, power residues and exponential congruences. Acta Arith.,
+     32(3):245–274, 1977.
+31   A. Schinzel. On the congruence un ≡ c (mod p) where un is a recurring sequence of the second
+     order. Acta Acad. Paedagog. Agriensis Sect. Math., 30:147–165, 2003.
+32   Th. Skolem. Anwendung exponentieller Kongruenzen zum Beweis der Unlösbarkeit gewisser
+     diophantischer Gleichungen. Avhdl. Norske Vid. Akad. Oslo I, 12:1–16, 1937.
+33   M. Soittola. On D0L synthesis problem. In A. Lindenmayer and G. Rozenberg, editors,
+     Automata, Languages, Development. North-Holland, 1976.
+34   N. K. Vereshchagin. The problem of appearance of a zero in a linear recurrence sequence (in
+     Russian). Mat. Zametki, 38(2), 1985.
+

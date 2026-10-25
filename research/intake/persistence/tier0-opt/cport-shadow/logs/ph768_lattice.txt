@@ -1,0 +1,8 @@
+Lambda_96: index 10^56.45, shortest basis vector 10^27.89
+Lambda_192: index 10^91.90, shortest basis vector 10^45.87
+Lambda_384: index 10^103.63, shortest basis vector 10^51.41
+Lambda_768 (384 primes + the five PH-feasible new primes): index 10^110.02, shortest basis vector 10^54.55
+a=0 level 384: homogeneous window kernel at K=384: index 10^480.22, shortest vector 10^240.04 => digits bound for a typical coset ~ 10^239.6 (worst case over cosets can be smaller by the covering radius, not larger than ~ this order)
+a=0 level 768: homogeneous window kernel at K=768: index 10^870.61, shortest vector 10^435.00 => digits bound for a typical coset ~ 10^434.5 (worst case over cosets can be smaller by the covering radius, not larger than ~ this order)
+a=1 level 384: homogeneous window kernel at K=384: index 10^479.92, shortest vector 10^239.90 => digits bound for a typical coset ~ 10^239.4 (worst case over cosets can be smaller by the covering radius, not larger than ~ this order)
+a=1 level 768: homogeneous window kernel at K=768: index 10^870.31, shortest vector 10^435.00 => digits bound for a typical coset ~ 10^434.5 (worst case over cosets can be smaller by the covering radius, not larger than ~ this order)

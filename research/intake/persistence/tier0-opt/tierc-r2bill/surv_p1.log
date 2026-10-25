@@ -1,0 +1,1 @@
+nice -n 10 uv run --no-project python -I surv_k.py pat_p1.jsonl surv_p1.jsonl  0.46s user 0.01s system 91% cpu 0.514 total

@@ -1,0 +1,14 @@
+parsed 43 recorded patterns from SANDWICH-run.txt
+depth rule D = ceil((log10 U - 72)/48) + 1 reproduces the recorded sandwich depth: mismatches 0 of 43
+planted negative: the rule applied to log10 U = 60 gives D=1 (a pattern with U below 10^72 needs no sandwich beyond depth 1): True
+
+theta-model depth for the recorded patterns (S_{j+1} = S_j + C S_j^theta, C calibrated so theta = 1 reproduces the recorded log10 U):
+  theta=1.00  depth histogram {2: 7, 3: 26, 4: 10}
+  theta=0.90  depth histogram {2: 39, 3: 4}
+  theta=0.75  depth histogram {1: 43}
+  theta=0.50  depth histogram {1: 43}
+  recorded depths  {2: 7, 3: 26, 4: 10}
+k range of recorded patterns: 5..11 (Tier C is k = 31..44)
+
+per-gap multiplier implied by the recorded log10 U (a>=1 rows, (log10 U - 14.925)/k):
+   [(5, 18.2), (6, 18.25), (7, 18.3), (8, 18.35), (9, 18.38), (10, 18.42)]

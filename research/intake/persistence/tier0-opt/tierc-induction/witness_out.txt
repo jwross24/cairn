@@ -1,0 +1,54 @@
+S-units below 10^141: 3915914 keys (leading 40 digits, zero padded), build+sort 5s
+zero-free corpus children: prefix j followed by its run of 1s (M = 9y agrees with N_j then zeros for L = p_(j+1) - 1 digits); any other S-unit below 10^141 sharing the leading L digits?
+  L = digits of agreement (capped at 40; 21245 cases above the cap); (child,j) pairs; pairs with another S-unit sharing them
+  L= 1  pairs=  7700  shared=  7700
+  L= 2  pairs=  7717  shared=  7717
+  L= 3  pairs=  7760  shared=  7760
+  L= 4  pairs=  7727  shared=  7727
+  L= 5  pairs=  7644  shared=  7644
+  L= 6  pairs=  7551  shared=  7524
+  L= 7  pairs=  7413  shared=  4196
+  L= 8  pairs=  7331  shared=   361
+  L= 9  pairs=  7247  shared=     0
+  L=10  pairs=  7065  shared=     0
+  L=11  pairs=  6918  shared=     0
+  L=12  pairs=  6669  shared=     0
+  L=13  pairs=  6477  shared=     0
+  L=14  pairs=  6244  shared=     0
+  L=15  pairs=  6067  shared=     0
+  L=16  pairs=  5772  shared=     0
+  L=17  pairs=  5568  shared=     0
+  L=18  pairs=  5374  shared=     0
+  L=19  pairs=  5126  shared=     0
+  L=20  pairs=  4913  shared=     0
+  L=21  pairs=  4695  shared=     0
+  L=22  pairs=  4449  shared=     0
+  L=23  pairs=  4278  shared=     0
+  L=24  pairs=  4098  shared=     0
+  L=25  pairs=  3886  shared=     0
+  L=26  pairs=  3653  shared=     0
+  L=27  pairs=  3474  shared=     0
+  L=28  pairs=  3287  shared=     0
+  L=29  pairs=  3151  shared=     0
+  L=30  pairs=  2962  shared=     0
+  L=31  pairs=  2822  shared=     0
+  L=32  pairs=  2682  shared=     0
+  L=33  pairs=  2509  shared=     0
+  L=34  pairs=  2347  shared=     0
+  L=35  pairs=  2235  shared=     0
+  L=36  pairs=  2092  shared=     0
+  L=37  pairs=  1943  shared=     0
+  L=38  pairs=  1842  shared=     0
+  L=39  pairs=  1700  shared=     0
+  L=40  pairs= 22821  shared=     0
+smallest L from which no pair has a competitor: 9
+Codex T1 cofactor on real prefixes (s_j >= 6): N_j = 9*floor(y/10^E_j)+1 = 2^r 7^t R; pairs 175707; R = 1 (N_j an S-unit): 0; median log R / log N_j = 0.989; 5th percentile 0.889
+PLANTED NEGATIVES
+N1 step (b) 'witness unique' on child n=62 at L=6 (competitors known to exist): FLAGGED (competitor found)
+N1 control, same child at L=24: certified unique
+N2 planted twin sharing 39 digits inserted: FLAGGED
+N2 same query without the twin: certified unique
+N3 record unit 2^126 3^75 7^81: digits 143, digits 1..8 = 14683000, then 8 zeros: run verified
+N3 step (a) nest_ok(s=5, g=8, lambda=2) [claims scale ratio (s+g)/s <= 2]: FLAGGED (ratio 2.6)
+N3 same step at lambda=3: holds
+mutant (always-unique tester) on the N1 query: True -> the N1 check above would be CERTIFIED, so the planted negative distinguishes the real tester from the mutant

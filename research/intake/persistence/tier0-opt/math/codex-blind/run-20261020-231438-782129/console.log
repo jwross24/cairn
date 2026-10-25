@@ -1,0 +1,16 @@
+{"clock": "1792552479 2026-10-20 23:14:39 EDT", "nice": 15}
+{"args": {"maxcases": 200000, "part": "all", "patterns": 300, "seconds": 3600, "worker": "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/codex-blind/run-20261020-231438-782129"}, "hashes": {"/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/codex-blind/independent.py": "e617ba4d92e72b62b4b36b9d1e60764e3a390119e445efe474dfadf542f1eff4", "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/codex-blind/run.py": "bedfd90e5c7c695d5bcf07c5d91cf24ba272ada84bfc8e892543dbaeeab81a48", "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/deepcut.py": "38e830285bc6e5e8ae5acec04b67ee02f2752d665b4703dd2c1edac658433dc9", "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12": "6a76cb50b9832a178ddf4851575985655ac6eebe37948fc00b85a29d5512ebdf", "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/runall_final.jsonl": "b151b03be8aa56c12d0b75f9a2e190648ba0045b3be138a520ef6fd3fa4b91ae", "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/trees_c.jsonl": "4119acd0d72610bb32f603590c8b3dcf2558cb68d5e9f167094d1d2ff13e0926", "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/trees_mac.jsonl": "f85d7470b8d52227cbec89db95d7e172df6b5d80be92fde993581795f048472e"}, "started_epoch": 1792552479.038395}
+Traceback (most recent call last):
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/codex-blind/run.py", line 323, in <module>
+    main()
+    ~~~~^^
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/codex-blind/run.py", line 293, in main
+    branch(out)
+    ~~~~~~^^^^^
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/codex-blind/run.py", line 72, in branch
+    from export_cfg import export, _static
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/export_cfg.py", line 5, in <module>
+    from tier0v2 import PrimeData, primes_for_level, two_adic_bound, ten_adic_K, chain_step
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/tier0v2.py", line 32, in <module>
+    import sympy
+ModuleNotFoundError: No module named 'sympy'

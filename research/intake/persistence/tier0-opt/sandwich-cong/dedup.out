@@ -1,0 +1,20 @@
+R2BILL 550 survivors 550
+  anchor y                                             distinct     20  dedup ratio 27.50
+  (y, nu)                                              distinct     98  dedup ratio 5.61
+  (a, nu)                                              distinct     84  dedup ratio 6.55
+  a                                                    distinct     12  dedup ratio 45.83
+  pattern (y, digit multiset)                          distinct    236  dedup ratio 2.33
+  MITM unit key (units with multiplicity, nu, wrap)    distinct    549  dedup ratio 1.00
+  full rep (y, nu, units)                              distinct    549  dedup ratio 1.00
+  (y, nu, units) positions only                        distinct    549  dedup ratio 1.00
+  survivors per anchor: max 128, top5 [(142910862192, 128), (2723245873992, 116), (2636931307236912, 96), (32419593738, 84), (28342368844941312, 32)]
+1335 set, representations with >= 1 depth-1 word survivors 2655
+  anchor y                                             distinct     82  dedup ratio 32.38
+  (y, nu)                                              distinct    326  dedup ratio 8.14
+  (a, nu)                                              distinct     67  dedup ratio 39.63
+  a                                                    distinct      8  dedup ratio 331.88
+  pattern (y, digit multiset)                          distinct   1335  dedup ratio 1.99
+  MITM unit key (units with multiplicity, nu, wrap)    distinct   2655  dedup ratio 1.00
+  full rep (y, nu, units)                              distinct   2655  dedup ratio 1.00
+  (y, nu, units) positions only                        distinct   2190  dedup ratio 1.21
+  survivors per anchor: max 622, top5 [(330812181, 622), (903981141, 225), (103355177121, 194), (133923132, 153), (60761421, 130)]

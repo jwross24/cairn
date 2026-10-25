@@ -1,0 +1,24 @@
+393216 22222222222222234 A 66 DIFF ['open', 'bounds'] verdict_changed wall 36.11 l12 30.65 pat/s(l12) 435.6 M
+3779136 233333334666 A 64 DIFF ['open', 'bounds'] verdict_changed wall 56.48 l12 55.1 pat/s(l12) 363.3 M
+2939328 23333346667 A 65 DIFF ['open', 'bounds'] verdict_changed wall 162.3 l12 156.57 pat/s(l12) 210.6 M
+331776 22222222233338 A 65 DIFF ['open', 'bounds'] verdict_changed wall 94.09 l12 89.44 pat/s(l12) 369.1 M
+11239424 222222222222222777 A 64 DIFF ['open', 'bounds'] verdict_changed wall 121.78 l12 99.82 pat/s(l12) 338.1 M
+69441624 33333333334677 A 67 DIFF ['open', 'bounds'] verdict_changed wall 163.8 l12 161.26 pat/s(l12) 294.8 M
+11239424 2222222222227778 A 64 DIFF ['open', 'bounds'] verdict_changed wall 339.99 l12 317.56 pat/s(l12) 223.2 M
+3779136 22223333333366 A 65 DIFF ['open', 'bounds'] verdict_changed wall 337.51 l12 311.74 pat/s(l12) 309.8 M
+69441624 23333333336677 A 70 DIFF ['open', 'bounds'] verdict_changed wall 519.79 l12 509.24 pat/s(l12) 289.0 M
+1161216 22222222233667 A 64 DIFF ['open', 'bounds'] verdict_changed wall 501.49 l12 475.02 pat/s(l12) 309.8 M
+13226976 233333346679 A 69 same []  wall 759.71 l12 744.76 pat/s(l12) 322.5 M
+11239424 2222222222244777 A 65 DIFF ['open', 'bounds'] verdict_changed wall 1016.05 l12 888.64 pat/s(l12) 270.5 M
+2939328 222233336679 A 64 DIFF ['open', 'bounds'] verdict_changed wall 832.05 l12 791.18 pat/s(l12) 317.4 M
+11239424 222222222444777 A 66 DIFF ['open', 'bounds'] verdict_changed wall 1215.49 l12 1101.04 pat/s(l12) 242.5 M
+13226976 22333333333467 A 64 same []  wall 904.0 l12 878.67 pat/s(l12) 309.2 M
+69441624 233333667799 A 64 DIFF ['open', 'bounds'] verdict_changed wall 1029.77 l12 1012.43 pat/s(l12) 294.8 M
+11239424 22222222447778 A 65 DIFF ['open', 'bounds'] verdict_changed wall 1082.91 l12 973.65 pat/s(l12) 317.4 M
+69441624 223333333333677 A 70 DIFF ['open', 'bounds'] verdict_changed wall 1132.56 l12 1099.94 pat/s(l12) 280.9 M
+13226976 22233333333667 A 65 same []  wall 1006.79 l12 928.9 pat/s(l12) 332.7 M
+1161216 2222233334447 A 66 DIFF ['open', 'bounds'] verdict_changed wall 1059.65 l12 988.05 pat/s(l12) 316.3 M
+1161216 222222222333347 A 65 DIFF ['open', 'bounds'] verdict_changed wall 1380.28 l12 1191.39 pat/s(l12) 332.5 M
+7112448 222233466777 A 65 same []  wall 1717.74 l12 1672.95 pat/s(l12) 260.2 M
+69441624 22333333336779 A 66 DIFF ['open', 'bounds'] verdict_changed wall 2750.25 l12 2618.69 pat/s(l12) 303.4 M
+69441624 2233333367799 A 70 DIFF ['open', 'bounds'] verdict_changed wall 2727.29 l12 2632.91 pat/s(l12) 321.2 M

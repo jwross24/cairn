@@ -1,0 +1,3 @@
+{"s": 1372, "P": 4, "K": 4, "nmax": 30, "multisets": 2, "pairs": 2386, "a_free_pairs": 75, "queries": 2311, "enum_points": 3, "coset_empty": 1691, "found": [177147], "recorded_known": [177147], "agree": true, "secs": 11.8}
+{"s": 784, "P": 4, "K": 4, "nmax": 30, "multisets": 4, "pairs": 10206, "a_free_pairs": 404, "queries": 9807, "enum_points": 38, "coset_empty": 5984, "found": [1778112], "recorded_known": [1778112], "agree": true, "secs": 81.1}
+{"s": 224, "P": 4, "K": 4, "nmax": 30, "multisets": 5, "pairs": 8643, "a_free_pairs": 389, "queries": 8259, "enum_points": 46, "coset_empty": 4571, "found": [784, 2744, 41472, 71442, 122472], "recorded_known": [784, 2744, 41472, 71442, 122472], "agree": true, "secs": 88.2}

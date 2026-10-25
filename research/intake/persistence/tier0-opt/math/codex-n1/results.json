@@ -1,0 +1,279 @@
+{
+  "started": "2026-10-21T01:00:18.683890-04:00",
+  "runtime": "3.14.7 (main, Sep  1 2026, 14:05:28) [Clang 22.1.3 ]",
+  "calibration": "COMPUTED, HIGH within finite test scope",
+  "direct_modular_equivalence_checks": 13524,
+  "random_lattice_cases": {
+    "cases": 60,
+    "feasible": 49,
+    "infeasible": 11,
+    "nodes": 1212,
+    "sphere_points": 508
+  },
+  "combined_parent_target_cases": [
+    {
+      "precision": 6,
+      "a": 0,
+      "solutions": 1,
+      "nodes": 6,
+      "sphere_points": 1,
+      "lll_steps": 65,
+      "complete": true
+    },
+    {
+      "precision": 7,
+      "a": 1,
+      "solutions": 1,
+      "nodes": 6,
+      "sphere_points": 1,
+      "lll_steps": 67,
+      "complete": true
+    },
+    {
+      "precision": 8,
+      "a": 0,
+      "solutions": 1,
+      "nodes": 6,
+      "sphere_points": 1,
+      "lll_steps": 67,
+      "complete": true
+    },
+    {
+      "precision": 6,
+      "a": 1,
+      "solutions": 1,
+      "nodes": 6,
+      "sphere_points": 1,
+      "lll_steps": 28,
+      "complete": true
+    },
+    {
+      "precision": 7,
+      "a": 0,
+      "solutions": 1,
+      "nodes": 6,
+      "sphere_points": 1,
+      "lll_steps": 57,
+      "complete": true
+    },
+    {
+      "precision": 8,
+      "a": 1,
+      "solutions": 1,
+      "nodes": 6,
+      "sphere_points": 1,
+      "lll_steps": 61,
+      "complete": true
+    },
+    {
+      "precision": 6,
+      "a": 0,
+      "solutions": 1,
+      "nodes": 6,
+      "sphere_points": 1,
+      "lll_steps": 72,
+      "complete": true
+    },
+    {
+      "precision": 7,
+      "a": 1,
+      "solutions": 1,
+      "nodes": 6,
+      "sphere_points": 1,
+      "lll_steps": 56,
+      "complete": true
+    },
+    {
+      "precision": 8,
+      "a": 0,
+      "solutions": 1,
+      "nodes": 6,
+      "sphere_points": 1,
+      "lll_steps": 79,
+      "complete": true
+    },
+    {
+      "precision": 6,
+      "a": 1,
+      "solutions": 1,
+      "nodes": 6,
+      "sphere_points": 1,
+      "lll_steps": 42,
+      "complete": true
+    },
+    {
+      "precision": 7,
+      "a": 0,
+      "solutions": 1,
+      "nodes": 6,
+      "sphere_points": 1,
+      "lll_steps": 41,
+      "complete": true
+    },
+    {
+      "precision": 8,
+      "a": 1,
+      "solutions": 1,
+      "nodes": 6,
+      "sphere_points": 1,
+      "lll_steps": 58,
+      "complete": true
+    }
+  ],
+  "high_precision_planted_cases": [
+    {
+      "precision": 96,
+      "a": 0,
+      "nodes": 5,
+      "sphere_points": 1,
+      "lll_steps": 759,
+      "complete": true
+    },
+    {
+      "precision": 96,
+      "a": 40,
+      "nodes": 5,
+      "sphere_points": 1,
+      "lll_steps": 289,
+      "complete": true
+    },
+    {
+      "precision": 192,
+      "a": 1,
+      "nodes": 5,
+      "sphere_points": 1,
+      "lll_steps": 1482,
+      "complete": true
+    }
+  ],
+  "complete_copy_family_cases": [
+    {
+      "digits": [
+        [
+          6,
+          1
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          6,
+          1
+        ]
+      ],
+      "a": 0,
+      "block": 2,
+      "depth": 2,
+      "bound": 8,
+      "solutions": 2,
+      "low_branches": 8,
+      "lattice_calls": 3,
+      "nodes": 10,
+      "complete": true,
+      "max_rank": 5
+    },
+    {
+      "digits": [
+        [
+          3,
+          0
+        ],
+        [
+          7,
+          1
+        ]
+      ],
+      "a": 0,
+      "block": 2,
+      "depth": 2,
+      "bound": 6,
+      "solutions": 0,
+      "low_branches": 4,
+      "lattice_calls": 4,
+      "nodes": 0,
+      "complete": true,
+      "max_rank": 4
+    },
+    {
+      "digits": [
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      "a": 1,
+      "block": 2,
+      "depth": 3,
+      "bound": 6,
+      "solutions": 0,
+      "low_branches": 27,
+      "lattice_calls": 0,
+      "nodes": 0,
+      "complete": true,
+      "max_rank": 0
+    },
+    {
+      "digits": [
+        [
+          4,
+          0
+        ],
+        [
+          2,
+          1
+        ]
+      ],
+      "a": 0,
+      "block": 2,
+      "depth": 3,
+      "bound": 6,
+      "solutions": 0,
+      "low_branches": 6,
+      "lattice_calls": 4,
+      "nodes": 2,
+      "complete": true,
+      "max_rank": 5
+    }
+  ],
+  "sparse_alphabet_cases": {
+    "planted_rank4": {
+      "solutions": 1,
+      "nodes": 5,
+      "sphere_points": 1,
+      "lll_steps": 49,
+      "complete": true
+    },
+    "rank3_relaxation_negative": {
+      "nodes": 60,
+      "sphere_points": 57,
+      "lll_steps": 3,
+      "complete": true
+    }
+  },
+  "planted_negatives": {
+    "below_cutoff_log5_mixed_difference_mod625": 250,
+    "copy_index_bits_mixed_difference_mod244140625": 37640625,
+    "half_precision_naive_alpha_mod256": 112,
+    "half_precision_exact_log_mod256": 240,
+    "budget_exhaustion_returns_unknown": true
+  },
+  "sha256": {
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/codex-n1/prototype.py": "85a6ae9515713af0bcc68b932e971018f1358b81ce036809ebee1c618f4edb7d",
+    "tier0/sandwich.py": "05e883292a1e1e932d326265accc2ba5e221bfc5ae32906e50e02a14a17e51d1",
+    "tier0/deepcut.py": "38e830285bc6e5e8ae5acec04b67ee02f2752d665b4703dd2c1edac658433dc9",
+    "tier0/SANDWICH.md": "42b932929e8642cf37b0a9c255a2d23e252193dddff796965983a9fd4a097af9",
+    "tier0-opt/math/codex-deep-attempt.md": "f826b26c741df04b0bf9eadacef96cce478d7c90f3bcba58f2345e5ea8704e05"
+  },
+  "elapsed_seconds": 37.1,
+  "finished": "2026-10-21T01:00:55.783872-04:00",
+  "verdict": "PASS"
+}

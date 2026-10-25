@@ -1,0 +1,815 @@
+3154 open patterns from 3 files: {'SELF': 51, 'CARRY': 2636, 'UNANCHORED': 467}
+
+anchors (exceptional point y, class, #patterns anchored on it):
+                  111132  2^2 3^4 7^3   CARRY      x324   digits 111123
+                   13122  2^1 3^8 7^0   CARRY      x192   digits 11223
+              1134213192  2^3 3^10 7^4   CARRY      x80   digits 1111223349
+                  413343  2^0 3^10 7^1   CARRY      x78   digits 133344
+               330812181  2^0 3^9 7^5   UNANCHORED x77   digits 011123388
+               133923132  2^2 3^14 7^1   CARRY      x75   digits 112233339
+                  531441  2^0 3^12 7^0   CARRY      x66   digits 113445
+                  941192  2^3 3^0 7^6   CARRY      x66   digits 112499
+                 2571912  2^3 3^8 7^2   CARRY      x63   digits 1122579
+                 1417176  2^3 3^11 7^0   CARRY      x61   digits 1114677
+               224042112  2^7 3^6 7^4   UNANCHORED x58   digits 011222244
+                  214326  2^1 3^7 7^2   CARRY      x49   digits 122346
+                 3111696  2^4 3^4 7^4   CARRY      x47   digits 1113669
+                60761421  2^0 3^11 7^3   UNANCHORED x45   digits 01124667
+              1481421312  2^9 3^10 7^2   CARRY      x45   digits 1111223448
+               130691232  2^5 3^5 7^5   UNANCHORED x40   digits 011223369
+                 1778112  2^6 3^4 7^3   CARRY      x38   digits 1112778
+                   33614  2^1 3^0 7^5   CARRY      x37   digits 13346
+                   61236  2^2 3^7 7^1   CARRY      x37   digits 12366
+                   11664  2^4 3^6 7^0   CARRY      x34   digits 11466
+                 1037232  2^4 3^3 7^4   UNANCHORED x33   digits 0122337
+                34012224  2^6 3^12 7^0   UNANCHORED x33   digits 01222344
+                 3429216  2^5 3^7 7^2   CARRY      x30   digits 1223469
+               242121642  2^1 3^1 7^9   CARRY      x29   digits 112222446
+                  236196  2^2 3^10 7^0   CARRY      x28   digits 123669
+                 6223392  2^5 3^4 7^4   CARRY      x28   digits 2223369
+                   21168  2^4 3^3 7^2   CARRY      x27   digits 11268
+                  333396  2^2 3^5 7^3   CARRY      x27   digits 333369
+               830131344  2^4 3^2 7^8   UNANCHORED x27   digits 011333448
+                   27216  2^4 3^5 7^1   CARRY      x26   digits 12267
+                44471322  2^1 3^3 7^7   CARRY      x26   digits 12234447
+                  177147  2^0 3^11 7^0   CARRY      x25   digits 114777
+                25412184  2^3 3^3 7^6   CARRY      x25   digits 11224458
+                59521392  2^4 3^12 7^1   CARRY      x25   digits 12235599
+                85766121  2^0 3^6 7^6   CARRY      x25   digits 11256678
+                15431472  2^4 3^9 7^2   CARRY      x24   digits 11234457
+                  222264  2^3 3^4 7^3   CARRY      x23   digits 222246
+                 1229312  2^9 3^0 7^4   CARRY      x23   digits 1122239
+                 1613472  2^5 3^1 7^5   CARRY      x23   digits 1123467
+               457419312  2^4 3^5 7^6   CARRY      x23   digits 112344579
+                 1594323  2^0 3^13 7^0   CARRY      x22   digits 1233459
+                 2333772  2^2 3^5 7^4   CARRY      x22   digits 2233377
+               158723712  2^7 3^11 7^1   CARRY      x22   digits 112235778
+               171532242  2^1 3^6 7^6   CARRY      x19   digits 112223457
+                45177216  2^7 3^1 7^6   CARRY      x18   digits 11245677
+                 2519424  2^7 3^9 7^0   CARRY      x17   digits 1224459
+                57177414  2^1 3^5 7^6   CARRY      x17   digits 11445777
+                 1411788  2^2 3^1 7^6   CARRY      x16   digits 1114788
+                78121827  2^0 3^13 7^2   CARRY      x16   digits 11227788
+               903981141  2^0 3^17 7^1   UNANCHORED x16   digits 011134899
+                   12348  2^2 3^2 7^3   CARRY      x15   digits 12348
+                   23814  2^1 3^5 7^2   CARRY      x15   digits 12348
+                   43218  2^1 3^2 7^4   CARRY      x15   digits 12348
+                   71442  2^1 3^6 7^2   CARRY      x15   digits 12447
+                  122472  2^3 3^7 7^1   CARRY      x15   digits 122247
+                  518616  2^3 3^3 7^4   CARRY      x15   digits 115668
+                 1361367  2^0 3^4 7^5   CARRY      x15   digits 1133667
+                 3294172  2^2 3^0 7^7   CARRY      x15   digits 1223479
+                14521248  2^5 3^3 7^5   CARRY      x15   digits 11224458
+              1067311728  2^4 3^4 7^7   UNANCHORED x15   digits 0111236778
+                 2722734  2^1 3^4 7^5   CARRY      x14   digits 2223477
+                 5334336  2^6 3^5 7^3   CARRY      x14   digits 3333456
+                52081218  2^1 3^12 7^2   UNANCHORED x14   digits 01122588
+                63011844  2^2 3^8 7^4   UNANCHORED x13   digits 01134468
+                69177612  2^2 3^1 7^8   CARRY      x13   digits 11266779
+            103355177121  2^0 3^16 7^4   UNANCHORED x13   digits 011112335577
+                   19683  2^0 3^9 7^0   CARRY      x12   digits 13689
+                   28812  2^2 3^1 7^4   CARRY      x12   digits 12288
+                   34992  2^4 3^7 7^0   CARRY      x12   digits 23499
+                   49392  2^4 3^2 7^3   CARRY      x12   digits 23499
+                  163296  2^5 3^6 7^1   CARRY      x12   digits 123669
+                 2117682  2^1 3^2 7^6   CARRY      x12   digits 1122678
+               211631616  2^9 3^10 7^1   CARRY      x12   digits 111123666
+               423263232  2^10 3^10 7^1   CARRY      x12   digits 222233346
+                   39366  2^1 3^9 7^0   CARRY      x11   digits 33669
+                  137781  2^0 3^9 7^1   CARRY      x11   digits 113778
+                  172872  2^3 3^2 7^4   CARRY      x11   digits 122778
+                  472392  2^3 3^10 7^0   CARRY      x11   digits 223479
+                 6377292  2^2 3^13 7^0   CARRY      x11   digits 2236779
+                 7112448  2^8 3^4 7^3   CARRY      x11   digits 1124478
+                33191424  2^9 3^3 7^4   CARRY      x11   digits 11233449
+                43046721  2^0 3^16 7^0   UNANCHORED x11   digits 01234467
+                   16464  2^4 3^1 7^3   CARRY      x10   digits 14466
+                   38416  2^4 3^0 7^4   CARRY      x10   digits 13468
+                  268912  2^4 3^0 7^5   CARRY      x10   digits 122689
+                 3779136  2^6 3^10 7^0   CARRY      x10   digits 1336779
+               476171136  2^7 3^12 7^1   CARRY      x10   digits 111346677
+                  734832  2^4 3^8 7^1   CARRY      x9   digits 233478
+                14823774  2^1 3^2 7^7   CARRY      x9   digits 12344778
+              3281116734  2^1 3^14 7^3   CARRY      x9   digits 1112334678
+            551227611312  2^4 3^15 7^4   CARRY      x9   digits 111122235567
+                   26244  2^2 3^8 7^0   CARRY      x8   digits 22446
+                 1741824  2^10 3^5 7^1   CARRY      x8   digits 1124478
+                 2939328  2^6 3^8 7^1   CARRY      x8   digits 2233899
+                 4741632  2^9 3^3 7^3   CARRY      x8   digits 1234467
+                19131876  2^2 3^14 7^0   CARRY      x8   digits 11136789
+             81352871712  2^5 3^2 7^10  CARRY      x8   digits 11122357788
+                  777924  2^2 3^4 7^4   CARRY      x7   digits 247779
+                 7411887  2^0 3^2 7^7   CARRY      x7   digits 1147788
+                23514624  2^9 3^8 7^1   CARRY      x7   digits 12234456
+                30118144  2^8 3^0 7^6   UNANCHORED x7   digits 01113448
+               121522842  2^1 3^11 7^3   CARRY      x7   digits 112222458
+               133413966  2^1 3^4 7^7   CARRY      x7   digits 113334669
+               154893312  2^10 3^2 7^5   CARRY      x7   digits 112334589
+              2542277241  2^0 3^2 7^10  CARRY      x7   digits 1222244577
+                   24696  2^3 3^2 7^3   CARRY      x6   digits 24669
+                   83349  2^0 3^5 7^3   CARRY      x6   digits 33489
+                  314928  2^4 3^9 7^0   CARRY      x6   digits 123489
+                  321489  2^0 3^8 7^2   CARRY      x6   digits 123489
+                  583443  2^0 3^5 7^4   CARRY      x6   digits 334458
+                35271936  2^8 3^9 7^1   CARRY      x6   digits 12335679
+                38118276  2^2 3^4 7^6   CARRY      x6   digits 11236788
+               104162436  2^2 3^12 7^2   UNANCHORED x6   digits 011234466
+              1764331632  2^4 3^8 7^5   CARRY      x6   digits 1123334667
+                  921984  2^7 3^1 7^4   CARRY      x5   digits 124899
+                51018336  2^5 3^13 7^0   UNANCHORED x5   digits 01133568
+               100442349  2^0 3^15 7^1   UNANCHORED x5   digits 001234449
+               109734912  2^10 3^7 7^2   UNANCHORED x5   digits 011234799
+               146313216  2^12 3^6 7^2   CARRY      x5   digits 111233466
+               161414428  2^2 3^0 7^9   CARRY      x5   digits 111244468
+               432081216  2^6 3^9 7^3   UNANCHORED x5   digits 011223468
+              8716379112  2^3 3^3 7^9   CARRY      x5   digits 1112367789
+             73222472421  2^0 3^21 7^1   CARRY      x5   digits 12222234477
+            290667031221  2^0 3^1 7^13  UNANCHORED x5   digits 001122236679
+          11519532122112  2^14 3^15 7^2   CARRY      x5   digits 11111122223559
+                  194481  2^0 3^4 7^4   CARRY      x4   digits 114489
+                  367416  2^3 3^8 7^1   CARRY      x4   digits 134667
+                 2032128  2^9 3^4 7^2   UNANCHORED x4   digits 0122238
+                 5143824  2^4 3^8 7^2   CARRY      x4   digits 1234458
+                33882912  2^5 3^2 7^6   CARRY      x4   digits 12233889
+               265531392  2^12 3^3 7^4   CARRY      x4   digits 122335569
+               648121824  2^5 3^10 7^3   CARRY      x4   digits 112244688
+              2711943423  2^0 3^18 7^1   CARRY      x4   digits 1122334479
+              4374822312  2^3 3^13 7^3   CARRY      x4   digits 1222334478
+              6772211712  2^14 3^10 7^1   CARRY      x4   digits 1112226777
+             53331167232  2^11 3^12 7^2   CARRY      x4   digits 11223333567
+                   17496  2^3 3^7 7^0   CARRY      x3   digits 14679
+                   27783  2^0 3^4 7^3   CARRY      x3   digits 23778
+                   67228  2^2 3^0 7^5   CARRY      x3   digits 22678
+                   78732  2^2 3^9 7^0   CARRY      x3   digits 23778
+                  117649  2^0 3^0 7^6   CARRY      x3   digits 114679
+                  148176  2^4 3^3 7^3   CARRY      x3   digits 114678
+                  746496  2^10 3^6 7^0   CARRY      x3   digits 446679
+                 3226944  2^6 3^1 7^5   CARRY      x3   digits 2234469
+                19361664  2^7 3^2 7^5   CARRY      x3   digits 11346669
+                21337344  2^8 3^5 7^3   CARRY      x3   digits 12333447
+                73513818  2^1 3^7 7^5   CARRY      x3   digits 11335788
+               208324872  2^3 3^12 7^2   UNANCHORED x3   digits 022234788
+               361417728  2^10 3^1 7^6   CARRY      x3   digits 112346778
+               672126336  2^7 3^7 7^4   CARRY      x3   digits 122336667
+                   86436  2^2 3^2 7^4   CARRY      x2   digits 34668
+                  244944  2^4 3^7 7^1   CARRY      x2   digits 244449
+                  666792  2^3 3^5 7^3   CARRY      x2   digits 266679
+                  964467  2^0 3^9 7^2   CARRY      x2   digits 446679
+                  979776  2^6 3^7 7^1   CARRY      x2   digits 677799
+                 1928934  2^1 3^9 7^2   CARRY      x2   digits 1234899
+                 2074464  2^5 3^3 7^4   UNANCHORED x2   digits 0244467
+                22127616  2^10 3^2 7^4   CARRY      x2   digits 11222667
+                38723328  2^8 3^2 7^5   CARRY      x2   digits 22333788
+                45349632  2^8 3^11 7^0   CARRY      x2   digits 23344569
+                46294416  2^4 3^10 7^2   CARRY      x2   digits 12444669
+                69441624  2^3 3^11 7^2   CARRY      x2   digits 12444669
+                92236816  2^4 3^0 7^8   CARRY      x2   digits 12236689
+                98018424  2^3 3^6 7^5   UNANCHORED x2   digits 01244889
+                99574272  2^9 3^4 7^4   CARRY      x2   digits 22457799
+               203297472  2^6 3^3 7^6   UNANCHORED x2   digits 022234779
+               756142128  2^4 3^9 7^4   CARRY      x2   digits 112245678
+               952342272  2^8 3^12 7^1   CARRY      x2   digits 222234579
+             10330523392  2^8 3^0 7^9   UNANCHORED x2   digits 00122333359
+             10806531246  2^1 3^8 7^7   UNANCHORED x2   digits 00112345668
+             11206773144  2^3 3^5 7^8   UNANCHORED x2   digits 01112344677
+         100461232161612  2^2 3^21 7^4   UNANCHORED x2   digits 001111122234666
+                   11664  2^4 3^6 7^0   SELF       x1   digits 11466
+                   12348  2^2 3^2 7^3   SELF       x1   digits 12348
+                   13122  2^1 3^8 7^0   SELF       x1   digits 11223
+                   23814  2^1 3^5 7^2   SELF       x1   digits 12348
+                   27216  2^4 3^5 7^1   SELF       x1   digits 12267
+                   33614  2^1 3^0 7^5   SELF       x1   digits 13346
+                   34992  2^4 3^7 7^0   SELF       x1   digits 23499
+                   43218  2^1 3^2 7^4   SELF       x1   digits 12348
+                   47628  2^2 3^5 7^2   CARRY      x1   digits 24678
+                   49392  2^4 3^2 7^3   SELF       x1   digits 23499
+                   61236  2^2 3^7 7^1   SELF       x1   digits 12366
+                   64827  2^0 3^3 7^4   CARRY      x1   digits 24678
+                   67228  2^2 3^0 7^5   SELF       x1   digits 22678
+                   71442  2^1 3^6 7^2   SELF       x1   digits 12447
+                   81648  2^4 3^6 7^1   CARRY      x1   digits 14688
+                  111132  2^2 3^4 7^3   SELF       x1   digits 111123
+                  122472  2^3 3^7 7^1   SELF       x1   digits 122247
+                  137781  2^0 3^9 7^1   SELF       x1   digits 113778
+                  142884  2^2 3^6 7^2   CARRY      x1   digits 124488
+                  148176  2^4 3^3 7^3   SELF       x1   digits 114678
+                  163296  2^5 3^6 7^1   SELF       x1   digits 123669
+                  177147  2^0 3^11 7^0   SELF       x1   digits 114777
+                  214326  2^1 3^7 7^2   SELF       x1   digits 122346
+                  236196  2^2 3^10 7^0   SELF       x1   digits 123669
+                  268912  2^4 3^0 7^5   SELF       x1   digits 122689
+                  314928  2^4 3^9 7^0   SELF       x1   digits 123489
+                  321489  2^0 3^8 7^2   SELF       x1   digits 123489
+                  388962  2^1 3^4 7^4   CARRY      x1   digits 236889
+                  413343  2^0 3^10 7^1   SELF       x1   digits 133344
+                  537824  2^5 3^0 7^5   CARRY      x1   digits 234578
+                  642978  2^1 3^8 7^2   SELF       x1   digits 246789
+                  642978  2^1 3^8 7^2   CARRY      x1   digits 246789
+                  666792  2^3 3^5 7^3   SELF       x1   digits 266679
+                  691488  2^5 3^2 7^4   SELF       x1   digits 146889
+                  691488  2^5 3^2 7^4   CARRY      x1   digits 146889
+                  941192  2^3 3^0 7^6   SELF       x1   digits 112499
+                 1062882  2^1 3^12 7^0   UNANCHORED x1   digits 0122688
+                 1166886  2^1 3^5 7^4   SELF       x1   digits 1166688
+                 1361367  2^0 3^4 7^5   SELF       x1   digits 1133667
+                 1382976  2^6 3^2 7^4   SELF       x1   digits 1236789
+                 1411788  2^2 3^1 7^6   SELF       x1   digits 1114788
+                 1417176  2^3 3^11 7^0   SELF       x1   digits 1114677
+                 1469664  2^5 3^8 7^1   CARRY      x1   digits 1446669
+                 1778112  2^6 3^4 7^3   SELF       x1   digits 1112778
+                 2117682  2^1 3^2 7^6   SELF       x1   digits 1122678
+                 2667168  2^5 3^5 7^3   SELF       x1   digits 1266678
+                 2939328  2^6 3^8 7^1   SELF       x1   digits 2233899
+                 3048192  2^8 3^5 7^2   UNANCHORED x1   digits 0123489
+                 3111696  2^4 3^4 7^4   SELF       x1   digits 1113669
+                 3779136  2^6 3^10 7^0   SELF       x1   digits 1336779
+                 4148928  2^6 3^3 7^4   SELF       x1   digits 1244889
+                 7112448  2^8 3^4 7^3   SELF       x1   digits 1124478
+                13226976  2^5 3^10 7^1   SELF       x1   digits 12236679
+                13716864  2^7 3^7 7^2   SELF       x1   digits 11346678
+                13716864  2^7 3^7 7^2   CARRY      x1   digits 11346678
+                15676416  2^10 3^7 7^1   CARRY      x1   digits 11456667
+                19361664  2^7 3^2 7^5   SELF       x1   digits 11346669
+                21781872  2^4 3^4 7^5   CARRY      x1   digits 11227788
+                46294416  2^4 3^10 7^2   SELF       x1   digits 12444669
+                69441624  2^3 3^11 7^2   SELF       x1   digits 12444669
+                86093442  2^1 3^16 7^0   UNANCHORED x1   digits 02344689
+               102036672  2^6 3^13 7^0   UNANCHORED x1   digits 001223667
+               116169984  2^8 3^3 7^5   SELF       x1   digits 111466899
+               133413966  2^1 3^4 7^7   SELF       x1   digits 113334669
+               135531648  2^7 3^2 7^6   CARRY      x1   digits 113345568
+               204073344  2^7 3^13 7^0   UNANCHORED x1   digits 002334447
+               207532836  2^2 3^2 7^8   UNANCHORED x1   digits 022335678
+               400241898  2^1 3^5 7^7   UNANCHORED x1   digits 001244889
+               600362847  2^0 3^6 7^7   UNANCHORED x1   digits 002346678
+               864162432  2^7 3^9 7^3   CARRY      x1   digits 122344668
+              1162261467  2^0 3^19 7^0   SELF       x1   digits 1112246667
+              1162261467  2^0 3^19 7^0   CARRY      x1   digits 1112246667
+              2222131968  2^8 3^11 7^2   CARRY      x1   digits 1122223689
+              3099363912  2^3 3^18 7^0   UNANCHORED x1   digits 0123336999
+              3281116734  2^1 3^14 7^3   SELF       x1   digits 1112334678
+              3373232128  2^12 3^0 7^7   CARRY      x1   digits 1222333378
+             12350321424  2^4 3^8 7^6   UNANCHORED x1   digits 01122233445
+             41841412812  2^2 3^21 7^0   CARRY      x1   digits 11112244488
+           1012391292416  2^9 3^0 7^11  UNANCHORED x1   digits 0111122234699
+           1121144263281  2^0 3^4 7^12  SELF       x1   digits 1111122234468
+           1121144263281  2^0 3^4 7^12  CARRY      x1   digits 1111122234468
+           2118080124216  2^3 3^8 7^9   UNANCHORED x1   digits 0011112224688
+          12208015311282  2^1 3^2 7^14  UNANCHORED x1   digits 00111122223588
+
+per vertex:
+  s=6                {'SELF': 1}
+  s=12               {'SELF': 1, 'CARRY': 1}
+  s=24               {'CARRY': 2}
+  s=48               {'CARRY': 2}
+  s=144              {'SELF': 1}
+  s=162              {'CARRY': 1}
+  s=168              {'SELF': 1}
+  s=192              {'CARRY': 4, 'SELF': 3}
+  s=216              {'CARRY': 3, 'SELF': 2}
+  s=224              {'SELF': 2}
+  s=288              {'CARRY': 3, 'SELF': 1}
+  s=324              {'CARRY': 3}
+  s=378              {'CARRY': 1}
+  s=432              {'SELF': 1, 'CARRY': 12}
+  s=448              {'CARRY': 2}
+  s=648              {'SELF': 1, 'CARRY': 4}
+  s=672              {'CARRY': 4}
+  s=784              {'SELF': 1}
+  s=864              {'CARRY': 18}
+  s=896              {'CARRY': 2}
+  s=972              {'SELF': 1, 'CARRY': 2}
+  s=1176             {'SELF': 2}
+  s=1344             {'SELF': 3, 'CARRY': 5}
+  s=1372             {'SELF': 1}
+  s=1728             {'CARRY': 25, 'SELF': 3}
+  s=1764             {'CARRY': 1}
+  s=1792             {'SELF': 2, 'CARRY': 3}
+  s=1944             {'SELF': 4, 'CARRY': 7}
+  s=2268             {'SELF': 1, 'CARRY': 2}
+  s=2744             {'CARRY': 1}
+  s=6272             {'CARRY': 2}
+  s=8192             {'UNANCHORED': 8, 'CARRY': 14}
+  s=8748             {'CARRY': 5}
+  s=11664            {'CARRY': 31}
+  s=13824            {'SELF': 2, 'CARRY': 149, 'UNANCHORED': 31}
+  s=14112            {'CARRY': 12, 'UNANCHORED': 2}
+  s=14336            {'CARRY': 18, 'UNANCHORED': 10}
+  s=18144            {'CARRY': 54, 'SELF': 1, 'UNANCHORED': 9}
+  s=18432            {'CARRY': 135, 'UNANCHORED': 49, 'SELF': 2}
+  s=23328            {'CARRY': 63, 'SELF': 2, 'UNANCHORED': 5}
+  s=23814            {'CARRY': 3, 'SELF': 1}
+  s=24192            {'CARRY': 107, 'SELF': 5, 'UNANCHORED': 18}
+  s=27216            {'SELF': 2, 'CARRY': 33, 'UNANCHORED': 3}
+  s=28672            {'CARRY': 30, 'UNANCHORED': 16}
+  s=32928            {'CARRY': 4, 'UNANCHORED': 1}
+  s=34992            {'CARRY': 41, 'SELF': 1, 'UNANCHORED': 2}
+  s=41472            {'CARRY': 258, 'UNANCHORED': 67, 'SELF': 2}
+  s=42336            {'CARRY': 57, 'UNANCHORED': 5}
+  s=43218            {'CARRY': 2}
+  s=49392            {'CARRY': 15}
+  s=61236            {'CARRY': 12, 'UNANCHORED': 2}
+  s=71442            {'CARRY': 3}
+  s=93312            {'SELF': 1, 'UNANCHORED': 57, 'CARRY': 276}
+  s=111132           {'CARRY': 5}
+  s=112896           {'CARRY': 155, 'UNANCHORED': 40}
+  s=122472           {'CARRY': 49, 'UNANCHORED': 2}
+  s=131712           {'CARRY': 38, 'UNANCHORED': 6}
+  s=139968           {'CARRY': 246, 'UNANCHORED': 38}
+  s=148176           {'CARRY': 36, 'UNANCHORED': 1}
+  s=163296           {'CARRY': 203, 'UNANCHORED': 25}
+  s=214326           {'CARRY': 5}
+  s=236196           {'CARRY': 12}
+  s=314928           {'CARRY': 107, 'UNANCHORED': 5}
+  s=642978           {'CARRY': 7}
+  s=666792           {'CARRY': 51, 'UNANCHORED': 3}
+  s=691488           {'CARRY': 31, 'UNANCHORED': 1}
+  s=1166886          {'CARRY': 3}
+  s=1229312          {'CARRY': 22, 'UNANCHORED': 11}
+  s=1382976          {'CARRY': 72, 'UNANCHORED': 15}
+  s=1411788          {'CARRY': 1}
+  s=1417176          {'CARRY': 67, 'UNANCHORED': 2}
+  s=1843968          {'CARRY': 76, 'UNANCHORED': 28}
+  s=2117682          {'CARRY': 1}
+  s=133413966        {'CARRY': 4}
+  s=184473632        {'CARRY': 4, 'UNANCHORED': 2}
+  s=368947264        {'CARRY': 9, 'UNANCHORED': 3}
+
+unanchored / other: 467
+   ('trees_mac.jsonl', 32928, (2, 2, 3, 7, 7, 7, 8), 4, 1067311728, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 8192, (4, 4, 4, 4, 4, 8), 2, 63011844, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 8192, (2, 2, 4, 4, 4, 4, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 8192, (2, 2, 2, 4, 4, 8, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 8192, (2, 2, 2, 4, 4, 8, 8), 8, 30118144, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 8192, (2, 2, 2, 2, 2, 2, 2, 8, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 8192, (2, 2, 2, 2, 2, 4, 8, 8), 1, 52081218, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 8192, (2, 2, 2, 2, 2, 4, 8, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 8192, (2, 2, 2, 2, 2, 2, 2, 2, 4, 8), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 14112, (2, 2, 2, 2, 2, 3, 3, 7, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 14112, (2, 2, 2, 3, 3, 4, 7, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 14336, (2, 2, 4, 4, 4, 7, 8), 2, 63011844, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 14336, (2, 2, 2, 4, 4, 4, 4, 7), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 14336, (2, 2, 2, 2, 2, 2, 2, 2, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 14336, (2, 2, 2, 2, 4, 4, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 14336, (2, 2, 2, 2, 4, 4, 7, 8), 2, 63011844, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 14336, (2, 2, 2, 2, 2, 4, 4, 4, 7), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 14336, (2, 2, 2, 2, 2, 2, 4, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 14336, (2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 7), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 14336, (2, 2, 2, 2, 2, 2, 2, 4, 4, 7), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 14336, (2, 2, 2, 2, 2, 2, 2, 4, 4, 7), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 61236, (2, 2, 3, 3, 3, 7, 9, 9), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 61236, (2, 2, 3, 3, 3, 3, 3, 3, 3, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 2, 7, 8, 8, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 4, 4, 7, 8, 8), 1, 52081218, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 4, 4, 7, 8, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 2, 2, 4, 7, 8, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 2, 4, 4, 4, 7, 8), 2, 63011844, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 2, 2, 4, 4, 4, 4, 7), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 2, 2, 2, 2, 2, 2, 2, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 2, 2, 2, 4, 4, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 2, 2, 2, 4, 4, 7, 8), 2, 63011844, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 7), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 7), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 2, 2, 2, 2, 4, 4, 4, 7), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 2, 2, 2, 2, 4, 4, 4, 7), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 2, 2, 2, 2, 2, 4, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 7), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 28672, (2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 7), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 27216, (2, 2, 3, 3, 3, 3, 3, 4, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 27216, (2, 2, 2, 2, 3, 3, 3, 7, 9), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 27216, (2, 2, 2, 3, 3, 3, 3, 6, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18144, (2, 3, 3, 3, 3, 4, 4, 7), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18144, (2, 2, 2, 3, 3, 6, 6, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18144, (2, 2, 2, 2, 2, 3, 3, 7, 9), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18144, (2, 2, 2, 3, 3, 4, 7, 9), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18144, (2, 2, 3, 3, 3, 4, 6, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18144, (2, 2, 3, 3, 3, 4, 6, 7), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18144, (2, 2, 3, 3, 3, 4, 6, 7), 0, 43046721, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18144, (2, 2, 2, 2, 3, 3, 3, 6, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18144, (2, 2, 2, 3, 3, 3, 3, 4, 7), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 34992, (2, 2, 3, 6, 6, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 34992, (2, 3, 3, 3, 3, 3, 3, 4, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 42336, (2, 2, 3, 7, 7, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 42336, (2, 2, 2, 3, 4, 7, 7, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 42336, (2, 2, 2, 2, 3, 3, 6, 7, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 42336, (2, 2, 2, 2, 2, 3, 3, 3, 7, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 42336, (2, 2, 2, 3, 3, 3, 4, 7, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 148176, (2, 3, 3, 4, 6, 7, 7, 7), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 23328, (2, 3, 6, 8, 9, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 23328, (2, 2, 2, 2, 3, 6, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 23328, (2, 3, 3, 3, 3, 4, 6, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 23328, (2, 2, 3, 3, 3, 3, 3, 4, 6), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 23328, (2, 2, 2, 2, 2, 3, 3, 3, 3, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 184473632, (2, 2, 2, 2, 2, 7, 7, 7, 7, 7, 7, 7, 7), 0, 103355177121, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 184473632, (2, 2, 2, 4, 7, 7, 7, 7, 7, 7, 7, 7), 0, 103355177121, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 131712, (2, 2, 4, 4, 6, 7, 7, 7), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 131712, (2, 2, 4, 4, 6, 7, 7, 7), 0, 43046721, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 131712, (2, 2, 2, 2, 3, 7, 7, 7, 8), 4, 1067311728, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 131712, (2, 2, 2, 2, 3, 7, 7, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 131712, (2, 2, 2, 2, 2, 3, 4, 7, 7, 7), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 131712, (2, 2, 2, 2, 2, 3, 4, 7, 7, 7), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 122472, (2, 2, 2, 3, 3, 3, 7, 9, 9), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 122472, (2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 6, 8, 8, 9), 1, 52081218, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (3, 3, 4, 4, 4, 4, 6), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (3, 3, 3, 4, 4, 4, 8), 2, 63011844, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 3, 8, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 3, 4, 4, 4, 6, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 2, 4, 6, 6, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 3, 3, 3, 8, 8), 1, 52081218, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 3, 3, 4, 4, 6, 8), 8, 30118144, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 3, 4, 4, 4, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 3, 4, 4, 4, 9), 0, 100442349, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 2, 2, 2, 3, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 3, 4, 4, 6, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 3, 4, 4, 6, 6), 2, 104162436, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 3, 3, 3, 4, 4, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 3, 3, 3, 4, 4, 8), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 2, 3, 4, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 2, 2, 3, 3, 6, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 2, 2, 3, 4, 4, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 2, 2, 3, 4, 4, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 2, 2, 3, 4, 4, 9), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 2, 2, 3, 4, 4, 9), 0, 100442349, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 2, 2, 3, 4, 6, 6), 2, 104162436, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 3, 3, 4, 6, 8), 9, 2032128, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 3, 3, 4, 6, 8), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 3, 3, 4, 6, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 2, 2, 2, 2, 3, 4, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 2, 2, 2, 2, 3, 4, 9), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 2, 3, 3, 3, 4, 8), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 2, 3, 3, 4, 4, 6), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 2, 3, 3, 4, 4, 6), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 13824, (2, 2, 2, 2, 2, 2, 3, 3, 4, 6), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 3, 7, 8, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (3, 4, 4, 7, 8, 9), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 3, 3, 3, 4, 4, 4, 7), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 2, 2, 2, 3, 7, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 2, 2, 3, 4, 6, 6, 7), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 2, 3, 3, 4, 4, 6, 7), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 2, 3, 3, 4, 4, 6, 7), 0, 43046721, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 2, 2, 2, 3, 3, 3, 7, 8), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 2, 2, 2, 3, 3, 3, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 2, 2, 3, 3, 3, 4, 4, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 2, 2, 3, 3, 3, 4, 4, 7), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 2, 2, 3, 3, 3, 4, 4, 7), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 2, 2, 2, 2, 2, 3, 3, 6, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 2, 2, 2, 3, 3, 4, 6, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 2, 2, 2, 3, 3, 4, 6, 7), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 2, 2, 2, 3, 3, 4, 6, 7), 0, 43046721, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 2, 2, 2, 2, 3, 3, 3, 4, 7), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 24192, (2, 2, 2, 2, 2, 3, 3, 3, 4, 7), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 691488, (2, 2, 2, 3, 3, 4, 7, 7, 7, 7), 0, 290667031221, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 3, 6, 8, 8, 8), 1, 52081218, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 3, 3, 8, 8, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 8, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 4, 8, 8, 9), 1, 52081218, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 4, 8, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 4, 4, 6, 6, 8), 8, 30118144, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 3, 3, 4, 4, 8, 8), 8, 30118144, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 3, 4, 4, 4, 6, 8), 8, 30118144, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 4, 4, 4, 6, 6), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 4, 4, 4, 6, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 2, 2, 2, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 3, 6, 8, 8), 1, 52081218, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 4, 4, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 4, 6, 6, 8), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 3, 4, 4, 4, 4, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 4, 4, 4, 9), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 2, 4, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 9), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 3, 3, 8, 8), 1, 52081218, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 3, 3, 8, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 4, 4, 6, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 3, 3, 4, 8, 8), 1, 52081218, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 3, 3, 4, 4, 4, 8), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 3, 3, 4, 4, 4, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 3, 3, 4, 4, 4, 8), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 3, 3, 4, 4, 4, 8), 2, 63011844, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 2, 2, 4, 4, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 2, 2, 4, 4, 9), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 3, 4, 4, 6, 8), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 3, 4, 4, 6, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 3, 4, 4, 6, 8), 2, 63011844, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 3, 4, 4, 6, 8), 8, 30118144, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 2, 2, 3, 6, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 3, 4, 4, 4, 6), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 3, 4, 6, 8), 9, 2032128, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 3, 4, 6, 8), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 3, 4, 6, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 3, 3, 4, 4, 8), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 3, 3, 4, 4, 8), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 3, 3, 4, 4, 8), 9, 2032128, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 3, 3, 4, 4, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 3, 3, 4, 4, 8), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 3, 3, 4, 4, 4), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 2, 2, 2, 3, 4, 6), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 2, 3, 3, 4, 8), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 2, 3, 3, 4, 8), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 2, 3, 4, 4, 6), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 18432, (2, 2, 2, 2, 2, 2, 3, 4, 4, 6), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1229312, (2, 2, 2, 7, 7, 7, 7, 8, 8), 4, 1067311728, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1229312, (2, 2, 4, 4, 7, 7, 7, 7, 8), 4, 1067311728, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1229312, (2, 2, 4, 4, 7, 7, 7, 7, 8), 2, 63011844, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1229312, (2, 2, 4, 4, 7, 7, 7, 7, 8), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1229312, (2, 2, 2, 2, 2, 2, 7, 7, 7, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1229312, (2, 2, 2, 2, 4, 7, 7, 7, 7, 8), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1229312, (2, 2, 2, 2, 4, 7, 7, 7, 7, 8), 3, 208324872, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1229312, (2, 2, 2, 2, 4, 7, 7, 7, 7, 8), 4, 1067311728, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1229312, (2, 2, 2, 2, 4, 7, 7, 7, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1229312, (2, 2, 2, 2, 4, 7, 7, 7, 7, 8), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1229312, (2, 2, 2, 2, 2, 4, 4, 7, 7, 7, 7), 0, 103355177121, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 666792, (2, 2, 3, 3, 3, 3, 6, 7, 7, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 666792, (2, 2, 2, 3, 3, 3, 3, 3, 7, 7, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 666792, (2, 2, 2, 3, 3, 3, 7, 7, 7, 9), 0, 103355177121, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 368947264, (2, 2, 2, 7, 7, 7, 7, 7, 7, 7, 7, 8), 4, 1067311728, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 368947264, (2, 2, 2, 2, 2, 2, 7, 7, 7, 7, 7, 7, 7, 7), 0, 103355177121, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 368947264, (2, 2, 2, 2, 4, 7, 7, 7, 7, 7, 7, 7, 7), 0, 103355177121, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 4, 6, 6, 7, 7, 8), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 3, 3, 7, 7, 8, 8), 1, 52081218, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 3, 3, 7, 7, 8, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 4, 4, 6, 6, 7, 7), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 4, 4, 6, 6, 7, 7), 0, 103355177121, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 2, 2, 7, 7, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 3, 4, 4, 4, 6, 7, 7), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 3, 4, 4, 4, 6, 7, 7), 5, 2074464, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 3, 3, 4, 4, 7, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 3, 3, 4, 4, 7, 7, 8), 2, 63011844, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 3, 3, 4, 4, 7, 7, 8), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 3, 3, 4, 4, 7, 7, 8), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 2, 4, 4, 7, 7, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 2, 4, 4, 7, 7, 9), 6, 203297472, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 2, 4, 6, 6, 7, 7), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 3, 4, 6, 7, 7, 8), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 3, 4, 6, 7, 7, 8), 0, 43046721, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 3, 4, 6, 7, 7, 8), 4, 1067311728, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 3, 4, 6, 7, 7, 8), 0, 600362847, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 3, 4, 6, 7, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 2, 2, 2, 4, 7, 7, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 2, 2, 2, 4, 7, 7, 9), 6, 203297472, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 2, 2, 2, 4, 7, 7, 9), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 3, 3, 4, 4, 4, 7, 7), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 2, 3, 6, 7, 7, 8), 4, 1067311728, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 2, 3, 6, 7, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 2, 2, 3, 3, 7, 7, 8), 4, 1067311728, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 2, 2, 3, 3, 7, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 3, 3, 4, 7, 7, 8), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 3, 3, 4, 7, 7, 8), 3, 208324872, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 3, 3, 4, 7, 7, 8), 4, 1067311728, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 3, 3, 4, 7, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 3, 3, 4, 7, 7, 8), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 3, 4, 4, 6, 7, 7), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 3, 4, 4, 6, 7, 7), 0, 43046721, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 3, 4, 4, 6, 7, 7), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 7, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 2, 2, 3, 4, 6, 7, 7), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 2, 3, 3, 4, 4, 7, 7), 0, 103355177121, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 112896, (2, 2, 2, 2, 2, 2, 3, 3, 4, 7, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 314928, (2, 3, 3, 4, 6, 9, 9, 9), 3, 3099363912, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 314928, (2, 3, 3, 4, 6, 9, 9, 9), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 314928, (2, 2, 2, 3, 3, 6, 9, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 314928, (2, 2, 3, 3, 3, 3, 3, 6, 6, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 314928, (2, 2, 2, 2, 3, 3, 3, 3, 3, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1382976, (2, 2, 3, 6, 7, 7, 7, 7, 8), 4, 1067311728, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1382976, (2, 2, 3, 6, 7, 7, 7, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1382976, (2, 3, 3, 4, 7, 7, 7, 7, 8), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1382976, (2, 3, 4, 4, 6, 7, 7, 7, 7), 3, 11206773144, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1382976, (2, 2, 2, 3, 3, 7, 7, 7, 7, 8), 4, 1067311728, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1382976, (2, 2, 2, 3, 3, 7, 7, 7, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1382976, (2, 2, 3, 3, 4, 4, 7, 7, 7, 7), 0, 103355177121, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1382976, (2, 2, 3, 3, 4, 4, 7, 7, 7, 7), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1382976, (2, 2, 2, 3, 4, 6, 7, 7, 7, 7), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1382976, (2, 2, 2, 3, 4, 6, 7, 7, 7, 7), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1382976, (2, 2, 2, 3, 4, 6, 7, 7, 7, 7), 0, 43046721, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1382976, (2, 2, 2, 3, 4, 6, 7, 7, 7, 7), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1382976, (2, 2, 2, 2, 2, 2, 3, 3, 7, 7, 7, 7), 0, 290667031221, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1382976, (2, 2, 2, 2, 3, 3, 4, 7, 7, 7, 7), 0, 290667031221, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1382976, (2, 2, 2, 2, 3, 3, 4, 7, 7, 7, 7), 0, 103355177121, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (4, 4, 6, 6, 8, 9), 2, 63011844, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 4, 4, 8, 9, 9), 3, 98018424, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 4, 4, 8, 9, 9), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 3, 3, 6, 6, 8, 8), 1, 52081218, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (3, 3, 3, 3, 4, 4, 4, 8), 8, 30118144, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 3, 6, 8, 8, 9), 1, 1062882, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 3, 6, 8, 8, 9), 1, 52081218, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 3, 6, 8, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 3, 3, 4, 8, 8, 9), 8, 3048192, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 3, 3, 4, 8, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 3, 3, 4, 8, 8, 9), 1, 400241898, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 3, 3, 4, 8, 8, 9), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 4, 8, 9, 9), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 3, 4, 4, 6, 8, 9), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 3, 3, 3, 3, 4, 4, 4, 4), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 4, 4, 9, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 3, 3, 8, 8, 9), 1, 52081218, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 3, 3, 8, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 3, 3, 3, 6, 8, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 3, 3, 4, 4, 8, 9), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 3, 4, 6, 6, 6), 2, 100461232161612, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 3, 4, 6, 6, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 3, 6, 8, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 3, 6, 8, 9), 6, 432081216, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 3, 6, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 3, 4, 6, 8, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 3, 4, 6, 8, 9), 6, 432081216, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 3, 4, 6, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 3, 3, 3, 3, 4, 4, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 3, 3, 3, 3, 4, 4, 8), 2, 63011844, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 3, 3, 4, 4, 4, 9), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 3, 3, 3, 4, 4, 4, 6), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 3, 3, 3, 4, 4, 4, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 3, 3, 3, 4, 4, 4, 6), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 2, 2, 2, 3, 6, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 2, 3, 3, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 3, 3, 4, 4, 6, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 3, 3, 3, 3, 4, 4, 4), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 3, 3, 3, 6, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 3, 3, 3, 4, 6, 8), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 2, 3, 4, 6, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 3, 3, 3, 3, 4, 8), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 3, 3, 3, 3, 4, 8), 9, 2032128, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 3, 3, 3, 3, 4, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 3, 3, 4, 4, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 3, 3, 4, 4, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 3, 3, 4, 4, 9), 0, 100442349, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 3, 3, 4, 4, 9), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 3, 3, 4, 6, 6), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 3, 3, 4, 6, 6), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 3, 3, 4, 6, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 3, 3, 4, 6, 6), 2, 104162436, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 2, 2, 3, 3, 4, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 2, 2, 3, 3, 4, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 2, 2, 3, 3, 4, 9), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 3, 3, 3, 4, 4, 6), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 3, 3, 3, 4, 4, 6), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 3, 3, 3, 4, 4, 6), 4, 12350321424, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 3, 3, 3, 4, 4, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 3, 3, 3, 4, 4, 6), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 2, 3, 3, 3, 4, 6), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 41472, (2, 2, 2, 2, 2, 2, 3, 3, 3, 4, 6), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1417176, (2, 3, 3, 3, 3, 3, 4, 9, 9, 9), 10, 109734912, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1417176, (2, 2, 3, 3, 3, 3, 6, 9, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 3, 3, 3, 3, 3, 6, 7, 8), 2, 207532836, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 3, 3, 3, 6, 6, 6, 7), 6, 102036672, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 3, 3, 4, 6, 6, 7, 9), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 3, 3, 3, 3, 7, 8, 9), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 3, 3, 3, 3, 7, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 3, 3, 3, 3, 4, 4, 7, 9), 7, 204073344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 3, 3, 3, 3, 4, 4, 7, 9), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 3, 3, 3, 3, 4, 6, 6, 7), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 2, 2, 2, 3, 3, 7, 9, 9), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 2, 3, 3, 4, 7, 9, 9), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 2, 3, 3, 6, 6, 7, 9), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 2, 3, 3, 6, 6, 7, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 3, 3, 3, 4, 6, 7, 9), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 3, 3, 3, 4, 6, 7, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 3, 3, 3, 4, 6, 7, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 3, 3, 3, 4, 6, 7, 9), 10, 109734912, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 3, 3, 3, 4, 6, 7, 9), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 3, 3, 3, 4, 6, 7, 9), 0, 43046721, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 3, 3, 3, 4, 6, 7, 9), 1, 10806531246, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 2, 2, 2, 3, 3, 3, 3, 7, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 2, 2, 3, 3, 3, 3, 3, 6, 7), 4, 1037232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 2, 2, 3, 3, 3, 6, 7, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 163296, (2, 2, 2, 3, 3, 3, 3, 4, 7, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 4, 4, 4, 6, 7, 7, 7, 7), 0, 43046721, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 4, 4, 4, 6, 7, 7, 7, 7), 5, 2074464, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 3, 4, 4, 7, 7, 7, 7, 8), 3, 98018424, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 3, 4, 4, 7, 7, 7, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 3, 4, 4, 7, 7, 7, 7, 8), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 3, 4, 4, 7, 7, 7, 7, 8), 2, 63011844, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 3, 4, 4, 7, 7, 7, 7, 8), 3, 11206773144, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 2, 6, 7, 7, 7, 7, 8), 4, 1067311728, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 2, 6, 7, 7, 7, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 4, 4, 6, 7, 7, 7, 7), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 4, 4, 6, 7, 7, 7, 7), 0, 43046721, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 4, 4, 6, 7, 7, 7, 7), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 3, 4, 4, 4, 7, 7, 7, 7), 0, 103355177121, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 2, 2, 3, 7, 7, 7, 7, 8), 4, 1067311728, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 2, 2, 3, 7, 7, 7, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 2, 2, 4, 6, 7, 7, 7, 7), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 2, 2, 4, 6, 7, 7, 7, 7), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 2, 2, 4, 6, 7, 7, 7, 7), 0, 43046721, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 2, 2, 4, 6, 7, 7, 7, 7), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 3, 4, 7, 7, 7, 7, 8), 3, 208324872, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 3, 4, 7, 7, 7, 7, 8), 4, 1067311728, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 3, 4, 7, 7, 7, 7, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 3, 4, 7, 7, 7, 7, 8), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 2, 2, 2, 2, 2, 3, 7, 7, 7, 7), 0, 290667031221, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 2, 3, 4, 4, 7, 7, 7, 7), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 2, 3, 4, 4, 7, 7, 7, 7), 0, 103355177121, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 2, 2, 2, 3, 4, 7, 7, 7, 7), 0, 290667031221, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 1843968, (2, 2, 2, 2, 2, 2, 3, 4, 7, 7, 7, 7), 0, 103355177121, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (3, 3, 3, 3, 6, 6, 6, 8), 5, 51018336, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 3, 4, 8, 9, 9, 9), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (3, 3, 3, 4, 4, 4, 9, 9), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 3, 8, 9, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 3, 8, 9, 9, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (3, 3, 3, 4, 4, 6, 6, 9), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 3, 3, 3, 3, 3, 6, 6, 8), 6, 432081216, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 3, 3, 4, 6, 6, 6, 9), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 3, 3, 3, 3, 3, 4, 8, 9), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 2, 3, 6, 6, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 3, 3, 3, 8, 9, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 3, 3, 6, 6, 6, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 3, 3, 3, 4, 4, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 3, 3, 3, 4, 4, 9, 9), 0, 100442349, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 3, 3, 3, 4, 4, 9, 9), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 3, 3, 3, 3, 6, 8, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 3, 3, 3, 3, 6, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 3, 3, 3, 3, 6, 8, 9), 5, 51018336, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 3, 3, 3, 3, 4, 4, 6, 9), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 3, 3, 3, 3, 3, 8, 9), 1, 12208015311282, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 2, 2, 3, 3, 6, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 3, 3, 4, 6, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 3, 3, 4, 6, 9, 9), 10, 109734912, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 3, 3, 3, 4, 6, 6, 9), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 3, 3, 3, 4, 6, 6, 9), 1, 10806531246, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 3, 3, 3, 4, 6, 6, 9), 2, 104162436, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 2, 2, 2, 3, 3, 3, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 2, 3, 3, 3, 4, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 2, 3, 3, 3, 4, 9, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 2, 3, 3, 3, 4, 9, 9), 10, 109734912, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 2, 3, 3, 3, 4, 9, 9), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 2, 3, 3, 3, 6, 6, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 9), 8, 10330523392, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 3, 3, 3, 3, 4, 6, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 139968, (2, 2, 2, 3, 3, 3, 3, 4, 6, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (3, 3, 6, 6, 6, 6, 8), 5, 51018336, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 3, 3, 3, 3, 8, 8, 9), 1, 52081218, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 3, 3, 3, 3, 8, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (3, 3, 3, 3, 4, 4, 8, 9), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (3, 3, 3, 3, 4, 4, 8, 9), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 3, 3, 4, 4, 4, 9, 9), 0, 100442349, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 3, 6, 8, 9, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 3, 4, 6, 6, 6, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 3, 4, 6, 6, 6, 9), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 3, 3, 3, 3, 3, 3, 4, 4, 4), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 3, 3, 4, 8, 9, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 3, 3, 6, 6, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 3, 3, 6, 6, 8, 9), 5, 51018336, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 3, 4, 4, 6, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 3, 4, 4, 6, 9, 9), 1, 86093442, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 3, 3, 4, 4, 6, 6, 9), 2, 104162436, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 3, 3, 3, 4, 6, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 3, 3, 3, 4, 6, 8, 9), 5, 51018336, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 3, 3, 3, 4, 6, 8, 9), 0, 903981141, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 3, 3, 8, 9, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 3, 3, 3, 3, 6, 6, 8), 6, 432081216, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 3, 3, 3, 3, 6, 6, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 2, 2, 3, 6, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 3, 3, 4, 4, 9, 9), 10, 109734912, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 3, 3, 4, 4, 9, 9), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 3, 3, 3, 6, 6, 6), 2, 100461232161612, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 3, 4, 6, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 3, 4, 6, 9, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 3, 4, 6, 9, 9), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 3, 4, 6, 9, 9), 3, 2118080124216, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 3, 4, 6, 9, 9), 9, 1012391292416, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 2, 2, 2, 3, 3, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 8), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 3, 3, 3, 6, 8, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 3, 3, 3, 6, 8, 9), 6, 432081216, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 3, 3, 3, 6, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 3, 3, 3, 3, 8, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 3, 3, 3, 3, 8, 9), 0, 330812181, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 2, 3, 3, 4, 9, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 2, 3, 3, 4, 9, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 2, 3, 3, 4, 9, 9), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 2, 3, 3, 6, 6, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 3, 3, 4, 6, 6, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 3, 3, 4, 6, 6, 9), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 3, 3, 4, 6, 6, 9), 2, 104162436, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 3, 3, 3, 3, 3, 4, 4, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 3, 3, 3, 4, 4, 6, 9), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 3, 3, 3, 4, 4, 6, 9), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4), 4, 830131344, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 3, 3, 3, 3, 4, 4, 9), 8, 10330523392, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 3, 3, 3, 3, 4, 6, 6), 0, 60761421, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 9), 5, 130691232, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4), 6, 34012224, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 6), 7, 224042112, False, 'UNANCHORED')
+   ('trees_mac.jsonl', 93312, (2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 6), 0, 60761421, False, 'UNANCHORED')
+
+carry pairs available per anchored CARRY pattern (digits d, d' in M with (d-1)+(d'-1)=10):
+  ((2, 9),): 820
+  (): 664
+  ((4, 7),): 376
+  ((3, 8),): 325
+  ((2, 9), (3, 8)): 190
+  ((2, 9), (4, 7)): 181
+  ((3, 8), (4, 7)): 76
+  ((2, 9), (3, 8), (4, 7)): 4

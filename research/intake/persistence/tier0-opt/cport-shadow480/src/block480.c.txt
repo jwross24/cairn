@@ -1,0 +1,575 @@
+/* ---------------------------------------------------------------- level 480 (x5 over 96) */
+typedef struct { int d, e, m, isnu, nc; unsigned char (*n)[5]; u64 *val; } Unit;
+typedef struct { Unit u[MAXIT + 1]; int nun; int dunit[MAXIT]; u64 geo[5]; u64 PT; int nT; u64 T[16]; } UnitSet;
+typedef struct { int nun; long n, cap; uint32_t *ci; } GList;
+
+static int g_brute480 = 0, g_word_only = -1, g_mut_loosen = 0, g_mut_nonu480 = 0, g_verbose480 = 0;
+static u64 g_mut_skipT = 0;
+static FILE *g_ptdump;
+static long g_bloom_cands, g_true_matches;
+static double g_mitm_space, g_mitm_left, g_mitm_right;
+
+static void comps_build(Unit *U) {
+    if (U->isnu) U->nc = 5; else U->nc = (U->m + 1) * (U->m + 2) * (U->m + 3) * (U->m + 4) / 24;
+    U->n = malloc((size_t)U->nc * 5); U->val = malloc((size_t)U->nc * sizeof(u64));
+    if (U->isnu) {
+        for (int s = 0; s < 5; s++) { memset(U->n[s], 0, 5); U->n[s][s] = 1; }
+        return;
+    }
+    int c = 0, m = U->m;
+    for (int n0 = 0; n0 <= m; n0++) for (int n1 = 0; n1 <= m - n0; n1++) for (int n2 = 0; n2 <= m - n0 - n1; n2++) for (int n3 = 0; n3 <= m - n0 - n1 - n2; n3++) {
+        U->n[c][0] = n0; U->n[c][1] = n1; U->n[c][2] = n2; U->n[c][3] = n3; U->n[c][4] = m - n0 - n1 - n2 - n3; c++;
+    }
+    if (c != U->nc) die("comps_build: composition count mismatch");
+}
+static void unitset_free(UnitSet *S) {
+    for (int i = 0; i < S->nun; i++) { free(S->u[i].n); free(S->u[i].val); }
+    S->nun = 0;
+}
+static int unitset_build(UnitSet *S, const Rep *rep, int nu) {
+    memset(S, 0, sizeof *S);
+    int k = rep->n;
+    for (int j = 0; j < k; j++) {
+        int f = -1;
+        for (int i = 0; i < S->nun; i++) if (S->u[i].d == rep->d[j] && S->u[i].e == rep->e[j]) f = i;
+        if (f < 0) { f = S->nun++; S->u[f].d = rep->d[j]; S->u[f].e = rep->e[j]; S->u[f].m = 0; S->u[f].isnu = 0; }
+        S->u[f].m++; S->dunit[j] = f;
+    }
+    int nuu = S->nun++;
+    S->u[nuu].isnu = 1; S->u[nuu].m = 1; S->u[nuu].d = 0; S->u[nuu].e = 0;
+    return nuu;
+}
+static void unitset_vals(UnitSet *S, const Rep *rep, int nu, u64 PT) {
+    S->PT = PT;
+    u64 Q = mpz_fdiv_ui(P10[LMAX], PT);
+    u64 base = (Q + PT - 1) % PT, binv = invm_gen(base, PT);
+    u64 pw = 1;
+    for (int s = 0; s < 5; s++) { S->geo[s] = mulm((pw + PT - 1) % PT, binv, PT); pw = mulm(pw, Q, PT); }
+    u64 inv9 = invm_gen(9, PT);
+    u64 nuterm = g_mut_nonu480 ? 0 : mulm(mpz_fdiv_ui(P10[nu], PT), inv9, PT);
+    for (int i = 0; i < S->nun; i++) {
+        Unit *U = &S->u[i];
+        comps_build(U);
+        u64 A = U->isnu ? nuterm : mulm((u64)(U->d - 1) % PT, mpz_fdiv_ui(P10[U->e], PT), PT);
+        for (int c = 0; c < U->nc; c++) {
+            u64 sg = 0;
+            for (int s = 0; s < 5; s++) sg = (sg + (u64)U->n[c][s] * S->geo[s]) % PT;
+            U->val[c] = mulm(A, sg, PT);
+        }
+    }
+}
+
+typedef void (*cbfn)(u64 sum, u64 idx, void *ctx);
+static void enum_space(const UnitSet *S, const int *us, int n, cbfn cb, void *ctx) {
+    u64 P = S->PT;
+    if (n == 0) { cb(0, 0, ctx); return; }
+    int dig[MAXIT + 2]; u64 part[MAXIT + 3];
+    for (int i = 0; i < n; i++) dig[i] = 0;
+    part[n] = 0;
+    for (int i = n - 1; i >= 1; i--) { u64 s = part[i + 1] + S->u[us[i]].val[0]; if (s >= P) s -= P; part[i] = s; }
+    const Unit *U0 = &S->u[us[0]];
+    u64 idx = 0;
+    for (;;) {
+        u64 base = (n > 1) ? part[1] : 0;
+        for (int c = 0; c < U0->nc; c++) { u64 s = base + U0->val[c]; if (s >= P) s -= P; cb(s, idx++, ctx); }
+        int j = 1;
+        while (j < n) { dig[j]++; if (dig[j] < S->u[us[j]].nc) break; dig[j] = 0; j++; }
+        if (j >= n) break;
+        for (int i = j; i >= 1; i--) { u64 s = part[i + 1] + S->u[us[i]].val[dig[i]]; if (s >= P) s -= P; part[i] = s; }
+    }
+}
+static void decode_idx(const UnitSet *S, const int *us, int n, u64 idx, uint32_t *ci) {
+    for (int i = 0; i < n; i++) { int nc = S->u[us[i]].nc; ci[us[i]] = (uint32_t)(idx % (u64)nc); idx /= (u64)nc; }
+}
+static void gl_push(GList *g, const uint32_t *ci) {
+    if (g->n == g->cap) { g->cap = g->cap ? 2 * g->cap : 64; g->ci = realloc(g->ci, (size_t)g->cap * g->nun * sizeof(uint32_t)); }
+    memcpy(g->ci + (size_t)g->n * g->nun, ci, (size_t)g->nun * sizeof(uint32_t)); g->n++;
+}
+
+typedef struct { u64 *bits; int nb; } Bloom;
+static const u64 BC1 = 0x9E3779B97F4A7C15ULL, BC2 = 0xC2B2AE3D27D4EB4FULL, BC3 = 0x165667B19E3779F9ULL;
+static inline u64 bl_h(u64 x, u64 c, int nb) { return ((x ^ (x >> 29)) * c) >> (64 - nb); }
+static void cb_bloom(u64 s, u64 idx, void *c) {
+    Bloom *b = c; u64 h;
+    h = bl_h(s, BC1, b->nb); b->bits[h >> 6] |= 1ULL << (h & 63);
+    h = bl_h(s, BC2, b->nb); b->bits[h >> 6] |= 1ULL << (h & 63);
+    h = bl_h(s, BC3, b->nb); b->bits[h >> 6] |= 1ULL << (h & 63);
+}
+typedef struct { u64 ridx, need; } Cand;
+typedef struct { u64 x, lidx; } LM;
+static int cmp_cand(const void *x, const void *y) {
+    const Cand *a = x, *b = y;
+    if (a->need != b->need) return a->need < b->need ? -1 : 1;
+    return a->ridx < b->ridx ? -1 : a->ridx > b->ridx;
+}
+static int cmp_lm(const void *x, const void *y) {
+    const LM *a = x, *b = y;
+    if (a->x != b->x) return a->x < b->x ? -1 : 1;
+    return a->lidx < b->lidx ? -1 : a->lidx > b->lidx;
+}
+typedef struct { u64 *tab; int nb; LM *m; long n, cap; } VCtx;
+static void cb_verify(u64 s, u64 idx, void *c) {
+    VCtx *v = c;
+    u64 mask = ((u64)1 << v->nb) - 1, h = bl_h(s, BC1, v->nb);
+    while (v->tab[h] != ~0ULL) {
+        if (v->tab[h] == s) {
+            if (v->n == v->cap) { v->cap = v->cap ? 2 * v->cap : 1024; v->m = realloc(v->m, (size_t)v->cap * sizeof(LM)); }
+            v->m[v->n].x = s; v->m[v->n].lidx = idx; v->n++;
+            return;
+        }
+        h = (h + 1) & mask;
+    }
+}
+static void cb_collect_inner(u64 s, u64 idx, void *c) { ((u64 *)c)[idx] = s; }
+
+static int mitm480(const UnitSet *S, GList *G) {
+    int nun = S->nun; u64 P = S->PT;
+    G->nun = nun; G->n = 0;
+    int ord[MAXIT + 1];
+    for (int i = 0; i < nun; i++) ord[i] = i;
+    for (int i = 1; i < nun; i++) { int x = ord[i], j = i - 1; while (j >= 0 && S->u[ord[j]].nc < S->u[x].nc) { ord[j + 1] = ord[j]; j--; } ord[j + 1] = x; }
+    double tot = 1; for (int i = 0; i < nun; i++) tot *= S->u[i].nc;
+    g_mitm_space = tot;
+    if (tot > 6e16) return 1;
+    double lcap = sqrt(tot) * 4; if (lcap > 6e7) lcap = 6e7; if (lcap < 1) lcap = 1;
+    int L[MAXIT + 1], R[MAXIT + 1], nL = 0, nR = 0; u64 NL = 1, NR = 1;
+    for (int t = 0; t < nun; t++) {
+        int u = ord[t];
+        if ((double)NL * S->u[u].nc <= lcap) { L[nL++] = u; NL *= S->u[u].nc; } else { R[nR++] = u; NR *= S->u[u].nc; }
+    }
+    g_mitm_left = (double)NL; g_mitm_right = (double)NR;
+    if ((double)NR > 5e9) return 1;
+    u64 NI = 1; int RU[MAXIT + 1], nRU = 0;
+    for (int t = 0; t < nR; t++) { if (NI * S->u[R[t]].nc <= (1u << 20)) { RU[nRU++] = R[t]; NI *= S->u[R[t]].nc; } }
+    int RO[MAXIT + 1], nRO = 0; u64 NO = 1;
+    for (int t = 0; t < nR; t++) { int in = 0; for (int q = 0; q < nRU; q++) if (RU[q] == R[t]) in = 1; if (!in) { RO[nRO++] = R[t]; NO *= S->u[R[t]].nc; } }
+    int RA[MAXIT + 1], nRA = 0;
+    for (int t = 0; t < nRU; t++) RA[nRA++] = RU[t];
+    for (int t = 0; t < nRO; t++) RA[nRA++] = RO[t];
+
+    int nb = 16; while (((u64)1 << nb) < NL * 40 && nb < 31) nb++;
+    Bloom bl; bl.nb = nb; bl.bits = calloc(((u64)1 << nb) / 64 + 1, 8);
+    if (!bl.bits) die("mitm480: cannot allocate the Bloom filter");
+    enum_space(S, L, nL, cb_bloom, &bl);
+
+    u64 *tin = malloc(NI * sizeof(u64)), *tout = malloc(NO * sizeof(u64));
+    enum_space(S, RU, nRU, cb_collect_inner, tin);
+    enum_space(S, RO, nRO, cb_collect_inner, tout);
+
+    Cand *cands = NULL; long ncand = 0, capc = 0;
+    for (u64 o = 0; o < NO; o++) {
+        u64 base = tout[o];
+        for (u64 i0 = 0; i0 < NI; i0 += 32) {
+            int m = (int)(NI - i0 < 32 ? NI - i0 : 32);
+            u64 need[32], h1[32];
+            for (int t = 0; t < m; t++) {
+                u64 s = base + tin[i0 + t]; if (s >= P) s -= P;
+                need[t] = s ? P - s : 0;
+                h1[t] = bl_h(need[t], BC1, nb);
+                __builtin_prefetch(&bl.bits[h1[t] >> 6]);
+            }
+            for (int t = 0; t < m; t++) {
+                if (!(bl.bits[h1[t] >> 6] >> (h1[t] & 63) & 1)) continue;
+                u64 h2 = bl_h(need[t], BC2, nb); if (!(bl.bits[h2 >> 6] >> (h2 & 63) & 1)) continue;
+                u64 h3 = bl_h(need[t], BC3, nb); if (!(bl.bits[h3 >> 6] >> (h3 & 63) & 1)) continue;
+                if (ncand == capc) { capc = capc ? 2 * capc : 1 << 16; cands = realloc(cands, (size_t)capc * sizeof(Cand)); if (capc > (1L << 26)) die("mitm480: candidate list too large"); }
+                cands[ncand].ridx = o * NI + i0 + t; cands[ncand].need = need[t]; ncand++;
+            }
+        }
+    }
+    free(bl.bits); free(tin); free(tout);
+    g_bloom_cands = ncand;
+    VCtx vc; vc.nb = 16; while (((u64)1 << vc.nb) < (u64)ncand * 4 + 16) vc.nb++;
+    vc.tab = malloc(((size_t)1 << vc.nb) * sizeof(u64)); for (size_t i = 0; i < ((size_t)1 << vc.nb); i++) vc.tab[i] = ~0ULL;
+    vc.m = NULL; vc.n = vc.cap = 0;
+    for (long i = 0; i < ncand; i++) {
+        u64 mask = ((u64)1 << vc.nb) - 1, h = bl_h(cands[i].need, BC1, vc.nb);
+        int have = 0;
+        while (vc.tab[h] != ~0ULL) { if (vc.tab[h] == cands[i].need) { have = 1; break; } h = (h + 1) & mask; }
+        if (!have) vc.tab[h] = cands[i].need;
+    }
+    enum_space(S, L, nL, cb_verify, &vc);
+    free(vc.tab);
+    qsort(vc.m, (size_t)vc.n, sizeof(LM), cmp_lm);
+    qsort(cands, (size_t)ncand, sizeof(Cand), cmp_cand);
+    uint32_t *ci = malloc((size_t)nun * sizeof(uint32_t));
+    long nsol = 0;
+    for (long i = 0; i < ncand; i++) {
+        long lo = 0, hi = vc.n;
+        while (lo < hi) { long mid = (lo + hi) / 2; if (vc.m[mid].x < cands[i].need) lo = mid + 1; else hi = mid; }
+        for (long q = lo; q < vc.n && vc.m[q].x == cands[i].need; q++) {
+            decode_idx(S, L, nL, vc.m[q].lidx, ci);
+            decode_idx(S, RA, nRA, cands[i].ridx, ci);
+            gl_push(G, ci); nsol++;
+        }
+    }
+    g_true_matches = nsol;
+    free(ci); free(vc.m); free(cands);
+    return 0;
+}
+
+static int g_cmpw;
+static int cmp_row(const void *a, const void *b) { return memcmp(a, b, (size_t)g_cmpw * 4); }
+typedef struct { u64 *idx; long n, cap; } IdxList;
+static void cb_zero(u64 s, u64 idx, void *c) {
+    IdxList *l = c;
+    if (s != 0) return;
+    if (l->n == l->cap) { l->cap = l->cap ? 2 * l->cap : 64; l->idx = realloc(l->idx, (size_t)l->cap * sizeof(u64)); }
+    l->idx[l->n++] = idx;
+}
+static int brute480(const UnitSet *S, const GList *G) {
+    int nun = S->nun;
+    int all[MAXIT + 1]; for (int i = 0; i < nun; i++) all[i] = i;
+    IdxList il = {0, 0, 0};
+    enum_space(S, all, nun, cb_zero, &il);
+    GList B; B.nun = nun; B.n = 0; B.cap = 0; B.ci = NULL;
+    uint32_t *ci = malloc((size_t)nun * 4);
+    for (long i = 0; i < il.n; i++) { decode_idx(S, all, nun, il.idx[i], ci); gl_push(&B, ci); }
+    free(ci); free(il.idx);
+    int same = (B.n == G->n);
+    if (same) {
+        g_cmpw = nun;
+        qsort(B.ci, (size_t)B.n, (size_t)nun * 4, cmp_row);
+        uint32_t *c2 = malloc((size_t)G->n * nun * 4); memcpy(c2, G->ci, (size_t)G->n * nun * 4);
+        qsort(c2, (size_t)G->n, (size_t)nun * 4, cmp_row);
+        same = memcmp(B.ci, c2, (size_t)B.n * nun * 4) == 0;
+        free(c2);
+    }
+    if (!same) fprintf(stderr, "BRUTE480 MISMATCH: brute %ld solutions, MITM %ld\n", B.n, G->n);
+    free(B.ci);
+    return same ? 0 : 1;
+}
+
+typedef struct {
+    int nwords, nonappl, taubad, budget, nT, nun, shadow_ok;
+    double space; long nG, compat, passchain, nwin, alive, wordsalive, notshadow_compat, notshadow_alive, win_budget;
+    int have_nn; mpz_t nn;
+} R480;
+static void r480_init(R480 *r) { memset(r, 0, sizeof *r); mpz_init(r->nn); }
+
+typedef struct { mpz_t V; int shadow; int sn; u64 tgt[64]; unsigned char ts[64]; mpz_t btgt[4]; unsigned char bts[4]; } GInfo;
+
+static int chain480(Co *c, GInfo *gi, int a) {
+    for (int i = 0; i < g_nlp; i++) {
+        LP *P = &g_lp[i];
+        if (P->L != 480 || !P->on) continue;
+        if (!gi->ts[i]) {
+            u64 vm = mpz_fdiv_ui(gi->V, P->p);
+            if (vm == 0) gi->ts[i] = 2; else { gi->tgt[i] = tgt_for(P, vm, a); gi->ts[i] = 1; }
+        }
+        if (gi->ts[i] == 2) return 0;
+        if (!cut_lp_tgt(c, P, gi->tgt[i])) return 0;
+    }
+    for (int i = 0; i < g_nbp; i++) {
+        BP *B = &g_bp[i];
+        if (B->L != 480 || !B->on) continue;
+        if (!bp_cut(c, B, gi->V, a, &gi->btgt[i], &gi->bts[i])) return 0;
+    }
+    return 1;
+}
+
+static void dump_point(const char *key, int ri, int wi, const char *tag, const GInfo *gi, const mpz_t Lv, const Co *c, int a) {
+    if (!g_ptdump) return;
+    mpz_t nn, pb, pc; mpz_inits(nn, pb, pc, NULL);
+    co_nearest(c, nn, pb, pc);
+    char *s1 = mpz_get_str(NULL, 10, gi->V), *s2 = mpz_get_str(NULL, 10, Lv), *s3 = mpz_get_str(NULL, 10, nn), *s4 = mpz_get_str(NULL, 10, pb), *s5 = mpz_get_str(NULL, 10, pc);
+    fprintf(g_ptdump, "{\"key\":\"%s\",\"rep\":%d,\"word\":%d,\"tag\":\"%s\",\"a\":%d,\"V\":\"%s\",\"Lv\":\"%s\",\"nn\":\"%s\",\"pb\":\"%s\",\"pc\":\"%s\"}\n", key, ri, wi, tag, a, s1, s2, s3, s4, s5);
+    free(s1); free(s2); free(s3); free(s4); free(s5);
+    mpz_clears(nn, pb, pc, NULL);
+}
+
+static void run_rep480(const char *key, int ri, const Rep *rep, const Co *co0, int a, long maxcases, R480 *rr) {
+    int k = rep->n, nu = rep->nu;
+    for (int j = 0; j < k; j++) if (rep->e[j] < 0 || rep->e[j] >= LMAX) die("shadow480: digit position outside 0..95");
+    DC s; dc_init(&s, rep, co0);
+    dc_stage(&s, a, maxcases);
+    if (s.budget) { rr->budget = 1; dc_free(&s); return; }
+    rr->nwords = s.nsv;
+    if (s.nsv == 0) { dc_free(&s); return; }
+
+    UnitSet S;
+    int nuu = unitset_build(&S, rep, nu);
+    u64 Tl[16]; int nT = 0;
+    u64 PT = 1;
+    for (int i = 0; i < g_nlp; i++) {
+        LP *P = &g_lp[i];
+        if (P->L != 480 || !P->on) continue;
+        if (!basis_trivial_at(&s.sv[0].co, P->p)) continue;
+        if (g_mut_skipT == P->p) continue;
+        if (nT >= 16 || (double)PT * (double)P->p > 1.8e19) die("shadow480: trivial-image modulus overflows 64 bits");
+        Tl[nT++] = P->p; PT *= P->p;
+    }
+    if (nT == 0) { rr->nonappl++; unitset_free(&S); dc_free(&s); return; }
+    rr->nT = nT; rr->nun = S.nun;
+    unitset_vals(&S, rep, nu, PT);
+
+    mpz_t w[MAXIT], V, tmp;
+    mpz_init(V); mpz_init(tmp);
+    for (int j = 0; j < k; j++) { mpz_init(w[j]); mpz_set_si(w[j], rep->d[j] - 1); mpz_mul(w[j], w[j], P10[rep->e[j]]); }
+    mpz_sub_ui(V, P10[nu], 1); mpz_divexact_ui(V, V, 9);
+    for (int j = 0; j < k; j++) mpz_add(V, V, w[j]);
+
+    unsigned *fmask = malloc((s.nsv + 1) * sizeof(unsigned));
+    char *wok = calloc(s.nsv + 1, 1);
+    for (int wi = 0; wi < s.nsv; wi++) {
+        unsigned m = 0; for (int j = 0; j < k; j++) if (s.sv[wi].t[j] >= 0) m |= 1u << j;
+        fmask[wi] = m;
+        const Co *wc = &s.sv[wi].co;
+        int ok = 1;
+        for (int i = 0; i < nT; i++) {
+            u64 p = Tl[i], n = p - 1;
+            if (!basis_trivial_at(wc, p)) ok = 0;
+            u64 Tw = mulm(mulm(powm(2, a, p), powm(3, mpz_fdiv_ui(wc->v0b, n), p), p), powm(7, mpz_fdiv_ui(wc->v0c, n), p), p);
+            if (Tw != mpz_fdiv_ui(V, p)) { rr->taubad++; ok = 0; }
+        }
+        if (!ok) { rr->nonappl++; continue; }
+        wok[wi] = 1;
+    }
+
+    GList G = {0, 0, 0, NULL};
+    double tm0 = cpu_s();
+    if (mitm480(&S, &G)) { rr->budget = 1; goto cleanup; }
+    rr->space = g_mitm_space; rr->nG = G.n;
+    if (g_verbose480) fprintf(stderr, "MITM480 key=[%s] units=%d space=%.3g left=%.3g right=%.3g bloom_cands=%ld matches=%ld [%.1fs]\n", key, S.nun, g_mitm_space, g_mitm_left, g_mitm_right, g_bloom_cands, g_true_matches, cpu_s() - tm0);
+    if (g_brute480) {
+        if (g_mitm_space > 4e7) die("brute480: space too large");
+        if (brute480(&S, &G)) die("brute480: MITM set differs from the exhaustive set");
+    }
+
+    int nG = (int)G.n;
+    GInfo *gis = calloc((size_t)nG + 1, sizeof(GInfo));
+    int shadow_found = 0;
+    mpz_t Rw, Lv, V2, Rn;
+    mpz_inits(Rw, Lv, V2, Rn, NULL);
+    mpz_sub_ui(Rw, P10[480], 1); mpz_divexact_ui(Rw, Rw, 9);
+    for (int g = 0; g < nG; g++) {
+        const uint32_t *ci = G.ci + (size_t)g * G.nun;
+        GInfo *gi = &gis[g];
+        mpz_init(gi->V); for (int b2 = 0; b2 < 4; b2++) mpz_init(gi->btgt[b2]);
+        int sh = 1, sn = 0;
+        mpz_set_ui(gi->V, 0);
+        for (int u = 0; u < S.nun; u++) {
+            const Unit *U = &S.u[u]; const unsigned char *nv = U->n[ci[u]];
+            if (U->isnu) { for (int q = 0; q < 5; q++) if (nv[q]) sn = q; if (sn) sh = 0; continue; }
+            if (nv[0] != U->m) sh = 0;
+            for (int q = 0; q < 5; q++) if (nv[q]) {
+                mpz_set_si(tmp, U->d - 1); mpz_mul(tmp, tmp, P10[U->e + 96 * q]); mpz_mul_ui(tmp, tmp, nv[q]); mpz_add(gi->V, gi->V, tmp);
+            }
+        }
+        mpz_sub_ui(Rn, P10[nu + 96 * sn], 1); mpz_divexact_ui(Rn, Rn, 9); mpz_add(gi->V, gi->V, Rn);
+        gi->shadow = sh; gi->sn = sn;
+        if (sh) shadow_found = 1;
+    }
+    rr->shadow_ok = shadow_found;
+    if (!shadow_found) die("shadow480: the shadow composition is missing from the zero-sum set");
+
+    for (int wi = 0; wi < s.nsv; wi++) {
+        if (!wok[wi]) continue;
+        if (g_word_only >= 0 && wi != g_word_only) continue;
+        int fu[MAXIT + 1]; for (int u = 0; u < S.nun; u++) fu[u] = 0;
+        for (int j = 0; j < k; j++) if (fmask[wi] >> j & 1) fu[S.dunit[j]]++;
+        const Co *wc = &s.sv[wi].co;
+        int walive = 0;
+        for (int g = 0; g < nG; g++) {
+            const uint32_t *ci = G.ci + (size_t)g * G.nun;
+            int comp = 1;
+            for (int u = 0; u < S.nun && comp; u++) { if (S.u[u].isnu) continue; if (S.u[u].n[ci[u]][0] < fu[u]) comp = 0; }
+            if (!comp) continue;
+            GInfo *gi = &gis[g];
+            rr->compat++; if (!gi->shadow) rr->notshadow_compat++;
+            Co c3; co_init(&c3); co_set(&c3, wc);
+            if (!chain480(&c3, gi, a)) { co_clear(&c3); continue; }
+            rr->passchain++;
+            int ncell = 0; int cell_e[160], cell_s[160]; int cell_nopt[160]; int cell_u[160][12];
+            for (int sg = 1; sg < 5; sg++) {
+                for (int u = 0; u < S.nun; u++) {
+                    const Unit *U = &S.u[u]; if (U->isnu) continue;
+                    if (U->n[ci[u]][sg] == 0) continue;
+                    int cidx = -1;
+                    for (int x = 0; x < ncell; x++) if (cell_e[x] == U->e && cell_s[x] == sg) cidx = x;
+                    if (cidx < 0) { if (ncell >= 160) { rr->win_budget++; cidx = -2; } else { cidx = ncell++; cell_e[cidx] = U->e; cell_s[cidx] = sg; cell_nopt[cidx] = 0; } }
+                    if (cidx == -2) break;
+                    if (cell_nopt[cidx] >= 12) die("shadow480: too many values in one window cell");
+                    cell_u[cidx][cell_nopt[cidx]++] = u;
+                }
+            }
+            double combos = 1; for (int x = 0; x < ncell; x++) combos *= (1 + cell_nopt[x]);
+            if (combos > 4e6) { rr->win_budget++; rr->budget = 1; co_clear(&c3); continue; }
+            mpz_set(Lv, Rw);
+            for (int j = 0; j < k; j++) if (fmask[wi] >> j & 1) mpz_add(Lv, Lv, w[j]);
+            int pick[160]; for (int x = 0; x < ncell; x++) pick[x] = 0;
+            for (;;) {
+                mpz_set(V2, Lv);
+                for (int x = 0; x < ncell; x++) if (pick[x]) {
+                    const Unit *U = &S.u[cell_u[x][pick[x] - 1]];
+                    mpz_set_si(tmp, U->d - 1); mpz_mul(tmp, tmp, P10[U->e + 96 * cell_s[x]]); mpz_add(V2, V2, tmp);
+                }
+                rr->nwin++;
+                Co c4; co_init(&c4);
+                if (window_cut(&c4, &c3, a, V2, 480)) {
+                    rr->alive++; walive = 1; if (!gi->shadow) rr->notshadow_alive++;
+                    mpz_t nn, pb, pc; mpz_inits(nn, pb, pc, NULL);
+                    co_nearest(&c4, nn, pb, pc);
+                    if (!rr->have_nn || mpz_cmp(nn, rr->nn) < 0) { mpz_set(rr->nn, nn); rr->have_nn = 1; }
+                    mpz_clears(nn, pb, pc, NULL);
+                    char tg[64]; snprintf(tg, sizeof tg, "g%d%s", g, gi->shadow ? "sh" : "");
+                    dump_point(key, ri, wi, tg, gi, V2, &c4, a);
+                    dump_surv(key, ri, wi, tg, &c4);
+                }
+                co_clear(&c4);
+                int x = 0;
+                while (x < ncell) { if (++pick[x] <= cell_nopt[x]) break; pick[x] = 0; x++; }
+                if (x == ncell) break;
+            }
+            co_clear(&c3);
+        }
+        if (walive) rr->wordsalive++;
+    }
+    for (int g = 0; g < nG; g++) { mpz_clear(gis[g].V); for (int b2 = 0; b2 < 4; b2++) mpz_clear(gis[g].btgt[b2]); }
+    free(gis);
+    mpz_clears(Rw, Lv, V2, Rn, NULL);
+cleanup:
+    free(G.ci);
+    for (int j = 0; j < k; j++) mpz_clear(w[j]);
+    mpz_clears(V, tmp, NULL);
+    free(fmask); free(wok);
+    unitset_free(&S);
+    (void)nuu;
+    dc_free(&s);
+}
+
+static void tierc_rep(Rep *r) {
+    static const int cls_n[10] = {1, 1, 2, 1, 2, 8, 6, 2, 4, 4};
+    static const int cls_d[10][8] = {{3}, {2}, {2, 7}, {2}, {2, 3}, {2, 2, 2, 2, 2, 2, 2, 2}, {2, 2, 2, 2, 2, 2}, {2, 2}, {2, 2, 3, 3}, {2, 3, 3, 3}};
+    int d[64], e[64], n = 0;
+    for (int c = 0; c < 10; c++) for (int i = 0; i < cls_n[c]; i++) { d[n] = cls_d[c][i]; e[n] = c; n++; }
+    for (int i = 1; i < n; i++) { int xd = d[i], xe = e[i], j = i - 1; while (j >= 0 && (d[j] > xd || (d[j] == xd && e[j] > xe))) { d[j + 1] = d[j]; e[j + 1] = e[j]; j--; } d[j + 1] = xd; e[j + 1] = xe; }
+    memset(r, 0, sizeof *r);
+    r->nu = 2; r->n = n;
+    for (int i = 0; i < n; i++) { r->d[i] = d[i]; r->e[i] = e[i]; }
+}
+
+static const char *verdict480(const R480 *t, const mpz_t Ub, char *bstr, int *closes) {
+    bstr[0] = 0; *closes = 0;
+    if (t->budget) return "BUDGET";
+    if (t->nonappl) return "NOTAPPL";
+    if (!t->have_nn) return "CLOSED-cut";
+    mpz_t U; mpz_init_set(U, Ub);
+    if (g_mut_loosen) mpz_sub_ui(U, U, 1);
+    *closes = sandwich_closes(t->nn, U);
+    mpz_clear(U);
+    fmt_round2(bstr, digits_bound_log10(t->nn));
+    return *closes ? "CLOSED-sandwich" : "open";
+}
+
+static int cmd_shadow480(int argc, char **argv) {
+    const char *lat = NULL, *cases = NULL, *only = NULL, *tsv = NULL, *ut = NULL, *lpf = NULL, *ptf = NULL, *survf = NULL;
+    long maxcases = 5000000; int tierc = 0, no480 = 0;
+    for (int i = 0; i < argc; i++) {
+        if (!strcmp(argv[i], "--lattice")) lat = argv[++i];
+        else if (!strcmp(argv[i], "--cases")) cases = argv[++i];
+        else if (!strcmp(argv[i], "--only")) only = argv[++i];
+        else if (!strcmp(argv[i], "--utable")) ut = argv[++i];
+        else if (!strcmp(argv[i], "--tsv")) tsv = argv[++i];
+        else if (!strcmp(argv[i], "--levelprimes")) lpf = argv[++i];
+        else if (!strcmp(argv[i], "--points")) ptf = argv[++i];
+        else if (!strcmp(argv[i], "--dump-surv")) survf = argv[++i];
+        else if (!strcmp(argv[i], "--maxcases")) maxcases = atol(argv[++i]);
+        else if (!strcmp(argv[i], "--tierc")) tierc = 1;
+        else if (!strcmp(argv[i], "--no480")) no480 = 1;
+        else if (!strcmp(argv[i], "--brute480")) g_brute480 = 1;
+        else if (!strcmp(argv[i], "--verbose")) g_verbose480 = 1;
+        else if (!strcmp(argv[i], "--word-only")) g_word_only = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "--mutant")) {
+            const char *m = argv[++i];
+            if (!strcmp(m, "loosen")) g_mut_loosen = 1;
+            else if (!strcmp(m, "noNu480")) g_mut_nonu480 = 1;
+            else if (!strncmp(m, "skipT=", 6)) g_mut_skipT = strtoull(m + 6, NULL, 10);
+            else if (!strncmp(m, "skipchain=", 10)) continue;
+            else die("unknown mutant");
+        }
+    }
+    if (no480) return cmd_shadow(argc, argv);
+    if (!lat || !lpf || !ut || (!tierc && (!cases || !only))) die("shadow480 needs --lattice --levelprimes --utable and (--tierc | --cases --only)");
+    load_lattice(lat); load_utable(ut);
+    load_levelprimes(lpf);
+    for (int i = 0; i < argc; i++) if (!strncmp(argv[i], "--mutant", 8) && i + 1 < argc && !strncmp(argv[i + 1], "skipchain=", 10)) {
+        u64 p = strtoull(argv[i + 1] + 10, NULL, 10); int hit = 0;
+        for (int q = 0; q < g_nlp; q++) if (g_lp[q].L == 480 && g_lp[q].p == p) { g_lp[q].on = 0; hit = 1; }
+        if (!hit) die("skipchain names a prime that is not a level-480 prime");
+    }
+    g_dedup = tierc;
+    if (ptf) g_ptdump = fopen(ptf, "w");
+    if (survf) g_surv_out = fopen(survf, "w");
+    FILE *ft = tsv ? fopen(tsv, "w") : NULL;
+    double t0 = cpu_s();
+    long nall = 0, nclosed = 0;
+    if (tierc) {
+        Rep rep; tierc_rep(&rep);
+        mpz_t y, Ub; mpz_init_set_ui(y, 1); mpz_init(Ub);
+        mpz_ui_pow_ui(y, 3, 3); { mpz_t s7; mpz_init(s7); mpz_ui_pow_ui(s7, 7, 10); mpz_mul(y, y, s7); mpz_clear(s7); }
+        mpz_set(Ub, *get_U(rep.n, 0));
+        Co co0; co_init(&co0); co_set(&co0, &g_lam);
+        mpz_set_si(co0.v0b, 3); mpz_set_si(co0.v0c, 10); co_babai(&co0);
+        char *ys = mpz_get_str(NULL, 10, y);
+        printf("tierc pattern: y=%s a=0 b=3 c=10 k=%d nu=%d log10 U''=%.4f\n", ys, rep.n, rep.nu, mpz_log10d(Ub));
+        R480 rr; r480_init(&rr);
+        run_rep480("tierc k31 3^3 7^10", 0, &rep, &co0, 0, maxcases, &rr);
+        char bstr[64]; int closes;
+        const char *vd = verdict480(&rr, Ub, bstr, &closes);
+        printf("rep0: words=%d (notappl=%d taubad=%d) T=%d units=%d space=%.4g |G|=%ld shadow=%d compat(word,child)=%ld notshadow_compat=%ld passchain=%ld windows=%ld alive=%ld wordsalive=%ld notshadow_alive=%ld win_budget=%ld\n",
+               rr.nwords, rr.nonappl, rr.taubad, rr.nT, rr.nun, rr.space, rr.nG, rr.shadow_ok, rr.compat, rr.notshadow_compat, rr.passchain, rr.nwin, rr.alive, rr.wordsalive, rr.notshadow_alive, rr.win_budget);
+        if (rr.have_nn) { char *nns = mpz_get_str(NULL, 10, rr.nn); printf("min nn=%.60s... (%zu digits)\n", nns, strlen(nns)); free(nns); }
+        printf("VERDICT %s%s%s log10 U''=%.4f [%.0fs]\n", vd, bstr[0] ? " bound 10^(10^" : "", bstr[0] ? bstr : "", mpz_log10d(Ub), cpu_s() - t0);
+        if (bstr[0]) printf("bound log10(digits) = %s vs log10 U'' = %.4f\n", bstr, mpz_log10d(Ub));
+        free(ys); mpz_clears(y, Ub, rr.nn, NULL); co_clear(&co0);
+        if (ft) fclose(ft);
+        if (g_ptdump) fclose(g_ptdump);
+        if (g_surv_out) fclose(g_surv_out);
+        return 0;
+    }
+    KeySet ks = load_keys(only);
+    FILE *f = fopen(cases, "r"); if (!f) die("cannot open cases");
+    Case c;
+    while (read_case(f, &c)) {
+        if (!key_wanted(&ks, c.s, c.Mstr, c.a, c.y) || seen_before(c.fullkey)) { mpz_clear(c.y); continue; }
+        nall++;
+        mpz_t Ub; mpz_init_set(Ub, *get_U(c.k, c.a));
+        double logU = mpz_log10d(Ub);
+        int a, b, cc;
+        if (!factor237(c.y, &a, &b, &cc) || a != c.a) die("anchor is not 2^a 3^b 7^c with the recorded a");
+        Co co0; co_init(&co0); co_set(&co0, &g_lam);
+        mpz_set_si(co0.v0b, b); mpz_set_si(co0.v0c, cc); co_babai(&co0);
+        RepList reps = {0, 0, 0};
+        filtered_reps(&reps, &c);
+        char *ys = mpz_get_str(NULL, 10, c.y);
+        R480 tot; r480_init(&tot);
+        char detail[8192]; size_t dn = 0; detail[0] = 0;
+        long totwords = 0;
+        for (int ri = 0; ri < reps.n; ri++) {
+            R480 rr; r480_init(&rr);
+            run_rep480(c.fullkey, ri, &reps.v[ri], &co0, c.a, maxcases, &rr);
+            totwords += rr.nwords;
+            if (rr.nwords) dn += snprintf(detail + dn, sizeof detail - dn, "%s(w=%d,T=%d,G=%ld,compat=%ld,chain=%ld,win=%ld,alive=%ld%s%s)", dn ? " " : "", rr.nwords, rr.nT, rr.nG, rr.compat, rr.passchain, rr.nwin, rr.alive, rr.nonappl ? ",NONAPPL" : "", rr.budget ? ",BUDGET" : "");
+            tot.budget |= rr.budget; tot.nonappl += rr.nonappl; tot.alive += rr.alive; tot.nG += rr.nG; tot.compat += rr.compat; tot.nwords += rr.nwords;
+            if (rr.have_nn && (!tot.have_nn || mpz_cmp(rr.nn, tot.nn) < 0)) { mpz_set(tot.nn, rr.nn); tot.have_nn = 1; }
+            mpz_clear(rr.nn);
+        }
+        char bstr[64]; int closes;
+        const char *vd = verdict480(&tot, Ub, bstr, &closes);
+        int closed = !strcmp(vd, "CLOSED-cut") || !strcmp(vd, "CLOSED-sandwich");
+        nclosed += closed;
+        printf("s=%-8s M=%-12s a=%d y=%-11s k=%d log10 U=%.1f reps=%d words=%ld -> %s%s%s %s alive=%ld [%.0fs]\n", c.s, c.Mstr, c.a, ys, c.k, logU, reps.n, totwords, vd,
+               bstr[0] ? " bound 10^(10^" : "", bstr[0] ? bstr : "", detail, tot.alive, cpu_s() - t0);
+        if (ft) fprintf(ft, "%s\t%s\t%s\t%d\t%s\t%d\t%ld\t%s\t%s\t%ld\n", c.fullkey, c.s, c.Mstr, c.a, ys, reps.n, totwords, vd, bstr, tot.alive);
+        fflush(stdout);
+        free(ys); mpz_clear(tot.nn); mpz_clear(Ub);
+        free(reps.v); co_clear(&co0); mpz_clear(c.y);
+    }
+    printf("\n%ld of %ld patterns closed by the level-480 step; discrete logs %ld [%.0fs]\n", nclosed, nall, g_ndlog, cpu_s() - t0);
+    if (ft) fclose(ft);
+    if (g_ptdump) fclose(g_ptdump);
+    if (g_surv_out) fclose(g_surv_out);
+    return 0;
+}
+

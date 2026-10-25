@@ -1,0 +1,4 @@
+FAIL tierc k31 3^3 7^10 0 0 g0sh ['norm', 'level96 primes vs anchor', 'level480 primes vs V', 'tail 10^480']
+FAIL tierc k31 3^3 7^10 0 3 g0sh ['norm', 'level96 primes vs anchor', 'level480 primes vs V', 'tail 10^480']
+FAIL tierc k31 3^3 7^10 0 4 g0sh ['norm', 'level96 primes vs anchor', 'level480 primes vs V', 'tail 10^480']
+3 survivor points checked with Python integers: 0 satisfy every congruence, 3 do not; level-96 primes 20, level-480 primes 22

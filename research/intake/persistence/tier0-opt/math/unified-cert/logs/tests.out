@@ -1,0 +1,6 @@
+PASS test_nearest_routines_agree
+PASS test_node_sets_agree
+PASS test_open_then_closed_matches_oracle
+PASS test_planted_refused_and_threshold
+PASS test_verifiers_refuse_tampering
+failures 0

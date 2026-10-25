@@ -1,0 +1,20 @@
+[22:26:54] gate v2: 103 equations, 21 plants, jobs=2, logs /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/branchsplit/logs/gate_mut_swap37
+[22:26:54] candidate lvl12=/private/tmp/persist-branchsplit/mutpipe_swap37/lvl12 lvlN=None
+[22:27:31] differential + plants done in 37s
+[22:27:31] FINDING [python pipeline run_vertex_c 72, 224] pipeline vertex224: run_vertex_c output differs (rc cand 1; 6 vs 2 rows): rbose, l12=surv, l12_n_in=stats['patterns'], presolved=sols, lift_fn=(make_c_lift(M, workdir) if clift else None))
+  File "/private/tmp/persist-branchsplit/gwork/pipes/cand_mutpipe_swap37_lvl12_9e952b75_ee012b38_ovf65721c248/tier0v2.py", line 422, in solve_equation
+    assert hit, f"POSITIVE CONTROL LOST at level {L}: y={y}"
+           ^^^
+AssertionError: POSITIVE CONTROL LOST at level 12: y=2744
+
+[22:27:31] FINDING [planted children (pipeline)] plant plant33614: planted child 33614 (M=[3, 3, 4, 6], 5 digits) NOT recovered: AssertionError: POSITIVE CONTROL LOST at level 12: y=33614
+[22:27:31] FINDING [planted children (pipeline)] plant plant161414428: planted child 161414428 (M=[2, 4, 4, 4, 6, 8], 9 digits) NOT recovered: AssertionError: POSITIVE CONTROL LOST at level 12: y=161414428
+[22:27:31] 
+STAGE                                 VERDICT  DETAIL
+----------------------------------------------------------------------------
+lvl12 differential (corpus + 72/224)  PASS     118 equations, raw sorted stdout + stderr counters
+lvlN differential (corpus + 72/224)   SKIP     118 equations, parents from reference chain + wild parents; raw sorted stdout, counters, python-side reconstruction; 136 genuine-parent chains (true child must reappear)
+off-nominal configs (K != 3, np = 7)  PASS     8 configs: {'EQUIVALENT': 8, 'REFUSES': 0, 'DIVERGED': 0, 'CRASH': 0}
+python pipeline run_vertex_c 72, 224  FAIL     16 rows (open counts, children, per-level survivors, c_stats) ref vs cand
+planted children (pipeline)           FAIL     19/21 recovered
+[22:27:31] GATE v2: FAIL

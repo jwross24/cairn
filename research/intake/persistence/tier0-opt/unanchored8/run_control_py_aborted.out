@@ -1,0 +1,3 @@
+1161216 22222222222799 14 11519532122112 - - recorded status cut1 s480w None items matching anchor 1 lattice same True reps 1 111.0s
+  record (nu, eps) of each matching item is among the anchor representations: [True]
+  python coset-from-record verdict: cut1 (1/1 representations closed by the cut) recorded: cut1 MATCH

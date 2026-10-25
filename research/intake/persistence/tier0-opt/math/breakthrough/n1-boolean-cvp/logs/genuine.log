@@ -1,0 +1,13 @@
+{'a': 5, 'b': 1385, 'c': 577, 'E': 1, 'D': 2, 'm': 88, 'linear_ok': True, 'exact_ok': True, 'admissible': True, 'exact_system': False, 'certified_at_planted': False, 'nodes': 3} OK
+{'a': 9, 'b': 1233, 'c': 524, 'E': 1, 'D': 2, 'm': 89, 'linear_ok': True, 'exact_ok': True, 'admissible': True, 'exact_system': False, 'certified_at_planted': False, 'nodes': 3} OK
+{'a': 0, 'b': 1320, 'c': 774, 'E': 1, 'D': 2, 'm': 88, 'linear_ok': True, 'exact_ok': True, 'admissible': True, 'exact_system': True, 'certified_at_planted': False, 'nodes': 3} OK
+{'a': 0, 'b': 1087, 'c': 798, 'E': 1, 'D': 2, 'm': 83, 'linear_ok': True, 'exact_ok': True, 'admissible': True, 'exact_system': True, 'certified_at_planted': False, 'nodes': 3} OK
+{'a': 0, 'b': 1365, 'c': 759, 'E': 2, 'D': 3, 'm': 86, 'linear_ok': True, 'exact_ok': True, 'admissible': True, 'exact_system': True, 'certified_at_planted': False, 'nodes': 3} OK
+{'a': 2, 'b': 919, 'c': 544, 'E': 2, 'D': 3, 'm': 84, 'linear_ok': True, 'exact_ok': True, 'admissible': True, 'exact_system': True, 'certified_at_planted': False, 'nodes': 3} OK
+{'a': 9, 'b': 1114, 'c': 535, 'E': 2, 'D': 3, 'm': 85, 'linear_ok': True, 'exact_ok': True, 'admissible': True, 'exact_system': True, 'certified_at_planted': False, 'nodes': 3} OK
+{'a': 2, 'b': 946, 'c': 782, 'E': 2, 'D': 3, 'm': 90, 'linear_ok': True, 'exact_ok': True, 'admissible': True, 'exact_system': True, 'certified_at_planted': False, 'nodes': 3} OK
+{'a': 9, 'b': 930, 'c': 789, 'E': 2, 'D': 4, 'm': 332, 'linear_ok': True, 'exact_ok': True, 'admissible': True, 'exact_system': False, 'certified_at_planted': False, 'nodes': 3} OK
+{'a': 0, 'b': 1385, 'c': 614, 'E': 2, 'D': 4, 'm': 328, 'linear_ok': True, 'exact_ok': True, 'admissible': True, 'exact_system': True, 'certified_at_planted': False, 'nodes': 3} OK
+{'a': 0, 'b': 1195, 'c': 799, 'E': 2, 'D': 4, 'm': 338, 'linear_ok': True, 'exact_ok': True, 'admissible': True, 'exact_system': True, 'certified_at_planted': False, 'nodes': 3} OK
+{'a': 9, 'b': 925, 'c': 613, 'E': 2, 'D': 4, 'm': 320, 'linear_ok': True, 'exact_ok': True, 'admissible': True, 'exact_system': False, 'certified_at_planted': False, 'nodes': 3} OK
+genuine S-unit plants 12 failures 0

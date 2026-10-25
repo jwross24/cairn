@@ -1,0 +1,17 @@
+{
+ "report": {
+  "rep_rows": 0,
+  "dual": {
+   "rows": 100,
+   "status_eq": 100,
+   "min_rows": 59,
+   "min_eq": 59,
+   "lab_rows": 59,
+   "lab_eq": 59,
+   "cert_nodes": 80,
+   "verified_nodes": 80,
+   "pattern_summary_eq": 43
+  }
+ },
+ "mismatches": []
+}

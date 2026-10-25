@@ -1,0 +1,29 @@
+k=31: elementary bottom positions p_1..p_6 <= [0.0, 6.149747119504682, 26.750945827622594, 95.18664660447672, 322.52512370841333, 1077.7271978488875] ; p_k <= 10^16.07
+  m0= 1  a<=6  best split m=16  log10 G = 279.472
+  m0= 2  a<=26.8  best split m=16  log10 G = 266.299
+  m0= 3  a<=95.2  best split m=15  log10 G = 261.668
+  m0= 4  a<=323  best split m=15  log10 G = 249.191
+  m0= 5  a<=1.08e+03  best split m=14  log10 G = 243.757
+  m0= 6  a<=3.59e+03  best split m=14  log10 G = 232.113
+  m0=10  a<=4.37e+05  best split m=12  log10 G = 198.056
+  m0=15  a<=1.77e+08  best split m= 9  log10 G = 154.724
+  m0=20  a<=7.15e+10  best split m= 7  log10 G = 113.635
+  m0=25  a<=2.89e+13  best split m= 4  log10 G = 67.169
+  m0=30  a<=1.17e+16  best split m= 2  log10 G = 31.478
+  WORST CASE over m0 (all a>=1): log10 G = 279.472 at m0=1 (a<=6, split 16)
+k=44: elementary bottom positions p_1..p_6 <= [0.0, 6.149747119504682, 26.750945827622594, 95.18664660447672, 322.52512370841333, 1077.7271978488875] ; p_k <= 10^22.85
+  m0= 1  a<=6  best split m=23  log10 G = 394.167
+  m0= 2  a<=26.8  best split m=23  log10 G = 386.751
+  m0= 3  a<=95.2  best split m=22  log10 G = 376.208
+  m0= 4  a<=323  best split m=22  log10 G = 369.477
+  m0= 5  a<=1.08e+03  best split m=21  log10 G = 358.134
+  m0= 6  a<=3.59e+03  best split m=21  log10 G = 352.224
+  m0=10  a<=4.37e+05  best split m=19  log10 G = 317.782
+  m0=15  a<=1.77e+08  best split m=16  log10 G = 268.092
+  m0=20  a<=7.15e+10  best split m=14  log10 G = 232.113
+  m0=25  a<=2.89e+13  best split m=11  log10 G = 181.084
+  m0=30  a<=1.17e+16  best split m= 8  log10 G = 143.990
+  m0=35  a<=4.73e+18  best split m= 6  log10 G = 99.407
+  m0=40  a<=1.92e+21  best split m= 3  log10 G = 56.870
+  m0=43  a<=7.02e+22  best split m= 2  log10 G = 38.165
+  WORST CASE over m0 (all a>=1): log10 G = 394.167 at m0=1 (a<=6, split 23)

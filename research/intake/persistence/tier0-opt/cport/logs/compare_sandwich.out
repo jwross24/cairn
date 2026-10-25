@@ -1,0 +1,3 @@
+patterns 43, rep-depth entries compared 186, mismatches 0
+exact nearest-norm integers + survivor-count lists compared: 145, equal: 145
+python per-depth call (restarts from depth 1) total 4350.0s; C same-work (cumulative to D) 1.597s -> 2724x; C incremental stage only 1.224s -> 3555x

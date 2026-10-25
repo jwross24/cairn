@@ -1,0 +1,1 @@
+-p nice -n 10 ./cport_r2 shadow480 --rep-file data/r2_r3.rep --lattice         0.00s user 0.00s system 11% cpu 0.009 total

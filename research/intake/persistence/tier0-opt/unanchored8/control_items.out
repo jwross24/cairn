@@ -1,0 +1,9 @@
+Lambda_96: index 2.810e+56 [0.00s]
+s=1161216    M=22222222222799 a=14 y=0            reps=1   cases=2880    CLOSED
+s=11239424   M=222222222247778 a=8  y=0            reps=1   cases=3456    CLOSED
+s=11239424   M=222222222247778 a=8  y=0            reps=1   cases=3840    CLOSED
+s=11239424   M=222222222247778 a=8  y=0            reps=1   cases=2304    CLOSED
+s=1161216    M=22222222223679 a=1  y=0            reps=1   cases=1280    bound 10^(10^72.10) digits
+s=1161216    M=22222222223679 a=1  y=0            reps=1   cases=1280    CLOSED
+
+6 anchored patterns (6 representations): 5 CLOSED outright by the deep cut; others: bound >= 10^(10^72.10) digits [0s]

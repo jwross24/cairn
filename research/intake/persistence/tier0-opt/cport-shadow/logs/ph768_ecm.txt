@@ -1,0 +1,1 @@
+ecm: no factor found with B1=2e4 B2=1e6 over 60 curves ValueError('Increase the bounds') 25s

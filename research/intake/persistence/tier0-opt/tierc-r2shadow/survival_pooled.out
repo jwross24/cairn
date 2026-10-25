@@ -1,0 +1,3 @@
+patterns 25082 survivors 5 rate CP95 [6.47302172455251e-05, 0.00019934614464556255, 0.00046514556528359785]
+k quantiles [19, 26, 33] a quantiles [0, 6, 20, 47]
+ncases1 quantiles [1, 1, 1, 12, 20736] frac ncases1>=1e6 0.0

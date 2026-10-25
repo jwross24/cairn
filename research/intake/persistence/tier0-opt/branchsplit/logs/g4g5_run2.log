@@ -1,0 +1,30 @@
+== G4 plants candidate
+{"plants": 608, "found": 608, "lost": 0}
+== G5 swap37 vertex 224 (expect refusal)
+rc=1
+    assert hit, f"POSITIVE CONTROL LOST at level {L}: y={y}"
+== G5 swap37 kernel differential 72 224 (expect mismatch)
+MISMATCH 72 (2, 2, 3, 6)
+MISMATCH 72 (2, 3, 3, 4)
+{"vertex": 72, "equations": 9, "ref_open": 44, "cand_open": 9, "bsdrop": 35, "exact": 3, "py_dropped": 29, "mismatches": 6, "secs": 0.2}
+rc=0
+MISMATCH 224 (2, 2, 2, 2, 2, 7)
+MISMATCH 224 (2, 2, 2, 4, 7)
+{"vertex": 224, "equations": 5, "ref_open": 146, "cand_open": 28, "bsdrop": 118, "exact": 1, "py_dropped": 113, "mismatches": 4, "secs": 0.1}
+rc=0
+== G5 swap37 plants
+{"plants": 608, "found": 548, "lost": 60}
+== G5 drop3 vertex 224 (expect refusal)
+rc=1
+    assert hit, f"POSITIVE CONTROL LOST at level {L}: y={y}"
+== G5 drop3 kernel differential 72 224 (expect mismatch)
+MISMATCH 72 (2, 2, 2, 9)
+{"vertex": 72, "equations": 9, "ref_open": 44, "cand_open": 14, "bsdrop": 30, "exact": 3, "py_dropped": 29, "mismatches": 1, "secs": 0.2}
+rc=0
+MISMATCH 224 (2, 2, 7, 8)
+MISMATCH 224 (2, 4, 4, 7)
+{"vertex": 224, "equations": 5, "ref_open": 146, "cand_open": 27, "bsdrop": 119, "exact": 1, "py_dropped": 113, "mismatches": 2, "secs": 0.2}
+rc=0
+== G5 drop3 plants
+{"plants": 608, "found": 466, "lost": 142}
+DONE

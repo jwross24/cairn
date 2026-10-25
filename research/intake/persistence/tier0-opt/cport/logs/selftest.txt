@@ -1,0 +1,7 @@
+lattice: 20 primes, index 280999509749509611991995562563818636457519792000000000000
+PLANT nearest-point: 2000 random reduced cosets, exact descent vs 9x9 brute window: 0 mismatches
+PLANT positive: 300/300 genuine S-units (>=300 digits, a in 0..34) survive the chain K=96,192,288,384,480 with (b,c) inside every sub-coset; nearest norm exceeded the point's own norm in 0 cases; lazy prefilter wrongly dead in 0 cases
+PLANT negative: 300/300 corrupted-digit tails (digit moved at a position the verdict depends on) excluded at K=96
+PLANT own-pattern (faithful mode): 0/60 genuine S-unit patterns (all non-1 digits of the lowest 288, true copies) keep their point through dc_stage D=1..3; 60/60 with one copy index moved are dropped
+PLANT own-pattern (sound mode): 60/60 genuine S-unit patterns (all non-1 digits of the lowest 288, true copies) keep their point through dc_stage D=1..3; 60/60 with one copy index moved are dropped
+SELFTEST PASSED

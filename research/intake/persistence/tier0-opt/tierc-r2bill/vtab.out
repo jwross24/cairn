@@ -1,0 +1,14 @@
+k | n | cut | sandwich | open | NOTAPPL | BUDGET | needed raised caps
+20 1 1 0 0 0 0 0
+21 6 2 4 0 0 0 0
+22 12 1 11 0 0 0 0
+23 43 7 36 0 0 0 0
+24 63 13 50 0 0 0 1
+25 81 11 70 0 0 0 12
+26 116 18 98 0 0 0 24
+27 106 12 94 0 0 0 35
+28 63 9 54 0 0 0 28
+29 36 4 32 0 0 0 22
+30 12 0 12 0 0 0 7
+31 8 2 4 0 0 2 5
+{"closed by the sandwich (U'')": 465, 'closed by the cut': 80, 'BUDGET': 2}

@@ -1,0 +1,14 @@
+F 79 698047 698047 698047 robust
+F 80 724613 724613 724613 robust
+F 6883 447909267806 447909267806 447909267806 robust
+F 6885 448299783511 448299783511 448299783511 robust
+F 6900 451235888800 451235888800 451235888800 robust
+chat range [10^79,10^6885): 448299085464
+chat range [10^80,10^6883): 447908543193
+cairn range [1,10^6900): 451235888800
+DONE c values: 8147 min 0 max 8146 duplicates 0 conflicting 0
+missing c: []
+DONE sum: 448299085464
+per-c count mismatches vs exact: 0 []
+worker parity ok: True
+nice -n 10 uv run --no-project --with numpy --with gmpy2 python -I counts.py  2.39s user 0.04s system 97% cpu 2.492 total

@@ -1,0 +1,7 @@
+patterns 1335 new-not-closed or A>=64 flagged: []
+('sandwich', 1, 'CLOSED-cut') 250
+('sandwich', 1, 'CLOSED-sandwich') 23
+('sandwich', 2, 'CLOSED-cut') 884
+('sandwich', 2, 'CLOSED-sandwich') 157
+('sandwich', 3, 'CLOSED-cut') 19
+('sandwich', 3, 'CLOSED-sandwich') 2

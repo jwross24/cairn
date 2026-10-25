@@ -1,0 +1,18 @@
+import sys, time
+sys.path.insert(0, "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/sandwich-cong")
+from cc_lib import *
+t0 = time.time()
+b96, n96 = load_lam96()
+print("lam96 primes", n96, "index", det(b96), time.time() - t0)
+print(det(b96) == 280999509749509611991995562563818636457519792000000000000)
+g = math.gcd(math.gcd(abs(b96[0][0]), abs(b96[0][1])), math.gcd(abs(b96[1][0]), abs(b96[1][1])))
+print("content96", g)
+be, ne = load_lam_eff(b96)
+print("lam_eff primes", ne, "index digits", len(str(det(be))))
+g = math.gcd(math.gcd(abs(be[0][0]), abs(be[0][1])), math.gcd(abs(be[1][0]), abs(be[1][1])))
+print("content eff", g)
+w96 = Window(b96)
+print("96: c2", w96.c2, "A2", sorted(w96.A2), "t5", w96.t5, "A5", sorted(w96.A5), "Hs v5", )
+we = Window(be)
+print("eff: c2", we.c2, "A2", sorted(we.A2), "t5", we.t5, "A5", sorted(we.A5))
+print(time.time() - t0)

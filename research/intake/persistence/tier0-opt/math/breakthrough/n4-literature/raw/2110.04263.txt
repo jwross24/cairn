@@ -1,0 +1,1191 @@
+                                              The Multiplicative Persistence Conjecture Is
+                                                        True for Odd Targets
+
+                                              Éric Brier, Christophe Clavier2 , Linda Gutsche1 , and David Naccache1
+
+
+
+
+arXiv:2110.04263v1 [math.NT] 8 Oct 2021
+                                                                1
+                                                                  ENS, CNRS, PSL Research University
+                                                  Département d’informatique, École normale supérieure, Paris, France
+                                                       2
+                                                         Université de Limoges, XLIM-MATHIS, Limoges, France
+                                                          linda.gutsche@ens.psl.eu, david.naccache@ens.fr
+                                                                     eric.brier@polytechnique.org
+                                                                     christophe.clavier@unilim.fr
+
+
+
+                                                 Abstract. In 1973, Neil Sloane published a very short paper introducing
+                                                 an intriguing problem: Pick a decimal integer n and multiply all its digits
+                                                 by each other. Repeat the process until a single digit ∆(n) is obtained.
+                                                 ∆(n) is called the multiplicative digital root of n or the target of n. The
+                                                 number of steps Ξ(n) needed to reach ∆(n), called the multiplicative
+                                                 persistence of n or the height of n is conjectured to always be at most
+                                                 11.
+                                                 Like many other very simple to state number-theoretic conjectures, the
+                                                 multiplicative persistence mystery resisted numerous explanation attempts.
+                                                 This paper proves that the conjecture holds for all odd target values:
+                                                  – If ∆(n) ∈ {1, 3, 7, 9}, then Ξ(n) ≤ 1
+                                                  – If ∆(n) = 5, then Ξ(n) ≤ 5
+                                                 Naturally, we overview the difficulties currently preventing us from ex-
+                                                 tending the approach to (nonzero) even targets.
+
+
+                                          1    Introduction
+
+                                          In 1973, Neil Sloane published a very short paper [Slo73] introducing an intrigu-
+                                          ing problem: Pick a decimal integer n and multiply all its digits by each other.
+                                          Repeat the process until a single digit ∆(n) is obtained. ∆(n) is called the mul-
+                                          tiplicative digital root of n or the target of n. The number of steps Ξ(n) needed
+                                          to reach ∆(n), called the multiplicative persistence of n or the height of n is
+                                          conjectured to always be at most 11.
+                                              For instance, the target of 39 is 4, because:
+
+                                                         39 → 3 × 9 = 27 → 2 × 7 = 14 → 1 × 4 = 4 = ∆(39)
+                                              Like many other very simple to state number-theoretic conjectures, the mul-
+                                          tiplicative persistence mystery resisted numerous explanation attempts [Wor80],
+                                          [Sch], [PS], [McE19], [Dia11], [dFT14].
+   In particular, the conjecture is known to hold at least up to n = 1020000
+[Wei].
+   Addressing the Multiplicative persistence conjectures consists in studying the
+function f : n → f (n), where f (n) is obtained by multiplying the digits of the
+the number n.
+      Ξ(n) is hence the smallest k such that f k (n) ≤ 9.
+                                                                   Pr     i
+   Note that Ξ(n) is defined Q for all n ∈ N: letting n =           i=0 10 ai (where the
+                                 r
+0 ≤ ai ≤ 9 are digits), f (n) = i=0 ai < ar × 10r ≤ n.
+   Fn = {f (n), f 2 (n), f 3 (n), . . .} is thus a positive decreasing sequence, and as
+such, it converges.
+   Since Fn takes values in N, Fn can only converge by reaching a fix-point
+∆(n) and staying at it. However, the Fn is strictly decreasing while its values
+have at least two decimal digits.
+   Finally, Fn converges converges toward a one-digit number3 , ∆(n) ≤ 9. Hence
+the notion of multiplicative persistence 4 Ξ(n) defined as the number of steps
+required to reach ∆(n).
+      The following is a famous conjecture [K.81]:
+
+Conjecture 1. ∀n ∈ N, Ξ(n) ≤ 11.
+
+    In this work we prove the conjecture for all odd targets5 and provide bounds
+for Ξ(n) depending on the value of ∆(n).
+
+
+1.1     Notations
+
+To present formulae concisely, we introduce the following compact notation:
+
+                              [ ac db ] = 2a × 3b × 5c × 7d
+   When an exponent is zero we might just omit the corresponding entry in the
+notation, or replace it by a 0 e.g.:
+
+                             [ 0c db ] = [ c db ] = 3b × 5c × 7d
+   ordn (a) will denote the order of a mod n, i.e. the smallest positive integer k
+such that ak ≡ 1 mod n.
+   In this paper, the term “digit” will exclusively refer to decimal digits.
+   Let d be a digit, the shorthand notation dx will stand for a sequence of x
+consecutive digits d, e.g.:
+
+                             98 07 1 = 9999999900000001
+3
+  known as “multiplicative digital root” or “target”.
+4
+  or “height”.
+5
+  i.e. ∆(n) ∈ {1; 3; 5; 7; 9}
+               87                                59                              89                      39
+             78                                    95
+                56 65                                                           98 72               27 93
+                                             45
+                       30                                                                  14
+                          50            20        54 69
+                       70 0 90                       96                                    4
+                             80
+                  85 40 60                                                                41 22
+                   58      10
+                              52
+                                25                                                         23
+                                                                                84                        44
+                                  55                                  68          32                                    74
+                                                                           48              6             16        28
+                                                                      86                  61                            47
+                                                                                                          82
+                                             99
+             77      94
+                  49                         81           38     88
+                      36       29                             64
+                   66                                    24 83                  75
+                             92 18           8                                                                51
+                                                           46                        35             5
+                                                                                57         15
+                             63                  42
+                                                                                               53
+                        97
+                             79                  76 67
+
+
+                  62                                  91        19
+             26                        73
+                                                           9
+                  12    2         21                                  71    7        17             31    3        13
+             34                        37
+                  43                                       33
+
+
+
+             11   1
+
+
+
+                                   Fig. 1. Genealogy for 0 ≤ n ≤ 99.
+
+
+   To simplify notations we will denote by ~x a sequence of (k + 1) indexed
+variables starting with x0 and ending with xk , that is: ~x = “x0 , x1 , . . . , xk ”.
+Operations on vectors are to be understood component wise, e.g.:
+
+                       ~x + 7~y = “x0 + 7y0 , x1 + 7y1 , . . . , xk + 7yk ”
+    Finally, we will also need the following definition:
+
+Definition 1. decJ 1∗ a3 5b 7c d9 K denotes the set of decimal integers where the digits
+3, 5, 7, 9 respectively appear a, b, c, d times (at any position) with any number of
+1s.
+
+   The acronyms dnv, aad and anad will respectively stand for “do(es) not
+verify”, “are all different (from each other)” and “are not all different”. e.g.
+“x = 2 dnv x2 = 5”, “{1,2,3} aad”, “a = 1, b = 2 and c = 1 anad.”
+
+
+2    Convergence Genealogies
+(P1) : Take y an odd number. If ∃x such that f (x) = y then, as the product of
+the digits of x, y can be written as y = [ αγ βδ ]. Since y is odd, y = [ γ βδ ]. As an
+antecedent of y, x belongs to one of the sets decJ 1∗ β31 γ5 δ7 β92 K, with β1 +2×β2 = β.
+Conversely, if y = [ γ βδ ] and x ∈ decJ 1∗ β31 γ5 7δ β92 K, with β1 + 2 × β2 = β, then
+f (x) = y.
+   Let us notice that if ∆(n) is odd, then n has to be odd too: indeed, if n
+would have been even, its last digit would be even as well, and thus f (n) would
+be even, and so on.
+    For a digit d, let us denote as tree of antecedents of d the graph Ad = (Vd , Ed )
+defined as follows:
+
+ – d ∈ Vd
+ – If s ∈ Vd and x such that f 2 (x) = s, then f (x) ∈ Vd and (s, f (x)) ∈ Ed
+
+  (P2) : Then, {n : ∆(n) = d} = {n : f (n) ∈ Vd }, and Ξ(n) for n such that
+∆(n) = d is the number of different nodes in the path connecting d to f (n).
+    (P1) and (P2) together with the knowledge of A1 , A3 , A5 , A7 and A9
+describe all numbers n such that ∆(n) = d for a given odd digit d. We now want
+to prove that A1 , A3 , A5 , A7 and A9 are respectively the following graphs:
+
+
+
+
+B1 = (U1 , F1 ) =     1
+
+
+B3 = (U3 , F3 ) =     3
+
+B5 = (U5 , F5 ) =
+                                            75
+
+                            35             175             1575
+
+                                           1715           77175
+
+5             15           135
+
+
+
+
+                           315             3375           59535
+
+
+B7 = (U7 , F7 ) =     7
+
+
+B9 = (U9 , F9 ) =     9
+3     Establishing the Equations
+
+The five graphs above are respectively sub-graphs of A1 , A3 , A5 , A7 and A9 .
+To prove that they are also equal to said graphs, we need to prove for d ∈
+{1; 3; 5; 7; 9} that for each s ∈ Ud , if x is such that f 2 (x) = s, then f (x) ∈ Ud .
+    For example take d = 1 and s = 1. Let us consider x such that f 2 (x) = s.
+Because 1 = [ 0 00 ], (P1) gives that f (x) ∈ decJ ∗1 03 05 07 09 K, meaning that f (x) is
+only composed of 1s. Therefore, there exists a (corresponding to the number of
+                                         a
+digits of f (x)) such that f (x) = 10 9−1 . On the other hand, f (x) = [ γ βδ ], and
+f (x) has neither 0 nor 5 as digits since f 2 (x) = 1, so we have γ = 0. We thus
+                  a
+want to solve 10 9−1 = [ 00 βδ ], or equivalently: 10a − 1 = [ 00 w  u ].
+
+
+     For another example, take d = 5 and s = 315. Let us consider x such that
+f 2 (x) = s. Because 315 = [ 1 21 ], (P1) gives that either f (x) ∈ decJ 1∗ 23 15 17 09 K or
+f (x) ∈ decJ ∗1 03 15 17 19 K. Therefore, either
+
+ – there exist a (corresponding to the number of digits of f (x)), and b, c, d, e
+   (corresponding respectively to the positions6 of the digits 3, 3, 5 and 7 in
+                               a
+   f (x)) such that f (x) = 10 9−1 + (3 − 1) × 10b + (3 − 1) × 10c + (5 − 1) × 10d +
+   (7 − 1) × 10e (with a > b, c, d, e ≥ 0 and b, c, d, e all different because of what
+   a, b, c, d, e represent),
+                                                      a
+ – or there exist a and b, c, d such that f (x) = 10 9−1 + (5 − 1) × 10b + (7 − 1) ×
+   10c + (9 − 1) × 10d .
+
+On the other hand, f (x) = [ γ βδ ]. We thus want to solve
+
+                                                             u
+ – 10a + 18 × 10b + 18 × 10c + 36 × 10d + 54 × 10e − 1 = [ v w ]
+         a           b          c          d         u
+ – and 10 + 36 × 10 + 54 × 10 + 72 × 10 − 1 = [ v w ]
+
+
+3.1     About the Possible Values of v = γ, the Power of 5
+
+If d 6= 5 is an odd digit, if s ∈ Ud and x such that f 2 (x) = s, f (x) = [ γ βδ ] with
+γ = 0 since f (x) would otherwise end with 0 or 5, which would make f k (x) = d
+for some k impossible.
+   For d = 5 however, if s ∈ U5 and x such that f 2 (x) = s, we initially only
+know that f (x) = [ γ βδ ].
+   Let us look at the values [ γ βδ ] takes if γ ≥ 5: odd multiples of 55 have their
+values modulo 105 in7 :
+
+               {3125, 9375, 15625, 21875, 28125, 34375, 40625, 46875,
+               53125, 59375, 65625, 71875, 78125, 84375, 90625, 96875}
+6
+    Position 0 corresponds to the least significant digit.
+7
+    This set is formed of 55 × (2i + 1) for 0 ≤ i ≤ 15.
+   Therefore, if f (x) = [ γ βδ ] with γ ≥ 5, either f (x) = 9375 in Z or f (x) mod
+    5
+10 = 59375 = [ 10 52 ]. However, f (9375) = 945 ∈  / U5 . Furthermore, if f (x) mod
+105 = 59375, f 2 (x) is a multiple of 4725, but 4725 divides no element of U5 .
+From that, we know that γ ≤ 4.
+   Similarly, odd multiples of 54 have their values modulo 104 in 8 :
+
+                    {625, 1875, 3125, 4375, 5625, 6875, 8125, 9375}
+    Thus, if γ = 4, s = f 2 (x) is a multiple of f (9375) = 945. Since 59535 is the
+only element of U5 that 945 divides, s = 59535. Note that knowing f (x) mod
+104 = 9375 gives us the positions of some digits 9, 3, 7, 5 in f (x).
+    Likewise, if γ = 3, f (x) mod 103 = 375 and f (375) = 105 divides s = f 2 (x),
+so s ∈ {315, 1575, 59535, 77175} = [ 01 21 ] × {1, 5, 189, 245}.
+    If γ = 2, f (75) = 35 divides s, so s ∈ {35, 175, 315, 1575, 1715, 59535, 77175}.
+    Furthermore, because of the values 3β × 7δ takes modulo 100 (the tens digit
+is always even), γ ≥ 1.
+
+3.2     Listing all Equations
+To summarise, let us take d an odd digit, s ∈ Ud and x such that f 2 (x) = s.
+Then f (x) = [ γ βδ ] with γ = 0 if d 6= 5, and γ taking at most four different
+values from {1, 2, 3, 4} depending on s if d = 5. Also f (x) ∈ decJ 1∗ h31 5i 7j h92 K,
+with h1 + 2 × h2 = h if s = [ i hj ].
+    For all d, s we can range over all possible split (h1 , h2 ) and all possible γ to
+establish a finite list of equations that f (x) must satisfy. The number of equations
+for all possible d are as follows:
+
+                           value of d               1    3     5   7     9
+                       number of equations          1    1    39   1     2
+
+    Notice that when γ 6= 0, the knowledge of f (x) mod 10γ gives the position
+of the γ last digits of f (x), and they are always such that we are able to divide
+both sides of the equation by 5γ .
+    As a consequence, all equations can be put in the form LC(~a) = [ 00 w       u ] where
+
+LC(~a) is a linear combination of 10a0 , 10a1 , . . . , 10ak . Precisely, they are defined
+by the formula:
+                                         k
+                                         X
+                      2h × (10a0 + 18          ci × 10ai ) + τh = [ 00 w
+                                                                       u]
+
+                                         i=1
+
+where
+                         h=γ        0          1    2        3      4
+                          τh        −1         7    23       19    119
+8
+    This set is formed of 54 × (2i + 1) for 0 ≤ i ≤ 7.
+and where the other parameters are given in Appendix A.
+    The solutions that interest us must verify (R) : a0 > a1 , . . . , ak and a1 , . . . , ak
+aad and non-negative. The following section describes a resolution algorithm for
+solving this kind of equations. It outputs a finite list of solutions from which one
+can verify that the only ones satisfying (R) correspond to values f (x) belonging
+to Ud .
+
+4     Resolution Algorithm
+4.1     The General Principle
+We want to solve (E) : LC(~a) = [ 00 w     u ] where LC(~     a) is a linear combination of
+  a0    a1          ak
+10 , 10 , . . . , 10 , a0 > a1 , . . . , ak and a1 , . . . , ak aad.
+    For some t > 0 and y, z ≤ t, assume that we know for (~a, u, w) a solution
+of (E) the residues (a~′ ) = (~a) mod t, u′ = u mod ord[ y 0 ] (3), and w′ = w mod
+                                                                     z 0
+ord[ y 0 ] (7).
+      z 0
+     Because LC(~a) is a linear combination of 10a0 , 10a1 , . . . , 10ak , the knowledge
+of (~a) mod t gives at most 2k+1 possible values for LC(~a) mod [ yz 00 ]. Indeed, since
+ai = a′i + qi × t with 0 ≤ a′i < t, we have
+                                  ′                      ′
+                     10ai = 10ai × (10t )qi ≡ 10ai × (0)qi mod [ yz 00 ].
+                                                                                       ′
+Thus, for each i, 10ai mod [ yz 00 ] can take only two values: either 10ai (in which
+case ai is known in Z) or 0.
+   Note that the knowledge of u′ = u mod ord[ y 0 ] (3) and w′ = w mod ord[ y 0 ] (7)
+                                                             z 0                              z 0
+              u ] mod [ y 0 ].
+gives us [ 00 w         z 0
+     Considering the equation (E) modulo [ yz 00 ], we are able, for each (~b) =
+                                                                           ′
+(b0 , . . . , bk ) ∈ {0, 1}k+1 , to compute LC(~a) mod [ yz 00 ] = i bi 10ai mod [ zy 00 ] and
+                                                                  P
+                                       ′    ′
+check whether it is equal to 3u × 7w mod [ yz 00 ].
+     We want y and z to be high enough such that the congruence modulo [ yz 00 ] is
+satisfied for only a few (~b). This set of complying solutions can then be further
+reduced. Indeed, for each surviving (~b) one can check whether the partial set
+of known ai (ai is known in Z for all i such that bi = 1) also complies with
+requirement (R). The hope is that each tuple (a~′ , u′ , w′ ) we may start from,
+either yields a uniquely determined (bi = 1 for all i) solution f (x) belonging to
+Ud , or no solution at all.
+
+4.2     Application
+Let us e.g. chose (t, y, z) = (12, 9, 6). ord[ 9 0 ] (3) = [ 75 00 ] and ord[ 9 0 ] (7) = [ 64 00 ].
+                                                    60                           60
+   Let us notice that 1012 − 1 = [ 00 31 ] × 11 × 13 × 37 × 101 × 9901. Denote
+          12
+m12 := 1033 ×7
+             −1
+                = 11 × 13 × 37 × 101 × 9901. m12 has the two following interesting
+properties:
+ – ordm12 (10) = 12                         
+                ′                               u′ ≡ 0 mod 9900
+ – and ([ 00 w
+             u ] ≡ 1 mod m ) ⇐⇒
+                          12                                    .
+               ′
+                                                w′ ≡ 0 mod 900
+       Assume that (~a, u, w) is a solution of (E). Let us look at all 0 ≤ a′1 , a′2 , . . . a′k <
+12 such that LC(a~′ ) ≡ 3u × 7w mod m12 for some 0 ≤ u′ < 9900 and 0 ≤ w′ <
+                              ′      ′
+
+
+900. Thanks to the two properties of m12 mentioned here above, we can thus
+reduce the possible values of (~a) mod 12 and get matching values for u mod 9900
+and w mod 900.
+       At this point we have a set of possible values for (~a) mod 12, and for each
+of them we know the corresponding values of u′ = u mod (11 × [ 22 2 ]) and w′ =
+w mod [ 22 2 ]. Remember that our goal is to know u and w modulo [ 75 00 ] and
+[ 64 00 ] respectively. To improve our knowledge of u and w our strategy is to lift
+from equation (E) considered modulo m12 to (E) considered modulo m24 :=
+1024 −1
+   33 ×7 = m12 × 73 × 137 × 94 03 1.
+       For each value (~a) can take modulo 12, we obtain 2k+1 different values for
+(~a) mod 24. Consider p = 73 a prime divisor of m24 and observe that ord73 (3) =
+[ 20 10 ] and ord73 (7) = [ 30 10 ]. Since ord73 (7) = [ 30 10 ] we can improve our knowledge
+of w from w mod [ 22 2 ] to w mod [ 23 2 ]. This is due to the principle described
+in Section 4.3. Considering other prime divisors of m24 progressively further
+improves our knowledge of u and w. As this knowledge is not yet sufficient,
+                                                                         48
+we eventually have to lift upper from m24 to m48 := 1033 ×7                 −1
+                                                                               and exploit other
+prime divisors of m48 up to obtaining our sufficient knowledge of u mod [ 75 00 ]
+and w mod [ 64 00 ].
+
+4.3     Improving our knowledge of u and w
+Suppose that we know the value of LC(~a) mod p. Suppose that we have mu and
+mw such that we know of 0 ≤ u′ < mu and 0 ≤ w′ < mw verifying u = u′ +hu mu
+and w = w′ + hw mw . Suppose that q, nu = λ × mu and nw = µ × mw are such
+that ordp (3) divides q × nu and ordp (7) divides q × nw .
+   We are searching for 0 ≤ u′′ < nu and 0 ≤ w′′ < nw such that u = u′′ + ku nu
+and w = w′′ + kw nw for some ku and kw . Let us write hu = h′u + c × λ.
+              u = u′ + hu mu = u′ + h′u mu + cλmu = u′ + h′u mu + cnu
+    u′′ is therefore of the form u′ + h′u mu for some 0 ≤ h′u < λ. Similarly, w′′ is
+of the form w′ + h′w mw for some 0 ≤ h′w < µ.
+    Looking at (E)q modp gives us
+                                                   ′′
+                                     u ]q = [ 0 u +ku nu ]q = [    0 u′ +h′ m +k n
+      (LC(~a))q = (3u × 7w )q = [ 00 w        0 w ′′ +k n
+                                                                         u u  u u q
+                                                                0 w ′ +h′ m +k n
+                                                                                  ]
+                                                        w   w             w   w   w   w
+
+                    0 u′ +h′ m                             ′  ′        ′  ′
+                = [ 0 w′ +h′u mu ]q × [ 00 kkwu qn
+                                                qn
+                                                  u
+                                                  w
+                                                    ] ≡ (3u +hu mu × 7w +hw mw )q mod p
+                           w   w
+   since ordp (3) divides q × nu and ordp (7) divides q × nv .
+   We thus have a way to search for 0 ≤ h′u < λ and 0 ≤ h′w < µ to transform
+our knowledge of u mod mu and w mod mw into the knowledge of u mod nu and
+w mod nw .
+4.4   The Equation resolution algorithm
+
+Let us start with Algorithm 1 to find (~a) mod 12 and the matching u mod 9900
+and w mod 900.
+
+
+Algorithm 1 Finding (a~′ ) = (~a) mod 12, u′ = u mod 9900 and w′ = w mod 900
+ 1: procedure find(g, t)          ⊲ Dichotomy to find whether g has matching u′ and w′
+ 2:    d←0
+ 3:    f ←length(t)-1
+ 4:    while d ≤ f do
+ 5:        m ← (d + f )/2
+ 6:        (y, u′ , w′ ) ← t[m]
+ 7:        if y = g then
+ 8:            return (True,u′ , w′ )
+ 9:        else if g > y then
+10:            d←m+1
+11:        else
+12:            f ←m−1
+13:     return (False,0, 0)
+14: procedure aMod12(LC)
+                    12
+15:    m12 ← 1033 ×7   −1
+
+16:    leftModM12 ← [ ]
+17:    for all (u′ , w′ ) ∈ J0; 9900 − 1K × J0; 900 − 1K do
+                     ′     ′
+18:        g ← 3u × 7w mod m12
+19:        leftModM12.append((g, u′ , w′ ))
+20:    leftModM12.sort()
+21:    S12 ← ∅
+22:    for all (a~′ ) ∈ J0; 11Kk+1 do                                    ⊲ non-optimal
+23:        g ← LC(a~′ ) mod m12
+24:        found,u′ ,w′ ← find(g,leftModM12)
+25:        if found then
+26:            S12 ← S12 ∪ {(a~′ , u′ , w′ )}
+27:    return S12
+
+
+
+    Notice that trying all (a~′ ) ∈ J0; 11Kk+1 is not always necessary: indeed, some
+tuple may be equivalent except for ordering, and it is possible to treat only one
+of those by adding conditions such as a′1 < a′2 for example.
+
+For Algorithm 2, let us make the following assumptions:
+
+ – we know (~a) mod t where t is a multiple of ordp (10) and we hence know
+   g = LC(~a) mod p
+ – we know u mod mu and w mod mw
+ – q, nu = λ × mu and nw = µ × mw are such that ordp (3) divides q × nu and
+   ordp (7) divides q × nw
+Algorithm 2 Improving our knowledge of u and w
+   procedure updgradeuw(p, g, u′ , w′ , mu , mw , λ, µ, q)
+2:    R′ ← ∅
+      for all h′u ∈ J0; λ − 1K do
+4:       for all h′w ∈ J0; µ − 1K do
+                                 ′ ′        ′ ′
+             if g q mod p = (3u +hu mu × 7w +hw mw )q mod p then
+6:               R ← R ∪ {u + hu mu , w + h′w mw }
+                    ′     ′    ′     ′    ′
+
+      return R′
+
+
+
+    Algorithm 2 used with g = LC(~a) mod p for one candidate value of (~a) modulo
+t returns the matching possible values for u mod λmu and w mod µmw .
+    To gain knowledge of u mod [ 75 00 ] and w mod [ 64 00 ], we follow the path de-
+scribed in Algorithm 3 where Learn(i) denotes the operation of using the param-
+eters of line i of Table 1 to learn the possible matches of u, w modulo the last
+two columns of Table 1.
+
+
+Algorithm 3 Learning Path
+     Use aMod12 to get:
+2:                          ~a12 = (~a) mod 12
+                             and the matching u mod 9900 and w mod 900
+ 4: Transform the ~a12 and matching u and w into a 2k+1 bigger set of possible:
+                            ~a24 = (~a) mod 24
+ 6:                          and the matching u mod 9900 and w mod 900
+    for all ~a24 and matching u mod 9900 and w mod 900 candidates: do
+ 8:    Learn(1)
+       Learn(2)
+10:    Learn(3)
+       for all ~a48 resulting from lifting from modulo m24 to modulo m48 do
+12:        Learn(4)
+           Learn(5)
+
+
+
+     This uses the following facts:
+     Fact 1: cf. Table 2.
+                            12
+     Fact 2:     m12 := 1033 ×7
+                              −1
+                                 = 11 × 13 × 37 × 101 × 9901
+
+                            24
+     Fact 3:     m24 := 1033 ×7
+                              −1
+                                 = m12 × p1 × p2 × p3
+     Hence ordp (10) divides 24 for p ∈ {p1 , p2 , p3 }.
+
+                            48
+     Fact 4:     m48 := 1033 ×7
+                              −1
+                                 = m24 × p4 × p5 × 5882353
+     Hence ordp (10) divides 48 for p ∈ {p4 , p5 }.
+    i          pi             qi           λi               µi         learn u mod           learn w mod
+
+    1          73             1            1                2           [ 22 2 ] × 11           [ 32 2 ]
+    2         137             17           2                1           [ 32 2 ] × 11           [ 32 2 ]
+    3        94 03 1     11 × 101          52               2           [ 34 2 ] × 11           [ 42 2 ]
+    4          17             1            2                1           [ 44 2 ] × 11           [ 42 2 ]
+                           p5 −1
+    5        98 07 1       142 04
+                                         23 × 5         24 × 52         [ 75 2 ] × 11           [ 84 2 ]
+
+                              Table 1. Parameters for function Learn(i)
+
+
+
+                 i       pi                     ordpi (3)                        ordpi (7)
+                                                  2
+                 1       73                     2 ×3                              23 × 3
+                 2      137                     23 × 17                          22 × 17
+                 3     94 03 1            [ 34 1 ] × 11 × 101                   [ 42 2 ] × 11
+                 4       17                        24                                   24
+                 5     98 07 1      [ 78 1 ] × 11 × 73 × 101 × 137          2 × 3 × ordp5 (3)
+
+                        Table 2. Parameter values for the learning steps.
+
+
+
+
+    After the last Learn(5) phase we have solutions to (E) of the form (~a48 , u′ , w′ )
+where ~a48 = ~a mod 48, u′ = u mod ([ 75 2 ] × 11) and w′ = w mod [ 84 2 ]. Since
+ord[ 9 0 ] (3) = [ 75 00 ] divides [ 75 2 ] × 11 and ord[ 9 0 ] (7) = [ 64 00 ] divides [ 84 2 ], we
+        60                                                        60
+ can now consider equation (E) modulo [ 96 00 ]. Denote a~′ = ~a48 mod 12 with
+~a = a~′ + h~′ × 12. As explained in Section 4.1, when taken modulo [ 96 00 ] each term
+                                              ′
+ 10ai of LC(~a) may reduce either to 10ai or to 0 depending whether h′i = 0 or
+ not. The first case corresponds to ai = a′i < 12 and ai is known in Z, while the
+ second case corresponds to ai ≥ 12 and ai is not uniquely determined.
+     Given a~′ , u′ and w′ Algorithm 4 exhausts all possible alternatives for each
+ ai (whether ai < 12 or not) and checks the congruence modulo m = [ 96 00 ]. For
+ each solution that satisfies the congruence, if it returns (a′i , 1) it means that ai
+ is not known in Z, but if it returns (a′i , 0) it is known that ai = a′i . Then the set
+ of known ai can be considered to check whether it violates the requirement (R).
+
+
+5       Dealing with Nonzero Even Targets
+
+Having computationally demonstrated Conjecture 1 for odd targets, a natu-
+ral question that arises is whether it is possible to demonstrates the same for
+Algorithm 4 Getting (~a) in Z
+   procedure toZ(LC,a~′ , u′ , w′ )
+2:    m ← 29 × 56
+      R←∅
+4:    for all ~b ∈ {0, 1}k+1 do
+         if LC(a~′ + ~b × 12) mod m = 3u × 7w mod m then
+                                              ′          ′
+
+
+6:           R ← R ∪ {((a0 , b0 ), (a1 , b1 ), . . . , (ak , bk ), u′ , w′ )}
+      return R
+
+
+
+d ∈ {2; 4; 6; 8}9. In this section we give general research directions about the com-
+putational difficulty of this task and provide shortcuts and observations that may
+be useful to reduce the complexity for anyone tempted to take over the challenge.
+    Given d and the graph Bd = (Ud , Fd ), we have to prove, for each s ∈ Ud ,
+that if f 2 (x) = s then f (x) ∈ Ud . Given s, we have to solve as many different
+equations as the number of ways to express s as a product of digits. As an
+example, for d = 2 and s = 112, expressing s as the product 4 × 4 × 7 leads to
+the following equation: 10a0 +27×10a1 +27×10a2 +54×10a3 = 2t ×3u ×7w . The
+number of vertices in Ud and the total number of equations they produce are thus
+parameters related to the difficulty of proving the conjecture for d. Nevertheless,
+all equations are not equally difficult to solve as we have to exhaust all (k + 1)-
+tuples (a0 , . . . , ak ). The number k of terms when expressing s as a product of
+digits is thus particularly important. Consequently, the largest k value, which
+relates to the computational work to solve the most difficult equation, is a more
+relevant parameter than the number of vertices or equations.
+   Table 3 gives for each even target the number of vertices in Ud , the total
+number of equations to solve, and the maximal number of terms (k + 1) for
+the left part of an equation. One can notice that for each even d, the number of
+equations to solve and the maximal (k+1) to deal with are much more important
+than for odd targets (the maximal value of (k + 1) was merely equal to 8 for
+d = 5 and s = 59535). Given that each ai is defined modulo 12, it seems totally
+out of reach to exhaust 1230 ≃ 2107 tuples in the most favorable case. Though,
+d = 2 and d = 4 are the most promising targets in terms of difficulty as there
+seems to be a gap with d = 6 and d = 8 both regarding the number of equations
+and its maximal difficulty.
+    Should one want to prove the conjecture for d = 2 or d = 4, whose graphs B2
+and B4 are given in Appendix C, we do have a number of technical observations
+(omitted here for lack of space) allowing to noticeably reduce the complexity of
+the exhaustive search needed in the first phase. Section 5.1 considers the power
+of two that appears in the right part of the equations with a hope to reduce its
+negative impact on the filtering strength of the first phase.
+
+9
+    The particular case d = 0 can not be treated by our method.
+                Target     Number of      Total number        (k + 1) of the most
+                  d         vertices       of equations        difficult equation
+
+                   2           33               1117           30, for s = [ 26 3
+                                                                             0 0]
+
+                   4            9               1062           32, for s = [ 23 7
+                                                                             0 1]
+
+                   6           84               6377           37, for s = [ 24 6
+                                                                             0 6]
+
+                   8           51               4774           45, for s = [ 39 3
+                                                                             0 2]
+
+
+                   Table 3. Complexity parameters for d ∈ {2; 4; 6; 8}.
+
+
+
+5.1    About the Possible Values of the Power of 2
+Given d ∈ {2; 4; 6; 8} and s ∈ Ud , we want to prove that if there exists x such
+that f (f (x)) = s then f (x) ∈ Ud . Let n2 , n3 . . . , n9 such that s = 9i=2 ini and
+                                                                              Q
+A := decJ 1∗ n22 n33 n44 n55 n66 n77 n88 n99 K. Then f (x) must simultaneously belong to A
+and be of the form [ 0t w    u ].
+
+    Compared to the case of odd d, the presence of the new power of 2 – which
+is a priori unbounded – may result in a much weaker filter. Nevertheless we have
+noticed that for all A of interest to this paper, the power of two of all x ∈ A is
+actually bounded. This motivates the following conjecture.
+
+Conjecture 2. Let A := decJ 1∗ n22 n33 n44 n55 n66 n77 n88 n99 K for some integers n2 , . . . , n9 .
+Then there exists a such that the maximum power of two in any x ∈ A is 2a .
+
+   We do not provide any proof of this conjecture, but Lemma 1 allows to
+determine such bound a for some specific sets A.
+
+Lemma 1. Let A := decJ 1∗ n22 n33 n44 n55 n66 n77 n88 n99 K for some integers n2 , . . . , n9 .
+Let e be a positive integer and define Ce = Ae ∪ Be where Ae is the set of all
+x ∈ A whose number of digits is less than e, and where Be is the set of all
+integers whose number of digits is equal to e, which do not contain 0, and whose
+number of occurrences n′j of digit j is at most nj for 2 ≤ j ≤ 9.
+If Ce does not contain any integer divisible by 2e , then the same holds for A.
+
+Proof. Let x ∈ A. If the number of digits of x is less than e, then x ∈ Ae , and
+thus is not divisible by 2e . In the other case, x0 = x mod 10e necessarily belongs
+to Be . As the sum of x0 which is not divisible by 2e and (x−x0 ) which is divisible
+by 10e , x is thus not divisible by 2e .                                          ⊓
+                                                                                  ⊔
+
+    Thus, if we can find the smallest e (if it exists) for which Be does not contain
+any integer divisible by 2e , then 2e−1 is the maximal power of two in any x ∈ A.
+    As an example, consider A = decJ ∗1 02 03 24 05 06 17 08 09 K which corresponds to the
+multi-set {4, 4, 7} of interest for d = 2 and s = 112. Lemma 1 is verified for e = 8
+and not verified for any e < 8, thus 27 is the maximal power of two in any x ∈ A
+(indeed 27 divides 111744).
+   Table 4 gives the maximal power of two 2a in any x ∈ A for all multi-sets
+that arise when still considering d = 2 and s = 112.
+
+
+             multi-set        a    representative reaching divisibility by 2a
+             (2,2,2,2,7)     13             172122112 = 21011 × 213
+              (2,2,4,7)      15        211111411712 = 17 × 378977 × 215
+               (4,4,7)        7              111744 = 32 × 97 × 27
+               (4,7,8)        9           1178112 = 3 × 13 × 59 × 29
+
+Table 4. Maximal powers of two arising for all multi-sets related to d = 2 and s = 112.
+
+
+
+
+6    In Conclusion
+
+Finally, solving the equations shows what we wanted: the graphs we gave, B1 ,
+B3 , B5 , B7 and B9 are indeed the trees of pre-images of respectively 1, 3, 5, 7
+and 9. As seen above, this gives for d ∈ {1, 3, 5, 7, 9} the form of all numbers n
+such that ∆(n) = d: those are the elements of
+                          [         [
+                                          decJ 1∗ α31 β5 γ7 α92 K
+                                 α
+                           v=[ β γ ]∈Vd α1 +2α2 =α
+
+    We also got the following optimal bounds:
+
+ – If ∆(n) ∈ {1, 3, 7, 9}, then Ξ(n) ≤ 1
+ – If ∆(n) = 5, then Ξ(n) ≤ 5
+
+   It follows that the Multiplicative Persistence conjecture is proved for all odd
+targets and, in addition, Ξ(2n + 1) ≤ 5 rather than Ξ(n) ≤ 11 in the general
+case.
+
+
+7    Further Research
+
+A natural question is the applicability of our strategy to even targets. Indeed, if
+successful, this will settle definitely the multiplicative persistence enigma. As is,
+the method that we just applied would require a prohibitive amount of calcula-
+tions although according to our estimates, tackling those cases would be within
+the reach of Grover’s algorithm on a quantum computer. Three other natural
+extension directions would be the simplification of the proofs provided in this
+paper (in case more elementary arguments could be used to reach the same
+results), the extension of our techniques to non-decimal bases as well as their
+generalization to the “Erdős-variant” of the conjecture mentioned in [K.81].
+References
+dFT14. Edson de Faria and Charles Tresser. On Sloane’s persistence problem. Exper-
+       imental Mathematics, 23(4):363–382, 2014.
+Dia11. Mark R. Diamond. Multiplicative persistence base 10: some new null results.
+       Online, 2011. https://tinyurl.com/awv6m76e.
+K.81.  Guy Richard K. Unsolved problems in number theory. Problem books in
+       mathematics. Springer-Verlag, New York Berlin Heidelberg, 1981.
+McE19. Kevin McElwee. An algorithm for multiplicative persistence research. Online,
+       July 13 2019. https://tinyurl.com/4dvyx6jd.
+PS.    Stephanie Perez and Robert Styer. Persistence: A digit problem. Online.
+       https://tinyurl.com/5236zfvd.
+Sch.   Walter Schneider.         The persistence of a number.               Online.
+       https://tinyurl.com/t8mmckvp.
+Slo73. Neil J. A. Sloane. The persistence of a number. J. Recreational Mathematics,
+       6:97–98, 1973.
+Wei.   Eric Weisstein. World of mathematics, multiplicative persistence. Online.
+       https://tinyurl.com/hu9b3szw.
+Wor80. Susan Worst. Multiplicative persistence of base four numbers. Scanned copy of
+       manuscript and correspondence, May 1980. https://tinyurl.com/33nspma4.
+A   Appendix: Parameters for Equations
+
+
+    ∆(n)   Eq ID   h   c1   c2   c3   c4   c5   c6   c7    τh
+     1      1.01   0                                      −1
+     3      3.01   0   1                                  −1
+     7      7.01   0   3                                  −1
+     9      9.01   0   1    1                             −1
+     9      9.02   0   4                                  −1
+     5      5.01   1                                        7
+     5      5.02   1   1                                    7
+     5      5.03   1   3                                    7
+     5      5.04   2                                      23
+     5      5.05   1   1    2                               7
+     5      5.06   1   1    1    1                          7
+     5      5.07   1   1    4                               7
+     5      5.08   1   2    3                               7
+     5      5.09   2   2                                  23
+     5      5.10   1   1    1    3                          7
+     5      5.11   2   1    1                             23
+     5      5.12   3   1                                  19
+     5      5.13   1   3    4                               7
+     5      5.14   2   4                                  23
+     5      5.15   1   1    1    2    3                     7
+     5      5.16   2   1    1    2                        23
+     5      5.17   3   1    2                             19
+     5      5.18   1   2    3    4                          7
+     5      5.19   2   2    4                             23
+     5      5.20   1   3    3    3                          7
+     5      5.21   2   3    3                             23
+     5      5.22   1   1    1    1    2    2                7
+     5      5.23   1   1    2    2    4                     7
+     5      5.24   1   1    1    1    1    1    3    3      7
+     5      5.25   2   1    1    1    1    1    3         23
+     5      5.26   3   1    1    1    1    3              19
+     5      5.27   1   1    1    1    3    3    4           7
+     5      5.28   2   1    1    1    3    4              23
+     5      5.29   3   1    1    3    4                   19
+     5      5.30   4   1    1    3                        119
+     5      5.31   1   1    3    3    4    4                7
+     5      5.32   2   1    3    4    4                   23
+     5      5.33   3   3    4    4                        19
+     5      5.34   4   3    4                             119
+     5      5.35   1   1    1    2    3    3    3           7
+     5      5.36   2   1    1    2    3    3              23
+     5      5.37   3   1    2    3    3                   19
+     5      5.38   1   2    3    3    3    4                7
+     5      5.39   2   2    3    3    4                   23
+B     Appendix: Solutions
+For simplicity, we call “Set of solutions of the equation of E in Z” a set ssZE of
+tuples such that if (~a, u, w) is a solution in Z of E verifying
+           (Property to avoid having to deal with equivalent solutions:)
+
+                                                                 ′
+                                                                 ai ≥ a′j and
+if (i < j and ci = cj ) then (∃(a′i , a′j ) ∈ J0; 11K2 ) s.t.
+                                                                 (ai , aj ) = (a′i , a′j ) mod 12
+
+then ∃(u′ , w′ ) ∈ Z2 such that (~a, u′ , w′ ) ∈ ssZE and u = u′ mod ord[ y 0 ] (3) and
+                                                                                    z 0
+w = w′ mod ord[ y 0 ] (7). Indeed, such an ssZE is what the algorithm returns: we
+                   z 0
+do not look for the exact values of u, w in Z since we do not need them, and we
+do not verify that all candidate tuples actually match a solution in Z.
+
+B.1    Solving Equation 1.01
+The algorithm returns the following ssZ1.01 ;
+              element of ssZ3.01           interpretation            conclusion
+                  ((1), 2, 0)                 f (x) = 1                 X
+
+B.2    Solving Equation 3.01
+The algorithm returns the following ssZ3.01 :
+              element of ssZ3.01           interpretation            conclusion
+                 ((1, 0), 3, 0)               f (x) = 3                   X
+                 ((1, 1), 3, 1)              dnv a0 > a1              dismissed
+
+B.3    Solving Equation 7.01
+The algorithm returns the following ssZ7.01 :
+              element of ssZ7.01           interpretation            conclusion
+                 ((1, 0), 2, 1)               f (x) = 7                 X
+
+B.4    Solving Equation 9.01
+The algorithm returns ssZ9.01 = ∅.
+
+B.5    Solving Equation 9.02
+The algorithm returns the following ssZ9.02 :
+              element of ssZ9.02           interpretation            conclusion
+                 ((1, 0), 4, 0)               f (x) = 9                   X
+                 ((1, 1), 6, 0)              dnv a0 > a1              dismissed
+B.6    5.xy Equations with no Solutions
+
+The algorithm returns ssZ5.xy = ∅ for the equations:
+
+       5.13    5.14   5.16     5.17    5.25     5.26    5.30       5.33   5.34
+
+
+B.7    Solving Equation 5.01
+
+The algorithm returns the following ssZ5.01 :
+
+              element of ssZ5.01      interpretation       conclusion
+                  ((0), 2, 0)             f (x) = 5           X
+                  ((1), 3, 0)            f (x) = 15           X
+
+   f (x) = 5 and f (x) = 15 are thus the only f (x) such that f 2 (x) = 5.
+
+
+B.8    Solving Equation 5.02
+
+The algorithm returns the following ssZ5.02 :
+
+              element of ssZ5.02      interpretation       conclusion
+                 ((1, 0), 2, 1)          f (x) = 35           X
+                 ((2, 0), 5, 0)         f (x) = 135           X
+                 ((2, 1), 4, 1)         f (x) = 315           X
+
+   35, 135, 315, are thus the only f (x) such that f 2 (x) = 15.
+
+
+B.9    Solving Equation 5.03
+
+The algorithm returns the following ssZ5.03 :
+
+              element of ssZ5.03      interpretation       conclusion
+                 ((3, 1), 2, 3)         f (x) = 1715          X
+
+
+B.10    Solving Equation 5.04
+
+The algorithm returns the following ssZ5.04 :
+
+              element of ssZ5.04      interpretation       conclusion
+                  ((0), 3, 0)            f (x) = 75           X
+                  ((1), 2, 1)           f (x) = 175           X
+
+     These two solutions, together with solution of Equation 5.03 give us that, if
+f 2 (x) = 35, then f (x) ∈ {75, 175, 1715}.
+B.11    Solving Equation 5.05
+The algorithm returns the following ssZ5.05 :
+    element of ssZ5.05             interpretation                 conclusion
+      ((0, 1, 0), 2, 2)     dnv a0 > a1 , a2 ≥ 0 with a1 6= a2     dismissed
+      ((3, 1, 1), 2, 3)     dnv a0 > a1 , a2 ≥ 0 with a1 6= a2     dismissed
+
+B.12    Solving Equation 5.06
+The algorithm returns the following ssZ5.06 :
+            element of ssZ5.06       interpretation       conclusion
+             ((0, 1, 0, 0), 2, 2)     a1 , a2 , a3 anad    dismissed
+             ((3, 1, 1, 1), 2, 3)     a1 , a2 , a3 anad    dismissed
+
+B.13    Solving Equations 5.07 and 5.08
+The algorithm coincidentally returns the following ssZ5.07 = ssZ5.08 :
+       element of ssZ5.07 and ssZ5.08       interpretation       conclusion
+              ((0, 0, 0), 3, 1)               dnv a1 6= a2        dismissed
+              ((3, 0, 0), 7, 0)               dnv a1 6= a2        dismissed
+
+B.14    Solving Equation 5.09
+The algorithm returns the following ssZ5.09 :
+            element of ssZ5.09       interpretation       conclusion
+               ((2, 0), 4, 1)          f (x) = 1575          X
+
+   According to solutions of Equations 5.08 and 5.09, 1575 is the only f (x) such
+that f 2 (x) = 175.
+
+B.15    Solving Equation 5.10
+The algorithm returns the following ssZ5.10 :
+            element of ssZ5.10       interpretation       conclusion
+             ((0, 0, 0, 0), 3, 1)     a1 , a2 , a3 anad    dismissed
+             ((3, 0, 0, 0), 7, 0)     a1 , a2 , a3 anad    dismissed
+
+B.16    Solving Equation 5.11
+The algorithm returns the following ssZ5.11 :
+            element of ssZ5.11       interpretation       conclusion
+              ((2, 0, 0), 4, 1)        dnv a1 6= a2        dismissed
+B.17    Solving Equation 5.12
+The algorithm returns the following ssZ5.12 :
+            element of ssZ5.12        interpretation          conclusion
+               ((1, 0), 5, 0)           f (x) = 3375             X
+
+   According to solutions of Equations 5.10 to 5.14, 3375 is the only f (x) such
+that f 2 (x) = 315.
+
+B.18    Solving Equation 5.15
+The algorithm returns the following ssZ5.15 :
+            element of ssZ5.15        interpretation          conclusion
+            ((1, 3, 0, 2, 3), 2, 5)    a1 , . . . , a4 anad    dismissed
+
+B.19    Solving Equation 5.18
+The algorithm returns the following ssZ5.18 :
+            element of ssZ5.18        interpretation          conclusion
+             ((1, 0, 1, 0), 3, 2)      a1 , a2 , a3 anad       dismissed
+             ((4, 1, 2, 2), 8, 1)      a1 , a2 , a3 anad       dismissed
+
+B.20    Solving Equation 5.19
+The algorithm returns the following ssZ5.19 :
+            element of ssZ5.19        interpretation          conclusion
+              ((1, 0, 1,) 2, 3)        dnv a0 > a1 , a2        dismissed
+
+B.21    Solving Equation 5.20
+The algorithm returns the following ssZ5.20 :
+            element of ssZ5.20        interpretation          conclusion
+             ((1, 1, 0, 0), 3, 2)      a1 , a2 , a3 anad       dismissed
+
+B.22    Solving Equation 5.21
+The algorithm returns the following ssZ5.21 :
+
+            element of ssZ5.21        interpretation          conclusion
+              ((3, 2, 1), 4, 3)        f (x) = 77175             X
+
+   According to solutions of Equations 5.20 and 5.21, 77175 is the only f (x)
+such that f 2 (x) = 1715.
+B.23    Solving Equation 5.22
+
+The algorithm returns the following ssZ5.22 :
+
+             element of ssZ5.22         interpretation              conclusion
+           ((1, 2, 2, 0, 3, 3), 2, 5)    a1 , . . . , a5 anad        dismissed
+           ((1, 3, 3, 0, 3, 2), 2, 5)    a1 , . . . , a5 anad        dismissed
+
+
+B.24    Solving Equation 5.23
+
+The algorithm returns the following ssZ5.23 :
+
+             element of ssZ5.23         interpretation              conclusion
+             ((1, 1, 1, 0, 0), 3, 2)     a1 , . . . , a4 anad        dismissed
+             ((1, 3, 2, 2, 2), 3, 4)     a1 , . . . , a4 anad        dismissed
+             ((4, 0, 3, 1, 2), 7, 2)      f (x) = 59535                  X
+             ((4, 1, 2, 0, 0), 4, 3)     a1 , . . . , a4 anad        dismissed
+             ((4, 2, 2, 1, 2), 8, 1)     a1 , . . . , a4 anad        dismissed
+
+   According to solutions of Equations 5.22 and 5.23, 59535 is the only f (x)
+such that f 2 (x) = 3375.
+
+
+B.25    Solving Equation 5.24
+
+The algorithm returns the following ssZ5.24 :
+
+             element of ssZ5.24             interpretation            conclusion
+        ((0, 1, 0, 0, 0, 0, 0, 0), 6, 0)     a1 , . . . , a7 anad      dismissed
+        ((0, 1, 0, 0, 0, 0, 1, 0), 5, 1)     a1 , . . . , a7 anad      dismissed
+        ((0, 1, 1, 1, 1, 0, 0, 0), 5, 1)     a1 , . . . , a7 anad      dismissed
+        ((0, 1, 1, 1, 1, 1, 1, 1), 4, 2)     a1 , . . . , a7 anad      dismissed
+        ((0, 2, 0, 0, 0, 0, 0, 0), 4, 2)     a1 , . . . , a7 anad      dismissed
+        ((0, 2, 1, 1, 0, 0, 1, 1), 8, 0)     a1 , . . . , a7 anad      dismissed
+        ((0, 2, 1, 1, 0, 0, 2, 0), 7, 1)     a1 , . . . , a7 anad      dismissed
+        ((0, 3, 1, 1, 1, 1, 2, 2), 10, 0)    a1 , . . . , a7 anad      dismissed
+        ((0, 3, 2, 2, 2, 1, 2, 1), 10, 0)    a1 , . . . , a7 anad      dismissed
+        ((0, 3, 3, 1, 0, 0, 2, 0), 5, 3)     a1 , . . . , a7 anad      dismissed
+        ((0, 3, 3, 2, 0, 0, 3, 2), 4, 4)     a1 , . . . , a7 anad      dismissed
+        ((0, 4, 0, 0, 0, 0, 5, 0), 13, 1)    a1 , . . . , a7 anad      dismissed
+        ((0, 5, 5, 5, 4, 0, 0, 0), 13, 1)    a1 , . . . , a7 anad      dismissed
+
+
+B.26    Solving Equation 5.27
+
+The algorithm returns the following ssZ5.27 :
+             element of ssZ5.27            interpretation            conclusion
+          ((1, 1, 0, 0, 1, 0, 1), 2, 3)     a1 , . . . , a6 anad      dismissed
+          ((1, 1, 1, 0, 1, 1, 0), 2, 3)     a1 , . . . , a6 anad      dismissed
+          ((2, 1, 1, 0, 0, 0, 0), 3, 2)     a1 , . . . , a6 anad      dismissed
+          ((4, 5, 5, 3, 2, 1, 3), 2, 7)     a1 , . . . , a6 anad      dismissed
+          ((5, 3, 1, 1, 2, 1, 1), 6, 3)     a1 , . . . , a6 anad      dismissed
+          ((5, 4, 1, 0, 2, 2, 1), 5, 4)     a1 , . . . , a6 anad      dismissed
+          ((5, 5, 0, 0, 2, 0, 4), 7, 4)     a1 , . . . , a6 anad      dismissed
+          ((5, 5, 4, 0, 4, 2, 0), 7, 4)     a1 , . . . , a6 anad      dismissed
+
+B.27    Solving Equation 5.28
+The algorithm returns the following ssZ5.28 :
+             element of ssZ5.28           interpretation           conclusion
+           ((2, 0, 0, 0, 1, 0), 2, 3)      a1 , . . . , a5 anad     dismissed
+           ((2, 1, 1, 1, 0, 0), 2, 3)      a1 , . . . , a5 anad     dismissed
+           ((4, 1, 0, 0, 1, 1), 8, 1)      a1 , . . . , a5 anad     dismissed
+           ((4, 2, 2, 2, 4, 2), 8, 3)      a1 , . . . , a5 anad     dismissed
+           ((4, 4, 4, 4, 2, 2), 8, 3)      a1 , . . . , a5 anad     dismissed
+
+B.28    Solving Equation 5.29
+The algorithm returns the following ssZ5.29 :
+            element of ssZ5.29            interpretation           conclusion
+            ((0, 0, 0, 0, 0), 3, 2)        a1 , . . . , a4 anad     dismissed
+            ((0, 1, 1, 1, 2), 3, 4)        a1 , . . . , a4 anad     dismissed
+            ((0, 2, 1, 2, 1), 3, 4)        a1 , . . . , a4 anad     dismissed
+            ((3, 1, 0, 1, 1), 9, 0)        a1 , . . . , a4 anad     dismissed
+            ((3, 1, 1, 0, 0), 5, 2)        a1 , . . . , a4 anad     dismissed
+
+B.29    Solving Equation 5.31
+The algorithm returns the following ssZ5.31 :
+        element of ssZ5.31               interpretation                conclusion
+       ((0, 2, 1, 1, 2, 1), 2, 4)         a1 , . . . , a5 anad          dismissed
+       ((1, 0, 0, 0, 0, 0), 4, 1)         a1 , . . . , a5 anad          dismissed
+       ((1, 0, 1, 1, 1, 1), 6, 1)         a1 , . . . , a5 anad          dismissed
+       ((1, 0, 2, 1, 2, 1), 4, 3)         a1 , . . . , a5 anad          dismissed
+       ((1, 0, 5, 2, 4, 1), 6, 5)     dnv a0 > a1 , . . . , a5 ≥ 0      dismissed
+       ((1, 1, 0, 0, 1, 0), 7, 0)         a1 , . . . , a5 anad          dismissed
+       ((1, 2, 0, 0, 2, 1), 9, 0)         a1 , . . . , a5 anad          dismissed
+       ((1, 2, 1, 0, 0, 0), 6, 1)         a1 , . . . , a5 anad          dismissed
+       ((3, 2, 0, 0, 3, 1), 2, 5)         a1 , . . . , a5 anad          dismissed
+B.30    Solving Equation 5.32
+The algorithm returns the following ssZ5.32 :
+            element of ssZ5.32            interpretation           conclusion
+            ((0, 2, 0, 3, 3), 5, 4)        a1 , . . . , a4 anad     dismissed
+            ((1, 3, 2, 2, 2), 2, 5)        a1 , . . . , a4 anad     dismissed
+
+B.31    Solving Equation 5.35
+The algorithm returns the following ssZ5.35 :
+             element of ssZ5.35            interpretation          conclusion
+          ((1, 0, 0, 1, 1, 1, 0), 2, 3)     a1 , . . . , a6 anad    dismissed
+          ((1, 1, 1, 0, 1, 1, 0), 2, 3)     a1 , . . . , a6 anad    dismissed
+          ((2, 0, 0, 1, 0, 0, 0), 3, 2)     a1 , . . . , a6 anad    dismissed
+          ((2, 1, 1, 0, 0, 0, 0), 3, 2)     a1 , . . . , a6 anad    dismissed
+          ((4, 3, 3, 5, 3, 2, 1), 2, 7)     a1 , . . . , a6 anad    dismissed
+          ((4, 5, 5, 3, 3, 2, 1), 2, 7)     a1 , . . . , a6 anad    dismissed
+          ((5, 2, 2, 3, 4, 1, 1), 4, 5)     a1 , . . . , a6 anad    dismissed
+          ((5, 3, 1, 1, 2, 1, 1), 6, 3)     a1 , . . . , a6 anad    dismissed
+          ((5, 3, 2, 2, 1, 1, 1), 6, 3)     a1 , . . . , a6 anad    dismissed
+          ((5, 3, 3, 2, 4, 1, 1), 4, 5)     a1 , . . . , a6 anad    dismissed
+          ((5, 4, 0, 1, 2, 2, 1), 5, 4)     a1 , . . . , a6 anad    dismissed
+          ((5, 5, 4, 0, 4, 2, 0), 7, 4)     a1 , . . . , a6 anad    dismissed
+
+B.32    Solving Equation 5.36
+The algorithm returns the following ssZ5.36 :
+             element of ssZ5.36           interpretation           conclusion
+           ((2, 0, 0, 0, 1, 0), 2, 3)      a1 , . . . , a5 anad     dismissed
+           ((2, 1, 0, 1, 0, 0), 2, 3)      a1 , . . . , a5 anad     dismissed
+           ((4, 0, 0, 1, 1, 1), 8, 1)      a1 , . . . , a5 anad     dismissed
+           ((4, 1, 1, 0, 1, 1), 8, 1)      a1 , . . . , a5 anad     dismissed
+           ((4, 2, 2, 2, 4, 2), 8, 3)      a1 , . . . , a5 anad     dismissed
+           ((4, 4, 2, 4, 2, 2), 8, 3)      a1 , . . . , a5 anad     dismissed
+
+B.33    Solving Equation 5.37
+The algorithm returns the following ssZ5.37 :
+            element of ssZ5.37            interpretation           conclusion
+            ((0, 0, 0, 0, 0), 3, 2)        a1 , . . . , a4 anad     dismissed
+            ((0, 2, 1, 2, 1), 3, 4)        a1 , . . . , a4 anad     dismissed
+            ((3, 0, 1, 0, 0), 5, 2)        a1 , . . . , a4 anad     dismissed
+            ((3, 0, 1, 1, 1), 9, 0)        a1 , . . . , a4 anad     dismissed
+B.34    Solving Equation 5.38
+
+
+
+
+The algorithm returns the following ssZ5.38 :
+
+
+
+
+            element of ssZ5.38          interpretation          conclusion
+          ((0, 2, 2, 1, 1, 1), 2, 4)     a1 , . . . , a5 anad    dismissed
+          ((1, 0, 0, 0, 0, 0), 4, 1)     a1 , . . . , a5 anad    dismissed
+          ((1, 1, 1, 0, 0, 0), 7, 0)     a1 , . . . , a5 anad    dismissed
+          ((1, 1, 2, 0, 0, 0), 5, 2)     a1 , . . . , a5 anad    dismissed
+          ((1, 1, 2, 2, 2, 3), 11, 0)    a1 , . . . , a5 anad    dismissed
+          ((1, 2, 1, 1, 1, 1), 5, 2)     a1 , . . . , a5 anad    dismissed
+          ((1, 2, 2, 0, 0, 1), 9, 0)     a1 , . . . , a5 anad    dismissed
+
+
+
+
+B.35    Solving Equation 5.39
+
+
+
+
+The algorithm returns the following ssZ5.39 :
+
+
+
+
+             element of ssZ5.39         interpretation          conclusion
+            ((0, 1, 0, 0, 0), 7, 0)      a1 , . . . , a4 anad    dismissed
+            ((0, 2, 1, 0, 1), 9, 0)      a1 , . . . , a4 anad    dismissed
+            ((0, 3, 1, 1, 2), 11, 0)     a1 , . . . , a4 anad    dismissed
+            ((1, 3, 1, 1, 1), 2, 5)      a1 , . . . , a4 anad    dismissed
+
+
+
+
+   The full Python code of the solving algorithm is available from the authors.
+C    Appendix: Graphs B2 and B4
+
+
+
+
+B2 = (U2 , F2 ) =
+                                       393216
+                              972
+                                       3111696
+                     126      729       8748
+                                       1411788
+                              1792
+                                       1741824     [6 0]
+                                                    08
+
+
+
+                    1134               7112448
+
+
+
+
+                                        [8 3]
+                                         05
+              12     162     93312
+                                        [ 26 3 ]
+                                           0 0
+                             14336
+
+                             33614
+                     216
+                             61236      [ 16 1 ]
+                                           0 2
+
+
+2             21
+                            1229312
+                    13122
+
+
+                    2187
+                             268912
+              112
+                             314928
+                    1728
+                             321489
+
+                            11239424
+    B4 = (U4 , F4 ) =
+                        27
+                               98
+4              14
+                               189
+                        72
+                               294
+
+
+                             1161216   [ 23 7
+                                         0 1]
+

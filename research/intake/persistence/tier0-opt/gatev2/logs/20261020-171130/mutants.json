@@ -1,0 +1,253 @@
+[
+ {
+  "name": "m_a0_zero_check_deleted",
+  "target": "lvl12",
+  "expect": "equivalent",
+  "verdict": "SURVIVED",
+  "how": "no difference in any stage",
+  "secs": 38.1
+ },
+ {
+  "name": "m_a1_zero_skipped_open",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "KILLED",
+  "how": "lvl12 differential / counters: stderr counters differ",
+  "secs": 1.4
+ },
+ {
+  "name": "m_a2_zero_skipped_exact",
+  "target": "lvl12",
+  "expect": "equivalent-argued",
+  "verdict": "SURVIVED",
+  "how": "no difference in any stage",
+  "secs": 33.7
+ },
+ {
+  "name": "m_b1_crt_v1_uses_rep0",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "INAPPLICABLE",
+  "how": "find-string occurs 0 times"
+ },
+ {
+  "name": "m_b2_crt_coef_off",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "INAPPLICABLE",
+  "how": "find-string occurs 0 times"
+ },
+ {
+  "name": "m_c1_prefilter_rejects_rep0",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "SURVIVED",
+  "how": "no difference in any stage",
+  "secs": 38.1
+ },
+ {
+  "name": "m_c2_prefilter_accepts_class",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "SURVIVED",
+  "how": "no difference in any stage",
+  "secs": 35.1
+ },
+ {
+  "name": "m_d1_ymod_skips_last_prime",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "SURVIVED",
+  "how": "no difference in any stage",
+  "secs": 34.5
+ },
+ {
+  "name": "m_d2_ymod_checks_one",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "SURVIVED",
+  "how": "no difference in any stage",
+  "secs": 37.6
+ },
+ {
+  "name": "m_e1_nu_mod_off",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "KILLED",
+  "how": "lvl12 differential / counters: stderr counters differ",
+  "secs": 1.2
+ },
+ {
+  "name": "m_e2_split_U2_sign",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "KILLED",
+  "how": "lvl12 differential / stdout: sorted stdout differs: ref sha 480b24aaa28c3885 n=1, cand sha bbc4de96a92b379b n=1; full diff /Users/jwross/Do",
+  "secs": 1.0
+ },
+ {
+  "name": "m_e3_exact_multiset_unchecked",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "KILLED",
+  "how": "lvl12 differential / counters: stderr counters differ",
+  "secs": 1.0
+ },
+ {
+  "name": "m_e4_open_position_check_off",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "KILLED",
+  "how": "lvl12 differential / counters: stderr counters differ",
+  "secs": 1.0
+ },
+ {
+  "name": "m_e5_digit_contrib_gd",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "KILLED",
+  "how": "lvl12 differential / counters: stderr counters differ",
+  "secs": 1.0
+ },
+ {
+  "name": "m_e6_open_K_cap",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "KILLED",
+  "how": "lvl12 differential / counters: stderr counters differ",
+  "secs": 0.7
+ },
+ {
+  "name": "m3_N10_tail_K_cap2",
+  "target": "lvlN",
+  "expect": "kill",
+  "verdict": "SKIP",
+  "how": "no lvlN candidate/source supplied"
+ },
+ {
+  "name": "m3_N1_tail_zero_skipped",
+  "target": "lvlN",
+  "expect": "kill",
+  "verdict": "SKIP",
+  "how": "no lvlN candidate/source supplied"
+ },
+ {
+  "name": "m3_N1b_tail_zero_check_deleted",
+  "target": "lvlN",
+  "expect": "equivalent",
+  "verdict": "SKIP",
+  "how": "no lvlN candidate/source supplied"
+ },
+ {
+  "name": "m3_N2_linear_crt_x2_uses_x1",
+  "target": "lvlN",
+  "expect": "kill",
+  "verdict": "SKIP",
+  "how": "no lvlN candidate/source supplied"
+ },
+ {
+  "name": "m3_N3_mulmod128_no_reduce",
+  "target": "lvlN",
+  "expect": "kill",
+  "verdict": "SKIP",
+  "how": "no lvlN candidate/source supplied"
+ },
+ {
+  "name": "m3_N4_no_final_reduction",
+  "target": "lvlN",
+  "expect": "equivalent-argued",
+  "verdict": "SKIP",
+  "how": "no lvlN candidate/source supplied"
+ },
+ {
+  "name": "m3_N5_ph_crt_sign",
+  "target": "lvlN",
+  "expect": "kill",
+  "verdict": "SKIP",
+  "how": "no lvlN candidate/source supplied"
+ },
+ {
+  "name": "m3_N6_lift_drops_all_lifted",
+  "target": "lvlN",
+  "expect": "kill",
+  "verdict": "SKIP",
+  "how": "no lvlN candidate/source supplied"
+ },
+ {
+  "name": "m3_N7_drop_n_plus_L",
+  "target": "lvlN",
+  "expect": "kill",
+  "verdict": "SKIP",
+  "how": "no lvlN candidate/source supplied"
+ },
+ {
+  "name": "m3_N8_exact_nu_off",
+  "target": "lvlN",
+  "expect": "kill",
+  "verdict": "SKIP",
+  "how": "no lvlN candidate/source supplied"
+ },
+ {
+  "name": "m3_N9_adj_a_sign",
+  "target": "lvlN",
+  "expect": "kill",
+  "verdict": "SKIP",
+  "how": "no lvlN candidate/source supplied"
+ },
+ {
+  "name": "opt_T3K_table_entry",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "KILLED",
+  "how": "lvl12 differential / counters: stderr counters differ",
+  "secs": 1.8
+ },
+ {
+  "name": "opt_T7K_table_entry",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "KILLED",
+  "how": "lvl12 differential / counters: stderr counters differ",
+  "secs": 1.4
+ },
+ {
+  "name": "opt_P2A_entry",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "KILLED",
+  "how": "lvl12 differential / counters: stderr counters differ",
+  "secs": 1.0
+ },
+ {
+  "name": "opt_ENT_entry",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "KILLED",
+  "how": "lvl12 differential / counters: stderr counters differ",
+  "secs": 1.0
+ },
+ {
+  "name": "opt_OKT_entry",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "SURVIVED",
+  "how": "no difference in any stage",
+  "secs": 36.0
+ },
+ {
+  "name": "opt_ystep_wrap_boundary",
+  "target": "lvl12",
+  "expect": "equivalent-argued",
+  "verdict": "KILLED",
+  "how": "lvl12 differential / counters: stderr counters differ",
+  "secs": 1.4
+ },
+ {
+  "name": "opt_fast_filter_wrap_boundary",
+  "target": "lvl12",
+  "expect": "kill",
+  "verdict": "SURVIVED",
+  "how": "no difference in any stage",
+  "secs": 34.2
+ }
+]

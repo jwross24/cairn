@@ -1,0 +1,455 @@
+Rev. Mat. Iberoam. 34 (2018), no. 3, 1093–1101         
+                                                       c European Mathematical Society
+doi 10.4171/rmi/1017
+
+
+
+
+      Multiplicative energy of polynomial images
+                 of intervals modulo q
+
+                       Kyle Castro and Mei-Chu Chang
+
+       Abstract. Given a smooth integer q, we use existing upper bounds for
+       character sums to ﬁnd a lower bound for the size of a multiplicative sub-
+       group of the integers modulo q which contains the image of an interval of
+       consecutive integers I ⊂ Zq under a polynomial f ∈ Z[X].
+
+
+
+1. Introduction
+In this paper we give a result in the spirit of Shparlinski’s theorem ([12], The-
+orem 7) through the application of the Graham–Ringrose Theorem as improved
+by Chang [2]. In [12] lies an improvement to an earlier result of Shparlinski and
+Gómez-Pérez ([7], Theorem 7) which discusses the greatest lower bound for the
+order of a subgroup of a ﬁnite ﬁeld containing the image of an interval of consecu-
+tive integers under a rational function. There are various bounds for the number
+of images of consecutive polynomial values which belong to a given multiplicative
+subgroup (see [3], [5], and [7]); Theorem 7 in [12] shows that the size of the in-
+tersection discussed above is dependent on the size of the subgroup of the ﬁnite
+ﬁeld Fp .
+Theorem (Shparlinski). Let f (X) ∈ Fp [X] be a square-free quadratic polynomial.
+For any interval I of consecutive integers and a subgroup G of F∗p , we have
+
+                      |f (I) ∩ G| ≤ (1 + |I|3/4 p−1/8 ) |G|1/2 po(1) ,
+as |I| → ∞.
+   While the previous theorem uses a fact about the arithmetic p-norm (see [12],
+Lemma 5) which is found using Minkowski’s second theorem in [6], we take a diﬀer-
+ent approach to prove our main result. The following theorem uses the convention
+that πq (·) is an operator with functional arguments which evaluates the function
+modulo q.
+Mathematics Subject Classification (2010): Primary 11L40; Secondary 11L26.
+Keywords: Character sums, polynomial images, subgroups of finite fields.
+1094                                                                K. Castro And M.-C. Chang
+
+Theorem 1.1. Given an integer m and  > 0, let f (X) ∈ Z[X] be a monic
+polynomial of degree d. For a suﬃciently large square-free integer q > q(), take
+I ⊂ Zq to be an interval of consecutive integers with d < (log |I|)1/8 such that
+                                       4   2d
+    (1) for all p|q, p < q 1/(160d m            )
+                                                    ,
+    (2) log log q > 16d4 m2d .
+    If πq f (I) ⊂ G, for G a subgroup of Z∗q , then |G| ≥ min{|I|m/2 , q 1− }.
+
+    Note that, for a prime modulus, Theorem 7 in [12] is nontrivial if |I| > p1/2 ;
+however, assuming the modulus is smooth, Theorem 1.1 is nontrivial for smaller
+intervals as well. These theorems have relevance in polynomial dynamics as well
+as in the study of Dirichlet characters. More speciﬁcally, Theorem 7 in [12] can be
+generalized in the study of the frequency of elements in the orbit of iterations of f
+which belong to a subﬁeld of the ﬁnite ﬁeld Fqr (see [10] and [11]). Moreover, the
+bounds above give nontrivial bounds for the size of a character sum of a polynomial,
+                                               
+                                                
+                                        χ(f (x))
+                                                    x∈I
+
+as discussed in [4]. While incomplete character sums over an interval are being
+studied thoroughly, the notion of character sums with polynomial arguments can
+be improved with results such as these.
+    Before we begin discussing the preparations needed to prove our main result,
+we list the notation which will be used throughout the paper.
+(1) ω(q) is the number of distinct prime divisors of the integer q.
+(2) V (J) represents the variety, or common zero set, of a set of functions J.
+(3) πq (·) will be used as an operator with functional arguments which evaluates
+    the function mod q.
+(4) E(A1 , . . . , Am ) = |{(a1 , a1 , . . . , am , am ) ∈ A21 ×· · ·×A2m : a1 · · · am = a1 · · · am }|
+    is the multiplicative energy of m sets.
+(5) The logarithmic height of a polynomial is the maximum logarithm of the mod-
+    ulus of the coeﬃcients of the polynomial.
+(6) δ, , c, and c are various constants with δ,  > 0. Furthermore, the constant
+    p will always be considered as prime and the constant q will be a composite
+    integer with any added conditions stated as needed.
+(7) A = o(B) is equivalent to the statement that |A| ≤ |B| for any  > 0 as the
+    given parameter tends to inﬁnity.
+(8) A       B is equivalent to the statement |A| ≤ c|B| for some constant c.
+
+
+2. Preparations
+We now discuss some preparations needed for the proof of the main theorem. First,
+we need a sharp arithmetic version of Hilbert’s eﬀective Nullstellensatz theorem
+([9], Theorem 1).
+Multiplicative energy of polynomial images of intervals modulo q                    1095
+
+Theorem 2.1 (Krick, Pardo, and Sombra). Let P1 , . . . , Pm ∈ Z[X1 , . . . , Xn ] be
+polynomials of degree at most D and logarithmic height at most H. If the set
+V (P1 , . . . , Pm ) = ∅ in Cn , then there exists a positive integer b and polynomials
+Q1 , . . . , Qm ∈ Z[X1 , . . . , Xn ] such that
+
+                       
+                       m
+(2.1)             b=         Qi Pi ,    and
+                       i=1
+(2.2)          log b ≤ 4n(n + 1)Dn [H + log m + (n + 7) log(n + 1)D].
+
+    We will also use the following result on the number of factorizations in a gen-
+eralized arithmetic progression ([1], Proposition 3).
+Theorem 2.2 (Chang). Given integers c0 , c1 , . . . , cd and J1 , . . . , Jd ≥ 1, a gener-
+alized arithmetic progression P is
+
+                              
+                               d                            
+                      P = c0 +   ki ci | ki ∈ Z, 0 ≤ ki ≤ Ji .
+                                       i=1
+
+
+Let rh (n) be the number of representations of the integer n as a product of h
+elements in P . If J = maxi Ji , then for all n ∈ Z,
+
+                                 rh (n) < eCd.h log J/ log log J ,
+
+where Cd.h is a constant depending on d and h.
+    Another tool used in obtaining the lower bound found in this paper will be the
+improvement to the Graham–Ringrose theorem for character sums (Theorem 3
+in [2]). To discuss Theorem 3 of [2], we need the notion of an admissible pair.
+Definition 2.3 (Chang). Given a prime p and a polynomial f ∈ Z[x], we say p is a
+good prime (or f is p-good) if f mod p has a simple root or a simple pole. Moreover,
+                        √
+for q̄|qr such that q̄ > qr , the pair (f, q̄) is qr -admissible (or admissible when
+there is no ambiguity) if
+                                  
+                               p > log qr for all p|q̄
+
+and
+                                         q̄                      10
+                                   p>        ,   where τ =               .
+                                         qrτ                  log log qr
+                          p|q̄
+                       p is good
+
+Theorem 2.4 (Chang). Assume q = q1 · · · qr with (qi , qj ) = 1 for i = j and qr
+square-free. Factor χ = χ1 · · · χr , where χi (mod qi ) is arbitrary for i < r and
+primitive for i = r. Let N < q and assume
+ (a) for all p|q, p < N 1/10 ;
+ (b) log N > C log q/ log log q.
+1096                                                                 K. Castro And M.-C. Chang
+
+Let
+                                                                                       
+        f (x) =    (x − bj )cj ,      ci ∈ {−1, 1} for some i, d = deg f =                  |cj |.
+                   j
+
+Suppose that (f, qr ) is admissible. Furthermore, assume that
+  (c) d = deg f < (log qr )1/8 .
+Then,
+                         N         
+                                                             1−c
+                            χ(f (x))         N e−(log qr )         / log log qr
+                                                                                    .
+                           x=1
+
+    We would like to point out that in the factorization of q in the previous theorem,
+one can assume that up to reordering qi < qj for i < j. It is also important to note
+that the assumptions (a) and (b) are not the assumptions of Theorem 3 in [2] as
+stated; that is, (a) and (b) are the stronger assumptions of Theorem 3 in [2], as
+discussed in Remark 3.1 of [2]. Moreover, we take a moment to discuss how the
+assumptions of Theorem 3 in [2] can be further weakened.
+Remark 2.5. In Deﬁnition 2.3, the function is required to have a simple root or
+pole to ensure that f (mod p) is not an k th power of a polynomial; this
+                                                                     q assumption
+allows for the use of Weil’s estimate on the complete character sum | x=1 χ(f (x))|,
+where χ is a multiplicative character of order k > 1. It is possible to change the
+deﬁnition of a good prime as follows.
+Definition 2.6. Given a prime p and a polynomial f ∈ Z[x], we say p is good
+if f (mod p) is not an k th power of a polynomial.
+   Using Deﬁnition 2.6, we can remove the assumption that ci ∈ {−1, 1} for some i
+in Theorem 2.4 since its primary purpose is to ensure f (x) is not an k th power of
+a polynomial. Note that, when d is a multiple of k,
+                                                            
+            {χ : χ is a multiplicative character of order k} = C(d)
+
+(where C(d) is a constant depending d), so we can consider actually any polynomial
+in Z[X] and omit those characters of order k so that the conclusion of Theorem 3
+in [2] still holds.
+    The following lemmas will be also useful; the ﬁrst is a result on the multiplica-
+tive energy of several sets which follows from the Cauchy–Schwarz inequality.
+Lemma 2.7. Given subsets A1 , . . . , Am of a multiplicative group,
+
+                                                    |A1 |2 · · · |Am |2
+                                 |A1 · · · Am | ≥                       .
+                                                    E(A1 , . . . , Am )
+Proof. Notice that
+                                                                        
+         {(x1 , . . . , xm ) ∈ A1 × A2 × · · · × Am : x1 x2 · · · xm = x} ≥ |A1 | · · · |Am |.
+x∈A1 ···Am
+Multiplicative energy of polynomial images of intervals modulo q                                      1097
+
+However, by the Cauchy–Schwarz inequality,
+                                                                               2
+               {(x1 , . . . , xm ) ∈ A1 × A2 × · · · × Am : x1 x2 · · · xm = x}
+  x∈A1 ···Am
+                      
+ ≤ |A1 · · · Am |               |{(x1 , . . . , xm ) ∈ A1 × A2 × · · · × Am : x1 x2 · · · xm = x}|2 .
+                   x∈A1 ···Am
+
+Also,
+   
+             |{(x1 , . . . , xm ) ∈ A1 × A2 × · · · × Am : x1 x2 · · · xm = x}|2
+x∈A1 ···Am
+        
+=                |{(x1 , x1 , . . . , xm , xm ) ∈ A21 × · · · × A2m : x1 · · · xm = x = x1 · · · xm }|
+    x∈A1 ···Am
+
+= E(A1 , . . . , Am ),
+
+so that
+                                                      |A1 |2 · · · |Am |2
+                                  |A1 · · · Am | ≥                        .
+                                                      E(A1 , . . . , Am )                                    2
+   Finally, we give a lower bound on the size of the image of an interval under a
+polynomial f (mod q).
+Lemma 2.8. Given a square-free integer q, an interval of consecutive integers
+I ⊂ Zq , and a monic polynomial f of degree d,
+
+                                                           |I|
+(2.3)                                      |πq f (I)| ≥         .
+                                                          dω(q)
+Proof. For each y ∈ Zq , consider
+                                                
+        |{x ∈ I : f (x) ≡ y (mod q)}| =               |{x ∈ I : f (x) ≡ y (mod p)}| ≤ dω(q) .
+                                                p|q
+
+Since |πq f (I)| ≥ |I|/max |{x ∈ I : f (x) ≡ y (mod q)}|, we have
+                           y∈Zq
+
+                                                           |I|
+                                           |πq f (I)| ≥         ,
+                                                          dω(q)
+as desired.                                                                                                  2
+
+
+3. Proofs
+We will prove Theorem 1.1 using two propositions.
+Proposition 3.1. Given an integer m, let f (X) = X d + Cd−1 X d−1 + · · · + C1 X +
+C0 ∈ Z[X] be a monic polynomial of degree d. For a square-free integer q and an
+interval I ⊂ Zq of consecutive integers such that
+1098                                                                    K. Castro And M.-C. Chang
+
+  (i) d < (log |I|)1/8
+                      4    2d
+ (ii) |I| < q 1/16d m .
+If πq f (I) ⊂ G, for G a subgroup of Z∗q , then |G| > |I|m/2 .
+
+Proof. First take q1 |q so that q1 ≥ |I| (and hence |I| = |πq1 (I)|), but q1 /p < |I|
+for some prime p|q1 . For each ordered 2m-tuple, h = (h1 , . . . , h2m ) ∈ I 2m , deﬁne
+the polynomial Ph (a) ∈ Z[a] with indeterminates a = (a0 , . . . , ad−1 ) by
+
+                                               
+                                               m                 
+                                                                 2m
+                                 Ph (a) :=         g(hi ) −           g(hj ),
+                                               i=1              j=m+1
+
+
+where g(hk ) = hdk + ad−1 hd−1     k   + · · · + h1 a1 + a0 for 1 ≤ k ≤ 2m. Let C      =
+                                                  
+(C0 , C1 , . . . , Cd−1 ) ∈ Z , then deﬁne E = {h ∈ I
+                             d                          2m
+                                                           : Ph (C) ≡ 0 (mod q)} and let J
+                                                                  
+                                       
+be the ideal generated by Ph for h ∈ E. Then by Lemma 2.7,
+
+                                        m           |π f (I)|2m
+                                                       q
+(3.1)                            |G| ≥      πq f (I) ≥           .
+                                         i=1
+                                                           |E|
+
+Notice that Lemma 2.8 gives |πq1 f (I)| ≥ |I|/dω(q1 ) ; however, since q1 is square-free
+and q1 /p < |I|, for q1 suﬃciently large,
+
+                                                          log(q1 /p)         log |I|
+          ω(q1 ) = ω(q1 /p) + 1 ≤ 1 + o(1)                             +1≤             + 1,
+                                                        log log(q1 /p)     log log |I|
+
+so that
+                                                     1 1−log d/log log |I|
+                                  |πq1 f (I)| ≥        |I|                 .
+                                                     d
+Now assume |G| ≤ |I|m/2 . Then (3.1) gives that
+
+                          |πq1 f (I)|2m                                         |I|5m/4
+(3.2)         |E| ≥                     ≥ d−2m |I|3m/2−2m log d/log log |I| >            ,
+                               |G|                                            log |I|m/4
+
+where the last inequality follows from the fact that (i) gives that d−2m > log |I|−m/4
+and 2m log d/log log |I| < m/4. However, using Theorem 2.2, for any z = (z0 , . . . ,
+zd−1 ) ∈ Cd we have
+                                                          
+(3.3)                           {h ∈ I 2m : P (z ) = 0} < |I|m+d,m
+                                                 h
+
+for q suﬃciently large. So, (3.2) and (3.3) together give that for each z ∈ Cd there
+exists h ∈ E such that Ph ( 
+                             C) ≡ 0 (mod q), but Ph (z) = 0. Therefore, V (J) = ∅.
+Thus, by Theorem 2.1 there exists an integer b with
+
+(3.4)         0 < log b < 4d(d + 1)md (log |I|d + log |E| + (d + 7) log(d + 1)m)
+Multiplicative energy of polynomial images of intervals modulo q                    1099
+
+and polynomials Qh ∈ Z[a] for all h ∈ E such that
+                                        
+(3.5)                              b=       Qh Ph .
+                                          
+                                          h∈E
+
+   Note that (d+7) log(d+1)m < d(d+1)m log |I| and |E| < |I|2m , so that (3.4) is
+                                                 4 2d
+bounded by 16d4 m2d log |I| giving 0 < b < |I|16d m . Evaluating the sum in (3.5)
+    gives that b ≡ 0 (mod q), so that
+at C
+                                                   4    2d
+(3.6)                               q ≤ b < |I|16d m ,
+
+which contradicts (ii).                                                               2
+Remark 3.2. Note that by assuming πq1 f (I) ⊂ G for G a subgroup of Z∗q1 where q1
+is as above, Proposition 3.1 holds for wider range of moduli than the smooth q
+of Theorem 1.1.
+    Moreover, Proposition 3.1 is a generalization of Lemma 6 in [8] with explicit
+                                                                    2d+1
+constants and a square-free modulus; that is, assuming |I| < p(c/m)      for some
+absolute constant c, Lemma 6 in [8] gives that
+                                                   √
+                        |G| > |I|m e−c(d,m)log |I|/ log log |I| .
+
+Proposition 3.3. Given a suﬃciently large square-free integer q = q1 · · · qr , take
+f (X) ∈ Z[X] to be a monic polynomial of degree d such that the pair (f, qr ) is
+admissible. Let I ⊂ Zq be an interval of consecutive integers such that
+  (i) log |I| > log q/ log log q,
+ (ii) for all p|q, p < |I|1/10 .
+If πq f (I) ⊂ G, for G a subgroup of Z∗q , then |G| ≥ q 1− provided q > q(d, ).
+Proof. Let
+
+  S = {χ : χ is a multiplicative character modulo q and χ(a) = 1 for all a ∈ G}.
+
+Then,
+                                               ϕ(q)
+(3.7)                                  |S| =        .
+                                               |G|
+Moreover, since πq f (I) ⊂ G, we have that χ(f (h)) = 1 for all h ∈ I. Thus,
+                                 
+(3.8)                               χ(f (h)) = |I|.
+                                    h∈I
+
+Notice that for any χ ∈ S there exists a q  |q such that χ is a primitive charac-
+ter mod q  . Therefore if |I| ≤ q  , (3.8) is impossible unless assumption (c) of
+Theorem 2.4 is violated; that is qr < c(d). Again, up to re-indexing qr > qi for
+all i; this gives a bound for q in terms of d so that |S| < c (d). Thus (3.7) gives
+|G| > ϕ(q)/c (d), which gives |G| > q 1− provided q > q(d, ).
+1100                                                  K. Castro And M.-C. Chang
+
+    On the other hand, if |I| > q  , we can separate the character sum in (3.8)
+as follows: let I  ⊂ I be a complete residue system mod q  so that using Weil’s
+theorem of [2] we have
+                                                      
+                                                 
+          χ(f (h)) =     χ(f (x)) +      χ(f (x)) < dω(q ) q  + (N − q  ),
+       h∈I                x∈I           x∈I\I 
+
+                                 √         
+which contradicts (3.8) unless q  ≤ dω(q ) . Thus, the characters χ ∈ S which are
+primitive for a small q  can be omitted. That is, if the characters discussed in this
+case were a signiﬁcant portion of the set S, then |S| < c (d) giving a bound on |G|
+as before.                                                                          2
+
+   Moreover, we can state Proposition 3.3 without the mention of an admissible
+pair.
+Proposition 3.4. Given f (X) ∈ Z[X] a monic polynomial of degree d, let q be a
+square-free integer and I ⊂ Zq be an interval of consecutive integers such that
+ (i ) log |I| > log q/ log log q
+(ii ) for all p|q, p < |I|1/10
+If πq f (I) ⊂ G, for G a subgroup of Z∗q , then |G| ≥ q 1− provided q > q(d, ).
+Remark 3.5. Proposition 3.4 need not mention that the pair (f, qr ) is admissible
+as is assumed in Proposition 3.3. Since
+                                   
+                                        p < q 1/10
+                                      p|q
+                                      √
+                                    p< log q
+
+                                                                            √
+as discussed in Remark 3.1 of[2], we can omit the assumption that p > log qr .
+Thus, after the omission of the characters of order k where d is a multiple of k (as
+discussed in Remark 2.5), we have that (f, qr ) is admissible so that Proposition 3.4
+follows exactly as in the proof of Proposition 3.3.
+                                                           4   2d
+Proof of Theorem 1.1. We have two cases. If |I| < q 1/16d m , we can apply Propo-
+                             4  2d
+sition 3.1. If |I| ≥ q 1/16d m , then the assumptions (1) and (2) of Theorem 1.1
+give (i ) and (ii ) of Proposition 3.4 which proves Theorem 1.1.             2
+
+
+
+
+References
+ [1] Chang, M.-C.: Factorization in generalized arithmetic progressions and applica-
+     tion to the Erdős–Szemerédi sum-product problems. Geom. Funct. Anal. 13 (2003),
+     no. 4, 720–736.
+ [2] Chang, M.-C.: Short character sums for composite moduli. J. Anal. Math. 123
+     (2014), no. 1, 1–33.
+Multiplicative energy of polynomial images of intervals modulo q                  1101
+
+ [3] Chang, M.-C., Cilleruelo, F., Garaev, M. Z., Hernández, J., Shparlinski,
+     I. E. and Zumalacárregui, A.: Points on curves in small boxes and applications.
+     Michigan Math. J. 63 (2014), no. 3, 503–534.
+ [4] Chang, M.-C. and Shparlinski, I. E.: Double character sums over subgroups and
+     intervals. Bull. Austr. Math. Soc. 90 (2014), no. 3, 376–390.
+ [5] Cilleruelo, J., Garaev, M. Z., Ostafe, A. and Shparlinski, I. E.: On the
+     concentration of points of polynomial maps and applications. Math. Z. 272 (2012),
+     no. 3-4, 825–837.
+ [6] Gómez-Pérez, D. and Gutiérrez, J.: On the linear complexity and lattice test of
+     nonlinear pseudorandom number generators. In Applied algebra and number theory,
+     91–101. Cambridge University Press, Cambridge, 2014.
+ [7] Gómez-Pérez, D. and Shparlinski, I. E.: Subgroups generated by rational func-
+     tions in ﬁnite ﬁelds. Monatsh. Math. 176 (2015), no. 2, 241–253.
+ [8] Ivanyos, G., Karpinski, M., Santha, M., Saxena, N. and Shparlinski, I. E.:
+     Polynomial interpolation and identity testing from high powers over ﬁnite ﬁelds.
+     Algorithmica 80 (2018), no. 2, 560–575.
+ [9] Krick, T., Pardo, L. M. and Sombra, M.: Sharp estimates for the arithmetic
+     Nullstellensatz. Duke Math. J. 109 (2001), no. 3, 521–598.
+[10] Ostafe, A.: Polynomial values in aﬃne subspaces over ﬁnite ﬁelds. To appear in
+     J. Anal. Math.
+[11] Roche-Newton, O. and Shparlinski, I. E.: Polynomial values in subﬁelds and
+     aﬃne subspaces of ﬁnite ﬁelds. Q. J. Math. 66 (2015), no. 2, 693–706.
+[12] Shparlinski, I. E.: Polynomial values in small subgroups of ﬁnite ﬁelds. Rev. Mat.
+     Iberoam. 32 (2016), no. 4, 1127–1136.
+
+
+
+Received March 21, 2016; revised November 16, 2016.
+
+
+Kyle Castro: Department of Mathematics, University of California, Riverside, CA
+92521, USA.
+E-mail: kcastro@math.ucr.edu
+
+
+Mei-Chu Chang: Department of Mathematics, University of California, Riverside,
+CA 92521, USA.
+E-mail: mcc@math.ucr.edu
+
+
+
+
+   Research partially financed by the NSF Grant DMS 1301608.
+

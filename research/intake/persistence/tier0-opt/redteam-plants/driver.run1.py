@@ -1,0 +1,699 @@
+import contextlib
+import hashlib
+import importlib.metadata
+import itertools
+import json
+import math
+import os
+from pathlib import Path
+import platform
+import re
+import runpy
+import subprocess
+import sys
+import tempfile
+
+S384_B = int(
+    "804786795895697435374483392981919196271021203526169766496776513225577988620760548291934147233169162691813462700576139679300791616392490007737766172026713013225209359967328577582997917089879582350975561729182179607029500173205910336000000009"
+)
+S384_C = int(
+    "2497383265397170803344874108104225203003857609441402280785475010155284324531926927961279087271544414288887439865731408076179832789776935876240473592789811812603435807317488137042528595483682356827678374003177735547084858855092764236800000014"
+)
+S288_B = int(
+    "98960139102646922631419970174592176014451350626973512607500890021279723494963903051689015292778116151116581375430951851621920383549380344668716"
+)
+S288_C = int(
+    "748088139449652741047421759314151152807026716908838114042285445605953804706054279084295795533812727621035762627888825573474661387839662187196404"
+)
+NEW192 = (
+    193, 769, 19841, 976193, 6187457,
+    834427406578561, 1253224535459902849,
+)
+NEW384 = (3457, 12289, 418725889, 1265011073)
+BOOT = (
+    "import os,sys,runpy;"
+    "sys.dont_write_bytecode=True;"
+    "p=sys.argv[1];sys.argv=sys.argv[1:];"
+    "sys.path.insert(0,os.path.dirname(p));"
+    "runpy.run_path(p,run_name='__main__')"
+)
+
+
+def need(ok, message):
+    if not ok:
+        raise AssertionError(message)
+
+
+def repunit(n):
+    return (10 ** n - 1) // 9
+
+
+def unit(a, b, c):
+    return 2 ** a * 3 ** b * 7 ** c
+
+
+def description(a, b, c):
+    y = unit(a, b, c)
+    pairs = sorted(
+        (int(d), e)
+        for e, d in enumerate(reversed(str(y)))
+        if d != "1"
+    )
+    M = tuple(d for d, e in pairs)
+    return {
+        "a": a, "b": b, "c": c, "y": y,
+        "n": len(str(y)), "M": M,
+        "eps": tuple(e for d, e in pairs),
+        "s": math.prod(M),
+    }
+
+
+def canonical_eps(p, L):
+    return tuple(
+        e for d, e in sorted(
+            (d, e % L) for d, e in zip(p["M"], p["eps"])
+        )
+    )
+
+
+def member(co, b, c):
+    u, w = co.u1, co.u2
+    det = u[0] * w[1] - u[1] * w[0]
+    need(det != 0, "degenerate returned lattice")
+    db, dc = b - co.v0[0], c - co.v0[1]
+    return (
+        (db * w[1] - dc * w[0]) % det == 0
+        and (u[0] * dc - u[1] * db) % det == 0
+    )
+
+
+def matching_row(output, p):
+    found = []
+    rx = re.compile(
+        r"^s=(\d+)\s+M=(\d+)\s+a=(\d+)\s+y=(\d+)"
+    )
+    target = (
+        p["s"], "".join(map(str, p["M"])), p["a"], p["y"]
+    )
+    for line in output.splitlines():
+        m = rx.match(line)
+        if m:
+            got = (int(m[1]), m[2], int(m[3]), int(m[4]))
+            if got == target:
+                found.append(line)
+    need(len(found) == 1, f"expected one verdict row, got {found!r}")
+    return found[0]
+
+
+def launch():
+    root = Path(os.environ.get(
+        "PERSIST_ROOT", "/Users/jwross/Documents/cairn"
+    )).resolve()
+    work = Path(tempfile.mkdtemp(prefix="persistence-plants-"))
+    print(f"ARTIFACTS {work}", flush=True)
+    interpreter = os.environ.get("PERSIST_PYTHON")
+    prefix = [interpreter] if interpreter else [
+        "uv", "run", "--no-project",
+        "--with", "sympy", "--with", "mpmath", "python",
+    ]
+    env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYDESC="0")
+    command = prefix + [
+        "-B", "-I", str(Path(__file__).resolve()),
+        "--worker", str(root), str(work),
+    ]
+    result = subprocess.run(command, env=env)
+    return result.returncode
+
+
+def worker(root, work):
+    T = root / "research/intake/persistence/tier0"
+    CP = root / "research/intake/persistence/tier0-opt/cport"
+    os.chdir(T)
+    sys.path.insert(0, str(T))
+    sys.dont_write_bytecode = True
+    os.environ["PYDESC"] = "0"
+    os.environ.pop("NOCLIFT", None)
+    os.environ.pop("BRANCHSPLIT", None)
+
+    import deepcut as DC
+    import deepcut_lift as DL
+    import shadowcert as SC
+    import wordlift as W
+    import tier0v2 as TV
+    import run_c as RC
+    from baker_chain import baker_upper_bound
+    from descent import cut_coset
+    from export_cfg import export as export12
+    from export_level import export as exportN
+    from lattice import Coset
+
+    failures = []
+    errors = []
+    serial = itertools.count()
+    timeout = int(os.environ.get("PERSIST_TIMEOUT", "7200"))
+
+    def test(label, fn):
+        try:
+            fn()
+        except AssertionError as exc:
+            failures.append(label)
+            print(f"FAIL {label}: {exc}", flush=True)
+        except Exception as exc:
+            errors.append(label)
+            print(
+                f"ERROR {label}: {type(exc).__name__}: {exc}",
+                flush=True,
+            )
+        else:
+            print(f"PASS {label}", flush=True)
+
+    def call(argv):
+        tag = f"command-{next(serial):04d}"
+        print(f"RUN {tag} {argv[0]}", flush=True)
+        (work / f"{tag}.argv.json").write_text(json.dumps(argv))
+        try:
+            r = subprocess.run(
+                list(map(str, argv)),
+                cwd=T, env=dict(os.environ),
+                capture_output=True, text=True, timeout=timeout,
+            )
+        except subprocess.TimeoutExpired as exc:
+            (work / f"{tag}.timeout.txt").write_text(str(exc))
+            raise RuntimeError(f"{tag}: timeout; no retention verdict")
+        (work / f"{tag}.stdout").write_text(r.stdout)
+        (work / f"{tag}.stderr").write_text(r.stderr)
+        if r.returncode:
+            raise RuntimeError(
+                f"{tag}: exit {r.returncode}; "
+                f"see {work / (tag + '.stderr')}"
+            )
+        return r.stdout
+
+    def pycall(name, *args):
+        return call([
+            sys.executable, "-B", "-I", "-c", BOOT,
+            str(T / name), *map(str, args),
+        ])
+
+    manifest = {
+        "python": sys.version,
+        "platform": platform.platform(),
+        "packages": {
+            name: importlib.metadata.version(name)
+            for name in ("sympy", "mpmath")
+        },
+        "PYDESC": "0",
+        "sha256": {},
+    }
+    sources = [
+        T / name for name in (
+            "lvl12", "lvlN", "lvl12.c", "lvlN.c", "run_c.py",
+            "export_cfg.py", "export_level.py", "deepcut.py",
+            "descent.py", "lattice.py", "shadowcert.py",
+            "wordlift.py", "deepcut_lift.py", "sandwich.py",
+            "baker_chain.py", "classify_open.py",
+            "zf_below_1e6900.txt",
+        )
+    ] + [CP / "cport", CP / "cport.c", CP / "data/lattice96.txt"]
+    for path in sources:
+        if path.is_file():
+            manifest["sha256"][str(path)] = hashlib.sha256(
+                path.read_bytes()
+            ).hexdigest()
+    (work / "manifest.json").write_text(
+        json.dumps(manifest, indent=2)
+    )
+
+    corpus = set()
+    for line in (T / "zf_below_1e6900.txt").read_text().splitlines():
+        f = line.split()
+        if len(f) >= 5 and f[0] == "ZF":
+            corpus.add(tuple(map(int, f[2:5])))
+
+    plants = [
+        ("G0", description(0, 0, 6)),
+        ("G1", description(1, 2, 3)),
+        ("G24", description(24, 0, 0)),
+    ]
+    high = description(132, 1, 10)
+    anchor = description(0, 9, 14)
+    negative = description(0, 3, 0)
+
+    def validate_real(p):
+        need((p["a"], p["b"], p["c"]) in corpus, "absent corpus row")
+        need("0" not in str(p["y"]), "child contains zero")
+        need("5" not in str(p["y"]), "vertex contains a factor 5")
+        q = p["s"]
+        for prime in (2, 3, 7):
+            while q % prime == 0:
+                q //= prime
+        need(q == 1, "vertex is not a {2,3,7}-unit")
+        need(
+            p["y"] == repunit(p["n"]) + sum(
+                (d - 1) * 10 ** e
+                for d, e in zip(p["M"], p["eps"])
+            ),
+            "incorrect digit representation",
+        )
+
+    for name, p in plants:
+        test(f"{name}/corpus-and-exact-identity",
+             lambda p=p: validate_real(p))
+    test("G132/corpus-and-exact-identity",
+         lambda: validate_real(high))
+    test("S384/anchor-corpus-and-identity",
+         lambda: validate_real(anchor))
+
+    def native12(p, branch):
+        path = work / f"cfg12-{p['y']}-{branch}.txt"
+        cfg = export12(p["M"], str(path))
+        need(p["a"] <= cfg["A"] < 64, "unsupported or short A bound")
+        nu = p["n"] % 12
+        args = [T / "lvl12", path, nu, nu + 1]
+        if branch:
+            args.append("bs")
+        output = call(args)
+        hits = []
+        negative_hits = []
+        for line in output.splitlines():
+            f = line.split()
+            if not f or f[0] not in ("OPEN", "EXACT"):
+                continue
+            a, n = map(int, f[1:3])
+            q = len(p["M"])
+            eps = tuple(map(int, f[3:3 + q]))
+            if a == 1 and n == nu and eps == (1,) * q:
+                negative_hits.append(line)
+            if (a, n, eps) != (
+                p["a"], nu, canonical_eps(p, 12)
+            ):
+                continue
+            b, c = map(int, f[3 + q:5 + q])
+            co = Coset((b, c), tuple(cfg["U2"][0]),
+                       tuple(cfg["U2"][1]))
+            if member(co, p["b"], p["c"]):
+                if f[0] == "OPEN" or int(f[5 + q]) == p["y"]:
+                    hits.append(line)
+        need(hits, "plant has neither matching OPEN nor EXACT")
+        need(not negative_hits, "even all-residue-1 pattern retained")
+        print(
+            f"PASS negative/lvl12/bs={branch}: parity pattern closed",
+            flush=True,
+        )
+
+    def native_lift(p, L):
+        path = work / f"cfg{L}-{p['y']}.txt"
+        info = exportN(p["M"], L, str(path))
+        need(p["a"] <= info["A"] < 64, "unsupported or short A bound")
+        parent = work / f"parent{L}-{p['y']}.txt"
+        old = L // 2
+        parent.write_text(" ".join(map(str, (
+            p["a"], p["n"] % old, *canonical_eps(p, old),
+            p["b"], p["c"],
+        ))) + "\n")
+        output = call([T / "lvlN", path, parent])
+        hits = []
+        q = len(p["M"])
+        u, w = info["U_old"]
+        for line in output.splitlines():
+            f = line.split()
+            if not f or f[0] not in ("OPEN", "EXACT"):
+                continue
+            idx, a, nu = map(int, f[1:4])
+            eps = tuple(map(int, f[4:4 + q]))
+            if (idx, a, nu, eps) != (
+                0, p["a"], p["n"] % L, canonical_eps(p, L)
+            ):
+                continue
+            t1, t2 = map(int, f[4 + q:6 + q])
+            v = (
+                p["b"] + t1 * u[0] + t2 * w[0],
+                p["c"] + t1 * u[1] + t2 * w[1],
+            )
+            co = Coset(v, tuple(info["U_new"][0]),
+                       tuple(info["U_new"][1]))
+            if member(co, p["b"], p["c"]):
+                if f[0] == "OPEN" or int(f[6 + q]) == p["y"]:
+                    hits.append(line)
+        need(hits, "lift lost the exact child and its coset")
+
+        neg_parent = work / f"negative-parent{L}-{p['y']}.txt"
+        neg_parent.write_text(" ".join(map(str, (
+            1, p["n"] % old, *((1,) * q), p["b"], p["c"],
+        ))) + "\n")
+        neg_output = call([T / "lvlN", path, neg_parent])
+        need(
+            not any(
+                line.startswith(("OPEN ", "EXACT "))
+                for line in neg_output.splitlines()
+            ),
+            "contradictory even parent retained",
+        )
+        print(
+            f"PASS negative/lift-{L}/{p['y']}: parity pattern closed",
+            flush=True,
+        )
+
+    def integrated(p):
+        directory = work / f"run-c-{p['y']}"
+        directory.mkdir()
+        with (directory / "python.stdout").open("w") as out:
+            with contextlib.redirect_stdout(out):
+                r = RC.run(
+                    p["s"], p["M"], [], ncores=1,
+                    workdir=str(directory), verbose=True, clift=True,
+                )
+        need(p["y"] in r["solutions"], "withheld child not rediscovered")
+        need(r["closed"] is False, "closed despite withheld child")
+        (directory / "result.json").write_text(json.dumps({
+            "closed": r["closed"],
+            "solutions": sorted(r["solutions"]),
+            "levels": r["levels"],
+        }, default=str))
+
+    for name, p in plants:
+        for branch in (False, True):
+            test(f"{name}/native-lvl12/bs={branch}",
+                 lambda p=p, branch=branch: native12(p, branch))
+        for L in (24, 48, 96):
+            test(f"{name}/native-lift-{L}",
+                 lambda p=p, L=L: native_lift(p, L))
+        test(f"{name}/run_c-withheld", lambda p=p: integrated(p))
+        print(
+            f"N/A {name}/late-anchor-closure: "
+            "checked exact child is exempt from late cuts",
+            flush=True,
+        )
+
+    def targeted_high():
+        co = Coset()
+        for i, L in enumerate((12, 24, 48, 96)):
+            step = TV.chain_step((12, 24, 48, 96), i)
+            for pd in step["pdata"]:
+                residue = high["y"] % pd.p
+                need(residue != 0, "unit vanished at sieve prime")
+                co = co.intersect(
+                    pd.l3, pd.l7,
+                    (pd.log(residue) - high["a"] * pd.l2)
+                    % (pd.p - 1),
+                    pd.p - 1,
+                )
+                need(co is not None, f"residue cut lost G132 at {L}")
+            need(member(co, high["b"], high["c"]),
+                 f"coset lost G132 at {L}")
+            kind, value = TV.classify(
+                co, high["a"], high["M"], high["n"] % L,
+                canonical_eps(high, L), L, high["M"], 400,
+            )
+            need(kind != "DEAD", f"classifier lost G132 at {L}")
+            if kind.startswith("SOLUTION"):
+                need(value == high["y"], "incorrect exact solution")
+            print(
+                f"PASS G132/targeted-residue-classifier-{L}: {kind}",
+                flush=True,
+            )
+        print(
+            "UNSUPPORTED G132/native: 42 digits exceed MAXQ=40 "
+            "and cport limit=24; A-bound/enumeration not tested",
+            flush=True,
+        )
+
+    test("G132/targeted-only", targeted_high)
+
+    Lam = DC.kernel_lattice()
+    co384 = Coset((anchor["b"], anchor["c"]), Lam.u1, Lam.u2)
+    co288 = Coset((S288_B, S288_C), Lam.u1, Lam.u2)
+    rep384 = (
+        anchor["n"], tuple(zip(anchor["M"], anchor["eps"]))
+    )
+    rep288 = (17, ((2, 7), (2, 7), (2, 7), (2, 1)))
+    U = int(baker_upper_bound(len(anchor["M"]), 0))
+    Unegative = int(baker_upper_bound(len(negative["M"]), 0))
+    upper384 = S384_B + S384_C + 1
+
+    def validate_synthetic():
+        need(
+            pow(3, S384_B, 10 ** 385)
+            * pow(7, S384_C, 10 ** 385) % 10 ** 385
+            == repunit(384) + anchor["y"] - repunit(anchor["n"]),
+            "S384 modular identity failed",
+        )
+        need((47 * S384_B + 84 * S384_C) // 100 > 385,
+             "forced zero might be leading padding")
+        need(upper384 < U, "plant is outside actual Baker bound")
+        need(math.isfinite(float(U)), "shadow table bound overflows")
+        need(member(co384, S384_B, S384_C),
+             "S384 not in starting level-96 coset")
+        old_primes = [
+            int(line.split()[0])
+            for line in (CP / "data/lattice96.txt").read_text().splitlines()
+            if line.strip() and not line.startswith("#")
+        ]
+        for p in old_primes + list(NEW192) + list(NEW384):
+            need(
+                pow(3, S384_B, p) * pow(7, S384_C, p) % p
+                == anchor["y"] % p,
+                f"S384 prime congruence failed at {p}",
+            )
+        L288 = repunit(288) + 10 ** 7 + 10 ** 103 + 10 ** 199 + 10
+        need(
+            pow(3, S288_B, 10 ** 289)
+            * pow(7, S288_C, 10 ** 289) % 10 ** 289 == L288,
+            "S288 modular identity failed",
+        )
+        need((47 * S288_B + 84 * S288_C) // 100 > 289,
+             "S288 forced zero might be padding")
+        need(S288_B + S288_C + 1 < 10 ** 150,
+             "S288 comparison fixture bound is too small")
+        for u in (Lam.u1, Lam.u2):
+            need(pow(3, u[0], 1000) * pow(7, u[1], 1000) % 1000 == 1,
+                 "negative control does not pin suffix 027")
+        (work / "synthetic-fixtures.json").write_text(json.dumps({
+            "S384": {
+                "b": S384_B, "c": S384_C,
+                "digit_count_upper": upper384, "Baker_U": U,
+            },
+            "S288": {"b": S288_B, "c": S288_C},
+        }, indent=2))
+
+    test("synthetic/independent-premises", validate_synthetic)
+
+    def raw_cut(co, a, rep, point, D, comparison_U):
+        original = DC.cut_coset
+        retained = []
+
+        def traced(start, aa, value, K):
+            result = original(start, aa, value, K)
+            if result is not None and K == 96 * D:
+                if member(result, *point):
+                    retained.append(result)
+            return result
+
+        DC.cut_coset = traced
+        try:
+            closed, bound, cases, stats = DC.deep_cut(
+                co, a, rep, D, 20_000_000
+            )
+        finally:
+            DC.cut_coset = original
+        need(closed is not None, "resource budget is not a pass")
+        need(closed is False, "Lemma C closed a planted point")
+        need(retained, "no final cut coset contains the planted point")
+        need(bound <= math.log10(comparison_U),
+             "sandwich lower bound exceeds a containing upper bound")
+
+    for D in (1, 2, 3, 4):
+        test(f"S384/Lemma-C-membership-depth-{D}",
+             lambda D=D: raw_cut(
+                 co384, 0, rep384, (S384_B, S384_C), D, U
+             ))
+    for D in (1, 2, 3):
+        test(f"S288/repeated-index-depth-{D}",
+             lambda D=D: raw_cut(
+                 co288, 0, rep288, (S288_B, S288_C), D, 10 ** 150
+             ))
+
+    def raw_negative():
+        result = DC.deep_cut(co288, 1, rep288, 1, 200000)
+        need(result[0] is True, "odd window was not rejected")
+
+    test("negative/Lemma-C-parity", raw_negative)
+
+    def shadow_components():
+        p192 = [DL.PD(p) for p in NEW192]
+        p384 = [DL.PD(p) for p in NEW384]
+        words = W.depth1_words(co384, 0, rep384)
+        witnesses = [
+            (co, state) for co, state in words
+            if member(co, S384_B, S384_C)
+            and all(st[0] == "F" for st in state)
+        ]
+        need(witnesses, "all-fixed planted word was lost")
+        for co, state in witnesses:
+            for p in SC.T:
+                for u in (co.u1, co.u2):
+                    need(
+                        pow(3, u[0], p) * pow(7, u[1], p) % p == 1,
+                        "shadow trivial-image premise failed",
+                    )
+            c192 = DL.child_coset(co, 0, anchor["y"], p192)
+            need(c192 is not None and member(c192, S384_B, S384_C),
+                 "level-192 shadow lost plant")
+            c384 = DL.child_coset(c192, 0, anchor["y"], p384)
+            need(c384 is not None and member(c384, S384_B, S384_C),
+                 "level-384 shadow lost plant")
+            final = cut_coset(
+                c384, 0,
+                repunit(384) + anchor["y"] - repunit(anchor["n"]),
+                384,
+            )
+            need(final is not None and member(final, S384_B, S384_C),
+                 "shadow window lost plant")
+            need(DC.digits_bound(final) <= math.log10(U),
+                 "shadow sandwich excludes its planted point")
+
+        terms = [(d - 1) * 10 ** e for d, e in rep384[1]]
+        extra = 10 ** rep384[0] * pow(9, -1, SC.PT) % SC.PT
+        actual0, actual1 = SC.dp_zero(terms, extra)
+        expected0, expected1 = [], []
+        for mask in range(1 << len(terms)):
+            residue = sum(
+                t for j, t in enumerate(terms) if mask >> j & 1
+            ) % SC.PT
+            if mask and residue == 0:
+                expected0.append(mask)
+            if (residue + extra) % SC.PT == 0:
+                expected1.append(mask)
+        need(sorted(actual0) == expected0, "DP lost/added sn=0 masks")
+        need(sorted(actual1) == expected1, "DP lost/added sn=1 masks")
+
+    test("S384/shadow-membership-and-independent-DP", shadow_components)
+
+    rows = [anchor, negative]
+    jsonl = work / "plants.jsonl"
+    only = work / "survivors.txt"
+    cases = work / "cases.txt"
+    utable = work / "utable.txt"
+    jsonl.write_text("".join(json.dumps({
+        "s": p["s"], "eqs": [],
+        "exceptional": [[
+            p["M"], p["a"], p["n"] % 96,
+            canonical_eps(p, 96), [p["y"], True],
+        ]],
+    }) + "\n" for p in rows))
+    only.write_text("".join(
+        f"{p['s']} {''.join(map(str, p['M']))} {p['a']} {p['y']}\n"
+        for p in rows
+    ))
+    cases.write_text("".join(
+        f"{p['s']} {''.join(map(str, p['M']))} {p['a']} {p['y']} "
+        f"{p['n'] % 96} {','.join(map(str, canonical_eps(p, 96)))}\n"
+        for p in rows
+    ))
+    utable.write_text(f"16 0 {U}\n2 0 {Unegative}\n")
+
+    def native_verdicts(output, stage):
+        positive = matching_row(output, anchor)
+        control = matching_row(output, negative)
+        need("CLOSED" not in positive, f"closed S384: {positive}")
+        if "BUDGET" in positive:
+            need(
+                stage == "shadowcert.py"
+                and "EXTRA-CHILDREN:" in positive,
+                f"resource/incomplete execution: {positive}",
+            )
+        need("CLOSED" in control, f"negative did not close: {control}")
+        if "sandwich" in stage or stage == "shadowcert.py":
+            need("CLOSED-cut" in control,
+                 f"negative should close by cut: {control}")
+        print(f"PASS negative/{stage}: {control}", flush=True)
+        print(f"VERDICT {stage}: {positive}", flush=True)
+
+    for D in (1, 2, 3, 4):
+        test(
+            f"S384/deepcut.py-depth-{D}",
+            lambda D=D: native_verdicts(
+                pycall("deepcut.py", jsonl, "--depth", D,
+                       "--maxcases", 20_000_000),
+                "deepcut.py",
+            ),
+        )
+    test(
+        "S384/sandwich.py-depth-4",
+        lambda: native_verdicts(
+            pycall("sandwich.py", only, jsonl,
+                   "--maxdepth", 4, "--maxcases", 20_000_000),
+            "sandwich.py",
+        ),
+    )
+    test(
+        "S384/shadowcert.py",
+        lambda: native_verdicts(
+            pycall("shadowcert.py", only, jsonl, "--utable", utable),
+            "shadowcert.py",
+        ),
+    )
+
+    lat = CP / "data/lattice96.txt"
+    for D in (1, 2, 3, 4):
+        test(
+            f"S384/cport-deepcut-depth-{D}",
+            lambda D=D: native_verdicts(
+                call([
+                    CP / "cport", "deepcut",
+                    "--lattice", lat, "--cases", cases,
+                    "--only", only, "--depth", D,
+                    "--maxcases", 20_000_000,
+                    "--tsv", work / f"cport-deepcut-{D}.tsv",
+                ]),
+                "cport-deepcut",
+            ),
+        )
+    test(
+        "S384/cport-sandwich-depth-4",
+        lambda: native_verdicts(
+            call([
+                CP / "cport", "sandwich",
+                "--lattice", lat, "--cases", cases,
+                "--only", only, "--utable", utable,
+                "--maxdepth", 4, "--maxcases", 20_000_000,
+                "--tsv", work / "cport-sandwich.tsv",
+            ]),
+            "cport-sandwich",
+        ),
+    )
+
+    print(
+        "UNSUPPORTED S288/native-C: arbitrary starting coset "
+        "has no CLI representation; function fixture only",
+        flush=True,
+    )
+    result = {
+        "failures": failures, "errors": errors,
+        "artifacts": str(work),
+        "excluded": [
+            "libpydesc acceleration",
+            "G132 native enumeration and two-adic A-bound",
+            "S288 native anchored interfaces",
+            "S384 windows beyond depth 4",
+            "tighter U2/Uprime bounds",
+            "native C survivor-by-survivor membership",
+        ],
+    }
+    (work / "summary.json").write_text(json.dumps(result, indent=2))
+    print(json.dumps(result, indent=2), flush=True)
+    return 1 if failures or errors else 0
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--worker":
+        try:
+            code = worker(Path(sys.argv[2]), Path(sys.argv[3]))
+        except Exception as exc:
+            print(
+                f"ERROR worker setup: {type(exc).__name__}: {exc}",
+                flush=True,
+            )
+            code = 2
+        raise SystemExit(code)
+    raise SystemExit(launch())

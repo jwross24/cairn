@@ -1,0 +1,6 @@
+vertex 72: IDENTICAL (9 equations)
+difftest 72 rc=0
+vertex 224: IDENTICAL (5 equations)
+difftest 224 rc=0
+vertex 10800: IDENTICAL (17 equations)
+difftest 10800 rc=0

@@ -1,0 +1,1094 @@
+                                             ON THE NUMBER OF SOLUTIONS TO S-UNIT EQUATIONS
+
+
+                                                                                    VOLKER ZIEGLER
+
+
+                                                     Abstract. Let K be a number field and S a finite set of places including
+
+
+
+
+arXiv:2609.15487v1 [math.NT] 14 Sep 2026
+                                                     the archimedian ones. Let (a1 , a2 , a3 ) ∈ K ∗ we consider the S-unit equation
+                                                     a1 x + a2 y = a3 with x, y ∈ US . In this paper we prove that for fixed a1 , a2
+                                                                                 |S|−1
+                                                     the equation has at most      2
+                                                                                       solutions provided that the height of a3 is
+                                                     sufficiently large. We want to emphasize that our results are effective.
+
+
+
+
+                                                                                    1. Introduction
+                                              Let K be a number field and S a finite set of places including the archime-
+                                           dian ones. Let us denote by US the set of S-units in K. Then for a fixed triple
+                                           (a1 , a2 , a3 ) ∈ (K ∗ )3 we consider the S-unit equation
+                                           (1)                              a1 x + a2 y = a3 ,          x, y ∈ US .
+                                           More than a century ago Siegel [17] proved that if S consists of the archimedian
+                                                                                                                               ∗
+                                           primes, then Equation (1) has at most finitely many solutions x, y ∈ OK                where OK
+                                           is the ring of algebraic integers of K. Finiteness for the general case was proved
+                                           by Lang [11] and effective results where subsequently proved by Győry [8, 9]. For
+                                           more on the history of unit equations and their results we refer to [5].
+                                              Although it is known that the number of solutions to (1) can be large (e.g. see
+                                           [4]), in many cases one can prove that only few solutions exist, if not all of a1 , a2
+                                           and a3 are small. Let us make this statement more precise.
+                                              We call the triples (a1 , a2 , a3 ), (a′1 , a′2 , a′3 ) ∈ (K ∗ )3 S-equivalent, if there exist
+                                           λ ∈ K ∗ , S-units ϵ1 , ϵ2 , ϵ3 ∈ US and a permutation σ on the set {1, 2, 3} such that
+                                                                    (λϵ1 a′σ(1) , λϵ2 a′σ(2) , λϵ3 a′σ(3) ) = (a1 , a2 , a3 ).
+                                           Note
+                                                  that if (x, y) = (x1 , x2 ) is a solution to a1 x + a2 y = a3 , then (x, y) =
+                                             xσ(1) ϵσ(3) xσ(2) ϵσ(3)
+                                             xσ(3) ϵσ(1) , xσ(3) ϵσ(2) is a solution to a′1 x + a′2 y = a′3 , where we set x3 = 1.
+                                              Denote by ν(a1 , a2 , a3 ) the number of solutions to (1). Then we have that
+                                           ν(a1 , a2 , a3 ) = ν(a′1 , a′2 , a′3 ), if (a1 , a2 , a3 ) and (a′1 , a′2 , a′3 ) are S-equivalent. Al-
+                                           though it has been shown by Erdős, Stewart and Tijdeman [4] that an S-unit can
+                                           have many solutions, it has been shown by Evertse, Győry, Stewart and Tijde-
+                                           man [6] that most S-unit equations have only few solutions. For the rational case
+                                           we refer to a result of Brindza and Győry [1] and a recent result due to Pintér [16].
+                                              Let us have a closer look on the result due to Evertse, et.al. [6]. They showed
+                                           that if an S-unit Equation (1) has at least |S| + 2 solutions, then there exists a
+                                           triple (a′1 , a′2 , a′3 ) equivalent to (a1 , a2 , a3 ) such that
+                                                                            max{h(a′1 ), h(a′2 ), h(a′3 )} ≤ C,
+
+                                              2020 Mathematics Subject Classification. 11D61, 11D45.
+                                              Key words and phrases. Diophantine equations; S-unit equations; Number of solutions.
+                                                                                                1
+2                                          V. ZIEGLER
+
+
+where C is an effectively computable constant depending on S and K. In this
+paper we prove a result similar to the results due to Evertse, Győry, Stewart and
+Tijdeman [6]. In particular, the main result of this paper implies the following:
+
+Corollary 1. Assume that ν(a1 , a2 , a3 ) ≥ |S|+1       2      and a1 /a2 , a1 /a3 , a2 /a3 ̸∈ US ,
+then (a1 , a2 , a3 ) is S-equivalent to a triple (a′1 , a′2 , a′3 ), with h(a′3 ) ≤ C, where C is
+an explicitly computable constant depending only on a1 , a2 , S and K.
+   In the next section we will introduce several notations and discuss some results
+from algebraic number theory concerning S-units. This will allow us to formulate
+a more concise statement, than provided by Corollary 1. We will also formulate a
+related result concerning the problem which rational integers can be presented as
+the sum of two units. In Section 3 we will present results due to Matveev [13] and
+Yu [21] on linear forms in (complex and p-adic) logarithms. We apply these results
+to S-unit equations and prove two key results (Lemma 8 and Lemma 9) that are
+essential in proving our main results. Hence, Theorem 1 will be proved in Section 4
+and our result concerning the representation of rational integers as a sum of two
+units (Theorem 2) will be proved in Section 5.
+
+                               2. Notations and Results
+   Let K be a number field of degree d and discriminant DK . We denote by PK be
+the set of places of K and by PQ = P ∪ {∞} the set of places of Q. We assume that
+the corresponding absolute values PQ of Q are normalized as follows. For p ∈ P
+we assume that |p|p = p−1 and | · |∞ is the usual absolute value. For v ∈ PK we
+denote by | · |v the absolute value such that |x|v = |x|p if v lies above p ∈ PQ and
+                                        d(v)
+x ∈ Q. Moreover, we write ∥ · ∥v = | · |v , where d(v) = [Kv : Qp ]/[K : Q], Qp is
+the completion of Q at p, and Kv is the completion of K at v. Note that by this
+choice the product formula holds:
+                              Y
+(2)                               ∥α∥v = 1      α ∈ K ∗.
+                                 v∈PK
+
+We define the absolute logarithmic Weil height by
+                                1     X
+                     h(α) =               max{0, log ∥α∥v },
+                              [K : Q]
+                                             v∈PK
+
+where K is some number field with α ∈ K. Note that indeed the definition of h(α)
+is independent of the choice of the ambient number field K.
+    Let us assume that vp ∈ PK is finite and corresponds to the prime ideal p|p,
+which lies above the prime number p. Then we denote by ordp (α) the exponent of
+p with which p divides the principal ideal (α). This implies ordp (α) = − log ∥α∥v
+                                                                           log p   .
+    Let us note that for a fixed number field K of degree d = [K : Q] and a given
+constant c there are at most finitely many α ∈ K ∗ such that h(α) ≤ c. Also
+note that h(α) = 0 holds if and only if α is a root of unity. Thus for a fixed
+number field K there exists a positive constant δK such that h(α) ≥ δK /d for all
+α ∈ K ∗ , with α not a root of unity. Due to a result of Voutier [20] we can choose
+                  2
+δK = λ(d) := (log(3d)) 3 , if d ≥ 2. Since λ(1) ≥ log 2 we can choose
+
+
+                                                         8
+(3)                               δK = λ(d) :=
+                                                    9(log(3d))3
+                                    S-UNIT EQUATIONS                                        3
+
+
+for all d ≥ 1.
+   Let S ⊆ PK be finite with |S| = s and assume that S contains all archimedian
+places. Then α ∈ K is called an S-unit if ∥α∥v = 1 for all v ̸∈ S respectively an
+S-integer if ∥α∥v ≥ 1 for all v ̸∈ S. The set of all S-units is denoted by US and
+the set of all S-integers is denoted by OS . If S consists of all archimedian places,
+then US = UK is the group of ordinary units and OS = OK is the ring of algebraic
+integers. We also define the S-norm by
+                                           Y
+                                 NS (α) :=     ∥α∥v .
+                                               v∈S
+Let us note that in case that S is the set of all archimedian places, then we have
+NS (α) = |NK/Q (α)|.
+   By Dirichlet’s unit theorem (see e.g. [12, Corollary, page 105]) we know that for
+a given set of places S = {v1 , . . . , vs } there exist units η1 , . . . , ηs−1 and a root of
+unity ζ such that US = ⟨ζ, η1 , . . . , ηs−1 ⟩. Then the S-Regulator is defined as the
+absolute value of one of the s − 1 minors of the matrix R = (log ∥ηi ∥vj ). Note that
+the S-Regulator RS is independent of the choice of the minor and the fundamental
+system of units η1 , . . . , ηs−1 .
+   According to Bugeaud and Győry [3] we can choose a fundamental system of
+units that will be useful for our applications.
+Lemma 1. Put
+                                           2                                     s−2
+                             2 ((s − 1)!)                                     d
+           c1 = c1 (d, s) =                  ,      c 2 = c 2 (d, s) = c 1
+                                (2d)s−1                                      λ(d)
+                                  c1 d s−1
+                                                                       (s − 1)s
+               c3 = c3 (d, s) =            ,      c4 = c4 (d, s) =                .
+                                   λ(d)                               2(λ(d))s−2
+Then there exists a system of fundamental units η1 , . . . , ηs−1 such that
+        Qs−1
+    (1) i=1 h(ηi ) ≤ c1 RS ,
+    (2) h(ηi ) ≤ c2 RS for all i = 1, . . . , s − 1.
+    (3) Let E = (eij ) be the inverse of one of the s − 1 × s − 1 submatrices of R.
+        Then we have |eij | ≤ c3 .
+    (4) For every α ∈ OS \ {0} and every integer n ≥ 1 there exists ϵ ∈ US such
+        that
+                                           log NS (α)
+                              h(αϵn ) ≤                  + nc4 RS .
+                                                 d
+   For a proof of statements (1)-(3) see Bugeaud and Győry [3, Lemma 1]. Let us
+note that in the case that S is the set of archimedian places a proof of statement (4)
+can also be found in [3, Lemma 2]. However, this proof can be extended to any set
+of places as proofs of variants of statement (4) show (see e.g. [10] or [2]).
+   Moreover, we note that Voutier’s lower bound for the heigth (3) together with
+statement (1) of Lemma 1 implies
+                            s−1                                           s−1
+                       λ(d)           −1           1                 16
+(4)           RS ≥                  c1 =                   ·                        .
+                         d                    ((s − 1)!)2       9(log(3d))3
+   The following lemma is similar to a statement due to Evertse et.al. [6, Lemma 5].
+Lemma 2. Each S-equivalence class contains a triple (a1 , a2 , a3 ) with the following
+properties:
+    (1) a1 , a2 , a3 ∈ OS \ {0},
+4                                           V. ZIEGLER
+
+
+         NS (a1 ) ≤ NS (a2 ) ≤ NS (a3 ),
+     (2) Q
+     (3) v̸∈S max{∥a1 ∥v , ∥a2 ∥v , ∥a3 ∥v } ≥ |DK |−1/(2d) ,
+     (4) h(ai ) := minx∈US {h(ai x)} ≤ log NdS (ai ) + c4 RS for i = 1, 2, 3.
+Proof. We follow the ideas of Evertse et.al. in [6, Lemma 5]. Therefore, assume
+that (α1 , α2 , α3 ) ∈ K 3 . Let d be the inverse ideal of the (fractional) ideal generated
+by α1 , α2 , α3 . There exists (see e.g. [14, Chapter 1, Lemma 6.2]) a δ ∈ d such that
+                                |NK/Q (δ)| ≤ |DK |1/2 NK/Q (d).
+Put αi′ = δαi for i = 1, 2, 3, then we have αi′ ∈ OK \ {0} and we get
+    NK/Q ((α1′ , α2′ , α3′ )) = |NK/Q (δ)|NK/Q ((α1 , α2 , α3 ))
+                                      ≤ |DK |1/2 NK/Q (d)NK/Q ((α1 , α2 , α3 )) = |DK |1/2 .
+Let S∞ ⊆ S be the set of archimedian places contained in S. Then, we deduce due
+to the product formula that
+                                                                           −d
+                                         Y
+           NK/Q ((α1′ , α2′ , α3′ )) =    max{∥α1′ ∥v , ∥α2′ ∥v , ∥α3′ ∥v }
+                                          ν̸∈S∞
+                                                                               −d
+                                            Y
+                                     ≤          max{∥α1′ ∥v , ∥α2′ ∥v , ∥α3′ ∥v }   .
+                                          ν̸∈S
+
+Altogether we obtain point (3) of the lemma.
+   By a simple reordering we may assume that NS (α1′ ) ≤ NS (α2′ ) ≤ NS (α3′ ). Fi-
+nally, we can choose ϵi ∈ US for i = 1, 2, 3 such that for ai = ϵi αi′ we have
+                                     h(ai ) = min {h(xai )}
+                                                 x∈US
+
+and due to Lemma 1 we have that h(ai ) ≤ log NdS (ai ) + c4 RS for i = 1, 2, 3. Note
+that by construction αi′ ∈ OK and therefore ai ∈ OS . Also note that
+          Y                                      Y
+             max{∥α1′ ∥v , ∥α2′ ∥v , ∥α3′ ∥v } =   max{∥a1 ∥v , ∥a2 ∥v , ∥a3 ∥v }.
+            v̸∈S                                     v̸∈S
+
+                                                                                               □
+   A triple (a1 , a2 , a3 ) that satisfies the properties of Lemma 2 is called S-normal-
+ized. That is every S-equivalence class contains at least one S-normalized triple.
+Note that the definition of S-normalized differs from the notation S-normalized
+used in [6].
+Lemma 3. Assume that (a1 , a2 , a3 ) ∈ (K ∗ )3 , with ν(a1 , a2 , a3 ) > 0 and at least
+one of a1 /a2 , a1 /a3 , a2 /a3 is an S-unit. Then (a1 , a2 , a3 ) is equivalent to an S-
+normalized triple of the form (1, 1, c) with c ∈ OS .
+Proof. After a permutation we may assume that a2 /a1 = u ∈ US that is (a1 , a2 , a3 )
+is equivalent to (1, u, a3 /a1 ) and since u ∈ US it is equivalent to (1, 1, c′ ) for some
+c ∈ K ∗ . Since ν(a1 , a2 , a3 ) ≥ 1 we know that there are x, y ∈ US , with x + y = c′ ,
+hence c′ ∈ OS . Due to Lemma 1 there is an S-unit ϵ such that c = c′ ϵ satisfies
+                                                log NS (c)
+                       h(c) = min {h(xc′ )} ≤              + c 4 RS .
+                                 x∈US               d
+                                      S-UNIT EQUATIONS                                          5
+
+
+With this choice (1, 1, c) is S-normalized.                                                    □
+   Let S be a set of places and (a1 , a2 , a3 ) ∈ (K ∗ )3 . Let us write
+                                 A = max{1, h(a1 ), h(a2 )}.
+If S = S∞ is exactly the set of archimedian primes, we set P = 1. Otherwise we
+define
+                           P = max {p ∈ P : v|p}.
+                                       v∈S\S∞
+
+For fixed (a1 , a2 , a3 ) ∈ (K ∗ )3 let (x1 , y1 ), . . . , (xn , yn ) be all solutions to (1). We
+write
+                                 X = max {h(xi ), h(yi )}.
+                                       i=1,...,n
+Now, we can state our main theorem.
+Theorem 1. Let (a1 , a2 , a3 ) ∈ (K ∗ )3 be an S-normalized triple. Assume that
+(a1 , a2 , a3 ) is not equivalent to (1, 1, c) for some c ∈ OS . Let us define
+                                                                                    s
+  C = C(s, d, P ) = 2.3 · 108 d(s + 1)6.5 (log(2(s + 1)d))2 P d ((s − 1)!)2 128e2 d2 .
+If ν(a1 , a2 , a3 ) ≥ |S|+1
+                        2 , then we have
+                         max{X, h(a3 )} ≤ 3CRS A log (CRS A) .
+  Suppose that (1, 1, c) with c ∈ OS is S-normalized such that ν(1, 1, c) ≥ |S| + 1.
+Then we have
+                         max{X, h(c)} ≤ 3CRS log (CRS ) .
+   Let us note that the second statement of Theorem 1 is, up to improved constants,
+covered by the result due to Evertse, et.al. [6]. Also note that the two statements
+of Theorem 1 coincide, if we count the two solutions x + y = c and y + x = c as
+only one solution.
+   We also want to note that using ineffective methods (see [6, Theorem 1] or [5,
+Theorem 6.1.6]) it can be shown that there are at most finitely many S-equivalence
+classes such that the S-unit equation (1) has more than two solutions.
+   Using our strategy it is also possible to prove the following related theorem.
+Theorem 2. Let K be a number field of degree d, unit group UK of rank s − 1.
+Let a, b ∈ Z be fixed positive integers with gcd(a, b) = 1. Assume that n ∈ Z has a
+representation of the form
+(5)                                      ax + by = n
+with x, y ∈ UK . Let us define A = max{1, log |a|, log |b|} and let us write
+                                                                             2s−1
+        C̃ = C̃(s, d) = 6.2 · 1012 s5.5 d6 log(ed2 )((s − 1)!)4 54(log(3d))3       .
+Then we have                     
+                      2         2
+     • log |n| ≤ 5C̃ARK log C̃ARK   or
+      • a = b = 1 and x = σ(y) for some σ ∈ Gal(K/Q).
+   Let us note that Theorem 2 is closely related to a result due to Brindza and
+Győry [1]. Brindza and Győry proved a version of Theorem 2 without explicitly
+describing the possible solution to (5) in case that a = b = 1. Recently R. Visser
+and the author [19] used another approach to obtain the explicit description of the
+possible solution to (5) in the case that a = b = 1, but they did not consider the
+6                                     V. ZIEGLER
+
+
+case that ab > 1. Therefore, we give a complete proof of Theorem 2 using the
+method of Visser and the author (see Section 5).
+   Using ineffective methods it can be shown (see [1, Theorem 1]) that at most
+finitely many triples (a, b, c) ∈ Z3 exist with gcd(a, b) = 1 such that the unit
+Equation (5) has a solution (x, y) for which Q(x, y) is not contained in a real
+quadratic field.
+
+      3. Results on Diophantine approximation and S-unit equations
+  One of the main tools in our proof are lower bounds for linear forms in (complex
+and p-adic) logarithms. We start with the following result due to Matveev [13].
+Lemma 4. Denote by α1 , . . . , αN algebraic numbers, not 0 nor 1. Let K =
+Q(α1 , . . . , αN ) and D = [K : Q] and denote by b1 , . . . , bN rational integers with
+bN ̸= 0. Furthermore, let κ = 1 if K is real and κ = 2 otherwise. For all integers
+j with 1 ≤ j ≤ N choose
+                   Aj ≥ hM (αj ) := max{Dh(αj ), | log αj |, 0.16},
+and set
+                    E = max({1} ∪ {|bj |Aj /AN : 1 ≤ j ≤ N }).
+Assume that Λ = b1 log α1 + · · · + bN log αN ̸= 0. Then
+                      log |Λ| ≥ −C(N, κ)D2 Ω log(eD) log(eE)
+with Ω = A1 · · · AN and
+                                   κ                    
+                                1 eN       N +3 3.5 6N +20
+                 C(N, κ) = min          30     N ,2          .
+                                κ  2
+   Here log α can be any nonzero determination of the logarithm of α. However,
+we will choose the principal value, that is we will assume that the imaginary part
+of log α is contained in the interval (−π, π].
+   In the case of p-adic logarithms we use a result due to Yu [21].
+Lemma 5. Denote by α1 , . . . , αN algebraic numbers, not 0 nor 1. Let K =
+Q(α1 , . . . , αN ) and D = [K : Q] and denote by b1 , . . . , bN rational integers. Let
+p be a prime ideal of OK with p|p and p a prime number. Moreover we denote by
+ep the ramification index of p and by fp the residue class degree of p. Assume that
+                                                 bN
+                                 Λ = α1b1 · · · αN  −1
+is nonzero. Then we have
+(6)                      ordp (Λ) ≤ C(N, D)H1 · · · HN log B
+where
+                                                                      pfp
+           C(N, D) = (16eD)2(N +1) N 5/2 log(2N D) log(2D)eN
+                                                           p
+                                                                  (fp log p)2
+and B ≥ 3 is a number such that |bi | ≤ B for 1 ≤ i ≤ N and
+                                                
+                                           1
+          Hi ≥ hY (αj ) := max h(αi ),                for i = 1, . . . , N .
+                                         16e2 d2
+                                      S-UNIT EQUATIONS                                          7
+
+
+   The following lemma will be useful in applying the results of Matveev and Yu
+stated above. We will denote by ζ ∈ K a fixed primitive root of unity and we
+write ω = |⟨ζ⟩| for the number of roots of unity in K. For the next results we will
+introduce the notion h∗ (α) for α ∈ K ∗ , where h∗ (α) = h(α) if α is not a root of
+unity and h∗ (α) = 1 otherwise. The following lemma is an application of the lower
+bounds for linear forms of logarithms and similar results can be found in [5, Section
+4.2].
+Lemma 6. Let η1 , . . . , ηs−1 be a fundamental system of S-units of K that satisfies
+               in Lemma 1 and let α ∈ K ∗ be fixed. Let b0 , b1 , . . . , bs−1 be integers
+the statements 
+with B := max |b1 |, . . . , |bs−1 |, esω
+                                       2  and (b1 , . . . , bs−1 ) ̸= (0, . . . , 0). Then we have
+         b0 b1      bs−1
+either αζ η1 · · · ηs−1 = 1 or
+                                         b
+(7)                − log ∥αζ b0 η1b1 · · · ηs−1
+                                             s−1
+                                                 − 1∥v ≤ Cv h∗ (α)RS log B,
+where
+             Cv = 3.8 · 107 d2 log(3d)(s + 1)5.5 ((s − 1)!)2 (54(log(3d))3 )s
+in case that v ∈ S∞ and
+                                                                                     s
+         Cv = 1.6 · 104 d2 (s + 1)2.5 (log(2(s + 1)d))2 P d ((s − 1)!)2 128e2 d2
+in case that v ∈ S \ S∞ .
+                                             b
+Proof. We assume that αζ b0 η1b1 · · · ηs−1
+                                         s−1
+                                              ̸= 1 and start with the case that v is
+archimedian. First, we show that if K ̸= Q or K = Q and γ > 0 we have
+                                                  
+                                         πd      1      3.2d
+(8)                  hM (γ) ≤ h(γ)             +     ≤       h(γ).
+                                        λ(d) d          λ(d)
+for γ ∈ K ∗ not a root of unity.
+   We note that
+                                 dh(γ)
+                                         · 0.16 ≥ 0.16.
+                                  λ(d)
+Therefore (8) holds in case that hM (γ) = 0.16. We also note that
+                                                        
+                                                πd     1
+                            dh(γ) ≥ h(γ)            +      .
+                                               λ(d) d
+Thus we may assume that hM (γ) = | log γ| and we obtain
+                                                                      
+                           h(γ)               π     1             πd   1
+  | log γ| ≤ log |γ| + π ≤      + π ≤ h(γ)        +     ≤ h(γ)       +     .
+                            d                h(γ) d              λ(d) d
+This proves the first inequality of (8). For the second inequality note that λ(d) =
+    8
+9(log 3d)3 . That is we have
+                                                       
+                      πd     1    d              8          3.2d
+                          + ≤          π+ 2               <      .
+                     λ(d) d     λ(d)       9d (log 3d)3     λ(d)
+if d ≥ 2. In the case that K = Q and γ > 0 we have hM (γ) = dh(α) = h(α) and
+Inequality (8) holds trivially.
+                                      bs−1
+   Let us write Γ = αζ b0 η1b1 · · · ηs−1  − 1 and Λ = log(Γ + 1). If |Γ| ≥ 1/2 the lemma
+obviously holds. In case that |Γ| < 1/2 we deduce that |Λ| < 2|Γ|. Note that
+               Λ = log α + b0 log ζ + b1 log η1 + · · · + bs−1 log ηs−1 − kiπ
+                 = log α + b̃ log ζ + b1 log η1 + · · · + bs−1 log ηs−1 ,
+8                                        V. ZIEGLER
+
+
+for suitable integers k and b̃ = ω2 k+b0 such that the imaginary part of Λ is contained
+in the interval (−π, π]. That is,
+                           B(s − 1)ω + ω ω          Bsω
+                          |b̃| ≤           + ≤            .
+                                  2            2      2
+  We apply Matveev’s lower bound to |Λ|. Note that hM (ζ) = max{ 2π
+                                                                 ω , 0.16} ≤ π,
+hence due to Lemma 1 and Inequality (8) we have
+                                      s
+                                 3.2d
+                   Ω ≤ h∗ (α)π            c1 R S
+                                 λ(d)
+                                      s              2
+                         ∗       3.2d     2 ((s − 1)!)
+                      = h (α)π                           RS
+                                 λ(d)        (2d)s−1
+                                              s
+                                          1.6
+                      = 4dπ((s − 1)!)2            h∗ (α)RS .
+                                         λ(d)
+    Since we assume that B ≥ esω
+                              2 we have
+                                                             e2 sω
+                     e max{|b̃|, |b1 |, . . . , |bs−1 |} ≤         B ≤ B2.
+                                                               2
+This yields
+                                                               
+               log(eE) ≤ log e max{|b̃|, |b1 |, . . . , |bs−1 |} ≤ 2 log B.
+Therefore we obtain
+                        κ
+              1 e(s + 1)
+  − log |Λ| ≤               30(s+1)+3 (s + 1)3.5 d2
+              κ     2
+                                                      s
+                                                   1.6
+                             × 4dπ((s − 1)!) 2
+                                                          h∗ (A)RS log(ed)2 log B
+                                                  λ(d)
+Since |Λ|κ/d = ∥Λ∥v we obtain that
+                                                                       κ
+               − log(∥Γ − 1∥v ) ≤ − log(2∥Λ∥v ) ≤ − log 2 −              log |Λ|
+                                                                       d
+and therefore we have
+                                   κ
+                     κ 1 e(s + 1)
+  − log(∥Γ − 1∥v ) ≤ ·                  30(s+1)+3 (s + 1)3.5 d2
+                     d κ        2
+                                               s
+                                           1.6
+                       × 4dπ((s − 1)!)2            h∗ (α)RS log(ed)2 log B + log 2
+                                          λ(d)
+                                                                   s
+                       2    4 2                5.5        2     48
+                   ≤ 2e π30 d log(3d)(s + 1) ((s − 1)!)
+                                                               λ(d)
+                          ∗
+                       × h (α)RS log B + log 2
+                    ≤ 3.8 · 107 d2 log(3d)(s + 1)5.5 ((s − 1)!)2 (54d(log(3d))3 )s
+                         × h∗ (α)RS log B
+which proves the lemma for v ∈ S∞ in case that K ̸= Q. Note that in the case that
+K = Q we may choose η1 , . . . , ηs to be positive and without loss of generality we
+can also choose ζ = 1 by changing the sign of α if necessary. In case that α > 0 the
+same arguments as above would lead to an even sharper bound for − log ∥Γ − 1∥v .
+In case that α < 0 we have Γ < 0 and obtain − log ∥Γ − 1∥v < 0 which also proves
+the lemma in this case.
+                                     S-UNIT EQUATIONS                                      9
+
+
+   We consider the case that v ∈ S is finite. In particular, we assume that v
+corresponds to the prime p|p. Let us note that due to Voutier’s lower bound (3)
+for heights we have hY (γ) = h(γ) provided that γ is not a root of unity. We also
+note that hY (ζ) ≤ 1.
+   Due to Lemma 1 we have
+                                                                2((s − 1)!)2
+       hY (α)hY (ζ)hY (η1 ) · · · hY (ηs−1 ) ≤ c1 RS h∗ (α) =                RS h∗ (α).
+                                                                  (2d)s−1
+Hence, we get by Yu’s lower bound (Lemma 5), with N = s + 1 and D = d the
+inequality
+
+                                                                         pfp
+  ordp (Γ − 1) ≤ (16ed)2s+2 (s + 1)2.5 log(2(s + 1)d) log(2d)es+1
+                                                              p
+                                                                     (fp log p)2
+                                                           2((s − 1)!)2
+                                                         ×              RS h∗ (α) log B.
+                                                             (2d)s−1
+Since we have p ≤ P and ep , fp ≤ d, we obtain
+
+                                                             pd
+  ordp (Γ − 1) ≤ 1024e2 d2 (s + 1)2.5 (log(2(s + 1)d))2            ((s − 1)!)2
+                                                          (log p)2
+                                                                       s
+                                                          × 128e2 d2 RS h∗ (α) log B.
+                                                                             d      d
+                                            ∥α∥v
+Finally, let us note that ordp (α) = − loglog                        p       P
+                                              p . We also note that log p ≤ log 2 , which
+yields the desired inequality.                                                         □
+
+  For a unified bound which holds for all places v ∈ S we note that
+                                                                                   s
+(9)      Cv ≤ 3.8 · 107 d2 (s + 1)5.5 (log(2(s + 1)d))2 P d ((s − 1)!)2 128e2 d2
+holds for all v ∈ S.
+   Next, we prove the following useful lemma that relates the height of the S-unit x
+to the maximal exponent that appears, if x is written as a product of fundamental
+units.
+Lemma 7. Let x ∈ US and let η1 , . . . , ηs−1 be a fundamental system of units
+satisfying the statements in Lemma 1 and ζ be a primitive root of unity of K.
+                                 bs−1
+Assume that x = ζ b0 η1b1 · · · ηs−1  and write B = max{b1 , b2 , . . . , bs−1 }. Then we
+have
+                                 C1 B < h(x) < C2 BRS ,
+with
+                                               2s
+                              C1 =
+                                     9d((s − 1)!)2 (log(3d))3
+and
+                                                                  s−2
+                           (s − 1)((s − 1)!)2       9(log(3d))3
+                                                
+                      C2 =                                               .
+                                   d                    16
+Proof. First, we remind that the height satisfies
+       • h(αβ) ≤ h(α) + h(β) and
+       • h(αr ) = |r|h(α)
+10                                           V. ZIEGLER
+
+
+for any nonzero algebraic numbers α and β and rational r. By Lemma 1 we have
+                          s−1
+                          X
+                 h(x) ≤         bi h(ηi ) ≤ (s − 1)Bc2 RS
+                          i=1
+                                                  2−s
+                                             d
+                      = (s − 1)c1                         BRS
+                                            λ(d)
+                                                         s−2
+                               2((s − 1)!)2 9d(log(3d))3
+                                            
+                      ≤ (s − 1)                               BRS
+                                 (2d)s−1          8
+                                                       s−2
+                        (s − 1)((s − 1)!)2 9(log(3d))3
+                                           
+                      ≤                                     BRS
+                                d              16
+which proves the upper bound for h(x).
+  On the other hand let λ(x) = (log ∥x∥vj )j=1,...,s , with {v1 , . . . , vs } = S and
+consider the (s − 1) × s-matrix R = (log ∥ηi ∥vj ). Then we have
+                                         
+                                      b1
+                                   b2 
+                              R ·  .  = λ(x).
+                                         
+                                   .. 
+                                              bs−1
+Let E be the inverse of (log ∥ηi ∥vj ) 1≤i≤s−1 , then we get
+                                            1≤j≤s−1
+                                                                   
+                                 b1                       log ∥x∥v1
+                                b2                     log ∥x∥v2   
+                                        =E                          .
+                                                                   
+                                 ..                           ..
+                                  .                          .     
+                                bs−1                    log ∥x∥vs−1
+Note that
+                                  s−1
+                                  X
+                                        | log ∥x∥vj | ≤ 2dh(x).
+                                  j=1
+Therefore we obtain by Lemma 1
+                       B ≤ c3 2dh(x)
+                         c1 ds−1
+                           =     dh(x)
+                          λ(d)
+                         2((s − 1)!)2 s−1 9(log(3d))3
+                       =              d d              h(x)
+                            (2d)s−1               8
+                         9d((s − 1)!)2 (log(3d))3
+                       =                          h(x)
+                                    2s
+and we obtain a lower bound for h(x).                                               □
+     The following lemma will be the essential tool in proving Theorem 1.
+Lemma 8. Given a1 , a2 ∈ K ∗ , and assume that for some x1 , y1 , x2 , y2 ∈ US we
+have
+                         a1 x1 + a2 y1 − a1 x2 − a2 y2 = 0
+such that no subsum vanishes. For fixed v ∈ S let us write
+                          x = max{∥x1 ∥v , ∥x2 ∥v , ∥y1 ∥v , ∥y2 ∥v }
+                                           S-UNIT EQUATIONS                                       11
+
+
+and
+                            y = min(2) {∥x1 ∥v , ∥x2 ∥v , ∥y1 ∥v , ∥y2 ∥v },
+where min(2) {M } denotes the second smallest element of the finite set M ⊆ R. Let
+us write
+       H = max{h(x1 ), h(x2 ), h(y1 ), h(y2 )}            and    A = max{h∗ (a1 ), h∗ (a2 )}.
+Assume that H > 3/C1 , then we have
+                                   log y > log x − C3 (v)ARS log H,
+where C3 (v) = 3Cv .
+Proof. Let us assume that σ is a permutation on {1, 2, 3, 4} such that x1 = uσ(1) ,
+x2 = uσ(2) , y1 = uσ(3) and y2 = uσ(4) and
+                                   ∥u1 ∥ν ≥ ∥u2 ∥ν ≥ ∥u3 ∥ν ≥ ∥u4 ∥ν .
+That is, we have the equation
+                                    u1 ã1 + u2 ã2 + u3 ã3 + u4 ã4 = 0
+with ãi ∈ {±a1 , ±a2 } and get the inequality
+                    ã2 u2                ã3 u3 + ã4 u4
+           − log           − 1 ≥ − log
+                    ã1 u1    v                ã1 u1       v
+                                        ∥ã3 ∥v ∥∥u3 ∥v + ∥ã4 ∥v ∥u4 ∥v
+                                ≥ − log
+(10)                                               ∥ã1 ∥v ∥u1 ∥v
+                                                                                        
+                                                                       ∥ã3 ∥v + ∥ã4 ∥v
+                                ≥ − log ∥u3 ∥v + log ∥u1 ∥v − log
+                                                                             ∥ã1 ∥
+                                ≥ log ∥u1 ∥v − log ∥u3 ∥v − 2dA − log 2.
+Indeed, we have
+                         
+        ∥ã3 ∥v + ∥ã4 ∥v
+  log
+              ∥ã1 ∥
+           ≤ log 2 + max{log ∥a1 ∥v , log ∥a2 ∥v } − min{log ∥a1 ∥v , log ∥a2 ∥v }
+                                                                                 ≤ log 2 + 2dA.
+                                                                                           ã2
+   Next, we apply Lemma 6 to the left hand side of (10), with α =                          ã1   and
+                          bs−1
+u1 /u2 = ζ b0 η1b1 · · · ηs−1                                     ∗
+                          In particular, we have h (α) ≤ 2A. Let us denote by
+                               .
+B̃ the maximum of the exponents of the fundamental units that appear in the
+decomposition of u1 and u2 . Then we have due to Lemma 7
+                                                             2H
+(11)                   B = max{|b1 |, . . . , |bs |} ≤ 2B̃ <    .
+                                                             C1
+   Let us assume for the moment that B = max{|b1 |, . . . , |bs−1 |} ≤ esω
+                                                                        2 . Then we
+obtain by an application of Lemma 6 the inequality
+                     ã2 u2
+            − log           − 1 ≤ Cv 2A(log(esω/2))RS < 2Cv ARS log(3sd)
+                     ã1 u1    v
+and together with (10) we get
+                 log ∥u3 ∥v ≥ log ∥u1 ∥v − 2Cv ARS log(3sd) − 2dA − log 2
+                              > log ∥u1 ∥v − 3Cv ARs log(3sd).
+12                                      V. ZIEGLER
+
+
+Since we assume that H ≥ 3/C1 and since
+                       3     27d((s − 1)!)2 (log(3d))3
+                          =                              ≥ 3sd
+                      C1                2s
+we obtain the statement of the lemma in the case that max{|b1 |, . . . , |bs−1 |} ≤ esω
+                                                                                     2 .
+   Therefore we may assume that max{|b1 |, . . . , |bs−1 |} ≥ esω
+                                                               2  . By  an  application
+of Lemma 6 together with Inequality (11) we get
+                   ã2 u2
+(12)       − log          − 1 ≤ Cv 2A(log B)RS < 2Cv ARS log(2H/C1 )
+                   ã1 u1    v
+Combining the inequalities (10) and (12) yields
+             log ∥u3 ∥v ≥ log ∥u1 ∥v − 2Cv ARS log(H/C1 ) − 2dA − log 2
+                       > log ∥u1 ∥v − 3ARs Cv log H
+provided that
+                                                    2dA + log 2
+(13)                     log(H) > log(2/C1 ) +                  .
+                                                     2ARS Cv
+Let us note that by (4) it is easy to show that RS Cv ≥ 1.6 · 104 d2 s2 for all v ∈ S
+and therefore
+                               2dA + log 2
+                                           ≤ log(3/2).
+                                 2ARS Cv
+Hence (13) is satisfied, if we we assume that H > 3/C1 .                            □
+    For the proof of Theorem 2 we need a slight variation of Lemma 8. For this we
+fix some notation first. Let {σ1 , . . . , σd } = HomQ (K, C) be the set of all embedding
+from K into C and let K (i) = σi (K) be the fields conjugate to K embedded into C.
+If x ∈ K we write x(i) for σi (x). We denote by s − 1 the unit rank of the number
+field K, that is, s is the number of archimedian places of K. Then we have the
+following lemma.
+Lemma 9. Given non zero integers a1 , a2 with gcd(a1 , a2 ) = 1 and x, y ∈ UK with
+                         a1 x(i) + a2 y (i) − a1 x(j) − a2 y (j) = 0
+such that no subsum vanishes. For fixed indices i, j ∈ {1, . . . , d}, with i ̸= j we
+write
+                      X = max{|x(i) |, |y (i) |, |x(j) |, |y (j) |}
+and
+                     Y = min(2) {|x(i) |, |y (i) |, |x(j) |, |y (j) |}.
+Let us write
+            H = max{h(x), h(y)}        and     A = max{1, log |a1 |, log |a2 |}.
+Assume that H > max{4esdC2 RK , 2/C1 }, then we have
+                                                  2
+                            log Y > log X − C̃3 ARK log H,
+where                                                                    2s−1
+            C̃3 = 6.2 · 1012 s5.5 d5 log(ed2 )((s − 1)!)4 54(log(3d))3           .
+Proof. We follow the arguments given in the proof of [19, Lemma 6]. Without loss
+of generality we may distinguish between the following three cases
+     Case A: We have |x(i) |, |y (i) | ≥ |x(j) | ≥ |y (j) |.
+                                      S-UNIT EQUATIONS                                            13
+
+
+     Case B: We have |y (i) |, |y (j) | ≥ |x(j) | ≥ |x(i) |.
+     Case C: We have |x(i) |, |y (j) | ≥ |x(j) | ≥ |y (i) |.
+Note that all other possible cases can be obtained by these three cases by exchanging
+the roles of x and y and/or exchanging the roles of i and j. We will discuss Case C
+in detail since the proof for the other cases is similar and the other cases will yield
+smaller bounds for C̃3 .
+   Let ζ be a primitive root of unity and η1 , . . . , ηs−1 a fundamental system of units
+of K. Then we have
+                               t0  t1                        ts−1
+                                            (i)              (i)
+                       x(i) = ζ (i)       η1        · · · ηs−1
+                                    t0        ξ               ts−1
+                                            (j) 1             (j)
+                       x(j) = ζ (j)        η1        · · · ηs−1
+                               u0  u1                         us−1
+                                             (i)              (i)
+                       y (i) = ζ (i)       η1        · · · ηs−1
+                                    u0        u1              us−1
+                                             (j)               (j)
+                       y (j) = ζ (j)       η1         · · · ηs−1         .
+
+Let us assume for the moment that a2 y (j) ≥ a1 x(i) . We consider the inequality
+                       a1 x(i)        a1 x(j) + a2 y (i)   2|a1 x(j) |
+                                − 1 =                    ≤              .
+                       a2 y (j)            a2 y (j)         |a2 y (j) |
+                        (i)
+Let us write Γ = aa21 yx(j) . If |Γ − 1| ≥ 1/2, then the statement of the lemma holds.
+Thus we may assume that |Γ − 1| < 1/2. But this implies that
+                                                    2|a1 x(j) |
+(14)                                 | log Γ| < 2                .
+                                                     |a2 y (j) |
+Let Λ = log Γ, then we have
+                                        (i)                          (i)
+  Λ = log α + t0 log ζ (i) + t1 log η1 + · · · + ts−1 log ηs−1
+                                                               (j)                   (j)
+                                 − u0 log ζ (j) − u1 log η1 − · · · − us−1 log ηs−1 − kiπ,
+where α = a1 /a2 and k is some integer such that the imaginary part of Λ is
+contained in the interval (−π, π]. That is, we have
+                                       (i)                           (i)
+  Λ = log α + k̃ log ζ (i) + t1 log η1 + · · · + ts−1 log ηs−1
+                                                                           (j)             (j)
+                                                          − u1 log η1 − · · · − us−1 log ηs−1 ,
+with k̃ some integer with |k̃| < (2(s − 1)B + 3) ω2 . We apply Matveev’s Theorem
+to Λ. We note that Λ is a linear form in 2s logarithms and all algebraic numbers
+come from the compositum K (i) K (j) of degree ≤ d(d − 1) < d2 . Similar as in the
+proof of Lemma 6 we deduce that
+                                           2s−1
+                                       3.2d
+(15)                        Ω ≤ Aπ                c21 RK
+                                                       2
+                                       λ(d)
+We also have
+                                                              ω
+(16)                                                              ≤ B2
+         eE = e max{|k̃|, |u1 |, . . . , |us |, |t1 |, . . . , |ts |} ≤ e(2sB + 3)
+                                                               2
+provided that B > 4esd. Indeed, we have s < d and ω ≤ 2d, that is,
+                            ω
+                 e(2sB + 3) < 2esdB + 3Bd < 4esdB < B 2
+                            2
+14                                        V. ZIEGLER
+
+
+unless B ≤ 4esd.
+   Let us assume for the moment that B ≤ 4esd. Then we have due to Lemma 7
+the upper bound H ≤ C2 BRK ≤ 4esdC2 RK .
+   Now, let us consider the case that B ≥ 4esd. Hence, we obtain by an application
+of Matveev’s lower bound for linear forms in logarithms (Lemma 4) with N = 2s,
+D = d2 and the estimates (15) and (16) the inequality
+                        κ                               2s−1
+                1 e2s           2s+3     3.5 4      3.2d
+    −| log Λ| <              30      (2s) d Aπ                   c21 RK
+                                                                      2
+                                                                        log(ed2 )2 log(B)
+                κ     2                             λ(d)
+                                              2s−1
+                                         3.2d
+              ≤e2 π23.5 s5.5 302s+5 d4               c21 log(ed2 )ARK 2
+                                                                        log B
+                                         λ(d)
+                                                                2s−1
+                 2 7.5 6      5.5 5       2            4     48            2
+              =e 2 30 πs d log(ed )((s − 1)!)                           ARK  log B
+                                                            λ(d)
+                                             :=C̃4
+                  z                             }|                         {
+                                                                       2s−1
+                < 3.1 · 1012 s5.5 d5 log(ed2 )((s − 1)!)4 54(log(3d))3         2
+                                                                             ARK log B
+
+On the other hand we have
+                              4|a1 x(j) |
+                                          
+             | log Λ| < log                  < log 4 + log α + log y − log x
+                               |a2 y (j) |
+Since B < H/C1 and log α < A we obtain
+                                         2                             2
+           log y > log x − log α − C̃4 ARK log(H/C1 ) > log x − 2C̃4 ARK log H
+
+provided that
+                                                     2dA + log 2
+(17)                         log H > log(1/C1 ) +           2
+                                                                 .
+                                                      C̃4 ARK
+                                                      2
+Due to Friedman [7] we know that RK > 0.2. Hence C̃4 RK > 1010 s5 d5 and
+                                     2dA + log 2
+                                            2
+                                                 < log 2.
+                                      C̃4 ARK
+Therefore, Inequality (17) certainly holds, if we assume that H > 2/C1 . That is
+the statement of the lemma holds with C̃3 = 2C̃4 in Case C.
+   In case that |a2 y (j) | < |a1 x(i) | we obtain instead of Λ the linear form −Λ and
+therefore we obtain the same lower bound for log y.
+   Let us have a quick look at the Cases A and B and let us start with Case A. In
+this case we obtain by following the arguments for Case C the linear form
+                                                       (i)
+     Λ′ = log α + (t0 − u0 ) log ζ (i) + (t1 − u1 ) log η1 +
+                                                                                  (i)
+                                                       · · · + (ts−1 − us−1 ) log ηs−1 − k̃iπ
+
+instead of Λ. Note that we have a linear form in s+1 logarithms instead of 2s. Also
+                                                (i)
+note that although the coefficients of the log ηk may be twice as large as those in
+Λ we only have half of the logarithms. That is, the corresponding constant C̃4′ is
+smaller than C̃4 and we obtain a sharper result in this case.
+                                      S-UNIT EQUATIONS                                          15
+
+
+   Finally, let us consider Case B. Following the arguments for Case C we obtain
+in this case the linear form
+                                            !                     (i)
+                                                                      !
+                      (i)             (i)
+           ′′          ζ              η1                         ηs−1
+         Λ = t0 log          + t1 log         + · · · + ts−1 log        − k̃iπ
+                       ζ (j)          η1
+                                        (j)                       (j)
+                                                                 ηs−1
+instead of Λ. Note that
+                      we have   a linear form in s + 1 logarithms instead of 2s.
+                        (i) (j)
+Moreover, we have h ηk /ηk        ≤ 2h(ηk ) for k = 1, . . . , s − 1. Therefore, the
+corresponding constant C̃4′′ will be smaller than C̃4 . That is, we obtain again a
+sharper result in this case.                                                    □
+   Finally, we state a useful lemma due to Pethő and de Weger [15]:
+Lemma 10. Let u, v ≥ 0, h ≥ 1 and x ∈ R be the largest solution of x = u +
+v(log x)h . Then
+                 x < max{2h (u1/h + v 1/h log(hh v))h , 2h (u1/h + 2e2 )h }.
+   For a proof of Lemma 10 we refer to [18, Appendix B].
+
+                     4. A bound for the number of solutions
+   This section is devoted to the proof of Theorem 1. Therefore let us assume that
+we have n solutions (x1 , y1 ), . . . , (xn , yn ) ∈ US2 to (1). In case that (a1 , a2 , a3 ) =
+(1, 1, c) we additionally assume that for no indices i ̸= j we have xi = yj and
+xj = yi . That is the two solutions x + y = c and y + x = c are counted only once.
+   We consider the following homogeneous system of S-unit equations
+(18)               a1 Xi + a2 Yi − a1 Xj − a2 Yj = 0          1 ≤ i < j ≤ n.
+Then (x1 , y1 , . . . , xn , yn ) ∈ US2n is a solution to (18) such that no subsum vanishes.
+Let us write
+                                  X = max {h(xi ), h(yi )}
+                                        i=1,...,n
+and for v ∈ S we write
+                                Xv = max {∥xi ∥v , ∥yi ∥v }.
+                                        i=1,...,n
+We also continue to write A = max{h∗ (a1 ), h∗ (a2 )}. Then an immediate conse-
+quence of Lemma 8 is the following lemma.
+Lemma 11. We have either
+                                     X ≤ 3/C1
+or for all v ∈ S there is at most one x out of {x1 , . . . , xn , y1 , . . . , yn } that satisfies
+                          log ∥x∥v < log Xv − 2C3 (v)ARS log X.
+Proof. Let us assume that X > 3/C1 and without loss of generality we may as-
+sume that ∥x1 ∥v = Xv . Let us assume for the moment that ∥y1 ∥v ≤ log Xv −
+C3 (v)ARS log X. Now for any j = 2, . . . , n we consider the equation
+                              a1 x1 + a2 y1 = a3 = a1 xj + a2 yj
+and due to Lemma 8 we deduce that
+                     log ∥xj ∥v , log ∥yj ∥v ≥ log Xv − C3 (v)ARS log X
+for all j = 2, . . . , n. This proves a slightly sharper result, than stated in the lemma.
+16                                          V. ZIEGLER
+
+
+   Without loss of generality we may assume that ∥yn ∥v = mini {∥xi ∥v , ∥yi ∥v } with
+n ̸= 1. We consider the equation
+                               a1 x1 + a2 y1 = a3 = a1 xn + a2 yn
+and due to Lemma 8 we deduce that
+                           log ∥xn ∥v ≥ log Xv − C3 (v)ARS log X.
+Now, we consider the equations
+                               a1 xj + a2 yj = a3 = a1 xn + a2 yn
+for all j = 1, . . . , n − 1 and deduce that
+                    log ∥xj ∥v , log ∥yj ∥v ≥ log ∥xn ∥v − C3 (v)ARS log X
+                                            ≥ log Xv − 2C3 (v)ARS log X
+holds for all j = 2, . . . , n which proves the lemma.                                              □
+   If x is an S-unit, then with (x1 , y1 , . . . , xn , yn ) also (xx1 , xy1 , . . . , xxn , xyn ) is a
+solution to (18). That is we may assume that x1 = 1 by choosing x = x−1                    1 . Next,
+we prove a result that is also of independent interest.
+Proposition 1. Assume that (x1 , y1 , . . . , xn , yn ) ∈ US2n is a solution to (18) with
+x1 = 1 such that no subsum vanishes. If |S| ≤ 2n − 1, then we have
+                    X = max {h(xi ), h(yi )} < 2C4 RS A log(C4 RS A),
+                          i=1,...,n
+
+with
+                                                2X
+                                         C4 =      C3 (v).
+                                                d
+                                                  v∈S
+
+Proof. It is easy to see that 2C4 RS A log(C4 RS A) > 3/C1 . Therefore we may
+assume that X ≥ 3/C1 . By the pigeonhole principle combined with Lemma 11
+there is one x ∈ {x1 , . . . , xn , y1 , . . . , yn } such that
+                            log ∥x∥v ≥ log Xv − 2C3 (v)ARS log X
+for all v ∈ S. Since by the product formula we have
+                           X
+                       0=      log ∥x∥v
+                                 v∈S
+                                 X                X
+                             ≥         log Xv −         2C3 (v)ARS log X
+                                 v∈S              v∈S
+                                 X
+                             =         log Xv − dC4 ARS log X.
+                                 v∈S
+
+Now, let z ∈ {x1 , . . . , xn , y1 , . . . , yn } be such that h(z) = X. Since we assume that
+x1 = 1, we have log Xv ≥ 0 for all v ∈ S. Therefore, we have
+                                X                   X
+        dC4 ARS log X ≥                log Xv ≥        max{log ∥z∥v , 0} = dh(z) = dX.
+                               v∈S              v∈S
+
+Due to Lemma 10 we deduce that
+                                  X < 2C4 RS A log(C4 RS A).
+                                                                                                    □
+                                        S-UNIT EQUATIONS                                                   17
+
+
+   Let us assume that we have n ≥ |S|+1            2    solutions (x1 , y1 ), . . . , (xn , yn ) ∈ US2 to
+S-unit Equation (1). In case that (a1 , a2 , a3 ) = (1, 1, c) we additionally assume that
+for no indices i ̸= j we have xi = yj and xj = yi . That is (x1 , y1 , . . . , xn , yn ) ∈ US2n is
+a solution to (18) such that no subsum vanishes. Then we deduce by an application
+of Proposition 1 that x = (1, x−1                     −1      −1
+                                      1 y1 , . . . , x1 xn , x1 yn ) is a solution to (18) with
+
+      X = max h(x−1                       −1              −1
+                  
+                       1 y1 ), · · · , h(x1 xn ), h(x1 yn ) ≤ 2C4 RS A log(C4 RS A).
+
+That is, we have
+                                  a1 x−1         −1         −1
+                                      1 x1 + a2 x1 y1 = a3 x1
+
+and therefore
+
+                         h(a3 ) ≤ h(a3 x−1
+                                        1 )
+
+                                 = h(a1 x−1         −1
+                                         1 x1 + a2 x1 y1 )
+
+                                 ≤ h(a1 ) + h(a2 ) + h(x−1
+                                                        1 y1 ) + log 2
+                                 ≤ 2A + log 2 + 2C4 RS A log(C4 RS A)
+                                 < 3C4 RS A log(C4 RS A).
+
+which proves Theorem 1 up to the explicit computation of C = C4 .
+  Since (9) we can choose
+
+          2X          6X
+  C4 =       C3 (v) ≤    Cv
+          d           d
+            v∈S                v∈S
+                                                                                                  s
+                      ≤ 2.3 · 108 d(s + 1)6.5 (log(2(s + 1)d))2 P d ((s − 1)!)2 128e2 d2               .
+
+
+                       5. Integers that are sums of two units
+  Let us assume that a, b ∈ Z with gcd(a, b) = 1. Furthermore, assume that
+x = (x, y) ∈ UK is a solution to
+
+(19)                                        ax + by = n
+
+Let us write M = Q(x) and let ℓ = [M : Q]. Since y = n−ax      b  we have M = Q(x) =
+Q(y). Let {σ̃1 , . . . , σ̃ℓ } = HomQ (M, C) be the set of all embeddings of M into C
+and let σ1 , . . . , σℓ be fixed embeddings of K into C with σi |M = σ̃i for i = 1, . . . , ℓ.
+Let us write α(i) = σi (α) for α ∈ K. Then we have
+
+(20)                     ax(i) + by (i) − ax(j) − by (j) = 0,           i ̸= j
+
+and no subsum vanishes provided that
+       • a ̸= b or
+       • a = b and σ(x) ̸= y for all σ ∈ Gal(K/Q).
+Indeed, since x, y are units aσi (x) = bσj (y) can only happen if a = b = 1. In
+that case we have σi (x) = σj (y), which can only happen if σ(x) = y for some
+σ ∈ Gal(K/Q).
+   Let us assume that ax + by = n. Assume for the moment that
+
+                         max{h(x), h(y)} ≤ max{4esdC2 RK , 2/C1 }.
+18                                           V. ZIEGLER
+
+
+Then we have
+                log |n| = h(n) ≤ h(ax + by)
+                                   ≤ 2A + log 2 + 2 max{4esdC2 RK , 2/C1 }
+                                                        
+                                           2           2
+                                   ≤ 5C̃ARK  log C̃ARK
+which proves Theorem 2 in this case.
+  Let us assume that
+                       max{h(x), h(y)} > max{4esdC2 RK , 2/C1 }.
+                                                                                 2
+Also in view of Theorem 2 we also may assume that |n| ≥ a + b. Let (x, y) ∈ UK
+be a solution to ax + by = n. Then (x, y) is also solution to (20). Let us assume
+that no subsum of (20) vanishes, i.e. one of the two statements listed above holds.
+Let us write                            n            o
+                           X (i) = max x(i) , y (i) .
+Since |n| ≥ a + b we have X (i) ≥ 1 for all 1 ≤ i ≤ ℓ. Let us write X =
+max{h(x), h(y)}. Further, let us assume that
+                                        n             o
+                          y (ℓ) = min     x(i) , y (i) .
+                                          i=1,...,ℓ
+
+Note that by exchanging the roles of a and b and x and y respectively we can assume
+without loss of generality that the minimum is attained for one of the conjugates
+of y.
+   With these notations and assumptions we obtain from Lemma 9 the inequality
+                              log x(i) ≥ X (i) − C̃3 ARK
+                                                       2
+                                                         log X
+for all i = 1, . . . , ℓ and therefore
+              ℓ
+              X                  ℓ
+                                 X                              ℓ
+                                                                X
+         0=         log x(i) ≥         X (i) − ℓC̃3 A log X ≥         X (i) − dC̃3 A log X.
+              i=1                i=1                            i=1
+Let z ∈ {x, y} be such that h(z) = max{h(x), h(y)}. Then we obtain the inequality
+                             ℓ
+                             X               ℓ
+                                             X        n             o
+            dC̃3 A log X ≥         X (i) ≥         max log z (i) , 0 = ℓh(z) ≥ X.
+                             i=1             i=1
+Therefore we have due to Lemma 10 the inequality
+                                           2            2
+                               X ≤ 2dC̃3 ARK log(dC̃3 ARK ).
+Hence,
+                log |n| = h(n) = h(ax + by) ≤ h(a) + h(b) + 2X + log 2
+                                                                2            2
+                                                      ≤ 5dC̃3 ARK log(dC̃3 ARK ).
+That is, |n| is bounded from above or a = b = 1 and n = x + y with y = σ(x) for
+some σ ∈ Gal(K/Q) which proves Theorem 2 with
+                                                                          2s−1
+         C̃ = dC̃3 = 6.2 · 1012 s5.5 d6 log(ed2 )((s − 1)!)4 54(log(3d))3       .
+
+                                       Acknowlegement
+   We gratefully acknowledge Kálmán Győry for his valuable suggestions and help-
+ful comments.
+                                      S-UNIT EQUATIONS                                           19
+
+
+                                         References
+ [1] B. Brindza and K. Győry. On unit equations with rational coefficients. Acta Arith., 53(4):367–
+     388, 1990.
+ [2] Y. Bugeaud. Effective bounds for solutions of S-unit equations and of Thue-Mahler equations.
+     J. Number Theory, 71(2):227–244, 1998.
+ [3] Y. Bugeaud and K. Györy. Bounds for the solutions of unit equations. Acta Arith., 74(1):67–
+     80, 1996.
+ [4] P. Erdős, C. L. Stewart, and R. Tijdeman. Some diophantine equations with many solutions.
+     Compos. Math., 66(1):37–56, 1988.
+ [5] J.-H. Evertse and K. Győry. Unit equations in Diophantine number theory, volume 146 of
+     Camb. Stud. Adv. Math. Cambridge: Cambridge University Press, 2015.
+ [6] J.-H. Evertse, K. Győry, C. L. Stewart, and R. Tijdeman. On S-unit equations in two un-
+     knowns. Invent. Math., 92(3):461–477, 1988.
+ [7] E. Friedman. Analytic formulas for the regulator of a number field. Invent. Math., 98(3):599–
+     622, 1989.
+ [8] K. Győry. Sur les polynômes à coefficients entiers et de discriminant donne. II. Publ. Math.
+     Debr., 21:125–144, 1974.
+ [9] K. Győry. On the number of solutions of linear equations in units of an algebraic number
+     field. Comment. Math. Helv., 54:583–600, 1979.
+[10] L. Hajdu. A quantitative version of Dirichlet’s S-unit theorem in algebraic number fields.
+     Publ. Math. Debrecen, 42(3-4):239–246, 1993.
+[11] S. Lang. Integral points on curves. Publ. Math., Inst. Hautes Étud. Sci., 6:319–335, 1960.
+[12] S. Lang. Algebraic number theory., volume 110 of Grad. Texts Math. New York: Springer-
+     Verlag, 2nd ed. edition, 1994.
+[13] E. M. Matveev. An explicit lower bound for a homogeneous rational linear form in logarithms
+     of algebraic numbers. II. Izv. Math., 64(6):1217–1269, 2000.
+[14] J. Neukirch. Algebraic number theory, volume 322 of Grundlehren der mathematischen Wis-
+     senschaften [Fundamental Principles of Mathematical Sciences]. Springer-Verlag, Berlin,
+     1999. Translated from the 1992 German original and with a note by Norbert Schappacher,
+     With a foreword by G. Harder.
+[15] A. Pethő and B. M. M. de Weger. Products of prime powers in binary recurrence sequences.
+     I. The hyperbolic case, with an application to the generalized Ramanujan-Nagell equation.
+     Math. Comp., 47(176):713–727, 1986.
+[16] A. Pintér. Rational S-unit equations with at most one solution. unpublished manuscript,
+     2026.
+[17] C. L. Siegel. Approximation algebraischer Zahlen. Math. Z., 10:173–213, 1921.
+[18] N. P. Smart. The algorithmic resolution of Diophantine equations, volume 41 of Lond. Math.
+     Soc. Stud. Texts. Cambridge: Cambridge University Press, 1998.
+[19] R. Visser and V. Ziegler. On integers that are representable as the sum of two units, 2026.
+     available at https://arxiv.org/abs/2608.15903.
+[20] P. M. Voutier. An effective lower bound for the height of algebraic numbers. Acta Arith.,
+     74(1), 1996.
+[21] K. Yu. p-adic logarithmic forms and group varieties. III. Forum Math., 19(2):187–280, 2007.
+
+   V. Ziegler, University of Salzburg, Hellbrunnerstrasse 34, A-5020 Salzburg, Austria
+   Email address: volker.ziegler@plus.ac.at
+

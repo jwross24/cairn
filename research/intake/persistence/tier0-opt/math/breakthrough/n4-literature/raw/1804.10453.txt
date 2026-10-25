@@ -1,0 +1,1588 @@
+                                            EFFECTIVE RESULTS FOR LINEAR EQUATIONS IN MEMBERS OF
+                                                         TWO RECURRENCE SEQUENCES
+
+                                                                                           VOLKER ZIEGLER
+
+
+
+
+arXiv:1804.10453v1 [math.NT] 27 Apr 2018
+                                                   Abstract. Let (Un )∞   n=0 and (Vm )m=0 be two linear recurrence sequences. For fixed
+                                                                                         ∞
+
+                                                   positive integers k and ℓ, fixed k-tuple (a1 , . . . , ak ) ∈ Zk and fixed ℓ-tuple (b1 , . . . , bℓ ) ∈ Zℓ
+                                                   we consider the linear equation
+                                                                              a1 Un1 + · · · + ak Unk = b1 Vm1 + · · · + bℓ Vmℓ
+                                                   in the unknown non-negative integers n1 , . . . , nk and m1 , . . . , mℓ . Under the assumption
+                                                   that the linear recurrences (Un )∞
+                                                                                    n=0 and (Vm )m=0 have dominant roots and under the
+                                                                                                      ∞
+
+                                                   assumption of further mild restrictions we show that this equation has only finitely many
+                                                   solutions which can be found effectively.
+
+
+
+
+                                                                                          1. Introduction
+                                             Let (Un )∞                                         ∞
+                                                      n=0 be a sequence. We say that (Un )n=0 is a linear recurrence sequence of order
+                                           d > 0 if there exist complex numbers c1 , . . . , cd such that
+                                                                                  Un+d = c1 Un+d−1 + · · · + cd Un .
+                                           If c1 , . . . , cd and U0 , . . . , Ud−1 are all integers, then Un is an integer for all n ≥ 0 and we
+                                           say that (Un )∞     n=0 is deﬁned over the integers. In what follows we will always assume that
+                                                 ∞
+                                           (Un )n=0 is deﬁned over the integers.
+                                              It is a well known fact that if the companion polynomial to (Un )∞          n=0 is of the form
+                                                                                                                       t
+                                                                                                                       Y
+                                                                     F (X) = X d − c1 X d−1 − · · · − cd =                   (X − αi )mi ,
+                                                                                                                       i=1
+
+                                           where α1 , . . . , αt are distinct complex numbers, and m1 , . . . , mt are positive integers whose
+                                           sum is d, then there exist polynomials u1 (X), . . . , ut (X) whose coeﬃcients are in Q(α1 , . . . , αt )
+                                           such that ui (X) is of degree at most mi − 1 for i = 1, . . . , t and
+                                                                                                    t
+                                                                                                    X
+                                           (1)                                             Un =            ui (n)αin
+                                                                                                    i=1
+
+                                           holds for all n ≥ 0. We call a recurrence sequence (Un )∞            n=0 simple if mi = 1 for all
+                                           i = 1, . . . , t = d, non-degenerate if αi /αj is not a root of unity for any 1 ≤ i < j ≤ t and say
+                                           that it satisﬁes the dominant root condition if |α1 | > |α2 | ≥ |α3 | ≥ · · · ≥ |αt |. Throughout
+
+                                             2010 Mathematics Subject Classification. 11D61,11B37,11B39,11A67.
+                                             Key words and phrases. Diophantine equations, recurrence sequences, digit expansions.
+                                                                                                       1
+2                                           V. ZIEGLER
+
+this paper we will assume that the recurrence sequences are simple, non-degenerate, satisfy
+the dominant root condition and are deﬁned over the integers.
+   General results on linear equations involving recurrence sequences have been made most
+prominently by Schlickewei and Schmidt [17, 18]. Recently the case of linear equations
+involving Fibonacci numbers and powers of two have been picked up by several authors
+such as Bravo and Luca [6] and Bravo, Gómez and Luca [5] who studied the Diophantine
+                                 (k)     (k)                                          (k) ∞
+equations Fn + Fm = 2a and Fn + Fm = 2a respectively, where (Fn )∞        n=0 and (Fn )n=0
+denote the sequence of Fibonacci and k-Fibonacci numbers. Besides, Bravo, Faye and Luca
+[4] studied the Diophantine equation Pl + Pm + Pn = 2a , where (Pn )∞ n=0 is the sequence of
+Pell numbers. Recently Chim and Ziegler [11] generalized the result of Bravo and Luca [6]
+and solved completely the Diophantine equations
+                                  Fn1 + Fn2 = 2a1 + 2a2 + 2a3
+and
+                              Fm1 + Fm2 + Fm3 = 2t1 + 2t2 .
+We also want to mention the results due to Bugeaud, Cipu and Mignotte [7] who considered
+the problem on representing Fibonacci and Lucas numbers in an integer base. Beside other
+things they solved the Diophantine equation
+                                   Fn = 2a1 + 2a2 + 2a3 + 2a4
+completely (see [7, Theorem 2.2]).
+  In this paper we want to further generalize these results and study the Diophantine
+equation
+(2)                      a1 Un1 + · · · + ak Unk = b1 Vm1 + · · · + bℓ Vmℓ ,
+                                ∞
+where (Un )∞   n=0 and (Vm )m=0 are ﬁxed linear recurrence sequences deﬁned over the integers
+and a1 , . . . , ak and b1 , . . . , bℓ are ﬁxed non-zero integers. Under some mild technical re-
+strictions we show that there exist only ﬁnitely many eﬀectively computable solutions to
+(2).
+   Let us mention that the problem of ﬁnding all members in a given recurrence sequence
+that have only few non-zero digits in a given integer base g is closely related to studying
+Diophantine equations of the form
+(3)                                Un = b1 g m1 + · · · + bℓ g mℓ .
+Note that this is a special case of the Diophantine equation (2). However, eﬀective ﬁniteness
+results for Diophantine equation (3) have been proved by Stewart [21]. In particular,
+Stewart showed that the number of non-zero digits of Un in a given base g is bounded
+                    log n
+from above by log log   n+C
+                            − 1, where C is an eﬀectively computable constant. However our
+method allows us the reprove this classical result in a more general setting (cf. Theorem
+2). Let us also remark that our method of proof follows more closely the line of a proof
+due to Luca [14] who also reproved Stewart’s result.
+   More precisely we aim to generalize the following results due to Senge and Strauss [19]
+who showed that the number of integers, such that the sum of non-zero digits in each of
+                        LINEAR EQUATIONS IN RECURRENCE SEQUENCES                                    3
+
+                                                                          log g
+the bases g and h lies below a ﬁxed bound M, is ﬁnite if and only if log      h
+                                                                                is irrational.
+However, their result which is ineﬀective has been brought to an eﬀective form by Stewart
+[21]. As a consequence of our proof we obtain a generalization of Stewart’s result which
+applies to generalized number systems (cf. Theorem 2).
+   Inspired by the results due to Bugeaud, Cipu and Mignotte [7] and Bravo and Luca [6]
+we consider the problem of ﬁnding all integers that have few non-zero integer digits in their
+binary as well as in their Zeckendorf expansion (cf. Theorems 3 and 6).
+   In the next section we will introduce some further notations and will state our main
+results. The proof of our main Theorems 1 and 2 will be established by an induction
+argument. In order to make the Theorems 1 and 2 accessible to induction we state a
+technical theorem, Theorem 4, which will imply Theorems 1 and 2. In Section 3 we
+discuss the technical restrictions under which our results hold. In the short Section 4 we
+demonstrate how Theorems 1 and 2 follow from the technical Theorem 4. After stating
+some auxiliary results such as lower bounds for linear forms in logarithms and results on
+heights of algebraic numbers (see Section 5), we prove Theorem 4 in Section 6. In the ﬁnal
+two sections we discuss how to use our results in practice to solve equations of the form
+(2) by discussing classical reduction methods as Baker-Davenport reduction and the usage
+of continued fractions. We demonstrate the strength of our method by proving a result on
+the number of non-zero binary digits and non-zero digits in the Zeckendorf expansion (see
+Theorem 3 below) in the last section.
+
+                 2. Notations and statement of the Main results
+   For a given recurrence sequence (Un )∞ n=0 we say that a k-tuple (a1 , . . . , ak ) of non-zero
+integers admits dominance if for every k-tuple of non-negative integers n1 > n2 > · · · >
+nk ≥ 0 we have that
+                              |a1 Un1 + · · · + ak Unk | ≫ |Un1 | ,
+where the implied constant does not depend on n1 , . . . , nk . How to recognize whether a
+given k-tuple (a1 , . . . , ak ) admits dominance will be discussed in the next section.
+                                                 ∞
+Theorem 1. Let (Un )∞               n=0 and (Vm )m=0 be non-constant, simple, non-degenerate, linear
+recurrence sequences deﬁned over the integers with dominant roots α and β respectively
+such that α and β are multiplicatively independent. Assume that the k-tuple (a1 , . . . , ak )
+and the ℓ-tuple (b1 , . . . , bℓ ) of non-zero integers admit dominance for (Un )∞                ∞
+                                                                                    n=0 and (Vm )m=0
+respectively. Then there exists an eﬀectively computable constant N such that every solution
+(n1 , . . . , nk , m1 , . . . , mℓ ) to equation (2) with n1 > · · · > nk ≥ 0 and m1 > · · · > mℓ ≥ 0
+satisﬁes max{n1 , m1 } ≤ N.
+Remark 1. The assumption that the k-tuple (a1 , . . . , ak ) and the ℓ-tuple (b1 , . . . , bℓ ) admit
+dominance is essential in view of the ﬁniteness of solutions. Indeed consider the example,
+where (Un )∞          ∞
+           n=0 = (Fn )n=0 is the Fibonacci sequence (i.e. the sequence that satisﬁes F0 =
+1, F1 = 2 and Fn = Fn−1 + Fn−2 for all n ≥ 2) and (Vm )∞        m=0 is the sequence given by
+       m
+Vm = 2 for all m ≥ 0. Let k = 4, ℓ = 1, (a1 , a2 , a3 , a4 ) = (1, −1, −1, 1) and b1 = 1, i.e.
+4                                           V. ZIEGLER
+
+we consider the Diophantine equation
+                                   Fn1 − Fn2 − Fn3 + Fn4 = 2m .
+Then (n1 , n2 , n3 , n4 , m) = (t, t − 1, t − 2, 4, 3) is a solution to the above equation for every
+t ≥ 2. Note that (1, −1, −1, 1) does not admit dominance for the Fibonacci sequence.
+  Theorem 1 has some remarkable consequences for generalized numeration systems G
+with base sequence (Gn )∞                               ∞
+                          n=0 . In particular, let (Gn )n=0 be a non-constant, simple, non-
+degenerate, linear recurrence of order d with
+                                Gn+d = c1 Gn+d−1 + · · · + cd Gn ,
+where d ≥ 1, G0 = 1, Gk = c1 Gk−1 + · · · + ck G0 + 1 for k < d and for i = 1, . . . , d the ci ’s
+are non-negative integers. Then every positive integer n can be represented as
+                                             ∞
+                                             X
+(4)                                     n=          εk (n)Gk ,
+                                              k=0
+
+where 0 ≤ εk (n) < Gk+1 /Gk and εk (n) ∈ Z. This expansion (called G-expansion) is
+uniquely determined provided that
+                             K−1
+                             X
+(5)                                εk (n)Gk < GK          for all K > 0,
+                             k=0
+
+where the digits εk (n) are computed by the greedy algorithm (see for instance [12]). We
+call a sequence of digits (ε0 , ε1 , . . .) regular if it satisﬁes (5) for every K. From now on we
+assume that all G-expansions are regular.
+  Furthermore we denote by
+                                                     X∞
+                                           HG (n) =      (εk (n))0
+                                                    k=1
+the Hamming weight of n in base G, i.e. the number of non-zero G-adic digits of n, where
+n has regular G-expansion (4). Note that since the uniqueness of regular G-expansion the
+Hamming weight HG (n) does not depend on the G-expansion and is therefore well deﬁned.
+Also note that any k-tuple (εn1 (n), . . . , εnk (n)) of non-zero digits of a regular G-expansion
+admits dominance for (Gn )∞n=0 . Finally let us remark that the companion polynomial
+
+                                     X d − c1 X d−1 − · · · − cd
+of (Gn )∞
+        n=0 has a real, dominant (characteristic) root α with c1 < α < c2 , by a simple
+application of Rouché’s theorem, the conjugated roots have to be of smaller modulus.
+Furthermore let us assume that the base sequence (Gn )∞  n=0 is simple and non-degenerate.
+In particular, this is fulﬁlled whenever the coeﬃcients satisfy c1 ≥ c2 ≥ · · · ≥ cd ≥ 1. For
+more details on generalized numeration systems see e.g. [13].
+   With these notations and remarks on hand we immediately deduce from Theorem 1 the
+following corollary:
+                        LINEAR EQUATIONS IN RECURRENCE SEQUENCES                                5
+
+Corollary 1. Given expansions G and H such that the dominant roots of the corresponding
+recurrence relations are multiplicatively independent. Then for every M ≥ 2 there exists
+an eﬀectively computable constant Ñ such that
+                                      HG (n) + HH (n) ≤ M
+implies that n < Ñ .
+  But even more is true. We can ﬁnd a uniform formula for the upper bound Ñ :
+Theorem 2. Given expansions G and H such that the dominant roots of the correspond-
+ing recurrence relations are multiplicatively independent. Then there exists an eﬀectively
+computable constant C̃ (depending on G and H) such that
+                                      HG (n) + HH (n) ≤ M
+implies that
+                                                    M −1
+                                   log n ≤ C̃M log M       .
+
+   Note that in the case that G and H are classical bases of number systems, say Gn = g n
+and Hn = hn , we obtain exactly Stewart’s famous result [21].
+   In order to demonstrate our method we consider the case where the base G is the
+Fibonacci sequence, i.e. we consider the Zeckendorf expansion on the one hand, and H is
+the sequence Hn = 2n , i.e. we consider the binary expansion on the other hand. In view
+of this application the attentive reader will recognize that this is the reason why we chose
+the not quite common deﬁnition of the Fibonacci sequence, i.e. the choice F0 = 1 and
+F1 = 2. With this choice the Fibonacci sequence satisﬁes the requirements for G-bases as
+described above. In this particular case we obtain:
+Theorem 3. Let HZ (n) be the Hamming weight of the Zeckendorf expansion of n and
+Hb (n) the Hamming weight of the binary digit expansion of n. If
+                                      HZ (n) + Hb (n) ≤ M,
+then we have that                                             M −1
+                               log n < 8.23 · 1015 M log M            .
+Additionally we have:
+     • If M = 2, then n = 1, 2, 8.
+     • If M = 3, then n = 3, 4, 5, 16, 34, 144.
+     • If M = 4, then
+                    n = 6, 9, 10, 13, 18, 21, 24, 32, 36, 64, 68, 256, 288, 1024.
+     • If M = 5, then
+        n = 11, 12, 14, 17, 20, 22, 26, 35, 37, 40, 42, 48, 65, 66, 76, 89, 96, 97, 128, 136,
+            145, 146, 152, 160, 257, 272, 322, 384, 385, 521, 576, 610, 644, 1026, 1042,
+            1152, 1600, 2584, 2592.
+6                                                   V. ZIEGLER
+
+  In order to derive Theorems 1 and 2 we prove that an even stronger statement holds.
+The formulation of this stronger statement allows us to use an induction argument to proof
+Theorem 4 stated below and therefore also prove Theorems 1 and 2.
+  In order to formulate the next result we have to introduce some further notations. We
+                                                                              (U )
+put nK = mL = 0 for K > k and L > ℓ. Moreover we denote by Ia1 ,...,ak the inﬁmum
+                                                                            
+                         (U )                     |a1 Un1 + · · · + ak Unk |
+                        Ia1 ,...,ak = inf
+                                     n1 >···>nk            |Un1 |
+          (U )
+and by Sa1 ,...,ak the supremum
+                                                                                             
+                                                             |a1 Un1 + · · · + ak Unk |
+                          Sa(U1 ,...,a
+                                 )
+                                        =     sup
+                                      k
+                                            n1 >···>nk                |Un1 |
+Then we have the following theorem:
+Theorem 4. Let the assumptions of Theorem 1 be in force and assume that n1 ≥ 3. Then
+there exists a constant C such that for every m ≥ 4 there exists a pair (K, L) of positive
+integers K, L ≥ 2 with K + L = m such that this pair (K, L) satisﬁes for every solution
+(n1 , . . . , nk , m1 , . . . , mℓ ) to Diophantine equation (2)
+(6)                         min{n1 − nK , m1 − mL } ≤ (C log n1 )m−3
+and
+(7)                      max{n1 − nK−1 , m1 − mL−1 } ≤ (C log n1 )m−4 .
+Moreover, to the pair (K, L) there exists a sequence of pairs (Ki , Li ) with i = 4, . . . , m such
+that Ki + Li = i, 2 ≤ K4 ≤ · · · ≤ Km = K and 2 ≤ L4 ≤ · · · ≤ Lm = L such that
+(8)              max{n1 − nKi −1 , m1 − mLi −1 } ≤ (C log n1 )i−4                        4 ≤ i ≤ m − 1.
+                                                                     (U )            (V )             (U )        (V )
+The constant C depends on (Un )∞              ∞
+                                  n=0 , (Vm )m=0 ,                  Ia1 ,...,ak ,   Ib1 ,...,bℓ ,   Sa1 ,...,ak , Sb1 ,...,bℓ , A =
+max1≤i≤k {|ai |} and B = max1≤i≤ℓ {|bi |} but not on M = k + ℓ.
+   In his book [25, Conjecture 14.25] Waldschmidt conjectured very sharp lower bounds
+for linear forms in logarithms. If we would apply these conjectural lower bounds due
+to Waldschmidt instead of the lower bounds due to Baker and Wüstholz [3], which are
+asymptotically the best known bounds, we would obtain instead of inequalities (6) and (7)
+the inequalities
+                         min{n1 − nK , m1 − mL } ≤ C m−3 log n1
+and
+                       max{n1 − nK−1 , m1 − mL−1 } ≤ C m−4 log n1 .
+These conjectural bounds would lead to the following stronger version of Theorem 2.
+Conjecture 1. Given expansions G and H such that the dominant roots of the correspond-
+ing recurrence relations are multiplicatively independent. Then there exists an eﬀectively
+computable constant C̃ (depending on G and H) such that
+                                            HG (n) + HH (n) ≤ M
+                         LINEAR EQUATIONS IN RECURRENCE SEQUENCES                                           7
+
+implies that
+                                              log n ≤ C̃ M .
+   For the rest of the paper we denote by C1 , C2 , . . . constants, which are eﬀectively
+                                      (U )     (V )        (U )          (V )
+computable and depend only on Ia1 ,...,ak , Ib1 ,...,bℓ , Sa1 ,...,ak , Sb1 ,...,bℓ , A = max1≤i≤k {|ai |},
+B = max1≤i≤ℓ {|bi |}, (Un )∞               ∞
+                           n=0 and (Vm )m=0 but not on M = k + ℓ. In several cases we also
+                                   (U )       (V )
+consider constants of the form C2 and C2 which indicate that the constant depends
+                                            ∞
+only on the sequence (Un )∞ n=0 and (Vm )m=0 respectively. Since the proof of the theorem is
+already rather technical, we abandon to keep track of the explicit values of these constants
+to avoid further technical details. The interested and experienced reader will not have
+problems to compute these constants for concrete examples explicitly. We demonstrate
+these computations during the proof of Theorem 3 in Section 8.
+                            3. Notes on the growth condition
+   The aim of this section is twofold. Firstly we want to describe an eﬀective procedure
+to decide whether a k-tuple (a1 , . . . , ak ) admits dominance for a simple, non-degenerate
+sequence (Un )∞
+              n=0 deﬁned over the integers. Secondly we want to give a characterization
+of dominance which will yield useful consequences in view of the proof of our main result
+Theorem 4.
+   Before we can settle our ﬁrst goal, let us prove a useful lemma. Therefore let
+                                     X dU − c1 X dU −1 − · · · − cdU
+be the characteristic polynomial of (Un )∞   n=0 with roots α1 = α, α2 , . . . , αdU such that |α| >
+|α2 | ≥ · · · ≥ |αdU | and let
+                                     X dV − d1 X dV −1 − · · · − ddV
+be the characteristic polynomial of (Vm )∞    m=0 with roots β1 = β, β2 , . . . , βdV such that |β| >
+|β2 | ≥ · · · ≥ |βdV |. Then by our assumption that (Un )∞                     ∞
+                                                                 n=0 and (Vm )m=0 are simple there
+exist algebraic numbers u1 = u, u2, . . . , udU each of degree at most dU and contained in
+Q(α1 , . . . , αdU ) and algebraic numbers v1 = v, v2 , . . . , vdV each of degree at most dV and
+contained in Q(β1 , . . . , βdV ) such that
+                                                       dU
+                                                       X
+                                                   n
+                                        Un = uα +             uj αjn
+                                                        j=2
+(9)
+                                                       dV
+                                                       X
+                                                  n
+                                         Vn = vβ +            vj βjn .
+                                                       j=2
+
+Let us also note that by our assumption that (Un )∞n=0 is non-degenerate and deﬁned over
+the integers, the dominant root α is a real algebraic integer which is not a root of unity,
+hence we have |α| > 1.
+                                                                                      (U )        (V )
+Lemma 1. Under the assumptions of Theorem 1 there exist constants C1                         and C1      such
+that
+                                           (U )
+                            |Un − uαn | < C1 |α2 |n
+8                                              V. ZIEGLER
+
+and
+                                                       (V )
+                                     |Vm − vβ m | < C1 |β2 |m .
+  Let us address to the question: How can we eﬀectively decide whether (a1 , . . . , ak ) admits
+dominance? This question is answered by the following proposition:
+Proposition 1. The k-tuple (a1 , . . . , ak ) does not admit dominance for (Un )∞
+                                                                                n=0 if and only
+if there exists some 1 ≤ K ≤ k and some integers n1 > · · · > nK ≥ 0 such that
+(10)                                 a1 αn1 + · · · + aK αnK = 0.
+It can be eﬀectively decided whether such K and such integers n1 > · · · > nK ≥ 0 exist,
+and in case of their existence such an instance can be eﬀectively computed.
+   Moreover, in case that (a1 , . . . , ak ) admits dominance there exist positive, eﬀectively
+                              (U )               (U )
+computable constants C2 = C2 and C3 = C3 such that
+(11)                           |a1 αn1 + · · · + aK αnK | > C2 |α|n1
+for any 1 ≤ K ≤ k and any integers n1 > · · · > nK ≥ 0 and
+(12)                           |a1 Un1 + · · · + ak Unk | > C3 |Un1 |
+for any integers n1 > · · · > nk ≥ 0.
+Remark 2. Note that in general the constants C2 and C3 depend on (Un )∞           n=0 , k and A =
+max1≤i≤k {|ai |}. In view of Theorems 2 and 4 the dependence on k is problematic. However
+in case that a1 , . . . , ak come from a regular digit expansion all the ai ’s are positive, α > 1
+and Un ≥ 0 for all n. Therefore one immediately sees that in this case Proposition 1 holds
+with C2 = C3 = a1 .
+Proof. For the moment let us assume that there exists an integer 1 ≤ K ≤ k and integers
+n1 > · · · > nK ≥ 0 such that
+                                     a1 αn1 + · · · + aK αnK = 0.
+Then we have due to Lemma 1 that
+                                       K
+                                       X                       k
+                                                               X
+          |a1 Un1 + · · · + ak Unk | ≤   |ai Uni − uai αni | +   |ai Uni |
+                                         i=1                        i=K+1
+                                          (U )
+                                      ≤KAC1 |α2 |n1 + (k − K)A              max {|Uni |},
+                                                                        K+1≤i≤k
+
+where we put nk+1 = 0 in case that K = k. It is easy to see that in the case that nK+1 is
+ﬁxed we have
+                              (U )
+                        KAC1 |α2 |n1 + (k − K)A maxK+1≤i≤k {|Uni |}
+                   lim                                              = 0,
+                  n1 →∞                    Un1
+hence (a1 , . . . , ak ) does not admit dominance for (Un )n≥0 . We have therefore shown that
+(10) is suﬃcient for not admitting dominance. Therefore we are left to show that (10) is
+necessary for not admitting dominance.
+                      LINEAR EQUATIONS IN RECURRENCE SEQUENCES                                 9
+
+  To prove necessity we proceed by an induction argument on K. More precisely we claim
+the following:
+                                                                                    (2)      (k)
+Claim 1. There are recursively computable sets N2 , . . . , Nk and constants C2 , . . . , C2
+such that for every tuple (m2 , m3 , . . . , mK ) 6∈ NK of integers with 0 < m2 < · · · < mK we
+have that for all integers mK+1 , . . . , mk with mK < mK+1 < · · · < mk
+     • either
+                                                                        (K)
+                       |a1 + a2 α−m2 + a3 α−m3 + · · · + ak α−mk | ≥ C2
+     • or there exist integers n1 > · · · > nK ≥ 0 such that (10) is satisﬁed.
+   We start with the case that K = 2. If there exist integers n1 > n2 such that a1 αn1 +
+a2 αn2 = 0, then we can ﬁnd n1 and n2 by solving the equation a1 + a2 α−n = 0 for n > 0.
+Therefore we may assume that for any integers n1 > n2 we have that a1 αn1 + a2 αn2 6= 0.
+Let us denote by N2 the set of integers m such that
+                                              A|α|−m+1  1
+                                    |a1 | −            < .
+                                               |α| − 1  2
+Note that N2 is a ﬁnite set and that m 6∈ N2 implies that
+                                                                     A|α|−m+1   1
+              |a1 + a2 α−m + a3 α−m3 + · · · + ak α−mk | > |a1 | −            ≥
+                                                                      |α| − 1   2
+for any choice of integers m3 , . . . , mk with m < m3 < · · · < mk . If N2 is empty we put
+                                   (2)           (k)
+Ni = ∅ for i = 2, . . . , k and C2 = · · · = C2 = 21 . In this case also inequality (11) holds
+             (k)
+with C2 = C2 . If N2 is not empty we compute
+                                                                 
+                               (2)          1                  −m
+                              C2 = min        , min {|a1 + a2 α |} .
+                                            2 m∈N2
+Thus for any choice of n1 > n2 ≥ 0 we have
+                                                         (2)
+                                 |a1 αn1 + a2 αn2 | ≥ C2 |α|n1 .
+Therefore the case K = 2 is settled.
+                                                                                  (i)
+  Assume now that we have computed the ﬁnite sets Ni and constants C2 for all i < K
+such that (m2 , m3 , . . . , mi ) 6∈ Ni implies that for all mi+1 < · · · < mk with mi < mi+1 we
+have
+                                                                           (i)
+                          |a1 + a2 α−m2 + a3 α−m3 + · · · + ak α−mk | ≥ C2 .
+Furthermore we may assume that for any choice of n1 > · · · > ni ≥ 0 we have that
+                                   a1 αn1 + · · · + ai αni 6= 0.
+Then we can ﬁnd for all (m2 , . . . , mK−1 ) ∈ NK−1 all solutions m to
+                      a1 + a2 α−m2 + · · · + aK−1 α−mK−1 + aK α−m = 0
+with m > mK−1. If there exists any solution we have found an example satisfying (10) by
+multiplying the above equation with αm and setting n1 = m, n2 = m − m2 , . . . , nK−1 =
+10                                          V. ZIEGLER
+
+m − mK−1 and nK = 0. If no solution exists we compute the set NK consisting of (K − 1)-
+tuples of positive integers as follows. The (K − 1)-tuple (m2 , . . . , mK ) is contained in NK
+if and only if (m2 , . . . , mK−1 ) ∈ NK−1 and mK > mK−1 is such that
+                                                                                (K−1)
+                                                          A|α|−mK +1  C
+                 a1 + a2 α−m2 + · · · + aK−1 α−mK−1 −                < 2                .
+                                                           |α| − 1       2
+Note that NK is a ﬁnite set and that (m2 , . . . , mK ) 6∈ NK implies that
+
+     a1 + a2 α−m2 + · · · + ak α−mk >
+                                                                                            (K−1)
+                                                                          A|α|−mK +1  C
+                                a1 + a2 α−m2 + · · · + aK−1 α−mK−1 −                 ≥ 2            .
+                                                                           |α| − 1       2
+for any choice of integers mK+1 < · · · < mk with mK < mK+1 . If NK is empty, then we
+                                                                              (K−1)
+                                                    (K)            (k)    C
+may choose Ni = ∅ for i = K + 1, . . . , k and C2 = · · · = C2 = 2 2 . Thus (11) holds
+           (K)
+with C2 = C2 . In the case that NK is not empty we compute
+                    (                                                               )
+                        (K−1)
+          (K)         C2
+         C2 = min             ,        min       {|a1 + a2 α−m2 + · · · + aK α−mK |} .
+                         2      (m2 ,...,mK )∈NK
+
+Thus for any choice of n1 > n2 > · · · > nK ≥ 0 we have
+                                                                    (K)
+                       |a1 αn1 + · · · + a2 αn2 + · · · + aK αnK | > C2 |α|n1
+and we completely proved our claim.
+   If we put ni = n1 − mi we obtain from the claim that either there exists some integer
+1 ≤ K ≤ k and some integers n1 > · · · > nK ≥ 0 such that (10) holds or (11) holds
+        (U )   (k)
+with C2 = C2 . Finally note that (12) follows from inequality (11) and applying Lemma
+1.                                                                                    
+     As an immediate corollary of Proposition 1 we obtain
+Corollary 2. Under the assumption that (a1 , . . . , ak ) admits dominance for (Un )∞
+                                                                                    n=0 we
+           (U )
+have that I(a1 ,...,ak ) > 0.
+                                (U )
+Proof. Note that 0 < C3 ≤ I(a1 ,...,ak ) by Proposition 1.                                              
+     Before we end this section we want to draw one more conclusion.
+Proposition 2. Under the hypothesis made in Theorem 1 there exist positive, eﬀectively
+computable constants C5 , C6 , C7 and C8 such that
+                                               |α|n1
+                                        C5 <         < C6
+                                               |β|m1
+and
+                                                n1
+                                         C7 <      < C8
+                                                m1
+                        LINEAR EQUATIONS IN RECURRENCE SEQUENCES                                   11
+
+provided that m1 6= 0. The constants C5 , C6 , C7 and C8 depend on (Un )∞                        ∞
+                                                                                      n=0 , (Vm )m=0 ,
+ (U )          (V )          (U )          (V )
+Ia1 ,...,ak , Ib1 ,...,bℓ , Sa1 ,...,ak , Sb1 ,...,bℓ , A and B but not on M = k + ℓ.
+Proof. Combining the results from Corollary 2 and Lemma 1 we obtain
+                                         (U )
+                          C5′ |α|n1 < C3 |Un1 | < |a1 Un1 + · · · + ak Unk |
+and
+                                         (V )
+                         C5′′ |β|m1 < C3 |Vm1 | < |b1 Vm1 + · · · + bℓ Vmℓ |.
+Moreover we have
+                                                               (U )
+                  |a1 Un1 + · · · + ak Unk | < A(|u| + C1 ) (|α|n1 + · · · + |α|nk )
+                                                               (U )     |α|
+                                                < A(|u| + C1 )                |α|n1
+                                                                      |α| − 1
+                                                = C6′′ |α|n1
+and similarly we have that
+                                |b1 Vm1 + · · · + bℓ Vmℓ | < C6′ |β|m1 .
+Thus we obtain
+                                           C5′′   |α|n1   C6′
+                                  C5 =          <       <     = C6 ,
+                                           C6′′   |β|m1   C5′
+where C5′ , C5′′ , C6′ and C6′′ are eﬀective computable, positive constants.
+  To obtain the second inequality we take logarithms and obtain
+                            log C5 < n1 log |α| − m1 log |β| < log C6
+which yields
+           | log C5 | log |β|     log C5     log |β|    n1
+  C7 = −             +         ≤           +         <
+            log |α|    log |α|   m1 log |α| log |α|     m1
+                                               log C6      log |β|   log C6   log |β|
+                                           <            +          ≤        +         = C8 .
+                                              m1 log |α| log |α|     log |α| log |α|
+                                                                                                   
+Remark 3. In case that (a1 , . . . , ak ) comes from a regular digit expansions we have that
+  (U )
+I(a1 ,...,ak ) ≥ a1 ≥ 1. Therefore the statements of Proposition 2 hold also in the situation
+relevant for Theorem 2.
+
+                4. Deduction of Theorems 1 and 2 from Theorem 4
+  This section is devoted to the proof of Theorem 1 and Theorem 2 by applying Theorem
+4 with m = k + ℓ + 3. With this choice of m for every pair (K, L) with K, L ≥ 2 and
+K + L = m we have that either K − 1 ≥ k + 1 or L − 1 ≥ ℓ + 1 holds. Thus by the bound
+(7) of Theorem 4 we get that either
+                                       n1 < (C log n1 )k+ℓ−1
+12                                           V. ZIEGLER
+
+or
+                                 n1 < C8 m1 < C8 (C log n1 )k+ℓ−1
+and therefore we have that max{n1 , m1 } ≤ N where N is eﬀectively computable provided
+that C is. Thus we have proved Theorem 1.
+  For the proof of Theorem 2 we note that HG (n) + HH (n) ≤ M implies that there are
+positive integers k and ℓ with k + ℓ ≤ M and positive integers a1 , . . . , ak and b1 , . . . , bℓ with
+max{a1 , . . . , ak , b1 , . . . , bℓ } ≤ CG,H such that
+(13)                   a1 Gn1 + · · · + ak Gnk = n = b1 Hm1 + · · · + bℓ Hmℓ
+for some integers n1 > · · · > nk ≥ 0 and m1 > · · · > mℓ ≥ 0. Note that by the premise
+that G and H are bases for a numeration system and since (13) is a regular digit expansion
+C2 , C3 do not depend on M by Remark 2. Moreover, the hypothesis of dominance are
+fulﬁlled, i.e. we may apply Theorem 4 with m = M + 3. Similar as above we obtain
+(14)             n1 < max{1, C8}(C log n1 )M −1 = max{1, C8}(C log n1 )M −1 .
+To solve the inequality above we apply a lemma due to Pethő and de Weger [16]. For a
+proof of Lemma 2 we refer to [20, Appendix B].
+Lemma 2. Let u, v ≥ 0, h ≥ 1 and x ∈ R be the largest solution of x = u + v(log x)h .
+Then
+               x < max{2h (u1/h + v 1/h log(hh v))h , 2h (u1/h + 2e2 )h }.
+     Applying Lemma 2 with u = 0, v = max{1, C8}C M −1 and h = M − 1 yields
+                                                                     M −1
+              n1 < (2C)M −1 max{1, C8 } log max{1, C8}(C(M − 1))M −1
+                 < (C ′′ M log M)M −1
+                                                        (U )
+for a suitable constant C ′′ . Since by assumption I(a1 ,...,ak ) ≥ a1 ≥ 1 we obtain log n < C ′′′ n1
+for some positive constant C ′′′ . Thus also Theorem 2 is proved.
+
+                                  5. Some auxiliary results
+   Denote by η1 , . . . , ηk algebraic numbers, not 0 or 1, and by log η1 , . . . , log ηk a ﬁxed
+determination of their logarithms. Let K = Q(η1 , . . . , ηk ) and let d = [K : Q] be the
+degree of K over Q. For any η ∈ K, suppose that its minimal polynomial over the integers
+is
+                                                               δ
+                                                               Y
+                                    δ     δ−1
+                        g(x) = a0 x + a1 x    + . . . + aδ = a0 (x − η (j) )
+                                                                 j=1
+          (j)
+where η , j = 1, . . . , δ are the roots of g(x). The absolute logarithmic Weil height of η is
+deﬁned as                                                                !
+                                                 δ
+                                 1              X                       
+                        h(η) =      log |a0 | +     log max{|η (j) |, 1} .
+                                 δ              j=1
+                        LINEAR EQUATIONS IN RECURRENCE SEQUENCES                                   13
+
+Then the modiﬁed height h′ (α) is deﬁned by
+                                      1
+                              h′ (η) = max{dh(η), | log η|, 1}.
+                                      d
+Let us consider the linear form
+                                L(z1 , . . . , zk ) = ℓ1 z1 + . . . + ℓk zk ,
+where ℓ1 , . . . , ℓk are rational integers, not all 0 and deﬁne
+                                                  1
+                                        h′ (L) = max{h(L), 1},
+                                                  d
+                                    n o
+                                       |ℓ |
+where h(L) = d log max1≤j≤k λj                 is the logarithmic Weil height of L, where λ is the
+greatest common divisor of ℓ1 , . . . , ℓk . If we write L = max{|ℓ1 |, . . . , |ℓk |, e}, then we get
+                                             h′ (L) ≤ log L.
+  With these notations we are able to state the following result due to Baker and Wüstholz [3].
+Theorem 5. If Λ = L(log η1 , . . . , log ηk ) 6= 0, then
+                            log |Λ| ≥ −C(k, d)h′ (η1 ) . . . h′ (ηk )h′ (L),
+where
+                           C(k, d) = 18(k + 1)!k k+1 (32d)k+2 log(2kd).
+  With |Λ| ≤ 12 , we have 21 |Λ| ≤ |Φ| ≤ 2|Λ|, where
+                                   Φ = eΛ − 1 = η1ℓ1 · · · ηkℓk − 1,
+so that
+                              log η1ℓ1 · · · ηkℓk − 1 ≥ log |Λ| − log 2.
+  Next let us state some known properties of the absolute logarithmic height:
+                                h(η ± γ) ≤ h(η) + h(γ) + log 2,
+                                 h(ηγ ±1 ) ≤ h(η) + h(γ),
+                                    h(η n ) = |n|h(η),        for n ∈ Z,
+where η and γ are some algebraic numbers. Upon applying Theorem 5, which is only
+valid for Λ 6= 0, we need to deal with the situation Λ = 0 separately. We shall apply the
+following lemma repeatedly when dealing with this situation (for a proof see [10, Lemma
+1]).
+Lemma 3. Let K be a number ﬁeld and suppose that α, β ∈ K are two algebraic numbers
+which are multiplicatively independent. Moreover, let n, m ∈ Z. Then there exists an
+eﬀectively computable constant C ′ > 0 such that
+                                 n
+                                   α
+                              h         ≥ C ′ max{|n|, |m|}.
+                                   βm
+14                                            V. ZIEGLER
+
+Remark 4. Let us note that instead of Lemma 3 Stewart used in his proof a result due
+to van der Poorten and Loxton [24, 23] to bound certain heights from below in case that
+some linear form in logarithms vanishes. However, our approach gives usually larger lower
+bounds especially when applied to speciﬁc situations than the general result due to van
+der Poorten and Loxton [24, 23] or recent results due to Vaaler [22]. See also Section 8
+where we derive rather good lower bounds by a direct approach.
+
+                                  6. Proof of Theorem 4
+   Before we start with the proof of Theorem 4 we introduce some helpful notations. As
+already noted, we write A = max1≤i≤k {|ai |} and B = max1≤i≤ℓ {|bi |}. Further, we write
+L = Q(α, β) and D = [L : Q].
+   As said before we prove Theorem 4 by induction on m. For the induction base we have
+to consider the case m = 4, i.e. K = L = 2. Since trivially max{n1 − n1 , m1 − m1 } = 0
+the inequalities (7) and (8) are satisﬁed in this case. In order to prove inequality (6) we
+consider equation (2) and collect the “large terms” on the left hand side and obtain
+        |a1 uαn1 − b1 vβ m1 | ≤|a1 Un1 − a1 uαn1 | + |b1 Vm1 − b1 vβ m1 |
+                                + |a2 Un2 | + · · · + |ak Unk | + |b2 Vm2 | + · · · + |bℓ Vmℓ |
+                                      (U )                         (V )
+                             ≤|a1 |C1 |α2 |n1 + |b1 |C1 |β2 |m1
+                                                    (U )
+                                + A(|u| + C1 )(|α|n2 + · · · + |α|nk )
+                                                    (V )
+                                + B(|v| + C1 )(|β|m2 + · · · + |β|mℓ )
+                                      (U )                         (V )
+                             ≤|a1 |C1 |α2 |n1 + |b1 |C1 |β2 |m1
+                                                  |α|
+                                                    (U )
+                                + A(|u| + C1 )          |α|n2
+                                                |α| − 1
+                                           (V )   |β|
+                                + B(|v| + C1 )          |β|m2
+                                                |β| − 1
+                                      (U )                         (V )
+                             ≤|a1 |C1 |α2 |n1 + |b1 |C1 |β2 |m1 + C9 |α|n2 + C10 |β|m2 .
+                                                               |α|               n1
+Dividing through |b1 vβ m1 | we obtain by using the inequality |β| m1 < C6 from Proposition
+
+2
+                                             (U )                 −n      (V )          −m1
+                   a1 uαn1       |a1 |C1 C6 α        1
+                                                           |b1 |C1    β
+                        m
+                           − 1 <                       +
+                   b1 vβ 1           |b1 v|      α2           |b1 v| β2
+(15)                                 C9 C6 n2 −n1       C10
+                                 +           |α|    +         |β|m2 −m1
+                                      |b1 v|           |b1 v|
+                               <C11 max{(α′ )n2 −n1 , (β ′)m2 −m1 }
+where                             (                                                     )
+                                                           (U )                  (V )
+                                      (C9 + |a1 |C1 )C6 C10 + |b1 |C1
+                     C11 = max                         ,
+                                             |b1 v|         |b1 v|
+                            LINEAR EQUATIONS IN RECURRENCE SEQUENCES                                    15
+            n             o             n          o
+and α′ = min |α|, |α|α|2 | and β ′ = min |β|, |β
+                                              |β|
+                                                 2
+                                                    . We consider the linear form
+                                           a1 u
+(16)                             Λ = log        + n1 log |α| − m1 log |β|.
+                                           b1 v
+                                           n
+Assuming that |Λ| > 21 or that ba11vβ
+                                   uα 1
+                                      m1 is negative would yield
+
+
+                             1
+                               < C11 max{(α′ )n2 −n1 , (β ′)m2 −m1 }.
+                             2
+i.e. min{n1 − n2 , m1 − m2 } < C12 < C12 log n1 .
+   Let us investigate the case that Λ = 0. But, Λ = 0 implies a1 uαn1 = b1 vβ m1 or
+equivalently
+                                         a1 u   β m1
+(17)                                           = n1
+                                          b1 v   α
+and an application of Lemma 3 to equation (17) yields
+                            m1 
+                   a1 u        β
+              h           =h         > C ′ max{m1 , n1 } > n1 C ′ max{1, 1/C8}
+                   b1 v        α n1
+which implies
+                          min{n1 − n2 , m1 − m2 } < C13 < C13 log n1
+with                                                
+                                                h ab11vu
+                                C ≥ C13 = ′                     .
+                                             C max{1, 1/C8 }
+   Therefore we may assume that 0 < |Λ| < 12 and we may apply Theorem 5 to (16) with
+                                       a1 u
+                                 η1 =       ,    η2 = |α|,     η3 = |β|.
+                                       b1 v
+                                   ℓ1 = 1,    ℓ2 = n1 ,    ℓ3 = −m1 ,
+and we obtain
+                           
+   ′     ′     ′       a1 u
+  h (α)h (β)h                 C(3, D) (log n1 + max{0, − log C8 })
+                       b1 v
+                                      > min{log α′ (n1 − n2 ), log β ′ (m1 − m2 )} − log C11 − log 2.
+This implies
+                          min{n1 − n2 , m1 − m2 } ≤ C14 log n1 .
+Therefore we have established (6) for the case m = 4 for any constant C with
+                                     C ≥ max {C12 , C13 , C14 } = C15 .
+   Next, we have to prove the induction step. Therefore let us assume that (6), (7) and (8)
+hold for a pair (K ′ , L′ ) such that K ′ + L′ = m − 1 and for a sequence of pairs (Ki′ , L′i ) with
+i = 4, . . . , m − 1. We distinguish now three cases:
+     Case 1: K ′ > k + 1;
+16                                           V. ZIEGLER
+
+      Case 2: L′ > ℓ + 1;
+      Case 3: K ′ ≤ k + 1 and L′ ≤ ℓ + 1.
+
+Case 1: If K ′ > k + 1 then we have
+
+
+                   min{n1 − nK ′ +1 , m1 − mL′ } = min{n1 − nK ′ , m1 − mL′ }
+                                                                            ′           ′
+                                                       ≤ (C log n1 )K +L −3
+                                                       ≤ (C log n1 )K +L −2
+                                                                            ′           ′
+
+
+
+
+and
+
+
+                max{n1 − nK ′ , m1 − mL′ −1 } = max{n1 − nK ′ −1 , m1 − mL′ −1 }
+                                                     ≤ (C log n1 )K +L −4
+                                                                    ′           ′
+
+
+                                                                    ′           ′
+                                                     ≤ (C log n1 )K +L −3 ,
+
+
+i.e. (6) and (7) also hold for the pair (K, L) = (K ′ + 1, L′ ). Moreover, (8) holds with
+(Ki , Li ) = (Ki′ , L′i ) for i = 4, . . . , m − 1 and (Km , Lm ) = (K ′ + 1, L′ ).
+
+Case 2: In case that L′ > l + 1 we similarly conclude that (6), (7) and (8) hold for the
+pair (K, L) = (K ′ , L′ + 1).
+
+Case 3: We assume that K ′ ≤ k + 1 and L′ ≤ l + 1. However, in view of (6) we have to
+distinguish between the following two sub-cases:
+                                             ′   ′
+      Case 3A: n1 − nK ′ < (C log n1 )K +L −3 and we choose (K, L) = (K ′ + 1, L′ ),
+      Case 3B: m1 − mL′ < (C log n1 )K +L −3 and we choose (K, L) = (K ′ , L′ + 1).
+                                        ′  ′
+
+
+
+
+Let us note that with this choice inequality (7) is satisﬁed in both cases. E.g. assuming
+that Case 3A holds, we obtain
+
+
+                 max{n1 − nK−1 , m1 − mL−1 } = max{n1 − nK ′ , m1 − mL′ −1 }
+                                                      < (C log n1 )K +L −3
+                                                                        ′           ′
+
+
+
+                                                      = (C log n1 )K+L−4.
+
+
+But also (8) holds with (Ki , Li ) = (Ki′ , L′i ) for i = 4, . . . , m−1 and (Km , Lm ) = (K ′ +1, L′ ).
+Obviously a similar argument also works in the Case 3B.
+                      LINEAR EQUATIONS IN RECURRENCE SEQUENCES                                   17
+
+  We are left to prove (6). We consider equation (2) which yields the inequality
+           |a1 uαn1 + . . . +aK−1 uαnK−1 − b1 vβ m1 − · · · − bL−1 vβ mL−1 |
+                        ≤|a1 Un1 − a1 uαn1 | + · · · + |aK−1UnK−1 − aK−1 uαnK−1 |
+                             + |b1 Vm1 − b1 vβ m1 | + · · · + |bL−1 VmL−1 − bL−1 vβ mL−1 |
+                             + |aK UnK | + · · · + |ak Unk | + |bL VmL | + · · · + |bℓ Vmℓ |
+                                   (U )
+                        <AC1              (|α2 |n1 + · · · + |α2 |nK−1 )
+                                          (V )
+                             + BC1 (|β2 |m1 + · · · + |β2 |mL−1 )
+                                            
+                                        (U )
+                             + A |u| + C1      (|α|nK + · · · + |α|nk )
+(18)                                        
+                                        (V )
+                             + B |v| + C1      (|β|mL + · · · + |β|mℓ )
+                                   |α2 |
+                                   (U )                  (V ) |β2 |
+                        <AC1               |α2 |n1 + BC1               |β2 |m1
+                                 |α2 | − 1                   |β2 | − 1
+                                               |α|
+                                          (U )
+                         + A |u| + C1                   |α|nK
+                                                |α| − 1
+                                               |β|
+                                          (V )
+                         + B |v| + C1                   |β|mL
+                                                |β| − 1
+                        <C16 |α2 |n1 + C17 |β2 |m1 + C18 |α|nK + C19 |β|mL ,
+
+Now dividing through
+                                                                                (V )
+                                                                   (V )    |v|C2
+                |v| |b1 β   m1
+                                 + · · · + bL β     mL−1                m1
+                                                           | > |v|C2 |β| >           |α|n1
+                                                                              C6
+yields
+                                    αn1 u(a1 + · · · + aK−1 αnK−1 −n1 )
+                        |Φ| =                                             −1
+                                    β m1 v(b1 + · · · + bL−1 β mL−1 −m1 )
+                                    C18 C6                 C19
+                                 <      (V )
+                                             |α|nK −n1 +      (V )
+                                                                   |β|mL −m1
+(19)                               |v|C2                 |v|C2
+                                                                −n1                        −m1
+                                          C16 C6         α                C17       β
+                                   +             (V )
+                                                                      +     (V )
+                              |v|C2                |v|C2|α2 |                      |β2 |
+                                     ′ nK −n1     ′ mL −m1
+                          <C20 max{(α )       , (β )       },
+               n         o             n          o
+       ′             |α|        ′             |β|
+where α = min |α|, |α2 | and β = min |β|, |β2 | .
+  We consider the linear form
+                        u(a1 + · · · + aK−1 αnK−1 −n1 )
+(20)          Λ = log                                    + n1 log |α| − m1 log |β|.
+                        v(b1 + · · · + bL−1 β mL−1 −m1 )
+18                                        V. ZIEGLER
+                                                nK−1 −n1
+Assuming that |Λ| > 21 or that u(a1 +···+aK−1 α
+                               v(b +···+b
+                                                       )
+                                            β mL−1 −m1 )
+                                                         is negative would yield
+                                    1     L−1
+
+                            1
+                               < C20 max{(α′ )nK −n1 , (β ′)mL −m1 }
+                            2
+and therefore we get min{n1 − nK , m1 − mL } < C21 < C21 log n1 .
+  Let us investigate the case that Λ = 0. But Λ = 0 implies
+                            α n1   u(a1 + · · · + aK−1 αnK−1 −n1 )
+(21)                             =                                   .
+                           β m1     v(b1 + · · · + bL−1 β mL−1 −m1 )
+However, an application of Lemma 3 to equation (21) yields
+                                                          n1 
+                    u(a1 + · · · + aK−1 αnK−1 −n1 )          α
+                h                                      = h
+                    v(b1 + · · · + bL−1 β mL−1 −m1 )         β m1
+                                                           ′
+                                                       > C max{m1 , n1 }
+                                                           > n1 C ′ max{1, 1/C8}.
+But, on the other hand we have
+                                                  
+                  u(a1 + · · · + aK−1αnK−1 −n1 )
+              h
+                  v(b1 + · · · + bL−1 β mL−1 −m1 )
+                   u
+              ≤h        + h(α)(n1 − n1 ) + · · · + h(α)(n1 − nK−1 )
+                     v
+                  + h(β)(m1 − m1 ) + · · · + h(β)(m1 − mL−1 )
+                 + (K − 1) log A + (L − 1) log B + log(K − 1) + log(L − 1)
+                  u
+               ≤h       + m(log A + log B + 1)
+(22)                 v                                                      
+                 + max{h(α), h(β)} 1 + (C log n1 ) + · · · + (C log n1 )m−4
+                  u
+               ≤h       + (log A + log B + 1)(C log n1 )m−4
+                     v
+                                          <1.01
+                                      z    }|    {
+                                        C log n1
+                 + max{h(α), h(β)}                 (C log n1 )m−4
+                                      C log n1 − 1
+               ≤ C22 (C log n1 )m−4 .
+Note that CCloglogn1n−1
+                     1
+                        < 1.01 holds provided that C > 92 which we clearly may assume.
+Furthermore, note that each exponent n1 − nK ′ or m1 − mL′ is equal to max{n1 − nKi , m1 −
+mLi } for some 4 ≤ i ≤ m − 1. Thus we obtain
+                           C22 (C log n1 )m−4 > n1 C ′ max{1, 1/C8}
+and
+                                                     C22
+                 min{n1 − nK , m1 − mL } <      ′
+                                                             (C log n1 )m−4
+                                              C max{1, 1/C8}
+                                            ≤ (C log n1 )m−3
+                        LINEAR EQUATIONS IN RECURRENCE SEQUENCES                                    19
+
+provided that
+                                                  C22
+                                       C≥     ′
+                                                            .
+                                             C max{1, 1/C8}
+ By the computations in the paragraph above we may assume that 0 < |Λ| < 12 and we
+may apply Theorem 5 to (20) with
+                       u(a1 + · · · + aK−1 αnK−1 −n1 )
+                η1 =                                    ,           η2 = |α|,        η3 = |β|
+                       v(b1 + · · · + bL−1 β mL−1 −m1 )
+                               ℓ1 = 1,        ℓ2 = n1 ,           ℓ3 = −m1
+From our previous height estimates (22) we know that
+                                     h(η1 ) ≤ C22 (C log n1 )m−4 .
+Moreover, we know that
+                                 max{n1 , m1 } ≤ max{1, 1/C8}n1 .
+Thus we obtain from Theorem 5 together with inequality (19)
+
+ C(3, D)h′(α)h′ (β)C22 (C log n1 )m−4 (log n1 + max{0, log(1/C8)})
+                                   > min{log α′ (n1 − nK ), log β ′ (m1 − mL )} − log C20 − log 2
+Let us write C23 = C(3, D)h′(α)h′ (β)C22 , then we get
+             min{n1 − nK , m1 − mL }
+                                                         
+                   log(2C20 ) + C23 1 + max{0,log(1/C
+                                             log n1
+                                                     8 )}
+                                                            C22 C m−4 (log n1 )m−3
+                 <
+                                      min{log α′ , log β ′ }
+                 ≤ (C log n1 )m−3
+provided that
+                                                                              
+                                log(2C20 )
+                              (C log n1 )m−3
+                                             + C23       1 + max{0,log(1/C
+                                                                  log n1
+                                                                          8 )}
+                                                                                 C22 C
+                       C≥
+                                             min{log α′ , log β ′ }
+                                                                         
+                               log(2C20 )               max{0,log(1/C8 )}
+                              (C log 3)m−3
+                                           + C 23   1 +      log 3
+                                                                            C22 C
+                          ≥
+                                            min{log α′ , log β ′ }
+                          =: C24
+Note that we assume that 3 ≤ n1 . In particular (6), (7) and (8) is satisﬁed if we have
+chosen C large enough, i.e.
+                                                               
+                                          C22
+                     C ≥ max C24 , ′                 , C21 , C15 .
+                                    C max{1, 1/C8}
+20                                        V. ZIEGLER
+
+                            7. Practical Implementation
+   Usually the use of Baker’s method provides an upper bound N for max{n1 , m1 } which
+is very large. Even if we take more care in computing the upper bounds in the course
+of the proof of Theorem 4 the upper bounds are way too large for using a simple search
+algorithm to enumerate all solutions to (2). Even using the best known results for linear
+forms in three logarithms (e.g. the bounds given in [8, 9, 15]) the upper bounds would still
+be too large.
+   However if k + ℓ stays reasonably small, say k + ℓ ≤ 5 or maybe 6, it is still possible to
+use the reduction method due to Baker and Davenport [2] in combination with Legendre’s
+theorem on continued fractions to obtain a much smaller upper bound for max{n1 , m1 }.
+The reduction process can be done inductively. This section is twofold. Firstly we want to
+describe the inductive way to use the above mentioned reduction methods. Secondly we
+want to give a short account on how to use these methods. In the next section we utilize
+these methods by an example and prove Theorem 3.
+   Let us present our reduction procedure. Therefore we assume that we are given an
+inequality of the form
+(23)                              |nλ − mκ + ν| < AB −k
+with λ, κ, ν ∈ R∗ , n, m, k ∈ Z, n ≤ M and A, B ∈ R such that A > 0 and B > 1. Let
+us denote by kxk = min{|x − n| : n ∈ Z} the distance from x to the nearest integer. Let
+us note that the inequalities (15) and (19) are of the form (23). Assume that the upper
+bound for max{n1 , m1 } obtained by Theorem 1 is N. Thus in many cases the following
+lemma can be applied:
+Lemma 4 (Bravo et. al. [4]). Let M be a positive integer, let p/q be a convergent of
+the continued fraction of the irrational τ such that q > 6M, and let A, B, µ be some real
+numbers with A > 0 and B > 1. Let ε := kµqk − Mkτ qk. If ε > 0, then there is no
+solution to the inequality
+                                0 < |nτ − m + µ| < AB −k ,
+in positive integers n, m and k with
+                                                   log(Aq/ε)
+                              n≤M        and k ≥             .
+                                                     log B
+   Typically Lemma 4 is applied to (23) after dividing through κ and choosing M = N.
+We take the smallest denominator q of a convergent pq to τ = λκ such that q > 6M and
+test whether ε > 0. If ε > 0 we have a new, hopefully much smaller upper bound for k. In
+case that we get ε < 0 we test whether ε > 0 for the next larger denominator q and so on.
+Sometimes it happens that we do not ﬁnd a denominator q such that ε > 0. Typically that
+happens if λ, κ and ν are linearly dependent over Q. In this case a good approximation to
+τ is also a good approximation to µ and ε will stay negative for every q. But in the case
+that λ, κ and ν satisfy some linear relation
+                                       aλ + bκ + cν = 0
+                         LINEAR EQUATIONS IN RECURRENCE SEQUENCES                                21
+
+over Q equation (23) turns into the form
+                                                   m′   A′ −k
+(24)                                       τ−         <    B
+                                                   n′   n′
+                                                                                ′
+with τ = λκ and m′ = mc + b, n′ = nc − a and A′ = Ac        κ
+                                                              . But, if An′ B −k < 2n1′ 2 , i.e. if
+           ′  ′
+k > log(2N   A)                                                             ′
+       log B
+                with N ′ = Nc − a, then by a criterion due to Legendre m  n′
+                                                                              is a convergent to
+                pj
+τ of the form qj for some j = 0, 1, 2, . . . , J, with
+
+                                      J = min{j : qj+1 > N ′ }.
+
+However it is well known (see e.g. [1, page 47]) that
+                                            1           pj
+                                                 2
+                                                   < τ−    ,
+                                      (aj+1 + 2)qj      qj
+
+where [a0 , a1 , . . . ] is the continued fraction expansion of τ . Let us write S = max{aj+1 :
+j = 0, 1, 2, . . . , J}, then we have
+                                             1        A′ −k
+                                                    <    B
+                                         (S + 2)qj2   qj
+
+and qj divides n′ . Thus we get the inequality
+
+                                          A′ (S + 2)qj > B k
+                   log((S+2)q A′ )
+                           j
+which yields k <     log B
+                             , a new upper bound which we expect to be of the size of the
+bound obtained by the Baker-Davenport reduction method (cf. Lemma 4).
+  Our next goal is to describe how we can apply the technique described above to our
+speciﬁc problem. Assume we are given an upper bound N for n1 and m1 , e.g. the bound
+we obtain in the proof of Theorem 1. Then we consider in a ﬁrst step the linear form (15)
+given in the form
+                                          a u
+                      log α        log( b11v )   2C11
+(25)             n1         − m1 +             <       max{(α′ )n2 −n1 , (β ′)m2 −m1 }
+                      log β          log β       log β
+                                                       a u
+                                                    log( 1 )
+and use Lemma 4. In case that 1, log  α
+                                  log β
+                                        and logb1βv are linearly dependent we use continued
+fractions directly. Thus we hopefully obtain a rather small new upper bound B2,2 for
+min{n1 − n2 , m1 − m2 }.
+   Let us assume that we have found (small) upper bounds for a pair (K ′ , L′ ) with K ′ , L′ ≥ 2
+and K ′ + L′ = M such that
+                                             (n)                        (m)
+                           n1 − nK ′ −1 < BK ′ −1 ,    m1 − mL′ −1 < BL′ −1 ,
+                           min{n1 − nK ′ , m1 − mL′ } ≤ BK ′,L′ .
+22                                             V. ZIEGLER
+
+Then we can hopefully ﬁnd rather small new upper bounds for a pair (K, L) with K, L ≥ 2
+and K + L = M + 1 such that
+                                               (n)                     (m)
+                             n1 − nK−1 < BK−1,        m1 − mL−1 < BL ,
+(26)
+                             min{n1 − nK , m1 − mL } ≤ BK,L .
+Note that if K + l ≥ m + 3 we have an upper bound for max{n1 , m1 } (cf. Section 4). To
+prove this claim we proceed as in the proof of Theorem 4. Thus we distinguish between
+the three cases
+     Case 1: K ′ > k + 1,
+     Case 2: L′ > ℓ + 1,
+     Case 3: K ′ ≤ k + 1 and L′ ≤ ℓ + 1.
+Case 1: If K ′ > k + 1 then we have
+             min{n1 − nK ′ +1 , m1 − mL′ } = min{n1 − nK ′ , m1 − mL′ } ≤ BK ′ ,L′
+and
+                                                     (n)                       (m)
+                 n1 − nK ′ = n1 − nK ′ −1 ≤ BK ′−1 , m1 − mL′ −1 ≤ BL′ −1
+i.e. we have found small upper bounds in case that (K, L) = (K ′ + 1, L′ ).
+
+Case 2: In case that L′ > ℓ + 1 we similarly ﬁnd small upper bounds for the pair
+(K, L) = (K ′ , L′ + 1).
+
+Case 3: We assume that K ′ ≤ k + 1 and L′ ≤ ℓ + 1. However in view of (26) we have to
+distinguish between the following two sub-cases:
+      Case 3A: n1 − nK ′ < BK ′ ,L′ and we choose (K, L) = (K ′ + 1, L′ ),
+      Case 3B: m1 − mL′ < BK ′ ,L′ and we choose (K, L) = (K ′ , L′ + 1).
+In case 3A we get
+                                                                                      (m)
+           n1 − nK−1 = n1 − nK ′ ≤ BK ′ ,L′ ,        m1 − mL−1 = m1 − mL′ −1 ≤ BL′ −1
+and in case 3B we get
+                                               (n)
+          n1 − nK−1 = n1 − nK ′−1 ≤ BK ′−1 ,           m1 − mL−1 = m1 − mL′ ≤ BK ′ ,L′ .
+Moreover we consider inequality (18) and obtain
+                             nK−1 −n1
+        log u(a1 +···+aK−1 α
+            v(b +···+b
+                                    )
+                         β mL−1 −m1 )          log |α|
+                                                       − m1 < 2C20 max{(α′ )nK −n1 , (β ′)mL −m1 },
+               1      L−1
+(27)                                    + n1
+                   log |β|                     log |β|
+
+provided that |Λ| < 0.5 deﬁned as in (20). But as already explained in the proof of
+Theorem 4 the inequality |Λ| ≥ 0.5 would yield min{n1 − nK , m1 − mL } < C21 , where C21
+is typically very small. We apply for all possible values of 0 < n1 − n2 < · · · < n1 − nK−1 <
+  (n)                                                (m)
+BK and 0 < m1 − m2 < · · · < m1 − mL−1 < BL Lemma 4 or in case of some linear
+dependency the continued fraction method to obtain an upper bound
+                                 min{n1 − nK , m1 − mL } ≤ BK,L .
+                     LINEAR EQUATIONS IN RECURRENCE SEQUENCES                          23
+
+  In practice we can proceed as follows. First we compute B2 such that min{n1 − n2 , m1 −
+m2 } ≤ B2 = B2,2 . Assume we have computed a bound BM such that for all pairs (K ′ , L′ )
+with K ′ , L′ ≥ 2 and K ′ + L′ = M we have
+                n1 − nK ′ −1 , m1 − mL′ −1 , min{n1 − nK ′ , m1 − mL′ } < BM
+we can compute an upper bound BM +1 for all pairs (K, L) with K, L ≥ 2 and K +L = M +1
+with
+                 n1 − nK−1 , m1 − mL−1 , min{n1 − nK , m1 − mL } < BM +1
+by applying our reduction method to all inequalities (27) for each such pair (K, L). Note
+that Bk+ℓ+3 will yield an upper bound for max{n1 , m1 }.
+
+                                    8. An Example
+  This section is devoted to prove Theorem 3. We start with some simple observations.
+Let us remind the Binet formula, that is
+                                           αn+2 − β n+2
+                                    Fn =       √        ,
+                                                 5
+            √               √
+with α = 1+2 5 and β = 1−2 5 . Note that in view of digit expansions (see section 2) we
+shifted the index by two with respect to the more common deﬁnition of the Fibonacci
+sequence starting with F0 = 0 and F1 = 1. Note that with our deﬁnition we have that
+αn ≤ Fn < √35 αn for all n ≥ 0.
+  Moreover, we want to emphasize that the regularity condition (5) in case of the Fi-
+bonacci sequence means that no two consecutive Fibonacci numbers may appear in the
+digit expansion. In other words the case that ǫk = ǫk+1 = 1 must not appear in the digit
+expansion (4).
+  Now let n be an integer such that
+(28)                     n = Fn1 + · · · + Fnk = 2m1 + · · · + 2mℓ
+is its Zeckendorf and binary expansion respectively. For technical reasons let us assume
+that n1 > 100. Then we obtain that
+                                                                3
+                   αn1 ≤ Fn1 ≤ n = Fn1 + · · · + Fnk < Fn1 +1 ≤ √ αn1 +1
+                                                                 5
+where the second inequality holds since we assume that n = Fn1 + · · · + Fnk is a regular
+expansion. We also have
+                          2m1 ≤ n = 2m1 + · · · + 2mℓ < 2 · 2m1 .
+These two inequalities together yield
+                                   3α
+(29)                        2m1 < √ αn1 and αn1 < 2 · 2m1 .
+                                    5
+  In order to prove the ﬁrst part of Theorem 3 we prove the following proposition which
+can be seen as a special case of Theorem 4.
+24                                         V. ZIEGLER
+
+Proposition 3. If HZ (n) + Hb (n) ≤ M, then for every m ≥ 4 there exists a pair (K, L)
+of positive integers K, L ≥ 2 with K + L = m such that
+                   min{(n1 − nK ) log α, (m1 − mL ) log 2} ≤ (C log n1 )m−3
+and
+                max{(n1 − nK−1 ) log α, (m1 − mL−1 log 2} ≤ (C log n1 )m−4
+Moreover, to the pair (K, L) there exists a sequence of pairs (Ki , Li ) with i = 4, . . . , m such
+that Ki + Li = i, 2 ≤ K1 ≤ · · · ≤ Km = K and 2 ≤ L1 ≤ · · · ≤ Lm = L such that
+         max{(n1 − nKi ) log α, (m1 − mLi ) log 2} ≤ (C log n1 )i−4     4 ≤ i ≤ m − 1.
+We can choose C = 4.17 · 1013 provided that n1 > 100.
+Proof. As in the proof of Theorem 4 we proceed by induction on m. Therefore we start
+with the case m = 4, i.e. K = L = 2. We collect the large terms occurring in (28), namely
+2m1 and αn1 , on the left hand side and obtain
+                αn1 +2            |β|n1 +2
+                 √ − 2m1 ≤ √               + |Fn2 + · · · + Fnk − 2m2 − · · · − 2mℓ |
+                   5                  5
+                                   1
+                              ≤ √ + max{Fn2 +1 , 2m2 +1 }
+                                    5
+                                                               
+                                           n2 +2         1     m2
+                              ≤ max α            , 2+ √ 2           .
+                                                          5
+We divide through 2m1 and obtain
+                                2
+                                                                                 
+                       n1 −m1 α                     2 n2 −n1          1      m2 −m1
+(30)        |Φ| = α 2         √ − 1 ≤ max 2α α                , 2+ √ 2                .
+                                5                                      5
+                √
+Since 2, α and 5 are multiplicatively independent the left hand side cannot vanish. We
+consider the linear form in logarithms
+                                                       α2
+                         Λ = n1 log α − m1 log 2 + log √ .
+                                                        5
+Assume for the moment that |Λ| < 0.5 then we obtain by using Theorem 5 that
+          4.161 · 1013 log n1 > −2 log(2α) + min{(n1 − n2 ) log α, (m1 − m2 ) log 2}.
+Let us note that h′ (α) = 1/2, h′ (2) = log 2 and
+                                      2
+                                   ′  α              1
+                                h √         = log α + log 5.
+                                        5            2
+Thus we obtain the proposition in case that m = 4 with C = 4.17 · 1013 . Note that in the
+case that |Λ| ≥ 0.5 the bounds for n1 − n2 and m1 − m2 are rather small and are covered
+by the bounds found in the case that |Λ| < 0.5.
+  Let us assume that the proposition holds for a pair (K ′ , L′ ) with K ′ + L′ = m − 1. In
+case that K ′ > k + 1 or L′ > ℓ + 1 we can similarly conclude as in the proof of Theorem
+                       LINEAR EQUATIONS IN RECURRENCE SEQUENCES                               25
+
+4 that the proposition holds for the pair (K, L) = (K ′ + 1, L′ ) and (K, L) = (K ′ , L′ + 1)
+respectively. Therefore we may assume that K ′ ≤ k + 1 and L′ ≤ ℓ + 1.
+  If we assume that
+
+        min{(n1 − nK ′ ) log α, (m1 − mL′ ) log 2} ≤ (C log n1 )m−3 = (n1 − nK ′ ) log α
+
+we put (K, L) = (K ′ + 1, L′ ) and in case that
+
+       min{(n1 − nK ′ ) log α, (m1 − mL′ ) log 2} ≤ (C log n1 )m−3 = (m1 − mL′ ) log 2
+
+we put (K, L) = (K ′ + 1, L′ ). With this notation we collect the large terms on the left
+hand side and obtain similarly as in the case that K = L = 2 the following inequality:
+
+            αn1 +2 + · · · + αnK−1 +2
+                       √               − (2m1 + · · · + 2mL−1 )
+                          5
+                   |β|n1 +2 + · · · + |β|nK−1 +2
+                ≤               √                + |FnK + · · · + Fnk − 2mL − · · · − 2mℓ |
+                                   5
+                    1
+                ≤ √ + max{FnK +1 , 2mL +1 }
+                     5
+                                                  
+                             nK +2         1     mL
+                ≤ max α            , 2+ √ 2            .
+                                            5
+
+Note that
+
+                                                                                |β|2
+            |β|n1+2 + · · · + |β|nK−1 +2 < |β|2 (1 + |β| + |β|2 + . . . ) =           = 1.
+                                                                              1 − |β|
+
+We divide through 2m1 + · · · + 2mL−1 > 2m1 and obtain
+
+                                    α2 (1 + αn2 −n1 + · · · + αnK−1 −n1 )
+                    |Φ| = αn1 2−m1 √                                      −1
+                                     5(1 + 2m2 −m1 + · · · + 2mL−1 −m1 )
+(31)                                                            
+                                   2 nK −n1         1       mL −m1
+                        ≤ max 2α α          , 2+ √ 2                 .
+                                                     5
+
+Therefore we consider the following linear form in logarithms:
+
+                                                                 :=γ3
+                                             z               }|                 {
+                                              α2 1 + αn2 −n1 + · · · + αnK−1 −n1
+               Λ = n1 log α − m1 log 2 + log √                                    .
+                                               5 1 + 2m2 −m1 + · · · + 2mL−1 −m1
+26                                              V. ZIEGLER
+
+Let us estimate the height of γ3 . We obtain by using a similar calculation as in (22) the
+upper bound
+                        2
+                          α
+             h(γ3 ) ≤ h √      + h(1 + αn2 −n1 + · · · + αnK−1 −n1 )
+                            5
+                      + h(1 + 2m2 −m1 + · · · + 2mL−1 −m1 )
+                       ≤ 1.3 + h(1) + h(αn1 −n2 ) + · · · + h(αn1 −nK−1 ) + log K
+                          + h(1) + h(2m1 −m2 ) + · · · + h(2m1 −mL−1 ) + log L
+                       ≤ 1.3 + 2 log m + h(α)(n1 − n2 ) + · · · + h(α)(n1 − nK−1 )
+                          + h(2)(m1 − m2 ) + · · · + h(2)(m1 − mL−1 )
+                       ≤ 1.3 + 2 log m + C log n1 + · · · + (C log n1 )m−4
+                                            C log n1
+                       ≤ 1.3 + 2 log m +               (C log n1 )m−4
+                                          C log n1 − 1
+                       < (1.0001C log n1 )m−4
+
+
+provided that C > 1013 which we clearly may assume. Let us assume for the moment that
+Λ 6= 0 and |Λ| < 0.5, then we get by Theorem 5
+     3.239 · 1013 (C log n1 )m−4 log n1 > −2 log(2α) + min{(n1 − nK ) log α, (m1 − mL ) log 2}
+hence
+     min{(n1 − nK ) log α, (m1 − mL ) log 2} < 3.24 · 1013 C m−4 (log n1 )m−3 ≤ (C log n1 )m−3
+and we obtain the proposition with C = 4.17 · 1013 .
+  In case that |Λ| ≥ 0.5 the bounds for min{(n1 −nK ) log α, (m1 −mL ) log 2} are small and
+covered by the bounds given in the proposition. Therefore we are left with the case that
+Λ = 0. We want to ﬁnd a lower bound for h(2m1 /αn1 ). Therefore we distinguish between
+the following two cases:
+       • 2m1 > αn1 ;
+       • 2m1 ≤ αn1 .
+In the ﬁrst case we ﬁnd
+                                                                      m1       
+                          m1     n1              2m1                     2
+                   2h(2        /α ) = log max         , 1 + log max            ,1
+                                                 α n1                    β n1
+                                           2m1         2m1
+                                    = log n1 + log n1
+                                           α           β
+                                    = m1 log 2 − n1 log |α| + m1 log 2 − n1 log |β|
+                                    = 2m1 log 2
+                                    > −2 log 2 + 2n1 log α
+                      LINEAR EQUATIONS IN RECURRENCE SEQUENCES                         27
+
+and in the second case we ﬁnd due to (29) that
+                m1 
+                2            2m1
+            2h         = log      = m1 log 2 + n1 log α > − log 2 + 2n1 log α.
+                 α n1        β n1
+Since Λ = 0 we have that            m1 
+                                     2
+                                 h          = h(γ3 ).
+                                     α n1
+Comparing the lower bound for h(2m1 /αn1 ) with the upper bound for h(γ3 ) we obtain
+                           n1 log α − log 2 < (1.0001C log n1 )m−4
+and therefore an absolute bound for n1 . However, we also ﬁnd
+         (n1 − nK ) log α ≤ n1 log α < log 2 + (1.0001C log n1 )m−4 < (C log n1 )m−3
+for C = 4.17 · 1013 . Therefore the proof of the proposition is complete.              
+   In order to proof the ﬁrst part of Theorem 3 we choose m = M + 3 and obtain that
+either K − 1 ≥ k + 1 or L − 1 ≥ ℓ + 1. Thus either
+                             n1 log α < (4.17 · 1013 log n1 )M −1
+or
+                     n1 log α − log 2 < m1 log 2 < (4.17 · 1013 log n1 )M −1
+in any case we obtain that
+                                        (4.18 · 1013 log n1 )M −1
+                                  n1 <
+                                                  log α
+and by an application of Lemma 2 we obtain
+                     
+                 1
+         n1 <          8.36 · 1013 ×
+               log α
+                                                                             M −1
+                              1                                              13
+                     log            + (M − 1)(log(M − 1) + log(4.18 · 10 ))
+                           log α
+                     
+                 1
+(32)         <         8.36 · 1013 (M − 1) ×
+               log α
+                                                            M −1
+                              1
+                     log            + log(M − 1) + 31.364)
+                           log α
+                 1                         M −1
+             <        3.96 · 1015 M log M        .
+               log α
+Thus we get
+                                                             M −1
+                                n1 < 8.23 · 1015 M log M
+and therefore we have proved the ﬁrst part of Theorem 3.
+   In order to prove the second part of Theorem 3 we have to consider several Diophantine
+equations. Most of these Diophantine equations have already been solved in the past. Let
+us start by considering the case M = 2. This case is basically the Diophantine equation
+28                                     V. ZIEGLER
+
+Fn = 2m . Since Bugeaud et.al. [9] we know that the only perfect powers in the Fibonacci
+sequence are 1, 8 and 144 and therefore this case is solved.
+  In the case that M = 3 we have to distinguish between two cases. We have to consider
+the Diophantine equations Fn = 2m1 + 2m2 and Fn1 + Fn2 = 2m . The second equation was
+solved by Bravo and Luca [6] and the solution of the ﬁrst equation is contained in Theorem
+2.2 of [7], where all Fibonacci numbers are determined with at most four binary digits.
+  In the case that M = 4 we have to distinguish between the three equations Fn =
+2 + 2m2 + 2m3 solved by Bugeaud et.al. [7, Theorem 2.2] Fn1 + Fn2 = 2m1 + 2m2 solved
+ m1
+
+by Chim and Ziegler [11] and Fn1 + Fn2 + Fn3 = 2m (see Theorem 6 below).
+  In the case that M = 5 we have to distinguish between the four equations Fn = 2m1 +
+2 + 2m3 + 2m4 solved by Bugeaud et.al. [7, Theorem 2.2] Fn1 + Fn2 = 2m1 + 2m2 + 2m3 and
+ m2
+
+Fn1 +Fn2 +Fn3 = 2m1 +2m2 both solved by Chim and Ziegler [11] and Fn1 +Fn2 +Fn3 +Fn4 =
+2m (see Theorem 6 below).
+  Therefore we are left to prove
+Theorem 6. The only powers of two that have a Zeckendorf expansion with exactly three
+non-zero digits are 32, 64, 128, 256 and 1024. Moreover, there are no powers of two that
+have a Zeckendorf expansion with exactly four non-zero digits.
+Proof. We consider the Diophantine equation
+(33)                           Fn1 + Fn2 + Fn3 + Fn4 = 2m
+where n1 − 1 > n2 , n2 − 1 > n3 , n3 − 1 > n4 and n4 ≥ 0 or n4 = −2. With this restriction
+we impose the condition that the right hand side is a Zeckendorf expansion with three or
+four non-zero digits.
+  Due to the ﬁrst part of Theorem 3 and more speciﬁc due to (32) we know that n1 <
+3.1 · 1064 and from (30) we obtain in our special case the inequality
+                                                2
+                                                α
+                             log α         log  √
+                                                  5
+                          n1       − m1 +            ≤ 4α2 αn2 −n1 .
+                             log 2           log 2
+
+We apply Lemma 4 to obtain that n2 − n1 ≤ 333.
+  Now we consider inequality (31) with K = 3 and L = 2. Then we obtain in our special
+case that
+                                         2             
+                                         α (1+αn2 −n1 )
+                       log α        log       √
+                                                5
+(34)                n1       − m1 +                       ≤ 4α2 αn3 −n1
+                       log 2               log 2
+
+and we apply Lemma 4 with τ = log α
+                              log 2
+                                    and
+                                                  2           
+                                                  α (1+α−r )
+                                           log        √
+                                                       5
+                                µ = µr =
+                                              log 2
+for all 2 ≤ r ≤ 333. Note that since we consider Zeckendorf expansions we may exclude
+the case that r = n1 − n2 = 0, 1. Applying Lemma 4 we obtain that for r 6= 2, 6 we have
+                          LINEAR EQUATIONS IN RECURRENCE SEQUENCES                              29
+
+n1 − n3 ≤ 348. Let us consider the case r = 2 and r = 6 separately. In cases that r = 2
+and r = 6 we obtain
+                               log α                  log α
+                         µ2 =          and     µ6 = −       +1
+                               log 2                  log 2
+and inequality (34) turns into
+                                           log α
+                                (n1 + 1)         − m1 ≤ 4α2αn3 −n1
+                                           log 2
+in case that r = 2 and
+                                        log α
+                             (n1 − 1)         − (m1 − 1) ≤ 4α2αn3 −n1
+                                        log 2
+in case that r = 6. Let us assume for the moment that n1 − n3 > 348 then we have that
+                            m1     log α    4α2 n3 −n1       1
+                                 −       ≤        α    <
+                           n1 + 1 log 2    n1 + 1        2(n1 + 1)2
+and
+                          m1 − 1   log α    4α2 n3 −n1       1
+                                 −       ≤        α    <
+                          n1 − 11 log 2    n1 − 1        2(n1 − 1)2
+        n −n        348
+since α 8α
+         1
+           2
+             3
+               ≥ α8α2 > 3.1 · 1064 > n1 ± 1. Thus by a criterion of Legendre nm           1
+                                                                                        1 +1
+                                                                                              and
+m1 −1                     log α                                                   m1         m1 −1
+ n1 −1
+       are convergents to log 2 respectively. Therefore we may assume that n1 +1 and n1 −1
+                                p
+are convergents of the form qjj for some j = 0, 1, 2, . . . , 133 respectively. Indeed, we may
+assume that j ≤ 133 since q134 > 3.1 · 1064 > n1 + 1 and we get (see e.g. [1, page 47] or
+Section 7)
+                                        1        log α pj
+                                             2
+                                               <       −        ,
+                                  (aj+1 + 2)qj   log 2      qj
+where [a0 , a1 , . . . ] is the continued fraction expansion of log α
+                                                                log 2
+                                                                      . Since
+                             max{aj+1 : j = 0, 1, 2, . . . , 133} = 134,
+we have
+                                           1      4α2 n3 −n1
+                                                <     α
+                                         136qj2    qj
+and qj divides one of {n1 + 1, n1 − 1}. Thus we get the inequality
+                                        136 · q133 4α2 ≥ αn1 −n3
+which yields n1 − n3 < 332. Thus overall we obtain n1 − n3 ≤ 348.
+  Now we consider inequality (31) with K = 4 and L = 2. Then we obtain in our special
+case the following inequality
+                                       2                      
+                                       α (1+αn2 −n1 +αn3 −n1 )
+                     log α        log           √
+                                                  5
+                  n1       − m1 +                                ≤ 4α2 αn4 −n1
+                     log 2                  log 2
+30                                        V. ZIEGLER
+
+and we apply Lemma 4 with τ = log α
+                              log 2
+                                    and
+                                                   2                
+                                                   α (1+α−r +α−s )
+                                            log          √
+                                                           5
+                               µ = µr,s =
+                                                        log 2
+for all 2 ≤ r ≤ 333 and r + 2 ≤ s ≤ 348. Applying Lemma 4 we obtain that in any case
+n1 − n4 ≤ 355 holds.
+   Finally we consider inequality (31) with K = 5 and L = 2. Then we obtain
+                                     2                               
+                                     α (1+αn2 −n1 +αn3 −n1 +αn4 −n1 )
+                   log α        log                √
+                                                     5
+                n1       − m1 +                                         ≤ 4α2 α−n1
+                   log 2                       log 2
+
+and again we apply Lemma 4 with τ = log  α
+                                     log 2
+                                           and
+                                          2     −r   −s +α−t )
+                                                                
+                                    log α (1+α √+α  5
+                       µ = µr,s,t =
+                                               log 2
+for all 2 ≤ r ≤ 333, r + 2 ≤ s ≤ 348 and s + 2 ≤ t ≤ 355. Applying Lemma 4 we
+obtain that in all cases except (r, s, t) = (3, 6, 9) we have that n1 ≤ 364. The case that
+(r, s, t) = (3, 6, 9) can be resolved by using Legendre’s criterion. Overall we obtain that
+n1 ≤ 364.
+   However due to (29) we deduce that m < 254. Hence for every m = 1, . . . , 253 we
+compute the Zeckendorf expansion of 2m and consider those expansions which have either
+three or four non-zero digits. In particular we ﬁnd that
+               25 = 32 = F6 + F4 + F2 ,                    28 = 256 = F11 + F6 + F1 ,
+               26 = 64 = F8 + F4 + F0 ,                  210 = 1024 = F14 + F7 + F2 ,
+              27 = 128 = F9 + F7 + F3 .
+                                                                                          
+Remark 5. The computation time for the reduction process was about 19 hours and 40
+minutes on a usual PC (Intel Core i7-3770) on a single kernel. In view of solving completely
+the case that M = 6 we would have to solve 5 Diophantine equations and we would expect
+that the computation time for the reduction process would be roughly 300 times longer for
+each Diophantine equation. Thus we expect a computation time of about 40 months on a
+single computer with a single kernel. Let us note that the process can be parallelized and
+using a local network with several computers such a computation seems to be feasible.
+
+
+                                    Acknowledgment
+     The author wants to thank Kwok Chi Chim for many helpful discussions and suggestions.
+                         LINEAR EQUATIONS IN RECURRENCE SEQUENCES                                        31
+
+                                             References
+ [1] A. Baker. A concise introduction to the theory of numbers. Cambridge University Press, Cambridge,
+     1984.
+ [2] A. Baker and H. Davenport. The equations 3x2 − 2 = y 2 and 8x2 − 7 = z 2 . Quart. J. Math. Oxford
+     Ser. (2), 20:129–137, 1969.
+ [3] A. Baker and G. Wüstholz. Logarithmic forms and group varieties. J. Reine Angew. Math., 442:19–62,
+     1993.
+ [4] J. J. Bravo, B. Faye, and F. Luca. Powers of Two as Sums of Three Pell Numbers. Taiwanese J.
+     Math., 21(4):739–751, 2017.
+ [5] J. J. Bravo, C. A. Gómez, and F. Luca. Powers of two as sums of two k-Fibonacci numbers. Miskolc
+     Math. Notes, 17(1):85–100, 2016.
+ [6] J. J. Bravo and F. Luca. On the Diophantine equation Fn + Fm = 2a . Quaest. Math., 39(3):391–400,
+     2016.
+ [7] Y. Bugeaud, M. Cipu, and M. Mignotte. On the representation of Fibonacci and Lucas numbers in
+     an integer base. Ann. Math. Qué., 37(1):31–43, 2013.
+ [8] Y. Bugeaud, M. Mignotte, and S. Siksek. Classical and modular approaches to exponential Diophan-
+     tine equations. I. Fibonacci and Lucas perfect powers. Ann. of Math. (2), 163(3):969–1018, 2006.
+ [9] Y. Bugeaud, M. Mignotte, and S. Siksek. Classical and modular approaches to exponential Diophan-
+     tine equations. II. The Lebesgue-Nagell equation. Compos. Math., 142(1):31–62, 2006.
+[10] K. C. Chim, I. Pink, and V. Ziegler. On a variant of Pillai’s problem II. J. Number Theory, 183:269–
+     290, 2018.
+[11] K. C. Chim and V. Ziegler. On Diophantine equations involving sums of Fibonacci numbers and
+     powers of 2. preprint available at https://arxiv.org/abs/1705.06468.
+[12] A. S. Fraenkel. Systems of numeration. Amer. Math. Monthly, 92(2):105–114, 1985.
+[13] P. J. Grabner, P. Liardet, and R. F. Tichy. Odometers and systems of numeration. Acta Arith.,
+     70(2):103–123, 1995.
+[14] F. Luca. Distinct digits in base b expansions of linear recurrence sequences. Quaest. Math., 23(4):389–
+     404, 2000.
+[15] M. Mignotte. A kit on linear forms in three logarithms. Preprint.
+[16] A. Pethő and B. M. M. de Weger. Products of prime powers in binary recurrence sequences. I. The
+     hyperbolic case, with an application to the generalized Ramanujan-Nagell equation. Math. Comp.,
+     47(176):713–727, 1986.
+[17] H. P. Schlickewei and W. M. Schmidt. Equations auln = bukm satisfied by members of recurrence
+     sequences. Proc. Amer. Math. Soc., 118(4):1043–1051, 1993.
+[18] H. P. Schlickewei and W. M. Schmidt. Linear equations in members of recurrence sequences. Ann.
+     Scuola Norm. Sup. Pisa Cl. Sci. (4), 20(2):219–246, 1993.
+[19] H. G. Senge and E. G. Strauss. P.v. numbers and sets of multiplicity. Periodica Math. Hung., 3(1–
+     2):93–100, 1973.
+[20] N. P. Smart. The algorithmic resolution of Diophantine equations, volume 41 of London Mathematical
+     Society Student Texts. Cambridge University Press, Cambridge, 1998.
+[21] C. L. Stewart. On the representation of an integer in two different bases. Journal für die reine und
+     angewandte Mathematik, 319:63–72, 1980.
+[22] J. D. Vaaler. Heights on groups and small multiplicative dependencies. Trans. Amer. Math. Soc.,
+     366(6):3295–3323, 2014.
+[23] A. van der Poorten and J. Loxton. Computing the effectively computable bound in Baker’s inequality
+     for linear forms in logarithms, and: Multiplicative relations in number fields: Corrigenda and addenda.
+     Bull. Aust. Math. Soc., 17:151–155, 1977.
+[24] A. J. Van der Poorten and J. H. Loxton. Multiplicative relations in number fields. Bull. Austral. Math.
+     Soc., 16(1):83–98, 1977.
+32                                          V. ZIEGLER
+
+[25] M. Waldschmidt. Diophantine approximation on linear algebraic groups, volume 326 of Grundlehren
+     der Mathematischen Wissenschaften [Fundamental Principles of Mathematical Sciences]. Springer-
+     Verlag, Berlin, 2000. Transcendence properties of the exponential function in several variables.
+
+  V. Ziegler, Institute of Mathematics, University of Salzburg, Hellbrunnerstrasse 34/I,
+A-5020 Salzburg, Austria
+  E-mail address: volker.ziegler@sbg.ac.at
+

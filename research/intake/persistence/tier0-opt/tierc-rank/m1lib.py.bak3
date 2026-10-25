@@ -1,0 +1,131 @@
+import math
+import gmpy2
+from gmpy2 import mpfr
+from chainrank import LN10, matveev_c, prodlog, alphas_for, log10_bound, two_ended_log10
+import mvchain
+
+_KTAB = {}
+LOGU = gmpy2.log(mpfr(80))
+LOGV = gmpy2.log(mpfr(9))
+
+
+def tfun(x, a):
+    return 1 + gmpy2.log(mpfr("2.1") * mpfr(10) ** x + 2 + a)
+
+
+def phi_gen(k, s1, k1):
+    lb = LN10
+    s = s1
+    for _ in range(1, k):
+        s = s + (LOGU + k1 * (s * lb + LOGV)) / lb
+    return k1 * (s * lb + LOGV) / lb
+
+
+def solve_gen(k, s1_of_x, k1_of_x):
+    x = mpfr(10)
+    for _ in range(400):
+        xn = gmpy2.log10(phi_gen(k, s1_of_x(x), k1_of_x(x)))
+        if xn <= x:
+            break
+        x = xn
+    for _ in range(300000):
+        if phi_gen(k, s1_of_x(x), k1_of_x(x)) * (1 + mpfr("1e-6")) < mpfr(10) ** x:
+            return x
+        x += mpfr("0.001")
+    raise RuntimeError("no fixed point")
+
+
+def frac_dist(v):
+    return abs(v - gmpy2.rint(v))
+
+
+def bd_first_gap(xexp, a, p):
+    bits = int(float(xexp) * 6.7) + 800
+    ctx = gmpy2.get_context().copy()
+    ctx.precision = bits
+    with gmpy2.local_context(ctx):
+        gamma = gmpy2.log(mpfr(p)) / gmpy2.log(mpfr(10))
+        mu = a * gmpy2.log(mpfr(2)) / gmpy2.log(mpfr(10))
+        big_b = mpfr("2.1") * mpfr(10) ** mpfr(xexp) + 2
+        x = gamma
+        rem = x - gmpy2.floor(x)
+        h_prev, k_prev = 1, 0
+        h, kk = int(gmpy2.floor(x)), 1
+        coef = mpfr(80) / gmpy2.log(mpfr(10))
+        for _ in range(20000):
+            if rem == 0:
+                break
+            x = 1 / rem
+            ai = int(gmpy2.floor(x))
+            rem = x - ai
+            h_prev, h = h, ai * h + h_prev
+            k_prev, kk = kk, ai * kk + k_prev
+            if a == 0:
+                if kk > big_b:
+                    d = frac_dist(gamma * k_prev)
+                    return float(gmpy2.log10(coef / d)), float(gmpy2.log10(k_prev)), float(d)
+            elif kk > 6 * big_b:
+                eps = frac_dist(mu * kk) - big_b * frac_dist(gamma * kk)
+                if eps > 0:
+                    val = gmpy2.log10(coef * kk / eps)
+                    return float(val), float(gmpy2.log10(kk)), float(eps)
+        return None
+
+
+def one_ended_variant(k, a, which, kind):
+    p = 3 if which == "b" else 7
+    top = alphas_for(a, 1, which)
+    pa = prodlog(top)
+    t0 = len(top)
+    if kind in ("r1", "r1bd"):
+        k1f = lambda x: matveev_c(t0 + 1) * pa * tfun(x, a)
+    elif kind in ("mv", "mvbd"):
+        if which not in _KTAB:
+            _KTAB[which] = {xe: mvchain.k1_mv(xe, which)[0] for xe in (100, 200, 300, 400, 500, 600, 700, 800)}
+        tab = _KTAB[which]
+        xs = sorted(tab)
+
+        def k1f(x):
+            xf = float(x)
+            if xf <= xs[0]:
+                return tab[xs[0]]
+            if xf >= xs[-1]:
+                return tab[xs[-1]]
+            for i in range(len(xs) - 1):
+                if xs[i] <= xf <= xs[i + 1]:
+                    t = (xf - xs[i]) / (xs[i + 1] - xs[i])
+                    return tab[xs[i]] * (1 - t) + tab[xs[i + 1]] * t
+    k0f = lambda x: matveev_c(t0) * pa * tfun(x, a)
+    if kind.endswith("bd"):
+        def s1f(x):
+            r = bd_first_gap(max(float(x), 20.0), a, p)
+            return mpfr(r[0] if r else float(x)) + 1
+    else:
+        s1f = lambda x: (k0f(x) + LOGU) / LN10
+    return solve_gen(k, s1f, k1f)
+
+
+def depth_needed(lg):
+    lg = float(lg)
+    return 1 if lg <= 72 else math.ceil((lg - 72) / 48) + 1
+
+
+def two_ended_mv(k, a, which):
+    from chainrank import two_ended_k1_log10
+    if which not in _KTAB:
+        _KTAB[which] = {xe: mvchain.k1_mv(xe, which)[0] for xe in (100, 200, 300, 400, 500, 600, 700, 800)}
+    tab = _KTAB[which]
+    xs = sorted(tab)
+
+    def k1f(nu):
+        xf = float(gmpy2.log10(nu))
+        if xf <= xs[0]:
+            return tab[xs[0]]
+        if xf >= xs[-1]:
+            return tab[xs[-1]]
+        for i in range(len(xs) - 1):
+            if xs[i] <= xf <= xs[i + 1]:
+                t = (xf - xs[i]) / (xs[i + 1] - xs[i])
+                return tab[xs[i]] * (1 - t) + tab[xs[i + 1]] * t
+
+    return two_ended_k1_log10(k, a, 1, which, k1f)

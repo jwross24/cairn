@@ -1,0 +1,22 @@
+PLANTED DELTA on ('14336', '227888', '0', '78121827')
+(192, 'member', False, 'family-test', False, 'reference', False) 25
+(192, 'member', True, 'family-test', True, 'reference', True) 25
+(384, 'member', False, 'family-test', False, 'reference', False) 25
+(384, 'member', True, 'family-test', True, 'reference', True) 25
+(480, 'member', False, 'family-test', False, 'reference', False) 25
+(480, 'member', True, 'family-test', True, 'reference', True) 25
+seconds 1.1
+reps cached 482 35
+MUTANT true (9,5)(13,5)(10,5): survivors falsely killed 0/182; cut keys falsely alive 0/300
+MUTANT strict 5-adic: 5^6 at 384,480: survivors falsely killed 57/182; cut keys falsely alive 0/300
+MUTANT loose 2-adic: 2^12 at 384: survivors falsely killed 0/182; cut keys falsely alive 27/300
+MUTANT loose 5-adic: 5^4 at 384: survivors falsely killed 0/182; cut keys falsely alive 0/300
+MUTANT strict 2-adic: 2^14 at 384: survivors falsely killed 80/182; cut keys falsely alive 0/300
+SIX recorded sandwich patterns at levels 192, 288, 384, 480, 768, 1152 (conductor (alpha, beta+1) inferred for 288, 768, 1152)
+('14336', '227888', '0', '78121827') wrap0 reps 1 {192: 1, 288: 1, 384: 1, 480: 1, 768: 1, 1152: 1}
+('28672', '2244788', '0', '78121827') wrap0 reps 2 {192: 1, 288: 1, 384: 1, 480: 1, 768: 1, 1152: 1}
+('28672', '2244788', '0', '330812181') wrap0 reps 1 {192: 1, 288: 0, 384: 1, 480: 1, 768: 1, 1152: 0}
+('28672', '22224788', '0', '330812181') wrap0 reps 1 {192: 1, 288: 0, 384: 1, 480: 1, 768: 1, 1152: 0}
+('28672', '2227888', '0', '78121827') wrap0 reps 1 {192: 2, 288: 1, 384: 1, 480: 2, 768: 1, 1152: 1}
+('42336', '22334677', '1', '3281116734') wrap0 reps 1 {192: 2, 288: 2, 384: 1, 480: 1, 768: 1, 1152: 1}
+seconds 37.3

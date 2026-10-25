@@ -1,0 +1,15 @@
+s=331776       open-patterns=1573   CLOSED-cut=1244   CLOSED-sandwich=0     open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=329 -> OPEN
+s=1161216      open-patterns=2636   CLOSED-cut=2042   CLOSED-sandwich=0     open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=594 RECORD-MISMATCH -> OPEN
+s=1492992      open-patterns=3191   CLOSED-cut=2474   CLOSED-sandwich=0     open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=717 -> OPEN
+s=1741824      open-patterns=3189   CLOSED-cut=2479   CLOSED-sandwich=0     open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=710 -> OPEN
+s=2939328      open-patterns=1169   CLOSED-cut=946    CLOSED-sandwich=0     open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=223 -> OPEN
+s=3779136      open-patterns=855    CLOSED-cut=698    CLOSED-sandwich=0     open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=157 -> OPEN
+s=7112448      open-patterns=1493   CLOSED-cut=1084   CLOSED-sandwich=0     open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=409 -> OPEN
+s=9483264      open-patterns=1954   CLOSED-cut=1384   CLOSED-sandwich=0     open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=570 -> OPEN
+s=11239424     open-patterns=297    CLOSED-cut=198    CLOSED-sandwich=0     open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=99 RECORD-MISMATCH -> OPEN
+s=13226976     open-patterns=1155   CLOSED-cut=922    CLOSED-sandwich=0     open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=233 -> OPEN
+s=46294416     open-patterns=846    CLOSED-cut=643    CLOSED-sandwich=0     open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=203 -> OPEN
+s=69441624     open-patterns=270    CLOSED-cut=211    CLOSED-sandwich=0     open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=59 -> OPEN
+s=3281116734   open-patterns=62     CLOSED-cut=45     CLOSED-sandwich=0     open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=17 -> OPEN
+
+13 vertices: 0 fully CLOSED, 13 not; 18690 open patterns: 14370 closed by Lemma C depth 1, 0 closed by the sandwich, 4320 left (open 0, budget 0, unsupported 0, timeout 0, unrun 4320, error 0); survivors of depth 1: 4320; wall 657.2s (deepcut 656.0s, sandwich 0.0s) on 2 processes

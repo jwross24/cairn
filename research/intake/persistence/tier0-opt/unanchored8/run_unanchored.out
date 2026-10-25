@@ -1,0 +1,9 @@
+unanchored items 8
+11239424 2222222222227778 item 0 a 1 nu 8 q 16 reduced True b0>=0 c0<0 log10 digits floor 24.285 V<R96 True cases 6912 survivors [0] CLOSED-cut 28.4s
+11239424 2222222222227778 item 1 a 1 nu 8 q 16 reduced True b0>=0 c0<0 log10 digits floor 24.285 V<R96 True cases 5760 survivors [0] CLOSED-cut 23.5s
+11239424 2222222222227778 item 2 a 1 nu 8 q 16 reduced True b0>=0 c0<0 log10 digits floor 24.285 V<R96 True cases 4320 survivors [0] CLOSED-cut 17.9s
+11239424 222222222444777 item 0 a 8 nu 9 q 15 reduced True b0<0 c0>=0 log10 digits floor 27.765 V<R96 True cases 6144 survivors [0] CLOSED-cut 0.2s
+11239424 222222222444777 item 1 a 8 nu 9 q 15 reduced True b0<0 c0>=0 log10 digits floor 27.765 V<R96 True cases 6144 survivors [0] CLOSED-cut 0.3s
+1161216 22222222233667 item 0 a 9 nu 7 q 14 reduced True b0>=0 c0<0 log10 digits floor 27.061 V<R96 True cases 1296 survivors [0] CLOSED-cut 0.1s
+1161216 22222222233667 item 1 a 9 nu 7 q 14 reduced True b0>=0 c0<0 log10 digits floor 27.061 V<R96 True cases 512 survivors [0] CLOSED-cut 0.3s
+1161216 22222222233667 item 2 a 9 nu 7 q 14 reduced True b0>=0 c0<0 log10 digits floor 27.061 V<R96 True cases 720 survivors [0] CLOSED-cut 0.2s

@@ -1,0 +1,21 @@
+{"family": 4, "bases": 2000, "certified": 2000, "failed": 0, "elapsed": 53, "t_build": 24.6, "t_cert": 12.3}
+{"family": 4, "bases": 4000, "certified": 4000, "failed": 0, "elapsed": 121, "t_build": 56.9, "t_cert": 27.4}
+{"family": 4, "bases": 6000, "certified": 6000, "failed": 0, "elapsed": 198, "t_build": 93.9, "t_cert": 43.9}
+{"family": 4, "bases": 8000, "certified": 8000, "failed": 0, "elapsed": 251, "t_build": 118.7, "t_cert": 56.0}
+{"family": 4, "bases": 10000, "certified": 10000, "failed": 0, "elapsed": 335, "t_build": 158.4, "t_cert": 73.9}
+{"family": 4, "bases": 12000, "certified": 12000, "failed": 0, "elapsed": 388, "t_build": 183.8, "t_cert": 85.3}
+{"family": 4, "bases": 14000, "certified": 14000, "failed": 0, "elapsed": 478, "t_build": 228.7, "t_cert": 101.5}
+{"family": 4, "bases": 16000, "certified": 16000, "failed": 0, "elapsed": 534, "t_build": 257.0, "t_cert": 111.9}
+{"family": 4, "bases": 18000, "certified": 18000, "failed": 0, "elapsed": 586, "t_build": 282.6, "t_cert": 121.3}
+{"family": 4, "bases": 20000, "certified": 20000, "failed": 0, "elapsed": 683, "t_build": 331.4, "t_cert": 138.4}
+{"family": 4, "bases": 22000, "certified": 22000, "failed": 0, "elapsed": 736, "t_build": 357.8, "t_cert": 148.4}
+{"family": 4, "bases": 24000, "certified": 24000, "failed": 0, "elapsed": 785, "t_build": 382.6, "t_cert": 157.5}
+{"family": 4, "bases": 26000, "certified": 26000, "failed": 0, "elapsed": 854, "t_build": 417.4, "t_cert": 168.3}
+{"family": 4, "bases": 28000, "certified": 28000, "failed": 0, "elapsed": 944, "t_build": 464.0, "t_cert": 182.2}
+{"family": 4, "bases": 30000, "certified": 30000, "failed": 0, "elapsed": 997, "t_build": 490.6, "t_cert": 192.0}
+{"family": 4, "bases": 32000, "certified": 32000, "failed": 0, "elapsed": 1046, "t_build": 515.0, "t_cert": 200.7}
+{"family": 4, "bases": 34000, "certified": 34000, "failed": 0, "elapsed": 1094, "t_build": 539.6, "t_cert": 209.2}
+{"family": 4, "bases": 36000, "certified": 36000, "failed": 0, "elapsed": 1142, "t_build": 564.3, "t_cert": 216.3}
+{"family": 4, "bases": 38000, "certified": 38000, "failed": 0, "elapsed": 1188, "t_build": 588.1, "t_cert": 223.3}
+{"family": 4, "bases": 40000, "certified": 40000, "failed": 0, "elapsed": 1234, "t_build": 611.5, "t_cert": 230.0}
+{"family": 4, "DONE": true, "bases": 41472, "certified": 41472, "failed": 0, "elapsed": 1266, "t_build": 628.6, "t_cert": 233.9, "fails": []}

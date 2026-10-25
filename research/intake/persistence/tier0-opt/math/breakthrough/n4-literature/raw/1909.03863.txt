@@ -1,0 +1,668 @@
+                                                        On the Zeckendorf representation of smooth numbers
+
+
+
+                                                                                YANN BUGEAUD
+
+
+
+
+arXiv:1909.03863v1 [math.NT] 9 Sep 2019
+                                                   Abstract. Among other results, we establish, in a quantitative form,
+                                                   that any sufficiently large integer cannot simultaneously be divisible
+                                                   only by very small primes and have very few digits in its Zeckendorf
+                                                   representation.
+
+
+
+                                                                        1. Introduction and results
+
+                                              The following general (and left intentionally vague) question was introduced and dis-
+                                          cussed in [2, 4]:
+                                               Do there exist arbitrarily large integers which have only small prime factors and, at
+                                          the same time, few nonzero digits in their representation in some integer base?
+                                               The expected answer is no and modest steps in this direction have been made in [2,
+                                          4], by using a combination of estimates for linear forms in complex and p-adic logarithms
+                                          of algebraic numbers. We refer to [2, 4] for bibliographical references.
+                                               A similar question can be asked as well for the Zeckendorf representation [11] of
+                                          integers having only small prime factors. Let (Fn )n≥0 denote the Fibonacci sequence
+                                          defined by F0 = 0, F1 = 1, and Fn+2 = Fn+1 + Fn for n ≥ 0. Every positive integer N
+                                          can be written uniquely as a sum
+
+                                                                  N = εℓ Fℓ + εℓ−1 Fℓ−1 + . . . + ε2 F2 + ε1 F1 ,
+
+                                          with εℓ = 1, εj in {0, 1}, and εj εj+1 = 0 for j = 1, . . . , ℓ − 1. This representation of
+                                          N is called its Zeckendorf representation. The number of digits of N in its Zeckendorf
+                                          representation is the number
+                                                                √       of positive integers j for
+                                                                                                 √ which εj is equal to √ 1. Recall
+                                                        n    n
+                                          that Fn = (γ − γ )/ 5 for n ≥ 0, where γ = (1 + 5)/2 and γ = (1 − 5)/2 is the
+                                          Galois conjugate of γ. Since γ is a unit, we cannot apply estimates for p-adic linear
+                                          forms of logarithms as in [2, 4], thus the method developed in these papers cannot be
+                                          straightforwardly adapted to this question.
+
+                                              2010 Mathematics Subject Classification : 11A63, 11J86, 11N25.
+
+                                                                                        1
+     The purpose of the present note is to give an alternative proof of the main results
+of [4], which rests only on estimates for linear forms in complex logarithms of algebraic
+numbers and can be extended to more general representations than b-ary representations,
+in particular to the Zeckendorf representation (and some other Ostrowski representations,
+see Section 4 for a short discussion). Moreover, it allows us also to extend some results of
+[2, 3]. Note that an argument similar to ours can be found in [8].
+                                                          (k)
+     Following [2], for an integer k ≥ 1, we denote by (Fj )j≥1 the sequence, arranged in
+increasing order, of all positive integers which have at most k digits in their Zeckendorf
+                                       (k)
+representation. Said differently, (Fj )j≥1 is the increasing sequence composed of the
+integers of the form
+
+Fnh + · · · + Fn1 ,   nh ≥ nh−1 + 2 ≥ nh−2 + 4 ≥ · · · ≥ n1 + 2h − 2, n1 ≥ 1, 1 ≤ h ≤ k.
+                                  (1)
+In particular, the sequence (Fj )j≥1 is the Fibonacci sequence (Fj )j≥1 .
+     Let S = {q1 , . . . , qs } be a finite, non-empty set of distinct prime numbers. Let n be a
+positive integer and write n = Aq1r1 . . . qsrs , where r1 , . . . , rs are non-negative integers and
+A is an integer relatively prime to q1 . . . qs . We define the S-part [n]S of n by
+
+                                          [n]S := q1r1 . . . qsrs .
+
+    Our first result shows that there are only finitely many integers which have a given
+number of digits in their Zeckendorf representation and whose prime divisors belong to a
+given finite set.
+Theorem 1.1. Let k be a positive integer and ε a positive real number. Let S be a finite,
+non-empty set of prime numbers. Then, we have
+                                             (k)           (k)
+                                          [Fj ]S < (Fj )ε ,
+
+for every sufficiently large integer j.
+     The case k = 1 of Theorem 1.1 has already been established in [3]. Theorem 1.1
+                                                                                   (k)
+implies that, for any given positive integer k, the greatest prime factor of Fj tends to
+infinity with j. However, its proof, based on the p-adic Schmidt Subspace Theorem, does
+not allow us to estimate the speed with which this greatest prime factor tends to infinity
+with j. Fortunately, we are able to derive such an estimate by means of the theory of
+linear forms in logarithms of algebraic numbers.
+     For a positive integer n, let P [n] denote its greatest prime factor, with the convention
+that P [1] = 1. A positive real number B being given, a positive integer n is called B-
+smooth if P [n] ≤ B.
+Theorem 1.2. Let S be a finite, non-empty set of prime numbers. Let k ≥ 1 be an
+integer. Then, there exist effectively computable positive numbers c1 and j1 , depending
+only on k and S, such that
+                                  (k)           (k)
+                               [Fj ]S ≤ (Fj )1−c1 ,              for j ≥ j1 .
+
+                                                      2
+Furthermore, for every positive real number ε, there exists an effectively computable pos-
+itive number j2 , depending only on k and ε, such that
+
+                                                                      (k)
+                   (k)
+                             1      
+                                               (k)       log log log Fj
+               P [Fj ] >          − ε log log Fj                          (k)
+                                                                                ,   for j > j2 .
+                              k                      log log log log Fj
+
+In particular, there exists an effectively computable positive integer n0 , depending only on
+k and ε, such that any integer n > n0 which is
+                             1                  log log log n
+                                − ε (log log n)                   -smooth
+                              k                 log log log log n
+
+has at least k + 1 digits in its Zeckendorf representation.
+                                                 (1)
+    A much stronger lower bound for P [Fj ] follows from Stewart’s work [10], namely
+
+                       (1)
+                   P [Fj ] > j exp(log j/104 log log j),          for j large enough.
+
+     The analogues of Theorems 1.2 and 1.3 and of Corollaries 1.4 and 1.5 of [4] also hold
+for the Zeckendorf representation instead of the base-b representation, as a consequence
+of Lemma 3.2 below. We state as Theorems 1.3 and 1.4 the statements analogous to
+Corollaries 1.4 and 1.5 of [4].
+Theorem 1.3. Let b ≥ 2 be an integer. There exists an effectively computable positive
+integer n0 such that any integer n > n0 satisfies the following three assertions. If n is
+
+                       log log n
+                                      -smooth, then n has at least log log log n
+                  2 log log log log n
+
+digits in its Zeckendorf representation. If n is
+   s                                                                      s
+                   log log log n                                1                             log log log n
+       log log n                   -smooth, then n has at least                 log log n
+                 log log log log n                              3                           log log log log n
+
+digits in its Zeckendorf representation. If n is
+
+         1                 log log log log n                                   log log n
+           log log log n                       -smooth, then n has at least
+         2               log log log log log n                              2 log log log n
+
+digits in its Zeckendorf representation.
+     Let S be a finite, non-empty set of prime numbers. A rational integer is an integral
+S-unit if all its prime factors belong to S. Proceeding as in [4], we can deduce from
+Lemma 3.2 below a lower bound for the number of digits in the Zeckendorf representation
+of integral S-units.
+
+                                                     3
+Theorem 1.4. Let S be a finite set of prime numbers. Then, for any positive real number
+ε, there exists an effectively computable positive integer n0 , depending only on S and ε,
+such that any integral S-unit n greater than n0 has more than
+
+                                                         log log n
+                                             (1 − ε)
+                                                       log log log n
+
+digits in its Zeckendorf representation.
+      Our method allows us to extend Theorem 1.2 of [2] as follows. For a given integer
+                             (k)
+k ≥ 2, we denote by (uj )j≥1 the sequence, arranged in increasing order, of all positive
+integers which are not divisible by b and have at most k nonzero digits in their b-ary
+                                        (k)
+representation. Said differently, (uj )j≥1 is the ordered sequence composed of the integers
+1, 2, . . . , b − 1 and those of the form
+
+dk bnk + . . . + d2 bn2 + d1 ,     nk > . . . > n2 > 0,       d1 , . . . , dk ∈ {0, 1, . . . , b − 1},   d1 dk 6= 0.
+
+Theorem 1.5. Let b ≥ 2 and k ≥ 2 be integers. Let S be a finite, non-empty set of prime
+numbers. Then, there exist effectively computable positive numbers c1 and j1 , depending
+only on b, k, and S, such that
+                                  (k)         (k)
+                                 [uj ]S ≤ (uj )1−c1 ,        for every j ≥ j1 .
+
+     Theorem 1.5 was proved in [2] for k = 2, 3 only.
+     We also get a (very slightly) weaker result than Theorem 1.1 of [4], namely, for any
+fixed k ≥ 3, the lower bound
+                                                                           (k)
+                         (k)
+                                       1     
+                                                        (k)   log log log uj
+                     P [uj ] >             − ε log log uj                     (k)
+                                                                                                              (1.1)
+                                       k−1                  log log log log u         j
+
+holds for any sufficiently large integer j. Note that k − 1 is replaced by k − 2 in Theorem
+1.1 of [4].
+     The paper is organized as follows. Theorem 1.1 is proved in Section 2 and Theorems
+1.2 to 1.5 are established in Section 3. The final section contains some additional remarks.
+
+                                        2. Proof of Theorem 1.1
+
+    Let K be an algebraic number field. Denote by MK the set of places of K. For v in
+MK , we choose a normalized absolute value | · |v such that if v is an infinite place, then
+
+                                   |x|v = |x|[Kv :R]/[K:Q], for x ∈ Q,
+
+while if v is finite and lies above the prime p, then
+
+                                   |x|v = |x|[K
+                                             p
+                                                v :Qp ]/[K:Q]
+                                                              , for x ∈ Q.
+
+                                                        4
+These absolute values satisfy the product formula
+                        Y
+                              |x|v = 1, for every non-zero x ∈ K.
+                           v∈MK
+                           Q                     Q
+Moreover, if x ∈ Q, then v|∞ |x|v = |x| and v|p |x|v = |x|p , where the products are
+taken over all infinite places of K, respectively all places of K lying above the prime
+number p.
+    For later use, the height h(x) of a non-zero x in K is defined by
+                                                  X
+                                       h(x) =            log max{1, |x|v }.                              (2.1)
+                                                v∈MK
+
+     Let T be a finite set of places of K, containing all the infinite places. Define the ring
+of T -integers of K by
+
+                           OT := {x ∈ K : |x|v ≤ 1 for v ∈ MK \ T }.
+
+Further define
+                                       Y
+            HT (x1 , . . . , xn ) :=         max{|x1 |v , . . . , |xn |v }, for x1 , . . . , xn ∈ OT .
+                                       v∈T
+
+Our main tool is the following version of the p-adic Subspace Theorem, adapted from
+Theorem 3.1.3 of [5].
+Theorem 2.1. Let K be an algebraic number field. Let S be a finite set of prime numbers.
+Let T be the finite set of places of K composed of all the infinite places and all the places
+lying above the primes in S. For v in T , let L1v , . . . , Lnv be linearly independent linear
+forms in X1 , . . . , Xn with coefficients in K. Let ε > 0. Then the set of solutions of
+                      Y
+                         |L1v (x) · · · Lnv (x)|v ≤ HT (x)−ε , in x ∈ OK
+                                                                       n
+                                                                         \ {0},
+                   v∈T
+
+is contained in a union of finitely many proper linear subspaces of K n .
+    Now we proceed with the proof of Theorem 1.1.
+    Let k ≥ 2 be an integer and ε a positive real number. Let N be the set of integer
+k-tuples (nk , . . . , n1 ) such that nj − nj−1 ≥ 2 for j = 2, . . . , k, n1 ≥ 1, and
+
+                             [Fnk + · · · + Fn1 ]S > (Fnk + · · · + Fn1 )ε .                             (2.2)
+
+     Assume that N is infinite. Our aim is to apply Theorem 2.1 to get a contradiction.
+Let (nk,i , . . . , n1,i ), i ≥ 1, denote an infinite subset of N ordered such that nk,i > nk,i−1
+for i ≥ 2. For technical reasons, which will be clear later, we would need to assume that
+
+                             lim (nℓ,i − nℓ−1,i ) = +∞,               ℓ = 2, . . . , k,
+                           i→+∞
+
+
+                                                          5
+a condition which has no reason to be satisfied. Let us explain how one can proceed to get
+a similar assumption.
+     Observe that, for integers m, ℓ with m > ℓ > 0, we have
+
+                                  Fm = Fℓ Fm−ℓ+1 + Fℓ−1 Fm−ℓ .
+
+If there is an infinite subset N1 of N such that nk,i − nk−1,i tends to infinity when i tends
+to infinity along N1 , then there is nothing more to do for the moment. Otherwise, there
+exist a positive integer t and an infinite subset N2 of N such that nk,i − nk−1,i = t for
+i in N2 . Then, instead of working with the k-tuple (Fnk,i , . . . , Fn1,i ), we work with the
+(k − 1)-tuple (Gnk−1,i , Fnk−2,i , . . . , Fn1,i ), where
+
+                              Gnk−1,i = Ft Fnk−1,i +1 + Ft−1 Fnk−1,i .
+
+Proceeding like this, we can assume that there are an integer h, with 1 ≤ h ≤ k, and an
+infinite subset N3 of N such that nh,i > . . . > n1,i , i ∈ N3 ,
+
+                       Fnk,i + · · · + Fn1,i = Gnh,i + · · · + Gn1,i ,         i ∈ N3 ,         (2.3)
+
+                   [Gnh,i + · · · + Gn1,i ]S > (Gnh,i + · · · + Gn1,i )ε ,        i ∈ N3 ,
+and
+                       lim (nℓ,i − nℓ−1,i ) = +∞,          ℓ = 2, . . . , h,    i ∈ N3 ,        (2.4)
+                     i→+∞
+
+where, for j = 1, . . . , h, we have
+
+                                 Gnj,i = aj Fnℓ(j),i +1 + bj Fnℓ(j),i ,
+
+for non-negative integers aj , bj and ℓ(j) in {1, . . . , k}.
+     We are in position to apply Theorem 2.1. √
+     We work in the quadratic field K := Q( 5). There√are two complex          embeddings,
+                                                                           √ 1/2
+denoted
+ √       by | · |∞√
+                  1
+                    and | · |∞2 , numbered such that |a + b 5|∞1 = |a + b 5|      and |a +
+                     1/2
+b 5|∞2 = |a − b 5| , for every rational numbers a, b. For j = 1, . . . , h − 1, we consider
+the linear forms in X = (X1 , . . . , X2h ) defined by
+                                               √
+                   L2j−1,1 (X) := X2j−1 − X2j / 5,            L2j−1,2 (X) := X2j−1 ,
+
+and
+                               L2j,1 (X) := X2j ,       L2j,2 (X) := X2j .
+Set also                                       √
+                   L2h−1,1 (X) := X2h−1 − X2h / 5,            L2h−1,2 (X) := X2h−1 ,
+and
+
+           L2h,1 (X) := X1 + X3 + . . . + X2h−1 ,        L2h,2 (X) := X2 + X4 + . . . + X2h .
+
+                                                    6
+Let T be the finite set of places of K composed of all the infinite places and all the places
+lying above the primes in S. For every finite place v in T , set
+
+          Lj,v (X) := Xj , j = 2, . . . , 2h, L1,v (X) := X1 + X3 + . . . + X2h−1 .
+                     √
+Recall that γ = (1 + 5)/2 and consider the points
+
+     xi = (Gn1,i , a1 γ nℓ(1),i +1 + b1 γ nℓ(1),i , . . . , Gnh,i , ah γ nℓ(h),i +1 + bh γ nℓ(h),i ),   i ∈ N3 .
+
+By (2.2) and (2.3), we have
+        2h
+       YY                         2h
+                                  Y
+                |Lj,v (xi )|v ·         |Lj,1 (xi )Lj,2 (xi )|∞1 |Lj,1 (xi )Lj,2 (xi )|∞2 ≤ HT (xi )−ε/2 ,
+      v∈T j=1                     j=1
+
+for every i large enough in N3 .
+     It then follows from Theorem 2.1 that there exist t1 , . . . , t2h in K, not all zero, and
+an infinite set N4 , contained in N3 , such that (1.1)
+
+t2h Gnh,i + t2h−1 (ah γ nℓ(h),i +1 + bh γ nℓ(h),i ) + · · · + t2 Gn1,i + t1 (a1 γ nℓ(1),i +1 + b1 γ nℓ(1),i ) = 0,
+                                                                                                             (2.5)
+for every i in N4 . Then, dividing (2.5) by Gnh,i and letting i tend to infinity along N4 , we
+deduce from (2.4) that
+
+                            t2h Gnh,i + t2h−1 (ah γ nℓ(h),i +1 + bh γ nℓ(h),i ) = 0                            (2.6)
+
+for infinitely many i in N4 . Taking the Galois conjugate of (2.6), we obtain that t2h =
+t2h−1 = 0. Continuing like this, we get t1 = . . . = t2h = 0, a contradiction. This shows
+that N cannot be infinite, thus (2.2) has only finitely many solutions. This completes the
+proof of Theorem 1.1.
+
+                                  3. Proofs of Theorems 1.2 to 1.5
+
+     The key tool for the proofs of Theorems 1.2 to 1.5 is the following immediate conse-
+quence of a theorem of Matveev [7]. The height h of an algebraic number is defined in
+(2.1).
+Theorem 3.1. Let n ≥ 2 be an integer. Let α1 , . . . , αn be non-zero algebraic real num-
+bers. Let D be the degree over Q of a number field containing α1 , . . . , αn . Let A1 , . . . , An
+be real numbers with
+                               n       | log αj | 0.16 o
+                  log Aj ≥ max h(αj ),           ,      ,    1 ≤ j ≤ n.
+                                           D       D
+Let b1 , . . . , bn be integers and set
+                                     n      n      log Aj       oo
+                            B ′ = max 1, max |bj |        :1≤j≤n .
+                                                   log An
+
+                                                          7
+Then, we have
+
+      log |αb11 . . . αbnn − 1| > −2 × 30n+3 n4.5 Dn+2 log(eD) log A1 . . . log An log(eB ′ ).
+
+    A key point in Theorem 3.1 is the presence of the factor log An in the denominator in
+the definition of B ′ . It is crucial for getting a power saving in Theorems 1.2 and 1.5.
+
+     We first establish Theorem 1.5 and (1.1).
+     Let b ≥ 2 be an integer. Below, the constants c1 , c2 , . . . are effectively computable and
+depend at most on b and the constants C1 , C2 , . . . are absolute and effectively computable.
+Let N be a positive integer greater than b and k the number of nonzero digits in its
+representation in base b. We assume that b does not divide N , thus k ≥ 2 and we write
+
+                               N =: dk bnk + · · · + d2 bn2 + d1 bn1 ,
+
+where
+                    nk > · · · > n2 > n1 = 0,       d1 , . . . , dk ∈ {1, . . . , b − 1}.
+Let q1 , . . . , qs denote distinct prime numbers written in increasing order. There exist non-
+negative integers r1 , . . . , rs and a positive integer A, coprime with q1 · · · qs , such that
+
+                                         N = Aq1r1 · · · qsrs .
+
+    In the case A = 1, the following lemma is similar to Lemma 3.1 of [4].
+Lemma 3.2. Under the above notation, we have
+
+                               s
+                               Y                      k−1
+                           s
+                  nk ≤ c1 C1 k    log qi log(k log qs )      max{1, log A}.
+                                   i=1
+
+
+Proof. Since
+
+                s                    s                       k−1
+                                             −1 A
+               Y                  Y                      X
+                   ri   −1 −nk          ri            −1 −nk
+        Λk := A   qi dk b      −1 =    qi dk n − 1 = dk b        dh bnh
+                                               b k
+                  i=1                            i=1                                      h=1
+                                                                                  1+nk−1 −nk
+                                                                             ≤b             ,
+
+we get
+                                log Λk ≤ −(nk − nk−1 − 1) log b.                                 (3.1)
+Set A∗ = max{A, e}. Obviously, Λk is non-zero. Since rj log qj ≤ (nk + 1) log b for
+j = 1, . . . , s, we deduce from Theorem 3.1 that
+
+                                                                                nk
+                    log Λk ≥ −c2 C2s (log q1 ) · · · (log qs )(log A∗ ) log          ,
+                                                                              log A∗
+
+                                                   8
+thus, by (3.1),
+                                                                                            nk
+                nk − nk−1 + log A∗ ≤ c3 C3s (log q1 ) · · · (log qs )(log A∗ ) log               .        (3.2)
+                                                                                          log A∗
+
+Likewise, for j = 2, . . . , k − 1, we have
+                Ys     
+                     ri
+          Λj := A   qi b−nj (dk bnk −nj + . . . + dj )−1 − 1
+                     i=1
+                   s                                                   Pj−1      nh
+                                                    A                   h=1 dh b
+                  Y            
+              =          qiri    b−nj        n  −n
+                                                                 − 1 = Pk           ≤ b1+nj−1 −nk ,
+                   i=1
+                                        dk b  k   j + . . . + dj        h=j dh b
+                                                                                 nh
+
+
+
+
+thus,
+                                         log Λj ≤ −(nk − nj−1 − 1) log b.                                 (3.3)
+Since Λj is non-zero, we deduce from Theorem 3.1 that
+                                                                                       nk
+        log Λj ≥ −c4 C4s (log q1 ) · · · (log qs )(nk − nj + log A∗ ) log                         .       (3.4)
+                                                                                 nk − nj + log A∗
+
+Combining (3.3) and (3.4), we obtain
+                                         s
+                                        Y                                             nk
+             nk − nj−1 ≤ c5 C5s                 log qi (nk − nj + log A∗ ) log                    .
+                                                                                  nk − nj + log A
+                                          i=1
+
+Consequently, we get
+                                                           s
+                                           ∗
+                                                          Y                                      nk
+     nk − n1 ≤ nk − n1 + log A                 ≤ c5 C5s         log qi (nk − n2 + log A∗ ) log            (3.5)
+                                                          i=1
+                                                                                                 log A∗
+
+and, for j = 3, . . . , k − 1,
+                                                        s
+                                                       Y                                      nk
+             nk − nj−1 + log A∗ ≤ c6 C6s                     log qi (nk − nj + log A∗ ) log          .    (3.6)
+                                                       i=1
+                                                                                              log A∗
+
+The combination of (3.2), (3.5), and (3.6) then gives
+                                     s
+                                   Y        k−1                                nk k−1
+                   nk − n1 ≤ c7 C7s    log qi       (log A∗ ) log                           .
+                                                 i=1
+                                                                                  log A∗
+
+Since n1 = 1, we get
+                n 1/(k−1)         Ys                    n 1/(k−1) 
+                    k             s                                k
+                      ∗
+                            ≤ c C
+                               8 8       log qi   (k − 1)  log       ∗
+                                                                           ,
+                log A                i=1
+                                                               log A
+
+                                                                9
+hence,
+                                   s
+                                   Y                      k−1
+                     nk ≤ c9 C9s k    log qi log(k log qs )      (log A∗ ).
+                                     i=1
+
+This establishes Lemma 3.2.
+
+     Since N ≤ (nk + 1) log b, Theorem 1.5 is a straightforward consequence of Lemma 3.2.
+     Now, we consider the Zeckendorf representation of N and write
+
+                             Fmk + . . . + Fm1 = N = Aq1r1 · · · qsrs ,
+
+with mk ≥ mk−1 + 2 ≥ mk−2 + 4 ≥ . . . ≥ m1 + 2k − 2 and m1 ≥ 1. Unlike for b-ary
+representations, we cannot assume that m1 = 1.
+    Below, the constants c10 , c11 , . . . and C10 , C11 , . . . are absolute and effectively com-
+putable.
+     We establish the following analogue of Lemma 3.2.
+Lemma 3.3. Under the above notation, we have
+                                 s
+                                 Y                     k
+                            s
+                  mk ≤ c10 C10 k    log qi log(k log qs ) max{1, log A}.
+                                     i=1
+
+Proof. We proceed as in the proof of Lemma 3.2, but we need to consider another linear
+form in logarithms to show that m1 cannot be too large. Observe that
+                 √
+            0 < | 5Aq1r1 · · · qsrs − γ m1 − . . . − γ mk | ≤ |γ|m1 + . . . + |γ|mk ≤ γ,
+
+so
+             Λ :=|Aq1r1 · · · qsrs γ −m1 (1 + γ m2 −m1 + . . . + γ mk −m1 )−1 − 1|
+                                                     A
+                = q1r1 · · · qsrs γ −m1                                 − 1 < γ −mk +1 .
+                                        1 + γ m2 −m1 + . . . + γ mk −m1
+Observe that there is an absolute positive constant C such that
+
+                       h(1 + γ m2 −m1 + . . . + γ mk −m1 ) ≤ C(mk − m1 ).
+
+Applying Theorem 3.1, this gives
+                                  s
+                            s
+                                 Y                                     mk
+                  mk ≤ c11 C11          log qi (mk − m1 + log A∗ ) log        .
+                                                                       log A∗
+                                  i=1
+
+We consider the quantities analogous to the Λj ’s occurring in the proof of Lemma 3.2 and,
+before applying Theorem 3.1, we need to check that there are nonzero. To this end, we
+may proceed as follows. Let j be an integer with 1 ≤ j ≤ k. Assume that
+                                √
+                                  5N = γ mk + . . . + γ mj .                         (3.7)
+
+                                                 10
+Take the Galois conjugate to get
+                                        √
+                                       − 5N = γ mk + . . . + γ mj .                                   (3.8)
+
+Subtracting (3.8) from (3.7), we get
+
+                                         2N = Fmk + . . . + Fmj ,
+
+a contradiction.
+    Since the exact analogues of (3.2) and (3.5) hold in our context, we proceed as in the
+proof of Lemma 3.2 to get
+                      m 1/k          Ys           m 1/k 
+                          k          s                       k
+                              ≤ c  C
+                                 12 12      log qi k log         ,
+                      log A∗            i=1
+                                                         log A ∗
+
+
+and
+                                               s
+                                               Y                        k
+                       mk ≤             s
+                                   c13 C13 k         log qi log(k log qs ) (log A∗ ).
+                                               i=1
+
+This establishes Lemma 3.3.
+
+     The first statement of Theorem 1.2 is a straightforward consequence of Lemma 3.1.
+To obtain the other statements, as well as Theorems 1.3 and 1.4, we proceed exactly as in
+[4]. We omit the details.
+
+                                          4. Further remarks
+
+       Let α be an irrational real number whose continued fraction expansion is given by
+[a0 ; a1 , a2 , . . .]. For n ≥ 0, let qn be the denominator of the rational number [a0 ; a1 , . . . , an ].
+Then (see Theorem 3.9.1 of [1] for a proof), every positive integer N can be represented
+uniquely in the form
+                                        N = dℓ qℓ + . . . + d1 q1 + d0 q0 ,
+where the integers d0 , . . . , dℓ satisfy the following three condiitons:
+     1. 0 ≤ d0 < a0 .
+     2. 0 ≤ di ≤ ai+1 , for i ≥ 1.
+     3.    For i ≥ 1, if di = ai+1 , then di−1 = 0.
+     This representation of N is called its representation in the Ostrowski α-numeration
+system. When α is the Golden Ratio, this is precisely the Zeckendorf representation of N .
+     For positive integers b1 , . . . , bs , Lenstra and Shallit [6] established that, if (pn /qn )n≥1
+denotes the sequence of convergents to
+
+                                               α = [0; b1 , . . . , bs ],
+
+then qn+2s = tqn+s − (−1)s qn , for n ≥ 1, where t = ps−1 + qs . This shows that, for
+h = 0, . . . , s − 1, the sequence (qns+h )n≥0 satisfies a binary recurrence relation. More
+
+                                                          11
+                                                                  p
+precisely, there exist ah in the quadratic field generated by (t + t2 − 4 × (−1)s )/2 such
+that
+                         p                n            p               n
+                     t + t2 − 4 × (−1)s              t − t2 − 4 × (−1)s
+                                                  
+      qns+h = ah                              + ah                         , n ≥ 0,
+                               2                              2
+
+where the bar denotes the Galois conjugate. A similar statement holds for every quadratic
+real number α.
+     More generally, Theorems 1.1 to 1.4 are still valid when the Zeckendorf representation
+is replaced by the representation in the Ostrowski α-numeration system, provided that α
+is a quadratic real number.
+     We have focused our attention to digital representations of integers. Actually, we can
+more generally consider finite sums of values of a given non-degenerate recurrence sequence
+of integers having a dominant root. Let
+
+                           un = f1 (n)αn1 + . . . + ft (n)αnt ,   n ≥ 0,
+
+be a nondegenerate recurrence sequence of integers having a dominant root. Here, f1 , . . . , ft
+are polynomials with coefficients in the algebraic number field K := Q(α1 , . . . , αt ), for all
+integers i, j with 1 ≤ i < j ≤ t, the quotient αi /αj is not a root of unity, and |α1 | > |αj |,
+for j = 2, . . . , t. For example, the Fibonacci sequence has these properties.
+                                                 (k)
+     For an integer k ≥ 1, we denote by (Uj )j≥1 the sequence, arranged in increasing
+order, of all the integers of the form
+
+                              unk + · · · + un1 ,    nk > . . . > n1 .
+
+Let S be a finite, non-empty set of prime numbers. We can proceed as in the proof of
+                                   (k)
+Theorem 1.2 in order to bound [Uj ]S from above. A difficulty arises since we have to
+ensure that the quantities analogous to the Λj ’s are nonzero. This may require additional
+assumption on the sequence (un )n≥0 . We leave the details to an interested reader.
+
+
+
+                                          References
+
+
+  [1] J.-P. Allouche and J. Shallit, Automatic Sequences: Theory, Applications, General-
+      izations, Cambridge University Press, 2003.
+  [2] Y. Bugeaud, On the digital representation of integers with bounded prime factors,
+      Osaka J. Math. 55 (2018), 315–324.
+  [3] Y. Bugeaud and J.-H. Evertse, S-parts of terms of integer linear recurrence sequences,
+      Mathematika 63 (2017), 840–851.
+  [4] Y. Bugeaud and H. Kaneko, On the digital representation of smooth numbers, Math.
+      Proc. Cambridge Philos. Soc. 165 (2018), 533–540.
+
+                                                12
+  [5] J.-H. Evertse and K. Győry, Unit Equations in Diophantine Number Theory. Cam-
+      bridge University Press, 2015.
+  [6] H. W. Lenstra and J. O. Shallit, Continued fractions and linear recurrences, Math.
+      Comp. 61 (1993), 351–354.
+  [7] E. M. Matveev, An explicit lower bound for a homogeneous rational linear form
+      in logarithms of algebraic numbers. II, Izv. Ross. Acad. Nauk Ser. Mat. 64 (2000),
+      125–180 (in Russian); English translation in Izv. Math. 64 (2000), 1217–1269.
+  [8] E. Mazumdar and S. S. Rout, Prime powers in sums of terms of binary recurrence
+      sequences, Monatsh. Math. 189 (2019), 695–714.
+  [9] C. L. Stewart, On the representation of an integer in two different bases, J. reine
+      angew. Math. 319 (1980), 63–72.
+ [10] C. L. Stewart, On divisors of Lucas and Lehmer numbers, Acta Math. 211 (2013),
+      291–314.
+ [11] E. Zeckendorf, Représentation des nombres naturels par une somme de nombres de
+      Fibonacci ou de nombres de Lucas, Bull. Soc. Roy. Sci. Liège 41 (1972), 179–182.
+
+
+
+Yann Bugeaud
+Institut de Recherche Mathématique Avancée, U.M.R. 7501
+Université de Strasbourg et C.N.R.S.
+7, rue René Descartes
+67084 Strasbourg, FRANCE
+e-mail : bugeaud@math.unistra.fr
+
+
+
+
+                                           13
+

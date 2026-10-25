@@ -1,0 +1,20 @@
+corpus rows: 8807, max digits 140
+identity 9y+1 = 10^n + sum c_i 10^E_i verified on 8806 rows
+k distribution (number of non-1 digits): 0:1, 1:14, 2:35, 3:60, 4:76, 5:108, 6:150, 7:157, 8:154, 9:230, 10:254, 11:259, 12:255 ... max k 124
+max s_(j+1)/s_j over children and interior j>=1, by s_j bucket (lower end of bucket; ratio, s_j, g_j, n, k):
+  s_j>=1: (6.0, 1, 5, 23, 18)
+  s_j>=2: (3.0, 2, 4, 23, 18)
+  s_j>=3: (2.6666666666666665, 3, 5, 14, 10)
+  s_j>=5: (1.8, 5, 4, 10, 6)
+  s_j>=9: (1.5, 10, 5, 44, 36)
+  s_j>=17: (1.2777777777777777, 18, 5, 43, 36)
+  s_j>=33: (1.1714285714285715, 35, 6, 47, 36)
+  s_j>=65: (1.0461538461538462, 65, 3, 68, 55)
+consecutive interior gap pairs (children with k>=3): 203876, Spearman(g_(j-1), g_j) = -0.002
+Spearman(s_j, g_j) over all interior (child, j): 212668 pairs, -0.011
+first exceptional index j*(theta) = least j with s_(j+1) >= theta (s_(k+1) := n); nesting N_(j*-1) exceptional would need s_j* >= theta:
+  theta=10: children with n>=theta 8090, nesting violated at j* in 8090 (= all); jump ratio s_(j*+1)/s_j*: max (1.6666666666666667, 6, 10, 70), median 1.11
+  theta=20: children with n>=theta 5739, nesting violated at j* in 5739 (= all); jump ratio s_(j*+1)/s_j*: max (1.3333333333333333, 15, 20, 21), median 1.05
+  theta=40: children with n>=theta 1907, nesting violated at j* in 1907 (= all); jump ratio s_(j*+1)/s_j*: max (1.1714285714285715, 35, 41, 47), median 1.03
+longest run of 1s between non-1 digits (or at the ends) over children:
+  (5, (32, 26, 13))

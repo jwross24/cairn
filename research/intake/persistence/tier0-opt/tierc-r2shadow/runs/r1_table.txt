@@ -1,0 +1,14 @@
+R1 | closed by the sandwich (U'') | bound 10^301.58 digits vs U'' 10^204.7947 | words 27 | space 4.239e+16 | wall 15.20 s | cpu 14.03 s | rss 161 MB
+R2 | closed by the sandwich (U'') | bound 10^301.88 digits vs U'' 10^204.6994 | words 16 | space 7.066e+16 | wall 11.16 s | cpu 10.37 s | rss 324 MB
+R3 | closed by the sandwich (U'') | bound 10^301.52 digits vs U'' 10^190.7314 | words 96 | space 7.01e+16 | wall 10.88 s | cpu 10.42 s | rss 324 MB
+R4 | NOTAPPL | bound 10^- digits vs U'' 10^- | words - | space - | wall 0.01 s | cpu 0.00 s | rss 7 MB
+R5 | closed by the sandwich (U'') | bound 10^301.78 digits vs U'' 10^204.6994 | words 40 | space 1.696e+16 | wall 5.33 s | cpu 5.02 s | rss 150 MB
+R6 | closed by the sandwich (U'') | bound 10^301.54 digits vs U'' 10^190.7314 | words 32 | space 6.056e+15 | wall 2.12 s | cpu 1.98 s | rss 280 MB
+R7 | closed by the sandwich (U'') | bound 10^301.54 digits vs U'' 10^190.7314 | words 144 | space 6.952e+16 | wall 11.20 s | cpu 10.37 s | rss 324 MB
+R8 | closed by the sandwich (U'') | bound 10^301.77 digits vs U'' 10^218.6965 | words 14 | space 3.331e+16 | wall 6.45 s | cpu 5.98 s | rss 291 MB
+R9 | closed by the sandwich (U'') | bound 10^301.77 digits vs U'' 10^190.7314 | words 24 | space 4.07e+14 | wall 0.61 s | cpu 0.56 s | rss 148 MB
+R10 | closed by the sandwich (U'') | bound 10^301.55 digits vs U'' 10^204.6994 | words 40 | space 3.553e+14 | wall 0.90 s | cpu 0.79 s | rss 280 MB
+R11 | closed by the sandwich (U'') | bound 10^301.09 digits vs U'' 10^204.6994 | words 48 | space 1.776e+15 | wall 1.47 s | cpu 1.22 s | rss 280 MB
+R12 | closed by the sandwich (U'') | bound 10^301.77 digits vs U'' 10^215.0673 | words 18 | space 6.541e+16 | wall 15.78 s | cpu 14.53 s | rss 290 MB
+R13 | closed by the sandwich (U'') | bound 10^301.54 digits vs U'' 10^215.0673 | words 152 | space 1.817e+17 | wall 41.87 s | cpu 39.47 s | rss 301 MB
+R14 | closed by the sandwich (U'') | bound 10^301.95 digits vs U'' 10^190.7314 | words 16 | space 4.239e+15 | wall 1.73 s | cpu 1.65 s | rss 283 MB

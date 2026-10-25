@@ -1,0 +1,3 @@
+  rep nu=5 words=3 passed_T=9 alive=51
+  rep nu=5 words=1 passed_T=1 alive=1
+PYREF M=22333467 a=0 y=60761421 primes=[31, 41] reps=5 passed_T=10 alive=52 bound=264.06

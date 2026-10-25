@@ -1,0 +1,4 @@
+[["S1 y=2636931307236912 k=28 nu=13 a=4 (cap-raised)","runs/r2_1_cap.txt","runs/r2_1_cap.err"],
+["S2 y=32419593738 k=25 nu=10 a=1","runs/r2_2.txt","runs/r2_2.err"],
+["S4 y=2636931307236912 k=28 nu=15 a=4","runs/r2_4.txt","runs/r2_4.err"],
+["S5 y=142910862192 k=26 nu=9 a=4","runs/r2_5.txt","runs/r2_5.err"]]

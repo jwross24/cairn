@@ -1,0 +1,77 @@
+[17:11:30] gate v2: 520 equations, 39 plants, jobs=3, logs /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/gatev2/logs/20261020-171130
+[17:11:30] candidate lvl12=/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/round2/lvl12_r2 lvlN=None
+[17:12:16] differential + plants done in 46s
+[17:14:56] mutant m_a0_zero_check_deleted: SURVIVED (38.1s) no difference in any stage
+[17:14:57] mutant m_a1_zero_skipped_open: KILLED (1.4s) lvl12 differential / counters: stderr counters differ
+[17:15:31] mutant m_a2_zero_skipped_exact: SURVIVED (33.7s) no difference in any stage
+[17:16:09] mutant m_c1_prefilter_rejects_rep0: SURVIVED (38.1s) no difference in any stage
+[17:16:44] mutant m_c2_prefilter_accepts_class: SURVIVED (35.1s) no difference in any stage
+[17:17:18] mutant m_d1_ymod_skips_last_prime: SURVIVED (34.5s) no difference in any stage
+[17:17:56] mutant m_d2_ymod_checks_one: SURVIVED (37.6s) no difference in any stage
+[17:17:57] mutant m_e1_nu_mod_off: KILLED (1.2s) lvl12 differential / counters: stderr counters differ
+[17:17:58] mutant m_e2_split_U2_sign: KILLED (1.0s) lvl12 differential / stdout: sorted stdout differs: ref sha 480b24aaa28c3885 n=1, cand sha
+[17:17:59] mutant m_e3_exact_multiset_unchecked: KILLED (1.0s) lvl12 differential / counters: stderr counters differ
+[17:18:00] mutant m_e4_open_position_check_off: KILLED (1.0s) lvl12 differential / counters: stderr counters differ
+[17:18:01] mutant m_e5_digit_contrib_gd: KILLED (1.0s) lvl12 differential / counters: stderr counters differ
+[17:18:02] mutant m_e6_open_K_cap: KILLED (0.7s) lvl12 differential / counters: stderr counters differ
+[17:18:04] mutant opt_T3K_table_entry: KILLED (1.8s) lvl12 differential / counters: stderr counters differ
+[17:18:05] mutant opt_T7K_table_entry: KILLED (1.4s) lvl12 differential / counters: stderr counters differ
+[17:18:06] mutant opt_P2A_entry: KILLED (1.0s) lvl12 differential / counters: stderr counters differ
+[17:18:07] mutant opt_ENT_entry: KILLED (1.0s) lvl12 differential / counters: stderr counters differ
+[17:18:43] mutant opt_OKT_entry: SURVIVED (36.0s) no difference in any stage
+[17:18:45] mutant opt_ystep_wrap_boundary: KILLED (1.4s) lvl12 differential / counters: stderr counters differ
+[17:19:19] mutant opt_fast_filter_wrap_boundary: SURVIVED (34.2s) no difference in any stage
+[17:19:19] mutant table:
+  m_a0_zero_check_deleted        lvl12 SURVIVED (equivalent, expected)    no difference in any stage
+  m_a1_zero_skipped_open         lvl12 KILLED                             lvl12 differential / counters: stderr counters differ
+  m_a2_zero_skipped_exact        lvl12 SURVIVED (equivalent-argued, expected) no difference in any stage
+  m_b1_crt_v1_uses_rep0          lvl12 INAPPLICABLE                       find-string occurs 0 times
+  m_b2_crt_coef_off              lvl12 INAPPLICABLE                       find-string occurs 0 times
+  m_c1_prefilter_rejects_rep0    lvl12 SURVIVED                           no difference in any stage
+  m_c2_prefilter_accepts_class   lvl12 SURVIVED                           no difference in any stage
+  m_d1_ymod_skips_last_prime     lvl12 SURVIVED                           no difference in any stage
+  m_d2_ymod_checks_one           lvl12 SURVIVED                           no difference in any stage
+  m_e1_nu_mod_off                lvl12 KILLED                             lvl12 differential / counters: stderr counters differ
+  m_e2_split_U2_sign             lvl12 KILLED                             lvl12 differential / stdout: sorted stdout differs: ref sha 480b24aaa28c3885 n=1, cand sha bbc4de96a
+  m_e3_exact_multiset_unchecked  lvl12 KILLED                             lvl12 differential / counters: stderr counters differ
+  m_e4_open_position_check_off   lvl12 KILLED                             lvl12 differential / counters: stderr counters differ
+  m_e5_digit_contrib_gd          lvl12 KILLED                             lvl12 differential / counters: stderr counters differ
+  m_e6_open_K_cap                lvl12 KILLED                             lvl12 differential / counters: stderr counters differ
+  m3_N10_tail_K_cap2             lvlN  SKIP                               no lvlN candidate/source supplied
+  m3_N1_tail_zero_skipped        lvlN  SKIP                               no lvlN candidate/source supplied
+  m3_N1b_tail_zero_check_deleted lvlN  SKIP                               no lvlN candidate/source supplied
+  m3_N2_linear_crt_x2_uses_x1    lvlN  SKIP                               no lvlN candidate/source supplied
+  m3_N3_mulmod128_no_reduce      lvlN  SKIP                               no lvlN candidate/source supplied
+  m3_N4_no_final_reduction       lvlN  SKIP                               no lvlN candidate/source supplied
+  m3_N5_ph_crt_sign              lvlN  SKIP                               no lvlN candidate/source supplied
+  m3_N6_lift_drops_all_lifted    lvlN  SKIP                               no lvlN candidate/source supplied
+  m3_N7_drop_n_plus_L            lvlN  SKIP                               no lvlN candidate/source supplied
+  m3_N8_exact_nu_off             lvlN  SKIP                               no lvlN candidate/source supplied
+  m3_N9_adj_a_sign               lvlN  SKIP                               no lvlN candidate/source supplied
+  opt_T3K_table_entry            lvl12 KILLED                             lvl12 differential / counters: stderr counters differ
+  opt_T7K_table_entry            lvl12 KILLED                             lvl12 differential / counters: stderr counters differ
+  opt_P2A_entry                  lvl12 KILLED                             lvl12 differential / counters: stderr counters differ
+  opt_ENT_entry                  lvl12 KILLED                             lvl12 differential / counters: stderr counters differ
+  opt_OKT_entry                  lvl12 SURVIVED                           no difference in any stage
+  opt_ystep_wrap_boundary        lvl12 KILLED                             lvl12 differential / counters: stderr counters differ
+  opt_fast_filter_wrap_boundary  lvl12 SURVIVED                           no difference in any stage
+[17:19:19] FINDING [mutation runner] mutant m_b1_crt_v1_uses_rep0: INAPPLICABLE: find-string occurs 0 times
+[17:19:19] FINDING [mutation runner] mutant m_b2_crt_coef_off: INAPPLICABLE: find-string occurs 0 times
+[17:19:19] FINDING [mutation runner] mutant m_c1_prefilter_rejects_rep0: SURVIVED: no difference in any stage
+[17:19:19] FINDING [mutation runner] mutant m_c2_prefilter_accepts_class: SURVIVED: no difference in any stage
+[17:19:19] FINDING [mutation runner] mutant m_d1_ymod_skips_last_prime: SURVIVED: no difference in any stage
+[17:19:19] FINDING [mutation runner] mutant m_d2_ymod_checks_one: SURVIVED: no difference in any stage
+[17:19:19] FINDING [mutation runner] mutant opt_OKT_entry: SURVIVED: no difference in any stage
+[17:19:19] FINDING [mutation runner] mutant opt_fast_filter_wrap_boundary: SURVIVED: no difference in any stage
+[17:19:19] 
+STAGE                                 VERDICT  DETAIL
+----------------------------------------------------------------------------
+lvl12 differential (corpus + 72/224)  PASS     538 equations, raw sorted stdout + stderr counters
+lvlN differential (corpus + 72/224)   SKIP     538 equations, parents from reference chain + wild parents; raw sorted stdout, counters, python-side reconstruction; 331 genuine-parent chains (true child must reappear)
+lvl12 full vertices 10800, 14336      PASS     33 multisets, 3.602e+09 patterns, level 12 only (lifts for these two vertices not run)
+off-nominal configs (K != 3, np = 7)  PASS     16 configs: {'EQUIVALENT': 16, 'REFUSES': 0, 'DIVERGED': 0, 'CRASH': 0}
+python pipeline run_vertex_c 72, 224  PASS     16 rows (open counts, children, per-level survivors, c_stats) ref vs cand
+planted children (pipeline)           PASS     39/39 recovered
+branch coverage (reference)           PASS     lvl12: lines 98.8% (84/85), branches 96.6% (143/148), regions 97.4%; lvlN: lines 99.3% (141/142), branches 93.4% (241/258), regions 95.9%; unreached sides {'DEAD-LIFT': 7, 'DEAD12': 4, 'DEFENSIVE': 6, 'RARE': 1, 'STRUCTURAL': 4} (see coverage.txt)
+mutation runner                       FAIL     12 killed, 8 survived, 11 skipped of 33
+[17:19:19] GATE v2: FAIL

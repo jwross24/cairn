@@ -1,0 +1,33 @@
+closed-form k=  6 theta=0.25  iter=10^22.261  bound=10^22.499  ok=True
+closed-form k=  6 theta=0.50  iter=10^32.150  bound=10^33.396  ok=True
+closed-form k=  6 theta=0.75  iter=10^53.121  bound=10^65.588  ok=True
+closed-form k=  6 theta=0.90  iter=10^75.194  bound=10^159.990  ok=True
+closed-form k= 31 theta=0.25  iter=10^23.495  bound=10^23.536  ok=True
+closed-form k= 31 theta=0.50  iter=10^34.783  bound=10^34.952  ok=True
+closed-form k= 31 theta=0.75  iter=10^67.677  bound=10^68.700  ok=True
+closed-form k= 31 theta=0.90  iter=10^156.990  bound=10^167.771  ok=True
+closed-form k= 44 theta=0.25  iter=10^23.716  bound=10^23.745  ok=True
+closed-form k= 44 theta=0.50  iter=10^35.145  bound=10^35.265  ok=True
+closed-form k= 44 theta=0.75  iter=10^68.631  bound=10^69.326  ok=True
+closed-form k= 44 theta=0.90  iter=10^163.083  bound=10^169.335  ok=True
+closed-form k=200 theta=0.25  iter=10^24.625  bound=10^24.632  ok=True
+closed-form k=200 theta=0.50  iter=10^36.568  bound=10^36.596  ok=True
+closed-form k=200 theta=0.75  iter=10^71.833  bound=10^71.987  ok=True
+closed-form k=200 theta=0.90  iter=10^174.887  bound=10^175.989  ok=True
+Young inequality C h^theta <= eps h + c(eps): violations in 2000 random draws = 0
+  theta=0.75 C=10^16.3 eps=0.0227  c(eps)=10^69.15
+  theta=0.75 C=10^16.3 eps=0.1000  c(eps)=10^67.22
+  theta=0.75 C=10^16.3 eps=1.0000  c(eps)=10^64.22
+  theta=0.75 C=10^16.3 eps=40.0000  c(eps)=10^59.42
+planted negative: bound divided by 10^3 must be violated by the iteration -> True
+per-gap multiplier needed for S_k <= target, S_{j+1} = (1+Y) S_j, S_1 = 10^14.7 (one-ended)
+two-ended: n <= min_m [S_1 (1+Y)^(m-1) + Z_1 (1+Y)^(k-m)], Z_1 = 10^14.7
+k=31 depth D=1 target 10^72: Y_one <= 10^1.90   Y_two <= 10^3.80   deficit vs 10^16.7 (Matveev K1): 10^14.8 one-ended, 10^14.4 two-ended (vs 10^18.2 Yu)
+k=31 depth D=2 target 10^120: Y_one <= 10^3.51   Y_two <= 10^7.00   deficit vs 10^16.7 (Matveev K1): 10^13.2 one-ended, 10^11.2 two-ended (vs 10^18.2 Yu)
+k=31 depth D=3 target 10^168: Y_one <= 10^5.11   Y_two <= 10^10.20   deficit vs 10^16.7 (Matveev K1): 10^11.6 one-ended, 10^8.0 two-ended (vs 10^18.2 Yu)
+k=31 depth D=4 target 10^216: Y_one <= 10^6.71   Y_two <= 10^13.40   deficit vs 10^16.7 (Matveev K1): 10^10.0 one-ended, 10^4.8 two-ended (vs 10^18.2 Yu)
+k=44 depth D=1 target 10^72: Y_one <= 10^1.31   Y_two <= 10^2.60   deficit vs 10^16.7 (Matveev K1): 10^15.4 one-ended, 10^15.6 two-ended (vs 10^18.2 Yu)
+k=44 depth D=2 target 10^120: Y_one <= 10^2.45   Y_two <= 10^4.79   deficit vs 10^16.7 (Matveev K1): 10^14.3 one-ended, 10^13.4 two-ended (vs 10^18.2 Yu)
+k=44 depth D=3 target 10^168: Y_one <= 10^3.56   Y_two <= 10^6.97   deficit vs 10^16.7 (Matveev K1): 10^13.1 one-ended, 10^11.2 two-ended (vs 10^18.2 Yu)
+k=44 depth D=4 target 10^216: Y_one <= 10^4.68   Y_two <= 10^9.15   deficit vs 10^16.7 (Matveev K1): 10^12.0 one-ended, 10^9.1 two-ended (vs 10^18.2 Yu)
+FAILURES: 0 0 0

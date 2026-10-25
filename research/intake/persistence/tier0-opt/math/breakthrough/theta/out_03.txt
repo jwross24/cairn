@@ -1,0 +1,14 @@
+Gauss/LLL-reduced recorded basis, sup norms: 5.8343e+27 2.6062e+28   |det| = 2.8100e+56
+g_u == 1 mod R_96 with the factors 3 and 7 removed : True
+g_v == 1 mod R_96 with the factors 3 and 7 removed : True
+planted negative, (u1+1, u2) == 1 mod the same modulus : False
+g_u: v5(g-1)=5  v2(g-1)=9
+g_v: v5(g-1)=5  v2(g-1)=10
+absolute log heights of the lattice generators: h(g_1)=10^28.22  h(g_2)=10^28.71  (h(3)=1.099, h(7)=1.946)
+
+Matveev product of heights: standard form uses A(3)A(7) = 2.138 ; lattice-coordinate form uses A(g_1)A(g_2)
+  height-product inflation factor: 10^56.60
+  n ~ 10^30: log B standard = 69.8, lattice coordinates z ~ n/10^28 gives log B = 5.6; net change in the Matveev exponent: x10^55.56 (loss)
+  n ~ 10^300: log B standard = 691.5, lattice coordinates z ~ n/10^28 gives log B = 627.3; net change in the Matveev exponent: x10^56.55 (loss)
+  n ~ 10^850: log B standard = 1957.9, lattice coordinates z ~ n/10^28 gives log B = 1893.7; net change in the Matveev exponent: x10^56.58 (loss)
+

@@ -1,0 +1,745 @@
+[codex] Starting Codex task thread.
+[codex] Thread ready (01a160ca-ff5f-7ef2-9536-976c6ea51d82).
+[codex] Turn started (01a160cb-01f5-7001-adb1-fd64208aa275).
+[codex] Assistant message captured: I’ll derive the lift independently from the permitted math files, then provide a standalone c...
+[codex] Running command: /bin/zsh -lc 'cat docs/agents/tools.md docs/agents/shell-pitfalls.md'
+[codex] Command completed: /bin/zsh -lc 'cat docs/agents/tools.md docs/agents/shell-pitfalls.md' (exit 0)
+[codex] Running command: /bin/zsh -lc 'cat research/intake/persistence/tier0/HSHADOW.md research/intake/persistence/ti...
+[codex] Command completed: /bin/zsh -lc 'cat research/intake/persistence/tier0/HSHADOW.md research/intake/persistence/ti... (exit 0)
+[codex] Running command: /bin/zsh -lc "rg -n '"'^#{1,4} '"' research/intake/persistence/tier0/PAPER.md"
+[codex] Command completed: /bin/zsh -lc "rg -n '"'^#{1,4} '"' research/intake/persistence/tier0/PAPER.md" (exit 0)
+[codex] Running command: /bin/zsh -lc "sed -n '185,306p' research/intake/persistence/tier0/PAPER.md"
+[codex] Command completed: /bin/zsh -lc "sed -n '185,306p' research/intake/persistence/tier0/PAPER.md" (exit 0)
+[codex] Running command: /bin/zsh -lc 'nl -ba research/intake/persistence/tier0/HSHADOW.md'
+[codex] Command completed: /bin/zsh -lc 'nl -ba research/intake/persistence/tier0/HSHADOW.md' (exit 0)
+[codex] Assistant message captured: The level-192 difference formula holds with **modular division by 9**. I also found two gaps ...
+[codex] Assistant message captured: The level-384 issue is concrete: all four listed primes have **\(10^{192}\equiv-1\)**, so mov...
+[codex] Assistant message captured: The in-memory implementation passes the arithmetic checks so far: **22,275 coset checks, 169 ...
+[codex] Assistant message captured: The implementation now checks all level-384 choices and uses an exact nearest-point calculati...
+[codex] Assistant message captured: **The level-192 difference formula is correct with modular division by 9. The level-384 certi...
+[codex] Turn completed.
+**The level-192 difference formula is correct with modular division by 9. The level-384 certificate, as written, leaves lift choices unaccounted for.**
+
+I did not open the prohibited implementations or run outputs, use git, invoke xcrun, or write files. The derivations below are ordinary mathematical arguments, **not Lean-checked**. I tested the implementation in memory on synthetic controls; **I did not verify the 43 reference patterns**.
+
+**1 → Child correspondence and the exact difference formula.**
+
+Write
+\[
+R_n=\frac{10^n-1}{9},\qquad
+w_j=(d_j-1)10^{e_j},
+\]
+where \(0\le e_j<96\) and \(0\le\nu<96\).
+
+A depth-1 word partitions the labeled special digits into:
+
+- \(F\): fixed at actual position \(e_j\), meaning copy \(t_j=0\).
+- \(U\): unplaced, meaning actual position \(e_j+96t_j\), with \(t_j\ge1\).
+
+Its actual length satisfies \(n=\nu+96q\). At level 192, the additional information is
+\[
+S=\{j\in U:t_j\equiv1\pmod2\},
+\qquad sn=q\bmod2\in\{0,1\}.
+\]
+
+Thus the formal level-192 representative is
+\[
+V_{S,sn}
+=
+R_{\nu+96sn}
++\sum_{j\notin S}w_j
++10^{96}\sum_{j\in S}w_j.
+\]
+
+The **representative shift is 96**, not 192. An odd unplaced copy has \(t=1,3,5,\ldots\); an even unplaced copy has \(t=2,4,6,\ldots\). In particular, an even copy is represented by residue \(e_j\), although its actual position is at least \(e_j+192\).
+
+Let
+\[
+V=R_\nu+\sum_jw_j.
+\]
+Because \(sn\) is binary,
+\[
+R_{\nu+96sn}-R_\nu
+=sn\,10^\nu\frac{10^{96}-1}{9}.
+\]
+Consequently,
+\[
+\boxed{
+V_{S,sn}-V
+=
+(10^{96}-1)
+\left(\sum_{j\in S}w_j+sn\,\frac{10^\nu}{9}\right).
+}
+\]
+
+The entirely integral version is
+\[
+\boxed{
+V_{S,sn}-V
+=
+\frac{10^{96}-1}{9}
+\left(9\sum_{j\in S}w_j+sn\,10^\nu\right).
+}
+\]
+
+Here \(\nu\) is **the original length residue modulo 96**, not the actual length and not the number of special digits.
+
+When \(sn=1\), the quantity called \(\Delta\) is generally rational, not an integer. Modulo a modulus coprime to 9, its precise meaning is
+\[
+\Delta_M(S,sn)
+=
+\sum_{j\in S}w_j+sn\,10^\nu\,9^{-1}\pmod M.
+\]
+
+For any prime \(p\ne3\) dividing \(10^L-1\), reducing the length modulo \(L\) is legitimate because
+\[
+R_{r+Lq}-R_r
+=
+10^r\frac{10^{Lq}-1}{9}
+\equiv0\pmod p.
+\]
+It is **not** generally legitimate modulo the whole integer \(10^L-1\), where division by 9 is unavailable.
+
+This correspondence is between **labeled formal residue choices**. Repeated identical digit/residue pairs can give the same multiset child. Actual-position collisions, placement inside the number, and window compatibility impose additional restrictions.
+
+**2 → The congruence criterion needs a shadow-residue hypothesis.**
+
+Let a word’s exponent coset be
+\[
+C_W=o_W+\Lambda_W\subseteq\mathbb Z^2,
+\]
+and define
+\[
+\chi_p(b,c)=3^b7^c\pmod p.
+\]
+
+The lattice’s image is trivial precisely when
+\[
+\chi_p(u)=1
+\]
+for every basis vector \(u\) of \(\Lambda_W\). Then every point of the coset has the same S-unit residue
+\[
+T_{W,p}=2^a\chi_p(o_W).
+\]
+
+To obtain HSHADOW’s zero-target criterion, one must additionally establish
+\[
+\boxed{T_{W,p}\equiv V\pmod p.}
+\]
+
+Under these two hypotheses,
+\[
+V_{S,sn}\equiv T_{W,p}\pmod p
+\iff
+(10^{96}-1)\Delta_p(S,sn)\equiv0\pmod p.
+\]
+
+My independent arithmetic checks give
+\[
+10^{96}\equiv-1\pmod{193},\qquad
+10^{96}\equiv-1\pmod{769}.
+\]
+Thus \(10^{96}-1\equiv-2\) is invertible at both primes.
+
+Trial division confirms that 193 and 769 are prime, and
+\[
+\boxed{193\cdot769=148417.}
+\]
+Their multiplicative orders of 10 are both 192. CRT therefore gives
+\[
+\boxed{
+\text{passes both prime cuts}
+\iff
+\Delta_{148417}(S,sn)=0,
+}
+\]
+**provided the shadow-residue hypothesis holds at both primes**.
+
+Without it, the correct condition has a word-dependent target:
+\[
+\Delta(S,sn)\equiv
+(T_{W,p}-V)(10^{96}-1)^{-1}\pmod p.
+\]
+
+The anchor’s existence alone does not establish the missing hypothesis: a word’s 10-adic cut need not retain the anchor point, and an anchored representation can have \(V=y+\kappa R_{96}\), rather than \(V=y\).
+
+For the content argument, define
+\[
+c=\gcd\{|u_{i,j}|:\text{all coordinates of a lattice basis}\}.
+\]
+The required interpretation is
+\[
+2^9\,3^2\mid c,
+\]
+so every coordinate of every lattice vector is divisible by \(4608\). Since
+\[
+193-1=192\mid4608,\qquad769-1=768\mid4608,
+\]
+Fermat’s theorem implies trivial images.
+
+Divisibility by **768 already suffices**. “The content contains 4608” is potentially misleading ideal language: the needed assertion is that the content integer is **divisible by** 4608.
+
+**3 → Level 384 introduces another set of binary choices.**
+
+After the level-192 shadow, every unplaced digit has even copy index:
+\[
+t_j=2u_j,\qquad u_j\ge1.
+\]
+A level-384 child is determined by
+\[
+T=\{j\in U:u_j\equiv1\pmod2\},\qquad
+sn_2\in\{0,1\}.
+\]
+Its representative is
+\[
+\boxed{
+V^{384}_{T,sn_2}
+=
+V+(10^{192}-1)\sum_{j\in T}w_j
++sn_2\,10^\nu R_{192}.
+}
+\]
+
+For all four listed level-384 primes,
+\[
+10^{192}\equiv-1\pmod p,
+\quad
+p\in\{3457,12289,418725889,1265011073\}.
+\]
+Their respective orders of 10 are \(384,384,384,128\).
+
+Therefore these choices **change the residues being tested**. Testing only \(V\) does not establish that all level-384 children fail.
+
+For the \(K=384\) window:
+
+- \(j\notin T\): its unplaced copy is \(t\ge4\), outside the window.
+- \(j\in T\): either fix it at \(t=2\), or retain \(t\equiv2\pmod4,\ t\ge6\).
+- Parent-fixed digits remain at \(t=0\).
+
+For each subset \(A\subseteq T\) fixed at copy 2, the window value is
+\[
+R_{384}+\sum_{j\in F}w_j+10^{192}\sum_{j\in A}w_j.
+\]
+
+As a deliberately limited counterexample to the **prime-cut inference**, take \(p=3457\), \(V=3\), and \(w=2\). Then
+\[
+V'=3+2(10^{192}-1)\equiv-1\pmod{3457}.
+\]
+The coset
+\[
+(864,0)+3456\mathbb Z^2
+\]
+has constant image \(3^{864}\equiv-1\). Its unchanged-value cut fails, while the shifted-value cut passes. **This is not a counterexample among the 43 patterns**; it shows why another hypothesis or an exhaustive check is required.
+
+**4 → Standalone implementation and input contract.**
+
+The implementation below performs:
+
+1. One counting DP over \(\mathbb Z/148417\), with backtracking to enumerate witnesses.
+2. Direct checks of trivial word images and shadow residues.
+3. The remaining five level-192 prime cuts.
+4. The shadow’s \(K=192\) window refinement.
+5. HSHADOW’s fixed-\(V\), copy-2-window calculation, labeled **diagnostic**.
+6. A complete level-384 lift and window check.
+7. Exact nearest-point calculation and an integer-only comparison with a supplied digit upper bound.
+
+**It deliberately enumerates the missing level-384 choices.** I cannot justify the document’s enumeration-free final step from the permitted mathematical sources.
+
+Input is one JSON pattern or an array of patterns:
+
+```json
+{
+  "id": "pattern identifier",
+  "modulus": 148417,
+  "a": "0",
+  "nu": "10",
+  "min_digits": "384",
+  "digits": [
+    {"d": 7, "e": 0},
+    {"d": 6, "e": 1}
+  ],
+  "upper_digits": "1000000000000000000000000000000000000000000000000000000000000000000",
+  "words": [
+    {
+      "id": "word identifier",
+      "fixed": [0],
+      "offset": ["123", "456"],
+      "basis": [["1000", "2000"], ["3000", "7000"]]
+    }
+  ]
+}
+```
+
+This illustrates the schema, not a valid reference pattern.
+
+**Input premises matter:**
+
+- `digits` lists labeled special digits; all remaining digits are 1.
+- `fixed` contains zero-based indices fixed at copy 0. Every other digit is unplaced.
+- `offset` and `basis` describe that word’s exponent coset in **original \((b,c)\) coordinates**.
+- Those cosets must cover all candidates under consideration. The program does not reconstruct the source pattern enumeration or verify that coverage.
+- `min_digits` asserts that separately handled small candidates are excluded and all remaining candidates have at least 384 digits.
+- `upper_digits` is an integer upper bound, preferably a conservative integer ceiling of the certified \(U''\). `null` permits arithmetic checks without a sandwich conclusion.
+- Large integers use decimal strings.
+
+Digits, positions, and \(\nu\) alone are insufficient: the prime cuts and nearest-point bound also require the word cosets.
+
+The lower-bound comparison uses
+\[
+3^{100}>10^{47}
+\quad\Longrightarrow\quad
+\log_{10}3>\frac{47}{100}.
+\]
+If the exact minimum squared norm is \(D\), every nonnegative exponent candidate has
+\[
+n>\frac{47}{100}\sqrt{D/2}.
+\]
+Thus the program certifies \(n>U\) using the exact integer inequality
+\[
+2209D>20000U^2.
+\]
+
+The code uses only JavaScript BigInt and Node’s standard input/output facilities:
+
+```javascript
+function certificate(input) {
+  const Z = BigInt;
+  const abs = x => x < 0n ? -x : x;
+  const mod = (x, m) => (x % m + m) % m;
+  const gcd = (a, b) => {
+    while (b) [a, b] = [b, a % b];
+    return abs(a);
+  };
+  function inv(a, m) {
+    if (m === 1n) return 0n;
+    let [r, s, u, v] = [m, mod(a, m), 0n, 1n];
+    while (s) {
+      const q = r / s;
+      [r, s, u, v] = [s, r - q * s, v, u - q * v];
+    }
+    if (r !== 1n) throw Error("nonunit");
+    return mod(u, m);
+  }
+  function pow(a, e, m) {
+    if (e < 0n) return pow(inv(a, m), -e, m);
+    let r = 1n;
+    for (a = mod(a, m); e; e >>= 1n, a = a * a % m)
+      if (e & 1n) r = r * a % m;
+    return r % m;
+  }
+  const floor = (a, b) => (a - mod(a, b)) / b;
+  const ceil = (a, b) => -floor(-a, b);
+  const round = (a, b) => floor(2n * a + b, 2n * b);
+  function sqrt(n) {
+    if (n < 0n) throw Error("negative square root");
+    if (n < 2n) return n;
+    let x = 1n << Z(Math.ceil(n.toString(2).length / 2));
+    for (;;) {
+      const y = (x + n / x) / 2n;
+      if (y >= x) return x;
+      x = y;
+    }
+  }
+  const add = (u, v) => [u[0] + v[0], u[1] + v[1]];
+  const mul = (s, u) => [s * u[0], s * u[1]];
+  const dot = (u, v) => u[0] * v[0] + u[1] * v[1];
+  const det = (u, v) => u[0] * v[1] - u[1] * v[0];
+  function reduce(C) {
+    let [u, v] = C.basis.map(x => x.slice());
+    if (!det(u, v)) throw Error("singular lattice");
+    for (;;) {
+      if (dot(v, v) < dot(u, u)) [u, v] = [v, u];
+      if (2n * abs(dot(u, v)) <= dot(u, u)) break;
+      v = add(v, mul(-round(dot(u, v), dot(u, u)), u));
+    }
+    if (det(u, v) < 0n) v = mul(-1n, v);
+    let o = C.offset;
+    o = add(o, mul(-round(det(u, o), det(u, v)), v));
+    o = add(o, mul(-round(dot(u, o), dot(u, u)), u));
+    return {offset: o, basis: [u, v]};
+  }
+  function cut(C, A, B, T, N) {
+    if (!C) return null;
+    const [u, v] = C.basis;
+    const alpha = A * u[0] + B * u[1];
+    const beta = A * v[0] + B * v[1];
+    const gamma = T - A * C.offset[0] - B * C.offset[1];
+    const g = gcd(alpha, N), d = gcd(beta, g);
+    if (gamma % d) return null;
+    const n = N / g, s = g / d, ia = inv(alpha / g, n);
+    const y = mod(gamma / d * inv(beta / d, s), s);
+    const x = mod((gamma - beta * y) / g * ia, n);
+    const t = mod(-beta / d * ia, n);
+    return reduce({
+      offset: add(C.offset, add(mul(x, u), mul(y, v))),
+      basis: [mul(n, u), add(mul(t, u), mul(s, v))]
+    });
+  }
+  function factors(n) {
+    const out = [];
+    for (let q = 2n; q * q <= n; q += q === 2n ? 1n : 2n) {
+      let e = 0;
+      while (n % q === 0n) {n /= q; e++;}
+      if (e) out.push([q, e]);
+    }
+    if (n > 1n) out.push([n, 1]);
+    return out;
+  }
+  function bsgs(g, h, m, order) {
+    const z = sqrt(order) + 1n, table = new Map();
+    let x = 1n;
+    for (let j = 0n; j < z; j++, x = x * g % m)
+      if (!table.has(x.toString())) table.set(x.toString(), j);
+    const step = pow(g, -z, m);
+    x = h;
+    for (let i = 0n; i <= z; i++, x = x * step % m) {
+      const j = table.get(x.toString());
+      if (j !== undefined && i * z + j < order) return i * z + j;
+    }
+    throw Error("discrete log outside subgroup");
+  }
+  function log(g, h, m, N, fs) {
+    let answer = 0n, product = 1n;
+    for (const [q, e] of fs) {
+      let x = 0n, qe = 1n;
+      const base = pow(g, N / q, m);
+      for (let i = 0; i < e; i++) {
+        const hq = pow(h * pow(g, -x, m) % m, N / (qe * q), m);
+        x += bsgs(base, hq, m, q) * qe;
+        qe *= q;
+      }
+      const t = mod((x - answer) * inv(product, qe), qe);
+      answer += product * t;
+      product *= qe;
+    }
+    if (product !== N || pow(g, answer, m) !== mod(h, m))
+      throw Error("invalid discrete log");
+    return answer;
+  }
+  const primeCache = new Map(), windowCache = new Map();
+  function primeData(p) {
+    const key = p.toString();
+    if (!primeCache.has(key)) {
+      const N = p - 1n, fs = factors(N);
+      let g = 2n;
+      while (fs.some(([q]) => pow(g, N / q, p) === 1n)) g++;
+      const dl = h => log(g, h, p, N, fs);
+      primeCache.set(key, {N, dl, A: dl(3n), B: dl(7n)});
+    }
+    return primeCache.get(key);
+  }
+  function primeCut(C, V, a, p) {
+    if (!C || mod(V, p) === 0n) return null;
+    const {N, dl, A, B} = primeData(p);
+    return cut(C, A, B, dl(mod(V * pow(2n, -a, p), p)), N);
+  }
+  function primeCuts(C, V, a, ps) {
+    for (const p of ps) {
+      C = primeCut(C, V, a, p);
+      if (!C) break;
+    }
+    return C;
+  }
+  function image(C, v, p) {
+    return mod(pow(3n, v[0], p) * pow(7n, v[1], p), p);
+  }
+  function windowData(K, a) {
+    const key = `${K}/${a}`;
+    if (windowCache.has(key)) return windowCache.get(key);
+    const h = K - a;
+    if (h <= 0n) throw Error("requires a < K");
+    const m5 = 5n ** K, n5 = 4n * 5n ** (K - 1n);
+    const fs5 = [[2n, 2], ...(K > 1n ? [[5n, Number(K - 1n)]] : [])];
+    const dl5 = x => log(2n, x, m5, n5, fs5);
+    const data = {h, m5, n5, dl5, A5: dl5(3n), B5: dl5(7n)};
+    if (h >= 3n) {
+      const m2 = 2n ** h, n2 = 2n ** (h - 2n);
+      const dl2 = x => log(5n, x, m2, n2, [[2n, Number(h - 2n)]]);
+      Object.assign(data, {
+        m2, n2, dl2,
+        A2: dl2(m2 - 3n), B2: dl2(m2 - 7n)
+      });
+    }
+    windowCache.set(key, data);
+    return data;
+  }
+  function windowCut(C, L, K, a) {
+    if (!C) return null;
+    const twoa = 2n ** a;
+    if (L % twoa || L / twoa % 2n === 0n || L % 5n === 0n)
+      return null;
+    const w = windowData(K, a);
+    C = cut(C, w.A5, w.B5,
+      w.dl5(mod(L * inv(twoa, w.m5), w.m5)), w.n5);
+    if (!C || w.h === 1n) return C;
+    const target = mod(L / twoa, 2n ** w.h);
+    const sign = target % 4n === 1n ? 0n : 1n;
+    C = cut(C, 1n, 1n, sign, 2n);
+    if (!C || w.h === 2n) return C;
+    return cut(C, w.A2, w.B2,
+      w.dl2(sign ? w.m2 - target : target), w.n2);
+  }
+  function nearest(C) {
+    C = reduce(C);
+    const [u, v] = C.basis, o = C.offset;
+    const uu = dot(u, u), D = det(u, v), A = det(u, o);
+    const t = -round(A, D);
+    const z = add(o, mul(t, v));
+    let point = add(z, mul(-round(dot(u, z), uu), u));
+    let R = dot(point, point);
+    const H = sqrt(R * uu);
+    for (let j = ceil(-H - A, D); j <= floor(H - A, D); j++) {
+      const y = add(o, mul(j, v));
+      const p = add(y, mul(-round(dot(u, y), uu), u));
+      const r = dot(p, p);
+      if (r < R) {R = r; point = p;}
+    }
+    return {squared_norm: R, nearest: point};
+  }
+  function analyze(C, U) {
+    const q = nearest(C);
+    return {...q, above_upper_bound: U === null ? null :
+      2209n * q.squared_norm > 20000n * U * U};
+  }
+  function subsetDP(weights, M, shift) {
+    const rows = [Array(M).fill(0n)];
+    rows[0][0] = 1n;
+    for (const w of weights) {
+      const old = rows[rows.length - 1], next = old.slice();
+      for (let s = 0; s < M; s++)
+        if (old[s]) next[(s + w) % M] += old[s];
+      rows.push(next);
+    }
+    function* back(i, target, mask) {
+      if (!i) {if (!target) yield mask; return;}
+      if (rows[i - 1][target])
+        yield* back(i - 1, target, mask);
+      const prior = (target - weights[i - 1] + M) % M;
+      if (rows[i - 1][prior])
+        yield* back(i - 1, prior, mask | (1n << Z(i - 1)));
+    }
+    function* candidates() {
+      for (let sn = 0; sn <= 1; sn++) {
+        const target = (M - sn * shift) % M;
+        for (const mask of back(weights.length, target, 0n))
+          if (mask || sn) yield {mask, sn};
+      }
+    }
+    return {
+      count: rows[weights.length][0] +
+        rows[weights.length][(M - shift) % M] - 1n,
+      candidates
+    };
+  }
+  function* submasks(mask) {
+    for (let s = mask;; s = (s - 1n) & mask) {
+      yield s;
+      if (!s) return;
+    }
+  }
+  const ids = mask => digits.flatMap((_, i) =>
+    mask & (1n << Z(i)) ? [i] : []);
+  const sum = mask => digits.reduce((s, x, i) =>
+    s + (mask & (1n << Z(i)) ? weightsExact[i] : 0n), 0n);
+  const rep = K => (10n ** K - 1n) / 9n;
+  if (Z(input.min_digits ?? 0) < 384n)
+    throw Error("requires checked large-candidate scope n >= 384");
+  const L = 96n, M = Number(input.modulus);
+  if (M !== 148417 || 193n * 769n !== Z(M))
+    throw Error("wrong modulus");
+  const digits = input.digits, a = Z(input.a), nu = Z(input.nu);
+  if (a < 0n || a >= L || nu < 0n || nu >= L)
+    throw Error("invalid a or nu");
+  for (const x of digits)
+    if (!Number.isInteger(x.d) || x.d < 2 || x.d > 9 ||
+        !Number.isInteger(x.e) || x.e < 0 || x.e >= 96)
+      throw Error("invalid digit");
+  const weightsExact = digits.map(x => Z(x.d - 1) * 10n ** Z(x.e));
+  const weights = weightsExact.map(w => Number(w % Z(M)));
+  const shift = Number(
+    pow(10n, nu, Z(M)) * inv(9n, Z(M)) % Z(M));
+  const dp = subsetDP(weights, M, shift);
+  const V = rep(nu) + sum((1n << Z(digits.length)) - 1n);
+  const all = (1n << Z(digits.length)) - 1n;
+  const ps192 = [
+    19841n, 976193n, 6187457n,
+    834427406578561n, 1253224535459902849n
+  ];
+  const ps384 = [3457n, 12289n, 418725889n, 1265011073n];
+  const U = input.upper_digits == null ? null : Z(input.upper_digits);
+  if (U !== null && U < 1n) throw Error("invalid upper bound");
+  const words = [];
+  for (const word of input.words) {
+    let fixed = 0n;
+    const occupied = new Set();
+    for (const j of word.fixed) {
+      if (!Number.isInteger(j) || j < 0 || j >= digits.length ||
+          (fixed & (1n << Z(j))) || occupied.has(digits[j].e))
+        throw Error("invalid fixed positions");
+      fixed |= 1n << Z(j);
+      occupied.add(digits[j].e);
+    }
+    const free = all ^ fixed;
+    let C = reduce({
+      offset: word.offset.map(Z),
+      basis: word.basis.map(v => v.map(Z))
+    });
+    C = windowCut(C, rep(L) + sum(fixed), L, a);
+    if (!C) throw Error("input word does not survive depth 1");
+    for (const p of [193n, 769n]) {
+      if (C.basis.some(v => image(C, v, p) !== 1n))
+        throw Error(`nontrivial word image at ${p}`);
+      if (mod(pow(2n, a, p) * image(C, C.offset, p) - V, p))
+        throw Error(`shadow offset mismatch at ${p}`);
+    }
+    const rivals = [];
+    for (const {mask, sn} of dp.candidates()) {
+      if (mask & fixed) continue;
+      const value = V + (10n ** L - 1n) * sum(mask) +
+        Z(sn) * 10n ** nu * rep(L);
+      if (primeCuts(C, value, a, ps192))
+        rivals.push({S: ids(mask), sn});
+    }
+    if (rivals.length)
+      return {
+        id: input.id, verdict: "NOT_ESTABLISHED",
+        reason: "nonshadow candidate passes all level-192 prime cuts",
+        word: word.id, rivals, dp_nonshadow_count: dp.count
+      };
+    let C192 = primeCuts(C, V, a, ps192);
+    C192 = windowCut(C192,
+      rep(192n) + sum(fixed), 192n, a);
+    if (!C192) {
+      words.push({
+        id: word.id, branches: [],
+        diagnostic_fixed_V: "dead_by_192"
+      });
+      continue;
+    }
+    const diagnostic = primeCuts(C192, V, a, ps384);
+    const diagnosticWindows = [];
+    if (diagnostic)
+      for (const A of submasks(free)) {
+        if (new Set(ids(A).map(j => digits[j].e)).size !== ids(A).length)
+          continue;
+        const Cw = windowCut(diagnostic,
+          rep(384n) + sum(fixed) + 10n ** 192n * sum(A),
+          384n, a);
+        if (Cw)
+          diagnosticWindows.push({
+            fixed_at_copy2: ids(A), ...analyze(Cw, U)
+          });
+      }
+    const branches = [];
+    for (const T of submasks(free)) {
+      for (let sn = 0; sn <= 1; sn++) {
+        const value = V + (10n ** 192n - 1n) * sum(T) +
+          Z(sn) * 10n ** nu * rep(192n);
+        const child = primeCuts(C192, value, a, ps384);
+        if (!child) continue;
+        for (const A of submasks(T)) {
+          if (new Set(ids(A).map(j => digits[j].e)).size !== ids(A).length)
+            continue;
+          const Cw = windowCut(child,
+            rep(384n) + sum(fixed) + 10n ** 192n * sum(A),
+            384n, a);
+          if (Cw)
+            branches.push({
+              shifted_to_copy2: ids(T), sn,
+              fixed_at_copy2: ids(A), ...analyze(Cw, U)
+            });
+        }
+      }
+    }
+    words.push({
+      id: word.id,
+      diagnostic_fixed_V: {
+        prime_cut_survives: !!diagnostic,
+        windows: diagnosticWindows
+      },
+      branches
+    });
+  }
+  const branches = words.flatMap(w => w.branches);
+  return {
+    id: input.id, dp_nonshadow_count: dp.count,
+    verdict: !branches.length ? "CLOSED_CUT" :
+      branches.every(x => x.above_upper_bound === true) ?
+        "CLOSED_SANDWICH" : "OPEN",
+    words
+  };
+}
+
+const fs = require("node:fs");
+const input = JSON.parse(fs.readFileSync(0, "utf8"));
+const results = (Array.isArray(input) ? input : [input]).map(pattern => {
+  try {
+    return certificate(pattern);
+  } catch (error) {
+    return {
+      id: pattern.id,
+      verdict: "NOT_APPLICABLE",
+      reason: error.message
+    };
+  }
+});
+console.log(JSON.stringify(results,
+  (_, value) => typeof value === "bigint" ? value.toString() : value, 2));
+process.exitCode = results.some(x =>
+  !["CLOSED_CUT", "CLOSED_SANDWICH"].includes(x.verdict)) ? 1 : 0;
+```
+
+The DP recurrence is
+\[
+C_i(x)=C_{i-1}(x)+C_{i-1}(x-w_i).
+\]
+Backtracking targets \(0\) for \(sn=0\), and \(-10^\nu9^{-1}\) for \(sn=1\). It excludes \((\varnothing,0)\).
+
+Counting takes \(O(kM)\) arithmetic operations. This implementation retains prefix rows for backtracking, using \(O(kM)\) memory. Witness enumeration necessarily adds output cost. The complete level-384 fallback has exponential worst-case cost.
+
+**5 → Discrepancies and ambiguities found.**
+
+**→ Rational versus integer \(\Delta\).** [HSHADOW §2.2](/Users/jwross/Documents/cairn/research/intake/persistence/tier0/HSHADOW.md:28) does not specify that \(10^\nu/9\) means modular inversion. Its displayed difference equality is valid over the rationals; the integral form above removes the ambiguity.
+
+**→ Representative versus actual value.** “The same number” refers to the pattern representative \(V\). Unplaced digits can have actual positions hundreds of places higher. Confusing those two values would invalidate the correspondence.
+
+**→ Trivial image does not determine the coset residue.** The passage from trivial lattice image to the zero-target DP needs the additional check \(2^a\chi_p(o_W)=V\). The implementation checks it directly and refuses otherwise.
+
+**→ The content statement is scoped to \(a=0\).** [§2.1](/Users/jwross/Documents/cairn/research/intake/persistence/tier0/HSHADOW.md:19) gives the stronger content computation for \(a=0\); that does not establish it for every \(a\). The residual in §5 acknowledges the general divisibility lemma is open. Direct basis-image checks avoid assuming it.
+
+**→ “Exactly one shadow” needs an existence check.** Eliminating every nonshadow candidate proves **at most one** surviving child. The shadow must itself pass the remaining five primes and the \(K=192\) window before “exactly one” follows.
+
+**→ The \(K=192\) window refinement must be explicit.** “The shadow’s level-192 coset” in [§3.3](/Users/jwross/Documents/cairn/research/intake/persistence/tier0/HSHADOW.md:51) leaves unclear whether this refinement is included. Even a non-killing window cut can change the lattice used at level 384.
+
+**→ The level-384 lift choices are missing from the argument.** Both \(T\) and \(sn_2\) affect all four new prime residues. No argument in the permitted documents establishes that testing unchanged \(V\) covers them.
+
+**→ Unchanged \(V\) and arbitrary copy-2 placements describe different branches.** The literal unchanged representative is \(T=\varnothing,\ sn_2=0\), whose unplaced digits cannot occur at copy 2. Allowing copy-2 placements after that fixed-value cut requires a separate coverage argument. The diagnostic calculation is therefore not used for closure.
+
+**→ Child counts depend on labeling and on the window stage.** Repeated digit/residue pairs reduce distinct multiset children. Moreover, a prime-stage child with odd copies can split into several window words, according to which digits are fixed at copy 1.
+
+**→ The fate count is internally inconsistent.** [§2.3](/Users/jwross/Documents/cairn/research/intake/persistence/tier0/HSHADOW.md:31) calls all 2464 children “non-shadow,” then counts 31 surviving shadows among them. The arithmetic \(2433+31=2464\) suggests 2464 was the total child count.
+
+**→ Counting complexity is not enumeration complexity.** The \(k\cdot148417\) bound covers DP counting. Listing candidates, testing them against words, and enumerating windows add costs. The expected candidate count also needs a probabilistic model; it is not a deterministic guarantee.
+
+**→ The level primes are a selected usable subset.** DEEPCUT explicitly describes omitted unfactored components. Closure using the selected primes remains valid, but surviving them is not equivalent to satisfying every congruence available from \(10^L-1\).
+
+**→ Numerical descriptions disagree across documents.** HSHADOW reports roughly \(10^{238\text{–}239}\) digits and \(U''\le10^{66}\). WORDLIFT §2 prints a double-exponential digit bound and upper bounds reaching \(10^{93.2}\). These need normalized units and identified bound versions; I did not resolve them by inspecting prohibited outputs.
+
+**→ The runtime forecast is not established by this derivation.** In particular, the missing level-384 coverage argument prevents me from deriving the claimed enumeration-free cost.
+
+**6 → Verification evidence and remaining scope.**
+
+The in-memory checks passed:
+
+- **22,275** affine-coset membership comparisons against direct congruence evaluation.
+- **169** exact nearest-point comparisons against bounded brute force.
+- **324** discrete-log round trips.
+- **11** DP comparisons against exhaustive subset enumeration.
+- **18** genuine S-unit window checks, including \(K=96,192,384\).
+- **11** genuine S-unit prime-cut checks.
+- Planted incompatible-word and shadow-offset inputs were **rejected**.
+- A two-free-digit synthetic control exercised the complete level-384 path and returned `CLOSED_SANDWICH`.
+
+**The remaining step is to feed the 43 patterns’ word cosets into this independent implementation and compare the complete level-384 branches with the diagnostic calculation. No 43-pattern verdict is claimed here.**
+
+[exited with code 0]

@@ -1,0 +1,8 @@
+96 index of kernel * 2 == phi(10^L): True
+192 index of kernel * 2 == phi(10^L): True
+384 index of kernel * 2 == phi(10^L): True
+480 index of kernel * 2 == phi(10^L): True
+96 Lambda_L inside kernel mod 2^9 5^5: True index equal: True
+192 Lambda_L inside kernel mod 2^9 5^5: True index equal: True
+384 Lambda_L inside kernel mod 2^13 5^5: True index equal: True
+480 Lambda_L inside kernel mod 2^10 5^5: True index equal: True

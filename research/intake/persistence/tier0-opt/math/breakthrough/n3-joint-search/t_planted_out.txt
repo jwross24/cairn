@@ -1,0 +1,28 @@
+scale   P    K     n_digits   ms_planted  recovered  tail_perturbed  head_perturbed  enum_pts
+1e6    12   48   a=70 >= K-5: UNRESOLVED branch (a-free), skipped
+1e6    12   68   a=110 >= K-5: UNRESOLVED branch (a-free), skipped
+1e6    12   39   a=52 >= K-5: UNRESOLVED branch (a-free), skipped
+1e12   18   50   a=62 >= K-5: UNRESOLVED branch (a-free), skipped
+1e12   18   22   8.82e+11         7.2  True       []              []              1
+1e12   18   25   8.43e+11         7.5  True       skip            []              1
+1e24   30   82   a=103 >= K-5: UNRESOLVED branch (a-free), skipped
+1e24   30   76   a=91 >= K-5: UNRESOLVED branch (a-free), skipped
+1e24   30   86   a=111 >= K-5: UNRESOLVED branch (a-free), skipped
+1e40   46   57   6.69e+39        50.9  True       []              []              1
+1e40   46   83   7.81e+39       408.7  True       skip            []              1
+1e40   46   92   a=91 >= K-5: UNRESOLVED branch (a-free), skipped
+1e70   76   129  7.81e+69       659.9  True       []              []              1
+1e70   76   99   9.81e+69       559.6  True       []              []              1
+1e70   76   81   9.41e+69       227.3  True       []              []              1
+1e100  106  128  8.23e+99       534.1  True       skip            []              1
+1e100  106  156  9.19e+99       941.4  True       []              []              1
+1e100  106  128  8.42e+99       932.3  True       []              []              1
+1e150  156  197  1.20e+150     2723.5  True       []              []              1
+1e150  156  186  1.01e+150     1622.5  True       []              []              1
+1e150  156  160  7.69e+149     1316.4  True       []              []              1
+1e220  226  279  8.51e+219     5342.3  True       []              []              1
+1e220  226  235  7.02e+219     3768.0  True       []              []              1
+1e220  226  286  1.09e+220     6950.7  True       skip            []              1
+1e281  287  305  7.44e+280     8053.5  True       []              []              1
+1e281  287  294  9.25e+280     7337.1  True       []              []              1
+1e281  287  326  9.89e+280     6831.8  True       []              []              1

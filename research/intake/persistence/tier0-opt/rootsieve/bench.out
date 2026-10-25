@@ -1,0 +1,24 @@
+A1 [2, 3, 7, 7, 7, 8, 8]
+  baseline: patterns 49061376 zero 8424187 prefilter-dead 39622801 (a,pattern) 2787197 tail-dead 2783574 open 3623 exact 0
+  stream  : patterns 2336256 zero 403695 prefilter-dead 1883740 (a,pattern) 134091 tail-dead 133904 open 187 exact 0
+  patterns visited: baseline 49061376 stream 2336256 ratio 21.00
+  user CPU seconds, best of 3: baseline 0.534 stream 0.042 ratio 12.73 (all: ['0.57', '0.57', '0.53'] | ['0.04', '0.05', '0.04'])
+  OPEN/EXACT lines: baseline restricted to rank 2 = 187, stream = 187, identical = True
+A2 [3, 4, 4, 7, 7, 7, 8]
+  baseline: patterns 49061376 zero 9477962 prefilter-dead 38595053 (a,pattern) 2306444 tail-dead 2305422 open 1022 exact 0
+  stream  : patterns 2336256 zero 447319 prefilter-dead 1841330 (a,pattern) 111080 tail-dead 111025 open 55 exact 0
+  patterns visited: baseline 49061376 stream 2336256 ratio 21.00
+  user CPU seconds, best of 3: baseline 0.525 stream 0.034 ratio 15.56 (all: ['0.58', '0.52', '0.56'] | ['0.04', '0.05', '0.03'])
+  OPEN/EXACT lines: baseline restricted to rank 2 = 55, stream = 55, identical = True
+A3 [4, 6, 6, 6, 6, 9, 9, 9]
+  baseline: patterns 71547840 zero 16439708 prefilter-dead 53729254 (a,pattern) 3908147 tail-dead 3903630 open 4517 exact 0
+  stream  : patterns 3407040 zero 763621 prefilter-dead 2576667 (a,pattern) 189190 tail-dead 188943 open 247 exact 0
+  patterns visited: baseline 71547840 stream 3407040 ratio 21.00
+  user CPU seconds, best of 3: baseline 0.861 stream 0.131 ratio 6.55 (all: ['0.86', '0.87', '0.88'] | ['0.15', '0.13', '0.15'])
+  OPEN/EXACT lines: baseline restricted to rank 2 = 247, stream = 247, identical = True
+A4 [2, 4, 6, 6, 6, 6, 7, 7, 7]
+  baseline: patterns 858574080 zero 168289421 prefilter-dead 673005886 (a,pattern) 53288422 tail-dead 53134312 open 154110 exact 0
+  stream  : patterns 40884480 zero 7795928 prefilter-dead 32245372 (a,pattern) 2601862 tail-dead 2594211 open 7651 exact 0
+  patterns visited: baseline 858574080 stream 40884480 ratio 21.00
+  user CPU seconds, best of 3: baseline 10.453 stream 1.689 ratio 6.19 (all: ['10.51', '10.71', '10.45'] | ['1.69', '1.72', '1.70'])
+  OPEN/EXACT lines: baseline restricted to rank 2 = 7651, stream = 7651, identical = True

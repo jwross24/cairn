@@ -1,0 +1,21 @@
+--- research/intake/persistence/tier0-opt/tierc-r2shadow/src/cport_r2.c	2026-10-24 05:33:15
++++ research/intake/persistence/tier0-opt/codex-wordmitm/a_full.c	2026-10-24 16:27:36
+@@ -2365,7 +2365,9 @@
+     for (int t = 0; t < nRU; t++) RA[nRA++] = RU[t];
+     for (int t = 0; t < nRO; t++) RA[nRA++] = RO[t];
+ 
+-    int nb = 16; while (((u64)1 << nb) < NL * 40 && nb < 31) nb++;
++    int nb = 16; while (((u64)1 << nb) < NL * 160 && nb < 33) nb++;
++    fprintf(stderr, "AUDIT_FULL nun=%d P=%llu target=%llu NL=%llu NR=%llu NI=%llu NO=%llu bloom_bits=2^%d\n", nun, P, target, NL, NR, NI, NO, nb);
++    fflush(stderr);
+     Bloom bl; bl.nb = nb; bl.bits = calloc(((u64)1 << nb) / 64 + 1, 8);
+     if (!bl.bits) die("mitm480: cannot allocate the Bloom filter");
+     enum_space(S, L, nL, cb_bloom, &bl);
+@@ -2376,6 +2378,7 @@
+ 
+     Cand *cands = NULL; long ncand = 0, capc = 0;
+     for (u64 o = 0; o < NO; o++) {
++        if ((o & 4095) == 0) { fprintf(stderr, "AUDIT_PROGRESS outer=%llu/%llu candidates=%ld cpu=%.1f\n", o, NO, ncand, cpu_s()); fflush(stderr); }
+         u64 base = tout[o];
+         for (u64 i0 = 0; i0 < NI; i0 += 32) {
+             int m = (int)(NI - i0 < 32 ? NI - i0 : 32);

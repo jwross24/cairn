@@ -1,0 +1,332 @@
+                                                Power residue symbols and the exponential
+
+
+
+
+arXiv:2501.19387v1 [math.NT] 31 Jan 2025
+                                                           local-global principle
+                                            Henry (Maya) Robert Thackeray (ORCID: 0000-0003-4467-9070)
+                                                Department of Mathematics and Applied Mathematics,
+                                                  University of Pretoria, Pretoria, 0002 South Africa
+                                                               maya.thackeray@up.ac.za
+
+
+                                               Preprint of an article submitted for consideration in International Journal
+                                           of Number Theory © 2025 [copyright World Scientific Publishing Company]
+                                           https://worldscientific.com/worldscinet/ijnt (journal allows posting of
+                                           preprints at any time in not-for-profit subject-based preprint servers; formatting
+                                           of the current document is different from formatting of preprint submitted to
+                                           the journal; copyright for preprint submitted to journal is transferred to World
+                                           Scientific on acceptance for publication)
+
+
+                                                                                 Abstract
+                                                      The exponential local-global principle, or Skolem conjecture, says:
+                                                Suppose that b is a positive integer, and that the sequence (un )∞    n=−∞ is
+                                                such that every term is in Z[1/b], the linear recurrence un+d = a1 un+d−1 +
+                                                · · ·+ad un holds for all integers n, and every root of xd −a1 xd−1 −a2 xd−2 −
+                                                · · · − ad is nonzero and simple; then there is no zero term un if and only
+                                                if, for some integer m that is larger than 1 and relatively prime to b, every
+                                                term un is not in mZ[1/b].
+                                                      Particular cases of the conjecture are known, but the general con-
+                                                jecture is open. This paper proves some apparently new quadratic and
+                                                degenerate cubic cases of the exponential local-global principle via power
+                                                residue symbols.
+                                                      This work was presented at the Stellenbosch Number Theory Confer-
+                                                ence 2025 in January 2025 at Stellenbosch University; much of the work
+                                                was also presented at the 67th Annual Congress of the South African
+                                                Mathematical Society in December 2024 at the University of Pretoria.
+                                              Keywords: Recurrence; local-global principle; power residue symbol; number
+                                           theory.
+                                              Mathematics Subject Classification 2020: 11B37
+
+
+
+
+                                                                                      1
+1    Introduction
+The exponential local-global principle, also called the Skolem conjecture, says
+(see [2]):
+Conjecture 1.1 (Exponential local-global principle). Let a1 , . . . , ad ∈ Q be
+such that ad 6= 0 and all roots of the polynomial f (x) = xd − a1 xd−1 − a2 xd−2 −
+· · · − ad are simple. Suppose that b is a positive integer, and that the sequence
+u = (un )∞ n=−∞ is such that every term is in Z[1/b] and, for all n ∈ Z,
+
+                         un+d = a1 un+d−1 + · · · + ad un .
+
+There is no zero term un if and only if, for some integer m ⩾ 2, we have
+gcd(b, m) = 1 and every term un is not in mZ[1/b].                    
+    If there is a zero term in u, then the condition about m must clearly fail.
+The interesting part of the conjecture is the inverse – the statement that if there
+is no zero term in u, then the condition about m holds. The conjecture is open
+in general.
+    The assumption that the roots of f (x) are simple is needed, as the following
+example illustrates.
+Example 1.2. (See [2].) Consider the sequence u in Z[1/2] given by
+
+                           un = (2n + 1)2n for n ∈ Z.
+
+We have un+2 = 4un+1 − 4un for n ∈ Z, and
+
+                         f (x) = x2 − 4x + 4 = (x − 2)2 .
+
+No term of u is zero. However, for each odd positive integer m, we have m | un
+for every integer n of the form n = km + (m − 1)/2 with k ∈ Z.               
+    For each prime p, write vp (x) for the p-adic valuation of a nonzero rational
+number x (for example, vp (pn ) = n for n ∈ Z). We say that a prime p is coprime
+to a nonzero rational number x if and only if vp (x) = 0.
+    It is straightforward to prove the exponential local-global principle in the
+linear case, that is, in the case where d = 1.
+Proposition 1.3. The exponential local-global principle holds in the case where
+d = 1.
+Proof. Consider a sequence u of numbers in Z[1/b] where, for some a1 ∈ Q−{0},
+we have un+1 = a1 un for n ∈ Z. Clearly, un = u0 an1 for all n ∈ Z. If u0 = 0,
+then all terms of u are zero and the conjecture holds. If u0 6= 0, then no term
+of u is zero and each prime p that is coprime to both a1 and u0 satisfies un 6≡ 0
+(mod p) for all n ∈ Z, so the conjecture holds (and all but finitely many primes
+work as choices for m).
+
+
+
+                                         2
+    The major goal of this paper is to prove a strengthening of the exponential
+local-global principle in many cases where d = 2 and f (x) has two distinct
+rational roots. From this, some degenerate cases where d = 3 will quickly
+follow.
+    This work was presented at the Stellenbosch Number Theory Conference
+2025 in January 2025 at Stellenbosch University; much of the work was also
+presented at the 67th Annual Congress of the South African Mathematical So-
+ciety in December 2024 at the University of Pretoria. This paper covers the first
+year of a planned three-year research project associated with the University of
+Pretoria’s Research Development Programme; for the second and third years of
+the project, the aim is to prove the exponential local-global principle in other
+cases (including families of cases where f (x) is cubic or quartic), and to examine
+whether and when the principle holds if algebraic number fields other than Q
+are considered.
+    In this article, from now on until the section on degenerate cubic cases, we
+assume that d = 2, we assume that the numbers a1 , a2 in Q are such that
+a2 6= 0 and a21 + 4a2 6= 0, we let b be a positive integer, we consider a sequence
+u = (un )∞
+         n=−∞ of numbers in Z[1/b] such that
+
+                               un+2 = a1 un+1 + a2 un
+
+for all n ∈ Z, and we assume that the roots c1 and c2 of f (x) = x2 − a1 x − a2
+are rational. By Viete’s formulas, c1 c2 = −a2 6= 0. The condition a21 + 4a2 6= 0
+yields c1 6= c2 , so by a well known result, there are b1 , b2 ∈ Q such that, for
+n ∈ Z, we have un = b1 cn1 + b2 cn2 . If 0 ∈ {b1 , b2 } then u ≡ 0 or we are in a d = 1
+case; from now on, let us assume b1 6= 0 and b2 6= 0. We write B = −b2 /b1 and
+C = c1 /c2 .
+    Under those assumptions, we shall prove the following main theorem.
+Theorem 1.4. Suppose that
+ (1) We have C m = B for some m ∈ Z, or
+ (2) We have (C, B) = (1, −1), or
+ (3) We have B k C ℓ ∈
+                     / {±1} for all k ∈ Z − {0} and all ℓ ∈ Z.
+There is no zero term in u if and only if, for infinitely many primes p, we have
+gcd(b, p) = 1 and every term un is not divisible by p.                        
+   To prove Theorem 1.4, we shall use a Chebotarev-density-like result of
+Schinzel [4] on power residue symbols. Unlike some articles of Schinzel [4, 5]
+that proved some quadratic cases of the exponential local-global principle, the
+number a2 is not necessarily ±1 in our work; Theorem 1.4 is apparently a new
+result.
+
+
+
+
+                                          3
+2    Initial Results
+We have B = −b2 /b1 ∈ Q − {0} and C = c1 /c2 ∈ Q − {0}. For each n ∈ Z, we
+have                                  n
+                        n        n    c1       −b2
+           un = 0 ⇔ b1 c1 = −b2 c2 ⇔         =     ⇔ Cn = B
+                                      c2        b1
+and, for every prime p coprime to all of b, b1 , b2 , c1 , and c2 simultaneously, we
+have
+                   un ≡ 0 (mod p) ⇔ b1 cn1 ≡ −b2 cn2 (mod p)
+                    n
+                     c1      −b2
+                ⇔         ≡      (mod p) ⇔ C n ≡ B (mod p).
+                     c2      b1
+    Cases (1) and (2) of Theorem 1.4 are straightforward. In case (1), we have
+C m = B for some m ∈ Z, so um = 0 and Theorem 1.4 holds. In case (2), we
+have (C, B) = (1, −1), so C n 6= B for all n ∈ Z and, for every odd prime p,
+C n 6≡ B (mod p), so Theorem 1.4 holds.
+    From now on, assume that we are in case (3); that is, assume that B k C ℓ ∈
+                                                                              /
+{±1} for all k ∈ Z − {0} and all ℓ ∈ Z. We must show C n 6≡ B (mod p) for
+infinitely many primes p. To prepare for the proof of this case, we recall some
+background on power residue symbols.
+
+
+3    Power Residue Symbols
+(See [3, pp. 244–248] and [1, exercise 2, pp. 351–354].) Consider a number field
+K and a positive integer n with K ⊇ µn .
+Definition 3.1 (Power residue symbols). Let a ∈ K − {0}. Let S(a) be the set
+of archimedean places and prime ideals p such that ordp (n) 6= 0 or ordp (a) 6= 0.
+We define the nth power residue symbols ba n and ab n as follows.
+                                                                  
+  (1) For prime ideals p such that ordp (n) = ordp (a) = 0, let ap     be the nth
+                                                                   n
+      root of 1 such that ap    ≡ a(N p−1)/n mod p.
+                                         n
+                                            cj
+                    a              Q    a
+ (2) Let       Q      cj       =    j    pj         for integers cj (for finite products).
+                   j pj                        n
+                           n
+                                                                 
+                                        a                 a
+                                                                          , where hbiS(a) is the ideal obtained
+                                         
+ (3) For b ∈ K − {0}, let               b n =           hbiS(a)       n
+      from the prime-ideal factorisation of hbi by removing all powers of prime
+      ideals p such that p ∈ S(a).                                            
+   The following result of Schinzel says that, in a certain sense, we can choose
+the values of finitely many power residue symbols.
+Theorem 3.2. [4, Theorem 4, p. 246] Let n be an odd prime. Let some numbers
+a1 , . . . , ak in Q satisfy:
+
+
+                                                              4
+                 For x1 , . . . , xk ∈ Z and r ∈ Q, if ax1 1 · · · axk k = rn ,
+                           then n divides each of x1 , . . . , xk .
+It follows that for c1 , . . . , ck ∈ Z, there are infinitely many primes p such that,
+for i ∈ {1, . . . , k}, we have         
+                                          ai
+                                                = ζnci .
+                                          p n
+In particular, this is the case if a1 , . . . , ak are distinct primes.                    
+    The paper of Schinzel [4] generalizes this to an arbitrary algebraic number
+field; we use only the case where the number field is Q. Schinzel’s proof uses
+the Chebotarev density theorem.
+
+
+4     Proof of Remaining Part of Main Theorem
+We now return to the proof of Theorem 1.4. The part that we still need to
+prove is case (3): Under the assumptions that C ∈ Q − {0}, B ∈ Q − {0, 1},
+(C, B) 6= (1, −1), and B k C ℓ ∈/ {±1} for all k ∈ Z − {0} and all ℓ ∈ Z, we
+need to show that there is an infinite set S of primes, all coprime to B and to
+C simultaneously, such that, for all r in S and all k in Z, we have C k 6≡ B
+(mod r).
+    Let P be the set of all primes. Let T = {p1 , . . . , pm } be the set of all primes
+p such that
+                (vp (b), vp (b1 ), vp (b2 ), vp (c1 ), vp (c2 )) 6= (0, 0, 0, 0, 0).
+Let M be the matrix
+                                                                              
+             vp1 (C)        vp2 (C)     ···    vpm (C)                 vp (C)
+                                                               =                       .
+             vp1 (B)        vp2 (B)     ···    vpm (B)                 vp (B)    p∈T
+
+    Since B k C ℓ ∈
+                  / {±1} for all k ∈ Z − {0} and all ℓ ∈ Z, it follows that
+ (1) The top row of M is a zero row, or
+ (2) The matrix M has rank 2.
+    Therefore, at least one of the following two conditions holds.
+ (1) Some prime p′ is such that vp′ (C) = 0 and vp′ (B) 6= 0.
+ (2) Some primes p′ and q ′ are such that
+                                                                        
+                                        vp′ (C)                vq′ (C)
+                       0 6= d := det                                         .
+                                        vp′ (B)                vq′ (B)
+
+In the following argument, wherever a list with items (1) and (2) occurs, each
+item in the list applies in the case where the corresponding condition above is
+true.
+    Choose a prime n such that
+
+                                                 5
+ (1) gcd(n, 2vp′ (B)) = 1.
+ (2) gcd(n, 2d) = 1.
+We consider the nth power residue symbol for Q(ζn ).
+   Let S be the set of primes r in P − T − {n} such that:
+                                              ′
+ (1) We have pr n = 1 for p ∈ T − {p′ } and pr
+                 
+                                                    = ζn .
+                                                  n
+                                               ′                ′
+ (2) We have pr n = 1 for p ∈ T − {p′ , q ′ }, pr     = ζna , and qr  = ζnb ,
+                 
+                                                             n            n
+      where the numbers a, b ∈ {0, 1, . . . , n − 1} are fixed so that
+                             avp′ (C) + bvq′ (C) ≡ 0         (mod n)
+                         and avp′ (B) + bvq′ (B) ≡ 1         (mod n)
+      (such a and b exist by the previous conditions).
+   The set S is infinite by Schinzel’s result.
+   Note that n is odd, so (−ζn )n= (−1)n = −1, so −1 is an nth power in
+Q(ζn ), so every r ∈ S satisfies −1
+                                  r n = 1.
+   It follows that for every r ∈ S, the number Br n is a primitive nth root of
+                                                   
+                                                k
+                                                   
+unity, but we have Cr n = 1 and therefore Cr
+                        
+                                                     = 1 for all k ∈ Z, so for
+                                                         n
+every k ∈ Z, we have C k 6≡ B (mod r). This completes the proof of Theorem
+1.4.
+
+
+5    Corollary: Some Degenerate Cubic Cases
+Theorem 1.4 easily implies some degenerate cubic cases of the exponential local-
+global principle.
+Corollary 5.1. Let c1 and c2 be nonzero rational numbers such that c1 ∈
+                                                                      /
+{c2 , −c2 }. Let b1 , b2 , and b3 be nonzero rational numbers.
+    Consider the sequence u = (un )∞   n=−∞ such that for n ∈ Z,
+
+                          un = b1 cn1 + (b2 + (−1)n b3 )cn2 .
+(Note that if we let the rational numbers a1 , a2 , and a3 be such that
+                (x − c1 )(x − c2 )(x + c2 ) = x3 − a1 x2 − a2 x − a3
+identically, then
+                         un+3 = a1 un+2 + a2 un+1 + a3 un
+for all n ∈ Z.)
+    Let C = c1 /c2 , B+ = −(b2 + b3 )/b1 , and B− = −(b2 − b3 )/b1 .
+    The exponential local-global principle holds for u if, for each B ∈ {B+ , B− },
+at least one of the following is true.
+ (1) We have (C, B) = (1, −1).
+ (2) We have B k C ℓ ∈
+                     / {±1} for all k ∈ Z − {0} and all ℓ ∈ Z.
+                                                                 ∞
+Proof. Apply Theorem 1.4 to the sequences (u2n )∞
+                                                n=−∞ and (u2n+1 )n=−∞ .
+
+
+                                          6
+Acknowledgments
+Many thanks to Eder Kikianty and James Raftery for their mentorship and
+support for this project.
+    Many thanks to Mapundi Banda, the head of the Department of Mathemat-
+ics and Applied Mathematics at the University of Pretoria, for their support.
+    This project was awarded funding from the University of Pretoria’s Research
+Development Programme. Many thanks to everyone at the University of Pre-
+toria for their support.
+
+
+References
+[1] J. W. S. Cassels and A. Fröhlich (eds), Algebraic Number Theory: Proceed-
+    ings of an instructional conference organized by the London Mathematical
+    Society (a NATO Advanced Study Institute) with the support of the Interna-
+    tional Mathematical Union (2nd edn, London Mathematical Society, 2010).
+[2] R. J. Lipton, F. Luca, J. Nieuwveld, J. Ouaknine, D. Purser and J. Wor-
+    rell, On the Skolem problem and the Skolem conjecture, in 37th Annual
+    ACM/IEEE Symposium on Logic in Computer Science, ed. C. Baier (As-
+    sociation for Computing Machinery, 2022), article number 5, pp. 1–9.
+    https://doi.org/10.1145/3531130.3533328
+
+[3] J. S. Milne, Class Field Theory (v4.03), 2020, accessed August 27, 2024.
+    https://jmilne.org/math/CourseNotes/CFT.pdf
+[4] A. Schinzel, Abelian binomials, power residues and exponential congruences,
+    Acta Arithmetica 32 (1977) 245–274. (Addendum and corrigendum, ibid.,
+    36 (1980) 101–104.)
+[5] A. Schinzel, On the congruence un ≡ c (mod p), where un is a recurring
+    sequence of the second order, Acta Academiae Paedagogicae Agriensis, Sectio
+    Mathematicae, 30 (2003) 147–165.
+
+
+
+
+                                      7
+

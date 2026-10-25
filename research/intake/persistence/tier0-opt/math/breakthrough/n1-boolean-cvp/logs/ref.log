@@ -1,0 +1,29 @@
+32928 446777 1 57177414 rep 0 deepcut bound 119.515017 lattice bound 119.515017 stats [1, 2] mine 2 OK old-file 10^1.7e+120 digits
+8192 2244448 0 330812181 rep 0 deepcut bound 120.035040 lattice bound 120.035040 stats [1, 3] mine 3 OK old-file 10^2.9e+120 digits
+8192 2244448 0 330812181 rep 1 deepcut CLOSED lattice nn None OK
+8192 2224488 0 330812181 rep 0 deepcut bound 119.850768 lattice bound 119.850768 stats [1, 4] mine 4 OK old-file 10^2.9e+120 digits
+8192 22222488 0 330812181 rep 0 deepcut bound 119.941923 lattice bound 119.941923 stats [3, 18] mine 18 OK old-file 10^2.9e+120 digits
+8192 22222488 0 330812181 rep 1 deepcut bound 119.756661 lattice bound 119.756661 stats [3, 36] mine 36 OK old-file 10^2.9e+120 digits
+14112 22233477 1 2722734 rep 0 deepcut bound 119.330843 lattice bound 119.330843 stats [1, 3] mine 3 OK old-file 10^1.7e+120 digits
+49392 2247779 2 777924 rep 0 deepcut bound 119.791909 lattice bound 119.791909 stats [1, 3] mine 3 OK old-file 10^8.6e+119 digits
+14336 47888 0 7411887 rep 0 deepcut bound 120.071750 lattice bound 120.071750 stats [1, 2] mine 2 OK old-file 10^2.9e+120 digits
+14336 227888 0 78121827 rep 0 deepcut bound 120.089194 lattice bound 120.089194 stats [1, 2] mine 2 OK old-file 10^2.9e+120 digits
+14336 2222222278 0 330812181 rep 0 deepcut bound 119.756661 lattice bound 119.756661 stats [3, 72] mine 72 OK old-file 10^2.9e+120 digits
+14336 2222222278 0 330812181 rep 1 deepcut CLOSED lattice nn None OK
+14336 22224478 0 330812181 rep 0 deepcut bound 119.850768 lattice bound 119.850768 stats [2, 12] mine 12 OK old-file 10^2.9e+120 digits
+14336 22224478 0 330812181 rep 1 deepcut CLOSED lattice nn None OK
+14336 222222478 0 330812181 rep 0 deepcut bound 119.742309 lattice bound 119.742309 stats [6, 54] mine 54 OK old-file 10^2.9e+120 digits
+14336 222222478 0 330812181 rep 1 deepcut bound 119.756661 lattice bound 119.756661 stats [6, 108] mine 108 OK old-file 10^2.9e+120 digits
+14336 222222478 0 330812181 rep 2 deepcut CLOSED lattice nn None OK
+14336 222222478 0 330812181 rep 3 deepcut CLOSED lattice nn None OK
+32928 446777 1 57177414 rep 0 deepcut bound 119.515017 lattice bound 119.515017 stats [1, 2] mine 2 OK old-file 10^2.3e+226 digits [22s]
+8192 2244448 0 330812181 rep 0 deepcut bound 120.035040 lattice bound 120.035040 stats [1, 3] mine 3 OK old-file 10^2.3e+226 digits [84s]
+8192 2244448 0 330812181 rep 1 deepcut CLOSED lattice nn None OK
+8192 2224488 0 330812181 rep 0 deepcut bound 119.850768 lattice bound 119.850768 stats [1, 4] mine 4 OK old-file 10^2.3e+226 digits [141s]
+8192 22222488 0 330812181 rep 0 deepcut bound 119.941923 lattice bound 119.941923 stats [3, 18] mine 18 OK old-file 10^2.3e+226 digits [284s]
+8192 22222488 0 330812181 rep 1 deepcut bound 119.756661 lattice bound 119.756661 stats [3, 36] mine 36 OK old-file 10^2.3e+226 digits [284s]
+14112 22233477 1 2722734 rep 0 deepcut bound 119.330843 lattice bound 119.330843 stats [1, 3] mine 3 OK old-file 10^2.3e+226 digits [326s]
+49392 2247779 2 777924 rep 0 deepcut bound 119.791909 lattice bound 119.791909 stats [1, 3] mine 3 OK old-file 10^2.3e+226 digits [345s]
+14336 47888 0 7411887 rep 0 deepcut bound 120.071750 lattice bound 120.071750 stats [1, 2] mine 2 OK old-file 10^2.3e+226 digits [362s]
+14336 227888 0 78121827 rep 0 deepcut bound 120.089194 lattice bound 120.089194 stats [1, 2] mine 2 OK old-file 10^2.3e+226 digits [390s]
+depth-2 cases compared 28 mismatches 0

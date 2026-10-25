@@ -1,0 +1,23 @@
+[22:27:32] gate v2: 103 equations, 21 plants, jobs=2, logs /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/branchsplit/logs/gate_mut_drop3
+[22:27:32] candidate lvl12=/private/tmp/persist-branchsplit/mutpipe_drop3/lvl12 lvlN=None
+[22:27:55] differential + plants done in 23s
+[22:27:55] FINDING [python pipeline run_vertex_c 72, 224] pipeline vertex224: run_vertex_c output differs (rc cand 1; 6 vs 2 rows): rbose, l12=surv, l12_n_in=stats['patterns'], presolved=sols, lift_fn=(make_c_lift(M, workdir) if clift else None))
+  File "/private/tmp/persist-branchsplit/gwork/pipes/cand_mutpipe_drop3_lvl12_310ad536_ee012b38_ovf65721c248/tier0v2.py", line 422, in solve_equation
+    assert hit, f"POSITIVE CONTROL LOST at level {L}: y={y}"
+           ^^^
+AssertionError: POSITIVE CONTROL LOST at level 12: y=41472
+
+[22:27:55] FINDING [planted children (pipeline)] plant plant6912: planted child 6912 (M=[2, 6, 9], 4 digits) NOT recovered: AssertionError: POSITIVE CONTROL LOST at level 12: y=6912
+[22:27:55] FINDING [planted children (pipeline)] plant plant124416: planted child 124416 (M=[2, 4, 4, 6], 6 digits) NOT recovered: AssertionError: POSITIVE CONTROL LOST at level 12: y=124416
+[22:27:55] FINDING [planted children (pipeline)] plant plant1594323: planted child 1594323 (M=[2, 3, 3, 4, 5, 9], 7 digits) NOT recovered: AssertionError: POSITIVE CONTROL LOST at level 12: y=1594323
+[22:27:55] FINDING [planted children (pipeline)] plant plant172186884: planted child 172186884 (M=[2, 4, 6, 7, 8, 8, 8], 9 digits) NOT recovered: AssertionError: POSITIVE CONTROL LOST at level 12: y=172186884
+[22:27:55] FINDING [planted children (pipeline)] plant plant41841412812: planted child 41841412812 (M=[2, 2, 4, 4, 4, 8, 8], 11 digits) NOT recovered: AssertionError: POSITIVE CONTROL LOST at level 12: y=41841412812
+[22:27:55] 
+STAGE                                 VERDICT  DETAIL
+----------------------------------------------------------------------------
+lvl12 differential (corpus + 72/224)  PASS     118 equations, raw sorted stdout + stderr counters
+lvlN differential (corpus + 72/224)   SKIP     118 equations, parents from reference chain + wild parents; raw sorted stdout, counters, python-side reconstruction; 136 genuine-parent chains (true child must reappear)
+off-nominal configs (K != 3, np = 7)  PASS     8 configs: {'EQUIVALENT': 8, 'REFUSES': 0, 'DIVERGED': 0, 'CRASH': 0}
+python pipeline run_vertex_c 72, 224  FAIL     16 rows (open counts, children, per-level survivors, c_stats) ref vs cand
+planted children (pipeline)           FAIL     16/21 recovered
+[22:27:55] GATE v2: FAIL

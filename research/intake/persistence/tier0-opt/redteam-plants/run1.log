@@ -1,0 +1,52 @@
+ARTIFACTS /var/folders/wp/7c8dr9tn5t3fdj8wy07zrn4w0000gn/T/persistence-plants-tzlz7fvp
+PASS G0/corpus-and-exact-identity
+PASS G1/corpus-and-exact-identity
+PASS G24/corpus-and-exact-identity
+PASS G132/corpus-and-exact-identity
+PASS S384/anchor-corpus-and-identity
+RUN command-0000 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12
+ERROR G0/native-lvl12/bs=False: TypeError: Object of type PosixPath is not JSON serializable
+RUN command-0001 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12
+ERROR G0/native-lvl12/bs=True: TypeError: Object of type PosixPath is not JSON serializable
+RUN command-0002 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+ERROR G0/native-lift-24: TypeError: Object of type PosixPath is not JSON serializable
+RUN command-0003 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+ERROR G0/native-lift-48: TypeError: Object of type PosixPath is not JSON serializable
+RUN command-0004 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+ERROR G0/native-lift-96: TypeError: Object of type PosixPath is not JSON serializable
+PASS G0/run_c-withheld
+N/A G0/late-anchor-closure: checked exact child is exempt from late cuts
+RUN command-0005 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12
+ERROR G1/native-lvl12/bs=False: TypeError: Object of type PosixPath is not JSON serializable
+RUN command-0006 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12
+ERROR G1/native-lvl12/bs=True: TypeError: Object of type PosixPath is not JSON serializable
+RUN command-0007 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+ERROR G1/native-lift-24: TypeError: Object of type PosixPath is not JSON serializable
+RUN command-0008 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+ERROR G1/native-lift-48: TypeError: Object of type PosixPath is not JSON serializable
+RUN command-0009 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+ERROR G1/native-lift-96: TypeError: Object of type PosixPath is not JSON serializable
+PASS G1/run_c-withheld
+N/A G1/late-anchor-closure: checked exact child is exempt from late cuts
+RUN command-0010 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12
+ERROR G24/native-lvl12/bs=False: TypeError: Object of type PosixPath is not JSON serializable
+RUN command-0011 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12
+ERROR G24/native-lvl12/bs=True: TypeError: Object of type PosixPath is not JSON serializable
+RUN command-0012 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+ERROR G24/native-lift-24: TypeError: Object of type PosixPath is not JSON serializable
+RUN command-0013 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+ERROR G24/native-lift-48: TypeError: Object of type PosixPath is not JSON serializable
+RUN command-0014 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+ERROR G24/native-lift-96: TypeError: Object of type PosixPath is not JSON serializable
+PASS G24/run_c-withheld
+N/A G24/late-anchor-closure: checked exact child is exempt from late cuts
+PASS G132/targeted-residue-classifier-12: OPEN
+PASS G132/targeted-residue-classifier-24: OPEN
+PASS G132/targeted-residue-classifier-48: OPEN
+PASS G132/targeted-residue-classifier-96: OPEN
+UNSUPPORTED G132/native: 42 digits exceed MAXQ=40 and cport limit=24; A-bound/enumeration not tested
+PASS G132/targeted-only
+PASS synthetic/independent-premises
+PASS S384/Lemma-C-membership-depth-1
+PASS S384/Lemma-C-membership-depth-2
+PASS S384/Lemma-C-membership-depth-3

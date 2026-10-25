@@ -1,0 +1,17 @@
+[
+ {
+  "source": "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/runall_final.jsonl",
+  "bytes": 32826,
+  "md5": "c2a3f37d1bc9bbb90ea8e4aedc527759"
+ },
+ {
+  "source": "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/trees_c.jsonl",
+  "bytes": 107216,
+  "md5": "3c02cbac7e1ae8e9c5c05c60c3540bc9"
+ },
+ {
+  "source": "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/trees_mac.jsonl",
+  "bytes": 6664709,
+  "md5": "a6911e81ec5b611a1136bf046fa822dc"
+ }
+]

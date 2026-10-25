@@ -1,0 +1,131 @@
+CONTENT a=0  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=1  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=2  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=3  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=4  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=5  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=6  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=7  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=8  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=9  content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=10 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=11 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=12 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=13 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=14 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=15 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=16 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=17 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=18 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=19 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=20 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=21 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=22 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=23 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=24 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=25 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=26 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=27 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=28 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=29 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=30 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=31 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=32 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=33 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=34 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=35 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=36 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=37 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=38 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=39 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=40 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=41 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=42 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=43 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=44 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=45 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=46 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=47 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=48 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=49 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=50 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=51 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=52 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=53 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=54 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=55 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=56 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=57 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=58 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=59 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=60 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=61 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=62 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT a=63 content=33862613400000000 = 2^9*3^2*5^8*7^1*11^1*41^1*59^1*101^1  768|content=yes  basis images at 193/769 trivial=yes/yes
+CONTENT assertion over a = 0..63: 0 failures
+s=69441624 M=22333333336779 a=0 y=103355177121 k=14 log10 U=111.7 reps=33 words=344 -> CLOSED-sandwich bound 10^(10^239.24 [(w=64,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=32/6,full=6,fv=0) (w=48,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=24/0,full=0,fv=0) (w=64,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=32/0,full=0,fv=0) (w=40,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=40/0,full=0,fv=0) (w=80,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=40/9,full=9,fv=0) (w=48,cand=2/0,xtra=0,sh192dead=0,win192dead=0,n384=24/0,full=0,fv=0)] full=15 fv=0 [0s]
+s=69441624 M=22333333336779 a=0 y=290667031221 k=14 log10 U=111.7 reps=33 words=0 -> CLOSED-cut [] full=0 fv=0 [1s]
+s=69441624 M=22333333336779 a=1 y=13122       k=14 log10 U=107.6 reps=517 words=0 -> CLOSED-cut [] full=0 fv=0 [1s]
+s=69441624 M=22333333336779 a=1 y=44471322    k=14 log10 U=107.6 reps=18 words=0 -> CLOSED-cut [] full=0 fv=0 [1s]
+s=69441624 M=22333333336779 a=2 y=111132      k=14 log10 U=107.7 reps=650 words=0 -> CLOSED-cut [] full=0 fv=0 [1s]
+s=69441624 M=22333333336779 a=2 y=333396      k=14 log10 U=107.7 reps=63 words=0 -> CLOSED-cut [] full=0 fv=0 [1s]
+s=69441624 M=22333333336779 a=2 y=2333772     k=14 log10 U=107.7 reps=55 words=0 -> CLOSED-cut [] full=0 fv=0 [1s]
+s=69441624 M=22333333336779 a=2 y=69177612    k=14 log10 U=107.7 reps=49 words=0 -> CLOSED-cut [] full=0 fv=0 [2s]
+s=69441624 M=22333333336779 a=3 y=472392      k=14 log10 U=107.7 reps=127 words=0 -> CLOSED-cut [] full=0 fv=0 [2s]
+s=69441624 M=22333333336779 a=3 y=1417176     k=14 log10 U=107.7 reps=75 words=0 -> CLOSED-cut [] full=0 fv=0 [2s]
+s=69441624 M=22333333336779 a=3 y=2571912     k=14 log10 U=107.7 reps=99 words=0 -> CLOSED-cut [] full=0 fv=0 [2s]
+s=69441624 M=22333333336779 a=3 y=26149137336 k=14 log10 U=107.7 reps=13 words=4 -> CLOSED-cut [(w=4,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=2/0,full=0,fv=0)] full=0 fv=0 [2s]
+s=69441624 M=22333333336779 a=4 y=27216       k=14 log10 U=107.8 reps=360 words=0 -> CLOSED-cut [] full=0 fv=0 [2s]
+s=69441624 M=22333333336779 a=4 y=1037232     k=14 log10 U=107.8 reps=264 words=0 -> CLOSED-cut [] full=0 fv=0 [2s]
+s=69441624 M=22333333336779 a=4 y=551227611312 k=14 log10 U=107.8 reps=37 words=44 -> CLOSED-cut [(w=9,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=9/0,full=0,fv=0) (w=12,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=12/0,full=0,fv=0) (w=5,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=5/0,full=0,fv=0) (w=4,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=4/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=2/0,full=0,fv=0) (w=8,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=8/0,full=0,fv=0) (w=4,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=4/0,full=0,fv=0)] full=0 fv=0 [3s]
+s=69441624 M=22333333336779 a=5 y=57634833312 k=14 log10 U=107.8 reps=3 words=0 -> CLOSED-cut [] full=0 fv=0 [3s]
+s=69441624 M=22333333336779 a=5 y=81352871712 k=14 log10 U=107.8 reps=18 words=0 -> CLOSED-cut [] full=0 fv=0 [3s]
+s=69441624 M=22333333336779 a=7 y=45177216    k=14 log10 U=107.9 reps=156 words=0 -> CLOSED-cut [] full=0 fv=0 [3s]
+s=69441624 M=22333333336779 a=8 y=10330523392 k=14 log10 U=107.9 reps=11 words=0 -> CLOSED-cut [] full=0 fv=0 [3s]
+s=69441624 M=22333333336779 a=9 y=1229312     k=14 log10 U=107.9 reps=468 words=0 -> CLOSED-cut [] full=0 fv=0 [3s]
+s=69441624 M=22333333336779 a=10 y=263473523712 k=14 log10 U=108.0 reps=3 words=0 -> CLOSED-cut [] full=0 fv=0 [3s]
+s=69441624 M=22333333336779 a=11 y=53331167232 k=14 log10 U=108.0 reps=72 words=0 -> CLOSED-cut [] full=0 fv=0 [3s]
+s=69441624 M=2233333367799 a=0 y=7626831723  k=13 log10 U=106.9 reps=5 words=18 -> CLOSED-cut [(w=6,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=6/0,full=0,fv=0) (w=12,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=6/0,full=0,fv=0)] full=0 fv=0 [4s]
+s=69441624 M=2233333367799 a=0 y=103355177121 k=13 log10 U=106.9 reps=11 words=250 -> CLOSED-sandwich bound 10^(10^239.2 [(w=54,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=30/2,full=2,fv=0) (w=54,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=30/2,full=2,fv=0) (w=54,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=27/0,full=0,fv=0) (w=48,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=24/2,full=2,fv=0) (w=40,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=20/1,full=1,fv=0)] full=7 fv=0 [4s]
+s=69441624 M=2233333367799 a=0 y=310065531363 k=13 log10 U=106.9 reps=4 words=69 -> CLOSED-sandwich bound 10^(10^238.89 [(w=24,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=16/2,full=2,fv=0) (w=27,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=18/2,full=2,fv=0) (w=18,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=12/2,full=2,fv=0)] full=6 fv=0 [4s]
+s=69441624 M=2233333367799 a=1 y=44471322    k=13 log10 U=96.9 reps=121 words=5 -> CLOSED-cut [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [4s]
+s=69441624 M=2233333367799 a=2 y=2333772     k=13 log10 U=96.9 reps=449 words=0 -> CLOSED-cut [] full=0 fv=0 [4s]
+s=69441624 M=2233333367799 a=2 y=6377292     k=13 log10 U=96.9 reps=154 words=0 -> CLOSED-cut [] full=0 fv=0 [4s]
+s=69441624 M=2233333367799 a=2 y=133923132   k=13 log10 U=96.9 reps=239 words=33 -> CLOSED-cut [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=5,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=5/0,full=0,fv=0) (w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0) (w=13,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=12/0,full=0,fv=0) (w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0) (w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0)] full=0 fv=0 [4s]
+s=69441624 M=2233333367799 a=2 y=266827932   k=13 log10 U=96.9 reps=16 words=0 -> CLOSED-cut [] full=0 fv=0 [5s]
+s=69441624 M=2233333367799 a=2 y=10847773692 k=13 log10 U=96.9 reps=3 words=0 -> CLOSED-cut [] full=0 fv=0 [5s]
+s=69441624 M=2233333367799 a=2 y=10167463313316 k=13 log10 U=96.9 reps=1 words=6 -> CLOSED-cut [(w=6,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [5s]
+s=69441624 M=2233333367799 a=3 y=1417176     k=13 log10 U=96.9 reps=319 words=0 -> CLOSED-cut [] full=0 fv=0 [5s]
+s=69441624 M=2233333367799 a=3 y=2571912     k=13 log10 U=96.9 reps=524 words=0 -> CLOSED-cut [] full=0 fv=0 [5s]
+s=69441624 M=2233333367799 a=3 y=1134213192  k=13 log10 U=96.9 reps=126 words=0 -> CLOSED-cut [] full=0 fv=0 [5s]
+s=69441624 M=2233333367799 a=3 y=3099363912  k=13 log10 U=96.9 reps=17 words=12 -> CLOSED-cut [(w=5,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=2/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=2/0,full=0,fv=0) (w=3,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=2/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [5s]
+s=69441624 M=2233333367799 a=3 y=8716379112  k=13 log10 U=96.9 reps=45 words=46 -> CLOSED-sandwich bound 10^(10^238.81 [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0) (w=5,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=8,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=4/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=6,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=3/3,full=3,fv=0) (w=4,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=4/0,full=0,fv=0) (w=5,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=4,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=3,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0)] full=3 fv=0 [6s]
+s=69441624 M=2233333367799 a=3 y=26149137336 k=13 log10 U=96.9 reps=25 words=1 -> CLOSED-cut [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0)] full=0 fv=0 [6s]
+s=69441624 M=2233333367799 a=4 y=59521392    k=13 log10 U=96.9 reps=130 words=0 -> CLOSED-cut [] full=0 fv=0 [6s]
+s=69441624 M=2233333367799 a=4 y=457419312   k=13 log10 U=96.9 reps=58 words=0 -> CLOSED-cut [] full=0 fv=0 [6s]
+s=69441624 M=2233333367799 a=4 y=1764331632  k=13 log10 U=96.9 reps=14 words=3 -> CLOSED-cut [(w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0)] full=0 fv=0 [6s]
+s=69441624 M=2233333367799 a=4 y=1936973136  k=13 log10 U=96.9 reps=65 words=18 -> CLOSED-cut [(w=4,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=4/0,full=0,fv=0) (w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=4,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=4/0,full=0,fv=0) (w=4,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=4/0,full=0,fv=0) (w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=0/0,full=0,fv=0)] full=0 fv=0 [6s]
+s=69441624 M=2233333367799 a=4 y=551227611312 k=13 log10 U=96.9 reps=3 words=8 -> CLOSED-cut [(w=3,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=5,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=3/0,full=0,fv=0)] full=0 fv=0 [7s]
+s=69441624 M=2233333367799 a=5 y=6223392     k=13 log10 U=96.9 reps=329 words=0 -> CLOSED-cut [] full=0 fv=0 [7s]
+s=69441624 M=2233333367799 a=5 y=130691232   k=13 log10 U=96.9 reps=60 words=0 -> CLOSED-cut [] full=0 fv=0 [7s]
+s=69441624 M=2233333367799 a=5 y=184473632   k=13 log10 U=96.9 reps=21 words=0 -> CLOSED-cut [] full=0 fv=0 [7s]
+s=69441624 M=2233333367799 a=6 y=3779136     k=13 log10 U=96.9 reps=275 words=0 -> CLOSED-cut [] full=0 fv=0 [7s]
+s=69441624 M=2233333367799 a=6 y=555532992   k=13 log10 U=96.9 reps=3 words=0 -> CLOSED-cut [] full=0 fv=0 [7s]
+s=69441624 M=2233333367799 a=6 y=520693137216 k=13 log10 U=96.9 reps=6 words=0 -> CLOSED-cut [] full=0 fv=0 [7s]
+s=69441624 M=2233333367799 a=7 y=45177216    k=13 log10 U=96.9 reps=25 words=0 -> CLOSED-cut [] full=0 fv=0 [7s]
+s=69441624 M=2233333367799 a=7 y=158723712   k=13 log10 U=96.9 reps=40 words=0 -> CLOSED-cut [] full=0 fv=0 [7s]
+s=69441624 M=2233333367799 a=7 y=476171136   k=13 log10 U=96.9 reps=62 words=9 -> CLOSED-cut [(w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=2/0,full=0,fv=0) (w=4,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=4/0,full=0,fv=0) (w=1,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=1/0,full=0,fv=0) (w=2,cand=0/0,xtra=0,sh192dead=0,win192dead=0,n384=2/0,full=0,fv=0)] full=0 fv=0 [7s]
+s=69441624 M=2233333367799 a=7 y=98802571392 k=13 log10 U=96.9 reps=3 words=0 -> CLOSED-cut [] full=0 fv=0 [8s]
+s=69441624 M=2233333367799 a=8 y=35271936    k=13 log10 U=96.9 reps=112 words=0 -> CLOSED-cut [] full=0 fv=0 [8s]
+s=69441624 M=2233333367799 a=9 y=272097792   k=13 log10 U=96.9 reps=12 words=0 -> CLOSED-cut [] full=0 fv=0 [8s]
+s=69441624 M=2233333367799 a=9 y=384072192   k=13 log10 U=96.9 reps=8 words=0 -> CLOSED-cut [] full=0 fv=0 [8s]
+s=69441624 M=2233333367799 a=9 y=816293376   k=13 log10 U=96.9 reps=22 words=0 -> CLOSED-cut [] full=0 fv=0 [8s]
+s=69441624 M=2233333367799 a=9 y=6273179136  k=13 log10 U=96.9 reps=44 words=0 -> CLOSED-cut [] full=0 fv=0 [8s]
+s=69441624 M=2233333367799 a=10 y=154893312   k=13 log10 U=96.9 reps=46 words=0 -> CLOSED-cut [] full=0 fv=0 [8s]
+s=69441624 M=2233333367799 a=11 y=2539579392  k=13 log10 U=96.9 reps=3 words=0 -> CLOSED-cut [] full=0 fv=0 [8s]
+s=69441624 M=2233333367799 a=12 y=146313216   k=13 log10 U=96.9 reps=161 words=0 -> CLOSED-cut [] full=0 fv=0 [8s]
+s=69441624 M=2233333367799 a=12 y=265531392   k=13 log10 U=96.9 reps=75 words=0 -> CLOSED-cut [] full=0 fv=0 [8s]
+s=69441624 M=2233333367799 a=14 y=6772211712  k=13 log10 U=96.9 reps=48 words=0 -> CLOSED-cut [] full=0 fv=0 [8s]
+s=69441624 M=2233333367799 a=15 y=242872713216 k=13 log10 U=96.9 reps=4 words=0 -> CLOSED-cut [] full=0 fv=0 [9s]
+
+64 of 64 patterns closed by the shadow certificate; content failures 0, lattice mismatches 0, non-applicable words 0; discrete logs 7642 [9s]

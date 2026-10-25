@@ -1,0 +1,218 @@
+{
+ "equations": 16,
+ "lines": 503581,
+ "overall_sha": "00df794a70bde897d4a7341d5c7a4cfd6a65d9824ff851379e4adba02b1b52dc",
+ "patterns": 1793301120,
+ "per_equation": {
+  "222222222227": {
+   "counters": {
+    "(a,pattern)": 6668205,
+    "exact": 0,
+    "open": 37224,
+    "patterns": 101582208,
+    "prefilter-dead": 80019442,
+    "tail-dead": 6630981,
+    "zero": 19510596
+   },
+   "nlines": 37224,
+   "sha": "ce7f1961d1bebbd0464e917f6db512d016d8cca6a46fc51041f148b7805f15f7"
+  },
+  "22222222247": {
+   "counters": {
+    "(a,pattern)": 21488864,
+    "exact": 0,
+    "open": 113852,
+    "patterns": 290234880,
+    "prefilter-dead": 228900557,
+    "tail-dead": 21375012,
+    "zero": 55473628
+   },
+   "nlines": 113852,
+   "sha": "de0616ae3c516e6e3e67522a40c4d747bad99ff7a020fe4ad6badea3e2b96e1a"
+  },
+  "2222222278": {
+   "counters": {
+    "(a,pattern)": 8067854,
+    "exact": 0,
+    "open": 40279,
+    "patterns": 130605696,
+    "prefilter-dead": 101987533,
+    "tail-dead": 8027575,
+    "zero": 26001278
+   },
+   "nlines": 40279,
+   "sha": "5e7945dbff616fa5395e2b6b9e38204d25b033cf372068771ae96ff081235131"
+  },
+  "2222222447": {
+   "counters": {
+    "(a,pattern)": 21615585,
+    "exact": 0,
+    "open": 102918,
+    "patterns": 357447168,
+    "prefilter-dead": 281321021,
+    "tail-dead": 21512667,
+    "zero": 68920952
+   },
+   "nlines": 102918,
+   "sha": "fc2a47a2e4f62d8e092a86cdc5b776a78dc907d9ef9166ab567f9570c9af60a2"
+  },
+  "222222478": {
+   "counters": {
+    "(a,pattern)": 15115854,
+    "exact": 0,
+    "open": 67867,
+    "patterns": 256628736,
+    "prefilter-dead": 202170516,
+    "tail-dead": 15047987,
+    "zero": 49278525
+   },
+   "nlines": 67867,
+   "sha": "2b614269917650b7c8d581f8ad997d39d02a41e39cc6f318b5f4345a784d43b1"
+  },
+  "222224447": {
+   "counters": {
+    "(a,pattern)": 14599653,
+    "exact": 0,
+    "open": 60565,
+    "patterns": 228953088,
+    "prefilter-dead": 179892399,
+    "tail-dead": 14539088,
+    "zero": 44450018
+   },
+   "nlines": 60565,
+   "sha": "ce5befdcffe827176a695941db49693b4bedad1220c9ff0b23716cb8e3710a3d"
+  },
+  "22222788": {
+   "counters": {
+    "(a,pattern)": 2607735,
+    "exact": 0,
+    "open": 10114,
+    "patterns": 49061376,
+    "prefilter-dead": 39369834,
+    "tail-dead": 2597621,
+    "zero": 8682314
+   },
+   "nlines": 10114,
+   "sha": "8bfb86e5dc5ab0cc9840fbd42ded5f254d155395bae3b443a7f93b9c6e87e639"
+  },
+  "22224478": {
+   "counters": {
+    "(a,pattern)": 11735354,
+    "exact": 0,
+    "open": 42567,
+    "patterns": 183980160,
+    "prefilter-dead": 144692288,
+    "tail-dead": 11692787,
+    "zero": 35581373
+   },
+   "nlines": 42567,
+   "sha": "83a25dfdd276c07ad0e7051f9904133b5d3f92902f2e31372d7107a287506f6b"
+  },
+  "22244447": {
+   "counters": {
+    "(a,pattern)": 4060124,
+    "exact": 0,
+    "open": 13313,
+    "patterns": 71547840,
+    "prefilter-dead": 55982136,
+    "tail-dead": 4046811,
+    "zero": 14132681
+   },
+   "nlines": 13313,
+   "sha": "84e75f24d081861ca99d26a60b5b17b22ff781451845c2539e7ce75dd39c095f"
+  },
+  "2224788": {
+   "counters": {
+    "(a,pattern)": 2167989,
+    "exact": 0,
+    "open": 6388,
+    "patterns": 49061376,
+    "prefilter-dead": 38942015,
+    "tail-dead": 2161601,
+    "zero": 9118188
+   },
+   "nlines": 6388,
+   "sha": "b718840fe55195aff336bc7cdb2efb6cc78d0e8135588373ca1295696316f482"
+  },
+  "2244478": {
+   "counters": {
+    "(a,pattern)": 2582275,
+    "exact": 0,
+    "open": 6596,
+    "patterns": 49061376,
+    "prefilter-dead": 39111466,
+    "tail-dead": 2575679,
+    "zero": 8947417
+   },
+   "nlines": 6596,
+   "sha": "0f24e4a8adee3e19c12591bb9f1fc181876a574f07feb80810442382fefdff10"
+  },
+  "227888": {
+   "counters": {
+    "(a,pattern)": 169006,
+    "exact": 0,
+    "open": 410,
+    "patterns": 4088448,
+    "prefilter-dead": 3173596,
+    "tail-dead": 168596,
+    "zero": 833657
+   },
+   "nlines": 410,
+   "sha": "4c9f1f0631945c2252cfef61e9e5589ecc4f68853761c068e8beafb1fa99bcf3"
+  },
+  "2444447": {
+   "counters": {
+    "(a,pattern)": 375054,
+    "exact": 0,
+    "open": 617,
+    "patterns": 7547904,
+    "prefilter-dead": 6263215,
+    "tail-dead": 374437,
+    "zero": 1124001
+   },
+   "nlines": 617,
+   "sha": "d8ed7ba960b4902a06f3b5e5c6308bf9b9c4f943e74c95edb585f4f2b79b4295"
+  },
+  "244788": {
+   "counters": {
+    "(a,pattern)": 447225,
+    "exact": 0,
+    "open": 775,
+    "patterns": 10513152,
+    "prefilter-dead": 8445123,
+    "tail-dead": 446450,
+    "zero": 1852479
+   },
+   "nlines": 775,
+   "sha": "3a65c4746323a2553b69e385b36777469b4db0a213ed8a85cb4a0c79cb5de514"
+  },
+  "444478": {
+   "counters": {
+    "(a,pattern)": 82034,
+    "exact": 0,
+    "open": 75,
+    "patterns": 2358720,
+    "prefilter-dead": 1935259,
+    "tail-dead": 81959,
+    "zero": 374294
+   },
+   "nlines": 75,
+   "sha": "5720d2dc43481839df2d802dee365740c57f464674bb6643888ec55b16f99249"
+  },
+  "47888": {
+   "counters": {
+    "(a,pattern)": 23462,
+    "exact": 0,
+    "open": 21,
+    "patterns": 628992,
+    "prefilter-dead": 488665,
+    "tail-dead": 23441,
+    "zero": 127531
+   },
+   "nlines": 21,
+   "sha": "db3ed9a84adc74d3a2379b41493ba109ca0e25b2a035fbe2c45c997a2a3e46c2"
+  }
+ },
+ "secs": 6.5,
+ "vertex": 14336
+}

@@ -1,0 +1,32 @@
+L24 222222222227 (1500 parents) load1 per round [6.0, 5.9, 5.3, 4.7, 4.8]
+  base   user s min 13.430 med 13.510 max 13.960  ratio(base med/med) 1.0
+  v1     user s min 4.070 med 4.080 max 4.110  ratio(base med/med) 3.3
+  v2     user s min 0.810 med 0.820 max 0.850  ratio(base med/med) 16.5
+  v3     user s min 0.770 med 0.770 max 0.770  ratio(base med/med) 17.5
+  v4     user s min 0.320 med 0.330 max 0.340  ratio(base med/med) 40.9
+  v5     user s min 0.090 med 0.090 max 0.090  ratio(base med/med) 150.1
+  v6     user s min 0.090 med 0.090 max 0.090  ratio(base med/med) 150.1
+  v7     user s min 0.080 med 0.080 max 0.090  ratio(base med/med) 168.9
+  v8     user s min 0.070 med 0.070 max 0.080  ratio(base med/med) 193.0
+  v8pgo  user s min 0.050 med 0.050 max 0.050  ratio(base med/med) 270.2
+L24 14336/2222222447 (all 12958 parents) load1 per round [4.8, 4.2, 4.6, 5.1, 4.7]
+  base   user s min 63.250 med 63.360 max 63.490  ratio(base med/med) 1.0
+  v1     user s min 19.290 med 19.300 max 19.400  ratio(base med/med) 3.3
+  v2     user s min 3.840 med 3.870 max 3.890  ratio(base med/med) 16.4
+  v3     user s min 3.630 med 3.650 max 3.730  ratio(base med/med) 17.4
+  v4     user s min 1.530 med 1.540 max 1.610  ratio(base med/med) 41.1
+  v5     user s min 0.440 med 0.440 max 0.460  ratio(base med/med) 144.0
+  v6     user s min 0.440 med 0.440 max 0.460  ratio(base med/med) 144.0
+  v7     user s min 0.420 med 0.440 max 0.470  ratio(base med/med) 144.0
+  v8     user s min 0.380 med 0.380 max 0.400  ratio(base med/med) 166.7
+  v8pgo  user s min 0.270 med 0.280 max 0.290  ratio(base med/med) 226.3
+L48 14336/22224478 (23 parents) load1 per round [4.7, 4.7, 4.7, 4.7, 4.7]
+  base   user s min 0.140 med 0.140 max 0.140  ratio(base med/med) 1.0
+  v1     user s min 0.050 med 0.050 max 0.050  ratio(base med/med) 2.8
+  v2     user s min 0.010 med 0.010 max 0.010  ratio(base med/med) 14.0
+  v3     user s min 0.010 med 0.010 max 0.010  ratio(base med/med) 14.0
+Traceback (most recent call last):
+  File "/private/tmp/persist-lvln/timing.py", line 27, in <module>
+    x=res[v]; print(f'  {v:6s} user s min {min(x):.3f} med {statistics.median(x):.3f} max {max(x):.3f}  ratio(base med/med) {b/statistics.median(x):.1f}',flush=True)
+                                                                                                                             ~^~~~~~~~~~~~~~~~~~~~~
+ZeroDivisionError: division by zero

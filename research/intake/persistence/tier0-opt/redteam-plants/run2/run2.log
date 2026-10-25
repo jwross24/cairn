@@ -1,0 +1,74 @@
+MD5 (../../tier0/lvl12) = e547259ef483d1cfc5bf8f86d3d0ccee
+MD5 (../../tier0/lvlN) = b43dad7d891e8a9e19ac7aec10fd042c
+ARTIFACTS /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/redteam-plants/run2/persistence-plants-7fy07fj3
+RUN command-0000 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12
+PASS negative/lvl12/bs=False: parity pattern closed
+PASS G0/native-lvl12/bs=False
+RUN command-0001 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12
+PASS negative/lvl12/bs=True: parity pattern closed
+PASS G0/native-lvl12/bs=True
+RUN command-0002 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+RUN command-0003 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+PASS negative/lift-24/117649: parity pattern closed
+PASS G0/native-lift-24
+RUN command-0004 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+RUN command-0005 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+PASS negative/lift-48/117649: parity pattern closed
+PASS G0/native-lift-48
+RUN command-0006 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+RUN command-0007 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+PASS negative/lift-96/117649: parity pattern closed
+PASS G0/native-lift-96
+N/A G0/late-anchor-closure: checked exact child is exempt from late cuts
+RUN command-0008 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12
+PASS negative/lvl12/bs=False: parity pattern closed
+PASS G1/native-lvl12/bs=False
+RUN command-0009 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12
+PASS negative/lvl12/bs=True: parity pattern closed
+PASS G1/native-lvl12/bs=True
+RUN command-0010 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+RUN command-0011 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+PASS negative/lift-24/6174: parity pattern closed
+PASS G1/native-lift-24
+RUN command-0012 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+RUN command-0013 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+PASS negative/lift-48/6174: parity pattern closed
+PASS G1/native-lift-48
+RUN command-0014 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+RUN command-0015 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+PASS negative/lift-96/6174: parity pattern closed
+PASS G1/native-lift-96
+N/A G1/late-anchor-closure: checked exact child is exempt from late cuts
+RUN command-0016 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12
+PASS negative/lvl12/bs=False: parity pattern closed
+PASS G24/native-lvl12/bs=False
+RUN command-0017 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12
+PASS negative/lvl12/bs=True: parity pattern closed
+PASS G24/native-lvl12/bs=True
+RUN command-0018 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+RUN command-0019 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+PASS negative/lift-24/16777216: parity pattern closed
+PASS G24/native-lift-24
+RUN command-0020 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+RUN command-0021 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+PASS negative/lift-48/16777216: parity pattern closed
+PASS G24/native-lift-48
+RUN command-0022 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+RUN command-0023 /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+PASS negative/lift-96/16777216: parity pattern closed
+PASS G24/native-lift-96
+N/A G24/late-anchor-closure: checked exact child is exempt from late cuts
+UNSUPPORTED S288/native-C: arbitrary starting coset has no CLI representation; function fixture only
+{
+  "failures": [],
+  "errors": [],
+  "artifacts": "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/redteam-plants/run2/persistence-plants-7fy07fj3",
+  "excluded": [
+    "libpydesc acceleration",
+    "G132 native enumeration and two-adic A-bound",
+    "S288 native anchored interfaces",
+    "S384 windows beyond depth 4",
+    "tighter U2/Uprime bounds",
+    "native C survivor-by-survivor membership"
+  ]
+}

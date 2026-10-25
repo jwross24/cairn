@@ -1,0 +1,3 @@
+
+exact-identity check (pattern == anchor over Z with positions in [0,96)): 3153 ok, 0 fail
+timeout 3000 uv run --no-project --with sympy python  runall_final.jsonl    26.14s user 0.21s system 89% cpu 29.313 total

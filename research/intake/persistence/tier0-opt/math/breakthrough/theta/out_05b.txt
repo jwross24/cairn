@@ -1,0 +1,3 @@
+true a n<=14 k<=3: 728256 candidates, 95860 with a>=1 (max a 16), 1464 chain steps with a gap larger than the dense case, violations 0
+PLANTED NEGATIVE (a shifted by 3) n<=14 k<=3: 728256 candidates, 728256 with a>=1 (max a 19), 30256 chain steps with a gap larger than the dense case, violations 2021244
+FAILURES: 0 0

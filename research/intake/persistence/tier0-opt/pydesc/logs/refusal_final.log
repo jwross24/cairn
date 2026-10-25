@@ -1,0 +1,16 @@
+blank_line     SAME  RESULT {"ok": false, "exc": "IndexError", "msg": "list index out of range"}
+short_open     SAME  RESULT {"ok": false, "exc": "IndexError", "msg": "list index out of range"}
+nonint         SAME  RESULT {"ok": false, "exc": "ValueError", "msg": "invalid literal for int() with base 10: 'x'"}
+unknown_kind   SAME  RESULT {"ok": true, "open": 0, "sols": [], "levels": [[12, 1, 1, {"DEAD": 1}]], "c_stats": {}}
+exact_short    SAME  RESULT {"ok": false, "exc": "IndexError", "msg": "list index out of range"}
+exact_ok       SAME  RESULT {"ok": true, "open": 0, "sols": [], "levels": [[12, 1, 1, {"DEAD": 1}]], "c_stats": {}}
+plus_sign      SAME  RESULT {"ok": true, "open": 0, "sols": [], "levels": [[12, 1, 1, {"DEAD": 1}]], "c_stats": {}}
+underscore     SAME  RESULT {"ok": true, "open": 0, "sols": [], "levels": [[12, 1, 1, {"DEAD": 1}]], "c_stats": {}}
+neg            SAME  RESULT {"ok": true, "open": 0, "sols": [], "levels": [[12, 2, 2, {"DEAD": 2}]], "c_stats": {}}
+extra_tokens   SAME  RESULT {"ok": true, "open": 0, "sols": [], "levels": [[12, 1, 1, {"DEAD": 1}]], "c_stats": {}}
+huge           SAME  RESULT {"ok": true, "open": 0, "sols": [], "levels": [[12, 1, 1, {"DEAD": 1}]], "c_stats": {}}
+empty          SAME  RESULT {"ok": true, "open": 0, "sols": [], "levels": [[12, 0, 0, {}]], "c_stats": {}}
+ws_only        SAME  RESULT {"ok": false, "exc": "IndexError", "msg": "list index out of range"}
+crlf           SAME  RESULT {"ok": true, "open": 0, "sols": [], "levels": [[12, 2, 2, {"DEAD": 2}]], "c_stats": {}}
+nonzero_rc     SAME  RESULT {"ok": false, "exc": "AssertionError", "msg": ""}
+many           SAME  RESULT {"ok": true, "open": 0, "sols": [], "levels": [[12, 300, 300, {"DEAD": 300}]], "c_stats": {}}

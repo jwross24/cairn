@@ -1,0 +1,824 @@
+                                                                         POWERS OF 3 WITH FEW NONZERO BITS
+                                                                            AND A CONJECTURE OF ERDŐS
+
+                                                                             VASSIL S. DIMITROV AND EVERETT W. HOWE
+
+
+
+
+arXiv:2105.06440v4 [math.NT] 3 Jul 2023
+                                                   A BSTRACT. Using completely elementary methods, we find all powers of 3 that can be written as the
+                                                   sum of at most twenty-two distinct powers of 2, as well as all powers of 2 that can be written as the sum
+                                                   of at most twenty-five distinct powers of 3. The latter result is connected to a conjecture of Erdős, namely,
+                                                   that 1, 4, and 256 are the only powers of 2 that can be written as a sum of distinct powers of 3.
+                                                      We present this work partly as a reminder that for certain exponential Diophantine equations, elemen-
+                                                   tary techniques based on congruences can yield results that would be difficult or impossible to obtain
+                                                   with more advanced techniques involving, for example, linear forms in logarithms.
+
+
+
+                                                                                               1. Introduction
+                                          To introduce our topic, we begin with some numerical observations. For an integer x ≥ 0, consider
+                                          the binary representation of 3x . In Table 1 we give this representation for x ≤ 25, and we tabulate the
+                                          number of bits in the binary representation together with the number of those bits that are equal to 1.
+                                             Based on this limited data, it looks like about half of the bits of the binary representation of 3x are
+                                          equal to 1, which is what one would expect if 3x were to behave like a random integer of the appropriate
+                                          size. Computations with larger values of x seem to indicate that the fraction of 1s does tend toward
+                                          1/2 as x increases to infinity, but proving that this is the case seems far beyond the reach of existing
+                                          techniques.
+                                             A much weaker observation is that as x goes to infinity, the number of 1s in the binary representation
+                                          of 3x tends to infinity as well; that is, one would certainly be tempted to guess that there are only
+                                          finitely many x such that the binary representation of 3x contains fewer than ten 1s, or a hundred 1s, or
+                                          any given finite number of 1s. This observation is in fact true, and was proven by Senge and Straus in
+                                          1973; their result [20, Theorem 3, p. 100] implies that for any given n, there are only finitely many
+                                          x such that the binary representation of 3x has n or fewer bits equal to 1. In 1980 Cameron Stewart
+                                          proved an effective version of this result [21, Theorem 1, p. 64] — which means that given a value
+                                          of n, Stewart’s arguments produce a bound B(n) so that if x > B(n), then 3x has more than n bits equal
+                                          to 1. Unfortunately, the values of B(n) produced by Stewart’s method grow very quickly; for example,
+                                          we can show1 that B(22) > 4.9×1046 .
+
+                                              2020 Mathematics Subject Classification. Primary 11D61; Secondary 11A63, 11D72, 11D79.
+                                              Key words and phrases. Exponential Diophantine equation, binary digit.
+                                              1Stewart’s Theorem 1 shows that the largest x for which 3x has at most 22 bits equal to 1 satisfies 23 > (log log 3x )/(C +
+                                          log log log 3x ) for some positive constant C. We only get a stronger upper bound on x if we solve for x when C = 0, and this
+                                          is how we get our lower bound for B(22).
+
+                                                                                                         1
+                                POWERS OF 3 WITH FEW NONZERO BITS                                     2
+
+        TABLE 1. For each x between 0 and 25 we give the binary representation of 3x ,
+        together with the total number of bits in the representation and the number of those
+        bits that are equal to 1.
+
+               x                          Binary representation of 3x      #Bits #Ones
+               0                                        1                    1       1
+               1                                       11                    2       2
+               2                                     1001                    4       2
+               3                                    11011                    5       4
+               4                                  1010001                    7       3
+               5                                 11110011                    8       6
+               6                               1011011001                   10       6
+               7                             100010001011                   12       5
+               8                            1100110100001                   13       6
+               9                          100110011100011                   15       8
+              10                         1110011010101001                   16       9
+              11                       101011001111111011                   18      13
+              12                     10000001101111110001                   20      10
+              13                    110000101001111010011                   21      11
+              14                  10010001111101101111001                   23      14
+              15                 110110101111001001101011                   24      15
+              16               10100100001101011101000001                   26      11
+              17              111101100101000010111000011                   27      14
+              18            10111000101111001000101001001                   29      14
+              19          1000101010001101011001111011011                   31      17
+              20         11001111110101000001101110010001                   32      17
+              21       1001101111011111000101001010110011                   34      20
+              22      11101001110011101001111100000011001                   35      19
+              23    1010111101011010111101110100001001011                   37      22
+              24 100000111000010000111001011100011100001                    39      16
+              25 1100010101000110010101100010101010100011                   40      18
+
+
+
+   In this paper, we use completely elementary techniques to find all powers of 3 whose binary
+representations have at most twenty-two bits equal to 1. In fact, these powers of 3 are exactly the ones
+displayed in Table 1.
+
+Theorem 1.1. The only powers of 3 that can be written as the sum of twenty-two or fewer distinct
+powers of 2 are 3x , where 0 ≤ x ≤ 25.
+
+   In other words, there are more than twenty-two 1s in the binary representation of 3x exactly when
+x > 25. Clearly, this bound is much smaller than the one obtained from Stewart’s theorem!
+                                   POWERS OF 3 WITH FEW NONZERO BITS                                           3
+
+
+  We also look at the complementary problem of finding powers of 2 whose base-3 representations
+contain no 2s and at most twenty-five 1s. Stewart’s theorem applies here as well, and says that if 2x
+can be expressed in this manner, then x is less than a computable bound that is larger than 5.4×1054 .
+Our result shows that in fact x ≤ 8.
+Theorem 1.2. The only powers of 2 that can be written as the sum of twenty-five or fewer distinct
+powers of 3 are:
+                                             20 = 30
+                                             22 = 30 + 31
+                                             28 = 30 + 31 + 32 + 35 .
+   Put differently, if x ̸∈ {0, 2, 8} then the base-3 representation of 2x will contain either at least one 2, or
+at least twenty-six 1s. This provides a tiny bit of confirmation for a conjecture of Erdős [15, Problem 1,
+p. 67], which states that the only powers of 2 whose base-3 representations contain only 0s and 1s
+are the three examples given in Theorem 1.2. (For work on Erdős’s conjecture and closely related
+problems, see for example [5, 14, 17, 18] and the papers these articles cite.)
+   Theorems 1.1 and 1.2 can be expressed in terms of exponential Diophantine equations. In particular,
+Theorem 1.1 gives us all solutions of
+(1)                        3x = 2a1 + · · · + 2an ,     x ≥ 0,       0 ≤ a1 < · · · < an
+for n ≤ 22, and Theorem 1.2 gives us all solutions to
+(2)                        2x = 3a1 + · · · + 3an ,     x ≥ 0,       0 ≤ a1 < · · · < an
+for n ≤ 25.
+   Our method for solving equations (1) and (2) involves considering the equations modulo M for a
+sequence of well-chosen moduli M, each one dividing the next. We will postpone our discussion of
+what “well-chosen” means, and for now we will simply illustrate our method with an example.
+   Let us look at the case n = 3 of equation (1). We start by considering the related problem of writing
+a power of 3 as the sum of three powers of 2 in the finite ring Z/M1 Z for M1 = 5440 = 26 · 5 · 17,
+where we no longer insist that the powers of 2 be distinct. The following diagram enumerates the
+powers of 2 modulo M1 ; here the arrows indicate multiplication by 2.
+            1        /2       /4        /8       / 16       / 32               / / 64
+                                                                                           &
+                                                                   2752
+                                                                   >                           128
+
+                                                                                                          
+(3)                                                         4096
+                                                              R                                          256
+
+                                                                                                     ~
+                                                                   2048f                       512
+                                                                               1024 p
+We see there are 14 distinct powers of 2 modulo M1 , and likewise we find that there are 16 distinct
+powers of 3. Using a computer to enumerate sums of three powers of 2 in Z/M1 Z, we find that (up to
+                                 POWERS OF 3 WITH FEW NONZERO BITS                                        4
+
+
+the order of the summands) there are only three ways to write a power of 3 in Z/M1 Z as a sum of three
+powers of 2:
+
+(4)                                    31 ≡ 20 + 20 + 20 mod M1
+(5)                                    32 ≡ 20 + 22 + 22 mod M1
+(6)                                    34 ≡ 20 + 24 + 26 mod M1 .
+
+   For each of the summands 2i on the right-hand side of one of these equations, we can ask for the
+exponents b such that 2b ≡ 2i mod M1 . Looking at diagram (3), we see that for i = 0, 2, and 4, the only
+exponent b with 2b ≡ 2i mod M1 is i itself, because 1, 4, and 16 are all on the “tail” of the diagram.
+On the other hand, the exponents b with 2b ≡ 26 mod M1 are {6, 14, 22, 30, . . .} = {6 + 8 j : j ≥ 0},
+because the “loop” part of diagram (3) goes around in a cycle of 8 steps.
+   Every solution to equation (1) with n = 3 must reduce modulo M1 to one of the three equations (4),
+(5), or (6). However, no solution to equation (1) can reduce to (4), because the summands in (1) would
+have to be 20 , 20 , and 20 , which are not distinct. Likewise, no solution to equation (1) can reduce
+modulo M1 to (5), because two of the summands in (1) would have to be 22 . Therefore, every solution
+to equation (1) with n = 3 reduces modulo M1 to (6), and we see that two of the summands in (1) must
+be 20 and 24 .
+   Now we consider information modulo M2 = 27 · 5 · 17 · 257. If a solution to equation (1) reduces
+modulo M1 to (6), what can it reduce to modulo M2 ? There are 16 powers of 3 in Z/M2 Z that reduce to
+34 in Z/M1 Z, namely 34 , 34+16 , . . . , 34+15·16 , and there are 3 powers of 2 in Z/M2 Z that reduce to 26
+in Z/M1 Z, namely 26 , 214 , and 222 . We check that in Z/M2 Z neither 20 + 24 + 214 nor 20 + 24 + 222 is
+equal to any of the possible powers of 3. However, 34 ≡ 20 + 24 + 26 in Z/M2 Z.
+   Therefore, every solution to equation (1) with n = 3 must reduce modulo M2 to the congruence
+34 ≡ 20 + 24 + 26 mod M2 . But we check that 20 , 24 , and 26 lie on the tail of the analog of diagram (3)
+for M2 , so the only powers of 2 in the integers that reduce to 20 , 24 , and 26 modulo M2 are 20 , 24 , and
+26 themselves. We see that if there is a solution to equation (1) with n = 3, the right-hand side must be
+20 + 24 + 26 . As it happens, in the integers this sum is equal to 34 , so 34 = 20 + 24 + 26 is the unique
+solution to equation (1) with n = 3.
+   This simple example displays the basic idea that we use to prove Theorem 1.1. For such a small
+example we could have started by considering the equation modulo M2 , instead of first looking
+modulo M1 , but for larger examples it is much more efficient to cut down the solution space by looking
+first at small moduli before building up to larger ones.
+   Solving exponential Diophantine equations using congruence arguments is not a new technique.
+In 1976, for example, Alex [2] used congruences to find all solutions to x + y = z, where x, y, and z
+are mutually coprime integers divisible by no prime larger than 7. In 1982, Brenner and Foster [10]
+presented a whole bestiary of exponential Diophantine equations that can be solved in this way. (They
+mention in particular that Alex found all solutions to our example 3x = 2a1 + 2a2 + 2a3 using “a few
+small moduli,” although this had been solved earlier by Pillai, as we discuss below.) In 2009, Ádám,
+Hajdu, and Luca [1] used a result of Erdős, Pomerance, and Schmutz [16] to show that for every finite
+set S of primes and finite set A ⊂ Z of coefficients, the number of integers less than x that can be written
+as the sum of a fixed number of terms of the form as, where a ∈ A and s ∈ Z is a product of powers of
+                                       POWERS OF 3 WITH FEW NONZERO BITS                                                     5
+
+
+primes in S, grows more slowly than a specific power of log x. Independently, in a 2011 paper [12] we
+studied representations of integers as sums of terms of the form ±2a 3b , which is the case A = {±1},
+S = {2, 3} of the problem studied in [1]. We presented one way of finding moduli M that could be used
+to prove that certain integers cannot be represented by a given number of such terms, and we used the
+same result of Erdős, Pomerance, and Schmutz to show that there is a positive constant c such that
+infinitely many integers n cannot be written as a sum of fewer than c log n/(log log n log log log n) such
+terms.
+   In 2016 Bertók and Hajdu [7] studied exponential Diophantine equations in general, again using
+arguments based on [16], and they conjectured that if an exponential Diophantine equation has only
+a finite number of solutions2 and satisfies some other natural restrictions, then there is an integer M
+such that the solutions to the equation modulo M lift uniquely to the solutions in Z. In a later paper [8]
+the same authors generalized this conjecture to number fields. One can view our work in this paper as
+providing evidence in support of the Bertók–Hajdu conjectures.
+   Our main contribution in this paper is the method we describe for choosing a sequence of moduli
+that allows us to refine the collection of solutions modulo M, for larger and larger M, until every
+solution modulo M can be lifted to at most one solution in the integers. Our moduli are chosen in a
+careful order that makes each refinement step computationally feasible. The closest predecessor to our
+technique seems to be the method used by Bertók and Hajdu in [7], in which they choose a modulus
+M and then piece together information gleaned from solutions to the original Diophantine equation
+modulo the prime power divisors of M. Another new observation in this paper appears in Section 3,
+where we show that any modulus M that provides us with all solutions to equation (1) or (2) must
+satisfy an unexpected condition.
+   We study the problem of writing powers of 2 as sums of distinct powers of 3, as well as the
+complementary problem of writing powers of 3 as sums of distinct powers of 2, for several reasons.
+First, these problems are simply-stated and natural. Second, we wanted to see what we could say about
+Erdős’s conjecture. Third, we were curious how far the modular methods discussed by Brenner and
+Foster can be pushed, since even modest laptop computers are much more powerful than anything
+available at the time their paper was written. And finally, we hope to bring these straightforward modular
+techniques to the attention of the community of mathematicians who are interested in exponential
+Diophantine equations.
+   As a historical note, we observe that the solutions to the case n = 2 of equations (1) and (2) were
+determined nearly seven centuries ago by Levi ben Gerson [4], who showed that the only pairs of
+integers of the form 2r 3s that differ by 1 are (1, 2), (2, 3), (3, 4), and (8, 9). A paraphrase of ben
+Gerson’s argument, more legible3 than [4], is given in [11, Appendice, pp. 183–191]. One way to prove
+ben Gerson’s theorem is to observe that every solution to ben Gerson’s problem is a solution to the
+case n = 2 of either equation (1) or equation (2), and then to consider those two equations modulo 80.
+   In 1945, Pillai [19] found all solutions to ±(2x − 3y ) = 2X + 3Y ; taking either x or y to be 0 leads to
+the solutions for the case n = 3 of equations (1) and (2). Between 2011 and 2013, Bennett, Bugeaud,
+and Mignotte [5, 6] used linear forms in two logarithms to find all perfect powers whose binary
+   2
+    The statement of the conjecture [7, p. 849] only applies to Diophantine equations with no solutions, but later in the paper
+the authors show how the conjecture, if true, can be applied to equations that have finitely many solutions.
+   3The adjective is chosen with intention. Follow the link in the bibliography to understand why.
+                                 POWERS OF 3 WITH FEW NONZERO BITS                                       6
+
+
+representations have at most four bits equal to 1 (extending a result of Szalay [22] that gives all perfect
+squares with at most three bits equal to 1), and this solves the case n = 4 of equation (1). These are all
+of the previous solutions to cases of equations (1) and (2) that we are aware of; however, the paper of
+Bertók and Hajdu [7] discussed earlier includes solutions to many very similar equations, including,
+for example, finding all powers of 17 that can be expressed as the sum of nine distinct powers of 5.
+Surely their methods could have been used to solve some more instances of equations (1) and (2).
+   The structure of this paper is as follows: In Section 2 we briefly review some notation. In Section 3
+we observe that in some situations there will necessarily be solutions to equations (1) or (2) modulo M
+that are not reductions of solutions in the integers, unless some specific conditions on M hold. These
+conditions shape our strategy of choosing a specific sequence of moduli to use in the proofs of
+Theorems 1.1 and 1.2. In Section 4 we give examples of two different ways of lifting solutions to (1)
+modulo M1 to solutions modulo M2 , suitable for two different circumstances. These examples help
+clarify the process by which we proved Theorems 1.1 and 1.2. We present the proofs of these theorem
+in Sections 5 and 6.
+   The programs we used to complete our calculations were written in Magma [9] and are available as
+supplementary material attached to the ArXiv version of this paper [13]. They are also available on the
+second author’s web site.
+Acknowledgments. We are grateful to Lajos Hajdu for his comments on an earlier version of this
+paper, and to the anonymous referees for their helpful suggestions.
+
+                                     2. Notation and conventions
+In this paper we will often want to count or enumerate the number of solutions to an exponential
+Diophantine equation modulo M, but there is some natural ambiguity as to what this might mean.
+For instance, there are infinitely many pairs of integers x ≥ 0 and y ≥ 0 for which the congruence
+3x ≡ 2y + 5 mod 28 holds, but for every such x and y we have 3x ≡ 9 mod 28 and 2y ≡ 1 mod 28, so it
+might not be unreasonable to say that there is only one solution. In order to avoid any confusion, we
+remove this ambiguity by adopting the following convention.
+Convention 2.1. When we count or enumerate solutions to an exponential Diophantine equation
+modulo M, we will consider two solutions to be the same if the corresponding terms in the equation
+are congruent modulo M.
+   This means, for example, that for the congruence 3x ≡ 2y + 5 mod 28 we consider the solutions
+(x, y) = (2, 2), (x, y) = (8, 2), and (x, y) = (8, 5) to be the same, because in each case 3x ≡ 9 mod 28
+and 2y ≡ 4 mod 28.
+   This convention does have one drawback, which is that for some exponential Diophantine equation
+modulo M, there truly are only finitely many integer solutions. For example, the only integers x ≥ 0
+and y ≥ 0 such that 3x ≡ 2y + 5 mod 216 are x = 2 and y = 2. This distinction will in fact be important
+to us, so we make the following definition.
+Definition 2.2. Let M > 0 be an integer and p a prime. We say that a power of p, say pi , is determinate
+modulo M if the only integer b ≥ 0 with pb ≡ pi mod M is b = i; otherwise, we say that pi is an
+indeterminate power of p modulo M.
+                                  POWERS OF 3 WITH FEW NONZERO BITS                                         7
+
+
+   Thus, we will say that the congruence 3x ≡ 2y + 5 mod 28 has one solution, namely 32 ≡ 22 +
+5 mod 28, but that 32 is an indeterminate power of 3 modulo 28 and 22 is an indeterminate power of 2
+modulo 28. On the other hand, 3x ≡ 2y + 5 mod 216 also has only one solution, but the power of 3 and
+the power of 2 involved are both determinate.
+   Given a prime p and an integer M > 0, we can construct a diagram like diagram (3) of the powers of
+p modulo M. Note that a determinate power of p modulo M is exactly a power of p that lies on the tail
+of this diagram, and a straightforward argument shows that for i ≥ 0, the integer pi is a determinate
+power of p modulo M if and only if M is divisible by pi+1 .
+   Recall that if M is a positive integer then the group of units in the ring Z/MZ has order ϕ(M),
+where ϕ is the Euler ϕ-function, which can be computed using the formula ϕ(n) = n ∏ p|n (1 − 1/p);
+see [3, §2.3, §2.5]. Also, if M is an odd prime power then the group of units in Z/MZ is cyclic [3,
+Theorem 10.4, p. 207].
+   For every prime p, we let v p be the p-adic valuation function, so that v p (M) is the largest x such
+that px divides M. And lastly, we set some notation related to the behavior of the numbers 2 and 3 in
+finite rings.
+
+Notation 2.3. Let M be a positive integer and write M = 2u 3v M ′ , where u = v2 (M) and v = v3 (M), so
+that M ′ is coprime to 6.
+      • We let O2 (M) be the multiplicative order of 2 in the ring Z/3v M ′ Z.
+      • We let O′2 (M) be the multiplicative order of 2 in the ring Z/M ′ Z.
+      • We let O3 (M) be the multiplicative order of 3 in the ring Z/2u M ′ Z.
+      • We let O′3 (M) be the multiplicative order of 3 in the ring Z/M ′ Z.
+
+    We see, for example, that there are v2 (M) + O2 (M) elements in the tail-and-loop diagram of
+the powers of 2 modulo M, with v2 (M) in the tail and O2 (M) in the loop. Similarly, there are
+v3 (M) + O3 (M) elements in the tail-and-loop diagram of the powers of 3 modulo M.
+
+                               3. Extraneous solutions to congruences
+The basic heuristic behind our strategy for solving instances of equations (1) and (2) is that if M is
+large and there are very few powers of 2 in Z/MZ and very few powers of 3 in Z/MZ, then there
+should be very few “extraneous” solutions to equations (1) or (2) modulo M — that is, solutions that
+are not the reduction modulo M of a solution in the integers. If M is divisible by sufficiently high
+powers of 2 and/or 3, we can hope that every solution modulo M to equation (1) or (2) will involve
+only determinate powers of 2 or of 3 modulo M (where determinate is as defined in Section 2). If this
+is the case, then each solution will lift uniquely to the integers, if it lifts at all. However, it turns out
+that for many moduli M, if there is any solution to one of these equations, then there is also a solution
+that includes indeterminate powers of 2 and of 3.
+    For example, we saw in the introduction that if M1 = 5440 = 26 · 5 · 17 then the equation 3x ≡
+2 1 + 2a2 + 2a3 mod M1 has the three solutions given by (4), (5), and (6), and we see that (6) involves
+  a
+
+an indeterminate power of 2 (and of 3). If we look at the same equation modulo M2 , where M2 = 2M1 =
+27 · 5 · 17, then we find four solutions, including 320 ≡ 20 + 24 + 214 , and this involves indeterminate
+powers of 2 and of 3 modulo M2 . When we look at the same equation modulo M3 , where M3 =
+                                 POWERS OF 3 WITH FEW NONZERO BITS                                        8
+
+
+41M2 = 27 · 5 · 17 · 41, there is once again a solution with indeterminate powers of 2 and 3, namely
+320 ≡ 20 + 24 + 246 . And the same happens yet again when we work modulo M4 , where M4 = 193M3 =
+27 · 5 · 17 · 41 · 193.
+   And yet in the introduction, when we considered solutions to 3x ≡ 2a1 + 2a2 + 2a3 modulo 27 · 5 ·
+17 · 257, we did not wind up with extraneous solutions. What is the difference between 27 · 5 · 17 · 257
+and 27 · 5 · 17 · 41 · 193?
+   The following proposition, which uses Notation 2.3, explains one way in which solutions with
+indeterminate powers of 2 or 3 can arise, and suggests a condition that we will want to impose on the
+moduli we use.
+
+Lemma 3.1. Let M be a positive integer. Suppose x > 2, y > 0, and c are integers such that 3y ≡
+c + 2x mod M. If O′3 (M) is not divisible by 2x−1 and O′2 (M) is not divisible by 3y , then there are
+integers x′ ≥ 0 and y′ ≥ 0 such that
+          ′         ′
+    (a) 3y ≡ c + 2x mod M,
+          ′
+    (b) 2x is an indeterminate power of 2 modulo M, and
+          ′
+    (c) 3y is an indeterminate power of 3 modulo M.
+
+   Lemma 3.1 shows that in the example we presented in the introduction, it was necessary for us to
+use a modulus divisible by a prime (in our case, 257) for which either the order of 3 is divisible by 25
+or the order of 2 is divisible by 34 . Since 34 = 20 + 24 + 26 , if we use a modulus M that is divisible by
+27 (so that 20 , 24 , and 26 are determinate powers of 2 modulo M), Lemma 3.1 shows that there will be
+other, extraneous, solutions modulo M unless M is divisible by such a prime.
+
+Proof of Lemma 3.1. Write M = 2u 3v M ′ where M ′ is an integer coprime to 6, and set o2 = O′2 (M) and
+o3 = O′3 (M). First we claim that there is an integer s such that y + so3 > v and 3y+so3 ≡ c mod 2u .
+   Suppose u ≤ x, so that 3y ≡ c mod 2u . We know that 3s ≡ 1 mod 2u if s is a multiple of ϕ(2u ), so
+we can simply take s to be a large enough multiple ϕ(2u ) so that y + so3 > v, and this s meets the
+conditions of our claim.
+   Suppose u > x. Then M is even, and since c differs from 3y by a multiple of the even number M,
+we see that c must be odd. Therefore there is an integer d such that cd ≡ 1 mod 2u . Choose such a d
+and consider the integer z = 1 + 2x d, which is congruent to 1 mod 8 because x > 2. If we apply part 1
+of Lemma 3.2 (below) to this z, we find that there is an integer e0 , divisible by 2x−2 , such that every
+integer e with e ≡ e0 mod 2u−2 satisfies 3e ≡ 1 + 2x d mod 2u . By assumption, the highest power of 2
+that divides o3 is at most 2x−2 . Therefore there is an integer s such that so3 ≡ −e0 mod 2u−2 , and we
+can choose such an s that is large enough so that y + so3 > v.
+   We have 3−so3 ≡ 1 + 2x d mod 2u . Multiplying both sides of this congruence by c 3so3 gives
+c ≡ (c + 2x )3so3 mod 2u , and since c + 2x ≡ 3y mod M and hence also modulo 2u , we find that
+c ≡ 3y+so3 mod 2u . Thus, this s has the properties we desire, and we have proven our claim.
+   Similarly, using part 2 of Lemma 3.2, we can show that there is an integer r such that x + ro2 > u
+and 2x+ro2 ≡ −c mod 3v .
+   Let x′ = x + ro2 and let y′ = y + so3 . We claim that this x′ and y′ satisfy conditions (a), (b), and (c)
+from the lemma. It is easy to check conditions (b) and (c) because x′ > u and y′ > v by construction.
+                                 POWERS OF 3 WITH FEW NONZERO BITS                                         9
+
+                                                                                                 ′         ′
+To check condition (a), we use the Chinese Remainder Theorem: It suffices to check that 3y ≡ c + 2x
+modulo M ′ , modulo 2u , and modulo 3v .
+                                                                                       ′
+  We have 2o2 ≡ 1 mod M ′ and 3o3 ≡ 1 mod M ′ by the definitions of o2 and o3 , so 3y ≡ 3y mod M ′
+      ′                              ′         ′
+and 2x ≡ 2x mod M ′ , and we have 3y ≡ c + 2x mod M ′ .
+               ′                                                         ′
+  We have 2x ≡ 0 mod 2u because x + ro2 > u by construction. Since 3y ≡ 3y+so3 ≡ c mod 2u , we
+        ′        ′
+have 3y ≡ c + 2x mod 2u .
+                                             ′                         ′
+  The same reasoning shows that we have 3y ≡ 0 mod 3v , and since 2x ≡ 2x+ro2 ≡ −c mod 3v , we
+        ′        ′
+have 3y ≡ c + 2x mod 3v . This shows that condition (a) holds for this x′ and y′ , and completes the
+proof of the lemma.                                                                               □
+
+Lemma 3.2.
+    (1) Let z be an integer with z ≡ 1 mod 8. For every integer u ≥ 3 there is an integer e0 such that the
+        integers e that satisfy 3e ≡ z mod 2u are precisely the integers e that satisfy e ≡ e0 mod 2u−2 .
+        If x ≤ u is an integer with z ≡ 1 mod 2x , then e0 is divisible by 2x−2 .
+    (2) Let z be an integer with z ≡ 1 mod 3. For every integer v ≥ 1 there is an integer e0 such that the
+        integers e that satisfy 2e ≡ z mod 3v are precisely the integers e that satisfy e ≡ e0 mod 2 · 3v−1 .
+        If y ≤ v is an integer with z ≡ 1 mod 3y , then e0 is divisible by 2 · 3y−1 .
+
+Proof. For statement 1: We leave the reader to show that for every u ≥ 3, the order of 3 modulo 2u
+is 2u−2 . (The proof can be modeled after the proof of [3, Theorem 10.11, p. 218].) Since there are 2u−1
+units in Z/2u Z, and the order of 3 is half of this, it follows that half of the units are powers of 3. A
+power of 3 is never congruent to 5 or 7 modulo 8, and this accounts for half of the units. Therefore,
+every unit that is 1 or 3 modulo 8 is a power of 3. Thus, there is an e0 such that 3e0 ≡ z. The fact that
+3e ≡ z mod 2u if and only if e ≡ e0 mod 2u−2 is simply a consequence of the fact that the order of 3
+modulo 2u is 2u−2 .
+   If z ≡ 1 mod 2x with x ≤ u, then 3e0 ≡ 1 mod 2x , so e0 is a multiple of the order of 3 modulo 2x ,
+and hence e0 is divisible by 2x−2 .
+   The proof of statement 2 is analogous, and we leave it to the reader.                                □
+
+   When we look at cases of equation (1) with larger values of n, we will find that Lemma 3.1 tells us
+that we will need to include information gleaned from moduli divisible by primes p such that the order
+of 3 modulo p is divisible by quite large powers of 2. In Section 5 we show how we can work our way
+up to such moduli.
+
+                                           4. Lifting solutions
+Our proofs of Theorems 1.1 and 1.2 are computational. In each proof, we consider a sequence of
+moduli M1 , M2 , . . ., each dividing the next. Roughly speaking, we first compute the solutions to
+equation (1) or (2) modulo M1 ; then for each i > 1 in turn we “lift” the solutions modulo Mi−1 to
+solutions modulo Mi . We stop when we have reached an Mi where all of the summands that appear on
+the right-hand side of the solutions modulo Mi are determinate (in the sense defined in Section 2); at
+that point, each solution modulo Mi can be lifted uniquely to a solution in the integers, if it lifts to a
+solution at all.
+                                 POWERS OF 3 WITH FEW NONZERO BITS                                       10
+
+
+   This strategy depends on our having efficient methods for lifting a solution modulo Mi−1 to a
+solution modulo Mi . In Section 5 we will spell out our methods more formally, but in this section we
+would like to give two examples to help make the methods more clear. For the sake of exposition,
+we will focus on finding solutions to equation (1) modulo M for various M, and as we did in the
+introduction, we will ignore the requirement that the summands be distinct.
+   As an example of one extreme case of the lifting problem, let M1 = 439 and let n = 12 and consider
+the following solution to equation (1) modulo M1 :
+(7)            357 ≡ 20 + 21 + 211 + 212 + 215 + 216 + 226 + 227 + 237 + 257 + 265 + 268 .
+Let p be the prime 9361973132609 and let M2 = pM1 . We will try to find a lift of the solution (7) to a
+solution modulo M2 . We compute that the graph of the powers of 2 modulo M1 forms a loop of cycle
+length 73 with no tail... and we compute that the graph of powers of 2 modulo M2 is also a tailless
+loop of cycle length 73. That means that there is exactly one power of 2 in Z/M2 Z that reduces to a
+given power of 2 in Z/M1 Z. If we can lift equation (7) to a solution modulo M2 , then the right-hand
+side of the lifted solution will have to be
+             20 + 21 + 211 + 212 + 215 + 216 + 226 + 227 + 237 + 257 + 265 + 268 mod M2 .
+If we let z be this sum, then to determine whether there is a lift of equation (7) to a solution modulo M2 ,
+we simply have to determine whether there is an x such that 3x ≡ z mod M2 .
+   It turns out that the graph of powers of 3 modulo M2 is a tailless loop with cycle length p − 1 =
+9361973132608, so we definitely do not want to find x (if it exists) by enumeration. Instead, we can
+find x by using discrete logarithms.
+   If there is an x with 3x ≡ z mod M2 , then that same x satisfies 3x ≡ z mod p for the prime p = M2 /M1 .
+We can find an x that satisfies this congruence if and only if z ∈ (Z/pZ)∗ lies in the subgroup of (Z/pZ)∗
+generated by 3. Using the computer algebra package Magma, we find that in fact 3 generates the whole
+group of units, and Magma very quickly computes a discrete logarithm of z with respect to 3 — that is,
+an integer x with 3x ≡ z mod p. In fact, every integer x satisfying
+(8)                                x ≡ 3976447101915 mod (p − 1)
+will give a solution to this congruence.
+   In order for x to give a solution modulo M2 , we also need to have 3x ≡ z mod M1 . The graph of
+powers of 3 modulo M1 is a tailless loop with cycle length 146, and we find that for x to solve this
+congruence modulo M1 we need to have x ≡ 57 mod 146.
+   But 146 is a divisor of p − 1, and reducing equation (8) modulo 146, we find that it becomes
+x ≡ 31 mod 146. This is incompatible with the congruence from the preceding paragraph, so there is
+no x with 3x ≡ z mod M2 . This shows that equation (7) cannot be lifted to a solution modulo M2 .
+   Let us turn to another example, which demonstrates a different approach to the lifting problem. We
+again take M1 = 439 and start with the solution to equation (1) modulo M1 given by (7). This time,
+however, we take p = 1753 and M2 = pM1 . We will try to find a lift of the solution (7) to a solution
+modulo M2 .
+   The graph of powers of 2 modulo M2 is a tailless loop of cycle length 146, which is exactly twice
+as long as the cycle of powers of 2 modulo M1 . That means that there are exactly two powers of 2
+                                   POWERS OF 3 WITH FEW NONZERO BITS                                         11
+
+
+modulo M2 that reduce to a given power of 2 modulo M1 . In particular, the two lifts to Z/M2 Z of the
+element 2i ∈ Z/M1 Z are 2i and 2i+73 .
+   Similarly, we can also compute that there are six lifts of 357 ∈ Z/M1 Z to powers of 3 in Z/M2 Z,
+namely 357 , 3203 , 3349 , 3495 , 3641 , and 3787 .
+   We see that every summand on the right-hand side of (7) has two lifts to Z/M2 Z, and the left-hand
+side has six lifts. In principle, we could compute all 6 · 212 = 24,576 lifts of the terms appearing
+in (7) and check to see which combinations of lifts give us an equality modulo M2 , but this would be
+inefficient... and for larger values of n, it would become more and more inefficient.
+   Instead, we use a “meet in the middle” technique. We rewrite equation (7) to get the following
+congruence modulo M1 :
+(9)            357 − 20 − 21 − 211 − 212 − 215 ≡ 216 + 226 + 227 + 237 + 257 + 265 + 268 .
+There are 6 · 25 = 192 lifts to Z/M2 Z of the terms appearing on the left-hand side of (9), and 27 = 128
+lifts of the terms on the right-hand side. We compute the values (modulo M2 ) of all of the left-hand
+lifts, and the values of all of the right-hand lifts, and then compare the two lists to see whether there are
+any values in common. (We can quickly find these common values if we sort each list first.) Each such
+common value w gives us one (or more) lifts to Z/M2 Z of (9), and hence also of (7). And clearly, all
+solutions to (1) modulo M2 that are lifts of (7) will arise in this way. In point of fact, for this particular
+example we found eight values of w, from which we obtained eight solutions to (1) in Z/M2 Z that
+were lifts of (7).
+    The two techniques we have demonstrated here for lifting solutions of (1) modulo M1 to solutions
+modulo M2 are the basis for the procedure for proving Theorem 1.1 that we sketch in the following
+section.
+
+                                         5. Proof of Theorem 1.1
+To prove Theorem 1.1 we consider the sequence of moduli Mi , where Mi = ∏ j≤i m j for the factors
+m1 , . . . , m64 listed in Table 5, so that each Mi divides the next. As we explained in Section 4, roughly
+speaking we first compute the solutions to equation (1) in Z/M1 Z; then, using the ideas sketched out
+in the examples in Section 4, we lift the solutions to Z/M2 Z, then to Z/M3 Z, then to Z/M4 Z, and so
+on, stopping when we have reached an Mi where all of the powers of 2 that appear in the solutions are
+determinate. If all the powers of 2 in a solution are determinate, the solution can be lifted uniquely to a
+solution in the integers, if it lifts to a solution at all.
+   To be more precise: For a given i, we write Mi = 2ui 3vi Mi′ where Mi′ is coprime to 6. As we noted in
+Section 2, there are ui + O2 (Mi ) distinct powers of 2 modulo Mi , and vi + O3 (Mi ) distinct powers of 3.
+For each Mi in turn, we set M = Mi and compute the solutions (x, a1 , . . . , an ) to
+                                      
+                                             x   a1           an
+                                       3 ≡ 2 + · · · + 2 mod M
+                                      
+(10)                                       0 ≤ x < v + O3 (M)
+                                      
+                                           0 = a1 ≤ · · · ≤ an < u + O2 (M),
+                                      
+
+with the added condition that for every pair ( j, k) of indices with j ̸= k, if a j and ak are both less than
+ui , then a j ̸= ak . This last condition reflects the fact that if a < ui , then 2a is a determinate power of 2
+     TABLE 2. Data for the factors mi and the moduli Mi = ∏ j≤i m j used in the proof of Theorem 1.1. The notation in
+     the table headings is as in Notation 2.3.
+
+ i                  mi     O2 (mi )    O2 (Mi )      O′3 (mi )   v2 (O′3 (Mi ))    i                 mi   O2 (mi )   O2 (Mi )       O′3 (mi )   v2 (O′3 (Mi ))
+ 1           24 · 7 · 73          32          32      3 · 22           2          32          113246209   220 · 32   220 · 32       27 · 219         20
+ 2              33 · 19      2 · 32      2 · 32       9 · 21           2          33             319489   212 · 30   220 · 32       39 · 28          20
+ 3    5 · 13 · 37 · 109     2 2 · 32    22 · 32      27 · 22           2          34      1084521185281   221 · 32   221 · 32    43095 · 222         22
+ 4          241 · 433       2 3 · 32    23 · 32     135 · 23           3          35                 22      —       221 · 32         —              22
+ 5                    17    23 · 30     23 · 32           24           4          36         7348420609   222 · 31   222 · 32       73 · 224         24
+ 6                    22       —        2 3 · 32       —               4          37                 22      —       222 · 32         —              24
+
+
+
+
+                                                                                                                                                                 POWERS OF 3 WITH FEW NONZERO BITS
+ 7              38737       23 · 32     23 · 32    2421 · 23           4          38       448203325441   223 · 31   223 · 32    26715 · 221         24
+ 8             97 · 577     2 4 · 32    24 · 32       3 · 24           4          39         1107296257   224 · 31   224 · 32       11 · 222         24
+ 9          257 · 673       24 · 31     24 · 32      21 · 28           8          40          167772161   224 · 30   224 · 32        5 · 225         25
+10                    24       —        2 4 · 32       —               8          41                  2      —       224 · 32         —              25
+11         193 · 1153       25 · 32     25 · 32       9 · 26           8          42        74490839041   226 · 31   226 · 32      185 · 226         26
+12                6337      25 · 32     25 · 32      99 · 24           8          43                  2      —       226 · 32         —              26
+13              65537       25 · 30     25 · 32           216         16          44       246423748609   226 · 31   226 · 32       27 · 228         28
+14                    28       —        2 5 · 32       —              16          45                 22      —       226 · 32         —              28
+15                  641     26 · 30     26 · 32       5 · 27          16          46        29796335617   227 · 31   227 · 32      111 · 224         28
+16                  769     27 · 31     27 · 32       3 · 24          16          47         3221225473   228 · 31   228 · 32            227         28
+17             274177       27 · 30     27 · 32     153 · 25          16          48        77309411329   229 · 31   229 · 32            230         30
+18              18433       28 · 32     28 · 32       9 · 29          16          49                 22      —       229 · 32         —              30
+19             101377       29 · 32     29 · 32      99 · 29          16          50      5469640851457   230 · 31   230 · 32      849 · 230         30
+20           2424833       210 · 30    210 · 32      37 · 216         16          51     28114855919617   231 · 31   231 · 32     3273 · 230         30
+21              12289      211 · 31    211 · 32           29          16          52   1095981164658689   231 · 30   231 · 32   127589 · 233         33
+22             974849      212 · 30    212 · 32     119 · 213         16          53                 23      —       231 · 32         —              33
+23             114689      213 · 30    213 · 32       7 · 214         16          54              87211     2 · 33   231 · 33     2907 · 20          33
+24         39714817        214 · 31    214 · 32     101 · 212         16          55      5566277615617   232 · 33   232 · 33        3 · 232         33
+25           1179649       215 · 32    215 · 32       9 · 216         16          56     25048249270273   233 · 33   233 · 33       81 · 234         34
+26      7908360193         215 · 32    215 · 32     419 · 220         20          57                  2      —       233 · 33         —              34
+27                    24       —       215 · 32        —              20          58    942556342910977   234 · 33   234 · 33     1143 · 237         37
+28        171048961        216 · 32    216 · 32    1305 · 215         20          59                 23      —       234 · 33         —              37
+29             786433      217 · 31    217 · 32           216         20          60       206158430209   235 · 31   235 · 33            233         37
+30         14155777        218 · 32    218 · 32      27 · 218         20          61      2748779069441   237 · 30   237 · 33        5 · 239         39
+31         13631489        219 · 30    219 · 32           220         20          62                 22      —       237 · 33         —              39
+
+                                                                                                                                                                 12
+                                  POWERS OF 3 WITH FEW NONZERO BITS                                        13
+
+
+in Z/M1 Z, and the right-hand side exponents in the solutions to equation (1) are required to be distinct.
+(Note that the upper bounds given in (10) have the effect of keeping us in line with Convention 2.1.)
+   For M1 = 24 · 7 · 73 we compute the solutions to (10) by brute force. The powers of 2 in Z/M1 Z are
+2 through 212 . To every n-tuple (a1 , . . . , an ) of exponents between 0 and 12 with 0 = a1 ≤ · · · ≤ an ,
+ 0
+
+we can associate the 13-tuple (b0 , . . . , b12 ), where bi is the number of a j that are equal to i. Then
+instead of enumerating all of the n-tuples (a1 , . . . , an ), we can simply run through all of the 13-tuples
+(b0 , . . . , b12 ) of non-negative integers such that
+                                             b0 + · · · + b12 = n
+and
+                                b0 = 1,    b1 ≤ 1,    b2 ≤ 1,       and b3 ≤ 1.
+When we find such a 13-tuple with the additional property that ∑ b j 2 j is congruent to 3x modulo M1
+for one of the 12 powers of 3 modulo M1 , we can compute the associated n-tuple (a1 , . . . , an ) and add
+(x, a1 , . . . , an ) to our list of solutions of equation (10) with M = M1 . We obtain all solutions to the
+equation in this way.
+   Now suppose we have a list of solutions to (10) with M = Mi−1 , and we want to create the list of
+solutions with M = Mi , where Mi = mi Mi−1 . Write Mi = 2ui 3vi Mi′ with Mi′ coprime to 6. For each
+solution (x, a1 , . . . , an ) to the problem modulo Mi−1 , we go through the following steps.
+
+Step One: Compute the powers of 2 in Z/Mi Z that lift the 2a j ∈ Z/Mi−1 Z.
+    For each j = 1, . . . , n, we compute a list A j of the values of a′ with 0 ≤ a′ < ui + O2 (Mi ) such that
+  ′
+2 ≡ 2a j mod Mi−1 .
+ a
+
+
+Step Two: Compute the number of powers of 3 in Z/Mi Z that lift 3x ∈ Z/Mi−1 Z.
+                                                                                   ′
+   Let χ denote the number of values of x′ with 0 ≤ x′ < vi + O3 (Mi ) such that 3x ≡ 3x mod Mi−1 .
+If 3x is a determinate power of 3 modulo Mi−1 , then χ = 1. If 3x is an indeterminate power of 3
+modulo Mi , then χ = O3 (Mi )/O3 (Mi−1 ). And if 3x is indeterminate modulo Mi−1 but determinate
+modulo Mi , then χ = 1 + O3 (Mi )/O3 (Mi−1 ).
+
+Step Three: Compute the lifted solutions.
+   We compute lifted solutions in one of two ways; to decide between the two methods, we check
+to see whether χ > ∏nj=1 #A j and whether mi is a prime that does not divide 6Mi−1 . If both these
+conditions hold, we say we are in the unbalanced case, and if not we say we are in the balanced case.
+      (1) The unbalanced case. In this case we must have χ > 1, so 3x is an indeterminate power of 3
+          modulo Mi−1 ; also, in this case we have vi = vi−1 because mi ̸= 3. We proceed as follows, for
+          each n-tuple (a′1 , . . . , a′n ) in A1 × · · · × An :
+                                                                   ′
+           (a) Compute the right-hand side sum. Set s := ∑ j 2a j .
+           (b) Check to see whether the right-hand side sum is a power of 3 modulo Mi . To check to see
+                                                               ′ ′
+               whether there is a power of 3, say 3x , with 3x ≡ s mod Mi , we use discrete logarithms as
+               follows.
+                    Let g be a generator of the group of units of Z/mi Z, let z be the smallest non-negative
+               integer with gz ≡ s mod mi , and let y be the smallest positive integer with gy ≡ 3 mod mi ,
+                                    POWERS OF 3 WITH FEW NONZERO BITS                                                14
+
+
+             so that z and y are discrete logarithms of s and of 3 with respect to the base g. If
+                                          ′                                                       ′
+             there is an x′ such that 3x ≡ s mod Mi , then for this x′ we have 3x ≡ s mod mi , so we
+                                                                                  ′
+             must have x′ y ≡ z mod (p − 1); for this x′ we have 3x ≡ s mod 2vi−1 Mi−1 , so we must
+                                                                                    ′
+             have x′ ≡ x mod O3 (Mi−1 ); and for this x′ we have 3x ≡ 3x ≡ 0 mod 3vi , so we must
+             have x′ ≥ vi . Conversely, any x′ that satisfies these three conditions will also satisfy
+                ′
+             3x ≡ s mod Mi .
+                   For primes mi of the size we are considering, the computation of the discrete loga-
+             rithms z and y is easily done by the computer algebra package Magma, in which we have
+             written our code. It is also a straightforward matter to compute the values of x′ that meet
+             the three conditions, if any exist.
+                   For each x′ that we find, we add (x′ , a′1 , . . . , a′n ) to our list of solutions of equation (10)
+             with M = Mi .
+        The time required to carry out this step is proportional to the number of n-tuples (a′1 , . . . , a′n )
+        that we have to consider, which is ∏ #Ai .
+    (2) The balanced case. We proceed as follows.
+         (a) Compute the left-hand side lifts. We compute the set X of the values of x′ with 0 ≤ x′ <
+                                       ′
+             vi + O3 (Mi ) such that 3x ≡ 3x mod Mi−1 .
+         (b) Group the variables into two balanced sets. Compute the value of k so that the product
+             #X · ∏ j≤k #A j and the product ∏ j>k #A j are as close in size as possible.
+         (c) Compute the lifts of the variables in each grouping. We make two lists. The first is the list
+             of all (k + 2)-tuples
+                                          ′           ′             ′
+                                      (3x − 2a1 − · · · − 2ak , x′ , a′1 , . . . , a′k )
+              for all (x′ , a′1 , . . . , a′k ) ∈ X × A1 × · · · × Ak , where we view the first entry of the tuple as an
+              element of Z/Mi Z. The second is the list of all (n − k + 1)-tuples
+                                                  ′             ′
+                                        (2ak+1 + · · · + 2an , a′k+1 , . . . , a′n )
+             for all (a′k+1 , . . . , a′n ) ∈ Ak+1 × · · · × An , where again we view the first entry as an element
+             of Z/Mi Z.
+         (d) Compare the lists for matching values. Sort each of these lists according to the value
+             of the first entry of each tuple, and then compare the two sorted lists to find all pairs of
+             elements, one from the first list and one from the second, whose first entries are equal.
+             Every such pair gives us a solution to
+                                              ′           ′             ′
+                                         3x ≡ 2a1 + · · · + 2an in Z/Mi Z
+            that reduces to our original solution in Z/Mi−1 Z. Add each such solution to our list of
+            solutions of equation (10) with M = Mi .
+        The time it takes to carry out this step is proportional to the larger of #X · ∏ j≤k #A j and
+        ∏ j>k #A j . If these two numbers are somewhat balanced, the time required for this step will be
+        roughly proportional to the square root of #X · ∏ j≤n #A j .
+   Once we have computed all of the solutions to equation (10) with M = Mi by this method, we check
+to see whether all of the powers of 2 that occur anywhere on our list are determinate. If they are
+                                 POWERS OF 3 WITH FEW NONZERO BITS                                       15
+
+        TABLE 3. For each n, we list the value of i such that our procedure for solving
+        equation (1) iterated up to the modulus Mi from Table 5. We also give the wall-clock
+        time it took for the computation to complete on a 2.8 GHz Quad-Core Intel Core
+        i7 with 16GB RAM running Magma V2.23-1 on Mac OS 11.2.3. For n ≥ 20 the
+        computation was split into parts that were run by separate processes; the time given is
+        the sum of the wall-clock times for each process.
+
+                             n     i Time (sec)           n     i Time (sec)
+                             3   10      0.01            13   37        19
+                             4   10      0.02            14   45        52
+                             5   14      0.04            15   45       145
+                             6   14      0.07            16   59       457
+                             7   14      0.14            17   59      1469
+                             8   14      0.29            18   62      5746
+                             9   14      0.62            19   62     17744
+                            10   27      1.54            20   62     53617
+                            11   37      3.81            21   62    139347
+                            12   37      8.03            22   62    743737
+
+
+not, then we increase i by 1 and iterate the procedure. If they are, then for each solution to (10) with
+M = Mi , we can check to see whether the (unique) lifts of the terms in the right-hand side of (10) to
+powers of 2 in Z add up to a power of 3. In this way, we hope to find all solutions to (1).
+
+Proof of Theorem 1.1. We ran through the procedure described above for all values of n from 3 to 22.
+For each n, the procedure did terminate before we ran out of values of Mi , so we successfully found
+all solutions to equation (1) for n ≤ 22. We found that the binary representation of 3x has at most
+twenty-two bits equal to 1 exactly when x ≤ 25.                                                   □
+
+   In Table 5, we give for each n the value of i for which the modulus Mi gave us all solutions to the
+equation. We also give the total time for the computation. As mentioned earlier, the programs we used
+to implement this computation were written in Magma and are available as supplementary material
+attached to the ArXiv version of this paper [13], as well as on the second author’s web site.
+   The procedure we described in the proof of Theorem 1.1 suggests the properties we looked for when
+choosing the factors mi out of which our moduli Mi are built. In the balanced case, we want the sets A j
+to be as small as possible, since the work in the balanced case is roughly on the order of the square
+root of the product #X · ∏ j≤n #A j . Of course, we’d like #X to be small as well, but since there are n
+sets A j we concentrate first on them.
+   For a given solution (x, a1 , . . . , an ) to (10) with M = Mi−1 , how large are the A j ? The answer is
+analogous to the computation of the value of χ given in Step Two of our procedure. Suppose we are
+in the case where mi is odd. If 2a j is a determinate power of 2 modulo Mi−1 , then #A j = 1. If 2a j is
+indeterminate modulo Mi−1 , then it is indeterminate modulo Mi as well because mi is odd, and we have
+                                     POWERS OF 3 WITH FEW NONZERO BITS                                                 16
+
+
+#A j = O2 (Mi )/O2 (Mi−1 ). If mi is coprime to Mi−1 , which is the case for all of the values we chose,
+then O2 (Mi ) is the least common multiple of O2 (mi ) and O2 (Mi−1 ).
+   The ideal case would be for O2 (mi ) to be a divisor of O2 (Mi−1 ), so that the ratio O2 (Mi )/O2 (Mi−1 )
+would be 1. The next-best case would be for O2 (mi ) to divide 2O2 (Mi−1 ) but not O2 (Mi−1 ), so that
+O2 (Mi )/O2 (Mi−1 ) would be 2. We were able to stay in these two cases for every i with mi odd, except
+for i = 54, where we have O2 (Mi )/O2 (Mi−1 ) = 3.
+   For those i for which O2 (Mi )/O2 (Mi−1 ) = 1, we can focus more on the unbalanced case. These
+i give us the opportunity to build up the number of powers of 2 in O′3 (Mi ). For example, for i = 13
+we have O2 (Mi )/O2 (Mi−1 ) = 1, and with the value of mi that we chose, we increase the 2-part of the
+order of 3 from 28 in O′3 (Mi−1 ) to 216 in O′3 (Mi ).
+   We found our mi mostly by looking for primes p congruent to 1 modulo 2a 3b for various values of a
+and b, and computing the orders of 2 and 3 in (Z/pZ)∗ .
+   We make one final note about our choice of the mi . We would also like the number of solutions we
+have to consider at any given stage to be small. This becomes especially critical for the larger values of
+n that we consider. Our choices for mi , especially for small i, reflect this. For example, we have chosen
+m4 to be 241 · 433, which puts us in the balanced case with #A j = 2 for most j and with #X = 10. After
+this m4 , we have m5 = 17, m6 = 22 , and m7 = 38737. For smaller values of n, it turns out that it would
+be faster to take m4 = 433 (which gives us #X = 1), m5 = 17, m6 = 22 , and then to add in a factor of
+241 before moving on to m7 = 38737. According to the heuristic mentioned in Step Three, the time it
+takes to process a solution in the balanced case is very roughly proportional to (#X · ∏ j≤n #A j )1/2 , so
+                                                                                      √
+having #X equal to 1 instead of 10 should speed up this step by a factor of about 10. But for large n,
+this improved speed for i = 4 would be outweighed by the extra time it would take to process the large
+number of solutions that would make it through to the next step. To simplify our exposition, we have
+simply given one single sequence of mi to use for all n, optimized for large values of n, even though
+different choices would have made the program run faster for smaller n.
+
+
+                                             6. Proof of Theorem 1.2
+The proof of Theorem 1.2 is also computational, and is essentially the same as that of Theorem 1.1.
+The sequence of moduli we use is given in Table 6, and the time it took to run our program for n up to
+24 is given in Table 6. The only other comment we make here is that if n is odd and greater than 1,
+then there are no solutions to equation (2), because no power of 2 (other than 1) can be written as the
+sum of an odd number of powers of 3.                                                                 □
+
+
+                                                     References
+ [1] Zsolt Ádám, Lajos Hajdu, and Florian Luca, Representing integers as linear combinations of S-units, Acta Arith. 138
+     (2009), no. 2, 101–107. MR 2520130
+ [2] Leo J. Alex, Diophantine equations related to finite groups, Comm. Algebra 4 (1976), no. 1, 77–100. MR 424675
+ [3] Tom M. Apostol, Introduction to analytic number theory, Springer-Verlag, New York, 1976, Undergraduate Texts in
+     Mathematics. MR 0434929
+ [4] Levi ben Gerson [Magistri Leonis Hebraei], De numeris harmonicis, Scripta diversa super scientiam mathematicam et
+     physicam, 14th century, Bibliothèque nationale de France, Département des manuscrits, Latin 7378A, pp. 55v–57r.
+                                      POWERS OF 3 WITH FEW NONZERO BITS                                              17
+
+         TABLE 4. Data for the factors mi and the moduli Mi = ∏ j≤i m j used in the proof of
+         Theorem 1.2. The notation in the table headings is as in Notation 2.3.
+
+                      i                    mi O3 (mi ) O3 (Mi )          O′2 (mi ) v3 (O′2 (Mi ))
+                     1 2 · 34 · 13 · 757             32         32  28 · 33               3
+                     2       7 · 19 · 37         2 · 32     2 · 32   4 · 32               3
+                     3             5 · 73       22 · 3      2
+                                                           2 ·3  2   4 · 32               3
+                     4          530713          22 · 32    22 · 32  91 · 36               6
+                     5                 33          —        2
+                                                           2 ·3  2    —                   6
+                     6        41 · 6481          3
+                                                2 ·3        3
+                                                           2 ·3  2  20 · 34               6
+                     7 282429005041             23 · 32    2 · 3 66430 · 312
+                                                            3    2                       12
+                     8                 36          —       23 · 32    —                  12
+
+
+         TABLE 5. For each n, we list the value of i such that our procedure for solving
+         equation (2) iterated up to the modulus Mi from Table 6. We also give the wall-clock
+         time it took for the computation to complete on a 2.8 GHz Quad-Core Intel Core i7
+         with 16GB RAM running Magma V2.23-1 on Mac OS 11.2.3.
+
+                                  n    i Time (sec)              n    i Time (sec)
+                                  4    5       0.01            16    8         14
+                                  6    5       0.01            18    8         84
+                                  8    5       0.07            20    8        789
+                                 10    8       0.23            22    8       9792
+                                 12    8       0.92            24    8     140036
+                                 14    8       3.44
+
+
+ [5] Michael A. Bennett, Yann Bugeaud, and Maurice Mignotte, Perfect powers with few binary digits and related
+     Diophantine problems, Ann. Sc. Norm. Super. Pisa Cl. Sci. (5) 12 (2013), no. 4, 941–953. MR 3184574
+ [6]         , Perfect powers with few binary digits and related Diophantine problems, II, Math. Proc. Cambridge Philos.
+     Soc. 153 (2012), no. 3, 525–540. MR 2990629
+ [7] Csanád Bertók and Lajos Hajdu, A Hasse-type principle for exponential Diophantine equations and its applications,
+     Math. Comp. 85 (2016), no. 298, 849–860. MR 3434884
+ [8]         , A Hasse-type principle for exponential Diophantine equations over number fields and its applications,
+     Monatsh. Math. 187 (2018), no. 3, 425–436. MR 3858424
+ [9] Wieb Bosma, John Cannon, and Catherine Playoust, The Magma algebra system. I. The user language, J. Symbolic
+     Comput. 24 (1997), no. 3-4, 235–265, Computational algebra and number theory (London, 1993). Software available at
+     http://magma.maths.usyd.edu.au/. MR 1484478
+[10] Joel Lee Brenner and Lorraine L. Foster, Exponential Diophantine equations, Pacific J. Math. 101 (1982), no. 2,
+     263–301. MR 675401
+[11] Karine Chemla and Serge Pahaut, Remarques sur les ouvrages mathématiques de Gersonide, Studies on Gersonides
+     — A Fourteenth-Century Jewish Philosopher-Scientist (G. Freudenthal, ed.), Collection de Travaux de l’Académie
+     Internationale d’Histoire des Sciences, vol. 36, E. J. Brill, Leiden, 1992, pp. 149–191.
+                                     POWERS OF 3 WITH FEW NONZERO BITS                                                 18
+
+
+[12] Vassil S. Dimitrov and Everett W. Howe, Lower bounds on the lengths of double-base representations, Proc. Amer.
+     Math. Soc. 139 (2011), no. 10, 3423–3430. MR 2813374
+[13]          , Powers of 3 with few nonzero bits and a conjecture of Erdős, 2021. arXiv:2105.06440 [math.NT]
+[14] Taylor Dupuy and David E. Weirich, Bits of 3n in binary, Wieferich primes and a conjecture of Erdős, J. Number
+     Theory 158 (2016), 268–280. MR 3393551
+[15] Paul Erdős, Some unconventional problems in number theory, Math. Mag. 52 (1979), no. 2, 67–70. MR 527408
+[16] Paul Erdős, Carl Pomerance, and Eric Schmutz, Carmichael’s lambda function, Acta Arith. 58 (1991), no. 4, 363–385.
+     MR 1121092
+[17] Jeffrey C. Lagarias, Ternary expansions of powers of 2, J. Lond. Math. Soc. (2) 79 (2009), no. 3, 562–588. MR 2506687
+[18] Władysław Narkiewicz, A note on a paper of H. Gupta concerning powers of two and three, Univ. Beograd. Publ.
+     Elektrotehn. Fak. Ser. Mat. Fiz. (1980), no. 678-715, 173–174 (1981). MR 623247
+[19] S. Sivasankaranarayana Pillai, On the equation 2x − 3y = 2X + 3Y , Bull. Calcutta Math. Soc. 37 (1945), 15–20.
+     MR 13386
+[20] Hans Georg Senge and Ernst Gabor Straus, PV-numbers and sets of multiplicity, Period. Math. Hungar. 3 (1973),
+     93–100. MR 340185
+[21] Cameron L. Stewart, On the representation of an integer in two different bases, J. Reine Angew. Math. 319 (1980),
+     63–72. MR 586115
+[22] László Szalay, The equations 2n ± 2m ± 2l = z2 , Indag. Math. (N.S.) 13 (2002), no. 1, 131–142. MR 2014980
+
+   (Dimitrov) C ENTER FOR I NFORMATION S ECURITY AND C RYPTOGRAPHY, U NIVERSITY OF C ALGARY, 2500 U NI -
+VERSITY D RIVE NW, C ALGARY, AB T2N 1N4, C ANADA
+   Email address: vdimitro@ucalgary.ca
+
+   (Dimitrov) L EMURIAN L ABS , I NC .
+   Email address: vassil@lemurianlabs.com
+
+   (Howe) I NDEPENDENT MATHEMATICIAN , S AN D IEGO , CA 92104, USA
+   Email address: however@alumni.caltech.edu
+   URL: http://ewhowe.com
+

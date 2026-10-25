@@ -1,0 +1,3 @@
+{"agreement": 2015699, "independent_drop": 1914506, "independent_keep": 101193, "open_tested": 2015699, "part": "A", "tested": 2015699}
+{"compared": 969, "count_agreement": 969, "duplicate_records": 229, "part": "B", "patterns_sampled": 300, "representations_sampled": 969, "verdict_agreement": 969}
+{"part": "plants", "survived": 8}

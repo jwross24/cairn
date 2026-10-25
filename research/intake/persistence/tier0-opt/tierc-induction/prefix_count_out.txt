@@ -1,0 +1,2 @@
+k=31: prefixes with s<=1126 digits and k blocks, 8 digit values: 10^88.5 (positions 10^60.5)
+k=44: prefixes with s<=1608 digits and k blocks, 8 digit values: 10^126.1 (positions 10^86.4)

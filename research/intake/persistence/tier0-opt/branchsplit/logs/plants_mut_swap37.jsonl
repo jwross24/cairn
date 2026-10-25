@@ -1,0 +1,608 @@
+{"y": 12, "n": 2, "a": 2, "b": 1, "c": 0, "cls": [true, false], "s": 2, "M": [2], "npat": 144, "found": true, "open": 0, "bsdrop": 1}
+{"y": 14, "n": 2, "a": 1, "b": 0, "c": 1, "cls": [false, true], "s": 4, "M": [4], "npat": 144, "found": true, "open": 0, "bsdrop": 0}
+{"y": 16, "n": 2, "a": 4, "b": 0, "c": 0, "cls": [false, false], "s": 6, "M": [6], "npat": 144, "found": true, "open": 0, "bsdrop": 0}
+{"y": 18, "n": 2, "a": 1, "b": 2, "c": 0, "cls": [true, false], "s": 8, "M": [8], "npat": 144, "found": true, "open": 0, "bsdrop": 0}
+{"y": 21, "n": 2, "a": 0, "b": 1, "c": 1, "cls": [true, true], "s": 2, "M": [2], "npat": 144, "found": true, "open": 0, "bsdrop": 1}
+{"y": 81, "n": 2, "a": 0, "b": 4, "c": 0, "cls": [true, false], "s": 8, "M": [8], "npat": 144, "found": true, "open": 0, "bsdrop": 0}
+{"y": 112, "n": 3, "a": 4, "b": 0, "c": 1, "cls": [false, true], "s": 2, "M": [2], "npat": 144, "found": true, "open": 0, "bsdrop": 1}
+{"y": 144, "n": 3, "a": 4, "b": 2, "c": 0, "cls": [true, false], "s": 16, "M": [4, 4], "npat": 936, "found": true, "open": 0, "bsdrop": 0}
+{"y": 441, "n": 3, "a": 0, "b": 2, "c": 2, "cls": [true, true], "s": 16, "M": [4, 4], "npat": 936, "found": true, "open": 0, "bsdrop": 0}
+{"y": 24, "n": 2, "a": 3, "b": 1, "c": 0, "cls": [true, false], "s": 8, "M": [2, 4], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 27, "n": 2, "a": 0, "b": 3, "c": 0, "cls": [true, false], "s": 14, "M": [2, 7], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 28, "n": 2, "a": 2, "b": 0, "c": 1, "cls": [false, true], "s": 16, "M": [2, 8], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 32, "n": 2, "a": 5, "b": 0, "c": 0, "cls": [false, false], "s": 6, "M": [2, 3], "npat": 1728, "found": true, "open": 1, "bsdrop": 0}
+{"y": 36, "n": 2, "a": 2, "b": 2, "c": 0, "cls": [true, false], "s": 18, "M": [3, 6], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 42, "n": 2, "a": 1, "b": 1, "c": 1, "cls": [true, true], "s": 8, "M": [2, 4], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 48, "n": 2, "a": 4, "b": 1, "c": 0, "cls": [true, false], "s": 32, "M": [4, 8], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 49, "n": 2, "a": 0, "b": 0, "c": 2, "cls": [false, true], "s": 36, "M": [4, 9], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 54, "n": 2, "a": 1, "b": 3, "c": 0, "cls": [true, false], "s": 20, "M": [4, 5], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 56, "n": 2, "a": 3, "b": 0, "c": 1, "cls": [false, true], "s": 30, "M": [5, 6], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 63, "n": 2, "a": 0, "b": 2, "c": 1, "cls": [true, true], "s": 18, "M": [3, 6], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 64, "n": 2, "a": 6, "b": 0, "c": 0, "cls": [false, false], "s": 24, "M": [4, 6], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 72, "n": 2, "a": 3, "b": 2, "c": 0, "cls": [true, false], "s": 14, "M": [2, 7], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 84, "n": 2, "a": 2, "b": 1, "c": 1, "cls": [true, true], "s": 32, "M": [4, 8], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 96, "n": 2, "a": 5, "b": 1, "c": 0, "cls": [true, false], "s": 54, "M": [6, 9], "npat": 1728, "found": true, "open": 0, "bsdrop": 1}
+{"y": 98, "n": 2, "a": 1, "b": 0, "c": 2, "cls": [false, true], "s": 72, "M": [8, 9], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 126, "n": 3, "a": 1, "b": 2, "c": 1, "cls": [true, true], "s": 12, "M": [2, 6], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 128, "n": 3, "a": 7, "b": 0, "c": 0, "cls": [false, false], "s": 16, "M": [2, 8], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 147, "n": 3, "a": 0, "b": 1, "c": 2, "cls": [true, true], "s": 28, "M": [4, 7], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 162, "n": 3, "a": 1, "b": 4, "c": 0, "cls": [true, false], "s": 12, "M": [2, 6], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 168, "n": 3, "a": 3, "b": 1, "c": 1, "cls": [true, true], "s": 48, "M": [6, 8], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 189, "n": 3, "a": 0, "b": 3, "c": 1, "cls": [true, true], "s": 72, "M": [8, 9], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 192, "n": 3, "a": 6, "b": 1, "c": 0, "cls": [true, false], "s": 18, "M": [2, 9], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 196, "n": 3, "a": 2, "b": 0, "c": 2, "cls": [false, true], "s": 54, "M": [6, 9], "npat": 1728, "found": true, "open": 0, "bsdrop": 1}
+{"y": 216, "n": 3, "a": 3, "b": 3, "c": 0, "cls": [true, false], "s": 12, "M": [2, 6], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 512, "n": 3, "a": 9, "b": 0, "c": 0, "cls": [false, false], "s": 10, "M": [2, 5], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 1134, "n": 4, "a": 1, "b": 4, "c": 1, "cls": [true, true], "s": 12, "M": [3, 4], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 1152, "n": 4, "a": 7, "b": 2, "c": 0, "cls": [true, false], "s": 10, "M": [2, 5], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 1176, "n": 4, "a": 3, "b": 1, "c": 2, "cls": [true, true], "s": 42, "M": [6, 7], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 1512, "n": 4, "a": 3, "b": 3, "c": 1, "cls": [true, true], "s": 10, "M": [2, 5], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 4116, "n": 4, "a": 2, "b": 1, "c": 3, "cls": [true, true], "s": 24, "M": [4, 6], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 14112, "n": 5, "a": 5, "b": 2, "c": 2, "cls": [true, true], "s": 8, "M": [2, 4], "npat": 1728, "found": true, "open": 0, "bsdrop": 0}
+{"y": 111132, "n": 6, "a": 2, "b": 4, "c": 3, "cls": [true, true], "s": 6, "M": [2, 3], "npat": 1728, "found": true, "open": 1, "bsdrop": 0}
+{"y": 224, "n": 3, "a": 5, "b": 0, "c": 1, "cls": [false, true], "s": 16, "M": [2, 2, 4], "npat": 11232, "found": true, "open": 0, "bsdrop": 2}
+{"y": 252, "n": 3, "a": 2, "b": 2, "c": 1, "cls": [true, true], "s": 20, "M": [2, 2, 5], "npat": 11232, "found": true, "open": 0, "bsdrop": 0}
+{"y": 288, "n": 3, "a": 5, "b": 2, "c": 0, "cls": [true, false], "s": 128, "M": [2, 8, 8], "npat": 11232, "found": true, "open": 0, "bsdrop": 0}
+{"y": 336, "n": 3, "a": 4, "b": 1, "c": 1, "cls": [true, true], "s": 54, "M": [3, 3, 6], "npat": 11232, "found": true, "open": 0, "bsdrop": 1}
+{"y": 343, "n": 3, "a": 0, "b": 0, "c": 3, "cls": [false, true], "s": 36, "M": [3, 3, 4], "npat": 11232, "found": true, "open": 0, "bsdrop": 1}
+{"y": 448, "n": 3, "a": 6, "b": 0, "c": 1, "cls": [false, true], "s": 128, "M": [4, 4, 8], "npat": 11232, "found": true, "open": 0, "bsdrop": 1}
+{"y": 588, "n": 3, "a": 2, "b": 1, "c": 2, "cls": [true, true], "s": 320, "M": [5, 8, 8], "npat": 11232, "found": true, "open": 0, "bsdrop": 0}
+{"y": 686, "n": 3, "a": 1, "b": 0, "c": 3, "cls": [false, true], "s": 288, "M": [6, 6, 8], "npat": 11232, "found": true, "open": 0, "bsdrop": 2}
+{"y": 882, "n": 3, "a": 1, "b": 2, "c": 2, "cls": [true, true], "s": 128, "M": [2, 8, 8], "npat": 11232, "found": true, "open": 0, "bsdrop": 0}
+{"y": 1323, "n": 4, "a": 0, "b": 3, "c": 2, "cls": [true, true], "s": 18, "M": [2, 3, 3], "npat": 11232, "found": true, "open": 0, "bsdrop": 0}
+{"y": 1344, "n": 4, "a": 6, "b": 1, "c": 1, "cls": [true, true], "s": 48, "M": [3, 4, 4], "npat": 11232, "found": true, "open": 0, "bsdrop": 0}
+{"y": 1944, "n": 4, "a": 3, "b": 5, "c": 0, "cls": [true, false], "s": 144, "M": [4, 4, 9], "npat": 11232, "found": true, "open": 0, "bsdrop": 0}
+{"y": 3136, "n": 4, "a": 6, "b": 0, "c": 2, "cls": [false, true], "s": 54, "M": [3, 3, 6], "npat": 11232, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=3136"}
+{"y": 6144, "n": 4, "a": 11, "b": 1, "c": 0, "cls": [true, false], "s": 96, "M": [4, 4, 6], "npat": 11232, "found": true, "open": 0, "bsdrop": 0}
+{"y": 6561, "n": 4, "a": 0, "b": 8, "c": 0, "cls": [true, false], "s": 180, "M": [5, 6, 6], "npat": 11232, "found": true, "open": 0, "bsdrop": 0}
+{"y": 11664, "n": 5, "a": 4, "b": 6, "c": 0, "cls": [true, false], "s": 144, "M": [4, 6, 6], "npat": 11232, "found": true, "open": 1, "bsdrop": 0}
+{"y": 13122, "n": 5, "a": 1, "b": 8, "c": 0, "cls": [true, false], "s": 12, "M": [2, 2, 3], "npat": 11232, "found": true, "open": 2, "bsdrop": 0}
+{"y": 18144, "n": 5, "a": 5, "b": 4, "c": 1, "cls": [true, true], "s": 128, "M": [4, 4, 8], "npat": 11232, "found": true, "open": 0, "bsdrop": 1}
+{"y": 18816, "n": 5, "a": 7, "b": 1, "c": 2, "cls": [true, true], "s": 384, "M": [6, 8, 8], "npat": 11232, "found": true, "open": 0, "bsdrop": 1}
+{"y": 1161216, "n": 7, "a": 11, "b": 4, "c": 1, "cls": [true, true], "s": 72, "M": [2, 6, 6], "npat": 11232, "found": true, "open": 0, "bsdrop": 1}
+{"y": 243, "n": 3, "a": 0, "b": 5, "c": 0, "cls": [true, false], "s": 24, "M": [2, 3, 4], "npat": 20736, "found": true, "open": 0, "bsdrop": 3}
+{"y": 256, "n": 3, "a": 8, "b": 0, "c": 0, "cls": [false, false], "s": 60, "M": [2, 5, 6], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 294, "n": 3, "a": 1, "b": 1, "c": 2, "cls": [true, true], "s": 72, "M": [2, 4, 9], "npat": 20736, "found": true, "open": 0, "bsdrop": 3}
+{"y": 324, "n": 3, "a": 2, "b": 4, "c": 0, "cls": [true, false], "s": 24, "M": [2, 3, 4], "npat": 20736, "found": true, "open": 0, "bsdrop": 3}
+{"y": 378, "n": 3, "a": 1, "b": 3, "c": 1, "cls": [true, true], "s": 168, "M": [3, 7, 8], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 384, "n": 3, "a": 7, "b": 1, "c": 0, "cls": [true, false], "s": 96, "M": [3, 4, 8], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 392, "n": 3, "a": 3, "b": 0, "c": 2, "cls": [false, true], "s": 54, "M": [2, 3, 9], "npat": 20736, "found": true, "open": 0, "bsdrop": 2}
+{"y": 432, "n": 3, "a": 4, "b": 3, "c": 0, "cls": [true, false], "s": 24, "M": [2, 3, 4], "npat": 20736, "found": true, "open": 0, "bsdrop": 3}
+{"y": 486, "n": 3, "a": 1, "b": 5, "c": 0, "cls": [true, false], "s": 192, "M": [4, 6, 8], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 567, "n": 3, "a": 0, "b": 4, "c": 1, "cls": [true, true], "s": 210, "M": [5, 6, 7], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 576, "n": 3, "a": 6, "b": 2, "c": 0, "cls": [true, false], "s": 210, "M": [5, 6, 7], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 648, "n": 3, "a": 3, "b": 4, "c": 0, "cls": [true, false], "s": 192, "M": [4, 6, 8], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 672, "n": 3, "a": 5, "b": 1, "c": 1, "cls": [true, true], "s": 84, "M": [2, 6, 7], "npat": 20736, "found": true, "open": 0, "bsdrop": 2}
+{"y": 729, "n": 3, "a": 0, "b": 6, "c": 0, "cls": [true, false], "s": 126, "M": [2, 7, 9], "npat": 20736, "found": true, "open": 0, "bsdrop": 1}
+{"y": 756, "n": 3, "a": 2, "b": 3, "c": 1, "cls": [true, true], "s": 210, "M": [5, 6, 7], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 768, "n": 3, "a": 8, "b": 1, "c": 0, "cls": [true, false], "s": 336, "M": [6, 7, 8], "npat": 20736, "found": true, "open": 0, "bsdrop": 2}
+{"y": 784, "n": 3, "a": 4, "b": 0, "c": 2, "cls": [false, true], "s": 224, "M": [4, 7, 8], "npat": 20736, "found": true, "open": 0, "bsdrop": 1}
+{"y": 864, "n": 3, "a": 5, "b": 3, "c": 0, "cls": [true, false], "s": 192, "M": [4, 6, 8], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 896, "n": 3, "a": 7, "b": 0, "c": 1, "cls": [false, true], "s": 432, "M": [6, 8, 9], "npat": 20736, "found": true, "open": 0, "bsdrop": 1}
+{"y": 972, "n": 3, "a": 2, "b": 5, "c": 0, "cls": [true, false], "s": 126, "M": [2, 7, 9], "npat": 20736, "found": true, "open": 0, "bsdrop": 1}
+{"y": 1296, "n": 4, "a": 4, "b": 4, "c": 0, "cls": [true, false], "s": 108, "M": [2, 6, 9], "npat": 20736, "found": true, "open": 0, "bsdrop": 2}
+{"y": 1372, "n": 4, "a": 2, "b": 0, "c": 3, "cls": [false, true], "s": 42, "M": [2, 3, 7], "npat": 20736, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=1372"}
+{"y": 1458, "n": 4, "a": 1, "b": 6, "c": 0, "cls": [true, false], "s": 160, "M": [4, 5, 8], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 1536, "n": 4, "a": 9, "b": 1, "c": 0, "cls": [true, false], "s": 90, "M": [3, 5, 6], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 1568, "n": 4, "a": 5, "b": 0, "c": 2, "cls": [false, true], "s": 240, "M": [5, 6, 8], "npat": 20736, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=1568"}
+{"y": 1728, "n": 4, "a": 6, "b": 3, "c": 0, "cls": [true, false], "s": 112, "M": [2, 7, 8], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 1764, "n": 4, "a": 2, "b": 2, "c": 2, "cls": [true, true], "s": 168, "M": [4, 6, 7], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 1792, "n": 4, "a": 8, "b": 0, "c": 1, "cls": [false, true], "s": 126, "M": [2, 7, 9], "npat": 20736, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=1792"}
+{"y": 2187, "n": 4, "a": 0, "b": 7, "c": 0, "cls": [true, false], "s": 112, "M": [2, 7, 8], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 2916, "n": 4, "a": 2, "b": 6, "c": 0, "cls": [true, false], "s": 108, "M": [2, 6, 9], "npat": 20736, "found": true, "open": 0, "bsdrop": 2}
+{"y": 5184, "n": 4, "a": 6, "b": 4, "c": 0, "cls": [true, false], "s": 160, "M": [4, 5, 8], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 6174, "n": 4, "a": 1, "b": 2, "c": 3, "cls": [true, true], "s": 168, "M": [4, 6, 7], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 6912, "n": 4, "a": 8, "b": 3, "c": 0, "cls": [true, false], "s": 108, "M": [2, 6, 9], "npat": 20736, "found": true, "open": 0, "bsdrop": 2}
+{"y": 7168, "n": 4, "a": 10, "b": 0, "c": 1, "cls": [false, true], "s": 336, "M": [6, 7, 8], "npat": 20736, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=7168"}
+{"y": 8192, "n": 4, "a": 13, "b": 0, "c": 0, "cls": [false, false], "s": 144, "M": [2, 8, 9], "npat": 20736, "found": true, "open": 0, "bsdrop": 0}
+{"y": 9216, "n": 4, "a": 10, "b": 2, "c": 0, "cls": [true, false], "s": 108, "M": [2, 6, 9], "npat": 20736, "found": true, "open": 0, "bsdrop": 2}
+{"y": 9261, "n": 4, "a": 0, "b": 3, "c": 3, "cls": [true, true], "s": 108, "M": [2, 6, 9], "npat": 20736, "found": true, "open": 0, "bsdrop": 2}
+{"y": 16128, "n": 5, "a": 8, "b": 2, "c": 1, "cls": [true, true], "s": 96, "M": [2, 6, 8], "npat": 20736, "found": true, "open": 1, "bsdrop": 0}
+{"y": 21168, "n": 5, "a": 4, "b": 3, "c": 2, "cls": [true, true], "s": 96, "M": [2, 6, 8], "npat": 20736, "found": true, "open": 1, "bsdrop": 0}
+{"y": 131712, "n": 6, "a": 7, "b": 1, "c": 3, "cls": [true, true], "s": 42, "M": [2, 3, 7], "npat": 20736, "found": true, "open": 0, "bsdrop": 1}
+{"y": 3888, "n": 4, "a": 4, "b": 5, "c": 0, "cls": [true, false], "s": 1536, "M": [3, 8, 8, 8], "npat": 52416, "found": true, "open": 0, "bsdrop": 0}
+{"y": 7776, "n": 4, "a": 5, "b": 5, "c": 0, "cls": [true, false], "s": 2058, "M": [6, 7, 7, 7], "npat": 52416, "found": true, "open": 0, "bsdrop": 0}
+{"y": 15552, "n": 5, "a": 6, "b": 5, "c": 0, "cls": [true, false], "s": 250, "M": [2, 5, 5, 5], "npat": 52416, "found": true, "open": 0, "bsdrop": 1}
+{"y": 177147, "n": 6, "a": 0, "b": 11, "c": 0, "cls": [true, false], "s": 1372, "M": [4, 7, 7, 7], "npat": 52416, "found": true, "open": 1, "bsdrop": 0}
+{"y": 12288, "n": 5, "a": 12, "b": 1, "c": 0, "cls": [true, false], "s": 256, "M": [2, 2, 8, 8], "npat": 73008, "found": true, "open": 1, "bsdrop": 4}
+{"y": 16464, "n": 5, "a": 4, "b": 1, "c": 3, "cls": [true, true], "s": 576, "M": [4, 4, 6, 6], "npat": 73008, "found": true, "open": 1, "bsdrop": 2}
+{"y": 28812, "n": 5, "a": 2, "b": 1, "c": 4, "cls": [true, true], "s": 256, "M": [2, 2, 8, 8], "npat": 73008, "found": true, "open": 1, "bsdrop": 4}
+{"y": 2268, "n": 4, "a": 2, "b": 4, "c": 1, "cls": [true, true], "s": 192, "M": [2, 2, 6, 8], "npat": 134784, "found": true, "open": 1, "bsdrop": 8}
+{"y": 2352, "n": 4, "a": 4, "b": 1, "c": 2, "cls": [true, true], "s": 60, "M": [2, 2, 3, 5], "npat": 134784, "found": true, "open": 0, "bsdrop": 9}
+{"y": 2592, "n": 4, "a": 5, "b": 4, "c": 0, "cls": [true, false], "s": 180, "M": [2, 2, 5, 9], "npat": 134784, "found": true, "open": 0, "bsdrop": 5}
+{"y": 2646, "n": 4, "a": 1, "b": 3, "c": 2, "cls": [true, true], "s": 288, "M": [2, 4, 6, 6], "npat": 134784, "found": true, "open": 1, "bsdrop": 5}
+{"y": 2688, "n": 4, "a": 7, "b": 1, "c": 1, "cls": [true, true], "s": 768, "M": [2, 6, 8, 8], "npat": 134784, "found": true, "open": 0, "bsdrop": 5}
+{"y": 2744, "n": 4, "a": 3, "b": 0, "c": 3, "cls": [false, true], "s": 224, "M": [2, 4, 4, 7], "npat": 134784, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=2744"}
+{"y": 3969, "n": 4, "a": 0, "b": 4, "c": 2, "cls": [true, true], "s": 1458, "M": [3, 6, 9, 9], "npat": 134784, "found": true, "open": 0, "bsdrop": 3}
+{"y": 4374, "n": 4, "a": 1, "b": 7, "c": 0, "cls": [true, false], "s": 336, "M": [3, 4, 4, 7], "npat": 134784, "found": true, "open": 0, "bsdrop": 2}
+{"y": 5292, "n": 4, "a": 2, "b": 3, "c": 2, "cls": [true, true], "s": 180, "M": [2, 2, 5, 9], "npat": 134784, "found": true, "open": 0, "bsdrop": 5}
+{"y": 5488, "n": 4, "a": 4, "b": 0, "c": 3, "cls": [false, true], "s": 1280, "M": [4, 5, 8, 8], "npat": 134784, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=5488"}
+{"y": 6272, "n": 4, "a": 7, "b": 0, "c": 2, "cls": [false, true], "s": 168, "M": [2, 2, 6, 7], "npat": 134784, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=6272"}
+{"y": 8232, "n": 4, "a": 3, "b": 1, "c": 3, "cls": [true, true], "s": 96, "M": [2, 2, 3, 8], "npat": 134784, "found": true, "open": 0, "bsdrop": 3}
+{"y": 8748, "n": 4, "a": 2, "b": 7, "c": 0, "cls": [true, false], "s": 1792, "M": [4, 7, 8, 8], "npat": 134784, "found": true, "open": 1, "bsdrop": 3}
+{"y": 12544, "n": 5, "a": 8, "b": 0, "c": 2, "cls": [false, true], "s": 160, "M": [2, 4, 4, 5], "npat": 134784, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=12544"}
+{"y": 14336, "n": 5, "a": 11, "b": 0, "c": 1, "cls": [false, true], "s": 216, "M": [3, 3, 4, 6], "npat": 134784, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=14336"}
+{"y": 18522, "n": 5, "a": 1, "b": 3, "c": 3, "cls": [true, true], "s": 160, "M": [2, 2, 5, 8], "npat": 134784, "found": true, "open": 1, "bsdrop": 11}
+{"y": 21952, "n": 5, "a": 6, "b": 0, "c": 3, "cls": [false, true], "s": 180, "M": [2, 2, 5, 9], "npat": 134784, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=21952"}
+{"y": 24192, "n": 5, "a": 7, "b": 3, "c": 1, "cls": [true, true], "s": 144, "M": [2, 2, 4, 9], "npat": 134784, "found": true, "open": 0, "bsdrop": 6}
+{"y": 27216, "n": 5, "a": 4, "b": 5, "c": 1, "cls": [true, true], "s": 168, "M": [2, 2, 6, 7], "npat": 134784, "found": true, "open": 1, "bsdrop": 8}
+{"y": 33614, "n": 5, "a": 1, "b": 0, "c": 5, "cls": [false, true], "s": 216, "M": [3, 3, 4, 6], "npat": 134784, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=33614"}
+{"y": 41472, "n": 5, "a": 9, "b": 4, "c": 0, "cls": [true, false], "s": 224, "M": [2, 4, 4, 7], "npat": 134784, "found": true, "open": 1, "bsdrop": 6}
+{"y": 61236, "n": 5, "a": 2, "b": 7, "c": 1, "cls": [true, true], "s": 216, "M": [2, 3, 6, 6], "npat": 134784, "found": true, "open": 2, "bsdrop": 4}
+{"y": 71442, "n": 5, "a": 1, "b": 6, "c": 2, "cls": [true, true], "s": 224, "M": [2, 4, 4, 7], "npat": 134784, "found": true, "open": 1, "bsdrop": 6}
+{"y": 81648, "n": 5, "a": 4, "b": 6, "c": 1, "cls": [true, true], "s": 1536, "M": [4, 6, 8, 8], "npat": 134784, "found": true, "open": 1, "bsdrop": 5}
+{"y": 93312, "n": 5, "a": 7, "b": 6, "c": 0, "cls": [true, false], "s": 162, "M": [2, 3, 3, 9], "npat": 134784, "found": true, "open": 1, "bsdrop": 3}
+{"y": 114688, "n": 6, "a": 14, "b": 0, "c": 1, "cls": [false, true], "s": 1536, "M": [4, 6, 8, 8], "npat": 134784, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=114688"}
+{"y": 124416, "n": 6, "a": 9, "b": 5, "c": 0, "cls": [true, false], "s": 192, "M": [2, 4, 4, 6], "npat": 134784, "found": true, "open": 0, "bsdrop": 8}
+{"y": 137781, "n": 6, "a": 0, "b": 9, "c": 1, "cls": [true, true], "s": 1176, "M": [3, 7, 7, 8], "npat": 134784, "found": true, "open": 1, "bsdrop": 1}
+{"y": 145152, "n": 6, "a": 8, "b": 4, "c": 1, "cls": [true, true], "s": 200, "M": [2, 4, 5, 5], "npat": 134784, "found": true, "open": 1, "bsdrop": 4}
+{"y": 175616, "n": 6, "a": 9, "b": 0, "c": 3, "cls": [false, true], "s": 1260, "M": [5, 6, 6, 7], "npat": 134784, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=175616"}
+{"y": 194481, "n": 6, "a": 0, "b": 4, "c": 4, "cls": [true, true], "s": 1152, "M": [4, 4, 8, 9], "npat": 134784, "found": true, "open": 1, "bsdrop": 1}
+{"y": 221184, "n": 6, "a": 13, "b": 3, "c": 0, "cls": [true, false], "s": 128, "M": [2, 2, 4, 8], "npat": 134784, "found": true, "open": 0, "bsdrop": 8}
+{"y": 518616, "n": 6, "a": 3, "b": 3, "c": 4, "cls": [true, true], "s": 1440, "M": [5, 6, 6, 8], "npat": 134784, "found": true, "open": 1, "bsdrop": 3}
+{"y": 531441, "n": 6, "a": 0, "b": 12, "c": 0, "cls": [true, false], "s": 240, "M": [3, 4, 4, 5], "npat": 134784, "found": true, "open": 1, "bsdrop": 0}
+{"y": 551124, "n": 6, "a": 2, "b": 9, "c": 1, "cls": [true, true], "s": 200, "M": [2, 4, 5, 5], "npat": 134784, "found": true, "open": 1, "bsdrop": 4}
+{"y": 941192, "n": 6, "a": 3, "b": 0, "c": 6, "cls": [false, true], "s": 648, "M": [2, 4, 9, 9], "npat": 134784, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=941192"}
+{"y": 1119744, "n": 7, "a": 9, "b": 7, "c": 0, "cls": [true, false], "s": 1008, "M": [4, 4, 7, 9], "npat": 134784, "found": true, "open": 0, "bsdrop": 0}
+{"y": 1411788, "n": 7, "a": 2, "b": 1, "c": 6, "cls": [true, true], "s": 1792, "M": [4, 7, 8, 8], "npat": 134784, "found": true, "open": 1, "bsdrop": 3}
+{"y": 1417176, "n": 7, "a": 3, "b": 11, "c": 0, "cls": [true, false], "s": 1176, "M": [4, 6, 7, 7], "npat": 134784, "found": true, "open": 1, "bsdrop": 1}
+{"y": 1778112, "n": 7, "a": 6, "b": 4, "c": 3, "cls": [true, true], "s": 784, "M": [2, 7, 7, 8], "npat": 134784, "found": true, "open": 1, "bsdrop": 2}
+{"y": 1815156, "n": 7, "a": 2, "b": 3, "c": 5, "cls": [true, true], "s": 1200, "M": [5, 5, 6, 8], "npat": 134784, "found": true, "open": 1, "bsdrop": 0}
+{"y": 3111696, "n": 7, "a": 4, "b": 4, "c": 4, "cls": [true, true], "s": 972, "M": [3, 6, 6, 9], "npat": 134784, "found": true, "open": 1, "bsdrop": 0}
+{"y": 3456, "n": 4, "a": 7, "b": 3, "c": 0, "cls": [true, false], "s": 360, "M": [3, 4, 5, 6], "npat": 248832, "found": true, "open": 0, "bsdrop": 0}
+{"y": 3528, "n": 4, "a": 3, "b": 2, "c": 2, "cls": [true, true], "s": 240, "M": [2, 3, 5, 8], "npat": 248832, "found": true, "open": 1, "bsdrop": 2}
+{"y": 3584, "n": 4, "a": 9, "b": 0, "c": 1, "cls": [false, true], "s": 480, "M": [3, 4, 5, 8], "npat": 248832, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=3584"}
+{"y": 4536, "n": 4, "a": 3, "b": 4, "c": 1, "cls": [true, true], "s": 360, "M": [3, 4, 5, 6], "npat": 248832, "found": true, "open": 0, "bsdrop": 0}
+{"y": 5376, "n": 4, "a": 8, "b": 1, "c": 1, "cls": [true, true], "s": 630, "M": [3, 5, 6, 7], "npat": 248832, "found": true, "open": 0, "bsdrop": 1}
+{"y": 5832, "n": 4, "a": 3, "b": 6, "c": 0, "cls": [true, false], "s": 240, "M": [2, 3, 5, 8], "npat": 248832, "found": true, "open": 1, "bsdrop": 2}
+{"y": 7938, "n": 4, "a": 1, "b": 4, "c": 2, "cls": [true, true], "s": 1512, "M": [3, 7, 8, 9], "npat": 248832, "found": true, "open": 0, "bsdrop": 0}
+{"y": 12348, "n": 5, "a": 2, "b": 2, "c": 3, "cls": [true, true], "s": 192, "M": [2, 3, 4, 8], "npat": 248832, "found": true, "open": 4, "bsdrop": 6}
+{"y": 13824, "n": 5, "a": 9, "b": 3, "c": 0, "cls": [true, false], "s": 192, "M": [2, 3, 4, 8], "npat": 248832, "found": true, "open": 4, "bsdrop": 6}
+{"y": 15876, "n": 5, "a": 2, "b": 4, "c": 2, "cls": [true, true], "s": 1680, "M": [5, 6, 7, 8], "npat": 248832, "found": true, "open": 1, "bsdrop": 1}
+{"y": 16384, "n": 5, "a": 14, "b": 0, "c": 0, "cls": [false, false], "s": 576, "M": [3, 4, 6, 8], "npat": 248832, "found": true, "open": 0, "bsdrop": 8}
+{"y": 17496, "n": 5, "a": 3, "b": 7, "c": 0, "cls": [true, false], "s": 1512, "M": [4, 6, 7, 9], "npat": 248832, "found": true, "open": 1, "bsdrop": 2}
+{"y": 18432, "n": 5, "a": 11, "b": 2, "c": 0, "cls": [true, false], "s": 192, "M": [2, 3, 4, 8], "npat": 248832, "found": true, "open": 4, "bsdrop": 6}
+{"y": 19683, "n": 5, "a": 0, "b": 9, "c": 0, "cls": [true, false], "s": 1296, "M": [3, 6, 8, 9], "npat": 248832, "found": true, "open": 1, "bsdrop": 7}
+{"y": 23814, "n": 5, "a": 1, "b": 5, "c": 2, "cls": [true, true], "s": 192, "M": [2, 3, 4, 8], "npat": 248832, "found": true, "open": 4, "bsdrop": 6}
+{"y": 31752, "n": 5, "a": 3, "b": 4, "c": 2, "cls": [true, true], "s": 210, "M": [2, 3, 5, 7], "npat": 248832, "found": true, "open": 3, "bsdrop": 3}
+{"y": 35721, "n": 5, "a": 0, "b": 6, "c": 2, "cls": [true, true], "s": 210, "M": [2, 3, 5, 7], "npat": 248832, "found": true, "open": 3, "bsdrop": 3}
+{"y": 38416, "n": 5, "a": 4, "b": 0, "c": 4, "cls": [false, true], "s": 576, "M": [3, 4, 6, 8], "npat": 248832, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=38416"}
+{"y": 43218, "n": 5, "a": 1, "b": 2, "c": 4, "cls": [true, true], "s": 192, "M": [2, 3, 4, 8], "npat": 248832, "found": true, "open": 4, "bsdrop": 6}
+{"y": 49152, "n": 5, "a": 14, "b": 1, "c": 0, "cls": [true, false], "s": 360, "M": [2, 4, 5, 9], "npat": 248832, "found": true, "open": 0, "bsdrop": 4}
+{"y": 64512, "n": 5, "a": 10, "b": 2, "c": 1, "cls": [true, true], "s": 240, "M": [2, 4, 5, 6], "npat": 248832, "found": true, "open": 1, "bsdrop": 7}
+{"y": 91854, "n": 5, "a": 1, "b": 8, "c": 1, "cls": [true, true], "s": 1440, "M": [4, 5, 8, 9], "npat": 248832, "found": true, "open": 1, "bsdrop": 1}
+{"y": 112896, "n": 6, "a": 8, "b": 2, "c": 2, "cls": [true, true], "s": 864, "M": [2, 6, 8, 9], "npat": 248832, "found": true, "open": 0, "bsdrop": 14}
+{"y": 115248, "n": 6, "a": 4, "b": 1, "c": 4, "cls": [true, true], "s": 320, "M": [2, 4, 5, 8], "npat": 248832, "found": true, "open": 1, "bsdrop": 12}
+{"y": 117649, "n": 6, "a": 0, "b": 0, "c": 6, "cls": [false, true], "s": 1512, "M": [4, 6, 7, 9], "npat": 248832, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=117649"}
+{"y": 148176, "n": 6, "a": 4, "b": 3, "c": 3, "cls": [true, true], "s": 1344, "M": [4, 6, 7, 8], "npat": 248832, "found": true, "open": 1, "bsdrop": 5}
+{"y": 151263, "n": 6, "a": 0, "b": 2, "c": 5, "cls": [true, true], "s": 180, "M": [2, 3, 5, 6], "npat": 248832, "found": true, "open": 1, "bsdrop": 10}
+{"y": 55566, "n": 5, "a": 1, "b": 4, "c": 3, "cls": [true, true], "s": 4500, "M": [5, 5, 5, 6, 6], "npat": 340704, "found": true, "open": 1, "bsdrop": 4}
+{"y": 413343, "n": 6, "a": 0, "b": 10, "c": 1, "cls": [true, true], "s": 432, "M": [3, 3, 3, 4, 4], "npat": 340704, "found": true, "open": 2, "bsdrop": 0}
+{"y": 774144, "n": 6, "a": 12, "b": 3, "c": 1, "cls": [true, true], "s": 3136, "M": [4, 4, 4, 7, 7], "npat": 340704, "found": true, "open": 0, "bsdrop": 2}
+{"y": 1166886, "n": 7, "a": 1, "b": 5, "c": 4, "cls": [true, true], "s": 13824, "M": [6, 6, 6, 8, 8], "npat": 340704, "found": true, "open": 1, "bsdrop": 9}
+{"y": 28224, "n": 5, "a": 6, "b": 2, "c": 2, "cls": [true, true], "s": 256, "M": [2, 2, 2, 4, 8], "npat": 628992, "found": true, "open": 0, "bsdrop": 54}
+{"y": 46656, "n": 5, "a": 6, "b": 6, "c": 0, "cls": [true, false], "s": 4320, "M": [4, 5, 6, 6, 6], "npat": 628992, "found": true, "open": 0, "bsdrop": 18}
+{"y": 122472, "n": 6, "a": 3, "b": 7, "c": 1, "cls": [true, true], "s": 224, "M": [2, 2, 2, 4, 7], "npat": 628992, "found": true, "open": 1, "bsdrop": 34}
+{"y": 165888, "n": 6, "a": 11, "b": 4, "c": 0, "cls": [true, false], "s": 15360, "M": [5, 6, 8, 8, 8], "npat": 628992, "found": true, "open": 0, "bsdrop": 24}
+{"y": 166698, "n": 6, "a": 1, "b": 5, "c": 3, "cls": [true, true], "s": 15552, "M": [6, 6, 6, 8, 9], "npat": 628992, "found": true, "open": 1, "bsdrop": 22}
+{"y": 614656, "n": 6, "a": 8, "b": 0, "c": 4, "cls": [false, true], "s": 4320, "M": [4, 5, 6, 6, 6], "npat": 628992, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=614656"}
+{"y": 688128, "n": 6, "a": 15, "b": 1, "c": 1, "cls": [true, true], "s": 6144, "M": [2, 6, 8, 8, 8], "npat": 628992, "found": true, "open": 0, "bsdrop": 23}
+{"y": 1229312, "n": 7, "a": 9, "b": 0, "c": 4, "cls": [false, true], "s": 216, "M": [2, 2, 2, 3, 9], "npat": 628992, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=1229312"}
+{"y": 1679616, "n": 7, "a": 8, "b": 8, "c": 0, "cls": [true, false], "s": 13608, "M": [6, 6, 6, 7, 9], "npat": 628992, "found": true, "open": 0, "bsdrop": 17}
+{"y": 211631616, "n": 9, "a": 9, "b": 10, "c": 1, "cls": [true, true], "s": 1296, "M": [2, 3, 6, 6, 6], "npat": 628992, "found": true, "open": 0, "bsdrop": 47}
+{"y": 23328, "n": 5, "a": 5, "b": 6, "c": 0, "cls": [true, false], "s": 288, "M": [2, 2, 3, 3, 8], "npat": 876096, "found": true, "open": 1, "bsdrop": 40}
+{"y": 26244, "n": 5, "a": 2, "b": 8, "c": 0, "cls": [true, false], "s": 384, "M": [2, 2, 4, 4, 6], "npat": 876096, "found": true, "open": 1, "bsdrop": 65}
+{"y": 39366, "n": 5, "a": 1, "b": 9, "c": 0, "cls": [true, false], "s": 2916, "M": [3, 3, 6, 6, 9], "npat": 876096, "found": true, "open": 2, "bsdrop": 22}
+{"y": 48384, "n": 5, "a": 8, "b": 3, "c": 1, "cls": [true, true], "s": 3072, "M": [3, 4, 4, 8, 8], "npat": 876096, "found": true, "open": 0, "bsdrop": 10}
+{"y": 65536, "n": 5, "a": 16, "b": 0, "c": 0, "cls": [false, false], "s": 2700, "M": [3, 5, 5, 6, 6], "npat": 876096, "found": true, "open": 1, "bsdrop": 16}
+{"y": 65856, "n": 5, "a": 6, "b": 1, "c": 3, "cls": [true, true], "s": 7200, "M": [5, 5, 6, 6, 8], "npat": 876096, "found": true, "open": 0, "bsdrop": 7}
+{"y": 142884, "n": 6, "a": 2, "b": 6, "c": 2, "cls": [true, true], "s": 2048, "M": [2, 4, 4, 8, 8], "npat": 876096, "found": true, "open": 3, "bsdrop": 43}
+{"y": 172872, "n": 6, "a": 3, "b": 2, "c": 4, "cls": [true, true], "s": 1568, "M": [2, 2, 7, 7, 8], "npat": 876096, "found": true, "open": 2, "bsdrop": 50}
+{"y": 217728, "n": 6, "a": 7, "b": 5, "c": 1, "cls": [true, true], "s": 1568, "M": [2, 2, 7, 7, 8], "npat": 876096, "found": true, "open": 2, "bsdrop": 50}
+{"y": 262144, "n": 6, "a": 18, "b": 0, "c": 0, "cls": [false, false], "s": 384, "M": [2, 2, 4, 4, 6], "npat": 876096, "found": true, "open": 1, "bsdrop": 65}
+{"y": 294912, "n": 6, "a": 15, "b": 2, "c": 0, "cls": [true, false], "s": 1296, "M": [2, 2, 4, 9, 9], "npat": 876096, "found": true, "open": 0, "bsdrop": 60}
+{"y": 331776, "n": 6, "a": 12, "b": 4, "c": 0, "cls": [true, false], "s": 2646, "M": [3, 3, 6, 7, 7], "npat": 876096, "found": true, "open": 0, "bsdrop": 16}
+{"y": 351232, "n": 6, "a": 10, "b": 0, "c": 3, "cls": [false, true], "s": 180, "M": [2, 2, 3, 3, 5], "npat": 876096, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=351232"}
+{"y": 451584, "n": 6, "a": 10, "b": 2, "c": 2, "cls": [true, true], "s": 3200, "M": [4, 4, 5, 5, 8], "npat": 876096, "found": true, "open": 0, "bsdrop": 13}
+{"y": 1361367, "n": 7, "a": 0, "b": 4, "c": 5, "cls": [true, true], "s": 2268, "M": [3, 3, 6, 6, 7], "npat": 876096, "found": true, "open": 1, "bsdrop": 18}
+{"y": 7411887, "n": 7, "a": 0, "b": 2, "c": 7, "cls": [true, true], "s": 12544, "M": [4, 7, 7, 8, 8], "npat": 876096, "found": true, "open": 1, "bsdrop": 7}
+{"y": 8128512, "n": 7, "a": 11, "b": 4, "c": 2, "cls": [true, true], "s": 1280, "M": [2, 2, 5, 8, 8], "npat": 876096, "found": true, "open": 0, "bsdrop": 78}
+{"y": 15116544, "n": 8, "a": 8, "b": 10, "c": 0, "cls": [true, false], "s": 2400, "M": [4, 4, 5, 5, 6], "npat": 876096, "found": true, "open": 1, "bsdrop": 10}
+{"y": 944111616, "n": 9, "a": 17, "b": 1, "c": 4, "cls": [true, true], "s": 5184, "M": [4, 4, 6, 6, 9], "npat": 876096, "found": true, "open": 1, "bsdrop": 26}
+{"y": 24696, "n": 5, "a": 3, "b": 2, "c": 3, "cls": [true, true], "s": 2592, "M": [2, 4, 6, 6, 9], "npat": 1617408, "found": true, "open": 2, "bsdrop": 52}
+{"y": 27783, "n": 5, "a": 0, "b": 4, "c": 3, "cls": [true, true], "s": 2352, "M": [2, 3, 7, 7, 8], "npat": 1617408, "found": true, "open": 3, "bsdrop": 42}
+{"y": 28672, "n": 5, "a": 12, "b": 0, "c": 1, "cls": [false, true], "s": 1344, "M": [2, 2, 6, 7, 8], "npat": 1617408, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=28672"}
+{"y": 32256, "n": 5, "a": 9, "b": 2, "c": 1, "cls": [true, true], "s": 360, "M": [2, 2, 3, 5, 6], "npat": 1617408, "found": true, "open": 2, "bsdrop": 98}
+{"y": 32928, "n": 5, "a": 5, "b": 1, "c": 3, "cls": [true, true], "s": 864, "M": [2, 2, 3, 8, 9], "npat": 1617408, "found": true, "open": 0, "bsdrop": 96}
+{"y": 34992, "n": 5, "a": 4, "b": 7, "c": 0, "cls": [true, false], "s": 1944, "M": [2, 3, 4, 9, 9], "npat": 1617408, "found": true, "open": 2, "bsdrop": 52}
+{"y": 36288, "n": 5, "a": 6, "b": 4, "c": 1, "cls": [true, true], "s": 2304, "M": [2, 3, 6, 8, 8], "npat": 1617408, "found": true, "open": 1, "bsdrop": 99}
+{"y": 36864, "n": 5, "a": 12, "b": 2, "c": 0, "cls": [true, false], "s": 3456, "M": [3, 4, 6, 6, 8], "npat": 1617408, "found": true, "open": 2, "bsdrop": 76}
+{"y": 37632, "n": 5, "a": 8, "b": 1, "c": 2, "cls": [true, true], "s": 756, "M": [2, 3, 3, 6, 7], "npat": 1617408, "found": true, "open": 0, "bsdrop": 79}
+{"y": 42336, "n": 5, "a": 5, "b": 3, "c": 2, "cls": [true, true], "s": 432, "M": [2, 3, 3, 4, 6], "npat": 1617408, "found": true, "open": 2, "bsdrop": 84}
+{"y": 49392, "n": 5, "a": 4, "b": 2, "c": 3, "cls": [true, true], "s": 1944, "M": [2, 3, 4, 9, 9], "npat": 1617408, "found": true, "open": 2, "bsdrop": 52}
+{"y": 52488, "n": 5, "a": 3, "b": 8, "c": 0, "cls": [true, false], "s": 2560, "M": [2, 4, 5, 8, 8], "npat": 1617408, "found": true, "open": 2, "bsdrop": 78}
+{"y": 54432, "n": 5, "a": 5, "b": 5, "c": 1, "cls": [true, true], "s": 480, "M": [2, 3, 4, 4, 5], "npat": 1617408, "found": true, "open": 3, "bsdrop": 60}
+{"y": 55296, "n": 5, "a": 11, "b": 3, "c": 0, "cls": [true, false], "s": 2700, "M": [2, 5, 5, 6, 9], "npat": 1617408, "found": true, "open": 2, "bsdrop": 53}
+{"y": 56448, "n": 5, "a": 7, "b": 2, "c": 2, "cls": [true, true], "s": 3840, "M": [4, 4, 5, 6, 8], "npat": 1617408, "found": true, "open": 0, "bsdrop": 48}
+{"y": 57344, "n": 5, "a": 13, "b": 0, "c": 1, "cls": [false, true], "s": 1680, "M": [3, 4, 4, 5, 7], "npat": 1617408, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=57344"}
+{"y": 67228, "n": 5, "a": 2, "b": 0, "c": 5, "cls": [false, true], "s": 1344, "M": [2, 2, 6, 7, 8], "npat": 1617408, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=67228"}
+{"y": 69984, "n": 5, "a": 5, "b": 7, "c": 0, "cls": [true, false], "s": 15552, "M": [4, 6, 8, 9, 9], "npat": 1617408, "found": true, "open": 0, "bsdrop": 20}
+{"y": 72576, "n": 5, "a": 7, "b": 4, "c": 1, "cls": [true, true], "s": 2940, "M": [2, 5, 6, 7, 7], "npat": 1617408, "found": true, "open": 1, "bsdrop": 48}
+{"y": 73728, "n": 5, "a": 13, "b": 2, "c": 0, "cls": [true, false], "s": 2352, "M": [2, 3, 7, 7, 8], "npat": 1617408, "found": true, "open": 3, "bsdrop": 42}
+{"y": 78732, "n": 5, "a": 2, "b": 9, "c": 0, "cls": [true, false], "s": 2352, "M": [2, 3, 7, 7, 8], "npat": 1617408, "found": true, "open": 3, "bsdrop": 42}
+{"y": 82944, "n": 5, "a": 10, "b": 4, "c": 0, "cls": [true, false], "s": 2304, "M": [2, 4, 4, 8, 9], "npat": 1617408, "found": true, "open": 4, "bsdrop": 78}
+{"y": 83349, "n": 5, "a": 0, "b": 5, "c": 3, "cls": [true, true], "s": 2592, "M": [3, 3, 4, 8, 9], "npat": 1617408, "found": true, "open": 1, "bsdrop": 13}
+{"y": 86436, "n": 5, "a": 2, "b": 2, "c": 4, "cls": [true, true], "s": 3456, "M": [3, 4, 6, 6, 8], "npat": 1617408, "found": true, "open": 2, "bsdrop": 76}
+{"y": 95256, "n": 5, "a": 3, "b": 5, "c": 2, "cls": [true, true], "s": 2700, "M": [2, 5, 5, 6, 9], "npat": 1617408, "found": true, "open": 2, "bsdrop": 53}
+{"y": 96768, "n": 5, "a": 9, "b": 3, "c": 1, "cls": [true, true], "s": 18144, "M": [6, 6, 7, 8, 9], "npat": 1617408, "found": true, "open": 0, "bsdrop": 35}
+{"y": 98784, "n": 5, "a": 5, "b": 2, "c": 3, "cls": [true, true], "s": 16128, "M": [4, 7, 8, 8, 9], "npat": 1617408, "found": true, "open": 0, "bsdrop": 11}
+{"y": 134456, "n": 6, "a": 3, "b": 0, "c": 5, "cls": [false, true], "s": 1440, "M": [3, 4, 4, 5, 6], "npat": 1617408, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=134456"}
+{"y": 139968, "n": 6, "a": 6, "b": 7, "c": 0, "cls": [true, false], "s": 11664, "M": [3, 6, 8, 9, 9], "npat": 1617408, "found": true, "open": 0, "bsdrop": 33}
+{"y": 147456, "n": 6, "a": 14, "b": 2, "c": 0, "cls": [true, false], "s": 3360, "M": [4, 4, 5, 6, 7], "npat": 1617408, "found": true, "open": 1, "bsdrop": 25}
+{"y": 153664, "n": 6, "a": 6, "b": 0, "c": 4, "cls": [false, true], "s": 2160, "M": [3, 4, 5, 6, 6], "npat": 1617408, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=153664"}
+{"y": 157464, "n": 6, "a": 3, "b": 9, "c": 0, "cls": [true, false], "s": 3360, "M": [4, 4, 5, 6, 7], "npat": 1617408, "found": true, "open": 1, "bsdrop": 25}
+{"y": 163296, "n": 6, "a": 5, "b": 6, "c": 1, "cls": [true, true], "s": 1944, "M": [2, 3, 6, 6, 9], "npat": 1617408, "found": true, "open": 3, "bsdrop": 66}
+{"y": 169344, "n": 6, "a": 7, "b": 3, "c": 2, "cls": [true, true], "s": 2592, "M": [3, 4, 4, 6, 9], "npat": 1617408, "found": true, "open": 0, "bsdrop": 18}
+{"y": 186624, "n": 6, "a": 8, "b": 6, "c": 0, "cls": [true, false], "s": 2304, "M": [2, 4, 6, 6, 8], "npat": 1617408, "found": true, "open": 1, "bsdrop": 91}
+{"y": 193536, "n": 6, "a": 10, "b": 3, "c": 1, "cls": [true, true], "s": 2430, "M": [3, 3, 5, 6, 9], "npat": 1617408, "found": true, "open": 0, "bsdrop": 12}
+{"y": 214326, "n": 6, "a": 1, "b": 7, "c": 2, "cls": [true, true], "s": 288, "M": [2, 2, 3, 4, 6], "npat": 1617408, "found": true, "open": 1, "bsdrop": 97}
+{"y": 236196, "n": 6, "a": 2, "b": 10, "c": 0, "cls": [true, false], "s": 1944, "M": [2, 3, 6, 6, 9], "npat": 1617408, "found": true, "open": 3, "bsdrop": 66}
+{"y": 268912, "n": 6, "a": 4, "b": 0, "c": 5, "cls": [false, true], "s": 1728, "M": [2, 2, 6, 8, 9], "npat": 1617408, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=268912"}
+{"y": 367416, "n": 6, "a": 3, "b": 8, "c": 1, "cls": [true, true], "s": 3024, "M": [3, 4, 6, 6, 7], "npat": 1617408, "found": true, "open": 1, "bsdrop": 33}
+{"y": 393216, "n": 6, "a": 17, "b": 1, "c": 0, "cls": [true, false], "s": 972, "M": [2, 3, 3, 6, 9], "npat": 1617408, "found": true, "open": 0, "bsdrop": 66}
+{"y": 395136, "n": 6, "a": 7, "b": 2, "c": 3, "cls": [true, true], "s": 2430, "M": [3, 3, 5, 6, 9], "npat": 1617408, "found": true, "open": 0, "bsdrop": 12}
+{"y": 571536, "n": 6, "a": 4, "b": 6, "c": 2, "cls": [true, true], "s": 3150, "M": [3, 5, 5, 6, 7], "npat": 1617408, "found": true, "open": 1, "bsdrop": 19}
+{"y": 691488, "n": 6, "a": 5, "b": 2, "c": 4, "cls": [true, true], "s": 13824, "M": [4, 6, 8, 8, 9], "npat": 1617408, "found": true, "open": 1, "bsdrop": 42}
+{"y": 921984, "n": 6, "a": 7, "b": 1, "c": 4, "cls": [true, true], "s": 5184, "M": [2, 4, 8, 9, 9], "npat": 1617408, "found": true, "open": 0, "bsdrop": 46}
+{"y": 1259712, "n": 7, "a": 6, "b": 9, "c": 0, "cls": [true, false], "s": 1260, "M": [2, 2, 5, 7, 9], "npat": 1617408, "found": true, "open": 2, "bsdrop": 131}
+{"y": 1741824, "n": 7, "a": 10, "b": 5, "c": 1, "cls": [true, true], "s": 1792, "M": [2, 4, 4, 7, 8], "npat": 1617408, "found": true, "open": 1, "bsdrop": 84}
+{"y": 2117682, "n": 7, "a": 1, "b": 2, "c": 6, "cls": [true, true], "s": 1344, "M": [2, 2, 6, 7, 8], "npat": 1617408, "found": true, "open": 1, "bsdrop": 152}
+{"y": 2151296, "n": 7, "a": 7, "b": 0, "c": 5, "cls": [false, true], "s": 1080, "M": [2, 2, 5, 6, 9], "npat": 1617408, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=2151296"}
+{"y": 2571912, "n": 7, "a": 3, "b": 8, "c": 2, "cls": [true, true], "s": 1260, "M": [2, 2, 5, 7, 9], "npat": 1617408, "found": true, "open": 2, "bsdrop": 131}
+{"y": 3211264, "n": 7, "a": 16, "b": 0, "c": 2, "cls": [false, true], "s": 288, "M": [2, 2, 3, 4, 6], "npat": 1617408, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=3211264"}
+{"y": 3981312, "n": 7, "a": 14, "b": 5, "c": 0, "cls": [true, false], "s": 1296, "M": [2, 3, 3, 8, 9], "npat": 1617408, "found": true, "open": 0, "bsdrop": 54}
+{"y": 7112448, "n": 7, "a": 8, "b": 4, "c": 3, "cls": [true, true], "s": 1792, "M": [2, 4, 4, 7, 8], "npat": 1617408, "found": true, "open": 1, "bsdrop": 84}
+{"y": 11757312, "n": 8, "a": 8, "b": 8, "c": 1, "cls": [true, true], "s": 1470, "M": [2, 3, 5, 7, 7], "npat": 1617408, "found": true, "open": 0, "bsdrop": 78}
+{"y": 711541152, "n": 9, "a": 5, "b": 3, "c": 7, "cls": [true, true], "s": 1400, "M": [2, 4, 5, 5, 7], "npat": 1617408, "found": true, "open": 1, "bsdrop": 74}
+{"y": 222264, "n": 6, "a": 3, "b": 4, "c": 3, "cls": [true, true], "s": 384, "M": [2, 2, 2, 2, 4, 6], "npat": 2358720, "found": true, "open": 1, "bsdrop": 200}
+{"y": 244944, "n": 6, "a": 4, "b": 7, "c": 1, "cls": [true, true], "s": 4608, "M": [2, 4, 4, 4, 4, 9], "npat": 2358720, "found": true, "open": 1, "bsdrop": 90}
+{"y": 333396, "n": 6, "a": 2, "b": 5, "c": 3, "cls": [true, true], "s": 4374, "M": [3, 3, 3, 3, 6, 9], "npat": 2358720, "found": true, "open": 1, "bsdrop": 37}
+{"y": 489888, "n": 6, "a": 5, "b": 7, "c": 1, "cls": [true, true], "s": 147456, "M": [4, 8, 8, 8, 8, 9], "npat": 2358720, "found": true, "open": 1, "bsdrop": 50}
+{"y": 71663616, "n": 8, "a": 15, "b": 7, "c": 0, "cls": [true, false], "s": 27216, "M": [3, 6, 6, 6, 6, 7], "npat": 2358720, "found": true, "open": 0, "bsdrop": 145}
+{"y": 24576, "n": 5, "a": 13, "b": 1, "c": 0, "cls": [true, false], "s": 1680, "M": [2, 4, 5, 6, 7], "npat": 2985984, "found": true, "open": 1, "bsdrop": 133}
+{"y": 27648, "n": 5, "a": 10, "b": 3, "c": 0, "cls": [true, false], "s": 2688, "M": [2, 4, 6, 7, 8], "npat": 2985984, "found": true, "open": 4, "bsdrop": 165}
+{"y": 32768, "n": 5, "a": 15, "b": 0, "c": 0, "cls": [false, false], "s": 2016, "M": [2, 3, 6, 7, 8], "npat": 2985984, "found": true, "open": 1, "bsdrop": 160}
+{"y": 45927, "n": 5, "a": 0, "b": 8, "c": 1, "cls": [true, true], "s": 2520, "M": [2, 4, 5, 7, 9], "npat": 2985984, "found": true, "open": 1, "bsdrop": 104}
+{"y": 47628, "n": 5, "a": 2, "b": 5, "c": 2, "cls": [true, true], "s": 2688, "M": [2, 4, 6, 7, 8], "npat": 2985984, "found": true, "open": 4, "bsdrop": 165}
+{"y": 57624, "n": 5, "a": 3, "b": 1, "c": 4, "cls": [true, true], "s": 1680, "M": [2, 4, 5, 6, 7], "npat": 2985984, "found": true, "open": 1, "bsdrop": 133}
+{"y": 64827, "n": 5, "a": 0, "b": 3, "c": 4, "cls": [true, true], "s": 2688, "M": [2, 4, 6, 7, 8], "npat": 2985984, "found": true, "open": 4, "bsdrop": 165}
+{"y": 75264, "n": 5, "a": 9, "b": 1, "c": 2, "cls": [true, true], "s": 1680, "M": [2, 4, 5, 6, 7], "npat": 2985984, "found": true, "open": 1, "bsdrop": 133}
+{"y": 76832, "n": 5, "a": 5, "b": 0, "c": 4, "cls": [false, true], "s": 2016, "M": [2, 3, 6, 7, 8], "npat": 2985984, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=76832"}
+{"y": 84672, "n": 5, "a": 6, "b": 3, "c": 2, "cls": [true, true], "s": 2688, "M": [2, 4, 6, 7, 8], "npat": 2985984, "found": true, "open": 4, "bsdrop": 165}
+{"y": 129654, "n": 6, "a": 1, "b": 3, "c": 4, "cls": [true, true], "s": 2160, "M": [2, 4, 5, 6, 9], "npat": 2985984, "found": true, "open": 1, "bsdrop": 128}
+{"y": 197568, "n": 6, "a": 6, "b": 2, "c": 3, "cls": [true, true], "s": 15120, "M": [5, 6, 7, 8, 9], "npat": 2985984, "found": true, "open": 0, "bsdrop": 41}
+{"y": 314928, "n": 6, "a": 4, "b": 9, "c": 0, "cls": [true, false], "s": 1728, "M": [2, 3, 4, 8, 9], "npat": 2985984, "found": true, "open": 2, "bsdrop": 105}
+{"y": 321489, "n": 6, "a": 0, "b": 8, "c": 2, "cls": [true, true], "s": 1728, "M": [2, 3, 4, 8, 9], "npat": 2985984, "found": true, "open": 2, "bsdrop": 105}
+{"y": 653184, "n": 6, "a": 7, "b": 6, "c": 1, "cls": [true, true], "s": 2880, "M": [3, 4, 5, 6, 8], "npat": 2985984, "found": true, "open": 0, "bsdrop": 42}
+{"y": 1179648, "n": 7, "a": 17, "b": 2, "c": 0, "cls": [true, false], "s": 12096, "M": [4, 6, 7, 8, 9], "npat": 2985984, "found": true, "open": 0, "bsdrop": 69}
+{"y": 1613472, "n": 7, "a": 5, "b": 1, "c": 5, "cls": [true, true], "s": 1008, "M": [2, 3, 4, 6, 7], "npat": 2985984, "found": true, "open": 1, "bsdrop": 161}
+{"y": 5619712, "n": 7, "a": 14, "b": 0, "c": 3, "cls": [false, true], "s": 3780, "M": [2, 5, 6, 7, 9], "npat": 2985984, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=5619712"}
+{"y": 6193152, "n": 7, "a": 15, "b": 3, "c": 1, "cls": [true, true], "s": 1620, "M": [2, 3, 5, 6, 9], "npat": 2985984, "found": true, "open": 0, "bsdrop": 106}
+{"y": 19131876, "n": 8, "a": 2, "b": 14, "c": 0, "cls": [true, false], "s": 9072, "M": [3, 6, 7, 8, 9], "npat": 2985984, "found": true, "open": 1, "bsdrop": 47}
+{"y": 338688, "n": 6, "a": 8, "b": 3, "c": 2, "cls": [true, true], "s": 27648, "M": [3, 3, 6, 8, 8, 8], "npat": 4088448, "found": true, "open": 0, "bsdrop": 145}
+{"y": 677376, "n": 6, "a": 9, "b": 3, "c": 2, "cls": [true, true], "s": 37044, "M": [3, 6, 6, 7, 7, 7], "npat": 4088448, "found": true, "open": 2, "bsdrop": 191}
+{"y": 826686, "n": 6, "a": 1, "b": 10, "c": 1, "cls": [true, true], "s": 27648, "M": [2, 6, 6, 6, 8, 8], "npat": 4088448, "found": true, "open": 2, "bsdrop": 411}
+{"y": 979776, "n": 6, "a": 6, "b": 7, "c": 1, "cls": [true, true], "s": 166698, "M": [6, 7, 7, 7, 9, 9], "npat": 4088448, "found": true, "open": 0, "bsdrop": 34}
+{"y": 1469664, "n": 7, "a": 5, "b": 8, "c": 1, "cls": [true, true], "s": 31104, "M": [4, 4, 6, 6, 6, 9], "npat": 4088448, "found": true, "open": 1, "bsdrop": 180}
+{"y": 1492992, "n": 7, "a": 11, "b": 6, "c": 0, "cls": [true, false], "s": 11664, "M": [2, 2, 4, 9, 9, 9], "npat": 4088448, "found": true, "open": 0, "bsdrop": 341}
+{"y": 1555848, "n": 7, "a": 3, "b": 4, "c": 4, "cls": [true, true], "s": 32000, "M": [4, 5, 5, 5, 8, 8], "npat": 4088448, "found": true, "open": 1, "bsdrop": 28}
+{"y": 1959552, "n": 7, "a": 7, "b": 7, "c": 1, "cls": [true, true], "s": 20250, "M": [2, 5, 5, 5, 9, 9], "npat": 4088448, "found": true, "open": 0, "bsdrop": 195}
+{"y": 2752512, "n": 7, "a": 17, "b": 1, "c": 1, "cls": [true, true], "s": 1400, "M": [2, 2, 2, 5, 5, 7], "npat": 4088448, "found": true, "open": 0, "bsdrop": 503}
+{"y": 14751744, "n": 8, "a": 11, "b": 1, "c": 4, "cls": [true, true], "s": 15680, "M": [4, 4, 4, 5, 7, 7], "npat": 4088448, "found": true, "open": 0, "bsdrop": 58}
+{"y": 16777216, "n": 8, "a": 24, "b": 0, "c": 0, "cls": [false, false], "s": 24696, "M": [2, 6, 6, 7, 7, 7], "npat": 4088448, "found": true, "open": 0, "bsdrop": 374}
+{"y": 22127616, "n": 8, "a": 10, "b": 2, "c": 4, "cls": [true, true], "s": 2016, "M": [2, 2, 2, 6, 6, 7], "npat": 4088448, "found": true, "open": 0, "bsdrop": 626}
+{"y": 57177414, "n": 8, "a": 1, "b": 5, "c": 6, "cls": [true, true], "s": 27440, "M": [4, 4, 5, 7, 7, 7], "npat": 4088448, "found": true, "open": 1, "bsdrop": 34}
+{"y": 21781872, "n": 8, "a": 4, "b": 4, "c": 5, "cls": [true, true], "s": 12544, "M": [2, 2, 7, 7, 8, 8], "npat": 5694624, "found": true, "open": 2, "bsdrop": 567}
+{"y": 78121827, "n": 8, "a": 0, "b": 13, "c": 2, "cls": [true, true], "s": 12544, "M": [2, 2, 7, 7, 8, 8], "npat": 5694624, "found": true, "open": 2, "bsdrop": 567}
+{"y": 225792, "n": 6, "a": 9, "b": 2, "c": 2, "cls": [true, true], "s": 2520, "M": [2, 2, 2, 5, 7, 9], "npat": 7547904, "found": true, "open": 2, "bsdrop": 791}
+{"y": 345744, "n": 6, "a": 4, "b": 2, "c": 4, "cls": [true, true], "s": 6720, "M": [3, 4, 4, 4, 5, 7], "npat": 7547904, "found": true, "open": 2, "bsdrop": 84}
+{"y": 444528, "n": 6, "a": 4, "b": 4, "c": 3, "cls": [true, true], "s": 5120, "M": [2, 4, 4, 4, 5, 8], "npat": 7547904, "found": true, "open": 4, "bsdrop": 419}
+{"y": 666792, "n": 6, "a": 3, "b": 5, "c": 3, "cls": [true, true], "s": 27216, "M": [2, 6, 6, 6, 7, 9], "npat": 7547904, "found": true, "open": 2, "bsdrop": 502}
+{"y": 777924, "n": 6, "a": 2, "b": 4, "c": 4, "cls": [true, true], "s": 24696, "M": [2, 4, 7, 7, 7, 9], "npat": 7547904, "found": true, "open": 1, "bsdrop": 352}
+{"y": 944784, "n": 6, "a": 4, "b": 10, "c": 0, "cls": [true, false], "s": 32256, "M": [4, 4, 4, 7, 8, 9], "npat": 7547904, "found": true, "open": 2, "bsdrop": 185}
+{"y": 1333584, "n": 7, "a": 4, "b": 5, "c": 3, "cls": [true, true], "s": 4320, "M": [3, 3, 3, 4, 5, 8], "npat": 7547904, "found": true, "open": 1, "bsdrop": 47}
+{"y": 1548288, "n": 7, "a": 13, "b": 3, "c": 1, "cls": [true, true], "s": 20480, "M": [2, 4, 5, 8, 8, 8], "npat": 7547904, "found": true, "open": 0, "bsdrop": 432}
+{"y": 1882384, "n": 7, "a": 4, "b": 0, "c": 6, "cls": [false, true], "s": 12288, "M": [2, 3, 4, 8, 8, 8], "npat": 7547904, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=1882384"}
+{"y": 1889568, "n": 7, "a": 5, "b": 10, "c": 0, "cls": [true, false], "s": 138240, "M": [5, 6, 8, 8, 8, 9], "npat": 7547904, "found": true, "open": 1, "bsdrop": 226}
+{"y": 2667168, "n": 7, "a": 5, "b": 5, "c": 3, "cls": [true, true], "s": 24192, "M": [2, 6, 6, 6, 7, 8], "npat": 7547904, "found": true, "open": 2, "bsdrop": 831}
+{"y": 4214784, "n": 7, "a": 12, "b": 1, "c": 3, "cls": [true, true], "s": 7168, "M": [2, 4, 4, 4, 7, 8], "npat": 7547904, "found": true, "open": 2, "bsdrop": 521}
+{"y": 7715736, "n": 7, "a": 3, "b": 9, "c": 2, "cls": [true, true], "s": 30870, "M": [3, 5, 6, 7, 7, 7], "npat": 7547904, "found": true, "open": 2, "bsdrop": 84}
+{"y": 8817984, "n": 7, "a": 6, "b": 9, "c": 1, "cls": [true, true], "s": 129024, "M": [4, 7, 8, 8, 8, 9], "npat": 7547904, "found": true, "open": 1, "bsdrop": 138}
+{"y": 12582912, "n": 8, "a": 22, "b": 1, "c": 0, "cls": [true, false], "s": 2880, "M": [2, 2, 2, 5, 8, 9], "npat": 7547904, "found": true, "open": 1, "bsdrop": 968}
+{"y": 15676416, "n": 8, "a": 10, "b": 7, "c": 1, "cls": [true, true], "s": 30240, "M": [4, 5, 6, 6, 6, 7], "npat": 7547904, "found": true, "open": 0, "bsdrop": 274}
+{"y": 19361664, "n": 8, "a": 7, "b": 2, "c": 5, "cls": [true, true], "s": 23328, "M": [3, 4, 6, 6, 6, 9], "npat": 7547904, "found": true, "open": 1, "bsdrop": 243}
+{"y": 66961566, "n": 8, "a": 1, "b": 14, "c": 1, "cls": [true, true], "s": 349920, "M": [5, 6, 6, 6, 6, 6, 9], "npat": 7547904, "found": true, "open": 1, "bsdrop": 367}
+{"y": 161414428, "n": 9, "a": 2, "b": 0, "c": 9, "cls": [false, true], "s": 6144, "M": [2, 4, 4, 4, 6, 8], "npat": 7547904, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=161414428"}
+{"y": 813189888, "n": 9, "a": 8, "b": 3, "c": 6, "cls": [true, true], "s": 884736, "M": [3, 8, 8, 8, 8, 8, 9], "npat": 7547904, "found": true, "open": 1, "bsdrop": 122}
+{"y": 891813888, "n": 9, "a": 19, "b": 5, "c": 1, "cls": [true, true], "s": 884736, "M": [3, 8, 8, 8, 8, 8, 9], "npat": 7547904, "found": true, "open": 1, "bsdrop": 122}
+{"y": 248832, "n": 6, "a": 10, "b": 5, "c": 0, "cls": [true, false], "s": 3072, "M": [2, 2, 3, 4, 8, 8], "npat": 10513152, "found": true, "open": 2, "bsdrop": 1023}
+{"y": 263424, "n": 6, "a": 8, "b": 1, "c": 3, "cls": [true, true], "s": 1152, "M": [2, 2, 3, 4, 4, 6], "npat": 10513152, "found": true, "open": 4, "bsdrop": 1064}
+{"y": 275562, "n": 6, "a": 1, "b": 9, "c": 1, "cls": [true, true], "s": 4200, "M": [2, 2, 5, 5, 6, 7], "npat": 10513152, "found": true, "open": 2, "bsdrop": 841}
+{"y": 435456, "n": 6, "a": 8, "b": 5, "c": 1, "cls": [true, true], "s": 7200, "M": [3, 4, 4, 5, 5, 6], "npat": 10513152, "found": true, "open": 0, "bsdrop": 189}
+{"y": 497664, "n": 6, "a": 11, "b": 5, "c": 0, "cls": [true, false], "s": 36288, "M": [4, 4, 6, 6, 7, 9], "npat": 10513152, "found": true, "open": 2, "bsdrop": 332}
+{"y": 524288, "n": 6, "a": 19, "b": 0, "c": 0, "cls": [false, false], "s": 5120, "M": [2, 2, 4, 5, 8, 8], "npat": 10513152, "found": true, "open": 3, "bsdrop": 1092}
+{"y": 583443, "n": 6, "a": 0, "b": 5, "c": 4, "cls": [true, true], "s": 5760, "M": [3, 3, 4, 4, 5, 8], "npat": 10513152, "found": true, "open": 1, "bsdrop": 124}
+{"y": 663552, "n": 6, "a": 13, "b": 4, "c": 0, "cls": [true, false], "s": 5400, "M": [2, 3, 5, 5, 6, 6], "npat": 10513152, "found": true, "open": 1, "bsdrop": 645}
+{"y": 746496, "n": 6, "a": 10, "b": 6, "c": 0, "cls": [true, false], "s": 36288, "M": [4, 4, 6, 6, 7, 9], "npat": 10513152, "found": true, "open": 2, "bsdrop": 332}
+{"y": 964467, "n": 6, "a": 0, "b": 9, "c": 2, "cls": [true, true], "s": 36288, "M": [4, 4, 6, 6, 7, 9], "npat": 10513152, "found": true, "open": 2, "bsdrop": 332}
+{"y": 2286144, "n": 7, "a": 6, "b": 6, "c": 2, "cls": [true, true], "s": 3072, "M": [2, 2, 4, 4, 6, 8], "npat": 10513152, "found": true, "open": 2, "bsdrop": 1142}
+{"y": 2519424, "n": 7, "a": 7, "b": 9, "c": 0, "cls": [true, false], "s": 2880, "M": [2, 2, 4, 4, 5, 9], "npat": 10513152, "found": true, "open": 1, "bsdrop": 913}
+{"y": 2612736, "n": 7, "a": 9, "b": 6, "c": 1, "cls": [true, true], "s": 3024, "M": [2, 2, 3, 6, 6, 7], "npat": 10513152, "found": true, "open": 1, "bsdrop": 1128}
+{"y": 3188646, "n": 7, "a": 1, "b": 13, "c": 0, "cls": [true, false], "s": 27648, "M": [3, 4, 6, 6, 8, 8], "npat": 10513152, "found": true, "open": 2, "bsdrop": 530}
+{"y": 3612672, "n": 7, "a": 13, "b": 2, "c": 2, "cls": [true, true], "s": 3024, "M": [2, 2, 3, 6, 6, 7], "npat": 10513152, "found": true, "open": 1, "bsdrop": 1128}
+{"y": 3779136, "n": 7, "a": 6, "b": 10, "c": 0, "cls": [true, false], "s": 23814, "M": [3, 3, 6, 7, 7, 9], "npat": 10513152, "found": true, "open": 2, "bsdrop": 180}
+{"y": 4148928, "n": 7, "a": 6, "b": 3, "c": 4, "cls": [true, true], "s": 18432, "M": [2, 4, 4, 8, 8, 9], "npat": 10513152, "found": true, "open": 1, "bsdrop": 712}
+{"y": 4251528, "n": 7, "a": 3, "b": 12, "c": 0, "cls": [true, false], "s": 3200, "M": [2, 2, 4, 5, 5, 8], "npat": 10513152, "found": true, "open": 2, "bsdrop": 864}
+{"y": 4816896, "n": 7, "a": 15, "b": 1, "c": 2, "cls": [true, true], "s": 82944, "M": [4, 6, 6, 8, 8, 9], "npat": 10513152, "found": true, "open": 0, "bsdrop": 567}
+{"y": 6322176, "n": 7, "a": 11, "b": 2, "c": 3, "cls": [true, true], "s": 3024, "M": [2, 2, 3, 6, 6, 7], "npat": 10513152, "found": true, "open": 1, "bsdrop": 1128}
+{"y": 6613488, "n": 7, "a": 4, "b": 10, "c": 1, "cls": [true, true], "s": 27648, "M": [3, 4, 6, 6, 8, 8], "npat": 10513152, "found": true, "open": 2, "bsdrop": 530}
+{"y": 6718464, "n": 7, "a": 10, "b": 8, "c": 0, "cls": [true, false], "s": 32256, "M": [4, 4, 6, 6, 7, 8], "npat": 10513152, "found": true, "open": 0, "bsdrop": 557}
+{"y": 11239424, "n": 8, "a": 15, "b": 0, "c": 3, "cls": [false, true], "s": 1728, "M": [2, 2, 3, 4, 4, 9], "npat": 10513152, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=11239424"}
+{"y": 11943936, "n": 8, "a": 14, "b": 6, "c": 0, "cls": [true, false], "s": 17496, "M": [3, 3, 4, 6, 9, 9], "npat": 10513152, "found": true, "open": 0, "bsdrop": 161}
+{"y": 13176688, "n": 8, "a": 4, "b": 0, "c": 7, "cls": [false, true], "s": 48384, "M": [3, 6, 6, 7, 8, 8], "npat": 10513152, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=13176688"}
+{"y": 14155776, "n": 8, "a": 19, "b": 3, "c": 0, "cls": [true, false], "s": 29400, "M": [4, 5, 5, 6, 7, 7], "npat": 10513152, "found": true, "open": 0, "bsdrop": 143}
+{"y": 14521248, "n": 8, "a": 5, "b": 3, "c": 5, "cls": [true, true], "s": 2560, "M": [2, 2, 4, 4, 5, 8], "npat": 10513152, "found": true, "open": 3, "bsdrop": 923}
+{"y": 16941456, "n": 8, "a": 4, "b": 2, "c": 6, "cls": [true, true], "s": 25920, "M": [4, 4, 5, 6, 6, 9], "npat": 10513152, "found": true, "open": 1, "bsdrop": 269}
+{"y": 18289152, "n": 8, "a": 9, "b": 6, "c": 2, "cls": [true, true], "s": 11520, "M": [2, 2, 5, 8, 8, 9], "npat": 10513152, "found": true, "open": 1, "bsdrop": 1039}
+{"y": 25412184, "n": 8, "a": 3, "b": 3, "c": 6, "cls": [true, true], "s": 2560, "M": [2, 2, 4, 4, 5, 8], "npat": 10513152, "found": true, "open": 3, "bsdrop": 923}
+{"y": 28311552, "n": 8, "a": 20, "b": 3, "c": 0, "cls": [true, false], "s": 2400, "M": [2, 2, 3, 5, 5, 8], "npat": 10513152, "found": true, "open": 0, "bsdrop": 787}
+{"y": 33191424, "n": 8, "a": 9, "b": 3, "c": 4, "cls": [true, true], "s": 2592, "M": [2, 3, 3, 4, 4, 9], "npat": 10513152, "found": true, "open": 0, "bsdrop": 408}
+{"y": 69177612, "n": 8, "a": 2, "b": 1, "c": 8, "cls": [true, true], "s": 31752, "M": [2, 6, 6, 7, 7, 9], "npat": 10513152, "found": true, "open": 3, "bsdrop": 920}
+{"y": 73513818, "n": 8, "a": 1, "b": 7, "c": 5, "cls": [true, true], "s": 20160, "M": [3, 3, 5, 7, 8, 8], "npat": 10513152, "found": true, "open": 1, "bsdrop": 46}
+{"y": 111476736, "n": 9, "a": 16, "b": 5, "c": 1, "cls": [true, true], "s": 21168, "M": [3, 4, 6, 6, 7, 7], "npat": 10513152, "found": true, "open": 1, "bsdrop": 332}
+{"y": 116169984, "n": 9, "a": 8, "b": 3, "c": 5, "cls": [true, true], "s": 93312, "M": [4, 6, 6, 8, 9, 9], "npat": 10513152, "found": true, "open": 1, "bsdrop": 346}
+{"y": 146313216, "n": 9, "a": 12, "b": 6, "c": 2, "cls": [true, true], "s": 2592, "M": [2, 3, 3, 4, 6, 6], "npat": 10513152, "found": true, "open": 0, "bsdrop": 892}
+{"y": 161243136, "n": 9, "a": 13, "b": 9, "c": 0, "cls": [true, false], "s": 2592, "M": [2, 3, 3, 4, 6, 6], "npat": 10513152, "found": true, "open": 0, "bsdrop": 892}
+{"y": 188116992, "n": 9, "a": 12, "b": 8, "c": 1, "cls": [true, true], "s": 62208, "M": [2, 6, 8, 8, 9, 9], "npat": 10513152, "found": true, "open": 0, "bsdrop": 833}
+{"y": 476171136, "n": 9, "a": 7, "b": 12, "c": 1, "cls": [true, true], "s": 21168, "M": [3, 4, 6, 6, 7, 7], "npat": 10513152, "found": true, "open": 1, "bsdrop": 332}
+{"y": 1134213192, "n": 10, "a": 3, "b": 10, "c": 4, "cls": [true, true], "s": 1296, "M": [2, 2, 3, 3, 4, 9], "npat": 10513152, "found": true, "open": 1, "bsdrop": 1006}
+{"y": 1481421312, "n": 10, "a": 9, "b": 10, "c": 2, "cls": [true, true], "s": 1536, "M": [2, 2, 3, 4, 4, 8], "npat": 10513152, "found": true, "open": 1, "bsdrop": 982}
+{"y": 2322432, "n": 7, "a": 12, "b": 4, "c": 1, "cls": [true, true], "s": 576, "M": [2, 2, 2, 2, 3, 3, 4], "npat": 15331680, "found": true, "open": 0, "bsdrop": 1720}
+{"y": 4644864, "n": 7, "a": 13, "b": 4, "c": 1, "cls": [true, true], "s": 73728, "M": [4, 4, 4, 4, 6, 6, 8], "npat": 15331680, "found": true, "open": 1, "bsdrop": 1410}
+{"y": 25815552, "n": 8, "a": 9, "b": 1, "c": 5, "cls": [true, true], "s": 20000, "M": [2, 2, 5, 5, 5, 5, 8], "npat": 15331680, "found": true, "open": 0, "bsdrop": 1456}
+{"y": 133923132, "n": 9, "a": 2, "b": 14, "c": 1, "cls": [true, true], "s": 2916, "M": [2, 2, 3, 3, 3, 3, 9], "npat": 15331680, "found": true, "open": 1, "bsdrop": 1451}
+{"y": 242121642, "n": 9, "a": 1, "b": 1, "c": 9, "cls": [true, true], "s": 1536, "M": [2, 2, 2, 2, 4, 4, 6], "npat": 15331680, "found": true, "open": 2, "bsdrop": 2534}
+{"y": 6772211712, "n": 10, "a": 14, "b": 10, "c": 1, "cls": [true, true], "s": 16464, "M": [2, 2, 2, 6, 7, 7, 7], "npat": 19079424, "found": true, "open": 0, "bsdrop": 2396}
+{"y": 229376, "n": 6, "a": 15, "b": 0, "c": 1, "cls": [false, true], "s": 4536, "M": [2, 2, 3, 6, 7, 9], "npat": 19408896, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=229376"}
+{"y": 235298, "n": 6, "a": 1, "b": 0, "c": 6, "cls": [false, true], "s": 4320, "M": [2, 2, 3, 5, 8, 9], "npat": 19408896, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=235298"}
+{"y": 279936, "n": 6, "a": 7, "b": 7, "c": 0, "cls": [true, false], "s": 20412, "M": [2, 3, 6, 7, 9, 9], "npat": 19408896, "found": true, "open": 0, "bsdrop": 1125}
+{"y": 285768, "n": 6, "a": 3, "b": 6, "c": 2, "cls": [true, true], "s": 26880, "M": [2, 5, 6, 7, 8, 8], "npat": 19408896, "found": true, "open": 1, "bsdrop": 1480}
+{"y": 296352, "n": 6, "a": 5, "b": 3, "c": 3, "cls": [true, true], "s": 3240, "M": [2, 2, 3, 5, 6, 9], "npat": 19408896, "found": true, "open": 2, "bsdrop": 1883}
+{"y": 326592, "n": 6, "a": 6, "b": 6, "c": 1, "cls": [true, true], "s": 3240, "M": [2, 2, 3, 5, 6, 9], "npat": 19408896, "found": true, "open": 2, "bsdrop": 1883}
+{"y": 354294, "n": 6, "a": 1, "b": 11, "c": 0, "cls": [true, false], "s": 4320, "M": [2, 3, 4, 4, 5, 9], "npat": 19408896, "found": true, "open": 2, "bsdrop": 850}
+{"y": 373248, "n": 6, "a": 9, "b": 6, "c": 0, "cls": [true, false], "s": 4032, "M": [2, 3, 3, 4, 7, 8], "npat": 19408896, "found": true, "open": 1, "bsdrop": 1006}
+{"y": 388962, "n": 6, "a": 1, "b": 4, "c": 4, "cls": [true, true], "s": 20736, "M": [2, 3, 6, 8, 8, 9], "npat": 19408896, "found": true, "open": 2, "bsdrop": 1499}
+{"y": 428652, "n": 6, "a": 2, "b": 7, "c": 2, "cls": [true, true], "s": 3840, "M": [2, 2, 4, 5, 6, 8], "npat": 19408896, "found": true, "open": 1, "bsdrop": 2141}
+{"y": 442368, "n": 6, "a": 14, "b": 3, "c": 0, "cls": [true, false], "s": 4608, "M": [2, 3, 4, 4, 6, 8], "npat": 19408896, "found": true, "open": 5, "bsdrop": 1524}
+{"y": 458752, "n": 6, "a": 16, "b": 0, "c": 1, "cls": [false, true], "s": 11200, "M": [2, 4, 5, 5, 7, 8], "npat": 19408896, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=458752"}
+{"y": 472392, "n": 6, "a": 3, "b": 10, "c": 0, "cls": [true, false], "s": 3024, "M": [2, 2, 3, 4, 7, 9], "npat": 19408896, "found": true, "open": 2, "bsdrop": 1449}
+{"y": 526848, "n": 6, "a": 9, "b": 1, "c": 3, "cls": [true, true], "s": 15360, "M": [2, 4, 5, 6, 8, 8], "npat": 19408896, "found": true, "open": 0, "bsdrop": 1674}
+{"y": 559872, "n": 6, "a": 8, "b": 7, "c": 0, "cls": [true, false], "s": 25200, "M": [2, 5, 5, 7, 8, 9], "npat": 19408896, "found": true, "open": 0, "bsdrop": 746}
+{"y": 589824, "n": 6, "a": 16, "b": 2, "c": 0, "cls": [true, false], "s": 23040, "M": [2, 4, 5, 8, 8, 9], "npat": 19408896, "found": true, "open": 3, "bsdrop": 1132}
+{"y": 629856, "n": 6, "a": 5, "b": 9, "c": 0, "cls": [true, false], "s": 25920, "M": [2, 5, 6, 6, 8, 9], "npat": 19408896, "found": true, "open": 1, "bsdrop": 1603}
+{"y": 734832, "n": 6, "a": 4, "b": 8, "c": 1, "cls": [true, true], "s": 4032, "M": [2, 3, 3, 4, 7, 8], "npat": 19408896, "found": true, "open": 1, "bsdrop": 1006}
+{"y": 823543, "n": 6, "a": 0, "b": 0, "c": 7, "cls": [false, true], "s": 2880, "M": [2, 3, 3, 4, 5, 8], "npat": 19408896, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=823543"}
+{"y": 884736, "n": 6, "a": 15, "b": 3, "c": 0, "cls": [true, false], "s": 32256, "M": [3, 4, 6, 7, 8, 8], "npat": 19408896, "found": true, "open": 2, "bsdrop": 671}
+{"y": 995328, "n": 6, "a": 12, "b": 5, "c": 0, "cls": [true, false], "s": 19440, "M": [2, 3, 5, 8, 9, 9], "npat": 19408896, "found": true, "open": 0, "bsdrop": 865}
+{"y": 1285956, "n": 7, "a": 2, "b": 8, "c": 2, "cls": [true, true], "s": 21600, "M": [2, 5, 5, 6, 8, 9], "npat": 19408896, "found": true, "open": 1, "bsdrop": 1307}
+{"y": 1354752, "n": 7, "a": 10, "b": 3, "c": 2, "cls": [true, true], "s": 4200, "M": [2, 3, 4, 5, 5, 7], "npat": 19408896, "found": true, "open": 0, "bsdrop": 935}
+{"y": 1376256, "n": 7, "a": 16, "b": 1, "c": 1, "cls": [true, true], "s": 7560, "M": [2, 3, 5, 6, 6, 7], "npat": 19408896, "found": true, "open": 7, "bsdrop": 1398}
+{"y": 1594323, "n": 7, "a": 0, "b": 13, "c": 0, "cls": [true, false], "s": 3240, "M": [2, 3, 3, 4, 5, 9], "npat": 19408896, "found": true, "open": 1, "bsdrop": 780}
+{"y": 1653372, "n": 7, "a": 2, "b": 10, "c": 1, "cls": [true, true], "s": 3780, "M": [2, 3, 3, 5, 6, 7], "npat": 19408896, "found": true, "open": 2, "bsdrop": 1082}
+{"y": 1769472, "n": 7, "a": 16, "b": 3, "c": 0, "cls": [true, false], "s": 21168, "M": [2, 4, 6, 7, 7, 9], "npat": 19408896, "found": true, "open": 1, "bsdrop": 1251}
+{"y": 1843968, "n": 7, "a": 8, "b": 1, "c": 4, "cls": [true, true], "s": 41472, "M": [3, 4, 6, 8, 8, 9], "npat": 19408896, "found": true, "open": 2, "bsdrop": 704}
+{"y": 1928934, "n": 7, "a": 1, "b": 9, "c": 2, "cls": [true, true], "s": 15552, "M": [2, 3, 4, 8, 9, 9], "npat": 19408896, "found": true, "open": 2, "bsdrop": 1004}
+{"y": 2125764, "n": 7, "a": 2, "b": 12, "c": 0, "cls": [true, false], "s": 3360, "M": [2, 2, 4, 5, 6, 7], "npat": 19408896, "found": true, "open": 2, "bsdrop": 2033}
+{"y": 3176523, "n": 7, "a": 0, "b": 3, "c": 6, "cls": [true, true], "s": 3780, "M": [2, 3, 3, 5, 6, 7], "npat": 19408896, "found": true, "open": 2, "bsdrop": 1082}
+{"y": 3294172, "n": 7, "a": 2, "b": 0, "c": 7, "cls": [false, true], "s": 3024, "M": [2, 2, 3, 4, 7, 9], "npat": 19408896, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=3294172"}
+{"y": 3429216, "n": 7, "a": 5, "b": 7, "c": 2, "cls": [true, true], "s": 2592, "M": [2, 2, 3, 4, 6, 9], "npat": 19408896, "found": true, "open": 1, "bsdrop": 1708}
+{"y": 4128768, "n": 7, "a": 16, "b": 2, "c": 1, "cls": [true, true], "s": 21504, "M": [2, 4, 6, 7, 8, 8], "npat": 19408896, "found": true, "open": 4, "bsdrop": 1856}
+{"y": 4741632, "n": 7, "a": 9, "b": 3, "c": 3, "cls": [true, true], "s": 4032, "M": [2, 3, 4, 4, 6, 7], "npat": 19408896, "found": true, "open": 0, "bsdrop": 1192}
+{"y": 4917248, "n": 7, "a": 11, "b": 0, "c": 4, "cls": [false, true], "s": 16128, "M": [2, 4, 4, 7, 8, 9], "npat": 19408896, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=4917248"}
+{"y": 4941258, "n": 7, "a": 1, "b": 1, "c": 7, "cls": [true, true], "s": 11520, "M": [2, 4, 4, 5, 8, 9], "npat": 19408896, "found": true, "open": 2, "bsdrop": 1284}
+{"y": 5143824, "n": 7, "a": 4, "b": 8, "c": 2, "cls": [true, true], "s": 3840, "M": [2, 3, 4, 4, 5, 8], "npat": 19408896, "found": true, "open": 3, "bsdrop": 1214}
+{"y": 5647152, "n": 7, "a": 4, "b": 1, "c": 6, "cls": [true, true], "s": 8400, "M": [2, 4, 5, 5, 6, 7], "npat": 19408896, "found": true, "open": 3, "bsdrop": 1308}
+{"y": 5971968, "n": 7, "a": 13, "b": 6, "c": 0, "cls": [true, false], "s": 136080, "M": [5, 6, 7, 8, 9, 9], "npat": 19408896, "found": true, "open": 0, "bsdrop": 266}
+{"y": 6291456, "n": 7, "a": 21, "b": 1, "c": 0, "cls": [true, false], "s": 12960, "M": [2, 4, 5, 6, 6, 9], "npat": 19408896, "found": true, "open": 0, "bsdrop": 1349}
+{"y": 6751269, "n": 7, "a": 0, "b": 9, "c": 3, "cls": [true, true], "s": 22680, "M": [2, 5, 6, 6, 7, 9], "npat": 19408896, "found": true, "open": 4, "bsdrop": 1374}
+{"y": 9144576, "n": 7, "a": 8, "b": 6, "c": 2, "cls": [true, true], "s": 30240, "M": [4, 4, 5, 6, 7, 9], "npat": 19408896, "found": true, "open": 1, "bsdrop": 286}
+{"y": 9437184, "n": 7, "a": 20, "b": 2, "c": 0, "cls": [true, false], "s": 24192, "M": [3, 4, 4, 7, 8, 9], "npat": 19408896, "found": true, "open": 1, "bsdrop": 263}
+{"y": 9882516, "n": 7, "a": 2, "b": 1, "c": 7, "cls": [true, true], "s": 34560, "M": [2, 5, 6, 8, 8, 9], "npat": 19408896, "found": true, "open": 1, "bsdrop": 1292}
+{"y": 12192768, "n": 8, "a": 10, "b": 5, "c": 2, "cls": [true, true], "s": 12096, "M": [2, 2, 6, 7, 8, 9], "npat": 19408896, "found": true, "open": 0, "bsdrop": 2157}
+{"y": 13716864, "n": 8, "a": 7, "b": 7, "c": 2, "cls": [true, true], "s": 24192, "M": [3, 4, 6, 6, 7, 8], "npat": 19408896, "found": true, "open": 2, "bsdrop": 821}
+{"y": 15431472, "n": 8, "a": 4, "b": 9, "c": 2, "cls": [true, true], "s": 3360, "M": [2, 3, 4, 4, 5, 7], "npat": 19408896, "found": true, "open": 1, "bsdrop": 1055}
+{"y": 15752961, "n": 8, "a": 0, "b": 8, "c": 4, "cls": [true, true], "s": 18900, "M": [2, 5, 5, 6, 7, 9], "npat": 19408896, "found": true, "open": 1, "bsdrop": 1222}
+{"y": 16595712, "n": 8, "a": 8, "b": 3, "c": 4, "cls": [true, true], "s": 18900, "M": [2, 5, 5, 6, 7, 9], "npat": 19408896, "found": true, "open": 1, "bsdrop": 1222}
+{"y": 16859136, "n": 8, "a": 14, "b": 1, "c": 3, "cls": [true, true], "s": 38880, "M": [3, 5, 6, 6, 8, 9], "npat": 19408896, "found": true, "open": 2, "bsdrop": 628}
+{"y": 38118276, "n": 8, "a": 2, "b": 4, "c": 6, "cls": [true, true], "s": 16128, "M": [2, 3, 6, 7, 8, 8], "npat": 19408896, "found": true, "open": 2, "bsdrop": 1404}
+{"y": 45177216, "n": 8, "a": 7, "b": 1, "c": 6, "cls": [true, true], "s": 11760, "M": [2, 4, 5, 6, 7, 7], "npat": 19408896, "found": true, "open": 2, "bsdrop": 1224}
+{"y": 75866112, "n": 8, "a": 13, "b": 3, "c": 3, "cls": [true, true], "s": 20160, "M": [2, 5, 6, 6, 7, 8], "npat": 19408896, "found": true, "open": 1, "bsdrop": 1887}
+{"y": 85766121, "n": 8, "a": 0, "b": 6, "c": 6, "cls": [true, true], "s": 20160, "M": [2, 5, 6, 6, 7, 8], "npat": 19408896, "found": true, "open": 1, "bsdrop": 1887}
+{"y": 113799168, "n": 9, "a": 12, "b": 4, "c": 3, "cls": [true, true], "s": 81648, "M": [3, 6, 7, 8, 9, 9], "npat": 19408896, "found": true, "open": 0, "bsdrop": 305}
+{"y": 125411328, "n": 9, "a": 13, "b": 7, "c": 1, "cls": [true, true], "s": 1920, "M": [2, 2, 3, 4, 5, 8], "npat": 19408896, "found": true, "open": 0, "bsdrop": 1960}
+{"y": 3511517184, "n": 10, "a": 15, "b": 7, "c": 2, "cls": [true, true], "s": 16800, "M": [3, 4, 5, 5, 7, 8], "npat": 19408896, "found": true, "open": 0, "bsdrop": 106}
+{"y": 2333772, "n": 7, "a": 2, "b": 5, "c": 4, "cls": [true, true], "s": 5292, "M": [2, 2, 3, 3, 3, 7, 7], "npat": 26574912, "found": true, "open": 1, "bsdrop": 2196}
+{"y": 41841412812, "n": 11, "a": 2, "b": 21, "c": 0, "cls": [true, false], "s": 16384, "M": [2, 2, 4, 4, 4, 8, 8], "npat": 26574912, "found": true, "open": 1, "bsdrop": 4234}
+{"y": 5334336, "n": 7, "a": 6, "b": 5, "c": 3, "cls": [true, true], "s": 9720, "M": [3, 3, 3, 3, 4, 5, 6], "npat": 28304640, "found": true, "open": 1, "bsdrop": 539}
+{"y": 121522842, "n": 9, "a": 1, "b": 11, "c": 3, "cls": [true, true], "s": 2560, "M": [2, 2, 2, 2, 4, 5, 8], "npat": 28304640, "found": true, "open": 2, "bsdrop": 4781}
+{"y": 352947, "n": 6, "a": 0, "b": 1, "c": 6, "cls": [true, true], "s": 7560, "M": [2, 3, 4, 5, 7, 9], "npat": 35831808, "found": true, "open": 5, "bsdrop": 1742}
+{"y": 453789, "n": 6, "a": 0, "b": 3, "c": 5, "cls": [true, true], "s": 30240, "M": [3, 4, 5, 7, 8, 9], "npat": 35831808, "found": true, "open": 1, "bsdrop": 200}
+{"y": 537824, "n": 6, "a": 5, "b": 0, "c": 5, "cls": [false, true], "s": 6720, "M": [2, 3, 4, 5, 7, 8], "npat": 35831808, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=537824"}
+{"y": 642978, "n": 6, "a": 1, "b": 8, "c": 2, "cls": [true, true], "s": 24192, "M": [2, 4, 6, 7, 8, 9], "npat": 35831808, "found": true, "open": 2, "bsdrop": 2855}
+{"y": 786432, "n": 6, "a": 18, "b": 1, "c": 0, "cls": [true, false], "s": 8064, "M": [2, 3, 4, 6, 7, 8], "npat": 35831808, "found": true, "open": 6, "bsdrop": 3145}
+{"y": 1382976, "n": 7, "a": 6, "b": 2, "c": 4, "cls": [true, true], "s": 18144, "M": [2, 3, 6, 7, 8, 9], "npat": 35831808, "found": true, "open": 4, "bsdrop": 2608}
+{"y": 1572864, "n": 7, "a": 19, "b": 1, "c": 0, "cls": [true, false], "s": 13440, "M": [2, 4, 5, 6, 7, 8], "npat": 35831808, "found": true, "open": 2, "bsdrop": 3020}
+{"y": 3145728, "n": 7, "a": 20, "b": 1, "c": 0, "cls": [true, false], "s": 6720, "M": [2, 3, 4, 5, 7, 8], "npat": 35831808, "found": true, "open": 7, "bsdrop": 1783}
+{"y": 4718592, "n": 7, "a": 19, "b": 2, "c": 0, "cls": [true, false], "s": 20160, "M": [2, 4, 5, 7, 8, 9], "npat": 35831808, "found": true, "open": 1, "bsdrop": 1864}
+{"y": 37158912, "n": 8, "a": 16, "b": 4, "c": 1, "cls": [true, true], "s": 15120, "M": [2, 3, 5, 7, 8, 9], "npat": 35831808, "found": true, "open": 0, "bsdrop": 1890}
+{"y": 114791256, "n": 9, "a": 3, "b": 15, "c": 0, "cls": [true, false], "s": 15120, "M": [2, 4, 5, 6, 7, 9], "npat": 35831808, "found": true, "open": 1, "bsdrop": 2513}
+{"y": 2187411156, "n": 10, "a": 2, "b": 13, "c": 3, "cls": [true, true], "s": 13440, "M": [2, 4, 5, 6, 7, 8], "npat": 35831808, "found": true, "open": 2, "bsdrop": 3020}
+{"y": 2722734, "n": 7, "a": 1, "b": 4, "c": 5, "cls": [true, true], "s": 4704, "M": [2, 2, 2, 3, 4, 7, 7], "npat": 49061376, "found": true, "open": 1, "bsdrop": 6508}
+{"y": 3359232, "n": 7, "a": 9, "b": 8, "c": 0, "cls": [true, false], "s": 4860, "M": [2, 2, 3, 3, 3, 5, 9], "npat": 49061376, "found": true, "open": 0, "bsdrop": 5844}
+{"y": 4667544, "n": 7, "a": 3, "b": 5, "c": 4, "cls": [true, true], "s": 80640, "M": [4, 4, 4, 5, 6, 6, 7], "npat": 49061376, "found": true, "open": 3, "bsdrop": 2558}
+{"y": 5225472, "n": 7, "a": 10, "b": 6, "c": 1, "cls": [true, true], "s": 5600, "M": [2, 2, 2, 4, 5, 5, 7], "npat": 49061376, "found": true, "open": 1, "bsdrop": 7175}
+{"y": 5445468, "n": 7, "a": 2, "b": 4, "c": 5, "cls": [true, true], "s": 76800, "M": [4, 4, 4, 5, 5, 6, 8], "npat": 49061376, "found": true, "open": 4, "bsdrop": 2594}
+{"y": 6223392, "n": 7, "a": 5, "b": 4, "c": 4, "cls": [true, true], "s": 3888, "M": [2, 2, 2, 3, 3, 6, 9], "npat": 49061376, "found": true, "open": 2, "bsdrop": 6254}
+{"y": 6967296, "n": 7, "a": 12, "b": 5, "c": 1, "cls": [true, true], "s": 244944, "M": [2, 6, 6, 6, 7, 9, 9], "npat": 49061376, "found": true, "open": 2, "bsdrop": 5092}
+{"y": 9529569, "n": 7, "a": 0, "b": 4, "c": 6, "cls": [true, true], "s": 218700, "M": [2, 5, 5, 6, 9, 9, 9], "npat": 49061376, "found": true, "open": 2, "bsdrop": 2847}
+{"y": 19668992, "n": 8, "a": 13, "b": 0, "c": 4, "cls": [false, true], "s": 419904, "M": [2, 6, 6, 8, 9, 9, 9], "npat": 49061376, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=19668992"}
+{"y": 21337344, "n": 8, "a": 8, "b": 5, "c": 3, "cls": [true, true], "s": 6048, "M": [2, 3, 3, 3, 4, 4, 7], "npat": 49061376, "found": true, "open": 1, "bsdrop": 3185}
+{"y": 22235661, "n": 8, "a": 0, "b": 3, "c": 7, "cls": [true, true], "s": 4320, "M": [2, 2, 2, 3, 5, 6, 6], "npat": 49061376, "found": true, "open": 1, "bsdrop": 8021}
+{"y": 31352832, "n": 8, "a": 11, "b": 7, "c": 1, "cls": [true, true], "s": 4320, "M": [2, 2, 3, 3, 3, 5, 8], "npat": 49061376, "found": true, "open": 0, "bsdrop": 4209}
+{"y": 44471322, "n": 8, "a": 1, "b": 3, "c": 7, "cls": [true, true], "s": 5376, "M": [2, 2, 3, 4, 4, 4, 7], "npat": 49061376, "found": true, "open": 3, "bsdrop": 5799}
+{"y": 46294416, "n": 8, "a": 4, "b": 10, "c": 2, "cls": [true, true], "s": 41472, "M": [2, 4, 4, 4, 6, 6, 9], "npat": 49061376, "found": true, "open": 4, "bsdrop": 5403}
+{"y": 65345616, "n": 8, "a": 4, "b": 5, "c": 5, "cls": [true, true], "s": 64800, "M": [3, 4, 5, 5, 6, 6, 6], "npat": 49061376, "found": true, "open": 2, "bsdrop": 2499}
+{"y": 69441624, "n": 8, "a": 3, "b": 11, "c": 2, "cls": [true, true], "s": 41472, "M": [2, 4, 4, 4, 6, 6, 9], "npat": 49061376, "found": true, "open": 4, "bsdrop": 5403}
+{"y": 87127488, "n": 8, "a": 6, "b": 4, "c": 5, "cls": [true, true], "s": 200704, "M": [2, 4, 7, 7, 8, 8, 8], "npat": 49061376, "found": true, "open": 4, "bsdrop": 4059}
+{"y": 95551488, "n": 8, "a": 17, "b": 6, "c": 0, "cls": [true, false], "s": 288000, "M": [4, 5, 5, 5, 8, 8, 9], "npat": 49061376, "found": true, "open": 0, "bsdrop": 516}
+{"y": 133413966, "n": 9, "a": 1, "b": 4, "c": 7, "cls": [true, true], "s": 34992, "M": [3, 3, 3, 4, 6, 6, 9], "npat": 49061376, "found": true, "open": 1, "bsdrop": 2351}
+{"y": 199148544, "n": 9, "a": 10, "b": 4, "c": 4, "cls": [true, true], "s": 207360, "M": [4, 4, 4, 5, 8, 9, 9], "npat": 49061376, "found": true, "open": 1, "bsdrop": 1392}
+{"y": 264241152, "n": 9, "a": 22, "b": 2, "c": 1, "cls": [true, true], "s": 3840, "M": [2, 2, 2, 4, 4, 5, 6], "npat": 49061376, "found": true, "open": 1, "bsdrop": 7744}
+{"y": 882165816, "n": 9, "a": 3, "b": 8, "c": 5, "cls": [true, true], "s": 184320, "M": [2, 5, 6, 6, 8, 8, 8], "npat": 49061376, "found": true, "open": 1, "bsdrop": 5635}
+{"y": 1162261467, "n": 10, "a": 0, "b": 19, "c": 0, "cls": [true, false], "s": 24192, "M": [2, 2, 4, 6, 6, 6, 7], "npat": 49061376, "found": true, "open": 4, "bsdrop": 7622}
+{"y": 1416167424, "n": 10, "a": 16, "b": 2, "c": 4, "cls": [true, true], "s": 32256, "M": [2, 4, 4, 4, 6, 6, 7], "npat": 49061376, "found": true, "open": 1, "bsdrop": 6696}
+{"y": 1644167168, "n": 10, "a": 25, "b": 0, "c": 2, "cls": [false, true], "s": 193536, "M": [4, 4, 6, 6, 6, 7, 8], "npat": 49061376, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=1644167168"}
+{"y": 2113929216, "n": 10, "a": 25, "b": 2, "c": 1, "cls": [true, true], "s": 11664, "M": [2, 2, 2, 3, 6, 9, 9], "npat": 49061376, "found": true, "open": 1, "bsdrop": 7225}
+{"y": 4182119424, "n": 10, "a": 10, "b": 5, "c": 5, "cls": [true, true], "s": 18432, "M": [2, 2, 4, 4, 4, 8, 9], "npat": 49061376, "found": true, "open": 0, "bsdrop": 6407}
+{"y": 11621838816, "n": 11, "a": 5, "b": 2, "c": 9, "cls": [true, true], "s": 110592, "M": [2, 3, 6, 6, 8, 8, 8], "npat": 49061376, "found": true, "open": 1, "bsdrop": 6246}
+{"y": 2939328, "n": 7, "a": 6, "b": 8, "c": 1, "cls": [true, true], "s": 23328, "M": [2, 2, 3, 3, 8, 9, 9], "npat": 68335488, "found": true, "open": 1, "bsdrop": 7256}
+{"y": 3483648, "n": 7, "a": 11, "b": 5, "c": 1, "cls": [true, true], "s": 55296, "M": [3, 3, 4, 4, 6, 8, 8], "npat": 68335488, "found": true, "open": 4, "bsdrop": 3762}
+{"y": 5878656, "n": 7, "a": 7, "b": 8, "c": 1, "cls": [true, true], "s": 403200, "M": [5, 5, 6, 6, 7, 8, 8], "npat": 68335488, "found": true, "open": 3, "bsdrop": 3257}
+{"y": 7558272, "n": 7, "a": 7, "b": 10, "c": 0, "cls": [true, false], "s": 39200, "M": [2, 2, 5, 5, 7, 7, 8], "npat": 68335488, "found": true, "open": 1, "bsdrop": 7849}
+{"y": 9289728, "n": 7, "a": 14, "b": 4, "c": 1, "cls": [true, true], "s": 145152, "M": [2, 2, 7, 8, 8, 9, 9], "npat": 68335488, "found": true, "open": 0, "bsdrop": 7466}
+{"y": 21233664, "n": 8, "a": 18, "b": 4, "c": 0, "cls": [true, false], "s": 5184, "M": [2, 2, 3, 3, 4, 6, 6], "npat": 68335488, "found": true, "open": 0, "bsdrop": 9053}
+{"y": 33718272, "n": 8, "a": 15, "b": 1, "c": 3, "cls": [true, true], "s": 14112, "M": [2, 2, 3, 3, 7, 7, 8], "npat": 68335488, "found": true, "open": 0, "bsdrop": 7788}
+{"y": 33882912, "n": 8, "a": 5, "b": 2, "c": 6, "cls": [true, true], "s": 20736, "M": [2, 2, 3, 3, 8, 8, 9], "npat": 68335488, "found": true, "open": 2, "bsdrop": 9748}
+{"y": 38535168, "n": 8, "a": 18, "b": 1, "c": 2, "cls": [true, true], "s": 86400, "M": [3, 3, 5, 5, 6, 8, 8], "npat": 68335488, "found": true, "open": 1, "bsdrop": 2313}
+{"y": 59521392, "n": 8, "a": 4, "b": 12, "c": 1, "cls": [true, true], "s": 24300, "M": [2, 2, 3, 5, 5, 9, 9], "npat": 68335488, "found": true, "open": 1, "bsdrop": 8060}
+{"y": 141776649, "n": 9, "a": 0, "b": 10, "c": 4, "cls": [true, true], "s": 254016, "M": [4, 4, 6, 6, 7, 7, 9], "npat": 68335488, "found": true, "open": 1, "bsdrop": 3312}
+{"y": 648121824, "n": 9, "a": 5, "b": 10, "c": 3, "cls": [true, true], "s": 24576, "M": [2, 2, 4, 4, 6, 8, 8], "npat": 68335488, "found": true, "open": 2, "bsdrop": 11079}
+{"y": 1152216576, "n": 10, "a": 9, "b": 8, "c": 3, "cls": [true, true], "s": 25200, "M": [2, 2, 5, 5, 6, 6, 7], "npat": 68335488, "found": true, "open": 1, "bsdrop": 8611}
+{"y": 1451188224, "n": 10, "a": 13, "b": 11, "c": 0, "cls": [true, false], "s": 20480, "M": [2, 2, 4, 4, 5, 8, 8], "npat": 68335488, "found": true, "open": 5, "bsdrop": 8545}
+{"y": 1811939328, "n": 10, "a": 26, "b": 3, "c": 0, "cls": [true, false], "s": 93312, "M": [2, 3, 3, 8, 8, 9, 9], "npat": 68335488, "found": true, "open": 0, "bsdrop": 4621}
+{"y": 47775744, "n": 8, "a": 16, "b": 6, "c": 0, "cls": [true, false], "s": 768320, "M": [4, 4, 4, 5, 7, 7, 7, 7], "npat": 71547840, "found": true, "open": 1, "bsdrop": 1552}
+{"y": 3857868, "n": 7, "a": 2, "b": 9, "c": 2, "cls": [true, true], "s": 322560, "M": [3, 5, 6, 7, 8, 8, 8], "npat": 90574848, "found": true, "open": 4, "bsdrop": 3044}
+{"y": 6422528, "n": 7, "a": 17, "b": 0, "c": 2, "cls": [false, true], "s": 7680, "M": [2, 2, 2, 4, 5, 6, 8], "npat": 90574848, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=6422528"}
+{"y": 6453888, "n": 7, "a": 7, "b": 1, "c": 5, "cls": [true, true], "s": 184320, "M": [3, 4, 5, 6, 8, 8, 8], "npat": 90574848, "found": true, "open": 0, "bsdrop": 4232}
+{"y": 7375872, "n": 7, "a": 10, "b": 1, "c": 4, "cls": [true, true], "s": 82320, "M": [2, 3, 5, 7, 7, 7, 8], "npat": 90574848, "found": true, "open": 5, "bsdrop": 5368}
+{"y": 12446784, "n": 8, "a": 6, "b": 4, "c": 4, "cls": [true, true], "s": 43008, "M": [2, 4, 4, 4, 6, 7, 8], "npat": 90574848, "found": true, "open": 3, "bsdrop": 10109}
+{"y": 18874368, "n": 8, "a": 21, "b": 2, "c": 0, "cls": [true, false], "s": 258048, "M": [3, 4, 6, 7, 8, 8, 8], "npat": 90574848, "found": true, "open": 1, "bsdrop": 5101}
+{"y": 53747712, "n": 8, "a": 13, "b": 8, "c": 0, "cls": [true, false], "s": 41160, "M": [2, 3, 4, 5, 7, 7, 7], "npat": 90574848, "found": true, "open": 0, "bsdrop": 6504}
+{"y": 61725888, "n": 8, "a": 6, "b": 9, "c": 2, "cls": [true, true], "s": 215040, "M": [2, 5, 6, 7, 8, 8, 8], "npat": 90574848, "found": true, "open": 1, "bsdrop": 9237}
+{"y": 89915392, "n": 8, "a": 18, "b": 0, "c": 3, "cls": [false, true], "s": 174960, "M": [2, 3, 5, 8, 9, 9, 9], "npat": 90574848, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=89915392"}
+{"y": 97542144, "n": 8, "a": 13, "b": 5, "c": 2, "cls": [true, true], "s": 40320, "M": [2, 4, 4, 4, 5, 7, 9], "npat": 90574848, "found": true, "open": 0, "bsdrop": 7474}
+{"y": 151732224, "n": 9, "a": 14, "b": 3, "c": 3, "cls": [true, true], "s": 3360, "M": [2, 2, 2, 3, 4, 5, 7], "npat": 90574848, "found": true, "open": 3, "bsdrop": 13863}
+{"y": 171532242, "n": 9, "a": 1, "b": 6, "c": 6, "cls": [true, true], "s": 3360, "M": [2, 2, 2, 3, 4, 5, 7], "npat": 90574848, "found": true, "open": 3, "bsdrop": 13863}
+{"y": 172186884, "n": 9, "a": 2, "b": 16, "c": 0, "cls": [true, false], "s": 172032, "M": [2, 4, 6, 7, 8, 8, 8], "npat": 90574848, "found": true, "open": 1, "bsdrop": 10070}
+{"y": 181398528, "n": 9, "a": 10, "b": 11, "c": 0, "cls": [true, false], "s": 138240, "M": [2, 3, 5, 8, 8, 8, 9], "npat": 90574848, "found": true, "open": 1, "bsdrop": 5977}
+{"y": 719323136, "n": 9, "a": 21, "b": 0, "c": 3, "cls": [false, true], "s": 20412, "M": [2, 3, 3, 3, 6, 7, 9], "npat": 90574848, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=719323136"}
+{"y": 1146617856, "n": 10, "a": 19, "b": 7, "c": 0, "cls": [true, false], "s": 241920, "M": [4, 5, 6, 6, 6, 7, 8], "npat": 90574848, "found": true, "open": 4, "bsdrop": 6468}
+{"y": 2124251136, "n": 10, "a": 15, "b": 3, "c": 4, "cls": [true, true], "s": 2880, "M": [2, 2, 2, 3, 4, 5, 6], "npat": 90574848, "found": true, "open": 1, "bsdrop": 13764}
+{"y": 4161798144, "n": 10, "a": 20, "b": 4, "c": 2, "cls": [true, true], "s": 193536, "M": [4, 4, 4, 6, 7, 8, 9], "npat": 90574848, "found": true, "open": 0, "bsdrop": 5027}
+{"y": 9913171968, "n": 10, "a": 16, "b": 2, "c": 5, "cls": [true, true], "s": 734832, "M": [3, 6, 7, 8, 9, 9, 9], "npat": 90574848, "found": true, "open": 0, "bsdrop": 1828}
+{"y": 161915142144, "n": 12, "a": 16, "b": 1, "c": 7, "cls": [true, true], "s": 34560, "M": [2, 4, 4, 4, 5, 6, 9], "npat": 90574848, "found": true, "open": 1, "bsdrop": 8457}
+{"y": 2239488, "n": 7, "a": 10, "b": 7, "c": 0, "cls": [true, false], "s": 27648, "M": [2, 2, 3, 4, 8, 8, 9], "npat": 126157824, "found": true, "open": 10, "bsdrop": 18645}
+{"y": 2359296, "n": 7, "a": 18, "b": 2, "c": 0, "cls": [true, false], "s": 29160, "M": [2, 2, 3, 5, 6, 9, 9], "npat": 126157824, "found": true, "open": 1, "bsdrop": 15256}
+{"y": 2458624, "n": 7, "a": 10, "b": 0, "c": 4, "cls": [false, true], "s": 15360, "M": [2, 2, 4, 4, 5, 6, 8], "npat": 126157824, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=2458624"}
+{"y": 2765952, "n": 7, "a": 7, "b": 2, "c": 4, "cls": [true, true], "s": 37800, "M": [2, 2, 5, 5, 6, 7, 9], "npat": 126157824, "found": true, "open": 4, "bsdrop": 15362}
+{"y": 2834352, "n": 7, "a": 4, "b": 11, "c": 0, "cls": [true, false], "s": 5760, "M": [2, 2, 3, 3, 4, 5, 8], "npat": 126157824, "found": true, "open": 4, "bsdrop": 15046}
+{"y": 2985984, "n": 7, "a": 12, "b": 6, "c": 0, "cls": [true, false], "s": 207360, "M": [2, 4, 5, 8, 8, 9, 9], "npat": 126157824, "found": true, "open": 1, "bsdrop": 9697}
+{"y": 3226944, "n": 7, "a": 6, "b": 1, "c": 5, "cls": [true, true], "s": 10368, "M": [2, 2, 3, 4, 4, 6, 9], "npat": 126157824, "found": true, "open": 4, "bsdrop": 14441}
+{"y": 3538944, "n": 7, "a": 17, "b": 3, "c": 0, "cls": [true, false], "s": 51840, "M": [3, 3, 4, 4, 5, 8, 9], "npat": 126157824, "found": true, "open": 2, "bsdrop": 2110}
+{"y": 3556224, "n": 7, "a": 7, "b": 4, "c": 3, "cls": [true, true], "s": 7200, "M": [2, 2, 3, 4, 5, 5, 6], "npat": 126157824, "found": true, "open": 3, "bsdrop": 14755}
+{"y": 3687936, "n": 7, "a": 9, "b": 1, "c": 4, "cls": [true, true], "s": 163296, "M": [3, 3, 6, 6, 7, 8, 9], "npat": 126157824, "found": true, "open": 0, "bsdrop": 6728}
+{"y": 3764768, "n": 7, "a": 5, "b": 0, "c": 6, "cls": [false, true], "s": 169344, "M": [3, 4, 6, 6, 7, 7, 8], "npat": 126157824, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=3764768"}
+{"y": 4235364, "n": 7, "a": 2, "b": 2, "c": 6, "cls": [true, true], "s": 8640, "M": [2, 3, 3, 4, 4, 5, 6], "npat": 126157824, "found": true, "open": 3, "bsdrop": 9389}
+{"y": 4478976, "n": 7, "a": 11, "b": 7, "c": 0, "cls": [true, false], "s": 338688, "M": [4, 4, 6, 7, 7, 8, 9], "npat": 126157824, "found": true, "open": 1, "bsdrop": 5664}
+{"y": 4572288, "n": 7, "a": 7, "b": 6, "c": 2, "cls": [true, true], "s": 35840, "M": [2, 2, 4, 5, 7, 8, 8], "npat": 126157824, "found": true, "open": 7, "bsdrop": 15568}
+{"y": 6377292, "n": 7, "a": 2, "b": 13, "c": 0, "cls": [true, false], "s": 31752, "M": [2, 2, 3, 6, 7, 7, 9], "npat": 126157824, "found": true, "open": 5, "bsdrop": 16003}
+{"y": 6588344, "n": 7, "a": 3, "b": 0, "c": 7, "cls": [false, true], "s": 92160, "M": [3, 4, 4, 5, 6, 8, 8], "npat": 126157824, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=6588344"}
+{"y": 7225344, "n": 7, "a": 14, "b": 2, "c": 2, "cls": [true, true], "s": 6720, "M": [2, 2, 3, 4, 4, 5, 7], "npat": 126157824, "found": true, "open": 2, "bsdrop": 14655}
+{"y": 7962624, "n": 7, "a": 15, "b": 5, "c": 0, "cls": [true, false], "s": 36288, "M": [2, 2, 4, 6, 6, 7, 9], "npat": 126157824, "found": true, "open": 5, "bsdrop": 20100}
+{"y": 8957952, "n": 7, "a": 12, "b": 7, "c": 0, "cls": [true, false], "s": 226800, "M": [2, 5, 5, 7, 8, 9, 9], "npat": 126157824, "found": true, "open": 0, "bsdrop": 7723}
+{"y": 9565938, "n": 7, "a": 1, "b": 14, "c": 0, "cls": [true, false], "s": 291600, "M": [3, 5, 5, 6, 8, 9, 9], "npat": 126157824, "found": true, "open": 2, "bsdrop": 1750}
+{"y": 9633792, "n": 7, "a": 16, "b": 1, "c": 2, "cls": [true, true], "s": 61236, "M": [2, 3, 3, 6, 7, 9, 9], "npat": 126157824, "found": true, "open": 1, "bsdrop": 9850}
+{"y": 9834496, "n": 7, "a": 12, "b": 0, "c": 4, "cls": [false, true], "s": 186624, "M": [3, 4, 4, 6, 8, 9, 9], "npat": 126157824, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=9834496"}
+{"y": 12644352, "n": 8, "a": 12, "b": 2, "c": 3, "cls": [true, true], "s": 5760, "M": [2, 2, 3, 4, 4, 5, 6], "npat": 126157824, "found": true, "open": 3, "bsdrop": 15021}
+{"y": 12754584, "n": 8, "a": 3, "b": 13, "c": 0, "cls": [true, false], "s": 44800, "M": [2, 4, 4, 5, 5, 7, 8], "npat": 126157824, "found": true, "open": 5, "bsdrop": 8685}
+{"y": 13226976, "n": 8, "a": 5, "b": 10, "c": 1, "cls": [true, true], "s": 27216, "M": [2, 2, 3, 6, 6, 7, 9], "npat": 126157824, "found": true, "open": 1, "bsdrop": 18647}
+{"y": 13934592, "n": 8, "a": 13, "b": 5, "c": 1, "cls": [true, true], "s": 29160, "M": [2, 3, 3, 4, 5, 9, 9], "npat": 126157824, "found": true, "open": 0, "bsdrop": 7452}
+{"y": 14224896, "n": 8, "a": 9, "b": 4, "c": 3, "cls": [true, true], "s": 27648, "M": [2, 2, 4, 4, 6, 8, 9], "npat": 126157824, "found": true, "open": 4, "bsdrop": 19865}
+{"y": 14823774, "n": 8, "a": 1, "b": 2, "c": 7, "cls": [true, true], "s": 37632, "M": [2, 3, 4, 4, 7, 7, 8], "npat": 126157824, "found": true, "open": 4, "bsdrop": 10659}
+{"y": 15925248, "n": 8, "a": 16, "b": 5, "c": 0, "cls": [true, false], "s": 28800, "M": [2, 2, 4, 5, 5, 8, 9], "npat": 126157824, "found": true, "open": 2, "bsdrop": 16730}
+{"y": 18966528, "n": 8, "a": 11, "b": 3, "c": 3, "cls": [true, true], "s": 207360, "M": [2, 5, 6, 6, 8, 8, 9], "npat": 126157824, "found": true, "open": 2, "bsdrop": 12472}
+{"y": 22674816, "n": 8, "a": 7, "b": 11, "c": 0, "cls": [true, false], "s": 32256, "M": [2, 2, 4, 6, 6, 7, 8], "npat": 126157824, "found": true, "open": 3, "bsdrop": 21003}
+{"y": 23514624, "n": 8, "a": 9, "b": 8, "c": 1, "cls": [true, true], "s": 5760, "M": [2, 2, 3, 4, 4, 5, 6], "npat": 126157824, "found": true, "open": 3, "bsdrop": 15021}
+{"y": 25165824, "n": 8, "a": 23, "b": 1, "c": 0, "cls": [true, false], "s": 19200, "M": [2, 2, 4, 5, 5, 6, 8], "npat": 126157824, "found": true, "open": 5, "bsdrop": 18014}
+{"y": 49545216, "n": 8, "a": 18, "b": 3, "c": 1, "cls": [true, true], "s": 43200, "M": [2, 4, 4, 5, 5, 6, 9], "npat": 126157824, "found": true, "open": 3, "bsdrop": 13175}
+{"y": 68841472, "n": 8, "a": 12, "b": 0, "c": 5, "cls": [false, true], "s": 86016, "M": [2, 4, 4, 6, 7, 8, 8], "npat": 126157824, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=68841472"}
+{"y": 74317824, "n": 8, "a": 17, "b": 4, "c": 1, "cls": [true, true], "s": 37632, "M": [2, 3, 4, 4, 7, 7, 8], "npat": 126157824, "found": true, "open": 4, "bsdrop": 10659}
+{"y": 92236816, "n": 8, "a": 4, "b": 0, "c": 8, "cls": [false, true], "s": 31104, "M": [2, 2, 3, 6, 6, 8, 9], "npat": 126157824, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=92236816"}
+{"y": 94517766, "n": 8, "a": 1, "b": 9, "c": 4, "cls": [true, true], "s": 317520, "M": [4, 5, 6, 6, 7, 7, 9], "npat": 126157824, "found": true, "open": 1, "bsdrop": 4527}
+{"y": 114354828, "n": 9, "a": 2, "b": 5, "c": 6, "cls": [true, true], "s": 30720, "M": [2, 3, 4, 4, 5, 8, 8], "npat": 126157824, "found": true, "open": 1, "bsdrop": 11882}
+{"y": 134217728, "n": 9, "a": 27, "b": 0, "c": 0, "cls": [false, false], "s": 18816, "M": [2, 2, 3, 4, 7, 7, 8], "npat": 126157824, "found": true, "open": 0, "bsdrop": 15680}
+{"y": 135531648, "n": 9, "a": 7, "b": 2, "c": 6, "cls": [true, true], "s": 43200, "M": [3, 3, 4, 5, 5, 6, 8], "npat": 126157824, "found": true, "open": 2, "bsdrop": 3651}
+{"y": 157351936, "n": 9, "a": 16, "b": 0, "c": 4, "cls": [false, true], "s": 85050, "M": [3, 3, 5, 5, 6, 7, 9], "npat": 126157824, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=157351936"}
+{"y": 158723712, "n": 9, "a": 7, "b": 11, "c": 1, "cls": [true, true], "s": 23520, "M": [2, 2, 3, 5, 7, 7, 8], "npat": 126157824, "found": true, "open": 1, "bsdrop": 14013}
+{"y": 169869312, "n": 9, "a": 21, "b": 4, "c": 0, "cls": [true, false], "s": 139968, "M": [2, 3, 6, 6, 8, 9, 9], "npat": 126157824, "found": true, "open": 0, "bsdrop": 13708}
+{"y": 178564176, "n": 9, "a": 4, "b": 13, "c": 1, "cls": [true, true], "s": 282240, "M": [4, 5, 6, 6, 7, 7, 8], "npat": 126157824, "found": true, "open": 3, "bsdrop": 7367}
+{"y": 185177664, "n": 9, "a": 6, "b": 10, "c": 2, "cls": [true, true], "s": 282240, "M": [4, 5, 6, 6, 7, 7, 8], "npat": 126157824, "found": true, "open": 3, "bsdrop": 7367}
+{"y": 311299254, "n": 9, "a": 1, "b": 3, "c": 8, "cls": [true, true], "s": 19440, "M": [2, 2, 3, 4, 5, 9, 9], "npat": 126157824, "found": true, "open": 1, "bsdrop": 15678}
+{"y": 725594112, "n": 9, "a": 12, "b": 11, "c": 0, "cls": [true, false], "s": 25200, "M": [2, 2, 4, 5, 5, 7, 9], "npat": 126157824, "found": true, "open": 1, "bsdrop": 15750}
+{"y": 1194891264, "n": 10, "a": 11, "b": 5, "c": 4, "cls": [true, true], "s": 124416, "M": [2, 4, 4, 6, 8, 9, 9], "npat": 126157824, "found": true, "open": 1, "bsdrop": 13061}
+{"y": 1291315424, "n": 10, "a": 5, "b": 0, "c": 9, "cls": [false, true], "s": 8640, "M": [2, 2, 3, 4, 4, 5, 9], "npat": 126157824, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=1291315424"}
+{"y": 1316818944, "n": 10, "a": 12, "b": 8, "c": 2, "cls": [true, true], "s": 165888, "M": [3, 4, 4, 6, 8, 8, 9], "npat": 126157824, "found": true, "open": 0, "bsdrop": 8142}
+{"y": 1927561216, "n": 10, "a": 14, "b": 0, "c": 6, "cls": [false, true], "s": 45360, "M": [2, 2, 5, 6, 6, 7, 9], "npat": 126157824, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=1927561216"}
+{"y": 2951578112, "n": 10, "a": 9, "b": 0, "c": 8, "cls": [false, true], "s": 50400, "M": [2, 2, 5, 5, 7, 8, 9], "npat": 126157824, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=2951578112"}
+{"y": 111152892816, "n": 12, "a": 4, "b": 10, "c": 6, "cls": [true, true], "s": 69120, "M": [2, 2, 5, 6, 8, 8, 9], "npat": 126157824, "found": true, "open": 2, "bsdrop": 17204}
+{"y": 138883248, "n": 9, "a": 4, "b": 11, "c": 2, "cls": [true, true], "s": 294912, "M": [2, 3, 3, 4, 8, 8, 8, 8], "npat": 183980160, "found": true, "open": 3, "bsdrop": 21042}
+{"y": 177885288, "n": 9, "a": 3, "b": 3, "c": 7, "cls": [true, true], "s": 2007040, "M": [2, 5, 7, 7, 8, 8, 8, 8], "npat": 183980160, "found": true, "open": 5, "bsdrop": 14262}
+{"y": 229582512, "n": 9, "a": 4, "b": 15, "c": 0, "cls": [true, false], "s": 28800, "M": [2, 2, 2, 2, 5, 5, 8, 9], "npat": 183980160, "found": true, "open": 1, "bsdrop": 38946}
+{"y": 317447424, "n": 9, "a": 8, "b": 11, "c": 1, "cls": [true, true], "s": 75264, "M": [2, 3, 4, 4, 4, 4, 7, 7], "npat": 183980160, "found": true, "open": 2, "bsdrop": 17447}
+{"y": 416649744, "n": 9, "a": 4, "b": 12, "c": 2, "cls": [true, true], "s": 580608, "M": [4, 4, 4, 4, 6, 6, 7, 9], "npat": 183980160, "found": true, "open": 2, "bsdrop": 18511}
+{"y": 616562688, "n": 9, "a": 22, "b": 1, "c": 2, "cls": [true, true], "s": 829440, "M": [2, 5, 6, 6, 6, 6, 8, 8], "npat": 183980160, "found": true, "open": 2, "bsdrop": 30353}
+{"y": 661624362, "n": 9, "a": 1, "b": 9, "c": 5, "cls": [true, true], "s": 62208, "M": [2, 2, 3, 4, 6, 6, 6, 6], "npat": 183980160, "found": true, "open": 1, "bsdrop": 36768}
+{"y": 1258815488, "n": 10, "a": 19, "b": 0, "c": 4, "cls": [false, true], "s": 819200, "M": [2, 4, 5, 5, 8, 8, 8, 8], "npat": 183980160, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=1258815488"}
+{"y": 5165261696, "n": 10, "a": 7, "b": 0, "c": 9, "cls": [false, true], "s": 583200, "M": [2, 5, 5, 6, 6, 6, 6, 9], "npat": 183980160, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=5165261696"}
+{"y": 19999187712, "n": 11, "a": 8, "b": 13, "c": 2, "cls": [true, true], "s": 5143824, "M": [2, 7, 7, 8, 9, 9, 9, 9], "npat": 183980160, "found": true, "open": 1, "bsdrop": 11431}
+{"y": 11519532122112, "n": 14, "a": 14, "b": 15, "c": 2, "cls": [true, true], "s": 10800, "M": [2, 2, 2, 2, 3, 5, 5, 9], "npat": 183980160, "found": true, "open": 2, "bsdrop": 36822}
+{"y": 143327232, "n": 9, "a": 16, "b": 7, "c": 0, "cls": [true, false], "s": 6048, "M": [2, 2, 2, 3, 3, 3, 4, 7], "npat": 228953088, "found": true, "open": 2, "bsdrop": 33857}
+{"y": 544195584, "n": 9, "a": 10, "b": 12, "c": 0, "cls": [true, false], "s": 576000, "M": [4, 4, 4, 5, 5, 5, 8, 9], "npat": 228953088, "found": true, "open": 2, "bsdrop": 7654}
+{"y": 686128968, "n": 9, "a": 3, "b": 6, "c": 6, "cls": [true, true], "s": 1990656, "M": [2, 6, 6, 6, 8, 8, 8, 9], "npat": 228953088, "found": true, "open": 1, "bsdrop": 40013}
+{"y": 48814981614, "n": 11, "a": 1, "b": 20, "c": 1, "cls": [true, true], "s": 1769472, "M": [4, 4, 4, 6, 8, 8, 8, 9], "npat": 228953088, "found": true, "open": 3, "bsdrop": 26561}
+{"y": 2823576, "n": 7, "a": 3, "b": 1, "c": 6, "cls": [true, true], "s": 20160, "M": [2, 2, 3, 5, 6, 7, 8], "npat": 232906752, "found": true, "open": 10, "bsdrop": 34515}
+{"y": 4782969, "n": 7, "a": 0, "b": 14, "c": 0, "cls": [true, false], "s": 217728, "M": [2, 4, 6, 7, 8, 9, 9], "npat": 232906752, "found": true, "open": 3, "bsdrop": 21981}
+{"y": 6858432, "n": 7, "a": 6, "b": 7, "c": 2, "cls": [true, true], "s": 46080, "M": [2, 3, 4, 5, 6, 8, 8], "npat": 232906752, "found": true, "open": 7, "bsdrop": 25484}
+{"y": 7529536, "n": 7, "a": 6, "b": 0, "c": 6, "cls": [false, true], "s": 56700, "M": [2, 3, 5, 5, 6, 7, 9], "npat": 232906752, "found": false, "lost": "POSITIVE CONTROL LOST at level 12: y=7529536"}
+{"y": 8257536, "n": 7, "a": 17, "b": 2, "c": 1, "cls": [true, true], "s": 50400, "M": [2, 3, 5, 5, 6, 7, 8], "npat": 232906752, "found": true, "open": 5, "bsdrop": 20025}
+{"y": 8297856, "n": 7, "a": 7, "b": 3, "c": 4, "cls": [true, true], "s": 241920, "M": [2, 5, 6, 7, 8, 8, 9], "npat": 232906752, "found": true, "open": 5, "bsdrop": 23758}
+{"y": 8429568, "n": 7, "a": 13, "b": 1, "c": 3, "cls": [true, true], "s": 138240, "M": [2, 4, 5, 6, 8, 8, 9], "npat": 232906752, "found": true, "open": 2, "bsdrop": 23681}
+{"y": 9483264, "n": 7, "a": 10, "b": 3, "c": 3, "cls": [true, true], "s": 41472, "M": [2, 3, 4, 4, 6, 8, 9], "npat": 232906752, "found": true, "open": 6, "bsdrop": 25149}
+{"y": 13436928, "n": 8, "a": 11, "b": 8, "c": 0, "cls": [true, false], "s": 31104, "M": [2, 3, 3, 4, 6, 8, 9], "npat": 232906752, "found": true, "open": 1, "bsdrop": 21034}
+{"y": 17635968, "n": 8, "a": 7, "b": 9, "c": 1, "cls": [true, true], "s": 272160, "M": [3, 5, 6, 6, 7, 8, 9], "npat": 232906752, "found": true, "open": 3, "bsdrop": 11250}
+{"y": 18579456, "n": 8, "a": 15, "b": 4, "c": 1, "cls": [true, true], "s": 302400, "M": [4, 5, 5, 6, 7, 8, 9], "npat": 232906752, "found": true, "open": 0, "bsdrop": 6505}
+{"y": 27869184, "n": 8, "a": 14, "b": 5, "c": 1, "cls": [true, true], "s": 193536, "M": [2, 4, 6, 7, 8, 8, 9], "npat": 232906752, "found": true, "open": 5, "bsdrop": 25259}
+{"y": 28697814, "n": 8, "a": 1, "b": 15, "c": 0, "cls": [true, false], "s": 193536, "M": [2, 4, 6, 7, 8, 8, 9], "npat": 232906752, "found": true, "open": 5, "bsdrop": 25259}
+{"y": 35271936, "n": 8, "a": 8, "b": 9, "c": 1, "cls": [true, true], "s": 34020, "M": [2, 3, 3, 5, 6, 7, 9], "npat": 232906752, "found": true, "open": 4, "bsdrop": 19582}
+{"y": 49787136, "n": 8, "a": 8, "b": 4, "c": 4, "cls": [true, true], "s": 254016, "M": [3, 4, 6, 7, 7, 8, 9], "npat": 232906752, "found": true, "open": 0, "bsdrop": 8285}
+{"y": 79361856, "n": 8, "a": 6, "b": 11, "c": 1, "cls": [true, true], "s": 272160, "M": [3, 5, 6, 6, 7, 8, 9], "npat": 232906752, "found": true, "open": 3, "bsdrop": 11250}
+{"y": 123451776, "n": 9, "a": 7, "b": 9, "c": 2, "cls": [true, true], "s": 35280, "M": [2, 3, 4, 5, 6, 7, 7], "npat": 232906752, "found": true, "open": 5, "bsdrop": 21213}
+{"y": 154893312, "n": 9, "a": 10, "b": 2, "c": 5, "cls": [true, true], "s": 25920, "M": [2, 3, 3, 4, 5, 8, 9], "npat": 232906752, "found": true, "open": 2, "bsdrop": 15694}
+{"y": 346816512, "n": 9, "a": 18, "b": 3, "c": 2, "cls": [true, true], "s": 34560, "M": [2, 3, 4, 5, 6, 6, 8], "npat": 232906752, "found": true, "open": 3, "bsdrop": 30516}
+{"y": 361417728, "n": 9, "a": 10, "b": 1, "c": 6, "cls": [true, true], "s": 56448, "M": [2, 3, 4, 6, 7, 7, 8], "npat": 232906752, "found": true, "open": 6, "bsdrop": 21157}
+{"y": 457419312, "n": 9, "a": 4, "b": 5, "c": 6, "cls": [true, true], "s": 30240, "M": [2, 3, 4, 4, 5, 7, 9], "npat": 232906752, "found": true, "open": 3, "bsdrop": 18606}
+{"y": 756142128, "n": 9, "a": 4, "b": 9, "c": 4, "cls": [true, true], "s": 26880, "M": [2, 2, 4, 5, 6, 7, 8], "npat": 232906752, "found": true, "open": 4, "bsdrop": 35669}
+{"y": 3214155168, "n": 10, "a": 5, "b": 15, "c": 1, "cls": [true, true], "s": 28800, "M": [2, 3, 4, 5, 5, 6, 8], "npat": 232906752, "found": true, "open": 3, "bsdrop": 23861}
+{"y": 3281116734, "n": 10, "a": 1, "b": 14, "c": 3, "cls": [true, true], "s": 24192, "M": [2, 3, 3, 4, 6, 7, 8], "npat": 232906752, "found": true, "open": 1, "bsdrop": 25019}
+{"y": 8716379112, "n": 10, "a": 3, "b": 3, "c": 9, "cls": [true, true], "s": 127008, "M": [2, 3, 6, 7, 7, 8, 9], "npat": 232906752, "found": true, "open": 1, "bsdrop": 22420}
+{"y": 11152318464, "n": 11, "a": 13, "b": 4, "c": 5, "cls": [true, true], "s": 23040, "M": [2, 3, 4, 4, 5, 6, 8], "npat": 232906752, "found": true, "open": 5, "bsdrop": 25382}

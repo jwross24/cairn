@@ -1,0 +1,7 @@
+layered uniform model on s=124416, M=2^9 3^5 (per a; x50 for a=0..49):
+ L=12 patterns=8803791360 survivors=4544237 (pred 1.834e+07 per a)
+ L=24 children=3510549840 survivors=1097 pred_per_a=1.354e+04 pred_x50=6.772e+05 obs/pred_x50=0.00162
+ L=48 children=13874912 survivors=17 pred_per_a=0.9124 pred_x50=45.62 obs/pred_x50=0.373
+L=48 relaxed DP, budget 5.29e+09: primes (11, 13, 17, 37, 73, 137) rho_S=4.340e-04; N48*rho_S*50 = 2.051e+16 (observed engine-open 17; exact accidents 0)
+L=48 relaxed DP, budget 1.00e+12: primes (11, 13, 37, 73, 101, 9901) rho_S=5.787e-05; N48*rho_S*50 = 2.735e+15 (observed engine-open 17; exact accidents 0)
+Poisson 95% upper limit on accident count given 0 observed: 3.0; ratio to registered prediction 42: 0.071

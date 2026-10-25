@@ -1,0 +1,33 @@
+base 8: level 192 new primes [641, 3457, 816769, 6700417, 18446744069414584321] [6s]
+s=3402 M=2333337 bv=[0] y=81 k=7: words 1, trivial primes [], alive at 192: 0 [7s]
+s=3402 M=2333337 bv=[0] y=81 k=7: words 1, trivial primes [], alive at 192: 0 [9s]
+s=3402 M=(2, 3, 3, 3, 3, 3, 7) y=250: closed at depth 1 (no words)
+s=3402 M=2333337 bv=[0] y=75 k=7: words 5, trivial primes [], alive at 192: 0 [11s]
+s=3402 M=2333337 bv=[0] y=75 k=7: words 2, trivial primes [], alive at 192: 0 [13s]
+s=3402 M=(2, 3, 3, 3, 3, 3, 7) y=65610: closed at depth 1 (no words)
+s=3402 M=(2, 3, 3, 3, 3, 3, 7) y=18522: closed at depth 1 (no words)
+s=3402 M=2333337 bv=[1] y=12250 k=7: words 8, trivial primes [], alive at 192: 0 [19s]
+s=3402 M=2333337 bv=[1] y=8930250 k=7: words 18, trivial primes [], alive at 192: 0 [23s]
+s=3402 M=2333337 bv=[0] y=107163 k=7: words 8, trivial primes [], alive at 192: 0 [27s]
+s=3402 M=2333337 bv=[0] y=2100875 k=7: words 12, trivial primes [], alive at 192: 0 [32s]
+s=3402 M=2333337 bv=[0] y=2100875 k=7: words 10, trivial primes [], alive at 192: 0 [35s]
+s=3402 M=2333337 bv=[0] y=1225 k=7: words 1, trivial primes [], alive at 192: 0 [36s]
+s=3402 M=2333337 bv=[0] y=1225 k=7: words 4, trivial primes [], alive at 192: 0 [38s]
+s=3402 M=2333337 bv=[0] y=3675 k=7: words 4, trivial primes [], alive at 192: 0 [41s]
+s=3402 M=2333337 bv=[0] y=70875 k=7: words 8, trivial primes [], alive at 192: 2, bound 10^(10^79.6) digits [48s]
+s=3402 M=2333337 bv=[0] y=15435 k=7: words 12, trivial primes [], alive at 192: 0 [51s]
+s=3402 M=2333337 bv=[0] y=23625 k=7: words 18, trivial primes [], alive at 192: 0 [54s]
+s=3402 M=2333337 bv=[0] y=4862025 k=7: words 72, trivial primes [], alive at 192: 0 [64s]
+s=3402 M=2333337 bv=[0] y=70875 k=7: words 8, trivial primes [], alive at 192: 0 [69s]
+s=3402 M=2333337 bv=[0] y=15435 k=7: words 9, trivial primes [], alive at 192: 0 [73s]
+s=3402 M=2333337 bv=[0] y=23625 k=7: words 12, trivial primes [], alive at 192: 0 [76s]
+s=3402 M=2333337 bv=[0] y=756315 k=7: words 18, trivial primes [], alive at 192: 0 [82s]
+s=3402 M=2333337 bv=[0] y=297675 k=7: words 12, trivial primes [], alive at 192: 0 [86s]
+s=3402 M=2333337 bv=[0] y=60025 k=7: words 24, trivial primes [], alive at 192: 0 [92s]
+s=3402 M=2333337 bv=[0] y=297675 k=7: words 18, trivial primes [], alive at 192: 0 [98s]
+s=3402 M=2333337 bv=[0] y=2893401 k=7: words 20, trivial primes [], alive at 192: 0 [102s]
+s=3402 M=2333337 bv=[0] y=2893401 k=7: words 48, trivial primes [], alive at 192: 0 [113s]
+s=3402 M=2333337 bv=[0] y=759375 k=7: words 20, trivial primes [], alive at 192: 10, bound 10^(10^79.5) digits [126s]
+s=3402 M=2333337 bv=[0] y=455625 k=7: words 24, trivial primes [], alive at 192: 24, bound 10^(10^79.4) digits [152s]
+
+base 8: 30 patterns, 27 closed outright at level 192; children tested 17192, passed the filter 17192

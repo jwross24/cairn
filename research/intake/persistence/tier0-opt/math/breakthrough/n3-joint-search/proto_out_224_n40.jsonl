@@ -1,0 +1,1 @@
+{"s": 224, "P": 4, "K": 4, "nmax": 40, "multisets": 5, "pairs": 8643, "a_free_pairs": 389, "queries": 8270, "enum_points": 118, "coset_empty": 4571, "found": [784, 2744, 41472, 71442, 122472], "recorded_known": [784, 2744, 41472, 71442, 122472], "agree": true, "secs": 73.3}

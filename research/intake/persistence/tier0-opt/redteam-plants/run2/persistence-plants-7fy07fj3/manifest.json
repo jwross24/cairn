@@ -1,0 +1,31 @@
+{
+  "python": "3.14.7 (main, Sep  1 2026, 14:05:28) [Clang 22.1.3 ]",
+  "platform": "macOS-26.6-arm64-arm-64bit-Mach-O",
+  "packages": {
+    "sympy": "1.14.0",
+    "mpmath": "1.3.0"
+  },
+  "PYDESC": "0",
+  "sha256": {
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12": "aed735372b5a8d9cd713ad304928cae4440ccd9fd9f7c77888a0684fb5b8eae5",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN": "64bb776e1bae9b2c7487e66a219f75aa84bc7e86af4ba17b824d15838937382d",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvl12.c": "c3ebc7d05d00f112efe7a15e2429d029cba4c128a05454ae1b68b204bf23367b",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN.c": "fb318328268739237db6b7e1729cc2d520d2c9c2c38c58607669c9678b8a1682",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/run_c.py": "b09639f6ac1548ec61ab4efdeb1e62ce5527ca47308657d510135e83bfba0833",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/export_cfg.py": "e2541fdfc957ee1cee50f05f5be9c50f6c3fd6ddc657a3fd6b26504cc1f0fc0d",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/export_level.py": "b2db0d5242c550b026641f19adf861e438a82128f86f25334694895cef3f2847",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/deepcut.py": "38e830285bc6e5e8ae5acec04b67ee02f2752d665b4703dd2c1edac658433dc9",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/descent.py": "684766b3c1ef6888e93bb328e601f25d6451be55b4e95d6294be25c3c2ba56ed",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/lattice.py": "3d514953dc8f91a55f60ad4b65ef0c44865b4ced028df802e96fcf99d925fd9f",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/shadowcert.py": "9bb98625d4abf90b8f9ff55f30ea9794a3d6c467b70953a53a056f36f30a76f5",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/wordlift.py": "f17ea5c305b42ff43e0dec0d3e3a6cce29c34e809f8702f47ebdf14a869ed71f",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/deepcut_lift.py": "7f5778c3e299f51b57050ad35570428e452a0b3a94b46bf4c4efa15a1e384e6b",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/sandwich.py": "05e883292a1e1e932d326265accc2ba5e221bfc5ae32906e50e02a14a17e51d1",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/baker_chain.py": "1d1136fb66f38846fce4567c2c135809bae032e3ace1304b41d1ad990265b981",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/classify_open.py": "d4dc9cdaa199d9a06daa6d7908d5eb3d8d0d834e7d6b6cc75fca3a88d54592bc",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/zf_below_1e6900.txt": "1c89375dc3d0e986ecd9d3dd9b1eb52fbfdfed9cbdd83031c12f75012466afb1",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/cport/cport": "886c3283bec3695b5c7518032631bf0e165ce536c9584dddb15a85928bc069a2",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/cport/cport.c": "475d5230014882e441514b58f976cf707a0af1e50f39122570e86d417fcd05a8",
+    "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/cport/data/lattice96.txt": "f44a9a2cc98a5b4827425e03d7776a56c69168386bc1037b92466571404ebcae"
+  }
+}

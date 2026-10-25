@@ -1,0 +1,2 @@
+{"mode": "cert", "E": 2, "D": 4, "logU": 281.51, "extra": 0, "t_base": 0.2, "exact": true, "logM": 192.0, "logZ1": 161.2, "logZ2": 161.1, "groups": 12, "vars": 14, "predicted_slack": -146.4, "certified": false, "nodes": 13, "depth": 12, "t_cert": 0.0}
+{"mode": "cert", "E": 2, "D": 4, "logU": 281.51, "extra": 0, "t_base": 0.2, "exact": true, "logM": 192.0, "logZ1": 161.2, "logZ2": 161.1, "groups": 10, "vars": 14, "predicted_slack": -143.3, "certified": false, "nodes": 11, "depth": 10, "t_cert": 0.0}

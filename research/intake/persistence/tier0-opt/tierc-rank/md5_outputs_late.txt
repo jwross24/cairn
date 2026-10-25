@@ -1,0 +1,5 @@
+ae9e86d01479e71b08f9c6f9d102d7f6 k1_values.py
+00cdf68e1fb8da2fe21540044672d105 k1_values.out
+5612297a3f49b0130fa2c3e4530a4081 m1_fold.py
+e5244cb1df1ddf27060baad160b37186 m1_fold.out
+7de2d9fe367ddca7f683f4fbc75a33c5 m1lib.py

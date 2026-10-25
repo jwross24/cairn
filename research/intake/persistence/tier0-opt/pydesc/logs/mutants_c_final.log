@@ -1,0 +1,11 @@
+m1_a_eq_t: 106980 survivors, 20144 mismatches, 0 fallbacks; python 0.95s, C batch 3.42s, ra
+m2_t_lt_K: 106980 survivors, 15743 mismatches, 0 fallbacks; python 0.33s, C batch 1.63s, ra
+m3_Kp_le_a: 106980 survivors, 3111 mismatches, 0 fallbacks; python 0.30s, C batch 2.59s, rat
+m4_x1tab: 106980 survivors, 9867 mismatches, 0 fallbacks; python 0.31s, C batch 2.11s, rat
+m5_contains: 106980 survivors, 418 mismatches, 0 fallbacks; python 0.35s, C batch 2.93s, rati
+m6_depth: 106980 survivors, 717 mismatches, 0 fallbacks; python 0.92s, C batch 4.82s, rati
+m8_dup: 106980 survivors, 3307 mismatches, 0 fallbacks; python 0.53s, C batch 3.98s, rat
+m10_open: 106980 survivors, 231 mismatches, 0 fallbacks; python 0.42s, C batch 3.51s, rati
+m11_k2eq1: 106980 survivors, 0 mismatches, 2780 fallbacks; python 0.46s, C batch 3.53s, rat
+m12_K2guard: 106980 survivors, 0 mismatches, 0 fallbacks; python 0.44s, C batch 3.52s, ratio 
+m13_len: 106980 survivors, 0 mismatches, 0 fallbacks; python 0.43s, C batch 3.34s, ratio 

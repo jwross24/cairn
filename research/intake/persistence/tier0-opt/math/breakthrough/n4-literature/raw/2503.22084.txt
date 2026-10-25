@@ -1,0 +1,530 @@
+                                                   ON THE DIFFERENCE BETWEEN SQUARES AND
+                                                               INTEGRAL S-UNITS
+
+
+
+
+arXiv:2503.22084v2 [math.NT] 23 Apr 2025
+                                                                                   YANN BUGEAUD
+
+                                                                      To Jan-Hendrik Evertse on his retirement
+
+
+                                                   Abstract. Let q1 , . . . , qt be distinct prime numbers. Let a1 , . . . , at be non-
+                                                   negative integers and x a positive integer. We establish an effective lower
+                                                   bound for the greatest prime divisor of |x2 − q1a1 . . . qtat |, which tends to infin-
+                                                   ity with the maximum of x, a1 , . . . , at .
+
+
+
+
+                                                                                 1. Introduction
+                                               In his seminal paper [20], Schinzel established fully explicit versions of two
+                                           theorems of Gelfond [15, 16] on the Archimedean and the p-adic distances between
+                                           integral powers of algebraic numbers (nowadays commonly referred to as linear
+                                           forms in two logarithms, in the Archimedean and in the p-adic settings). He
+                                           further gave many applications of his estimates, including the following result
+                                           [20, Theorem 9].
+                                           Theorem 1.1 (Schinzel, 1967). Let m1 , . . . , mk be positive integers. If x and
+                                           ℓ1 , . . . , ℓk are positive integers and x2 − mℓ11 . . . mℓkk is nonzero, then
+                                                             |x2 − mℓ11 . . . mℓkk | > exp c (log max{x2 , mℓ11 . . . mℓkk })1/7 ,
+                                                                                                                                
+                                           (1.1)
+                                           where c is a positive effectively computable number depending only on m1 , . . . , mk .
+                                               By using more recent estimates for linear forms in two p-adic logarithms (es-
+                                           tablished e.g. in [12, 13]), the right hand side of (1.1) can be replaced by a small
+                                           positive power of max{x2 , mℓ11 . . . mℓkk }, see [1, 8]. Here, we go one step further,
+                                           in the spirit of the papers [7, 10, 11, 17], where the authors bound from above
+                                           the S-parts of various sequences of integers.
+                                               Let S = {p1 , . . . , ps } be a finite, non-empty set of distinct prime numbers.
+                                           For a nonzero integer n, write n = bpa11 . . . pas s , where a1 , . . . , as are non-negative
+                                           integers and b is an integer relatively prime to the product p1 . . . ps . Then, we
+                                           define the S-part [n]S of n by
+                                                                                  [n]S := pa11 . . . pas s .
+                                               In the sequel, we use the notation ≫eff          eff              ineff        ineff
+                                                                                   a,b,... and ≪a,b,... (resp., ≫a,b,... and ≪a,b,... )
+                                           to indicate that the positive numerical constants implied by ≫ and ≪ can be
+                                           given explicitly (resp., cannot be given explicitly from the known proofs) and
+                                           depend at most on the parameters a, b, . . .
+                                             2010 Mathematics Subject Classification. 11D61, 11J86.
+                                             Key words and phrases. exponential Diophantine equations, linear forms in logarithms.
+                                                                                              1
+2                                       YANN BUGEAUD
+
+    Our main result is the following
+Theorem 1.2. Let S := {p1 , . . . , ps } and T := {q1 , . . . , qt } be disjoint sets of
+distinct prime numbers. For every nonzero integer x coprime with q1 . . . qt , every
+nonnegative integers a1 , . . . , at , and every positive ε, we have
+                                                                           1
+                    [x2 − q1a1 . . . qtat ]S ≪ineff   2   a1       at 2 +ε
+                                              S,T,ε |x − q1 . . . qt |     .
+Furthermore, for every nonzero integer x coprime with q1 . . . qt and every non-
+negative integers a1 , . . . , at , we have
+(1.2)                [x2 − q1a1 . . . qtat ]S ≪eff   2   a1       at 1−κ
+                                               S,T |x − q1 . . . qt |    ,
+where
+                                                                  2 −1
+(1.3)                κ = cs (log log P ) (log p1 ) · · · (log ps )
+and c is an effectively computable positive number depending only on T , and P
+is the maximum of p1 , . . . , ps .
+    The first assertion of Theorem 1.2 is sharp. Indeed, let T := {q1 , . . . , qt } be
+a set of distinct prime numbers. Then, there are finite sets of primes S with the
+smallest prime in S arbitrarily large, and, for each one of these sets S, infinitely
+many (t + 1)-uples (x, a1 , . . . , at ) of nonnegative integers such that
+                                                                            1
+                      [x2 − q1a1 . . . qtat ]S ≫S,T |x2 − q1a1 . . . qtat | 2 .
+This follows from Hensel’s lemma, in a similar way as [11, Theorem 2.1, (ii)].
+     It would be interesting to solve completely Diophantine equations of the form
+x2 − q1a1 q2a2 = pu (resp., x2 − q a = pu1 1 pu2 2 ), for three given distinct prime numbers
+q1 , q2 , p (resp., q, p1 , p2 ). The more general equation
+                                    x2 − q1a1 . . . qtat = y n ,
+where q1 , . . . , qt are fixed prime numbers, has been investigated in [2, 3, 5] when
+t = 1.
+   By applying Theorem 1.2 with the set S composed of the first s prime num-
+bers, we derive a lower bound for the greatest prime factor of |x2 − q1a1 . . . qtat |.
+For a nonzero integer n, let P [n] denote the greatest prime factor of |n| with
+the convention that P [±1] = 1. For any positive real number x, we set log∗ x =
+max{1, log x}.
+Corollary 1.3. Let T := {q1 , . . . , qt } be a set of distinct prime numbers. Let x
+be a nonzero integer coprime with q1 . . . qt and set
+                               X := max{x2 , q1a1 . . . qtat , 3}.
+Then, we have
+                                                              log∗ log∗ log X
+               P [x2 − q1a1 . . . qtat ] ≫eff
+                                          T log ∗ log X                          .
+                                                            log∗ log∗ log∗ log X
+   To obtain this lower bound instead of the weaker estimate ≫eff
+                                                              T log ∗ log X, we
+argue as Győry and Yu in the proof of their [18, Theorem 2], see also [14] and
+the remark at the end of Section 3.
+          ON THE DIFFERENCE BETWEEN SQUARES AND INTEGRAL S-UNITS                         3
+
+    For completeness, we state the following result, whose proof follows the same
+lines as that of Theorem 1.2.
+Theorem 1.4. Let T := {q1 , . . . , qt } be a set of distinct prime numbers. Let m
+be a nonzero integer. There exists an effectively computable, positive real number
+c, depending only on T , such that, for every (t + 1)-uple (x, a1 , . . . , at ) with
+                                    x2 − q1a1 . . . qtat = m,
+we have
+                                          |x| ≤ |2m|c .
+    Let S, T , and P be as in the statement of Theorem 1.2. Let a1 , . . . , at be
+nonnegative integers. For higher powers than squares, the analogue of the effec-
+tive part of Theorem 1.2 is a particular case of [11, Theorem 2.5]. Indeed, for an
+integer d ≥ 3, we write
+                                              ⌊a /d⌋     ⌊a /d⌋ d
+                        xd − q1r1 . . . qtrt q1 1 . . . qt t       ,
+where ri is the remainder in the Euclidean division of ai by d, for i = 1, . . . , t.
+Thus, we get td integer binary forms
+                 Fr (X, Y ) = X d − q1r1 . . . qtrt Y d ,     r = (r1 , . . . , rt ),
+of degree d, to which [11, Theorem 2.5] applies. Thus, for every nonzero integer
+x coprime with q1 . . . qt and any nonnegative integers a1 , . . . , at , we have
+                                                          a1
+                    [xd − q1a1 . . . qtat ]S ≪eff     d            at 1−κ
+                                              S,T,d |x − q1 . . . qt |    ,
+where
+                                                            d! −1
+(1.4)                     κ = cs P (log p1 ) · · · (log ps )
+and c is an effectively computable positive number depending only on T and d.
+The dependence on P is much better in (1.3) than in (1.4). The reason for this
+is that we do not use estimates for linear forms in pi -adic logarithms in the proof
+of Theorem 1.2 (namely, we use estimates for linear forms in qj -adic logarithms),
+unlike in the proof of [11, Theorem 2.5].
+    Furthermore, by arguing as in the proof of [11, Theorem 2.4], we easily obtain
+that, for every integer x and every positive ε, we have
+                                                                            1
+                    [xd − q1a1 . . . qtat ]S ≪ineff   d   a1       at d +ε
+                                              S,T,ε |x − q1 . . . qt |     .
+Conversely, if T := {q1 , . . . , qt } is a given set of distinct prime numbers, there
+are finite sets of primes S with the smallest prime in S arbitrarily large, and for
+each one of these sets S infinitely many (t + 1)-uples (x, a1 , . . . , at ) of nonnegative
+integers such that
+                                                                            1
+                      [xd − q1a1 . . . qtat ]S ≫S,T |xd − q1a1 . . . qtat | d .
+    Finally, we point out that a result of similar strength than Theorem 1.2 has
+been proved in [8] for the difference (or the sum) of two integral T -units. Namely,
+[8, Theorem 3.8] asserts that if x and y are coprime integers whose prime divisors
+are in T and S is a finite set of prime numbers disjoint from T , then
+                                 [x + y]S ≪eff
+                                           S,T |x + y|
+                                                      1−τ
+                                                          ,
+4                                       YANN BUGEAUD
+
+where τ is an effectively computable positive number depending only on S and
+T . By looking closely at the proof, we see that
+                                                                 −1
+                     τ = cs (log log P )(log p1 ) · · · (log ps )    ,
+where c is an effectively computable positive number depending only on T , and
+P is the maximum of p1 , . . . , ps .
+
+                                  2. Auxiliary results
+    In this section, we recall, in a simplified form, estimates from the theory of
+linear forms in logarithms. As usual, h(α) denotes the (logarithmic) Weil height
+of the algebraic number α and we set h∗ (α) = max{h(α), 1}.
+    We begin with an immediate consequence of an estimate of Matveev [19]; see
+also [6, Theorem 2.2].
+Theorem 2.1. Let n ≥ 2 be an integer. Let α1 , . . . , αn be nonzero algebraic
+numbers. Let b1 , . . . , bn be integers with bn = ±1. Let D be the degree over Q of
+the number field Q(α1 , . . . , αn ). Set
+                                B = max{3, |b1 |, . . . , |bn |}.
+If
+                                        αb11 . . . αbnn 6= 1,
+then there exists an effectively computable positive number c1 , depending only on
+D, such that
+          log |αb11 . . . αbnn − 1| ≥ −cn1 h∗ (α1 ) . . . h∗ (αn )
+                                                   B max{h∗ (α1 ), . . . , h∗ (αn−1 )}
+                                            log∗                                       .
+                                                             h∗ (αn )
+   Let p be a prime number. For a nonzero rational number α, let vp (α) denote
+the exponent of p in the decomposition of α as a product of powers of prime
+numbers. More generally, if α is a nonzero algebraic number in a number field
+K, let vp (α) denote the exponent of p in the decomposition of the fractional ideal
+αOK in a product of prime ideals and set
+                                                    vp (α)
+                                        vp (α) =           .
+                                                      ep
+This defines a valuation vp on K which extends the p-adic valuation vp on Q
+normalized in such a way that vp (p) = 1. We reproduce, in a simplified form, an
+estimate obtained by Yu [21]; see also [6, Theorems 2.9 and 2.11].
+Theorem 2.2. Let n ≥ 2 be an integer. Let p be a prime number and α1 , . . . , αn
+algebraic numbers in an algebraic number field of degree D. Let b1 , . . . , bn denote
+rational integers such that bn = ±1 and αb11 . . . αbnn is not equal to 1. Set
+                                B = max{3, |b1 |, . . . , |bn |}.
+         ON THE DIFFERENCE BETWEEN SQUARES AND INTEGRAL S-UNITS                          5
+
+There exists a positive effectively computable real number c2 , depending only on
+D, such that
+
+           vp (αb11 . . . αbnn − 1) < cn2 pD h∗ (α1 ) . . . h∗ (αn )
+                                                 B max{h∗ (α1 ), . . . , h∗ (αn−1 )}
+                                          log∗                                       .
+                                                           h∗ (αn )
+   We may also refer to [14, Theorem 3.2.8], which merges the statements of
+Theorems 2.1 and 2.2.
+   In comparison with other lower bounds for linear forms in logarithms, the
+crucial point in Theorems 2.1 and 2.2 is the replacement of the factor log∗ B by
+the factor
+                            B max{h∗ (α1 ), . . . , h∗ (αn−1 )}
+                       log∗                                     ,
+                                      h∗ (αn )
+which is much smaller than log B when h∗ (αn ) is large. This is precisely the
+situation occurring in Section 3; see also [9] for more explanations and further
+examples of Diophantine questions where this refined estimate appears to be
+crucial.
+    We state now a particular case of a classical lemma (see e.g. [14, Proposition
+4.3.12]).
+Lemma 2.3. Let K be a real quadratic number field. Let η denote its fundamental
+unit. For every nonzero algebraic integer α in K, there exists an integer m such
+that
+                                   1              log η
+                        h(η m α) ≤ log |ασ(α)| +        ,
+                                   2                2
+where σ denotes the Galois embedding of K different from the identity.
+Proof. Set N = |ασ(α)|. Observe that σ(η) = ±η −1 . There exist an algebraic
+integer δ in K and an integer m such that
+                             α = δη m ,      σ(α) = ±σ(δ)η −m ,
+with
+                               N 1/2 η −1/2 < |δ| ≤ N 1/2 η 1/2 .
+It suffices to observe that we get
+                                             N
+                                 |σ(δ)| =        ≤ η 1/2 N 1/2 ,
+                                             |δ|
+and the lemma follows from the definition of the height.                                 
+
+    The proof of the ineffective part of Theorem 1.2 rests on the p-adic Thue–
+Siegel–Roth theorem, formulated as in [4, Theorem 6.2.3]. In the next theorem,
+it is understood that, for a rational number x/y and a prime number p, the
+expression |x/y − ∞|p means |y/x|p (this can be seen by applying a Möbius
+transformation, see [4, 6.2.5]).
+6                                      YANN BUGEAUD
+
+Theorem 2.4. Let S1 be a finite set of finite places of Q. For each p in S1 , let
+βp be algebraic in Qp or put βp = ∞. Let β∞ be a real number. Let ε > 0. Then,
+there are only finitely many rational numbers x/y such that
+             n x          o Y        n x          o
+         min 1,     − β∞         min 1,    − βp     ≤ max{|x|, |y|}−2−ε .
+                  y                      y      p
+                              p∈S1
+
+In particular, if S2 is a subset of S1 , then, for any ε > 0, there are only finitely
+many reduced rational numbers x/y such that all the prime divisors of y belong
+to S2 and
+           n x            o Y            n x           o
+       min 1,      − β∞             min 1,      − βp     ≤ max{|x|, |y|}−1−ε .
+                 y                           y       p
+                            p∈S1 \S2
+
+Proof. The second assertion follows from the first one by taking βp = ∞ for every
+prime number p in S2 .                                                         
+
+                            3. Proof of Theorem 1.2
+3.1. Proof of the ineffective estimate. We argue as in the proof of [11, Propo-
+sition 3.1]. We denote by | · |∞ the ordinary absolute value, and by | · |p the p-adic
+absolute value normalized in such a way that |p|p = p−1 for a prime number p.
+Further, we set Q∞ := R and Q∞ := C. The ineffective part of Theorem 1.2
+follows straightforwardly from the next result.
+Proposition 3.1. Let T = {q1 , . . . , qt } be a finite, non-empty set of prime num-
+bers. Let S be a finite set of prime numbers, disjoint from T . Then
+                  |x2 − q1a1 . . . qtat |             2 a1         at 12 −ε
+                    2   a1         at     ≫ineff
+                                           S,T,ε max{x , q1 . . . qt }
+                 [x − q1 . . . qt ]S
+for every ε > 0 and every positive integer x coprime with q1 . . . qt .
+                   ⌊a /2⌋     ⌊a /2⌋
+Proof. Set y = q1 1 . . . qt t . Our assumption implies that, for each p in
+S ∪ {∞}, there exists βp in Qp algebraic over Q such that
+                       x2 − q1a1 . . . qtat = (x − βp y)(x + βp y).
+Then we have
+                                                                 2  a1       at
+                    |x2 − q1a1 . . . qtat |
+                                                    Q
+                                                      p∈S∪{∞} |x − q1 . . . qt |p
+                                                  =
+            [x2 − q1a1 . . . qtat ]S · max{x, y}2           max{x, y}2
+                         Y              n   x        x         o
+              ≫S,T                  min 1,    − βp ,    + βp
+                                            y      p y       p
+                     p∈S∪{∞}
+                         Y              n x          x         o
+              ≫S,T                  min 1,    − βp ,    + βp .
+                                            y      p y       p
+                     p∈S∪{∞}
+                      βp ∈Qp
+
+Since the prime factors of y are in a finite set, the latter quantity is ≫ineff
+                                                                          S,T,ε
+max{x, y}−1−ε for every ε > 0, by Theorem 2.4.                               
+           ON THE DIFFERENCE BETWEEN SQUARES AND INTEGRAL S-UNITS                                        7
+
+3.2. Proof of the effective estimate. We adapt Schinzel’s argument [20] and
+the proof of [1, Theorem 1.2]; see also [6, Theorem 6.3]. Throughout this sub-
+section, all the numerical constants c1 , c2 , . . . and those implicit in ≪ and ≫ are
+effective and depend at most on q1 , . . . , qt .
+    Define                                                s
+                              Y                             q1a1 . . . qtat
+                  Q1 =                      q i , Q2 =                      ,
+                                                                 Q1
+                              1≤i≤t,ai ≡1 (mod 2)
+
+thus, q1a1 . . . qtat = Q1 Q22 . Set
+                                               |x2 − q1a1 . . . qtat |
+                                       b :=
+                                              [x2 − q1a1 . . . qtat ]S
+and write
+             [x2 − q1a1 . . . qtat ]S = p2u
+                                         1
+                                            1 +v1
+                                                  . . . ps2us +vs ,      v1 , . . . , vs ∈ {0, 1}.
+Set
+A := max{|a1 |, . . . , |at |, 2},      U := max{|u1 |, . . . , |us |, 2},         X := max{x, Q2 , 2}.
+For later use, observe that
+                     A ≪ log X,          U ≪ log X,           |x2 − Q1 Q22 | ≪ X 2 .
+      Assume first that Q1 = 1. Then, a1 , . . . , at are all even and we get
+                          |x − Q2 | · |x + Q2 | = bp12u1 +v1 . . . ps2us +vs .
+Since the greatest common divisor of x − Q2 and x + Q2 is equal to 1 or 2, there
+exist an integer h in {0, 1, . . . , s} (below, an empty product is always equal to 1)
+and integers b1 , b2 with b1 b2 = 4b such that (we reorder p1 , . . . , ps if necessary)
+                    b1 2u1 +v1                                        b2 2uh+1 +vh+1
+        x − Q2 =      p        . . . p2u h +vh
+                                               ,     x + Q2 =           p            . . . ps2us +vs .
+                    2 1               h                               2 h+1
+Consequently,
+             −2Q2    b1                   h +vh −2uh+1 −vh+1
+(3.1)               = p12u1 +v1 . . . p2u
+                                       h       ph+1          . . . ps−2us −vs − 1.
+             x + Q2  b2
+Observe that
+                                      b 
+                                         1
+                                     h       ≪ log∗ b.
+                                        b2
+If x > Q22 , then it follows from Theorem 2.1 applied to (3.1) that
+                                           s
+                                           Y                U 
+                      log X ≤ cs1 (log∗ b) (log pi ) · log
+                                                           log∗ b
+                                                   i=1
+                                                    s
+                                                   Y                    log X 
+                                 ≤ cs2 (log∗ b)          (log pi ) · log        ,
+                                                                         log∗ b
+                                                   i=1
+and, setting
+                    P := (log p1 ) · · · (log ps ),        P := max{p1 , . . . , ps },
+8                                           YANN BUGEAUD
+
+we get
+                             log X              log X 
+                                    ≤ cs2 P log          ,
+                             log∗ b              log∗ b
+thus, assuming that log X ≥ 10 log∗ b, we get
+              log X
+                     ≤ 2cs2 P log(cs2 P) ≤ 2cs2 Ps(log log P + log c2 ).
+              log∗ b
+Consequently, we have established the lower bound
+                                  −s                −1                    −s         −1
+               max{b, 3} ≥ X c3 (P log log P )           ≥ |x2 − Q22 |c4 (P log log P ) .
+If x ≤ Q22 , then A ≫ U and we apply Theorem 2.2 to (3.1) to bound ⌊ai /2⌋ =
+vqi (Q2 ) and we get
+                                       s
+                                       Y                 U 
+                     A ≤ cs5 (log∗ b)qi (log pi ) · log
+                                                        log∗ b
+                                                i=1
+                                                 s
+                                                Y                        A 
+                           ≤ cs6 (log∗ b)qi           (log pi ) · log          .
+                                                                        log∗ b
+                                                i=1
+This gives
+                     −s                −1         −s              −1               −s       −1
+    max{b, 3} ≥ 2Ac7 (P log log P )              ≥ |x2 − Q22 |c9 (P log log P ) .
+                                            ≥ X c8 (P log log P )
+                                                                      √
+    Assume now that Q1 ≥ 2. Let K denote the real quadratic field Q( Q1 ) and
+h its class number. The quadratic number
+                                      p
+                              α = x − Q1 Q2
+is an algebraic integer in K. Let p1 , . . . , ps′ denote the prime ideals in K that
+divide p1 , . . . , ps . Since at most two prime ideals in K divide pi for i = 1, . . . , s,
+we have s′ ≤ 2s. There is an ideal b in K, coprime with p1 . . . ps′ , and nonnegative
+integers w1 , . . . , ws′ such that
+                                                              w
+                                        (α) = bpw          s′
+                                                1 . . . ps′ .
+                                                  1
+
+
+For i = 1, . . . , s′ , let zi and ri denote, respectively, the quotient and the remainder
+in the Euclidean division of wi by h. Then, write
+                                                   r
+                           (α) = (bpr11 . . . pss′ ′ )(ph1 )z1 . . . (phs′ )zs′
+and observe that all the ideals in this equality are principal. Let η denote the
+fundamental unit in K. By Lemma 2.3, there is an integer m, an algebraic integer
+γ in K and, for i = 1, . . . , s′ , an algebraic integer πi generating the ideal (phi )
+such that
+                                                                  z
+(3.2)                                  α = ±η m γπ1z1 . . . πs′s′
+and
+              h(γ) ≤ c10 log∗ b, h(πi ) ≤ c11 log N pi , i = 1, . . . , s′ ,
+where N p is the norm of the ideal p. We need now to bound |m|, z1 , . . . , zs′ from
+above.
+   Since the algebraic integer α is a root of the quadratic polynomial
+                                Z 2 − 2xZ + x2 − q1a1 . . . qtat ,
+         ON THE DIFFERENCE BETWEEN SQUARES AND INTEGRAL S-UNITS                                        9
+
+its height h(α) satisfies
+                                        h(α) ≪ log X.
+For i = 1, . . . , s′ , the pi -adic valuation of γ is bounded by the class number h
+and the pi -adic valuations of the πj ’s are zero for j 6= i. It then follows from the
+definition of the height that
+                             U ≪ max{z1 , . . . , zs′ } ≪ h(α).
+Then, we deduce from (3.2) that
+                                                          −z
+            |m| ≪ h(η m ) = h(αγ −1 π1−z1 . . . πs′ s′ ) ≪ (h∗ (γ) + log X).
+                                                         √          √
+    Let σ denote the complex embedding sending Q1 to − Q1 . Then,
+                               √                                  s′
+               α − σ(α)     −2 Q1 Q2             γ  η m Y  πi zi
+(3.3)     Λ :=           =     √          =                                  − 1.
+                 σ(α)       x + Q1 Q2          σ(γ) σ(η)              σ(πi )
+                                                                              i=1
+
+If x > Q22 , then we apply Theorem 2.1 to (3.3) to get
+                                                      s′
+                                                     Y                    h∗ (γ) + log X
+         log X ≪ − log Λ ≤ cs12 h(η) h∗ (γ)                    h∗ (πi ) log                .
+                                                                                 h∗ (γ)
+                                                         i=1
+
+This gives the lower bound
+                            −s   −2 (log log P )−1                       −s    −2 (log log P )−1
+         max{b, 3} ≥ X c13 P                         ≥ |x2 − Q1 Q22 |c14 P                         .
+If x ≤ Q22 , then we apply Theorem 2.2 to (3.3) to bound ⌊ai /2⌋ = vqi (Q2 ) and
+we get
+                                         s′
+                      s
+                                        Y              h∗ (γ) + log X
+                ai ≤ c15 qi h(η) h∗ (γ)     h∗ (πi ) log                .
+                                                              h∗ (γ)
+                                             i=1
+Since log X ≪ A, this gives the lower bound
+                            −s   −2 (log log P )−1                       −s    −2 (log log P )−1
+         max{b, 3} ≥ X c16 P                         ≥ |x2 − Q1 Q22 |c17 P                         ,
+and the proof of the effective part of Theorem 1.2 is complete.
+   We have established that, if b = 1, then
+                                              s      2
+                                    X ≤ 3c18 P (log log P ) .
+By using the Prime Number Theorem and taking for pj the j-th prime number
+for j = 1, . . . , s, we obtain Corollary 1.3.
+    We conclude with a remark. Instead of several applications of Lemma 2.3, we
+could have applied only once [14, Proposition 4.3.12] to write α as a product of an
+algebraic number in K of controlled height times an S-unit (the finite places in S
+being p1 , . . . , ps′ ). We would then have obtained (1.2) with a different expression
+for κ and the estimate
+                            P [x2 − q1a1 . . . qtat ] ≫eff
+                                                       T log∗ log X,
+
+which is weaker than our Corollary 1.3.
+10                                YANN BUGEAUD
+
+                              Acknowledgement
+     The author is very thankful to the referee for a prompt and detailed report.
+
+
+                                   References
+ [1] M. A. Bennett and Y. Bugeaud, Effective results for restricted rational ap-
+     proximation to quadratic irrationals, Acta Arith. 155 (2012), 259–269. 1,
+     7
+ [2] M. A. Bennett and S. Siksek, Difference between perfect powers: prime power
+     gaps, Algebra Number Theory 17 (2023), 1789–1846. 2
+ [3] M. A. Bennett, Ph. Michaud-Jacobs, and S. Siksek, Q-curves and the
+     Lebesgue–Nagell equation, J. Théor. Nombres Bordeaux 35 (2023), 495–510.
+     2
+ [4] E. Bombieri and W. Gubler. Heights in Diophantine geometry. New Mathe-
+     matical Monographs, 4. Cambridge University Press, Cambridge, 2006. 5
+ [5] Y. Bugeaud, On the Diophantine equation x2 − pm = ±y n , Acta Arith. 80
+     (1997), 213–223. 2
+ [6] Y. Bugeaud, Linear forms in logarithms and applications. IRMA Lectures in
+     Mathematics and Theoretical Physics 28, European Mathematical Society,
+     Zürich, 2018. 4, 7
+ [7] Y. Bugeaud, On the Zeckendorf representation of smooth numbers, Moscow
+     Math. J. 21 (2021), 31–42. 1
+ [8] Y. Bugeaud, On effective approximation to quadratic numbers, Acta Math.
+     Spalatensia 2 (2022), 83–96. 1, 3
+ [9] Y. Bugeaud, B ′ , Publ. Math. Debrecen 103 (2023), 499–533. 5
+[10] Y. Bugeaud and J.-H. Evertse, S-parts of terms of integer linear recurrence
+     sequences, Mathematika 63 (2017), 840–851. 1
+[11] Y. Bugeaud, J.-H. Evertse, and K. Győry, S-parts of values of of univariate
+     polynomials, binary forms and decomposable forms at integral points, Acta
+     Arith. 184 (2018), 151–185. 1, 2, 3, 6
+[12] Y. Bugeaud et M. Laurent, Minoration effective de la distance p-adique entre
+     puissances de nombres algébriques, J. Number Theory 61 (1996), 311–342. 1
+[13] K. C. Chim, Lower bounds for linear forms in two p-adic logarithms, J.
+     Number Theory 266 (2025), 295–349. 1
+[14] J.-H. Evertse and K. Győry, Unit equations in Diophantine number theory.
+     Cambridge Stud. Adv. Math. 146, Cambridge Univ. Press, 2015. 2, 5, 9
+[15] A. O. Gelfond, Sur l’approximation du rapport des logarithmes de deux nom-
+     bres algébriques au moyen de nombres algébriques, Izv. Ross. Akad. Nauk Ser.
+     Mat. 3 (1939), 509–518 (in Russian). 1
+[16] A. O. Gelfond. Transcendental and Algebraic Numbers, Dover Publ., New
+     York, 1960. 1
+[17] S. Gross and A. Vincent, On the factorization of f (n) for f (x) in Z[x], Int.
+     J. Number Theory 9 (2013), 1225–1236. 1
+[18] K. Győry and K. Yu, Bounds for the solutions of S-unit equations and de-
+     composable form equations, Acta Arith. 123 (2006), 9–41. 2
+        ON THE DIFFERENCE BETWEEN SQUARES AND INTEGRAL S-UNITS                 11
+
+[19] E. M. Matveev, An explicit lower bound for a homogeneous rational linear
+     form in logarithms of algebraic numbers. II, Izv. Ross. Akad. Nauk Ser. Mat.
+     64 (2000), 125–180. 4
+[20] A. Schinzel, On two theorems of Gelfond and some of their applications, Acta
+     Arith. 13 (1967), 177–236. 1, 7
+[21] K. Yu, p–adic logarithmic forms and group varieties, III, Forum Math. 19
+     (2007), 187–280. 4
+   I.R.M.A., UMR 7501, Université de Strasbourg et CNRS, 7 rue René Descartes,
+67084 Strasbourg Cedex, France
+
+   Institut universitaire de France
+   Email address: bugeaud@math.unistra.fr
+

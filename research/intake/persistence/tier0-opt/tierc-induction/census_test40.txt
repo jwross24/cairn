@@ -1,0 +1,23 @@
+S-units below 10^40: 93323, scan 0s
+longest zero run: 5
+zero runs by length g (all positions, count of runs):
+  g=4  199
+  g=5  10
+max (s+g)/s over runs with g>=4, by prefix length bucket of s (s = digits before the run):
+  s in [1,1): runs=15  maxg=5 at s=1  ratio (s+g)/s=6.000
+  s in [2,2): runs=4  maxg=4 at s=2  ratio (s+g)/s=3.000
+  s in [3,3): runs=6  maxg=4 at s=3  ratio (s+g)/s=2.333
+  s in [4,5): runs=7  maxg=4 at s=4  ratio (s+g)/s=2.000
+  s in [6,8): runs=10  maxg=4 at s=8  ratio (s+g)/s=1.500
+  s in [9,16): runs=90  maxg=5 at s=9  ratio (s+g)/s=1.556
+  s in [17,32): runs=77  maxg=5 at s=19  ratio (s+g)/s=1.263
+zero runs with g>=6 (n a b c s g j=nonzero digits above):
+adjacent sorted pairs of distinct units, by longest common leading prefix (digits), keys with n>=18:
+max lcp 6, equal 18-digit keys: 0, examples [(100048283306744807, 100048988938224898), (100071156713993720, 100071862506797880), (100075221209057993, 100075927030528669)]
+keys: 85570; Benford random-model expected pairs sharing >=L digits: L=12:0.00622, L=13:0.000622, L=14:6.22e-05, L=15:6.22e-06, L=16:6.22e-07, L=17:6.22e-08, L=18:6.22e-09
+witness uniqueness: zero runs g>=5 in units with n>=18, grouped by min(s+g,18); count, with another unit sharing the leading min(s+g,18) digits:
+  s+g=6  runs=1  shared=0
+  s+g=14  runs=1  shared=0
+  s+g=17  runs=4  shared=0
+  s+g=>=18  runs=4  shared=0
+runs g>=5 with s+g>=16: 8

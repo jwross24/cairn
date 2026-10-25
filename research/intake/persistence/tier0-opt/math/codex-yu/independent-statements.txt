@@ -1,0 +1,29 @@
+Independent extraction completed before opening yu-audit.
+
+Common setup: nonzero algebraic alpha_j in a number field K of degree d, prime ideal above p, integer b_j, Xi=product alpha_j^b_j !=1. ord_ideal=ep*ord_p (2007 pp.187-188; 2013 p.318). For the requested rational units p=5,n=3, ep=fp=1; kappa=0 from p^(kappa-1)(p-1)<=2ep<p^kappa(p-1) (2007 p.188; 2013 p.318).
+
+2007 condition (1.5), p.188: q=2 for p>2, and ord_2(p^fp-1)=1 or zeta_4 in K. Here ord_2(4)=2, so choose Q(i), d=2, q^u=4. Case III (p.194), NOT case II because ep=1. Page 195: a^(1)=32/3,c^(1)=1473,k1=10; a0^(1)=2+ln8,a1^(1)=.32,a2^(1)=3.01 for n>=3. a^(2)=8,c^(2)=1576/3,k2=4e^2; a0^(2)=1+ln8,a1^(2)=2.4,a2^(2)=6.44.
+
+2007 Theorem II, p.260: n>=2, (1.5), multiplicative independence, p-adic units, integer exponents not all zero, ord_p b_n<=ord_p b_j. Bound C2*h0(alpha1)*...*h0(alphan)*h^(2); C2=(1.7),p.189; h^(2)=(1.10), p.189. Proof Part II pp.260-279; final reduction abbreviated p.279.
+
+2007 Theorem 1, p.193: n>=1, (1.5), units, Xi!=1, B>=max(abs(b_j),3). No independence or exponent-order requirement. Bound (n+1)C1*W*lnB; W=min over maximal independent subsets of product ordinary heights on subset and modified heights on complement, (1.21)-(1.22),pp.192-193. Modified floor fp ln p/(k1(n+4)d). Proof section11 pp.249-253.
+
+2007 Theorem 3, p.194: same hypotheses as Theorem1. Bound (n+1)C2*W*lnB, floor 1/(k2*p^kappa*d), pp.193-194. Proof deduction from TheoremII by analogy to section11 explicitly omitted p.279.
+
+2007 first consequence, p.190: no (1.5), no unit or independence requirement; Xi!=1, integer exponents, B>=max(abs(b_j),3). Bound n*C0*product modified heights*lnB; modified floor 1/(16e^2*d^2); C0=(16ed)^(2(n+1))*n^(3/2)*ln(2nd)*ln(2d)*ep^n*p^fp/(fp ln p)^2. The factor16 may be10 for p>2,p.191. Detailed deduction/computation omitted p.194. Use d=1.
+
+2013: condition (1.5),p.319 only requires zeta3 in K when p=2; Q allowed for p5. q=2,q^u=2. CaseIII.2 p.324: c1=1790,c2=2228/3,a1=28/3,a2=7,k1=12,k2=25; a0^(1)=a0^(2)=2+ln7,a1^(1)=a2^(1)=5.84,a1^(2)=3.32.
+
+2013 Main,p.321: n>=2,(1.5), independent units, integer exponents not all zero, ord_p b_n<=ord_p b_j. Bound min(C1*h^(1),C2*h^(2))*product ordinary heights; constants (1.9)-(1.10),p.320; h^(i)=(1.13),pp.320-321, extra max term (n+1)fp ln p. TheoremII,p.325 literally prints h^(1), not h^(2); likely typo is inference. Proof of II explicitly omitted,p.325. TheoremI proof sections2-7,pp.325-369 supports the C1 branch in print.
+
+2013 Theorem1,p.323: rank>=1,(1.5),units,Xi!=1, B>=max(abs(b_j),3); bound (n+1)C1*Omega*max(lnB,fp ln p). Omega uses ordinary heights on minimizing maximal independent subset b and modified heights off b; floor max(n,fp ln p)/(k1(n+5)d). C1 uses delta(b). rank1 permits extra factor1/2100. Proof section8,pp.369-373.
+
+2013 Theorem2,p.323: same but (n+1)C2 and floor max(n/(fp ln p),1)/(k2*p^kappa*d); rank1 extra factor1/4000. Proof explicitly omitted,p.325.
+
+For independent {3,7,t}, saturated residue subgroup contains residue3 of order4 in F5*, so delta=1 from saturation construction pp.319-320, not a Kummer conjecture. Full Kummer degree (1.7) is sufficient for convenient formula (1.8), not a theorem prerequisite. Both 2013 maxima barely select their first terms: see independent-arithmetic.txt.
+
+Ordering t last with b_n=1 satisfies valuation order. Independence still needs verification; t supported only on 3,7 (up to sign) is dependent, while t with a prime outside {3,7}, including2, is independent by valuations. The stated separately handled family +-2^a*3^u*7^v is broader than the dependent family, which has a=0 for this triple. Separate handling not proved by this source-only extraction.
+
+Main log factor: max(log(omega(d)*max_j<3(1/h_j+abs(b_j)/h_3)),0,G_i), additionally4 ln5 for2013. Bcirc=1. omega(d)=(d*ln(3d)^3)^-1 for d>1, and ln2*ln3/ln6 for d1 (2007 p.189;2013 pp.320-321). G_i values and decimal exponents in independent-arithmetic.txt.
+
+BK is not a named bound in either supplied paper; no independently sourced BK constant extracted. No other source used and no audit file opened at completion of this record.

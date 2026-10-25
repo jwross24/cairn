@@ -1,0 +1,51 @@
+command: tools/sandwich_full.py --out /private/tmp/claude-501/-Users-jwross-Documents-cairn/ec9f8f52-ce29-4a5c-9caf-2ecbd434509f/scratchpad/full_prime --jobs 2 --timeout 600 --utable-file /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/cport/data/utable_prime.txt
+md5 c2a3f37d1bc9bbb90ea8e4aedc527759  /Users/jwross/Documents/cairn/research/intake/persistence/tier0/runall_final.jsonl
+md5 3c02cbac7e1ae8e9c5c05c60c3540bc9  /Users/jwross/Documents/cairn/research/intake/persistence/tier0/trees_c.jsonl
+md5 91b0bbe22b714ae01a6f66f3057e68b0  /Users/jwross/Documents/cairn/research/intake/persistence/tier0/trees_mac.jsonl
+md5 680a173316f3e8b940950416976c4d11  /Users/jwross/Documents/cairn/research/intake/persistence/tier0/DEEPCUT-run-final-d1.txt
+md5 8c0335e9e473ea033acec026716213ad  /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/cport/cport
+s=14336   M=47888        a=0 y=7411887     k=5 reps=1 log10G=53.27 depth=1 subcosets=1 min-bound=72.26 margin=+18.99 wall=0s -> CLOSED
+s=28672   M=78888        a=2 y=1411788     k=5 reps=1 log10G=47.27 depth=1 subcosets=2 min-bound=71.71 margin=+24.44 wall=0s -> CLOSED
+s=14336   M=227888       a=0 y=78121827    k=6 reps=1 log10G=61.78 depth=1 subcosets=1 min-bound=71.98 margin=+10.20 wall=0s -> CLOSED
+s=27216   M=266679       a=0 y=85766121    k=6 reps=1 log10G=61.78 depth=1 subcosets=2 min-bound=72.29 margin=+10.50 wall=0s -> CLOSED
+s=28672   M=247888       a=0 y=7411887     k=6 reps=1 log10G=61.78 depth=1 subcosets=1 min-bound=72.26 margin=+10.48 wall=0s -> CLOSED
+s=28672   M=444788       a=0 y=7411887     k=6 reps=2 log10G=61.78 depth=1 subcosets=1 min-bound=72.26 margin=+10.48 wall=0s -> CLOSED
+s=32928   M=446777       a=1 y=57177414    k=6 reps=1 log10G=53.98 depth=1 subcosets=1 min-bound=71.66 margin=+17.68 wall=0s -> CLOSED
+s=42336   M=366778       a=0 y=1361367     k=6 reps=1 log10G=61.78 depth=1 subcosets=1 min-bound=72.18 margin=+10.39 wall=0s -> CLOSED
+s=28672   M=2227888      a=0 y=78121827    k=7 reps=1 log10G=71.65 depth=1 subcosets=2 min-bound=71.98 margin=+0.33 wall=0s -> CLOSED
+s=28672   M=2244788      a=0 y=330812181   k=7 reps=1 log10G=71.65 depth=1 subcosets=1 min-bound=72.19 margin=+0.54 wall=0s -> CLOSED
+s=28672   M=2244788      a=0 y=78121827    k=7 reps=2 log10G=71.65 depth=1 subcosets=1 min-bound=71.98 margin=+0.33 wall=0s -> CLOSED
+s=42336   M=2246779      a=2 y=777924      k=7 reps=3 log10G=63.71 depth=1 subcosets=1 min-bound=71.48 margin=+7.77 wall=0s -> CLOSED
+s=42336   M=2336778      a=2 y=19131876    k=7 reps=1 log10G=63.71 depth=1 subcosets=1 min-bound=71.89 margin=+8.18 wall=0s -> CLOSED
+s=49392   M=2247779      a=2 y=777924      k=7 reps=1 log10G=63.71 depth=1 subcosets=1 min-bound=71.48 margin=+7.77 wall=0s -> CLOSED
+s=8192    M=2224488      a=0 y=330812181   k=7 reps=1 log10G=71.65 depth=1 subcosets=1 min-bound=72.41 margin=+0.76 wall=0s -> CLOSED
+s=8192    M=2244448      a=0 y=330812181   k=7 reps=2 log10G=71.65 depth=1 subcosets=1 min-bound=72.41 margin=+0.76 wall=0s -> CLOSED
+s=14112   M=22233477     a=1 y=2722734     k=8 reps=1 log10G=72.37 depth=2 subcosets=3 min-bound=119.33 margin=+46.97 wall=0s -> CLOSED
+s=14336   M=22224478     a=0 y=330812181   k=8 reps=2 log10G=78.34 depth=2 subcosets=12 min-bound=119.85 margin=+41.51 wall=0s -> CLOSED
+s=148176  M=22366777     a=0 y=1361367     k=8 reps=4 log10G=78.34 depth=2 subcosets=12 min-bound=119.66 margin=+41.32 wall=0s -> CLOSED
+s=148176  M=22366777     a=2 y=69177612    k=8 reps=4 log10G=72.42 depth=2 subcosets=3 min-bound=119.96 margin=+47.54 wall=0s -> CLOSED
+s=148176  M=23346777     a=0 y=60761421    k=8 reps=4 log10G=78.34 depth=2 subcosets=8 min-bound=120.10 margin=+41.76 wall=0s -> CLOSED
+s=148176  M=23346777     a=2 y=69177612    k=8 reps=2 log10G=72.42 depth=2 subcosets=6 min-bound=119.60 margin=+47.18 wall=0s -> CLOSED
+s=18144   M=22333467     a=0 y=60761421    k=8 reps=5 log10G=78.34 depth=2 subcosets=27 min-bound=119.88 margin=+41.55 wall=0s -> CLOSED
+s=18144   M=22333467     a=1 y=2722734     k=8 reps=1 log10G=72.37 depth=2 subcosets=3 min-bound=119.35 margin=+46.98 wall=0s -> CLOSED
+s=23328   M=23333466     a=0 y=60761421    k=8 reps=1 log10G=78.34 depth=2 subcosets=27 min-bound=119.76 margin=+41.43 wall=0s -> CLOSED
+s=28672   M=22224788     a=0 y=330812181   k=8 reps=1 log10G=78.34 depth=2 subcosets=12 min-bound=118.90 margin=+40.56 wall=0s -> CLOSED
+s=34992   M=23333389     a=3 y=1134213192  k=8 reps=1 log10G=72.48 depth=2 subcosets=12 min-bound=119.22 margin=+46.75 wall=0s -> CLOSED
+s=42336   M=22234779     a=3 y=1134213192  k=8 reps=1 log10G=72.48 depth=2 subcosets=4 min-bound=119.32 margin=+46.84 wall=0s -> CLOSED
+s=42336   M=22334677     a=1 y=3281116734  k=8 reps=1 log10G=72.37 depth=2 subcosets=12 min-bound=119.53 margin=+47.16 wall=0s -> CLOSED
+s=8192    M=22222488     a=0 y=330812181   k=8 reps=2 log10G=78.34 depth=2 subcosets=36 min-bound=119.76 margin=+41.42 wall=0s -> CLOSED
+s=14336   M=222222478    a=0 y=330812181   k=9 reps=4 log10G=90.15 depth=2 subcosets=108 min-bound=119.74 margin=+29.59 wall=0s -> CLOSED
+s=148176  M=222336777    a=2 y=2333772     k=9 reps=9 log10G=80.27 depth=2 subcosets=3 min-bound=119.67 margin=+39.40 wall=0s -> CLOSED
+s=18144   M=222333347    a=1 y=44471322    k=9 reps=2 log10G=80.27 depth=2 subcosets=8 min-bound=119.01 margin=+38.74 wall=0s -> CLOSED
+s=27216   M=223333347    a=1 y=2722734     k=9 reps=2 log10G=80.27 depth=2 subcosets=4 min-bound=119.35 margin=+39.08 wall=0s -> CLOSED
+s=28672   M=222224478    a=0 y=330812181   k=9 reps=2 log10G=90.15 depth=2 subcosets=48 min-bound=119.84 margin=+29.69 wall=0s -> CLOSED
+s=34992   M=233333346    a=0 y=60761421    k=9 reps=1 log10G=90.15 depth=2 subcosets=36 min-bound=119.76 margin=+29.61 wall=0s -> CLOSED
+s=14336   M=2222222278   a=0 y=330812181   k=10 reps=2 log10G=94.98 depth=2 subcosets=72 min-bound=119.76 margin=+24.77 wall=0s -> CLOSED
+s=148176  M=2222333777   a=1 y=44471322    k=10 reps=2 log10G=90.87 depth=2 subcosets=9 min-bound=119.72 margin=+28.86 wall=0s -> CLOSED
+s=18144   M=2222233337   a=1 y=44471322    k=10 reps=1 log10G=90.87 depth=2 subcosets=12 min-bound=119.85 margin=+28.98 wall=0s -> CLOSED
+s=18144   M=2222233337   a=2 y=133923132   k=10 reps=5 log10G=90.92 depth=2 subcosets=16 min-bound=120.13 margin=+29.21 wall=0s -> CLOSED
+s=27216   M=2222333337   a=1 y=44471322    k=10 reps=1 log10G=90.87 depth=2 subcosets=12 min-bound=119.85 margin=+28.98 wall=0s -> CLOSED
+s=28672   M=2222222478   a=0 y=330812181   k=10 reps=4 log10G=94.98 depth=2 subcosets=216 min-bound=119.63 margin=+24.65 wall=0s -> CLOSED
+s=28672   M=22222222278  a=0 y=330812181   k=11 reps=2 log10G=108.74 depth=2 subcosets=216 min-bound=119.76 margin=+11.01 wall=0s -> CLOSED
+
+43 of 43 patterns CLOSED by the full sub-coset enumeration; wall 1s

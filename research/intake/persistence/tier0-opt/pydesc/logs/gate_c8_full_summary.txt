@@ -1,0 +1,10 @@
+STAGE                                 VERDICT  DETAIL
+----------------------------------------------------------------------------
+lvl12 differential (corpus + 72/224)  PASS     538 equations, raw sorted stdout + stderr counters
+lvlN differential (corpus + 72/224)   PASS     538 equations, parents from reference chain + wild parents; raw sorted stdout, counters, python-side reconstruction; 331 genuine-parent chains (true child must reappear)
+lvl12 full vertices 10800, 14336      PASS     33 multisets, 3.602e+09 patterns, level 12 only (lifts for these two vertices not run)
+off-nominal configs (K != 3, np = 7)  PASS     31 configs: {'EQUIVALENT': 31, 'REFUSES': 0, 'DIVERGED': 0, 'CRASH': 0}
+python pipeline run_vertex_c 72, 224  PASS     16 rows (open counts, children, per-level survivors, c_stats) ref vs cand
+planted children (pipeline)           PASS     39/39 recovered
+branch coverage (reference)           PASS     lvl12: lines 98.8% (84/85), branches 96.6% (143/148), regions 97.4%; lvlN: lines 99.3% (141/142), branches 93.4% (241/258), regions 95.9%; unreached sides {'DEAD-LIFT': 7, 'DEAD12': 4, 'DEFENSIVE': 6, 'RARE': 1, 'STRUCTURAL': 4} (see coverage.txt)
+GATE v2: PASS

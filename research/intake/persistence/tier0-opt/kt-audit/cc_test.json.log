@@ -1,0 +1,23 @@
+(lldb) command script import /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/kt-audit/tally.py
+(lldb) command script add -f tally.armc armc
+(lldb) target create /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+Current executable set to '/Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN' (arm64).
+(lldb) breakpoint set -n main
+Breakpoint 1: where = lvlN`main, address = 0x00000001000005c0
+(lldb) process launch -o /dev/null -- cfgs/393216_22222222222222234_L24.txt empty.txt
+Process 61130 launched: '/Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN' (arm64)
+Process 61130 stopped
+* thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+       frame #0: 0x00000001000005c0 lvlN`main
+lvlN`main:
+->  0x1000005c0 <+0>:  stp    x28, x27, [sp, #-0x60]!
+    0x1000005c4 <+4>:  stp    x26, x25, [sp, #0x10]
+    0x1000005c8 <+8>:  stp    x24, x23, [sp, #0x20]
+    0x1000005cc <+12>: stp    x22, x21, [sp, #0x30]
+Target 0: (lvlN) stopped.
+(lldb) armc
+(lldb) continue
+parents 0 children 0 zero 0 dead 0 tail-dead 0 open 0 exact 0
+Process 61130 resuming
+Process 61130 exited with status = 0 (0x00000000)
+(lldb) script tally.ccdump()

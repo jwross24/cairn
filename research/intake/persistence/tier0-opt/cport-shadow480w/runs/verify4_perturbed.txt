@@ -1,0 +1,11 @@
+FAIL 393216 222222244468 0 330812181 - - 12 0 g0 ['norm', 'level96 primes vs anchor', 'level480 primes vs V', 'tail 10^480']
+FAIL 393216 222222244468 0 330812181 - - 12 0 g0 ['norm', 'level96 primes vs anchor', 'level480 primes vs V', 'tail 10^480']
+FAIL 393216 222222244468 0 330812181 - - 12 1 g0 ['norm', 'level96 primes vs anchor', 'level480 primes vs V', 'tail 10^480']
+FAIL 393216 222222244468 0 330812181 - - 12 1 g0 ['norm', 'level96 primes vs anchor', 'level480 primes vs V', 'tail 10^480']
+FAIL 3211264 2222222247788 0 7411887 - - 3 0 g0 ['norm', 'level96 primes vs anchor', 'level480 primes vs V', 'tail 10^480']
+FAIL 3211264 2222222247788 0 7411887 - - 3 0 g0 ['norm', 'level96 primes vs anchor', 'level480 primes vs V', 'tail 10^480']
+FAIL 393216 2222222223488 0 330812181 - - 16 0 g0 ['norm', 'level96 primes vs anchor', 'level480 primes vs V', 'tail 10^480']
+FAIL 393216 2222222223488 0 330812181 - - 16 0 g0 ['norm', 'level96 primes vs anchor', 'level480 primes vs V', 'tail 10^480']
+FAIL 393216 2222222223488 0 330812181 - - 16 1 g0 ['norm', 'level96 primes vs anchor', 'level480 primes vs V', 'tail 10^480']
+FAIL 393216 2222222223488 0 330812181 - - 16 1 g0 ['norm', 'level96 primes vs anchor', 'level480 primes vs V', 'tail 10^480']
+10 wrap>=1 survivor points checked with Python integers: 0 satisfy every congruence, 10 do not; wrap>=1 reps 5; level-96 primes 20, level-480 primes 22

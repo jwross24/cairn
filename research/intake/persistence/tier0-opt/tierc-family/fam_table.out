@@ -1,0 +1,8 @@
+1335 vs recorded-384 level 96 {'key': (1335, {'ALIVE': 1333, 'UNDECIDED': 2}, 0), '(s,M,a)': (1008, {'ALIVE': 1006, 'UNDECIDED': 2}, 0), '(s,M)': (598, {'ALIVE': 596, 'UNDECIDED': 2}, 0), 's': (42, {'ALIVE': 41, 'UNDECIDED': 1}, 0)}
+1335 vs recorded-384 level 192 {'key': (1335, {'ALIVE': 1333, 'UNDECIDED': 2}, 0), '(s,M,a)': (1008, {'ALIVE': 1006, 'UNDECIDED': 2}, 0), '(s,M)': (598, {'ALIVE': 596, 'UNDECIDED': 2}, 0), 's': (42, {'ALIVE': 41, 'UNDECIDED': 1}, 0)}
+1335 vs recorded-384 level 384 {'key': (1335, {'KILL': 1151, 'ALIVE': 182, 'UNDECIDED': 2}, 0), '(s,M,a)': (1008, {'KILL': 849, 'ALIVE': 157, 'UNDECIDED': 2}, 0), '(s,M)': (598, {'KILL': 454, 'ALIVE': 142, 'UNDECIDED': 2}, 0), 's': (42, {'ALIVE': 25, 'KILL': 16, 'UNDECIDED': 1}, 0)}
+1335 vs recorded-384 level 480 {'key': (1335, {'ALIVE': 974, 'KILL': 359, 'UNDECIDED': 2}, 0), '(s,M,a)': (1008, {'ALIVE': 758, 'KILL': 248, 'UNDECIDED': 2}, 0), '(s,M)': (598, {'ALIVE': 500, 'KILL': 96, 'UNDECIDED': 2}, 0), 's': (42, {'ALIVE': 38, 'KILL': 3, 'UNDECIDED': 1}, 0)}
+1335 vs recorded-480 level 480 {'key': (1335, {'ALIVE': 974, 'KILL': 359, 'UNDECIDED': 2}, 0), '(s,M,a)': (1008, {'ALIVE': 758, 'KILL': 248, 'UNDECIDED': 2}, 0), '(s,M)': (598, {'ALIVE': 500, 'KILL': 96, 'UNDECIDED': 2}, 0), 's': (42, {'ALIVE': 38, 'KILL': 3, 'UNDECIDED': 1}, 0)}
+4320 vs recorded-480 level 480 {'key': (4320, {'ALIVE': 3414, 'KILL': 904, 'UNDECIDED': 2}, 1), '(s,M,a)': (2437, {'ALIVE': 2057, 'KILL': 378, 'UNDECIDED': 2}, 0), '(s,M)': (816, {'ALIVE': 767, 'KILL': 47, 'UNDECIDED': 2}, 0), 's': (13, {'ALIVE': 11, 'UNDECIDED': 2}, 0)}
+mult>1 keys 0 of 1335
+{5: 1.0, 6: 1.0, 7: 1.0, 8: 1.0, 9: 1.0, 10: 1.0, 11: 1.0, 12: 1.0, 13: 1.0, 14: 1.0, 15: 1.0, 16: 1.0, 17: 1.0, 18: 1.0}

@@ -1,0 +1,8 @@
+{"stage": "vertex", "vertex": "4", "rc": [0, 0], "secs": [0.4, 1.0], "rows": 3, "rows_identical": true, "lvlN_calls": 0, "lvlN_call_outputs_identical": false, "rows_sha": "d373953d32d0ef2a"}
+{"stage": "vertex", "vertex": "14", "rc": [0, 0], "secs": [0.4, 0.3], "rows": 2, "rows_identical": true, "lvlN_calls": 0, "lvlN_call_outputs_identical": false, "rows_sha": "73b3921073967106"}
+{"stage": "vertex", "vertex": "27", "rc": [0, 0], "secs": [0.3, 0.3], "rows": 3, "rows_identical": true, "lvlN_calls": 0, "lvlN_call_outputs_identical": false, "rows_sha": "38c8afcb82288c3d"}
+{"stage": "vertex", "vertex": "98", "rc": [0, 0], "secs": [0.6, 0.2], "rows": 2, "rows_identical": true, "lvlN_calls": 0, "lvlN_call_outputs_identical": false, "rows_sha": "fe930c58330460bb"}
+{"stage": "vertex", "vertex": "189", "rc": [0, 0], "secs": [0.2, 0.3], "rows": 3, "rows_identical": true, "lvlN_calls": 0, "lvlN_call_outputs_identical": false, "rows_sha": "9637bade13892a51"}
+{"stage": "vertex", "vertex": "294", "rc": [0, 0], "secs": [0.3, 0.3], "rows": 3, "rows_identical": true, "lvlN_calls": 1, "lvlN_call_outputs_identical": true, "rows_sha": "31d819c7174a62fb"}
+{"stage": "vertex", "vertex": "72", "rc": [0, 0], "secs": [1.1, 1.3], "rows": 10, "rows_identical": true, "lvlN_calls": 6, "lvlN_call_outputs_identical": true, "rows_sha": "f6c113d61bfa9d2e"}
+{"stage": "eq6", "rc": [0, 0], "secs": [2.8, 2.7], "identical": true, "rows": 6}

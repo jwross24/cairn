@@ -1,0 +1,17 @@
+W0 survivors 547 tested 4580000 WN survivors 3 tested 500000
+new W0 mean cpu 0.134 median 0.064 max 1.572; WN mean 0.242
+W0 bill core-years 0.01833, WN 0.00495, total 0.02328 = 8.504 core-days = 204.1 core-hours
+bootstrap core-years [0.01627, 0.03393] median 0.02285
+batched (0.04 s process start-up removed): central 0.01749 core-years [0.0115, 0.02711]
+stand-in 10 s: k>=32 up to 2.91e+04 survivors -> 0.009235 core-years; tail fraction (cost >= 1 s: 6 of 547, CP95 upper 0.0237) -> 0.03248 core-years
+   envelope: hi + both = 0.07565 core-years
+stand-in 100 s: k>=32 up to 2.91e+04 survivors -> 0.09235 core-years; tail fraction (cost >= 1 s: 6 of 547, CP95 upper 0.0237) -> 0.3248 core-years
+   envelope: hi + both = 0.4511 core-years
+24 63 mean 0.094 max 0.60
+25 81 mean 0.124 max 1.57
+26 116 mean 0.152 max 1.15
+27 106 mean 0.125 max 1.06
+28 63 mean 0.182 max 1.17
+29 36 mean 0.159 max 1.23
+30 12 mean 0.144 max 0.51
+31 8 mean 0.212 max 0.88

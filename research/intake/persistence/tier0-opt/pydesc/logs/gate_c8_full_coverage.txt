@@ -1,0 +1,95 @@
+coverage inputs: 3259 runs (corpus, genuine parents, wild parents, range splits, CLI error cases) + 23 synthetic off-nominal configs
+facts: {"K12": [3], "np12": 5, "nc12": 4, "K24": [4], "np24": 3, "lin24": [], "K48": [5], "np48": 3, "lin48": [], "K96": [5], "np96": 9, "lin96": [{"m": 29406683, "g1": 28249472, "g2": 23976715, "g": 1, "d": 1}]}
+
+== lvl12: per-function coverage (corpus without synthetic configs) ==
+File '/private/tmp/persist-gatev2/work-pydesc-c8_full/ref/lvl12.c':
+Name                        Regions    Miss   Cover     Lines    Miss   Cover  Branches    Miss   Cover
+-------------------------------------------------------------------------------------------------------
+main                             17       0 100.00%         8       0 100.00%         6       0 100.00%
+lvl12.c:read_cfg                 78       0 100.00%        28       0 100.00%        50       0 100.00%
+lvl12.c:rec_group                19       1  94.74%         9       0 100.00%        12       1  91.67%
+lvl12.c:process                  21       0 100.00%        10       0 100.00%        12       0 100.00%
+lvl12.c:tail_test                81       5  93.83%        23       1  95.65%        58       4  93.10%
+lvl12.c:mulmod                    1       0 100.00%         1       0 100.00%         0       0   0.00%
+lvl12.c:powmod                    5       0 100.00%         1       0 100.00%         4       0 100.00%
+lvl12.c:powmod_signed             4       0 100.00%         1       0 100.00%         2       0 100.00%
+lvl12.c:invmod                    5       0 100.00%         4       0 100.00%         4       0 100.00%
+-------------------------------------------------------------------------------------------------------
+TOTAL                           231       6  97.40%        85       1  98.82%       148       5  96.62%
+
+== lvl12: unreached branch sides (5) ==
+  lvl12.c:72:20 tail_test [T-side never taken] DEAD12: K == 3 for every a in 0..63 at level 12 (ten_adic_K recomputed from U2 for all a), so K > 18 and K < 1 never hold
+      int K=KT[a0]; if(K>18) K=18; if(K<1){ // no pinning: OPEN
+  lvl12.c:72:35 tail_test [T-side never taken] DEAD12: K == 3 for every a in 0..63 at level 12 (ten_adic_K recomputed from U2 for all a), so K > 18 and K < 1 never hold
+      int K=KT[a0]; if(K>18) K=18; if(K<1){ // no pinning: OPEN
+  lvl12.c:73:45 tail_test [F-side never taken] DEAD12: body of the K < 1 branch (K == 3 at level 12)
+      printf("OPEN %d %d",a0,nu); for(int i=0;i<q;i++) printf(" %d",eps[i]); printf(" %lld %lld\n",b,c); cnt_open++; return; }
+  lvl12.c:73:45 tail_test [T-side never taken] DEAD12: body of the K < 1 branch (K == 3 at level 12)
+      printf("OPEN %d %d",a0,nu); for(int i=0;i<q;i++) printf(" %d",eps[i]); printf(" %lld %lld\n",b,c); cnt_open++; return; }
+  lvl12.c:112:6 rec_group [T-side never taken] STRUCTURAL: rec_group is entered with g < ng: the only recursive call that advances g sits behind `if(g+1<ng)`, and ng >= 1 for q >= 1
+      if(g==ng){ process(nu); return; }
+
+== lvlN: per-function coverage (corpus without synthetic configs) ==
+File '/private/tmp/persist-gatev2/work-pydesc-c8_full/ref/lvlN.c':
+Name                        Regions    Miss   Cover     Lines    Miss   Cover  Branches    Miss   Cover
+-------------------------------------------------------------------------------------------------------
+main                             39       0 100.00%        17       0 100.00%        18       0 100.00%
+lvlN.c:read_cfg                  69       0 100.00%        27       0 100.00%        44       0 100.00%
+lvlN.c:ph_init                   17       0 100.00%         8       0 100.00%        12       1  91.67%
+lvlN.c:powmod                     5       0 100.00%         1       0 100.00%         4       0 100.00%
+lvlN.c:hget                       7       0 100.00%         1       0 100.00%         4       0 100.00%
+lvlN.c:hins                       3       0 100.00%         1       0 100.00%         2       0 100.00%
+lvlN.c:mulmod                     1       0 100.00%         1       0 100.00%         0       0   0.00%
+lvlN.c:hput                       3       0 100.00%         1       0 100.00%         2       0 100.00%
+lvlN.c:parse128                  10       0 100.00%         1       0 100.00%         8       1  87.50%
+lvlN.c:rec_groups                 7       0 100.00%         5       0 100.00%         4       0 100.00%
+lvlN.c:process_child             44       3  93.18%        17       0 100.00%        30       4  86.67%
+lvlN.c:dlog                      17       2  88.24%        10       0 100.00%        10       1  90.00%
+lvlN.c:bsgs                       9       2  77.78%         5       1  80.00%         4       1  75.00%
+lvlN.c:mod128                     3       0 100.00%         1       0 100.00%         2       0 100.00%
+lvlN.c:hfind                      9       0 100.00%         1       0 100.00%         4       0 100.00%
+lvlN.c:egcd                       4       0 100.00%         1       0 100.00%         2       0 100.00%
+lvlN.c:invmod                     9       3  66.67%         1       0 100.00%         6       3  50.00%
+lvlN.c:mulmod128                  9       0 100.00%         4       0 100.00%         8       0 100.00%
+lvlN.c:tail_test                 80       4  95.00%        23       0 100.00%        58       4  93.10%
+lvlN.c:emit                       6       0 100.00%         4       0 100.00%         4       0 100.00%
+lvlN.c:print128                  12       2  83.33%         1       0 100.00%        10       2  80.00%
+lvlN.c:rec_dist                  32       0 100.00%        11       0 100.00%        22       0 100.00%
+-------------------------------------------------------------------------------------------------------
+TOTAL                           395      16  95.95%       142       1  99.30%       258      17  93.41%
+
+== lvlN: unreached branch sides (17) ==
+  lvlN.c:37:79 invmod [T-side never taken] DEFENSIVE: gcd(a, m) == 1 for every modulus used (primes and prime powers of a prime-order subgroup)
+      static ull invmod(ull a, ull m){ ll x,y; ll g=egcd((ll)(a%m),(ll)m,&x,&y); if(g!=1 && g!=-1){ fprintf(stderr,"no inverse\n"); exit(3);} x%= (ll)m; if(
+  lvlN.c:37:87 invmod [F-side never taken] DEFENSIVE: gcd(a, m) == 1 for every modulus used (primes and prime powers of a prime-order subgroup)
+      static ull invmod(ull a, ull m){ ll x,y; ll g=egcd((ll)(a%m),(ll)m,&x,&y); if(g!=1 && g!=-1){ fprintf(stderr,"no inverse\n"); exit(3);} x%= (ll)m; if(
+  lvlN.c:37:87 invmod [T-side never taken] DEFENSIVE: gcd(a, m) == 1 for every modulus used (primes and prime powers of a prime-order subgroup)
+      static ull invmod(ull a, ull m){ ll x,y; ll g=egcd((ll)(a%m),(ll)m,&x,&y); if(g!=1 && g!=-1){ fprintf(stderr,"no inverse\n"); exit(3);} x%= (ll)m; if(
+  lvlN.c:38:98 parse128 [F-side never taken] DEFENSIVE: parent files are written by this harness / run_c.py with decimal tokens only
+      static i128 parse128(const char* s){ i128 v=0; int neg=0; if(*s=='-'){neg=1;s++;} while(*s>='0'&&*s<='9'){ v=v*10+(*s-'0'); s++; } return neg?-v:v; }
+  lvlN.c:39:74 print128 [T-side never taken] STRUCTURAL: print128 receives t1, t2 reduced by mod128, so v >= 0
+      static void print128(i128 v){ char buf[64]; int n=0; int neg=v<0; u128 u=neg?(u128)(-v):(u128)v; if(u==0) buf[n++]='0'; while(u){ buf[n++]='0'+(int)(u
+  lvlN.c:39:169 print128 [T-side never taken] STRUCTURAL: print128 receives t1, t2 reduced by mod128, so v >= 0
+      static void print128(i128 v){ char buf[64]; int n=0; int neg=v<0; u128 u=neg?(u128)(-v):(u128)v; if(u==0) buf[n++]='0'; while(u){ buf[n++]='0'+(int)(u
+  lvlN.c:52:55 ph_init [F-side never taken] STRUCTURAL: gamma has prime order q and the table holds m <= q consecutive powers, so no key repeats
+      ull cur=1; for(ull jj=0;jj<m;jj++){ ull dummy; if(!hget(f,cur,&dummy)) hins(f,cur,jj); cur=mulmod(cur,f->gamma,p); } }
+  lvlN.c:56:15 bsgs [F-side never taken] DEFENSIVE: baby-step table always contains the target for h in the order-q subgroup; the exit(4) path needs a corrupt dlog input
+      for(ull i=0;i<m+1;i++){ ull jv; if(hget(f,cur,&jv)) return (i*m+jv)%f->q; cur=mulmod(cur,ginv_m,p); }
+  lvlN.c:67:6 dlog [T-side never taken] DEFENSIVE: self-check of the Pohlig-Hellman result; fires only on a defect (the N5 mutant)
+      if(powmod(G[i],x,p)!=h%p){ fprintf(stderr,"dlog verify failed p=%llu\n",p); exit(5); }
+  lvlN.c:116:23 tail_test [T-side never taken] DEAD-LIFT: K is 4/5/5 at levels 24/48/96 for every a in 0..63, so K > 18 and K < 1 never hold
+      int K=KT[a_cur]; if(K>18) K=18;
+  lvlN.c:117:6 tail_test [T-side never taken] DEAD-LIFT: K is 4/5/5 at levels 24/48/96 for every a in 0..63, so K > 18 and K < 1 never hold
+      if(K<1){ emit("OPEN",t1,t2,0); cnt_open++; return; }
+  lvlN.c:120:48 tail_test [F-side never taken] DEAD-LIFT: K >= 4 at every lift level, so the K < 3 arm of the l2 ternary is dead; lam is recomputed from gcd on the next statement
+      ull l5=4; for(int i=1;i<K;i++) l5*=5; ull l2=K>=3?(1ULL<<(K-2)):1; ull lam=l5/ (l5%l2==0?l2: 1) ; // lcm
+  lvlN.c:131:44 tail_test [T-side never taken] RARE: reachable at K = 4/5 only for a survivor whose tail value has an internal zero and n_Y == nu (mod L), about 1e-5 x 0.27/24 per child; exercised through the same code with a replaced K row (genuine parent with n = K)
+      for(int i=0;i<nY;i++){ int d=dg[i]; if(d==0){ok=0;break;} if(d==1) continue; have[d]++; if(have[d]>cntm[d]){ok=0;break;} if(++used[d][i%Lnew]>pattern_
+  lvlN.c:151:110 process_child [T-side never taken] DEAD-LIFT: the only linear component (level 96) has g1, g2 > 0, so egcd returns g > 0
+      for(int j=0;j<nlin;j++){ ll key=(ll)(adj[lidx[j]]%lmod[j]); ll x1,x2; ll g=egcd(lg1[j],lg2[j],&x1,&x2); if(g<0){g=-g;x1=-x1;x2=-x2;}
+  lvlN.c:153:8 process_child [T-side never taken] DEAD-LIFT: the only linear component has gcd(g1, g2, m) == 1, so d == 1 and key % d == 0
+      if(key%d){cnt_dead++; return;} ll f=key/d, mm=m/d; ll s=0; if(mm>1){ ll gi=(g/d)%mm; if(gi<0) gi+=mm; s=(ll)mulmod((ull)(f%mm),(ull)invmod((ull)gi,(ul
+  lvlN.c:153:67 process_child [F-side never taken] DEAD-LIFT: mm = m/d = m > 1 for the only linear component
+      if(key%d){cnt_dead++; return;} ll f=key/d, mm=m/d; ll s=0; if(mm>1){ ll gi=(g/d)%mm; if(gi<0) gi+=mm; s=(ll)mulmod((ull)(f%mm),(ull)invmod((ull)gi,(ul
+  lvlN.c:153:93 process_child [T-side never taken] DEAD-LIFT: the only linear component has gcd(g1, g2, m) == 1, so d == 1 and key % d == 0
+      if(key%d){cnt_dead++; return;} ll f=key/d, mm=m/d; ll s=0; if(mm>1){ ll gi=(g/d)%mm; if(gi<0) gi+=mm; s=(ll)mulmod((ull)(f%mm),(ull)invmod((ull)gi,(ul

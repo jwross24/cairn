@@ -1,0 +1,11 @@
+genuine {'kind': 'genuine-S-unit', 'a': 0, 'b': 1328, 'c': 825, 'D': 2, 'E': 1, 'remaining': 88, 'rho2': '2444209', 'dual_certified': False, 'cvp_certified': False, 'cvp_point_ok': True, 'ok': True}
+genuine {'kind': 'genuine-S-unit', 'a': 9, 'b': 1121, 'c': 743, 'D': 3, 'E': 2, 'remaining': 87, 'rho2': '1808690', 'dual_certified': False, 'cvp_certified': False, 'cvp_point_ok': True, 'ok': True}
+genuine {'kind': 'genuine-S-unit', 'a': 0, 'b': 1417, 'c': 770, 'D': 3, 'E': 2, 'remaining': 89, 'rho2': '2600789', 'dual_certified': False, 'cvp_certified': False, 'cvp_point_ok': True, 'ok': True}
+genuine {'kind': 'genuine-S-unit', 'a': 0, 'b': 914, 'c': 689, 'D': 2, 'E': 1, 'remaining': 86, 'rho2': '1310117', 'dual_certified': False, 'cvp_certified': False, 'cvp_point_ok': True, 'ok': True}
+genuine {'kind': 'genuine-S-unit', 'a': 5, 'b': 970, 'c': 574, 'D': 3, 'E': 2, 'remaining': 86, 'rho2': '1270376', 'dual_certified': False, 'cvp_certified': False, 'cvp_point_ok': True, 'ok': True}
+genuine {'kind': 'genuine-S-unit', 'a': 0, 'b': 943, 'c': 723, 'D': 2, 'E': 1, 'remaining': 86, 'rho2': '1411978', 'dual_certified': False, 'cvp_certified': False, 'cvp_point_ok': True, 'ok': True}
+genuine {'kind': 'genuine-S-unit', 'a': 5, 'b': 1352, 'c': 517, 'D': 3, 'E': 2, 'remaining': 90, 'rho2': '2095193', 'dual_certified': False, 'cvp_certified': False, 'cvp_point_ok': True, 'ok': True}
+genuine {'kind': 'genuine-S-unit', 'a': 9, 'b': 1018, 'c': 832, 'D': 3, 'E': 2, 'remaining': 87, 'rho2': '1728548', 'dual_certified': False, 'cvp_certified': False, 'cvp_point_ok': True, 'ok': True}
+genuine {'kind': 'genuine-S-unit', 'a': 0, 'b': 1058, 'c': 879, 'D': 3, 'E': 2, 'remaining': 92, 'rho2': '1892005', 'dual_certified': False, 'cvp_certified': False, 'cvp_point_ok': True, 'ok': True}
+genuine {'kind': 'genuine-S-unit', 'a': 0, 'b': 920, 'c': 732, 'D': 2, 'E': 1, 'remaining': 87, 'rho2': '1382224', 'dual_certified': False, 'cvp_certified': False, 'cvp_point_ok': True, 'ok': True}
+TOTAL {'genuine': 10, 'genuine_refused_dual': 10, 'genuine_refused_cvp': 10, 'genuine_cvp_point_ok': 10}

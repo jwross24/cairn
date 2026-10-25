@@ -1,0 +1,6 @@
+== s=124416 D=(2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3) A=49 known children with this arrangement: []
+   L= 12 primes=[11, 13, 37, 101, 9901] in=8803791360 survived=4544237 (dead: y≡0 0, prefilter 0, lattice 0) -> {'RESOLVED(descent)': 4160542, 'OPEN': 383695}  sols=[]  [18s]
+   L= 24 primes=[73, 137, 99990001] in=3510549840 survived=1097 (dead: y≡0 72385088, prefilter 3438151292, lattice 0) -> {'OPEN': 935, 'RESOLVED(descent)': 162}  sols=[]  [188s]
+   L= 48 primes=[17, 5882353, 9999999900000001] in=13874912 survived=17 (dead: y≡0 815603, prefilter 13059270, lattice 0) -> {'OPEN': 17}  sols=[]  [190s]
+levels [(12, 8803791360, 4544237, {'RESOLVED(descent)': 4160542, 'OPEN': 383695}), (24, 3510549840, 1097, {'OPEN': 935, 'RESOLVED(descent)': 162}), (48, 13874912, 17, {'OPEN': 17})] secs 298
+open at 48: 17

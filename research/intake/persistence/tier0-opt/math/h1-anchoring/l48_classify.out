@@ -1,0 +1,18 @@
+levels [[12, 8803791360, 4544237, {'RESOLVED(descent)': 4160542, 'OPEN': 383695}], [24, 3510549840, 1097, {'OPEN': 935, 'RESOLVED(descent)': 162}], [48, 13874912, 17, {'OPEN': 17}]]
+level-48 open patterns: 17 anchored(exact identity): 17 accident/no small anchor: 0
+Counter({True: 17})
+(2, 14, 1, True)
+(2, 14, 1, True)
+(2, 14, 1, True)
+(2, 14, 1, True)
+(1, 8, 0, True)
+(2, 4, 3, True)
+(1, 8, 0, True)
+(2, 4, 3, True)
+(1, 8, 0, True)
+(1, 8, 0, True)
+(1, 8, 0, True)
+(2, 4, 3, True)
+(2, 4, 3, True)
+(2, 4, 3, True)
+(2, 4, 3, True)

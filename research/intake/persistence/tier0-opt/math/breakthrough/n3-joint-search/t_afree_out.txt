@@ -1,0 +1,9 @@
+a>=K branch: scan a in [K, K+80]; scale  P   K   a_true  recovered_only_true  ms_total
+1e6   12   12   40   True         406
+1e6   12   12   40   True         486
+1e12  18   21   33   True        1331
+1e12  18   21   27   True        2246
+1e24  30   38   72   True        5167
+1e24  30   38   40   True        4530
+1e40  46   61   98   True        6430
+1e40  46   61   77   True        6126

@@ -1,0 +1,9 @@
+{
+ "imad_per_s_m5": 1.0e12,
+ "lvl12_patterns_per_s_m5": 1.3e10,
+ "pf24_children_per_s_m5": 2.7e9,
+ "pf48_children_per_s_m5": 1.09e10,
+ "cand_frac24": 3.4e-5, "cand_ns24": 1300,
+ "cand_frac48": 2.44e-3, "cand_ns48": 330,
+ "prep_a_s": 3.2e-6, "prep_b_s": 2.19e-8
+}

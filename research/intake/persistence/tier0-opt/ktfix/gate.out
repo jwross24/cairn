@@ -1,0 +1,36 @@
+Traceback (most recent call last):
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/ktfix/gate.py", line 63, in <module>
+    for row in pool.map(job, items):
+               ~~~~~~~~^^^^^^^^^^^^
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/concurrent/futures/_base.py", line 645, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/concurrent/futures/_base.py", line 312, in _result_or_cancel
+    return fut.result(timeout)
+           ~~~~~~~~~~^^^^^^^^^
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/concurrent/futures/_base.py", line 454, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/concurrent/futures/_base.py", line 396, in __get_result
+    raise self._exception
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/ktfix/gate.py", line 46, in job
+    asan = subprocess.run([ASAN, cfg, par], capture_output=True, text=True, timeout=TIMEOUT)
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/subprocess.py", line 557, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/subprocess.py", line 1221, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/subprocess.py", line 2154, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/subprocess.py", line 1268, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/ktfix/lvlN_asan', '/private/tmp/claude-501/-Users-jwross-Documents-cairn/ec9f8f52-ce29-4a5c-9caf-2ecbd434509f/scratchpad/h12/9437184_22222222222222222266/cfgL24.txt', '/private/tmp/claude-501/-Users-jwross-Documents-cairn/ec9f8f52-ce29-4a5c-9caf-2ecbd434509f/scratchpad/h12/9437184_22222222222222222266/parents24.txt']' timed out after 900.0 seconds
+{"equations": 636, "verdicts": {"OK": 630, "FAIL": 3, "OK-A64": 3}, "a64": [{"eq": "9437184_222222222222222222229", "level": "24", "A": 67, "rc": [0, 0], "identical": false, "open": [929, 870], "new_open_not_in_prod": 766, "asan_new": [0, false], "verdict": "FAIL"}, {"eq": "9437184_222222222222222222229", "level": "48", "A": 67, "rc": [0, 0], "identical": true, "open": [0, 0], "new_open_not_in_prod": 0, "asan_new": [0, false], "verdict": "OK-A64"}, {"eq": "9437184_22222222222222222266", "level": "24", "A": 64, "rc": [0, 0], "identical": false, "open": [2585, 2553], "new_open_not_in_prod": 2249, "asan_new": [0, false], "verdict": "FAIL"}, {"eq": "9437184_22222222222222222266", "level": "48", "A": 64, "rc": [0, 0], "identical": false, "open": [2, 0], "new_open_not_in_prod": 0, "asan_new": [0, false], "verdict": "OK-A64"}, {"eq": "9437184_22222222222222222266", "level": "96", "A": 64, "rc": [0, 0], "identical": true, "open": [0, 0], "new_open_not_in_prod": 0, "asan_new": [0, false], "verdict": "OK-A64"}, {"eq": "9437184_2222222222222222289", "level": "24", "A": 67, "rc": [0, 0], "identical": false, "open": [1814, 1856], "new_open_not_in_prod": 1620, "asan_new": [0, false], "verdict": "FAIL"}]}

@@ -1,0 +1,1 @@
+PYREF M=2227888 a=0 y=78121827 primes=[31, 41] reps=1 passed_T=2 alive=2 bound=264.24

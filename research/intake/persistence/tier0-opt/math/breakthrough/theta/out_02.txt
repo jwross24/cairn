@@ -1,0 +1,9 @@
+Lemma H: min denominator within 80*10^-s_{j+1} of x is >= min(10^s_j/8, 10^g_j/160): violations 0 of 4000 trials; within factor 50 of the bound in 1459
+planted negative (tolerance widened by 10^12, hypothesis broken): bound violated in 746 of 4000 trials
+Liouville sharpness: beta = U (1 + 10^-m), U in the group <2,3,7,10> with fixed small exponents; Lambda = U/beta - 1
+  m=   10  h(beta)=     33.26  -log|Lambda|=     23.03  ratio=0.69234
+  m=   40  h(beta)=    102.34  -log|Lambda|=     92.10  ratio=0.90001
+  m=  160  h(beta)=    378.65  -log|Lambda|=    368.41  ratio=0.97298
+  m=  640  h(beta)=   1483.89  -log|Lambda|=   1473.65  ratio=0.99310
+  m= 2560  h(beta)=   5904.85  -log|Lambda|=   5894.62  ratio=0.99827
+FAILURES: 0 0 0

@@ -1,0 +1,5 @@
+base 8: 70 vertices, 67 done, 3 to go, 3 cores, levels (12, 24, 48, 96)
+  target 6 s=972405 (3.5.5.3.1.6.5_b) CLOSED BELOW 10^1.0e+15 DIGITS; children [] known [] 2958s
+  target 6 s=455625 (1.5.7.1.7.1.1_b) CLOSED BELOW 10^1.0e+15 DIGITS; children [] known [] 3082s
+  target 4 s=826875 (3.1.1.6.7.7.3_b) CLOSED BELOW 10^1.0e+15 DIGITS; children [] known [] 5077s
+SUMMARY {'CLOSED': 3}

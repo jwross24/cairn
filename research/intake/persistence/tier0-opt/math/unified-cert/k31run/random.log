@@ -1,0 +1,5 @@
+enumerated 440640 nodes in 2.0s
+selected 200, already done 0
+processed 100/200 elapsed 7s {'certified': 100}
+processed 200/200 elapsed 13s {'certified': 200}
+DONE processed 200 {'certified': 200} elapsed 13s

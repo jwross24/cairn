@@ -1,0 +1,10 @@
+child test at the seven level-192 primes: mean seconds 7.663442908475796e-06 n 300 alive 0 primes [193, 769, 19841, 976193, 6187457, 834427406578561, 1253224535459902849]
+family shadow test (one congruence) mean seconds 3.8426334504038096e-07
+reference lattice shadow test over 96/192/384/480: mean seconds 0.0032042655686382203
+{"tag": "C 128421199872 k=31", "k": 31, "unplaced_r": 27, "expected_children": 1808.66, "measured_mean": 1831.5, "measured_min": 1768, "measured_max": 1910, "t_dp_mean": 0.086, "ratio_mean": 1.0322941735047082, "ratio_min": 1.0267645894029385, "ratio_max": 1.036066080589521}
+{"tag": "C 128421199872 k=31", "k": 31, "unplaced_r": 23, "expected_children": 113.04, "measured_mean": 107.75, "measured_min": 83, "measured_max": 167, "t_dp_mean": 0.07, "ratio_mean": 1.046017051309066, "ratio_min": 1.0403667097442568, "ratio_max": 1.0576612209829113}
+{"tag": "C 3416267673274176 k=34", "k": 34, "unplaced_r": 30, "expected_children": 14469.26, "measured_mean": 14453.25, "measured_min": 13992, "measured_max": 14712, "t_dp_mean": 0.091, "ratio_mean": 1.0159237864243884, "ratio_min": 1.0155163549997108, "ratio_max": 1.0166472626708338}
+{"tag": "C 3416267673274176 k=34", "k": 34, "unplaced_r": 26, "expected_children": 904.33, "measured_mean": 892.38, "measured_min": 836, "measured_max": 943, "t_dp_mean": 0.081, "ratio_mean": 1.0374434097743066, "ratio_min": 1.0254700919814683, "ratio_max": 1.0447181884003056}
+{"tag": "C 727326941773824 k=44", "k": 44, "unplaced_r": 40, "expected_children": 14816518.7, "measured_mean": 14814098.25, "measured_min": 14803498, "measured_max": 14821953, "t_dp_mean": 0.125, "ratio_mean": 1.000028190275096, "ratio_min": 1.0000281751129103, "ratio_max": 1.0000282086433563}
+{"tag": "C 727326941773824 k=44", "k": 44, "unplaced_r": 36, "expected_children": 926032.42, "measured_mean": 926133.0, "measured_min": 924214, "measured_max": 927443, "t_dp_mean": 0.125, "ratio_mean": 1.0004435818610504, "ratio_min": 1.0004419454621998, "ratio_max": 1.000444904014311}
+seconds 4.8

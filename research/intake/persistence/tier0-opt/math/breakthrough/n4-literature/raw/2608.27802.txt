@@ -1,0 +1,734 @@
+                                             THE MULTIPLICATIVE PERSISTENCE CONJECTURE: RESOLVING THE
+                                                  2-ADIC OBSTRUCTION FOR NONZERO EVEN TARGETS
+
+                                                                                          PATRICK NYADJO FONGA
+
+
+                                                  Abstract. The multiplicative persistence problem studies the process of repeatedly replacing a
+                                                  positive integer by the product of its digits until a single digit, called the terminal digit, is reached.
+                                                  The classical conjecture asserts that no decimal integer requires more than 11 iterations. Brier,
+
+
+
+
+arXiv:2608.27802v1 [math.NT] 28 Aug 2026
+                                                  Clavier, Gutsche, and Naccache proved the conjecture for all odd terminal digits. In their approach
+                                                  to nonzero even terminal digits, they were led to infinite families of decimal integers in which
+                                                  the numbers of digits 2, . . . , 9 are fixed, while arbitrarily many digits 1 may be inserted. They
+                                                  conjectured that, despite the infinitude of such a family, the exponent of 2 dividing its elements
+                                                  is uniformly bounded. We prove this conjecture and obtain an explicit bound depending only on
+                                                  the prescribed digit multiplicities. More generally, our argument applies in every base b ≥ 3 and to
+                                                  every prime p | b. In base 10, combining our bound with the method of Brier, Clavier, Gutsche, and
+                                                  Naccache yields a finite algorithm for a further analysis of each nonzero even terminal digit.
+                                                  2020 Mathematics Subject Classification: Primary 11A63; Secondary 11A07, 11Y16.
+
+
+
+
+                                                                                            1. Introduction
+
+                                           Throughout the present paper, if p is a prime and m is a nonzero integer, we denote by vp (m) the
+                                           p-adic valuation of m. We also set vp (0) = +∞ and write N0 = {0, 1, 2, . . .}. Let b ≥ 2 and let
+                                                                          L−1
+                                                                          X
+                                                                    n=          dj bj ,     dj ∈ {0, 1, . . . , b − 1},        dL−1 ̸= 0,
+                                                                          j=0
+
+                                           be the base-b expansion of a positive integer n. We define the digit product of n as
+                                                                                                             L−1
+                                                                                                             Y
+                                                                                             Sb (n) :=             dj .
+                                                                                                             j=0
+
+                                           Starting from n0 = n, define nk+1 = Sb (nk ). Whenever nk ≥ b, we have that Sb (nk ) < nk , so the
+                                           sequence (nk ) is decreasing and therefore eventually reaches a one-digit number in base b. Therefore,
+                                           we define the multiplicative persistence or simply persistence of n in base b as
+                                                                                   Pb (n) := min{r ≥ 0 : Sbr (n) < b}
+                                           and we call
+                                                                                              P (n)
+                                                                                ∆b (n) := Sb b        (n) ∈ {0, 1, . . . , b − 1}
+                                           the target digit or terminal digit or simply terminal of the integer n in base b.
+                                           Sloane introduced the notion of multiplicative persistence in 1973 and asked whether, for each fixed
+                                           base, the persistence is uniformly bounded [7]. In base 10, this leads to the following well-known
+                                           conjecture:
+                                           Conjecture A. For all n ∈ N, we have P10 (n) ≤ 11.
+                                           The smallest known integer with multiplicative persistence 11 is 277777788888899, and no example
+                                           of larger persistence is currently known; see [6].
+                                                                                                         1
+2                                               P. NYADJO FONGA
+
+
+Perez and Styer performed interesting computations in bases 2 through 12 and in the particular
+case of base 10, they verified the bound 11 given by Conjecture A for all integers below 101500 [6].
+Further background is available in [1, 3, 4, 5].
+A useful way to study the problem is to work backward from the terminal digit. Brier, Clavier,
+Gutsche, and Naccache [2] developed this approach in base 10. They showed that Conjecture A holds
+for odd terminal digits: indeed, they proved that terminal digits 1, 3, 7, and 9 lead to persistence at
+most 1, while terminal digit 5 leads to persistence at most 5. However, their approach to the even
+terminal digits 2, 4, 6, and 8 leads to exponential Diophantine equations whose analysis gives rise to
+the following conjecture [2, Conjecture 2];
+
+Conjecture B. Fix nonnegative integers ν2 , . . . , ν9 . Consider the family of positive decimal integers
+containing exactly νd occurrences of the digit d, for each d = 2, . . . , 9, an arbitrary number of
+occurrences of the digit 1, and no occurrence of the digit 0. Then there exists a constant C such
+that v2 (n) ≤ C for every integer n in this family.
+
+In this paper, we provide a proof for Conjecture B; see Corollary 3.2. In fact, we obtain a more
+general result that applies to arbitrary bases; see Theorem 3.1
+The paper is organized as follows. In Section 2, we establish an explicit uniform bound in every
+base b ≥ 3 for every prime p | b; see Theorem 3.1. Since the bound found in Theorem 3.1 is not
+optimal, Section 4 develops a finite recursive procedure, given in Theorem 4.1, for computing the
+exact maximal valuation associated with a prescribed multiset of digits. Finally, Section 5 explains
+how these results apply to the even-terminal-digit approach to multiplicative persistence.
+
+                                          2. Preliminary results
+
+We begin by giving three elementary properties of the digit-product map defined in the previous
+section. Let b ≥ 3 and n ∈ N.
+      • If the base-b expansion of n contains a zero digit, then Sb (n) = 0.
+      • Inserting or removing digits equal to 1 in the base-b expansion of n does not change the
+        value of Sb (n).
+      • Reordering the digits in the base-b expansion of n does not change the value of Sb (n).
+Consequently, once a multiset of nonzero digits has been fixed, the only way to obtain infinitely
+many integers with the same first digit product is by inserting arbitrarily many digits 1 in arbitrary
+positions. This motivates the following definition.
+Let ν = (ν2 , ν3 , . . . , νb−1 ) ∈ Nb−2
+                                     0 . We denote by Ab (ν) the family of positive integers whose base-b
+expansions contain exactly νd occurrences of the digit d, for each 2 ≤ d ≤ b − 1, an arbitrary number
+of occurrences of the digit 1, and no occurrence of the digit 0. The digits 2, . . . , b − 1 will be referred
+to as the exceptional digits of the family. We write
+                                                             b−1
+                                                             X
+                                               q = q(ν) :=         νd
+                                                             d=2
+
+for the total number of exceptional digits in every element of Ab (ν).
+Lemma 2.1. Let x ∈ Ab (ν) have L digits in base b. Denote its exceptional digits by d1 , . . . , dq , and
+let ri be the position occupied by di , where ri ∈ {0, 1, . . . , L − 1}, and r1 , . . . , rq are pairwise distinct.
+Then
+                                                       q
+                                            bL − 1 X
+                                        x=         +      (di − 1)bri .
+                                             b−1      i=1
+                           THE MULTIPLICATIVE PERSISTENCE CONJECTURE                                    3
+
+
+Proof. The base-b integer consisting of L digits, all equal to 1, is
+                                                                bL − 1
+                                   1 + b + b2 + · · · + bL−1 =         .
+                                                                 b−1
+Here position 0 is the units position, position 1 is the coefficient of b, and, more generally, position
+r is the coefficient of br . Replacing the digit 1 in position ri by di increases the value of the integer
+by (di − 1)bri . Performing this replacement at every exceptional position therefore gives
+                                                        q
+                                            bL − 1 X
+                                      x=          +     (di − 1)bri ,
+                                             b−1    i=1
+as claimed.                                                                                             □
+
+Lemma 2.1 shows that, once the multiplicities νd are fixed, the exceptional digits themselves are fixed
+as a multiset. Thus, the only quantities that vary among the elements of Ab (ν) are the number L of
+base-b digits and the pairwise distinct positions r1 , . . . , rq . Lemma 2.1 therefore gives a convenient
+representation of the entire family Ab (ν).
+The family A10 (ν) is exactly the family that appears in the study of multiplicative persistence.
+Indeed, suppose in base 10 that
+                                            2
+                                           S10 (x) = s
+and that one representation of s as a product of decimal digits is
+                                                     9
+                                                     Y
+                                                s=          dνd .
+                                                     d=2
+
+Then the intermediate value S10 (x) must have exactly νd occurrences of the digit d, for 2 ≤ d ≤ 9,
+together with an arbitrary number of digits 1. Hence S10 (x) ∈ A10 (ν).
+At the same time, since S10 (x) is itself a product of decimal digits, its prime divisors can only be
+2, 3, 5, and 7. Thus
+                              S10 (x) = 2t 3u 5v 7w ,   t, u, v, w ∈ N0 .
+                              
+In particular, t = v2 S10 (x) . Therefore, proving that v2 (y) is uniformly bounded for y ∈ A10 (ν)
+is precisely what is needed to show that the exponent t cannot grow arbitrarily large when the
+exceptional digits are fixed. This is the content of Conjecture B.
+We now provide in the following lemma the elementary p-adic mechanism behind all our bounds.
+Lemma 2.2. Let p be a prime and let b ≥ 2 satisfy p | b. Set e := vp (b).
+(i) If S, c ∈ Z \ {0} and a ∈ N0 satisfy
+                                           ea + vp (c) > vp (S),
+      then
+                                           vp (S + cba ) = vp (S).
+(ii) Suppose that a, c, B, T are positive integers and
+                                              T + cba < Bba .
+      Then either
+(1)                                        vp (T + cba ) = vp (T ),
+      or
+                                                                    logp b
+(2)                               vp (T + cba ) < logp B +                 vp (T ).
+                                                                      e
+4                                                   P. NYADJO FONGA
+
+
+Proof. For (i), we have
+                                         vp (cba ) = vp (c) + ea > vp (S).
+Since the two summands have distinct p-adic valuations,
+                                  vp (S + cba ) = min{vp (S), vp (cba )} = vp (S).
+
+For (ii), if ea > vp (T ), then
+                                                 ea + vp (c) > vp (T ),
+so part (i) gives (1). Otherwise, ea ≤ vp (T ), and hence
+                                                               vp (T )
+                                                          a≤           .
+                                                                  e
+Therefore,
+                                            a
+                                   pvp (T +cb ) ≤ T + cba < Bba ≤ Bbvp (T )/e .
+Taking logarithms to base p gives (2).                                                                                   □
+
+Lemma 2.2 states that once the position a is large enough that ea exceeds the current p-adic
+valuation, placing a new digit at position a cannot change that valuation. When ea does not exceed
+the current valuation, the new digit may affect it, but part (ii) provides an explicit upper bound for
+the resulting valuation.
+
+
+                            3. Uniform bounds for p-adic valuations
+
+Fix b ≥ 3. In this section, we show that once the number of occurrences of each digit 2, . . . , b − 1 is
+fixed, there is a uniform limit on the power of any prime dividing b that can divide the resulting
+integers. We also provide an explicit formula for this limit.
+Theorem 3.1. Let b ≥ 3, let p | b be prime, and fix ν = (ν2 , . . . , νb−1 ) ∈ Nb−2
+                                                                                0 . Then
+
+                                                      sup vp (x) < ∞.
+                                                    x∈Ab (ν)
+
+Moreover, if we set
+                                                b−1
+                                                X                                                 logp b
+                     B(ν) := 1 + (b − 1)              (d − 1)νd ,       e := vp (b),       λ :=
+                                                d=2
+                                                                                                    e
+and
+                                                                                                               
+          ρp (ν) := max {0} ∪ vp (b − 1)(d − 1) − 1 : 2 ≤ d ≤ b − 1, νd > 0,                               p|d       ,
+then;
+if none of the exceptional digits is divisible by p, then
+                                       vp (x) = 0          for every x ∈ Ab (ν).
+                      Pb−1
+Otherwise, with q =      d=2 νd , every x ∈ Ab (ν) satisfies, when λ > 1,
+                                                $                                      %
+                                                           q     λq − 1
+(3)                                 vp (x) ≤ ρp (ν)λ + logp B(ν)        ,
+                                                                 λ−1
+while, when λ = 1,
+                                                      j                          k
+(4)                                      vp (x) ≤ ρp (ν) + q logp B(ν) .
+                             THE MULTIPLICATIVE PERSISTENCE CONJECTURE                                        5
+
+
+Proof. Fix x ∈ Ab (ν). Suppose first that none of the exceptional digits of x is divisible by p. Every
+digit of x, including its units digit, is either 1 or one of the exceptional digits. Since neither 1 nor
+any exceptional digit is divisible by p, the units digit is not divisible by p. As p | b, it follows that
+p ∤ x, and therefore vp (x) = 0.
+We now assume that at least one prescribed exceptional digit of x is divisible by p. If the units
+digit of x is not divisible by p, then again vp (x) = 0, so there is nothing to prove. We may therefore
+restrict our attention to the case p | x. In this case the units digit must be an exceptional digit t
+satisfying p | t.
+Suppose that x has L digits in base b with its q exceptional digits being d1 , . . . , dq , and that these
+digits occur at the pairwise distinct positions r1 , . . . , rq ∈ {0, 1, . . . , L − 1}, so that di is the digit
+occurring in position ri , with position 0 corresponding to the units digit. We have from Lemma 2.1
+that
+                                                              q
+                                                              X
+                                                        L
+(5)                            (b − 1)x = −1 + b +                   (b − 1)(di − 1)bri .
+                                                               i=1
+Apart from the initial term −1, the right-hand side of (5) contains exactly q + 1 positive terms.
+We now arrange these q + 1 positive terms according to increasing powers of b. Since the positions
+r1 , . . . , rq are pairwise distinct and all belong to {0, . . . , L − 1}, while the additional exponent is L,
+then we may write their exponents as
+                                   0 = a1 < a2 < · · · < aq < aq+1 = L,
+so that
+                                                                     q+1
+                                                                     X
+(6)                                      (b − 1)x = −1 +                   cj baj ,
+                                                                     j=1
+
+with
+                                       q+1
+                                       X                             q
+                                                                     X
+                                             cj = 1 + (b − 1)              (di − 1).
+                                       j=1                           i=1
+Since the digit d occurs exactly νd times among d1 , . . . , dq , we have
+                                         q
+                                         X                    b−1
+                                                              X
+                                               (di − 1) =           (d − 1)νd .
+                                         i=1                  d=2
+Therefore
+                                q+1
+                                X                           b−1
+                                                            X
+(7)                                   cj = 1 + (b − 1)             (d − 1)νd = B(ν).
+                                j=1                         d=2
+For 1 ≤ j ≤ q + 1, define
+                                                  j
+                                                  X
+                                  Tj := −1 +            ci bai ,       rj := vp (Tj ).
+                                                  i=1
+Notice that
+                                 T1 = −1 + c1 = −1 + (b − 1)(t − 1) > 0.
+Because the units digit t is divisible by p, the definition of ρp (ν) gives
+                                                                           
+(8)                                r1 = vp (b − 1)(t − 1) − 1 ≤ ρp (ν).
+
+Since pe | b, we have b ≥ pe , and hence λ ≥ 1. We define a sequence of integers R0 , . . . , Rq recursively
+by                                              j                k
+                       R0 := ρp (ν), Rk+1 := λRk + logp B(ν) , 0 ≤ k < q.
+6                                           P. NYADJO FONGA
+
+
+We shall prove that
+(9)                                  rj ≤ Rj−1 ,          1 ≤ j ≤ q + 1.
+For j = 1, this follows immediately from (8). Now let 2 ≤ j ≤ q + 1, and suppose inductively that
+                                               rj−1 ≤ Rj−2 .
+Since Tj = Tj−1 + cj baj , the effect of the new term cj baj on the valuation of the partial sum is
+determined by the size of eaj relative to rj−1 . We distinguish two cases.
+Case 1: eaj > rj−1 . Since cj is a positive integer,
+                          vp (cj baj ) = vp (cj ) + eaj ≥ eaj > rj−1 = vp (Tj−1 ).
+The two summands Tj−1 and cj baj therefore have distinct p-adic valuations. By Lemma 2.2(i),
+                                            vp (Tj ) = vp (Tj−1 ),
+and hence rj = rj−1 ≤ Rj−2 . Also, the sequence (Rk ) is nondecreasing. Indeed, since λ ≥ 1 and
+B(ν) > 1,
+                                     λRk + logp B(ν) > Rk ,
+so
+                                           Rk+1 ≥ Rk .
+Consequently,
+                                       rj ≤ Rj−2 ≤ Rj−1 .
+Case 2: eaj ≤ rj−1 . In this case,
+                                                  rj−1
+                                                aj ≤   .
+                                                    e
+Since the exponents satisfy ai ≤ aj for 1 ≤ i ≤ j, we have bai ≤ baj . Therefore
+                                                   q+1
+                                                   X
+                                       Tj ≤ baj          ci = B(ν)baj .
+                                                   i=1
+Since aj ≤ rj−1 /e, we obtain
+                                          0 < Tj < B(ν)brj−1 /e .
+Now prj | Tj , so prj ≤ Tj . It follows that
+                                            prj < B(ν)brj−1 /e .
+Taking logarithms to base p gives
+                                                             logp b
+                                      rj < logp B(ν) +              rj−1 .
+                                                               e
+By the definition of λ,
+                                    rj < logp B(ν) + λrj−1 .
+Using the induction hypothesis rj−1 ≤ Rj−2 , we get
+                                        rj < logp B(ν) + λRj−2 .
+Since rj is an integer,                 j                        k
+                                  rj ≤ λRj−2 + logp B(ν) = Rj−1 .
+Thus (9) holds in both cases. By induction,
+                                rj ≤ Rj−1         for every 1 ≤ j ≤ q + 1.
+Taking j = q + 1, and recalling that Tq+1 = (b − 1)x, we obtain
+                                       vp ((b − 1)x) = rq+1 ≤ Rq .
+                          THE MULTIPLICATIVE PERSISTENCE CONJECTURE                                    7
+
+
+Because p | b, we have p ∤ b − 1, and therefore
+                                                       vp (b − 1) = 0.
+Hence
+                                            vp (x) = vp ((b − 1)x) ≤ Rq .
+It remains to obtain a closed expression for Rq . From (3),
+                                        j                              k
+                           Rk+1 = λRk + logp B(ν) ≤ λRk + logp B(ν).
+Iterating this inequality gives
+                                                                                                  
+                            Rq ≤ λq R0 + logp B(ν) 1 + λ + · · · + λq−1
+                                                                           q−1
+                                                                           X
+                                                 q
+                                  = ρp (ν)λ + logp B(ν)                          λj .
+                                                                           j=0
+
+If λ > 1, then
+                                                      q−1
+                                                      X            λq − 1
+                                                            λj =          ,
+                                                      j=0
+                                                                   λ−1
+and therefore
+                                                                                        λq − 1
+                                                                                             
+                                  vp (x) ≤ ρp (ν)λq + logp B(ν)                                ,
+                                                                                        λ−1
+which is (3).
+If λ = 1, then
+                                                           q−1
+                                                           X
+                                                                 λj = q,
+                                                           j=0
+and consequently                                       j                                  k
+                                        vp (x) ≤ ρp (ν) + q logp B(ν) ,
+which is (4).                                                                                          □
+
+We now specialize Theorem 3.1 to the decimal case b = 10 with p = 2. In this setting, we write
+                              9
+                              X                                  9
+                                                                 X
+(10)                     q=         νd , B = 1 + 9                   (d − 1)νd , c = log2 10.
+                              d=2                                d=2
+
+If the units digit is even, then it must be one of 2, 4, 6, or 8. The corresponding initial values
+appearing in the definition of ρp (ν) are
+
+                                                                                              
+                                    d       9(d − 1) − 1           v2 9(d − 1) − 1
+                                    2                8                            3
+                                    4                26                           1
+                                    6                44                           2
+                                    8                62                           1
+and therefore
+                                        
+                                        
+                                        
+                                        
+                                          3,         ν2 > 0,
+                                        
+                                        2,          ν2 = 0 and ν6 > 0,
+(11)                              ρ=
+                                        
+                                        
+                                         1,         ν2 = ν6 = 0 and ν4 + ν8 > 0,
+                                        
+                                            0,       ν2 = ν4 = ν6 = ν8 = 0.
+                                        
+8                                           P. NYADJO FONGA
+
+
+Applying Theorem 3.1 with these quantities gives the following Corollary.
+Corollary 3.2. Fix ν = (ν2 , . . . , ν9 ) ∈ N80 . We have
+                                              sup      v2 (x) < ∞.
+                                           x∈A10 (ν)
+
+More precisely, every x ∈ A10 (ν) satisfies
+                                                           cq − 1
+                                                                           
+(12)                                 v2 (x) ≤ ρcq +               log2 B ,
+                                                           c−1
+where q, B, c, and ρ are given by (10) and (11).
+
+Corollary 3.2 proves that the 2-adic valuation is uniformly bounded when the exceptional digits are
+fixed. However, the bound obtained need not to be the smallest possible one. In the next section,
+we show that the exact maximal valuation can be computed by a finite procedure.
+
+                       4. The optimal bound for the p-adic valuation
+
+Fix an integer b ≥ 3, a prime p | b, and ν ∈ Nb−2 0 , and set e := vp (b). Let D be the prescribed
+multiset of exceptional digits, containing exactly νd copies of d for each 2 ≤ d ≤ b − 1, and put
+                                                          b−1
+                                                          X
+                                                  q :=          νd .
+                                                          d=2
+Theorem 3.1 shows that the set {vp (x) : x ∈ Ab (ν)} is bounded and therefore has a maximum.
+Computing this maximum directly is not immediate because Ab (ν) is infinite: arbitrarily many
+digits equal to 1 may be inserted, so the length of x and the positions of its exceptional digits are
+unbounded. We overcome this difficulty by following the partial sum obtained as the exceptional
+digits are placed successively.
+Let x ∈ Ab (ν) satisfying p | x. Since p | b, divisibility by p is determined by the units digit. Thus,
+the units digit must be an exceptional digit divisible by p. List the exceptional digits of x as
+d1 , . . . , dq , in increasing order of their positions given by:
+                                      0 = r1 < r2 < · · · < rq < L.
+By Lemma 2.1,
+                                                           q
+                                                           X
+                              (b − 1)x = −1 + bL +                (b − 1)(di − 1)bri .
+                                                            i=1
+Since p ∤ b − 1, we have
+                                                                       
+                                          vp (x) = vp (b − 1)x .
+For 1 ≤ m ≤ q, define
+                                                   m
+                                                   X
+                                   Tm := −1 +             (b − 1)(di − 1)bri .
+                                                    i=1
+Thus, Tm is the partial sum obtained after the first m exceptional digits have been placed, and
+                                           (b − 1)x = Tq + bL .
+For 1 ≤ m < q, the next digit dm+1 , placed at position rm+1 > rm , gives
+                                 Tm+1 = Tm + (b − 1)(dm+1 − 1)brm+1 .
+
+The new term satisfies
+                    vp (b − 1)(dm+1 − 1)brm+1 = vp (dm+1 − 1) + erm+1 ≥ erm+1 .
+                                                  
+                           THE MULTIPLICATIVE PERSISTENCE CONJECTURE                                      9
+
+
+If erm+1 > vp (Tm ), Lemma 2.2(i) gives
+                                          vp (Tm+1 ) = vp (Tm ).
+Moreover, all exceptional digits placed afterward, as well as the leading term bL , occur at larger
+positions and therefore cannot change this valuation. Consequently, after the first m digits have
+been placed, the next position needs to be examined only if
+                                                  vp (Tm )
+                                                          
+(13)                                    rm+1 ≤               .
+                                                      e
+This is the observation that makes the search finite.
+We now express the same construction without fixing a particular integer x. A state of the search is
+a triple
+                                              (M, a, T ),
+where M is the multiset of exceptional digits not yet placed, a is the largest occupied position, and
+T is the current partial sum. For the integer considered above, the state after the first m exceptional
+digits have been placed is
+                                     (D \ {d1 , . . . , dm }, rm , Tm ) ,
+where one occurrence of each listed digit is removed.
+Let
+                                            V(M, a, T )
+denote the largest final p-adic valuation obtainable from the state (M, a, T ). If M ̸= ∅, place a
+digit d ∈ M at a position t > a and set
+                                      Td,t := T + (b − 1)(d − 1)bt .
+By (13), only positions satisfying
+                                             vp (T )
+                                                            
+                                        a<t≤
+                                                e
+can change the current valuation. Therefore,
+                                                                                                   !
+                                                                
+(14)    V(M, a, T ) = max {vp (T )} ∪ V M \ {d}, t, Td,t : d ∈ M, a < t ≤ ⌊vp (T )/e⌋                .
+
+Here M \ {d} means that one occurrence of d is removed. The value vp (T ) represents the case in
+which the next digit is placed beyond the relevant range. In that case, neither this digit nor any
+subsequent term changes the valuation.
+When M = ∅, all exceptional digits have been placed and only the leading term bL remains. Hence
+                                                                                   !
+                                                                      vp (T )
+                                                                          
+                                                             L
+(15)              V(∅, a, T ) = max {vp (T )} ∪ vp (T + b ) : a < L ≤                   .
+                                                                         e
+If eL > vp (T ), then bL cannot change the valuation, which accounts for the first value in the
+maximum.
+The recursion is finite and exact. At each nonterminal state, one exceptional digit is removed from
+M, and only finitely many positions satisfy (13). Moreover, every completion of a state either places
+the next digit within this finite range, in which case it appears in the recursive part of (14), or
+places it beyond the range, in which case the final valuation remains vp (T ).
+It remains to identify the possible initial states. If p ∤ x, then vp (x) = 0. If p | x, its units digit is
+some d ∈ D satisfying p | d. Placing d in position 0 gives
+                                         Td := (b − 1)(d − 1) − 1
+                                     
+and the initial state D \ {d}, 0, Td . We have therefore established the following exact formula.
+10                                               P. NYADJO FONGA
+
+
+Theorem 4.1. Let b ≥ 3, let p | b be a prime, and let ν = (ν2 , . . . , νb−1 ) ∈ Nb−2   0 . Let D be the
+multiset containing exactly νd copies of each digit d ∈ {2, . . . , b − 1}, and, for d ∈ D, define
+                                             Td := (b − 1)(d − 1) − 1.
+Then the recursion defining V terminates after finitely many steps, and
+                                                                                       !
+                                                                          
+(16)              max vp (x) = max {0} ∪ V D \ {d}, 0, Td : d ∈ D, p | d               .
+                 x∈Ab (ν)
+
+
+We illustrate the procedure in base 10 with p = 2 and
+                                                   D = {4, 4, 7}.
+Here e = v2 (10) = 1. An even integer in this family must have units digit 4. Placing one copy of 4
+in position 0 gives
+                             T4 = 9(4 − 1) − 1 = 26,        v2 (T4 ) = 1,
+so the initial state is
+                                           ({4, 7}, 0, 26).
+The next position must satisfy
+                                             0 < t ≤ 1,
+so t = 1 is the only possible position. There are, however, two possible digits to place there. They
+give
+                            digit d         26 + 9(d − 1)10         2-adic valuation
+                              4                    296                         3
+                              7                    566                         1
+We therefore place the second digit 4 in position 1, producing the state
+                                          ({7}, 1, 296),    v2 (296) = 3.
+
+For the remaining digit 7, the relevant positions satisfy
+                                                     1 < t ≤ 3,
+so both t = 2 and t = 3 must be examined:
+                                  t        296 + 54 · 10t     2-adic valuation
+                                2               5696                   6
+                                3              54296                   3
+For t = 2, we obtain the terminal state
+                                          (∅, 2, 5696),     v2 (5696) = 6.
+The leading position must now satisfy L > 2, and only the values L = 3, 4, 5, 6 can change the
+current valuation. Checking all of them gives
+                                  L         5696 + 10L       2-adic valuation
+                                      3          6696                  3
+                                      4         15696                  4
+                                      5        105696                  5
+                                      6       1005696                  7
+Thus, the largest value among all terminal choices is 7, attained when L = 6. Since 9 is odd,
+                                               v2 (x) = v2 (9x) = 7.
+                           THE MULTIPLICATIVE PERSISTENCE CONJECTURE                                11
+
+
+The corresponding integer is
+                                               1005696
+                                          x=           = 111744,
+                                                  9
+and indeed
+                                          111744 = 32 · 97 · 27 .
+Applying the same finite procedure to the four exceptional-digit multisets considered in [2, Table 4]
+gives the following exact values. A maximizing integer is recovered by recording the choices made
+along a maximizing branch of the recursion.
+
+                        multiset        max v2 one maximizing integer
+                      {2, 2, 2, 2, 7}     13     172122112 = 21011 · 213
+                       {2, 2, 4, 7}       15     211111411712 = 17 · 378977 · 215
+                        {4, 4, 7}         7      111744 = 32 · 97 · 27
+                        {2, 7, 8}         9      1178112 = 3 · 13 · 59 · 29
+
+Thus, Corollary 3.2 gives a convenient explicit bound valid over the whole family, whereas Theorem 4.1
+gives a finite procedure for computing the optimal bound for each prescribed multiset of exceptional
+digits.
+
+                    5. Consequences for nonzero even terminal digits
+
+We now explain how our valuation bounds could contribute to the treatment of the nonzero even
+terminal digits δ ∈ {2, 4, 6, 8}.
+Throughout this section, S = S10 denotes the decimal digit-product map.
+For a fixed terminal digit δ, let
+                                         Aδ = (Vδ , Eδ )
+denote its full backward graph. More precisely, Aδ is the smallest directed graph constructed as
+follows. We begin with δ ∈ Vδ . Whenever s ∈ Vδ and x is a positive integer satisfying S 2 (x) = s,
+we add the intermediate value y := S(x) to Vδ , together with the directed edge s −→ y. Thus, an
+arrow s → y means that S(y) = s and that y itself occurs as the digit product of another integer.
+The arrows point away from the terminal digit and toward its possible predecessors.
+If Aδ was finite, then the length of its longest path would give a uniform bound on the persistence of
+all such integers. Motivated by this observation, Brier, Clavier, Gutsche, and Naccache constructed
+finite candidate graphs
+                                              Bδ = (Uδ , Fδ )
+for the nonzero even terminal digits [2, Appendix C]. Proving that Bδ = Aδ would show that these
+graphs contain all possible predecessors and would therefore establish the corresponding persistence
+bounds. Here Uδ is the proposed finite set of vertices and Fδ is the proposed set of directed edges
+between them. By construction,
+                                          Uδ ⊆ Vδ ,    Fδ ⊆ Eδ .
+The remaining problem is to prove that no additional vertices are missing. Equivalently, one must
+verify that
+(17)                           s ∈ Uδ ,    S 2 (x) = s   =⇒    S(x) ∈ Uδ .
+If (17) holds for every s ∈ Uδ , then Bδ = Aδ .
+For example, the candidate finite graph for the terminal digit 4 proposed in [2] has vertex set
+                               n                                             o
+                         U4 = 4, 14, 27, 72, 98, 189, 294, 1161216, 223 37 · 7 .
+12                                               P. NYADJO FONGA
+
+
+Its edges are displayed in Figure 1. The loop at 4 records S(4) = 4, while, for example,
+                        S(14) = 4,           S(72) = 14,             and     S(1161216) = 72.
+
+
+                                                                       98
+                                                27
+
+                                                                       189
+                  4           14
+
+                                                                       294
+                                                72
+
+                                                                     1161216                        223 37 · 7
+
+
+                      Figure 1. The candidate backward graph B4 = (U4 , F4 ).
+
+We next describe how the completeness condition (17) is verified. Fix s ∈ Uδ , and suppose that
+                                                       S 2 (x) = s.
+Set
+                                                       y := S(x).
+Then S(y) = s. Hence the product of the decimal digits of y is s. Every possible multiset of non-1
+digits of y is therefore obtained from a factorization
+                                                 9
+                                                 Y
+                                          s=           dnd ,         nd ∈ N0 .
+                                                 d=2
+We denote the set of all such factorizations by
+                                                                            9
+                                         (                                                    )
+                                                                            Y
+                                                                                 nd
+                             F(s) :=         (n2 , . . . , n9 ) ∈ N80 :          d     =s .
+                                                                           d=2
+For each
+                                          n = (n2 , . . . , n9 ) ∈ F(s),
+let D(n) be the multiset containing nd copies of the digit d with 2 ≤ d ≤ 9. The decimal expansion
+of y then consists of the digits in D(n), together with an arbitrary number of digits equal to 1.
+Write
+                                                                                 9
+                                                                                 X
+                                   D(n) = {d1 , . . . , dk },              k=          nd .
+                                                                                 d=2
+Let a0 be the number of digits of y, and let ai be the position of the exceptional digit di . Thus,
+(18)                       0 ≤ ai < a0        (1 ≤ i ≤ k),               ai ̸= aj       (i ̸= j).
+Lemma 2.1 gives
+                                                               k
+                                                               X
+                                     9y = 10a0 − 1 +                 9(di − 1)10ai .
+                                                               i=1
+
+Because y = S(x), every prime divisor of y belongs to {2, 3, 5, 7}. Moreover, an orbit ending at one
+of 2, 4, 6, or 8 cannot pass through a value containing a factor 5: such a value leads either to the
+terminal digit 5 or to 0. Consequently, the relevant intermediate values have the form
+                                        y = 2t 3u 7w ,           t, u, w ∈ N0 .
+                               THE MULTIPLICATIVE PERSISTENCE CONJECTURE                                              13
+
+
+Therefore, the possible predecessors associated with D are exactly the solutions of
+                                                   k
+                                                   X
+(19)                                  10a0 − 1 +         9(di − 1)10ai = 2t 3u+2 7w
+                                                   i=1
+
+satisfying the positional conditions (18). The exponent t is precisely v2 (y).
+Theorem 4.1 computes
+                                            tmax (D) := max v2 (y).
+                                                             y∈A10 (ν)
+
+Hence every solution of (19) satisfies
+                                                   0 ≤ t ≤ tmax (D).
+
+Using the modular method of [2] gives the following finite procedure:
+(1) For each s ∈ Uδ , enumerate the finite set F(s) of digit factorizations of s.
+(2) For each n ∈ F (s), form the corresponding multiset D(n) and the equation (19).
+(3) Apply Theorem 4.1 to compute tmax (D), and consider only 0 ≤ t ≤ tmax (D).
+(4) For each fixed t, apply the modular-lifting algorithm of [2].
+(5) Discard every solution that violates (18). Each surviving solution determines a possible prede-
+    cessor y. Verify that every such y belongs to Uδ .
+If the last verification succeeds for every s ∈ Uδ , then (17) holds and the candidate graph is complete.
+The size of this computation was estimated in [2]:
+
+                       δ      |Uδ |      equation families           largest number of terms
+                       2       33               1117                            30
+                       4        9               1062                            32
+                       6       84               6377                            37
+                       8       51               4774                            45
+The numbers in the third column count the digit factorizations before the finite range of t is taken
+into account. Including all admissible values of t therefore produces a larger, but still finite, collection
+of equations. Their exhaustive analysis is well suited to exact high-performance computational
+methods, and its completion would determine whether the proposed backward graphs are complete.
+The purpose of the present work is to provide the missing theoretical bound and to reduce this
+verification to a finite, terminating procedure. Although carrying out the full computation lies
+beyond the scope of this paper, the formulation developed here is intended to make that next step
+accessible.
+
+                                                    References
+ [1] G. Bonuccelli, L. Colucci and E. de Faria, On the Erdős–Sloane and shifted Sloane persistence problems, J. Integer
+     Seq. 23 (2020), Article 20.10.7, 30 pp.
+ [2] É. Brier, C. Clavier, L. Gutsche and D. Naccache, The multiplicative persistence conjecture is true for odd targets,
+     arXiv:2110.04263 [math.NT], 2021, https://arxiv.org/abs/2110.04263.
+ [3] E. de Faria and C. Tresser, On Sloane’s persistence problem, Exp. Math. 23 (2014), no. 4, 363–382.
+ [4] R. K. Guy, Unsolved Problems in Number Theory, 3rd ed., Problem Books in Mathematics, Springer, New York,
+     2004.
+ [5] T. Lamont-Smith, Multiplicative persistence and absolute multiplicative persistence, J. Integer Seq. 24 (2021),
+     Article 21.6.7, 26 pp.
+ [6] S. Perez and R. Styer, Persistence: a digit problem, Involve 8 (2015), no. 3, 439–446.
+ [7] N. J. A. Sloane, The persistence of a number, J. Recreational Math. 6 (1973), 97–98.
+14                                    P. NYADJO FONGA
+
+
+Department of Mathematics and Statistics, Bowling Green State University, Bowling Green, Ohio
+43403, USA
+Email address: nyadjop@bgsu.edu
+

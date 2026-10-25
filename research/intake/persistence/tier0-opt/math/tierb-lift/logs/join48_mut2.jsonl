@@ -1,0 +1,2 @@
+{"dir": "393216_22222222222222226", "level": "48", "mutant": "2", "rc": [0, 0], "lines": [0, 0], "identical": true, "stats_equal": false, "parents": 24, "children": 1084000, "cpu_ref": 0.136, "cpu_join": 0.064, "speedup": 2.13, "probes": 10572, "cands": 127507, "built": 7399, "K": null}
+{"dir": "393216_222222222222222223", "level": "48", "mutant": "2", "rc": [0, 0], "lines": [15, 0], "identical": false, "stats_equal": false, "parents": 59, "children": 3324768, "cpu_ref": 0.383, "cpu_join": 0.122, "speedup": 3.13, "probes": 27872, "cands": 391134, "built": 17514, "K": null}

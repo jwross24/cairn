@@ -1,0 +1,37 @@
+equations 2364
+rows for open-rate fit (k >= 11, open12 > 0): 646
+ln(open12/npat) = -8.248 + -0.3184 k (resid sd 1.40); slope boot 5-95%: -0.3858..-0.2508
+  k=16 open12/npat: point 1.606e-06, slope-boot 5-95% 1.28e-06..2.04e-06; with equation spread x/ /10.1
+  k=20 open12/npat: point 4.495e-07, slope-boot 5-95% 2.80e-07..7.45e-07; with equation spread x/ /10.1
+  k=24 open12/npat: point 1.258e-07, slope-boot 5-95% 5.98e-08..2.73e-07; with equation spread x/ /10.1
+  k=26 open12/npat: point 6.656e-08, slope-boot 5-95% 2.73e-08..1.65e-07; with equation spread x/ /10.1
+  k=29 open12/npat: point 2.561e-08, slope-boot 5-95% 8.67e-09..7.69e-08; with equation spread x/ /10.1
+children per OPEN parent: measured/analytic-uniform E[C0]: median 0.822, 5-95% 0.661..0.906 (n=646)
+  k=11 bias median 0.866 n=268
+  k=12 bias median 0.829 n=171
+  k=13 bias median 0.779 n=102
+  k=14 bias median 0.733 n=55
+  k=15 bias median 0.692 n=26
+  k=16 bias median 0.634 n=14
+  k=17 bias median 0.584 n=6
+  k=18 bias median 0.542 n=4
+measured join24 ns/child on equations with >5e8 children: ['2.00', '1.51', '1.60', '1.70', '2.42', '2.93', '2.84']  ref ns/child: ['36.5', '35.2', '35.1', '38.1', '38.6', '36.0', '39.5']
+vertex 71663616 kmax 22 patterns 3.130e+15 open parents 5.075e+09 children 3.129e+14 children/parent 6.165e+04 (5.01e+05 s at 1.6 ns)
+vertex 226492416 kmax 26 patterns 4.290e+15 open parents 3.697e+09 children 5.592e+14 children/parent 1.512e+05 (8.95e+05 s at 1.6 ns)
+vertex 1194891264 kmax 20 patterns 5.319e+15 open parents 8.551e+09 children 6.111e+14 children/parent 7.147e+04 (9.78e+05 s at 1.6 ns)
+vertex 169869312 kmax 25 patterns 5.730e+15 open parents 5.756e+09 children 7.254e+14 children/parent 1.260e+05 (1.16e+06 s at 1.6 ns)
+vertex 4182119424 kmax 20 patterns 5.785e+15 open parents 8.296e+09 children 7.311e+14 children/parent 8.812e+04 (1.17e+06 s at 1.6 ns)
+vertex 1792336896 kmax 20 patterns 7.414e+15 open parents 1.156e+10 children 8.961e+14 children/parent 7.750e+04 (1.43e+06 s at 1.6 ns)
+vertex 13884223438848 kmax 25 patterns 1.558e+16 open parents 5.251e+09 children 4.598e+15 children/parent 8.757e+05 (7.36e+06 s at 1.6 ns)
+vertex 2113929216 kmax 28 patterns 2.843e+16 open parents 1.535e+10 children 5.407e+15 children/parent 3.522e+05 (8.65e+06 s at 1.6 ns)
+vertex 1811939328 kmax 29 patterns 3.408e+16 open parents 1.654e+10 children 6.832e+15 children/parent 4.131e+05 (1.09e+07 s at 1.6 ns)
+vertex 11329339392 kmax 25 patterns 4.038e+16 open parents 2.677e+10 children 8.459e+15 children/parent 3.160e+05 (1.35e+07 s at 1.6 ns)
+vertex 4444263936 kmax 22 patterns 4.393e+16 open parents 4.972e+10 children 7.020e+15 children/parent 1.412e+05 (1.12e+07 s at 1.6 ns)
+vertex 3699376128 kmax 27 patterns 4.607e+16 open parents 2.657e+10 children 9.349e+15 children/parent 3.519e+05 (1.50e+07 s at 1.6 ns)
+vertex 1783627776 kmax 26 patterns 1.567e+17 open parents 1.103e+11 children 3.207e+16 children/parent 2.908e+05 (5.13e+07 s at 1.6 ns)
+TOTAL open parents 2.934e+11 children 7.757e+16 ; core-seconds at 1.6 ns/child: 1.241e+08 = 1.436e+03 core-days
+chat reading: parents 1.984e+15 (5e-3 x patterns), children 8.485e+21 (x 2^(k+1)), seconds at 1 ns 8.485e+12
+bootstrap (fit uncertainty only) 5-95%: open parents 2.10e+11 .. 4.18e+11, children 4.92e+16 .. 1.28e+17
+single-equation residual sd of ln(open/npat) = 1.40 (x/ 10.1 at 90%)
+bias trend ln(bias) = 0.627 + -0.0680 k; bias(20)=0.48 bias(26)=0.32 bias(29)=0.26
+children with trending bias: 4.656e+16 (x0.60 of constant-bias)

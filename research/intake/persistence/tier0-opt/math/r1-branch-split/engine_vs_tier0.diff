@@ -1,0 +1,101 @@
+--- tier0/tier0v2.py
++++ engine/tier0v2.py
+@@ -39,6 +39,7 @@
+ DESCENT_MAX = int(float(os.environ.get('DESCENT_MAX', '1e18')))   # eager descent by default; set e.g. 2000 to defer
+ from descent import descend
+ import pydesc
++import branchsplit
+ USE_PYDESC = pydesc.ENABLED
+ import os
+ PREFILTER = os.environ.get('NOPREFILTER') is None
+@@ -413,6 +414,8 @@
+                 co = co2
+             if ok:
+                 surv.append((a, nu, eps, co))
++        if not isinstance(surv, pydesc.RawSurv) and lift_fn is None:
++            surv = branchsplit.filter_list(D, surv, f'py{L}')
+         # positive controls
+         for (y, n, es, a, b, c) in known_here:
+             if y in results['solutions']:
+@@ -468,6 +471,7 @@
+             if verbose: print("   time budget exhausted", flush=True)
+             break
+     results['open'] = survivors
++    results['bs'] = {k: list(v) for k, v in branchsplit.COUNTS.items()}
+     # solutions must be exactly the known children
+     found = {y for y in results['solutions'] if y >= 10}; kn = {k[0] for k in known_here}
+     results['closed'] = (not survivors) and found == kn
+--- tier0/run_c.py
++++ engine/run_c.py
+@@ -4,6 +4,7 @@
+ from collections import Counter
+ from export_cfg import export
+ import pydesc
++import branchsplit
+ from tier0v2 import solve_equation, canon, factor237
+ from lattice import Coset
+ import math
+@@ -17,7 +18,9 @@
+         par=f"{workdir}/parents{L}.txt"
+         with open(par,'w') as f:
+             for (a,nu,eps,co) in survivors: f.write(f"{a} {nu} "+' '.join(map(str,eps))+f" {co.v0[0]} {co.v0[1]}\n")
++        _t=time.perf_counter()
+         out=subprocess.run([f"{HERE}/lvlN", cfgp, par],capture_output=True,text=True)
++        branchsplit.TIMES['lvlN']=branchsplit.TIMES.get('lvlN',0)+time.perf_counter()-_t
+         assert out.returncode==0, out.stderr
+         parts=out.stderr.split(); stats={k:int(v) for k,v in zip(parts[0::2],parts[1::2]) if v.lstrip('-').isdigit()}
+         surv=[]; seen=set()
+@@ -29,6 +32,7 @@
+             nu2,eps2=canon(M,nu,eps); key=(a,nu2,eps2)
+             if key in seen: continue
+             seen.add(key); surv.append((a,nu2,eps2,Coset((b,c),tuple(Un[0]),tuple(Un[1]))))
++        surv=branchsplit.filter_list(M, surv, f'c{L}')
+         return surv, stats.get('children',0), stats
+     return lift
+ 
+@@ -41,7 +45,7 @@
+     cfgp=f"{workdir}/cfg_{tag}.txt"; cfg=export(M, cfgp)
+     L=cfg['L']; U2=cfg['U2']
+     # split nu ranges across cores
+-    procs=[]; outs=[]
++    procs=[]; outs=[]; _t12=time.perf_counter(); branchsplit.TIMES.clear()
+     for i in range(ncores):
+         lo=L*i//ncores; hi=L*(i+1)//ncores
+         outp=f"{workdir}/l12_{tag}_{i}.txt"; outs.append(outp)
+@@ -55,8 +59,27 @@
+         for k,v in zip(parts[0::2], parts[1::2]):
+             try: stats[k]+=int(v)
+             except ValueError: pass
++    branchsplit.TIMES['lvl12']=time.perf_counter()-_t12
++    q=len(M)
++    branchsplit.COUNTS.clear(); branchsplit.REMOVED.clear()
++    if branchsplit.MODE!='off':
++        fouts=[]; nb=na=0
++        for outp in outs:
++            fo=outp+'.bs'; fouts.append(fo)
++            with open(outp) as fi, open(fo,'w') as fw:
++                for line in fi:
++                    f=line.split()
++                    if f[0]=='OPEN':
++                        nb+=1
++                        nu=int(f[2]); eps=tuple(int(x) for x in f[3:3+q]); b,c=int(f[3+q]),int(f[4+q])
++                        cos=Coset((b,c),tuple(U2[0]),tuple(U2[1]))
++                        if not branchsplit.keep(M,int(f[1]),nu,eps,cos):
++                            branchsplit.note('c12',int(f[1]),nu,eps,cos); continue
++                        na+=1
++                    fw.write(line)
++        outs=fouts
++        cc=branchsplit.COUNTS.setdefault('c12',[0,0]); cc[0]+=nb; cc[1]+=na
+     # parse
+-    q=len(M)
+     scan = pydesc.scan12(outs, q) if pydesc.ENABLED else None
+     if scan is not None:
+         surv = pydesc.RawSurv(outs, M, U2, scan[0]); exact = []
+@@ -85,6 +108,7 @@
+     kn=[y for y in known if Counter(ch for ch in str(y) if ch!='1')==Counter(str(d) for d in M)]
+     r=solve_equation(s, M, kn, verbose=verbose, l12=surv, l12_n_in=stats['patterns'], presolved=sols, lift_fn=(make_c_lift(M, workdir) if clift else None))
+     r['c_stats']=dict(stats)
++    r['times']=dict(branchsplit.TIMES)
+     # open patterns: nearest coset point (Babai) and certified digit bound for any other solution
+     r['bounds']=[]; r['exceptional']=[]
+     for (a,nu,eps,co) in r['open']:

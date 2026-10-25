@@ -1,0 +1,45 @@
+2 selected, 2 to run, workers=1 ncores=2
+Traceback (most recent call last):
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/kt-audit-l12/rerun/rerun.py", line 163, in <module>
+    for st, s, M in ex.map(one, todo):
+                    ~~~~~~^^^^^^^^^^^
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/concurrent/futures/_base.py", line 645, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/concurrent/futures/_base.py", line 312, in _result_or_cancel
+    return fut.result(timeout)
+           ~~~~~~~~~~^^^^^^^^^
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/concurrent/futures/_base.py", line 454, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/concurrent/futures/_base.py", line 396, in __get_result
+    raise self._exception
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/kt-audit-l12/rerun/rerun.py", line 115, in one
+    r = run_c.run(s, M, kids[s], ncores=args.ncores)
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/run_c.py", line 89, in run
+    r=solve_equation(s, M, kn, verbose=verbose, l12=surv, l12_n_in=stats['patterns'], presolved=sols, lift_fn=(make_c_lift(M, workdir) if clift else None))
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/tier0v2.py", line 373, in solve_equation
+    surv, n_in, stats = lift_fn(L_prev, L, survivors, fg)
+                        ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/run_c.py", line 21, in lift
+    out=subprocess.run([f"{HERE}/lvlN", cfgp, par],capture_output=True,text=True)
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/subprocess.py", line 555, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/subprocess.py", line 1039, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/subprocess.py", line 1990, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/kt-audit-l12/rerun/bin_prod/lvlN'

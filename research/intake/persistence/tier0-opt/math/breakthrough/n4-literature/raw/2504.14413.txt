@@ -1,0 +1,1310 @@
+                                         On the p-adic Skolem Problem
+                                         Piotr Bacik #
+                                         University of Oxford, UK
+                                         Max Planck Institute for Software Systems, Saarland Informatics Campus, Germany
+                                         Joël Ouaknine #
+                                         Max Planck Institute for Software Systems, Saarland Informatics Campus, Germany
+                                         David Purser #
+                                         University of Liverpool, UK
+                                         James Worrell #
+                                         University of Oxford, UK
+
+                                               Abstract
+
+
+
+
+arXiv:2504.14413v4 [cs.LO] 11 May 2026
+                                         The Skolem Problem asks to determine whether a given linear recurrence sequence (LRS) has a
+                                         zero term. Showing decidability of this problem is equivalent to giving an effective proof of the
+                                         Skolem-Mahler-Lech Theorem, which asserts that a non-degenerate LRS has finitely many zeros.
+                                         The latter result was proven over 90 years ago via an ineffective method showing that such an
+                                         LRS has only finitely many p-adic zeros. In this paper we consider the problem of determining
+                                         whether a given LRS has a p-adic zero, as well as the corresponding function problem of computing
+                                         exact representations of all p-adic zeros. We present algorithms for both problems and report on
+                                         their implementation. The output of the algorithms is unconditionally correct, and termination
+                                         is guaranteed subject to the p-adic Schanuel Conjecture (a standard number-theoretic hypothesis
+                                         concerning the p-adic exponential function). While these algorithms do not solve the Skolem Problem,
+                                         they can be exploited to find natural-number and rational zeros under additional hypotheses. To
+                                         illustrate this, we apply our results to show decidability of the Simultaneous Skolem Problem
+                                         (determine whether two coprime linear recurrences have a common natural-number zero), again
+                                         subject to the p-adic Schanuel Conjecture.
+
+                                         2012 ACM Subject Classification Theory of computation → Logic and verification
+
+                                         Keywords and phrases Skolem Problem, p-adic Schanuel Conjecture, Skolem Conjecture, Exponential
+                                         Local-Global Principle, exponential polynomial
+
+                                         Digital Object Identifier 10.4230/LIPIcs.STACS.2026.51
+
+                                         Supplementary Material InteractiveResource (Online tool): https://skolem.mpi-sws.org/?padic
+                                         Software (Source code): https://doi.org/10.5281/zenodo.15858619 [2]
+
+                                         Funding Piotr Bacik: Supported by EPSRC grant EP/X033813/1.
+                                         Joël Ouaknine: Supported by ERC grant DynAMiCs (101167561) and DFG grant 389792660 as part
+                                         of TRR 248.
+                                         James Worrell: Supported by EPSRC grant EP/X033813/1.
+
+                                         Acknowledgements The authors would like to thank Naoki Fujita for helpful comments on the main
+                                         algorithm, as well as pointing out an oversight in the previous version of the paper. Joël Ouaknine
+                                         is also affiliated with Keble College, Oxford as an emmy.network Fellow.
+
+
+
+
+                                                     © Piotr Bacik, Joël Ouaknine, David Purser, and James Worrell;
+                                                     licensed under Creative Commons License CC-BY 4.0
+                                         43rd International Symposium on Theoretical Aspects of Computer Science (STACS 2026).
+                                         Editors: Meena Mahajan, Florin Manea, Annabelle McIver, and Nguyễn Kim Thắng; Article No. 51; pp. 51:1–51:23
+                                                            Leibniz International Proceedings in Informatics
+                                                            Schloss Dagstuhl – Leibniz-Zentrum für Informatik, Dagstuhl Publishing, Germany
+51:2   On the p-adic Skolem Problem
+
+
+           1      Introduction
+       1.1        The Skolem Problem
+       A linear recurrence sequence (LRS) u = ⟨un ⟩∞
+                                                   n=0 is a sequence of integers satisfying a linear
+       recurrence relation:
+
+               un+d = ad−1 un+d−1 + · · · + a0 un                                                          (1.1)
+
+       where a0 , . . . , ad−1 ∈ Z and a0 ̸= 0. We call d the order of the recurrence. If d is the
+       minimum order of a recurrence satisfied by u then we call d the order of u.
+           The zero set of an LRS u is {n ∈ N : un = 0}. The celebrated Skolem-Mahler-Lech
+       theorem [26, 19, 17] states that the zero set is comprised of a union of a finite set and
+       finitely many arithmetic progressions. The statement may be refined via the concept of
+       non-degeneracy. Define the characteristic polynomial 1 of the recurrence (1.1) to be
+
+               g(X) := X d − ad−1 X d−1 − · · · − a0 .                                                     (1.2)
+
+       Let λ1 , . . . , λs ∈ Q be the distinct roots of g; these are called the characteristic roots of
+       u. We say u is non-degenerate if no ratio λi /λj of distinct characteristic roots is a root
+       of unity. A given LRS can be effectively decomposed as the interleaving of finitely many
+       non-degenerate LRS [14, Theorem 1.6]. The core of the Skolem-Mahler-Lech Theorem is that
+       a non-degenerate LRS that is not identically zero has finitely many zero terms. Unfortunately,
+       the proof of this result remains ineffective: there is no known algorithm to determine whether
+       a non-degenerate LRS has a zero. This is the famous Skolem Problem:
+
+       ▶ Problem 1 (The Skolem Problem). Given an LRS u specified by a non-degenerate linear
+       recurrence and a set of initial values, determine whether there exists n ∈ N such that un = 0.
+
+       One can also formulate a corresponding function version of this problem in which the task is
+       to compute the finite set of zeros of a given non-degenerate LRS. We denote the decision
+       version by SP(N) and the function version by FSP(N). This notation makes explicit that we
+       are looking for natural-number zeros of the LRS.
+           It is folklore that computability of FSP(N) reduces to decidability of SP(N). Assuming
+       the latter, given an LRS u, the finitely many zeros in each non-degenerate subsequence of
+       u can be found by brute-force search and, since the infinite suffix of an LRS remains an
+       LRS, one can use a decision procedure for SP(N) to certify that no zeros remain to be found.
+       However, decidability of the Skolem Problem has remained open for close to a century, with
+       only partial results known from restricting the order (see the exposition of [5] on results of
+       [28, 29, 1]), restricting to reversible sequences of low order [18], or restricting to simple LRS
+       and assuming certain number-theoretic conjectures [6].
+           In the remainder of this section we introduce various relaxations of the Skolem Problem
+       that arise by extending LRS to larger domains and seeking zeros of such extensions.
+
+       1.2        The Bi-Skolem Problem
+       The first variant of the Skolem Problem involves bi-infinite (that is, two-way infinite)
+       sequences. Indeed, given a recurrence (1.1) and initial values u0 , . . . , ud−1 ∈ Q, there is a
+
+
+       1
+           Note that the minimal-order recurrence for an LRS u is unique, and so the characteristic polynomial of
+           u is also unique.
+P. Bacik, J. Ouaknine, D. Purser, and J. Worrell                                                                51:3
+
+
+unique bi-infinite sequence u = ⟨un ⟩∞             n=−∞ that satisfies the recurrence. We call u a linear
+recurrent bi-sequence (LRBS). For example, the Fibonacci sequence extends to an LBRS
+⟨. . . , 5, −3, 2, −1, 1, 0, 1, 1, 2, 3, 5 . . .⟩.
+
+▶ Problem 2 (Bi-Skolem Problem). Given an LRBS u, specified by a non-degenerate linear
+recurrence and a set of initial values, determine whether there exists n ∈ Z such that un = 0.
+
+We use the notation SP(Z) to refer to the above decision problem and we write FSP(Z) for
+the corresponding function version, in which we output the finite set of zeros of a given
+non-degenerate bi-infinite sequence.
+    For function problems P1 , P2 , write P1 ≤ P2 if there is a Turing reduction from P1 to
+P2 . Here for purposes of comparison we view decision problems as function problems with
+outputs in {TRUE, FALSE}. Write P1 ≡ P2 if P1 ≤ P2 and P2 ≤ P1 . Then it is easy to see
+that
+
+    SP(Z) ≤ FSP(Z) ≡ FSP(N) ≡ SP(N) .
+
+Indeed, the reduction FSP(Z) ≤ FSP(N) is realised by splitting a given bi-infinite LRS around
+the index zero into forward and backward sequences (both of which are LRS) and computing
+the respective zeros of each of the two one-way infinite sequences.
+   Unlike for Skolem’s Problem, it is not known whether the function version of the Bi-
+Skolem Problem reduces to its decision version, i.e., it is not known whether FSP(Z) ≤ SP(Z);
+however the reduction holds if one assumes the weak p-adic Schanuel Conjecture [6].
+
+1.3     The Rational Skolem Problem
+Having expanded the index set of an LRS to Z in the Bi-Skolem Problem, we consider
+a further expansion of its domain to Q, which leads us to consider rational zeros of an
+LRS. One way to realise this generalisation is via the exponential-polynomial formulation of
+LRS. It is classical that an LRS u of order d with characteristic roots λ1 , . . . , λs admits the
+following representation:
+           s
+           X
+    un =         qi (n)λni ,                                                                       (1.3)
+           i=1
+
+where the qi are polynomials with algebraic coefficients and degree one less than the multi-
+plicity of λi as a root of the characteristic polynomial of u. We say that ab ∈ Q is a rational
+              Ps            a                a
+zero of u if i=1 qi ( ab )λib = 0, where λ b denotes any b-th root of λa . For example, the
+sequence un = 4n + 2 has a rational zero at 12 that is witnessed by setting 41/2 := −2. The
+Rational Skolem Problem SP(Q) asks to determine whether a given LRS has a rational zero,
+while its function analogue FSP(Q) asks to compute all rational zeros of a non-degenerate
+sequence. We note that the definition of rational zeros is consistent with that of integer zeros,
+that is, the integer rational zeros of u are precisely the zeros of the bi-infinite extension of u.
+    A recent result [7, Proposition 4.7] shows that the denominator of any rational zero can
+be effectively bounded. This allows us to determine the relationship of the Rational Skolem
+Problem with the Bi-Skolem Problem and the usual Skolem Problem. We have
+           (1)           (2)                            (3)
+    SP(Q) ≡ SP(Z) ≤ SP(N) ≡ FSP(N) ≡ FSP(Z) ≡ FSP(Q) ,
+
+where, as noted earlier, (2) is an equivalence assuming the weak p-adic Schanuel Conjecture.
+Indeed, suppose u is an LRS satisfying (1.3). We may compute a bound bmax on the largest
+
+
+
+                                                                                                            S TA C S 2 0 2 6
+51:4   On the p-adic Skolem Problem
+
+
+       denominator of any rational zero of u using [7, Proposition 4.7]. For the reduction (1)
+       we note that deciding SP(Q) is equivalent to deciding SP(Z) on every LRS v defined by
+            Ps              1/b
+       vn := i=1 qi ( nb )(λi )n , where 1 ≤ b ≤ bmax . The reduction (3) is similar.
+
+       1.4      The p-adic Skolem Problem
+       The main contributions of this paper concern the p-adic zeros of an LRS, that is, zeros lying
+       in a p-adic completion Zp of the integers with respect to a given prime p. Roughly speaking,
+       the idea is to extend a given LRS u = ⟨un ⟩∞   n=0 to a map f : Zp → Zp such that f (n) = un for
+       all n ∈ Z. We then determine whether f has any zeros in Zp and, if yes, we compute exact
+       representations and approximate them to arbitrary precision. By an exact representation of
+       a p-adic zero x of f we mean a disc D in Zp such that x is the unique zero of f in D.2 It
+       turns out that f can have p-adic zeros other than the integer or rational zeros of the original
+       LRS u. Hence the ability to determine the existence of p-adic zeros does not directly solve
+       Skolem’s Problem. Nevertheless, as our results and experiments show, working p-adically
+       offers a practical approach to finding integer zeros of an LRS that can moreover find all
+       integer zeros subject to additional assumptions and hypotheses.
+           By way of example, consider the ring Z3 of 3-adic integers, which is the Cauchy completion
+       of Z with respect to the absolute value |·|3 . The latter is defined by writing |a|3 := 3−k , where
+       k is the order of 3 as a divisor of a ∈ Z (the larger k, the smaller the absolute value). It turns
+       out that the LRS un = 4n + 2 extends uniquely to a continuous map f : Z3 → Z3 . It is not
+                                                                   k
+       difficult to see that f ( 12 ) = 0. Indeed, write nk := 1+3
+                                                                 2   for all k ∈ N. Then limk→∞ nk = 12
+       in Z3 . On the other hand, it can be shown by induction that unk ≡ 0 mod 3k+1 for all k and
+       hence limk→∞ unk = 0 in Z3 . By continuity we conclude that f ( 12 ) = 0.
+           In general, given an LRS u satisfying (1.1), pick a prime p ∈ N such that p does not
+       divide the last coefficient a0 of the recurrence (1.1). Then there exists N ≥ 1 and analytic
+       functions f0 , . . . , fN −1 : Zp → Zp such that for each 0 ≤ ℓ ≤ N − 1 we have uN n+ℓ = fℓ (n)
+       for all n ∈ N. Let us call a zero x ∈ Zp of one of the above functions fℓ a p-adic zero of
+       u. The proof of the Skolem-Mahler-Lech Theorem shows that u has finitely many p-adic
+       zeros—but it does not allow one to determine whether a given u has any p-adic zeros and, if
+       so, how to compute them (hence the proof does not tell us anything about computing the
+       integer zeros either). This motivates:
+       ▶ Problem 3 (The p-adic Skolem Problem). Given a non-degenerate LRS u and prime p ∈ N
+       not dividing the last coefficient of the recurrence satisfied by u, determine whether u has a
+       p-adic zero.
+       The function version of this problem asks to compute a finite representation of all p-adic
+       zeros of u (see Definition 7), allowing us both to count the number of p-adic zeros and to
+       approximate them to arbitrary precision (with respect to the p-adic absolute value). As
+       shorthand we denote the decision and function problems respectively by SP(Zp ) and FSP(Zp ).
+            We remark that p-adic zeros have a concrete interpretation requiring little p-adic termin-
+       ology to understand. A p-adic zero can be interpreted as a coherent collection of zeros mod
+       pr for all r, that is, x ∈ Zp is a p-adic zero of u if and only if there is an infinite sequence
+       n1 , n2 , · · · ∈ N such that unr ≡ 0 mod pr and nr ≡ nr+1 ≡ x mod pr . We then have x ∈ N if
+       this sequence can be taken eventually constant.
+
+
+       2
+           This notion may be compared to exact representations of algebraic numbers given by their minimal
+           polynomial and an approximation that distinguishes the number from other roots of the minimal
+           polynomial.
+P. Bacik, J. Ouaknine, D. Purser, and J. Worrell                                                         51:5
+
+
+    It is open whether any of the above-mentioned variants of Skolem’s Problem can be
+reduced to SP(Zp ) or FSP(Zp ). The essential problem is that we do not know how to
+determine in general whether a p-adic zero of a given LRS is rational or not. While our
+decision procedure can approximate such a zero to arbitrary precision, it cannot in general
+certify that it is irrational or even non-integer. Note also that not all rational zeros will be
+p-adic zeros for a given prime p. See Sections 3.6 and 4.1 for further discussion on these
+points.
+
+1.5      Main Results
+Our main theoretical result is the following.
+
+▶ Theorem 4. Assuming the p-adic Schanuel Conjecture, SP(Zp ) is decidable and FSP(Zp )
+is computable.
+
+In the case when all characteristic roots of u lie in Zp (which occurs for infinitely many primes
+p by the Chebotarev density theorem), we have implemented the algorithm for FSP(Zp ) in
+the Skolem tool [2].3
+    The main technical lemma (also subject to the p-adic Schanuel Conjecture) behind
+the proof of Thm. 4 shows that if two exponential polynomials are coprime in the ring of
+exponential polynomials, then every common p-adic zero must be rational (and thus may be
+found by enumerating the rationals). This lemma has consequences for the Simultaneous
+Skolem Problem: determine whether two LRS have a common integer zero.
+
+▶ Theorem 5. Assuming the p-adic Schanuel Conjecture, the Simultaneous Skolem Problem
+is decidable for coprime LRS.
+
+    An in-principle decision procedure for SP(Zp ) may be deduced from the doctoral thesis
+of Mariaule [20] that shows the first-order theory of the structure (Zp , +, ·, 0, 1, Ep ) is
+decidable assuming the p-adic Schanuel Conjecture (where Ep (x) = epx ). The p-adic
+Schanuel Conjecture is used in [20] via a desingularisation construction; given a zero x of
+an exponential polynomial, there exists a system of exponential polynomials of which x is a
+non-singular zero. This approach is not practical to implement however, as the algorithm
+entails enumerating systems of integer multivariate polynomials. In contrast, our algorithm
+only requires enumerating rational numbers to check for repeated zeros of a given LRS. Such
+a search can moreover be done efficiently in practice by searching for rational numbers close to
+the approximations of p-adic zeros that the algorithm identifies. Using p-adic approximation
+to speed up the search for integer zeros of LRS is explored further in [4].
+    We note also that Thm. 5 does not follow directly from the result of [20] since Z is not
+first-order definable in (Zp , +, ·, 0, 1, Ep ), as this would immediately contradict decidability
+of the latter structure.
+
+    2    Preliminaries
+2.1      p-adic numbers
+We briefly recall relevant notions about p-adic numbers. More details may be found in
+algebraic number theory textbooks such as [23, 24].
+
+
+3
+    Skolem may be experimented with online at https://skolem.mpi-sws.org/?padic. For the algorithm
+    described in this paper, toggle the switch labelled “Use p-adic algorithm”.
+
+
+
+
+                                                                                                     S TA C S 2 0 2 6
+51:6   On the p-adic Skolem Problem
+
+
+           Given a prime number p, every non-zero rational number x ∈ Q may be written as
+       x = ab pr for some integers a, b coprime to p, with b non-zero, and r ∈ Z. We define the
+       valuation vp (x) = r, and vp (0) = ∞. From this derivation we see that vp satisfies the
+       ultrametric inequality vp (x + y) ≥ min(vp (x), vp (y)) for all x, y ∈ Q.
+           We define an absolute value on Q by |x|p = p−vp (x) . The ultrametric inequality on vp
+       translates to the strong triangle inequality: |x + y|p ≤ max(|x|p , |y|p ) for all x, y ∈ Q. Define
+       the set of p-adic numbers Qp as the completion of Q with respect to | · |p . If one completes Z
+       with respect to | · |p then one gets the p-adic integers Zp , which may also be defined as the
+       unit disc in Qp :
+
+            Zp = {x ∈ Qp : |x|p ≤ 1} = {x ∈ Qp : vp (x) ≥ 0} .
+
+       The absolute value | · |p on Qp extends uniquely to an absolute value on the algebraic closure
+                                                                    1/n
+       Qp . Specifically, given α ∈ Qp , we define |α|p := |N (α)|p , where n is the degree of α
+       over Qp and N (α) is the norm of α, that is the determinant of the Q-linear transformation
+       µα : Q(α) → Q(α) given by µα (x) = αx. We correspondingly extend the valuation vp (·) to
+       Qp by vp (α) := n1 vp (N (α)). With these definitions the identity |α|p = p−vp (α) holds for all
+       α ∈ Qp . While Qp is not complete with respect to | · |p , taking the Cauchy completion we
+       obtain a field Cp that is both algebraically closed and complete under the extension of | · |p
+       to Cp . Denote the valuation ring of Cp by OCp = {x ∈ Cp : vp (x) ≥ 0}.
+
+       2.2      Computing with p-adic numbers
+       We will require a generalisation of the above discussion to deal with algebraic numbers
+       lying outside of Zp . Given a number field K, let O denote its ring of integers. Previous
+       ideas of factorising to define a valuation vp do not carry over directly as O is no longer a
+       unique factorisation domain, instead one generalises to consider factorisations of (fractional)
+       ideals. Define a fractional ideal of K to be a non-zero finitely generated O-submodule of K;
+       equivalently, I is a fractional ideal if and only if there is c ∈ K such that cI ⊆ O is an ideal
+       of O. Any fractional ideal has a unique factorisation
+                 t
+                 Y
+            I=         pni i
+                 i=1
+
+       where t ∈ N and each p ⊆ O is a prime ideal, ni ∈ Z [23, p. 22]. If I ⊆ O is an ideal then
+       ni ≥ 0. Define the valuation vp by vp (a) = n if the exponent of p in the prime factorisation
+       of the ideal aO is n, and vp (0) = ∞. Any prime ideal p has vp (p) > 0 for a unique integer
+       prime p ∈ N. We say p “divides” or “lies above” p. Say p ramifies in K if vp (p)h= e > 1; call
+                                                                                                    i
+       e = ep/p the ramification index. Define the residue field degree f = fp/p by f = O⧸p : Z⧸pZ .
+       Define the p-adic absolute value by |x|p = p−f vp (x) .4 Denote the completion of K with
+       respect to | · |p by Kp , which may be embedded into Cp . Let the valuation ring be denoted by
+
+            Op = {x ∈ Kp : vp (x) ≥ 0} .
+                                                                                         √
+       A uniformiser
+            √         π ∈ Op is an √element such that vp (π) = 1. For example, let K = Q( 3) and
+       p = ( 3)O ⊆ O. Then π = 3 is a uniformiser in Kp , and the ramification index ep/p = 2.
+       Informally, the uniformiser π takes the analogous role in Op that p does in Zp .
+
+
+       4
+           There are many conventions for the normalization of p-adic absolute values as they are equivalent and
+           induce the same completions.
+P. Bacik, J. Ouaknine, D. Purser, and J. Worrell                                                                          51:7
+
+                                                                        P∞
+    Any element x ∈ Op can be represented as an infinite series x = n=0 an π n , where each
+an ∈ A, for A a choice of representatives for the residue field O⧸p. In the algorithm, using
+this fact, π and A are used to enumerate elements x ∈ Op , and to easily compute their
+                          P∞
+valuations vp , since vp ( n=0 an π n ) is equal to j, where j is the smallest integer for which
+aj ̸= 0. Practically, since only finitely many digits may be stored, for such computations one
+works with approximations — that is, reductions mod π r . This is equivalent to truncating
+                                 P∞         n
+                                                Pr−1       n       r
+the series representation, i.e.     n=0 an π ≡     n=0 an π mod π .
+    Since O⧸p is a finite field, O⧸p ∼
+                                     = Fpf is generated by (the reduction modulo p of) a single
+element a ∈ O; therefore A may be taken to be of the form
+
+     A = {b0 + b1 a + · · · + bf −1 af −1 : bi ∈ {0, 1, . . . , p − 1}} .                                    (2.1)
+
+We will not expand much in this article on the intricacies of computations in Op , for us
+it suffices to, given a number field K and integer prime p, pick a prime ideal p ⊆ O lying
+above p, compute a uniformiser π ∈ Op , and A of the form (2.1). This can be handled using
+Montes’ algorithm, see [22]. In particular one may compute representations of all prime
+ideals lying above p, compute valuations vp , and a p-integral basis of K, from which one can
+find A, ep/p , fp/p ; a uniformiser π can simply be found by enumerating elements until one is
+found with vp (π) = 1.
+
+2.3       p-adic interpolation of linear recurrence sequences
+Consider an LRS u satisfying (1.1) that is given by the formula (1.3) and let K be the field
+generated by the characteristic roots of u. As mentioned in Section 1.1, by [14, Theorem
+1.6] we may effectively decompose u into non-degenerate or identically zero subsequences;
+we may thus assume in the rest of this article that any given LRS u is non-degenerate.
+    Pick a prime ideal p ⊆ O lying above prime p ∈ N that does not divide the last coefficient
+a0 of the recurrence for u (so that vp (λi ) = 0 for all i). Choose N ∈ Z≥1 to be the smallest
+                                                e
+positive integer such that vp (λN   i − 1) > p−1 for all i, where e = ep/p is the ramification
+index. For ℓ ∈ {0, 1, . . . , N − 1} we define the ℓ-th p-adic interpolant of u to be the analytic
+function5
+                s
+                X
+     fℓ (x) =         qi (N x + ℓ)λℓi exp(x log λN
+                                                 i )                                                         (2.2)
+                i=1
+
+with x ∈ Op . Then fℓ (n) = uN n+ℓ for each n ∈ Z≥0 and so (2.2) defines an extension of u to
+Op . In fact, the right-hand side of (2.2) converges for any x ∈ OCp and we call such an x an
+extended p-adic zero if fℓ (x) = 0 for some ℓ ∈ {0, . . . , N − 1}. Note that since fℓ (n) ∈ Z for
+all n ∈ N, by continuity fℓ (x) ∈ Zp for all x ∈ Zp . Thus we have a power series representation
+                ∞
+                X
+     fℓ (x) =         bj x j
+                j=0
+
+for bj ∈ Zp . We will often implicitly restrict the domain to Zp and write that fℓ : Zp → Zp
+is a p-adic interpolant of u.
+    Given characteristic roots λ1 , . . . , λs ∈ K, say they are multiplicatively dependent if there
+is an integer tuple (k1 , . . . , ks ) ∈ Zs such that λk11 . . . λks s = 1. The group of all multiplicative
+
+
+5
+    The p-adic analytic functions exp, log have the usual series definitions, see [24, section 5.4]. In particular,
+                                                                                                         ep/p
+    log maps 1 + π r Op to π r Op , and exp converges on and maps π r Op to 1 + π r Op , when r > p−1         .
+
+
+
+
+                                                                                                                      S TA C S 2 0 2 6
+51:8   On the p-adic Skolem Problem
+
+
+       relations has generators which are effectively bounded by Masser’s theorem [21], this may be
+       used to find all multiplicative relations (see also [11] for a polynomial-time algorithm) and
+       hence find a multiplicatively independent set of algebraic numbers {α1 , . . . , αr } such that
+       each λi may be expressed as a Laurent monomial in α1 , . . . , αr (they can be expressed in
+       this way by non-degeneracy). Therefore fℓ may be expressed as a Laurent polynomial with
+       algebraic coefficients
+
+          fℓ (x) = Pℓ (x, exp(x log α1N ), . . . , exp(x log αrN )) .
+
+       Pℓ may easily be factored as Pℓ = Rℓ Qtℓ,1        1
+                                                            . . . Qtℓ,m
+                                                                     m
+                                                                        , where Rℓ is a Laurent monomial
+                       N                        N
+       in exp(x log α1 ), . . . , exp(x log αr ) and Qℓ,1 , . . . , Qℓ,m are irreducible polynomials in x,
+       exp(x log α1N ), . . . , exp(x log αrN ). Since Rℓ is never zero, finding zeros of fℓ (x) reduces
+       to working on each irreducible factor Qℓ,i individually. Note also that Rℓ corresponds to an
+       order-1 LRS; in effect we are factorising uN n+ℓ as a product of irreducible (algebraic-valued)
+       LRS.
+           We must still explain how p-adic zeros are represented and stored. The following is a key
+       lemma for finding zeros of power series on Kp (a proof may be found in e.g. [12, Thm. 9.2]
+       or [25, Thm. 27.6]).
+
+       ▶ Theorem 6 (Hensel’s Lemma for power series). Let f be a power series with coefficients in
+       Op that converges on Op . If a ∈ Op satisfies
+
+          |f (a)|p < |f ′ (a)|2p
+
+       then there is a unique α ∈ Op such that f (α) = 0 and |α − a|p < |f ′ (α)|p .
+
+       The following definition explains how we treat p-adic zeros of power series:
+
+       ▶ Definition 7. A specification of an extended p-adic zero x ∈ Op of an analytic function
+       f : Op → Op is an integer y ∈ Z, such that |f (y)|p < |f ′ (y)|2p , and |x − y| < |f ′ (y)|p .
+
+       Hensel’s Lemma ensures that x is defined uniquely. The proof of Hensel’s lemma also
+       provides an efficient method for computing approximations of x, via the iteration xn+1 =
+       xn − f (xn )/f ′ (xn ) and x0 = y.
+           The next theorem is a generalisation of Strassman’s Theorem, commonly known via the
+       notion of the Newton Polygon; see [24], page 307.
+
+                                                                   an X n ∈ OCp [[X]] be a nonzero
+                                                                P
+       ▶ Theorem 8. Let p be a prime, and let f (X) =
+       convergent power series. Given r ≥ 0, suppose µ < ν are the extreme indices n for which
+       vp (an ) + nr = min vp (aj ) + jr. Then f has exactly ν − µ zeros (counting multiplicities) on
+                         j≥0
+       the sphere {x ∈ Cp : vp (x) = r}.
+
+       Thm. 8 allows us to determine how many p-adic zeros we are searching for and provides a
+       certificate when we have found them all.
+           Finally, we state the p-adic Schanuel Conjecture (see [8, 20]).
+
+       ▶ Conjecture 9 (The p-adic Schanuel Conjecture). Let n ≥ 1 and t1 , . . . , tn ∈ Cp linearly
+                                                 1
+       independent over Q, such that vp (ti ) ≥ p−1 for all 1 ≤ i ≤ n). Then
+
+          trdegQ Q(t1 , . . . , tn , exp(t1 ), . . . , exp(tn )) ≥ n
+
+       where trdegQ K denotes the transcendence degree of K over Q.
+P. Bacik, J. Ouaknine, D. Purser, and J. Worrell                                                                      51:9
+
+
+    3         Decidability of the p-adic Skolem Problem
+
+3.1           Informal Outline of the Algorithm
+In this section we prove Thm. 4, assuming the p-adic Schanuel Conjecture. We start with
+an informal description of an algorithm that attempts to find the p-adic zeros of an LRS u
+using only brute-force search and Hensel’s Lemma. We note the problem with this approach,
+which motivates the subsequent development involving the p-adic Schanuel Conjecture.
+    Let fℓ : Zp → Zp be an interpolant of a given LRS u. We would like to compute
+specifications of all the zeros of fℓ in Zp . The idea is to search for zeros lying in the residue
+classes of Zp modulo pr for r = 1, 2, 3, . . .. Consider a representative z ∈ Zp of a residue class
+of Zp⧸pr Zp . Since Zp⧸pr Zp ∼   = Z⧸pr Z (e.g. [23, Ch. II, Prop. 2.4]), z may be taken to be an
+                           r
+integer in {0, 1, . . . , p − 1}.
+    If fℓ (z) ̸≡ 0 mod pr then the residue class of z does not contain a zero of fℓ , and we can
+proceed to search other residue classes. If fℓ (z) ≡ 0 mod pr and vp (fℓ (z)) > 2vp (fℓ′ (z)) then
+the residue class contains a unique zero of fℓ by Hensel’s Lemma (Thm. 6). If neither of
+the above cases hold then the residue class may contain any number of zeros of fℓ . Note
+that we can use Thm. 8 to determine the exact number of extended p-adic zeros (lying in
+the extension Cp of Zp ) of fℓ in the residue class of z.6 If this number is zero then we can
+again proceed to consider other residue classes. If the number is positive then we can refine
+our search by looking at residue classes modulo pr+1 contained in the current class. If all the
+zeros of fℓ in Zp are simple then this search will eventually terminate. However, if there is
+a zero in Zp of multiplicity two or more then the search will run forever (as the inequality
+vp (fℓ (z)) > 2vp (fℓ′ (z)) will never hold). The key challenge is thus to identify multiple zeros
+of fℓ in Zp and determine their multiplicity.
+    It so happens that for irreducible factors of fℓ , assuming p-adic Schanuel’s Conjecture,
+the only possible zeros of multiplicity two or more are rational. This is the content of the
+main technical results in this section and it allows us to amend the above algorithm so that
+it always terminates. Specifically, in parallel with the above-described process, we search by
+enumeration for rational zeros of fℓ . We thus find all p-adic zeros either by specifying them
+with Hensel’s Lemma or by enumerating rationals and checking directly. We use Thm. 8 to
+certify that all zeros have thereby been found.
+
+
+3.2           Simultaneous Zeros of Coprime Exponential Polynomials
+In this section we prove our main technical result. We prove that every common p-adic zero
+of two coprime exponential polynomials is rational, under appropriate conditions, assuming
+the p-adic Schanuel Conjecture. It is interesting to compare this result with [10, Proposition
+3.4], which shows that two coprime exponential polynomials over C in which all numerical
+constants are algebraic have no common zeros whatsoever, assuming Schanuel’s Conjecture
+over C.
+    Let K be a number field with ring of integers O, and p ⊆ O be a prime ideal lying
+above prime p ∈ N. Choose λ1 , . . . , λs ∈ O multiplicatively independent such that the
+
+
+                  P∞
+6
+    Let fℓ (x) =        a (x − z)n be a power-series expansion of fℓ around z and calculate the respective
+                    n=0 n
+    smallest and largest indices µ < ν for which vp (an ) + nr = min vp (aj ) + jr by computing each derivative
+                                                                j≥0
+        (j)
+    fℓ (z) mod pk for increasing powers k. By Thm. 8 there are ν − µ extended p-adic zeros in the same
+    residue class as z modulo pr .
+
+
+
+
+                                                                                                                  S TA C S 2 0 2 6
+51:10   On the p-adic Skolem Problem
+
+
+        p-adic logarithms log λ1 , . . . , log λs are defined. Note then that log λ1 , . . . , log λs are linearly
+        independent over Q. Let P ∈ K[x, y1 , . . . , ys , z1 , . . . , zs ] = K[x, y, z] be a polynomial. Define
+        its associated exponential polynomial by
+
+             fP (x) = P (x, log λ1 , . . . , log λs , exp(x log λ1 ), . . . , exp(x log λs )) .
+
+             We first prove a preparatory lemma.
+        ▶ Lemma 10. Let t ∈ OCp , and let
+
+             T = {t, log λ1 , . . . , log λs , exp(t log λ1 ), . . . , exp(t log λs )} .
+
+        Then assuming the p-adic Schanuel Conjecture,
+                                                                                           Ps
+          (i) If trdegQ Q(T ) ≤ 2s − 1, then there exist ai , bi ∈ Z not all zero such that i=1 (ai +
+              bi t) log λi = 0,
+         (ii) If trdegQ Q(T ) ≤ 2s − 2, then t ∈ Q.
+        Proof. Let S := {log λ1 , . . . , log λs , t log λ1 , . . . , t log λs }. Then trdegQ (T ) = trdegQ (S ∪
+        exp(S)). For Part (i), suppose that trdegQ (T ) ≤ 2s − 1. Then trdegQ (S ∪ exp(S)) ≤ 2s − 1
+        and hence, by the p-adic Schanuel Conjecture, there is a non-trivial rational linear relation
+        Ps
+           i=1 (ai + bi t) log λi = 0, and by clearing denominators we can take ai , bi ∈ Z.
+            For Part (ii), suppose that trdegQ (T ) ≤ 2s − 2. Observe that if bi = 0 for all i, then
+        Ps
+           i=1 ai log λi = 0 contradicts the Q-linear independence of log λ1 , . . . , log λs . Therefore,
+        we may assume without loss of generality that b1 ̸= 0. If S ′ = S \ {t log λ1 } were Q-
+        linearly independent, then the p-adic Schanuel Conjecture would imply trdegQ Q(T ) ≥
+        trdegQ Q(S ′ ∪ exp(S ′ )) ≥ 2s − 1, which contradicts the assumption that trdegQ Q(T ) ≤ 2s − 2.
+        Thus, S ′ is not Q-linearly indepndent, meaning there are two independent Q-linear relations
+                Ps                                Ps
+        on S: i=1 (ai + bt t) log λi = 0 and i=1 (ci + di t) log λi = 0, where b1 ̸= 0 and d1 = 0.
+            Write
+                     s
+                     X                        s
+                                              X                        s
+                                                                       X                          s
+                                                                                                  X
+             A :=          ai log λi   B :=         bi log λi   C :=         ci log λi     D :=         di log λi .
+                     i=1                      i=1                      i=1                        i=1
+
+        Then A + tB = C + tD = 0 and so t(AD − BC) = 0. We may suppose that t ̸= 0, and thus
+        that AD − BC = 0. By the p-adic Schanuel conjecture, log λ1 , . . . , log λs are algebraically
+        independent, so the polynomial
+              s
+                     ! s          
+                                       s
+                                               ! s       
+             X           X             X          X
+                ai Xi       dj Xj  −    bi Xi    cj Xj 
+               i=1               j=1                 i=1            j=1
+
+        is identically zero.
+            By unique factorisation in Q[X1 , . . . , Xs ], we either have that (d1 , . . . , ds ) = q(b1 , . . . , bs )
+        or (d1 , . . . , ds ) = q(c1 , . . . , cs ) for some rational number q.
+            The former case is impossible as b1 ̸= 0 and d1 = 0, while in the latter case we have
+                          Ps
+        C + tD =
+        Ps                   i=1 ci (1 + qt) log λi = 0. If 1 + qt = 0 then t ∈ Q as required; otherwise
+           i=1 ci log λi = 0, which contradicts Q-linear independence of log λ1 , . . . , log λs .
+                                                                                                                     ◀
+
+             Our main result is the following.7
+
+
+        7
+            This corrects the statement published in the conference proceedings [3, Lemma 10]. That statement
+            is incorrect
+                     λ2
+                         as evidenced
+                                log λ2
+                                        by the counterexample P = z1 − λ2 and Q = z1 − λ2 + y2 − xy1 , with
+            fP log
+                 log λ1 = fQ log λ1 = 0.
+P. Bacik, J. Ouaknine, D. Purser, and J. Worrell                                                                     51:11
+
+
+▶ Theorem 11. Let P, Q ∈ K[x, y, z] be coprime polynomials with associated exponential
+polynomials fP , fQ , and assume each zi appears with positive degree in either P or Q. Then
+assuming the p-adic Schanuel Conjecture, for any t ∈ OCp ,
+                                                                                   Ps
+   (i) if fP (t) = fQ (t) = 0, then there exist ai , bi ∈ Z not all zero such that   i=1 (ai +
+       bi t) log λi = 0,
+  (ii) if P, Q ∈ K[x, z] then t ∈ Q,
+ (iii) if P ∈ K[x, z] is irreducible and fQ = fP′ , then t ∈ Q.
+
+Proof. Part (i): Suppose t ∈ OCp satisfies fP (t) = fQ (t) = 0. Assume throughout the proof
+that t ̸∈ Q, otherwise all parts of the theorem trivially hold, and define
+
+     τ = (t, log λ1 , . . . , log λs , exp(t log λ1 ), . . . , exp(t log λs )) .
+
+    Now fP (t) = fQ (t) = 0 implies that T = {t, log λ1 , . . . , log λs , exp(t log λ1 ), . . . , exp(t log λs )}
+is comprised of at most 2s − 1 algebraically independent elements. Indeed, pick some element
+σ of {x, y1 , . . . , ys , z1 , . . . , zs } with positive degree in P . Then fP (t) = 0 implies that the
+component of T corresponding to σ is algebraic over the remaining components of T . Now
+fQ (t) = 0 implies that the remaining components of T are algebraically dependent. Indeed,
+if σ does not appear in Q then this is obviously true, otherwise since P and Q are coprime,
+the multivariate resultant Resσ (P, Q) is a non-zero polynomial in the remaining components
+of {x, y1 , . . . , ys , z1 , . . . , zs } \ {σ} with a zero at τ (see, e.g., [13, pp. 163–164]). Thus
+
+     trdegQ Q(t, log λ1 , . . . , log λs , exp(t log λ1 ), . . . , exp(t log λs )) ≤ 2s − 1              (3.1)
+                                                               Ps
+so by Lemma 10 (i), we have ai , bi ∈ Z not all zero such that i=1 (ai + bi t) log λi = 0, which
+proves item 1 of the theorem.
+    Now, for parts (ii),(iii) of the theorem, by Lemma 10 (ii) it suffices to prove that
+                                     Ps
+trdegQ Q(T ) ≤ 2s − 2. Let R := i=1 (ai + bi x)yi . Observe that if bi = 0 for all i, then
+Ps
+   i=1 ai log λi = 0 contradicts Q-linear independence of log λ1 , . . . , log λs , so without loss of
+generality b1 ̸= 0.
+    Part (ii): in the same way as the proof of part 1, fP (t) = fQ (t) = 0 implies that
+
+     trdegQ Q(t, exp(t log λ1 ), . . . , exp(t log λs )) ≤ s − 1
+
+and fR (t) = 0 implies that some log λi is algebraic over {t, log λ1 , . . . , log λs }\{log λi }. These
+two facts together entail that trdegQ Q(T ) ≤ 2s − 2, so we are done by Lemma 10 (ii).
+   Part (iii): in this scenario we have
+                    s
+                    X
+     Q = ∂x P +            yi zi ∂zi P .
+                     i=1
+
+We may assume that each z1 , . . . , zs appears in P with positive degree, as otherwise we
+simply pass to the appropriate subring of K[x, y, z] containing only the zi appearing in P .8
+Thus, every yi appears with positive degree in Q. Also, since b1 ̸= 0, we also have that y1
+appears with positive degree in R. Then we may compute
+                     s
+                                    !                               s
+                                                                                  !
+                    X                                              X
+   Resy1 (Q, R) =      (ai + bi x)yi z1 ∂z1 P − (a1 + b1 x) ∂x P +     yi zi ∂zi P .
+                            i=2                                                     i=2
+
+
+
+8
+    Note that if no zi appears in P then P = fP is irreducible, so fQ (t) = fP′ (t) = 0 is impossible.
+
+
+
+
+                                                                                                                 S TA C S 2 0 2 6
+51:12   On the p-adic Skolem Problem
+
+
+        Suppose, for a contradiction, that P and Resy1 (Q, R) are not coprime. Then P | Resy1 (Q, R),
+        and so, setting all y1 = · · · = ys = 0, we have
+
+             P | (a1 + b1 x)∂x P .
+
+        However, since z1 appears in P with positive degree, P ∤ (ai + bi x), so9 P | ∂x P ; but since
+        degx ∂x P < degx P , this implies ∂x P = 0.
+           Now, for each j ∈ {2, . . . , s}, setting yi = 0 for all i ̸= j implies
+                                                            
+           P | yj (aj + bj x)z1 ∂z1 P − (a1 + b1 x)zj ∂zj P .
+
+        Since P ∤ x and P ∤ yj , we have
+
+             P | (aj z1 ∂z1 P − a1 zj ∂zj P )   ,   P | (bj z1 ∂z1 P − b1 zj ∂zj P )
+
+        which implies
+
+             P | (aj b1 − a1 bj )zj ∂zj P .
+
+        Now if aj b1 − a1 bj = 0 for all j, we would have aj /bj = a1 /b1 for all j, and so (a1 + b1 x)
+        would divide R. Then fR (t) = 0 implies that a1 + b1 t = 0, so t ∈ Q.
+            Otherwise, there exists j such that aj b1 − a1 bj ̸= 0, so P | zj ∂zj P . If P | zj then P = zj
+        contradicting fP (t) = 0. So we must have P | ∂zj P , which is impossible as degzj ∂zj P < P .
+            Thus, we have proven that P and Resy1 (Q, R) are coprime. We are finally ready to
+        conclude the proof; fR (t) = 0 implies that some log λi is algebraic over Q(T \ {log λi }).
+        Next, Resy1 (Q, R) is a non-zero polynomial which is zero at the point τ , showing that some
+        α ∈ T \ {log λi } is algebraic over Q(T \ {log λi , α}). Finally, let σ ∈ {x, y1 , . . . , ys , z1 , . . . , zs }
+        be the variable corresponding to α. If σ does not appear in P with positive degree, then
+        fP (t) = 0 implies some element of T \ {log λi , α} is algebraic over the remaining elements,
+        which proves that trdegQ Q(T ) ≤ 2s − 2 as required.
+            Otherwise, if σ does appear in P with positive degree, then instead the vanishing of
+        the non-zero polynomial Resσ (P, Resy1 (Q, R)) at τ proves that trdegQ Q(T ) ≤ 2s − 2, since
+        Resσ (P, Resy1 (Q, R)) does not depend on σ or y1 .                                                           ◀
+
+        There are several interesting consequences.
+        ▶ Remark 12. Call fP an exponential polynomial with algebraic coefficients if yi does not
+        appear in P with positive degree for 1 ≤ i ≤ s. Then Theorem 11 shows that any irrational
+        zero t of an exponential polynomial with algebraic coefficients has a unique irreducible
+        exponential polynomial with algebraic coefficients that it is a root of (if t is algebraic
+        this is just its normal minimal polynomial). Therefore, just as in the case of algebraic
+        numbers, we may associate to any irrational exponential-algebraic number (ie., a root of an
+        exponential polynomial with algebraic coefficients) a unique minimal exponential polynomial
+        with algebraic coefficients that it is a root of.
+        ▶ Remark 13. The result also holds if we work instead with Schanuel’s Conjecture on elements
+        of C, and logarithms and exponentials over C.
+        ▶ Remark 14. By taking Q to be an integer polynomial in x in the statement of The-
+        orem 11, one sees that irrational algebraic numbers cannot be zeros of irreducible exponential
+        polynomials that are not polynomials in the usual sense.
+
+
+        9
+            Recall that in UFDs such as polynomial rings over a field, irreducible elements are prime.
+P. Bacik, J. Ouaknine, D. Purser, and J. Worrell                                                        51:13
+
+
+   The application of this result to LRS is the following corollary.
+
+▶ Corollary 15. Let K, λ1 , . . . , λs be as in Theorem 11. Let P ∈ K[x, y, z] be non-zero and
+irreducible and such that y1 , . . . ys do not appear with positive degree in P . Assuming the
+p-adic Schanuel Conjecture, if t ∈ OCp is a zero of fP with multiplicity ≥ 2 then t ∈ Q.
+
+Proof. Let Q ∈ K[x, y, z] be such that fQ = fP′ , then as soon as we prove P, Q are coprime,
+the result follows from item 3 of Theorem 11, as t being a zero of fP with multiplicity 2
+implies fP (t) = fP′ (t) = 0.
+   Since P is irreducible, P, Q only fail to be coprime if P | Q. Note that
+                s
+                X
+   Q = ∂x P +         yi zi ∂zi P
+                i=1
+
+Since P has no yi component for each 1 ≤ i ≤ s, we have P |yi =0, i∈I = P is a non-zero
+polynomial dividing Q|yi =0, i∈I for any subset I ⊆ {1, . . . , s}. In particular this implies
+that P | ∂x P , hence ∂x P = 0 since it has strictly lower total degree than P . Now using
+I = {1, . . . , s} \ i for each i, we also have P | yi zi ∂zi P . If P | zi then fP has no zeros,
+contradicting our starting assumption. Therefore we must have P | ∂zi P , implying ∂zi P = 0
+since it has strictly smaller total degree than P . We conclude that P must be constant as all
+of its partial derivatives vanish. This is impossible as we assume fP has a zero, so P and Q
+are coprime.                                                                                   ◀
+
+We may now ask, does there exist a rational zero of an exponential polynomial f with
+irreducible underlying multivariate polynomial, with multiplicity greater than 1? The
+following example shows the answer is yes.
+
+▶ Example 16. Let Q(x, y) = x2 (x−1)+y 2 . Then (x−1) is a prime ideal in Q[x] which divides
+x2 (x − 1) exactly once and does not divide the coefficient of y 2 , so by Eisenstein’s criterion
+Q(x, y) is irreducible in Q[x][y] = Q[x, y]. Now let f (x) = Q(exp(x log 2) − 1, exp(x log 3) − 1).
+It is easy to see that 0 is a multiplicity 2 root of f .
+
+3.3    The Algorithm and the Proof of Termination and Correctness
+With Corollary 15 in hand, we may amend the algorithm outlined earlier for finding the
+p-adic zeros of an LRS. First we define a recursive subroutine given by Algorithm 1, which
+finds specifications of all the zeros in Op of a suitable analytic function f : Op → Op .
+    Next, the idea is as follows. Following the process explained in Section 2.3, we find
+the p-adic interpolants of a given LRS u, that is, analytic functions interpolating each
+subsequence uN n+ℓ for each 0 ≤ ℓ ≤ N − 1, for some integer N . Since any interpolant f
+maps Z to Z, we have by continuity that f maps Zp to Zp . We compute a multiplicatively
+independent set of algebraic numbers {α1 , . . . , αs } that generates the characteristic roots of
+u as explained in Section 2.3, and for each interpolant f compute the associated Laurent
+polynomial P such that f (n) = P (n, α1N n , . . . , αsN n ) for all n ∈ Z.
+    Now, factorise P = RP1r1 . . . Pmrm
+                                        , where P1 , . . . , Pm are irreducible polynomials, and R
+is some Laurent monomial. Next, pass the associated analytic function fPi : Op → Op to
+Algorithm 1 to find specifications of all extended p-adic zeros in Op of each fPi . Unfortunately,
+we cannot guarantee that fPi maps Zp to Zp so we require one more step to identify the
+p-adic zeros (i.e. those in Zp ). Note however, that for an irrational zero x ∈ Op of fPi that
+has multiplicity 1, x will also be a zero of f (ri −1) : Zp → Zp of multiplicity 1. Therefore for
+a suitable approximation y of x, we can identify x as a zero of f (ri −1) using Hensel’s lemma
+
+
+
+                                                                                                      S TA C S 2 0 2 6
+51:14   On the p-adic Skolem Problem
+
+
+        when we certify vp (f (ri −1) (y)) > 2vp (f (ri ) (y)). Since f (ri −1) does map Zp to Zp , if y ∈ Zp
+        then Hensel’s lemma certifies that x ∈ Zp . Otherwise, if x ∈ Op \ Zp , one can certify this
+        by computing its p-adic series expansion. Thus, to find all the zeros of f in Zp , simply run
+        through each zero x ∈ Op of each fPi , and in parallel do the following:
+        1. Compute approximations y of x and check if one may take y ∈ Z and whether the Hensel
+           condition vp (f (ri −1) (y)) > 2vp (f (ri ) (y)) holds.
+        2. Enumerate rationals q ∈ Q matching the p-adic expansion of x and check algebraically
+           whether fPi (q) = 0.
+        Checking for rationals deals with the situation when a rational zero is shared by several fPi .
+        Pseudocode for the entire algorithm is given in Algorithm 2.
+
+             Algorithm 1 The zeroSearch subroutine
+             Input: A non-zero p-adic analytic function f : Op → Op , π a computed algebraic
+                    number that is a uniformiser for p, and A a set of representatives of the
+                    residue field Op /p computed as described in Section 2.3.
+             Output: A set henselZeros of tuples (x, ν) such that there is a unique simple zero z
+                      of f with x ≡ z mod π ν , and a set ratZeros of tuples (a/b, n) where a/b is
+                      a zero of f of multiplicity n
+         1  define zeroSearch (f ):
+         2     henselZeros ← empty set;
+         3     ratZeros ← empty set;
+         4     residues ← {(0, 0)};
+         5     while residues ̸= ∅ do
+          6        foreach (z, r) ∈ residues do
+          7            foreach a ∈ A do
+          8               zr+1 ← z + aπ r ;
+          9               if vp (f (zr+1 )) > 2vp (f ′ (zr+1 )) and ∄(x, ν) ∈ henselZeros with
+                            x ≡ zr+1 mod π ν then
+        10                    append (zr+1 , vp (f ′ (zr+1 )) + 1) to henselZeros;
+        11                else
+        12                    foreach a/b ∈ Q with a, b coprime, |a|, |b| ≤ r do
+        13                         n ← multiplicity of a/b as a zero of f ;
+        14                         if f (a/b) = 0 and (a/b, n) ̸∈ ratZeros and ∄(x, ν) ∈ henselZeros
+                                    with a/b ≡ x mod π ν then
+         15                            Append (a/b, n) to ratZeros;
+        16                n ← the number (counting multiplicity) of extended p-adic zeros
+                            ≡ zr+1 mod π r+1 (computed using Thm. 8);
+        17                m ← the sum of multiplicities of all zeros x in henselZeros or ratZeros
+                           with x ≡ zr+1 mod π r+1 ;
+        18                if n = m then next a;
+        19                else Append (zr+1 , r + 1) to residues;
+        20             Remove (z, r) from residues;
+        21     output: henselZeros,ratZeros
+
+
+             Theorem 4 follows from the next result.
+
+        ▶ Proposition 17. Assuming the p-adic Schanuel Conjecture, Algorithm 2 always terminates.
+        Upon termination it outputs all p-adic zeros of the given LRS u.
+P. Bacik, J. Ouaknine, D. Purser, and J. Worrell                                                      51:15
+
+
+
+   Algorithm 2 An algorithm to compute the p-adic zeros of an LRS u
+    Input: A non-degenerate LRS u, number field K containing u and its characteristic
+            roots, and prime ideal p ⊆ O lying above prime p with vp (λ) = 0 for all
+            characteristic roots λ. We let π be a computed uniformiser for p, and A a set
+            of representatives of the residue field Op /p
+    Output: All the p-adic zeros of u in the form of two lists. First, a list u_henselZeros
+               of tuples (x, ν, fi , ℓ) where x, ν, ℓ ∈ Z, fi : Op → Op is a factor of the ℓth
+               interpolant Fℓ of u and there is a unique simple p-adic zero z ∈ Zp of fi
+              (and so a zero of Fℓ ) such that x ≡ z mod pν . Secondly, a list u_ratZeros
+               of tuples (a/b, ℓ) for a/b ∈ Q with Fℓ (a/b) = 0.
+ 1 Compute a multiplicatively independent set {α1 , . . . , αs } of algebraic numbers that
+     generates every characteristic root as a monomial (replace K by K(α1 , . . . , αs ) if
+     necessary);
+                                                        N            e
+ 2 Compute least integer N > 0 such that vp (λi − 1) > p−1 for all 1 ≤ i ≤ s, where
+
+     e = ep/p is the ramification index;
+ 3 u_henselZeros ← empty list;
+ 4 u_ratZeros ← empty list;
+ 5 foreach 0 ≤ ℓ ≤ N − 1 do
+  6    Compute Laurent polynomial Q such that uN n+ℓ = Q(n, α1N n , . . . , αsN n );
+  7    F (x) ← Q(x, exp(x log α1N ), . . . , exp(x log αsN ));
+  8    Factorise Q = RP1r1 . . . Pm   rm
+                                          for irreducible polynomials P1 , . . . , Pm and Laurent
+                         n          n
+        monomial R(α1 , . . . , αs );
+  9    foreach Pi do
+10         fPi (x) ← Pi (x, exp(x log α1N ), . . . , exp(x log αsN ));
+11         henselZeros,ratZeros ← zeroSearch (fPi );
+12         foreach (a/b, n) ∈ ratZeros do
+13              Append (a/b, ℓ) to u_ratZeros;
+14         foreach (x, ν) ∈ henselZeros do
+15              foreach n ≥ 1 do
+16                 xn ← approximation of the zero z of fPi corresponding to (x, ν) such
+                     that xn ≡ z mod π n ;
+17                 if ∄y ∈ {0, 1, . . . , pn − 1} with y ≡ xn mod π n then
+18                     next (x, ν);
+19                 else
+20                     foreach a/b ∈ Q with |a|, |b| ≤ n do
+ 21                        if F (a/b) = 0 and a/b ≡ x mod π ν then
+ 22                            Append (a/b, ℓ) to u_ratZeros;
+ 23                            next (x, ν);
+ 24                        else
+ 25                            next a/b;
+26                     y ← integer in {0, 1, . . . , pn − 1} such that y ≡ xn mod π n ;
+27                     if vp (F (ri −1) (y)) > 2vp (F (ri ) (y)) then
+ 28                        Append (y, ν, fPi , ℓ) to u_henselZeros next (x, ν);
+29                     else
+ 30                        next n
+31 output: u_henselZeros,u_ratZeros
+
+
+
+
+                                                                                                    S TA C S 2 0 2 6
+51:16   On the p-adic Skolem Problem
+
+
+        Proof. Since each factor Pi defined on line 8 of Algorithm 2 is irreducible, by Cor. 15 the
+        p-adic Schanuel Conjecture implies that every zero in Op of fPi either has multiplicity 1 or
+        is rational. Therefore, zeroSearch(fPi ) will terminate.
+            Indeed, for each pair (z, r) (line 6, Algorithm 1), there are 3 possibilities for extended
+        p-adic zeros x ∈ OCp detected on line 16 using Thm. 8.
+         1. x ∈ OCp \ Op . In this case x will no longer be detected in higher iterations (z ′ , r′ ) for large
+            enough r′ > r as sup{vp (x − y) : y ∈ Op } < ∞. Therefore this case may be discarded for
+            large enough r.
+         2. x ∈ Q and has multiplicity > 1. In this case x = a/b for some a, b ∈ Z coprime and for
+            large enough r this will be found in the search on line 12. Note that the multiplicity of a/b
+                                                     (j)
+            as a root of fPi may be found as each fPi (a/b) is a polynomial in log α1N , . . . , log αsN with
+            algebraic coefficients, so pick the smallest j such that this polynomial is not identically
+                                                                 (j)
+            zero and p-adic Schanuel’s conjecture implies fPi (a/b) ̸= 0. One may approximate
+                (j)
+           fPi (a/b) p-adically to certify it is non-zero.
+        3. x ∈ Op and has multiplicity 1. In this case x will be detected by Hensel’s lemma using
+           the check on line 9. Note that this check is done in the following way. If zr+1 ∈ Q
+           then one can check algebraically (using the p-adic Schanuel Conjecture) whether f (zr+1 )
+           or f ′ (zr+1 ) = 0, and if they are non-zero then one can compute their valuations by
+           computing sufficiently many p-adic digits. Otherwise if zr+1 ̸∈ Q then by Cor. 15 either
+           f (zr+1 ) ̸= 0 or f ′ (zr+1 ) ̸= 0 so by computing sufficiently many p-adic digits of both
+           quantities one can determine whether vp (f (zr+1 )) > 2vp (f ′ (zr+1 )).
+        When zeroSearch(fi ) terminates, lines 14-30 of Algorithm 2 pick out the zeros identified
+        that actually lie in Zp and outputs them. Indeed, for every pair (x, ν) corresponding to zero
+        z ∈ Op (line 14, Algorithm 2), there are three possibilities:
+        1. z ∈ Op \ Zp . In this case, since sup{vp (z − y) : y ∈ Zp } is finite, for large enough n there
+           will not exist y ∈ {0, 1, . . . , pn − 1} with y ≡ xn mod π n , so this case is thrown out (lines
+           17-18).
+        2. z ∈ Zp \ Q. In this case, item 2 of Theorem 11 ensures z is not a zero of fPj for j ̸= i, so
+           z is a zero of F with multiplicity exactly ri . Hence z is confirmed as a zero of F (ri −1)
+           with Hensel’s lemma by the check on line 27, which confirms z ∈ Zp .
+        3. z ∈ Q. In this case z could be a zero of several of the fP1 , . . . , fPm , so z would be a zero
+           of F of multiplicity larger than ri , so the if statement on line 27 never triggers. However,
+           for large enough n, z would be identified by the checks on lines 20-25.                        ◀
+
+        ▶ Remark 18. We stress that the p-adic Schanuel Conjecture is required only for termination,
+        not for correctness. When the algorithm terminates, its output is unconditionally correct.
+
+        3.4       Simultaneous Skolem Problem
+        Theorem 11 has important consequences for the Simultaneous Skolem Problem. Given
+        two non-degenerate LRS u, v, suppose their exponential-polynomial expansions may be
+        written in terms of multiplicatively independent algebraic numbers {α1 , . . . , αs }. Suppose
+        the multivariate Laurent polynomials defined by the respective exponential-polynomial
+        expansions are coprime.10 In this case we say that u and v are coprime. Equivalently, u
+        and v are coprime if there are no algebraic-valued LRS w(1) , w(2) , w(3) such that w(1) has
+                                   (1) (2)        (1) (3)
+        order at least 2 and un = wn wn , vn = wn wn for all n ∈ N. We define the Simultaneous
+
+
+        10
+             Note that two LRS that are coprime in the sense of [15] are coprime in our sense.
+P. Bacik, J. Ouaknine, D. Purser, and J. Worrell                                                          51:17
+
+
+Skolem Problem to be the problem of deciding whether two LRS u and v share an integer
+zero.
+
+▶ Theorem 5. Assuming the p-adic Schanuel Conjecture, the Simultaneous Skolem Problem
+is decidable for coprime LRS.
+
+Proof. Pick a prime p not dividing the characteristic roots of u, v and consider the LRS
+w defined by wn = vn2 + pu2n . For some N ≥ 1, and all 0 ≤ ℓ ≤ N − 1, their interpolants
+                                                    2       2
+with respect to p are related by fw,ℓ = fv,ℓ           + pfu,ℓ . For all x ∈ Zp , fw,ℓ (x) = 0 iff
+fv,ℓ (x) = fu,ℓ (x) = 0. Indeed, if fv,ℓ (x), fu,ℓ (x) are non-zero then vp (fv,ℓ (x)2 ) is even, and
+vp (pfu,ℓ (x)2 ) is odd, so fw,ℓ ̸= 0.
+    By Thm. 4, we may find all p-adic zeros of w. By coprimality of u, v, all the p-adic zeros
+found must be rational according to item 2 of Theorem 11. Therefore they may be found
+by a brute-force guess-and-check search, which in particular identifies all common integer
+zeros.                                                                                              ◀
+
+
+The Simultaneous Skolem Problem arises naturally in the study of the higher-dimensional
+Kannan-Lipton Orbit Problem [16, 9]. Given a matrix A ∈ Qd×d , initial vector x ∈ Qd
+and subspace S ⊂ Qd , the Orbit Problem asks to decide whether there is n ∈ N such that
+An ∈ S. Now, one may write S as the orthogonal space of the span of k linearly independent
+vectors for some k, that is S = ⟨v1 , . . . , vk ⟩⊥ . Then An x ∈ S if and only if viT An x = 0 for
+                                 (i)
+all i = 1, . . . , k. Note that un := viT An x defines k LRS u(1) , . . . , u(k) whose recurrence
+relation is given by the characteristic polynomial of A. Therefore the Orbit Problem on
+A, x, S reduces to the Simultaneous Skolem Problem on u(1) , . . . , u(k) . Thus Thm. 5 may
+be used to decide many cases of the Orbit Problem when k ≥ 2, however, we do not expand
+on this further here.
+
+
+3.5    Algebraic-valued LRS
+Throughout the present article we have taken our LRS to be integer valued. The benefit
+of this is that integer-valued LRS always have interpolants f : Zp → Zp . However, p-adic
+interpolants of algebraic-valued LRS do not in general map Zp to Zp .
+    One can still decide the p-adic Skolem Problem for algebraic-valued LRS by reducing
+to the integer case. First, given an algebraic LRS u, assume all its recurrence coefficients
+and initial values are algebraic integers - if not, then there’s a λ ∈ Q such that u′n = λn un
+is algebraic integer valued; consider u′n instead. Next, define K to be the number field
+containing all the characteristic roots and initial values of u. Consider
+                           Y
+   vn = NK/Q (un ) =                σ(un ) .                                                    (3.2)
+                       σ∈Gal(K/Q)
+
+
+Then v is an integer LRS, and we may solve the p-adic Skolem Problem on v. We now claim
+v has identical p-adic zeros to u.
+     Indeed, x ∈ Zp is a p-adic zero of an (algebraic) LRS wn if and only if there’s a sequence
+n1 , n2 , · · · ∈ N such that |unj |p → 0 and |nj − x|p → 0 as j → ∞. Using (3.2) and the fact
+that |σ(y)|p = |y|p for all y ∈ K, σ ∈ Gal(K/Q), we see that if such a sequence ⟨nj ⟩∞      j=1
+converging to a p-adic zero x of vn exists, then we must have |unj |p → 0 also, so x must be a
+p-adic zero of u also, and vice versa. This proves the claim.
+
+
+
+                                                                                                        S TA C S 2 0 2 6
+51:18   On the p-adic Skolem Problem
+
+
+        3.6    The Skolem Conjecture and the Skolem Problem
+        As noted earlier, it is open whether there is a Turing reduction between FSP(N) and FSP(Zp ).
+        For a given sequence u, if we happen to choose a prime p ∈ N such that all p-adic zeros of u
+        are rational, then they can all be identified, and the output of Algorithm 2 gives a certificate
+        that we have found all the integer zeros. This solves FSP(N) for u. One may ask whether
+        such a prime always exists. It turns out that a generalisation of this idea is equivalent to the
+        Skolem Conjecture, also known as the Exponential Local-Global Principle.
+
+        ▶ Conjecture 19 (The Skolem Conjecture [27]). Let u be a simple rational LRBS taking
+        values in the ring Z[ 1b ] for some integer b. Then u has no integer zero iff, for some integer
+        m ≥ 2 with gcd(b, m) = 1, we have that un ̸≡ 0 mod m for all n ∈ Z.
+
+        ▶ Theorem 20. The Skolem Conjecture is equivalent to the following statement: if u is
+        a simple rational LRBS taking values in the ring Z[ 1b ] for some integer b, then u has no
+        integer zero iff there exists N ∈ Z≥1 and primes p1 , . . . , pt ∈ N coprime to b such that for all
+        0 ≤ ℓ ≤ N − 1, there exists i such that uN n+ℓ has no pi -adic zeros.
+
+        Proof. Suppose u is a simple rational LRBS of order d taking values in the ring Z[ 1b ] for
+        some integer b and that u has no integer zeros (the reverse implication is trivial for both
+        statements).
+            Suppose the Skolem Conjecture holds, then there’s an integer m with gcd(m, b) = 1 and
+        un ̸≡ 0 mod m for all n ∈ Z. Write
+                  t
+                  Y
+             m=         pki i .
+                  i=1
+
+        Since Z/pki i Z has finitely many elements, the vector (un , un+1 , . . . , un+d−1 ) takes only finitely
+        many values mod pki i and thus eventually repeats. Since u has order d, this means that
+        un mod pki is periodic, with some period Ni . Let N = i Ni . Then each subsequence uN n+ℓ
+                                                                  Q
+
+        for 0 ≤ ℓ ≤ N − 1 is constant mod m. In particular, for each 0 ≤ ℓ ≤ N − 1 there’s i such
+        that uN n+ℓ ̸≡ 0 mod pki i . Therefore there are no pi -adic zeros of uN n+ℓ .
+             Now suppose there exist N , p1 , . . . , pt as in the theorem statement. Then for each
+        0 ≤ ℓ ≤ N − 1, the subsequence uN n+ℓ has no pi -adic zeros for some i, which means that
+        vpi (uN n+ℓ ) < kℓ for some integer kℓ . Let k = max kℓ . Then the Skolem Conjecture holds for
+                                                            ℓ
+        u with m = i pki .
+                       Q
+                                                                                                              ◀
+
+
+         4     Concluding Remarks
+        4.1    A Remark on Rational Zeros
+        Note that rational non-integer zeros can be found as p-adic zeros for certain p, but not
+        always. This is because, informally, interpolating an LRS u using some prime ideal p fixes a
+                             1                                                                 1
+        definition of each λib for each b ∈ Z≥1 , whereas the notion of rational zero allows λib to be
+        any b-th root of λi . This phenomenon can be seen in the example below.
+
+        ▶ Example 21. Consider the Tribonacci sequence, defined by un+3 = un+2 + nn+1 + un
+        and u0 = 0, u1 = u2 = 1. In [7] it is shown that the set of rational zeros of the Tribonacci
+        sequence is exactly {0, −1, −4, −17, 1/3, −5/3}.
+           The characteristic polynomial of the Tribonacci sequence splits in Zp for p = 47, 103, 199
+        (among others). Let the ℓ-th interpolant with respect to p be denoted fp,ℓ , that is, the
+P. Bacik, J. Ouaknine, D. Purser, and J. Worrell                                                         51:19
+
+
+analytic function fp,ℓ : Zp → Zp such that fp,ℓ (n) = uN n+ℓ for ℓ ∈ {0, . . . , N − 1}. Here we
+used N = 46, 51, 198 for p = 47, 103, 199 respectively. We used our tool to compute all the
+p-adic zeros of u for each p. Define Zp to be the set of tuples (z, ℓ), where z is the p-adic
+zero of u such that fp,ℓ (z) = 0.
+
+                  Z47 = {(0, 0), (−2/3, 29), (−1, 29), (−2/3, 31), (−1, 42), (−1, 45)}
+          Z103 = {(0, 0), (−1/3, 13), (−1/3, 16), (−1/3, 17), (−2/3, 17), (−2/3, 30),
+                                 (−2/3, 33), (−2/3, 34), (−1, 34), (−1, 47), (−1, 50)},
+     Z199 = {(0, 0), (185 + 195 · 199 + 135 · 1992 + . . . , 26), (−1/3, 49), (−1/3, 62),
+            (−1/3, 65), (−1/3, 66), (52 + 63 · 199 + 3 · 1992 + . . . , 92), (−2/3, 115),
+     (−2/3, 128), (−2/3, 131), (−2/3, 132), (118 + 129 · 199 + 69 · 1992 + . . . , 158),
+                                                      (−1, 181), (−1, 194), (−1, 197)} .
+
+For each tuple (z, ℓ) corresponding to a rational zero of u, recover the rational zero as N z + ℓ.
+    For p = 47 and N = 46, all the rational zeros of u are correctly identified and there are
+    no transcendental 47-adic zeros.
+    For p = 103 and N = 51, each integer zero gives rise to three 103-adic zeros. For example,
+    n = −4 gives rise to (−1/3, 13), (−2/3, 30), (−1, 47). However, the rational zeros of u do
+    not appear as 103-adic zeros of u. There are also no transcendental 103-adic zeros of u.
+    For p = 199 and N = 198, again each integer zero gives rise to three 199-adic zeros.
+    Similarly to p = 103, the rational zeros of u do not appear as 199-adic zeros, but there
+    are several transcendental 199-adic zeros of u.
+It is also possible that a rational p-adic zero z of a subsequence uN n+ℓ of some LRS u does
+not correspond to a “true” zero of the original sequence, i.e, N z + ℓ ∈ Z but uN z+ℓ ̸= 0.
+
+▶ Example 22. Let un = (2 + i)n + (2 − i)n . Using our tool with p = 13, we find that the
+analytic function f6 : Z13 → Z13 satisfying f6 (n) = u12n+6 for all n ∈ N has f6 (−1/2) =
+0. Yet u12·(− 12 )+6 = u0 ̸= 0. This is because exp( 12 log((λi )12 )) = ±λ6i for λ1 , λ2 the
+characteristic roots of u embedded in Z13 . It so happens that in Z13 , up to relabelling λ1 , λ2
+we have exp( 12 log((λ1 )12 )) = λ61 , exp( 12 log((λ2 )12 )) = −λ62 , so f6 (−1/2) = 0. Informally,
+what went wrong is that roots of unity were introduced by the “wrong” square roots of λ12        i
+being chosen. In this situation we say 0 is a twisted rational zero of u. See [7] for a definition
+and exploration of this phenomenon. It should be noted however, that every genuine integer
+zero of u will arise as a p-adic zero for all primes p. Indeed, if um = 0, then for every integer
+N there exists n, ℓ such that N n + ℓ = m, and n will be a zero of any p-adic interpolant
+fℓ of uN n+ℓ since exp(n log(λN )) = exp(log(λN n )) = λN n for all characteristic roots λ, so
+fℓ (n) = uN n+ℓ = um = 0.
+
+ 5      Implementation and Experimental Analysis
+In the case where the characteristic polynomial of u splits in Zp , it is straightforward to
+implement Algorithm 2. We have written an implementation that we have integrated into
+the Skolem Tool, first developed as part of [6]. The source code is available at [2]. The tool
+is written in Python, using the SageMath computer-algebra system.
+    Concretely, the tool first searches for the smallest prime greater than some prescribed
+lower bound (by default 3) such that g splits in Zp , before computing the p-adic zeros of
+u. We have also implemented a shortened “Hensel-only” algorithm that assumes all zeros
+have multiplicity 1 and uses only Hensel’s Lemma to identify zeros. This avoids having to
+
+
+
+                                                                                                       S TA C S 2 0 2 6
+51:20   On the p-adic Skolem Problem
+
+
+        d    Success     Total       %          Count of instances with n zeros for n:           Avg     #Zeros of type
+            (Count)    (Count)                    0        1      2     3      4    5     6+   prime      Z Q\Z            ?
+
+        2      8886      8886    100%     0.6   4322   3730     625   112     59   20     18     9.2     839    108   4817
+        3      8921      8921    100%     2.2   3896   2825    1526   378    154   21    121    34.5     862      3   7962
+        4      9080      9160     99%    11.3   3527   3017    1687   537    183   28    101   144.7     983      2   9281
+        5      4892      9172     53%    25.7   1830   1710     903   316     95   13     25   263.8     568      0   4803
+        6       934      9162     10%    30.0    346    327     188    50     15    2      6   252.5     144      0   1081
+        7        96      9201      1%    33.3     29     34      22     8      3    0      0   240.9      17      0     97
+
+            Table 1 Summary of “Hensel-only” algorithm, for each order from 2 − 7. The          indicates the
+        average running time in seconds for successful cases (failed cases timeout at 60s). Averages are gray
+        where skewed by having many timeouts (counts may also be affected, but should be considered
+        relative to the successful cases).
+
+
+        d        Avg       StdDev         Max          Min       Timeouts          d     Success   Total          %
+
+        2          9             5          37           3         0/4435          2       8886        8886    100%        0.9
+        3         35            29         227           5         0/4460          3       8920        8921    100%        3.0
+        4        151           146        1831           5         0/4578          4       8613        9160     94%       19.1
+        5        817           905       11677           7         0/4582          5          2        9172      0%        5.9
+        6       5962          6395       45413           7         1/4581          6          0        9162      0%
+        7      18164         13268       49957          31      1842/4602          7          0        9201      0%
+        (a) Growth of primes that would be used by the algorithm                   (b) Summary of the full algorithm
+        (mean, standard deviation, max and min of the required prime               with 60s timeout.
+        reported for each LRS order d), with timeout of 60s or if the
+        prime would exceed 50000. The max at order 7 (gray) can be
+        attributed to the timeout, rather than the true value.
+
+            Table 2 Values gray where skewed by the timeout.
+
+
+
+        compute a multiplicatively independent generating set for the characteristic roots, having
+        to consider irreducible factors, and having to carry out a parallel search for rational zeros.
+        LRS with p-adic zeros of multiplicity greater than 1 are relatively rare, so this shortened
+        algorithm terminates for most (but not all) LRS in general.
+            When a zero is found, the tool attempts to determine if it is a (twisted) integer or rational
+        zero by guessing reasonably-sized rational numbers that match the p-adic expansion of the
+        zero found to certain precision. If this procedure is inconclusive the unidentified zero is likely
+        to be transcendental over Q, but we cannot be sure, thus it is reported as unknown. In the
+        interface, the user can request the p-adic expansion up to any given precision.
+            We report the analysis in Figure 1 and Tables 1, 2a, and 2b. Our experiments considered
+        the same randomly generated set of LRS as used in [6], and ran with up to 24 instances in
+        parallel on 32 core (including Hyper-Threading) Intel Xeon E5-2667 v2 machines with 256GB
+        RAM. Instances which are degenerate or identically zero are excluded as unsupported.
+            Table 1 considers the shortened “Hensel-only” algorithm. With a sixty-second timeout
+        the tool completes almost all instances up to order 4, but reduces to around half of instances
+        at order 5. In Table 2a and Figure 1d we considered the prime required on a 50% sample of
+        the dataset, without computing the zeros (in order to speed up the computation). The tool
+        appears to succeed within sixty seconds for LRS which require a prime up to between 400
+        and 500 (see Figure 1d). We observe the growth is approximately d!, and provides evidence
+        of why the tool can easily handle order 4 and most of order 5, but order 6 would be an order
+        of magnitude slower. The high standard deviation show that there is quite some spread.
+P. Bacik, J. Ouaknine, D. Purser, and J. Worrell                                                      51:21
+
+
+
+
+   Figure 1 (a)-(c): Timing comparison between the Hensel-only and full algorithm (in seconds) in
+cases where both succeed within 60s. (d): Distribution of instances requiring a prime in a given
+range, and the instances for which the Hensel-only algorithm terminates in 60s (displayed up to
+900); the system is highly effective up to primes of around 400-500 in this time limit.
+
+
+
+    The performance of Algorithm 2 is depicted in Table 2b. With a 60s timeout the tool is
+effective up to order 4, but a longer timeout would be required at order 5. Counts of zeros,
+zero types and average prime are not shown, as the result is the same as the “Hensel-only”
+algorithm reported on in Table Table 1. Not a single example of an LRS with a multiplicity
+of order greater than 1 was found in this randomly generated set of LRS, showing that these
+instances are relatively rare. Where both succeed for orders 2-4, the full algorithm is between
+1.3 to 1.5 times slower than the Hensel-only approach (see Figure 1a-c).
+
+
+     References
+ 1   Piotr Bacik. Completing the Picture for the Skolem Problem on Order-4 Linear Recurrence
+     Sequences. TheoretiCS, Volume 4, Dec 2025. doi:10.46298/theoretics.25.28.
+ 2   Piotr Bacik, Joris Nieuwveld, and David Purser. Skolem tool, August 2025. Tool available
+     online at https://skolem.mpi-sws.org/?padic. doi:10.5281/zenodo.16794130.
+ 3   Piotr Bacik, Joël Ouaknine, David Purser, and James Worrell. On the p-adic Skolem
+     Problem. In Meena Mahajan, Florin Manea, Annabelle McIver, and Nguyễn Kim Thang,
+     editors, 43rd International Symposium on Theoretical Aspects of Computer Science (STACS
+     2026), volume 364 of Leibniz International Proceedings in Informatics (LIPIcs), pages 8:1–
+     8:20, Dagstuhl, Germany, 2026. Schloss Dagstuhl – Leibniz-Zentrum für Informatik. URL:
+     https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.STACS.2026.8, doi:10.
+     4230/LIPIcs.STACS.2026.8.
+
+
+
+
+                                                                                                    S TA C S 2 0 2 6
+51:22   On the p-adic Skolem Problem
+
+
+         4   Piotr Bacik, Joël Ouaknine, and James Worrell. On the Complexity of the Skolem Problem at
+             Low Orders, July 2025. doi:10.48550/arXiv.2507.11234.
+         5   Yuri Bilu. Skolem Problem for Linear Recurrence Sequences with 4 Dominant Roots (after
+             Mignotte, Shorey, Tijdeman, Vereshchagin and Bacik), March 2025. doi:10.48550/arXiv.
+             2501.16290.
+         6   Yuri Bilu, Florian Luca, Joris Nieuwveld, Joël Ouaknine, David Purser, and James Worrell.
+             Skolem Meets Schanuel. In 47th International Symposium on Mathematical Foundations of
+             Computer Science (MFCS 2022), volume 241 of Leibniz International Proceedings in Informatics
+             (LIPIcs), pages 20:1–20:15, Dagstuhl, Germany, 2022. Schloss Dagstuhl – Leibniz-Zentrum für
+             Informatik. doi:10.4230/LIPIcs.MFCS.2022.20.
+         7   Yuri Bilu, Florian Luca, Joris Nieuwveld, Joël Ouaknine, and James Worrell. Twisted rational
+             zeros of linear recurrence sequences. Journal of the London Mathematical Society, 111(3),
+             March 2025. doi:10.1112/jlms.70126.
+         8   Frank Calegari and Barry Mazur. Nearly ordinary Galois deformations over arbitrary number
+             fields. Journal of the Institute of Mathematics of Jussieu, 8(1):99–177, 2009. doi:10.1017/
+             S1474748008000327.
+         9   Ventsislav Chonev, Joël Ouaknine, and James Worrell. The orbit problem in higher dimensions.
+             In Proceedings of the Forty-Fifth Annual ACM Symposium on Theory of Computing, STOC
+             ’13, page 941–950, New York, NY, USA, 2013. Association for Computing Machinery. doi:
+             10.1145/2488608.2488728.
+        10   Ventsislav Chonev, Joel Ouaknine, and James Worrell. On the zeros of exponential polynomials.
+             J. ACM, 70(4), August 2023. doi:10.1145/3603543.
+        11   Thierry Combot. Computing linear relations between polynomial roots. Mathematics of
+             Computation, March 2025. doi:10.1090/mcom/4081.
+        12   Keith Conrad.       Hensel’s Lemma.       URL: https://kconrad.math.uconn.edu/blurbs/
+             gradnumthy/hensel.pdf.
+        13   David A. Cox, John Little, and Donal O’Shea. Ideals, Varieties, and Algorithms: An
+             Introduction to Computational Algebraic Geometry and Commutative Algebra. Under-
+             graduate Texts in Mathematics. Springer International Publishing, Cham, 2015. doi:
+             10.1007/978-3-319-16721-3.
+        14   Graham Everest, Alf Van der Poorten, Igor Shparlinski, and Thomas Ward. Recurrence
+             sequences. Number v. 104 in Mathematical surveys and monographs. American Mathematical
+             Society, Providence, RI, 2003.
+        15   Graham R. Everest and Alf J. van der Poorten. Factorisation in the ring of exponential
+             polynomials. Proceedings of the American Mathematical Society, 125(5):1293–1298, July 2002.
+             doi:10.1090/S0002-9939-97-03919-1.
+        16   Ravindran Kannan and Richard J. Lipton. Polynomial-time algorithm for the orbit problem.
+             J. ACM, 33(4):808–821, August 1986. doi:10.1145/6490.6496.
+        17   Christer Lech. A note on recurring series. Arkiv för Matematik, 2(5):417–421, 8 1953.
+             doi:10.1007/BF02590997.
+        18   Richard Lipton, Florian Luca, Joris Nieuwveld, Joël Ouaknine, David Purser, and James
+             Worrell. On the Skolem Problem and the Skolem Conjecture. In Proceedings of the 37th
+             Annual ACM/IEEE Symposium on Logic in Computer Science, pages 1–9, Haifa Israel, 2022.
+             ACM. doi:10.1145/3531130.3533328.
+        19   Kurt Mahler. Eine arithmetische Eigenschaft der Taylor-Koeffizienten rationaler Funktionen.
+             Proc. Akad. Wet. Amsterdam, 38:50–60, 1935.
+        20   Nathanaël Mariaule. On the decidability of the p-adic exponential ring. PhD thesis, Univer-
+             sity of Manchester, 2013. URL: https://research.manchester.ac.uk/en/studentTheses/
+             on-the-decidability-of-the-p-adic-exponential-ring.
+        21   David W. Masser. Linear relations on algebraic groups, page 248–262. Cambridge University
+             Press, 1988.
+P. Bacik, J. Ouaknine, D. Purser, and J. Worrell                                                         51:23
+
+
+22   Enric Nart. Okutsu-Montes representations of prime ideals of one-dimensional integral closures.
+     Publicacions Matemàtiques, 55(2):261–294, January 2011.
+23   Jürgen Neukirch. Algebraic Number Theory, volume 322 of Grundlehren der mathem-
+     atischen Wissenschaften. Springer Berlin Heidelberg, Berlin, Heidelberg, 1999. doi:
+     10.1007/978-3-662-03983-0.
+24   Alain Robert. A course in p-adic analysis. Number 198 in Graduate texts in mathematics.
+     Springer, New York, NY, 2000. doi:10.1007/978-1-4757-3254-2.
+25   W. H. Schikhof. CALCULUS, page 56–144. Cambridge Studies in Advanced Mathematics.
+     Cambridge University Press, 1985.
+26   Thoralf Skolem. Ein Verfahren zur Behandlung gewisser exponentialer Gleichungen und
+     diophantischer Gleichungen. 8. Skand. Mat.-Kongr., 163-188 (1935)., 1935.
+27   Thoralf Skolem. Anwendung exponentieller Kongruenzen zum Beweis der Unlösbarkeit gewisser
+     diophantischer Gleichungen. Avhdl. Norske Vid. Akad. Oslo I, 12:1–16, 1937.
+28   Robert Tijdeman, Maurice Mignotte, and Tarlok N. Shorey. The distance between terms of
+     an algebraic recurrence sequence. Journal für die reine und angewandte Mathematik (Crelles
+     Journal), 1984(349):63–76, May 1984. doi:10.1515/crll.1984.349.63.
+29   Nikolay K. Vereshchagin. Occurrence of zero in a linear recursive sequence. Mathematical Notes
+     of the Academy of Sciences of the USSR, 38(2):609–615, 1985. doi:10.1007/BF01156238.
+
+
+
+
+                                                                                                       S TA C S 2 0 2 6
+

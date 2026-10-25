@@ -1,0 +1,16 @@
+cairn entries 8807 tier0 copy equal: True
+cairn entries failing exact recheck (digits, zero-free): 0
+chat found entries failing exact recheck: 0
+cairn max digits 140 count with >140 digits 0
+cairn entries with >=80 digits: 91  chat found: 91
+common range >=80 digits: only in cairn [] only in chat []
+digit counts agree on common entries: True
+found digit range 80 140
+ctrl80 stage survivors 9902 exact zero-free 8727 cairn with <=80 digits 8723
+ctrl80 digit max 81
+range <10^80: only in cairn [] only in ctrl [(9, 14, 84), (21, 142, 8), (77, 121, 0), (95, 69, 22)]
+union (ctrl80 + found) vs cairn full list: only cairn 0 only chat 0 equal: True
+planted drop (21, 37, 69) -> comparator flags: (True, [(21, 37, 69)], [])
+planted drop from cairn (26, 56, 18) -> comparator flags: (True, [], [(26, 56, 18)])
+planted extra entry -> comparator flags: (True, [], [(3, 4, 5)])
+unplanted control flags: (False, [], [])

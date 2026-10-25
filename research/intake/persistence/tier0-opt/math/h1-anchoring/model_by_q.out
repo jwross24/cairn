@@ -1,0 +1,13 @@
+L=12 q=2 in=215496 obs=488 pred=449 obs/pred=1.087
+L=12 q=3 in=7387824 obs=12688 pred=1.539e+04 obs/pred=0.824
+L=12 q=4 in=102601836 obs=149589 pred=2.138e+05 obs/pred=0.700
+L=12 q=5 in=605843568 obs=749639 pred=1.262e+06 obs/pred=0.594
+L=12 q=6 in=2420152824 obs=1200309 pred=5.042e+06 obs/pred=0.238
+L=12 q=7 in=15664435488 obs=1517126 pred=3.263e+07 obs/pred=0.046
+L=12 q=8 in=77982351408 obs=11701771 pred=1.625e+08 obs/pred=0.072
+L=12 q=9 in=215749145040 obs=45814881 pred=4.495e+08 obs/pred=0.102
+L=12 q=10+ in=1027562224272 obs=304300741 pred=2.141e+09 obs/pred=0.142
+L=24 q=7 in=50246564 obs=2155 pred=193.9 obs/pred=11.117
+L=24 q=8 in=604935596 obs=4827 pred=2334 obs/pred=2.068
+L=24 q=9 in=3810643468 obs=6395 pred=1.47e+04 obs/pred=0.435
+L=24 q=10+ in=75107799350 obs=26647 pred=2.898e+05 obs/pred=0.092

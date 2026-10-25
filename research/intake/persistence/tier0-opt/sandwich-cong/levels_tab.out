@@ -1,0 +1,5 @@
+96               index digits  57  c2= 9 |A2|=1  t5=5 |A5|=1
+96+192           index digits  92  c2= 9 |A2|=1  t5=5 |A5|=1
+96+192+384       index digits 104  c2=13 |A2|=1  t5=5 |A5|=1
+96+480           index digits 134  c2=10 |A2|=1  t5=5 |A5|=1
+96+192+384+480   index digits 178  c2=13 |A2|=1  t5=5 |A5|=1

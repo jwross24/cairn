@@ -1,0 +1,5 @@
+opt            n=4.906e+07 ns/pat med= 11.45 min= 10.91 max= 12.42 load1m(med)=10.1
+L4             n=4.906e+07 ns/pat med=  5.56 min=  4.59 max=  6.34 load1m(med)=10.1
+L5             n=4.906e+07 ns/pat med=  5.63 min=  4.90 max=  6.07 load1m(med)=10.1
+ratio opt/L4: med=2.165 min=1.806 max=2.464
+ratio opt/L5: med=2.108 min=1.796 max=2.416

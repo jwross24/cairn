@@ -1,0 +1,5 @@
+opt            n=4.906e+07 ns/pat med= 10.98 q25= 10.42 min= 10.11 max= 11.85 load1m(med)=16.2
+L7             n=4.906e+07 ns/pat med=  2.70 q25=  2.65 min=  2.40 max=  3.71 load1m(med)=16.2
+L8             n=4.906e+07 ns/pat med=  2.61 q25=  2.54 min=  2.48 max=  3.06 load1m(med)=16.2
+ratio opt/L7: med=3.956 min=3.186 max=4.457  of-minima=4.216
+ratio opt/L8: med=4.049 min=3.595 max=4.780  of-minima=4.077

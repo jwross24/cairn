@@ -1,0 +1,270 @@
+[
+ {
+  "name": "m_a0_zero_check_deleted",
+  "target": "lvl12",
+  "find": "    for(int i=0;i<K;i++){ int d=dg[i]; if(d==0){open=0;break;} if(d==1) continue; have[d]++; if(have[d]>cntmg[d]){open=0;break;}",
+  "replace": "    for(int i=0;i<K;i++){ int d=dg[i]; if(d==1) continue; have[d]++; if(have[d]>cntmg[d]){open=0;break;}",
+  "expect": "equivalent",
+  "source": "MUTATION-opt.md",
+  "note": "cntmg[0]==0, so have[0]++ > 0 kills the same line (MUTATION-opt.md)"
+ },
+ {
+  "name": "m_a1_zero_skipped_open",
+  "target": "lvl12",
+  "find": "    for(int i=0;i<K;i++){ int d=dg[i]; if(d==0){open=0;break;} if(d==1) continue; have[d]++; if(have[d]>cntmg[d]){open=0;break;}",
+  "replace": "    for(int i=0;i<K;i++){ int d=dg[i]; if(d==0) continue; if(d==1) continue; have[d]++; if(have[d]>cntmg[d]){open=0;break;}",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m_a2_zero_skipped_exact",
+  "target": "lvl12",
+  "find": "      for(int i=0;i<nY;i++){ int d=dg[i]; if(d==0){ok=0;break;} if(d==1) continue; have[d]++; if(have[d]>cntm[d]){ok=0;break;}",
+  "replace": "      for(int i=0;i<nY;i++){ int d=dg[i]; if(d==0) continue; if(d==1) continue; have[d]++; if(have[d]>cntm[d]){ok=0;break;}",
+  "expect": "equivalent-argued",
+  "source": "MUTATION-opt.md",
+  "note": "argued redundant in MUTATION-opt.md: exact needs Y<10^3 and Y agrees with the pattern number mod >10^9"
+ },
+ {
+  "name": "m_b1_crt_v1_uses_rep0",
+  "target": "lvl12",
+  "find": "    for(int c=0;c<nc;c++){ int* rp=&crep[c][((acc>>(16*c))&0xFFFF)*3]; v0+=ccrt[c]*rp[0]; v1+=ccrt[c]*rp[1]; v2+=ccrt[c]*rp[2]; }",
+  "replace": "    for(int c=0;c<nc;c++){ int* rp=&crep[c][((acc>>(16*c))&0xFFFF)*3]; v0+=ccrt[c]*rp[0]; v1+=ccrt[c]*rp[0]; v2+=ccrt[c]*rp[2]; }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m_b2_crt_coef_off",
+  "target": "lvl12",
+  "find": "    for(int c=0;c<nc;c++){ int* rp=&crep[c][((acc>>(16*c))&0xFFFF)*3]; v0+=ccrt[c]*rp[0]; v1+=ccrt[c]*rp[1]; v2+=ccrt[c]*rp[2]; }",
+  "replace": "    for(int c=0;c<nc;c++){ int* rp=&crep[c][((acc>>(16*c))&0xFFFF)*3]; v0+=(c==nc-1?ccrt[c]+1:ccrt[c])*rp[0]; v1+=ccrt[c]*rp[1]; v2+=ccrt[c]*rp[2]; }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m_c1_prefilter_rejects_rep0",
+  "target": "lvl12",
+  "find": "  for(int c=0;c<nc;c++){ OKT[c]=malloc(csize[c]); for(ll k=0;k<csize[c];k++) OKT[c][k]=crep[c][k*3]>=0; }",
+  "replace": "  for(int c=0;c<nc;c++){ OKT[c]=malloc(csize[c]); for(ll k=0;k<csize[c];k++) OKT[c][k]=crep[c][k*3]>0; }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m_c2_prefilter_accepts_class",
+  "target": "lvl12",
+  "find": "  for(int c=0;c<nc;c++){ OKT[c]=malloc(csize[c]); for(ll k=0;k<csize[c];k++) OKT[c][k]=crep[c][k*3]>=0; }",
+  "replace": "  for(int c=0;c<nc;c++){ OKT[c]=malloc(csize[c]); for(ll k=0;k<csize[c];k++) OKT[c][k]=crep[c][k*3]>=0||k==7; }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m_d1_ymod_skips_last_prime",
+  "target": "lvl12",
+  "find": "  for(int i=0;i<npc;i++){ ll y=R[i][nu]+ya[i]; if(y>=P[i]) y-=P[i]; z|=(y==0); acc+=ENT[i][y]; }",
+  "replace": "  for(int i=0;i<npc;i++){ ll y=R[i][nu]+ya[i]; if(y>=P[i]) y-=P[i]; z|=(y==0&&i<npc-1); acc+=ENT[i][y]; }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m_d2_ymod_checks_one",
+  "target": "lvl12",
+  "find": "  for(int i=0;i<npc;i++){ ll y=R[i][nu]+ya[i]; if(y>=P[i]) y-=P[i]; z|=(y==0); acc+=ENT[i][y]; }",
+  "replace": "  for(int i=0;i<npc;i++){ ll y=R[i][nu]+ya[i]; if(y>=P[i]) y-=P[i]; z|=(y==1); acc+=ENT[i][y]; }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m_e1_nu_mod_off",
+  "target": "lvl12",
+  "find": "  if(Y>=10 && nY%L==nu%L){",
+  "replace": "  if(Y>=10 && nY%L==(nu+1)%L){",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m_e2_split_U2_sign",
+  "target": "lvl12",
+  "find": "    for(ll a0=r; a0<=A; a0+=12){ ll k=(a0-v0)/12; ll b=v1+k*U[1], c=v2+k*U[2]; cnt_split++; tail_test((int)a0,nu,b,c); }",
+  "replace": "    for(ll a0=r; a0<=A; a0+=12){ ll k=(a0-v0)/12; ll b=v1+k*U[1], c=v2-k*U[2]; cnt_split++; tail_test((int)a0,nu,b,c); }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m_e3_exact_multiset_unchecked",
+  "target": "lvl12",
+  "find": "    if(ok){ for(int d=2;d<=9;d++) if(have[d]!=cntm[d]) ok=0; }",
+  "replace": "    if(ok){ for(int d=2;d<=9;d++) if(have[d]>cntm[d]) ok=0; }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m_e4_open_position_check_off",
+  "target": "lvl12",
+  "find": "      if(pattern_has[d][i]<1){open=0;break;} }",
+  "replace": "      if(pattern_has[d][i]<0){open=0;break;} }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m_e5_digit_contrib_gd",
+  "target": "lvl12",
+  "find": "    for(int g=0;g<ng;g++) for(int r=0;r<L;r++) D1[g][r][i]=(((ll)(gd[g]-1)*POW10[i][r])%P[i]+P[i])%P[i]; }",
+  "replace": "    for(int g=0;g<ng;g++) for(int r=0;r<L;r++) D1[g][r][i]=(((ll)(gd[g])*POW10[i][r])%P[i]+P[i])%P[i]; }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m_e6_open_K_cap",
+  "target": "lvl12",
+  "find": "  int K=KT[a0]; if(K>18) K=18;",
+  "replace": "  int K=KT[a0]; if(K>18) K=18; if(K>2) K=2;",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m3_N10_tail_K_cap2",
+  "target": "lvlN",
+  "find": "  int K=KT[a_cur]; if(K>18) K=18;",
+  "replace": "  int K=KT[a_cur]; if(K>18) K=18; if(K>2) K=2;",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m3_N1_tail_zero_skipped",
+  "target": "lvlN",
+  "find": "    for(int i=0;i<K;i++){ int d=dg[i]; if(d==0){open=0;break;} if(d==1) continue; have[d]++; if(have[d]>cntm[d]){open=0;break;} if(++used[d][i%Lnew]>pattern_has[d][i%Lnew]){open=0;break;} } }",
+  "replace": "    for(int i=0;i<K;i++){ int d=dg[i]; if(d==0) continue; if(d==1) continue; have[d]++; if(have[d]>cntm[d]){open=0;break;} if(++used[d][i%Lnew]>pattern_has[d][i%Lnew]){open=0;break;} } }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m3_N1b_tail_zero_check_deleted",
+  "target": "lvlN",
+  "find": "    for(int i=0;i<K;i++){ int d=dg[i]; if(d==0){open=0;break;} if(d==1) continue; have[d]++; if(have[d]>cntm[d]){open=0;break;} if(++used[d][i%Lnew]>pattern_has[d][i%Lnew]){open=0;break;} } }",
+  "replace": "    for(int i=0;i<K;i++){ int d=dg[i]; if(d==1) continue; have[d]++; if(have[d]>cntm[d]){open=0;break;} if(++used[d][i%Lnew]>pattern_has[d][i%Lnew]){open=0;break;} } }",
+  "expect": "equivalent",
+  "source": "MUTATION-opt.md",
+  "note": "cntm[0]==0 (MUTATION-opt.md)"
+ },
+ {
+  "name": "m3_N2_linear_crt_x2_uses_x1",
+  "target": "lvlN",
+  "find": "    t1+=mulmod128(lcrt[j], (i128)x1*s, N); t2+=mulmod128(lcrt[j], (i128)x2*s, N); }",
+  "replace": "    t1+=mulmod128(lcrt[j], (i128)x1*s, N); t2+=mulmod128(lcrt[j], (i128)x1*s, N); }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m3_N3_mulmod128_no_reduce",
+  "target": "lvlN",
+  "find": "  while(b){ if(b&1){ r+=a; if(r>=m) r-=m; } a<<=1; if(a>=m) a-=m; b>>=1; }",
+  "replace": "  while(b){ if(b&1){ r+=a; if(r>=m) r-=m; } a<<=1; b>>=1; }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m3_N4_no_final_reduction",
+  "target": "lvlN",
+  "find": "  t1=mod128(t1,N); t2=mod128(t2,N);",
+  "replace": "  ",
+  "expect": "equivalent-argued",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m3_N5_ph_crt_sign",
+  "target": "lvlN",
+  "find": "    ull t=((i128)(xq%qe) - (i128)(x%qe) + qe)%qe; t=mulmod(t, invmod(M%qe,qe), qe); x+=M*t; M*=qe; }",
+  "replace": "    ull t=((i128)(xq%qe) + (i128)(x%qe) + qe)%qe; t=mulmod(t, invmod(M%qe,qe), qe); x+=M*t; M*=qe; }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m3_N6_lift_drops_all_lifted",
+  "target": "lvlN",
+  "find": "  for(int k=0;k<=m;k++){ // k copies lifted",
+  "replace": "  for(int k=0;k<m;k++){ // k copies lifted",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m3_N7_drop_n_plus_L",
+  "target": "lvlN",
+  "find": "    for(int dn=0;dn<2;dn++){ nu_cur=nu+dn*Lold; memset(pattern_has,0,sizeof pattern_has); rec_groups(0,0); }",
+  "replace": "    for(int dn=0;dn<1;dn++){ nu_cur=nu+dn*Lold; memset(pattern_has,0,sizeof pattern_has); rec_groups(0,0); }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m3_N8_exact_nu_off",
+  "target": "lvlN",
+  "find": "  if(Y>=10 && nY%Lnew==nu_cur%Lnew){ int have[10]={0}; int ok=1; int used[10][128]; memset(used,0,sizeof used);",
+  "replace": "  if(Y>=10 && nY%Lnew==(nu_cur+1)%Lnew){ int have[10]={0}; int ok=1; int used[10][128]; memset(used,0,sizeof used);",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "m3_N9_adj_a_sign",
+  "target": "lvlN",
+  "find": "  for(int i=0;i<np;i++){ i128 m=(i128)(P[i]-1); i128 v=(i128)logs[i] - (i128)a_cur*L2[i] - mod128(vb_cur,m)*L3[i] - mod128(vc_cur,m)*L7[i]; adj[i]=(ull)mod128(v,m); }",
+  "replace": "  for(int i=0;i<np;i++){ i128 m=(i128)(P[i]-1); i128 v=(i128)logs[i] + (i128)a_cur*L2[i] - mod128(vb_cur,m)*L3[i] - mod128(vc_cur,m)*L7[i]; adj[i]=(ull)mod128(v,m); }",
+  "expect": "kill",
+  "source": "MUTATION-opt.md"
+ },
+ {
+  "name": "opt_T3K_table_entry",
+  "target": "lvl12",
+  "find": "T3K[K]=t3; T7K[K]=t7; LAMK[K]=lam; }",
+  "replace": "t3[17]^=1; T3K[K]=t3; T7K[K]=t7; LAMK[K]=lam; }",
+  "expect": "kill",
+  "source": "gatev2 (optimization-specific, tier0-opt/lvl12.c)"
+ },
+ {
+  "name": "opt_T7K_table_entry",
+  "target": "lvl12",
+  "find": "T3K[K]=t3; T7K[K]=t7; LAMK[K]=lam; }",
+  "replace": "t7[61]^=1; T3K[K]=t3; T7K[K]=t7; LAMK[K]=lam; }",
+  "expect": "kill",
+  "source": "gatev2 (optimization-specific, tier0-opt/lvl12.c)"
+ },
+ {
+  "name": "opt_P2A_entry",
+  "target": "lvl12",
+  "find": "P2A[a]=powmod(2,(ull)a,m);",
+  "replace": "P2A[a]=powmod(2,(ull)a,m); if(a==9) P2A[a]^=1;",
+  "expect": "kill",
+  "source": "gatev2 (optimization-specific, tier0-opt/lvl12.c)"
+ },
+ {
+  "name": "opt_ENT_entry",
+  "target": "lvl12",
+  "find": "ENT[i][y]=e; } }",
+  "replace": "ENT[i][y]=e; } ENT[i][3]^=1ULL<<16; }",
+  "expect": "kill",
+  "source": "gatev2 (optimization-specific, tier0-opt/lvl12.c)"
+ },
+ {
+  "name": "opt_OKT_entry",
+  "target": "lvl12",
+  "find": "OKT[c][k]=crep[c][k*3]>=0; }",
+  "replace": "OKT[c][k]=crep[c][k*3]>=0; if(c==0) OKT[c][5]^=1; }",
+  "expect": "kill",
+  "source": "gatev2 (optimization-specific, tier0-opt/lvl12.c)"
+ },
+ {
+  "name": "opt_ystep_wrap_boundary",
+  "target": "lvl12",
+  "find": "yst[pos+1][i]=v>=P[i]?v-P[i]:v;",
+  "replace": "yst[pos+1][i]=v>P[i]?v-P[i]:v;",
+  "expect": "equivalent-argued",
+  "source": "gatev2 (optimization-specific, tier0-opt/lvl12.c)",
+  "note": "a running residue equal to P[i] is congruent to 0 and is absorbed by the single subtraction in fast_filter and by the next ystep; survival is the expected verdict"
+ },
+ {
+  "name": "opt_fast_filter_wrap_boundary",
+  "target": "lvl12",
+  "find": "if(y>=P[i]) y-=P[i]; z|=(y==0); acc+=ENT[i][y];",
+  "replace": "if(y>P[i]) y-=P[i]; z|=(y==0); acc+=ENT[i][y];",
+  "expect": "kill",
+  "source": "gatev2 (optimization-specific, tier0-opt/lvl12.c)"
+ }
+]

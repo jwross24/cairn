@@ -1,0 +1,857 @@
+Max-Planck-Institut für Mathematik
+                        Bonn
+
+
+
+ Smooth numbers with few non-zero binary digits
+
+                             by
+
+
+                    Maximilian Hauck
+                   Igor E. Shparlinski
+
+
+
+
+              Max-Planck-Institut für Mathematik
+                  Preprint Series 2023 (11)
+
+
+             Date of submission: June 14, 2023
+  Smooth numbers with few non-zero binary
+                 digits
+
+
+                                             by
+
+
+                                      Maximilian Hauck
+                                     Igor E. Shparlinski
+
+
+
+Max-Planck-Institut für Mathematik            Universität Bonn
+Vivatsgasse 7                                 Endenicher Allee 60
+53111 Bonn                                    53115 Bonn
+Germany                                       Germany
+
+                                              Department of Pure Mathematics
+                                              University of New South Wales
+                                              Sidney, NSW 2052
+                                              Australia
+
+
+
+
+                                         MPIM 23-11
+        SMOOTH NUMBERS WITH FEW NON-ZERO BINARY DIGITS
+
+                     MAXIMILIAN HAUCK AND IGOR E. SHPARLINSKI
+
+       Abstract. We use bounds of character sums and some combinatorial arguments to
+       show the abundance of very smooth numbers which also have very few non-zero binary
+       digits.
+
+
+
+
+                                      1. Introduction
+1.1. Motivation and background. Since recently there has been a lot of interest in
+arithmetic properties of integers with various digit restrictions in a given integer base g .
+This includes the work of Bourgain [Bou13, Bou15] and Swaenepoel [Swa20] on primes
+with prescribed digits on a positive proportion of positions in their digital expansion, the
+resolution of the Gelfond conjecture by Mauduit and Rivat [MR10], and the results of
+Maynard [May19, May22] on primes with missing digits, see also [Bug18, BK18, Col09,
+DES17, DMR20, Kar22, Nas15, Pratt20] and references therein.
+   Prime divisors of integers with very few non-zero g -ary digits have been studied
+in [Bou05, CKS18, Shp08].
+   A variety of results on primitive roots and quadratic nonresidues modulo a prime
+p, which satisfy various digit restrictions can be found in the series of work [DES13a,
+DES13b, DES17].
+   Furthermore, Mauduit and Rivat [MR09] and Maynard [May22] have also studied
+values of integral polynomials with various digital restrictions.
+   We also note that special integers with restricted digits appear in the context of
+cryptography [GS08, Meng13, Shp06].
+   Here we consider some digital problems for smooth integers. We recall that by a result
+of Bugeaud and Kaneko [BK18, Theorem 1.1] any integer N with at most k ⩾ 3 nonzero
+digits in any fixed basis g ⩾ 2 not dividing N has a prime divisor p | N with
+                                         
+                                1            log log N log log log N
+(1.1)                  p⩾           + o(1)
+                              k−2               log log log log N
+as N → ∞, see also [Bug21]. The proof of (1.1) uses some classical methods of
+Diophantine analysis, such as the bounds of linear forms in logarithms. Our technique
+is different and shows that there are many both reasonably smooth and sparse binary
+integers.
+
+1.2. Smooth sparse integers. We recall that an integer s is called y -smooth if it has no
+prime divisors p > y , see [Gra08, HT86] for some background.
+
+  2020 Mathematics Subject Classification. 11A63, 11L40, 11N25.
+  Key words and phrases. Smooth integers, sparse binary representations, character sums.
+                                                1
+2                           M. HAUCK AND I. E. SHPARLINSKI
+
+  For a fixed absolute constant ζ ⩾ 1, given a real number A > ζ 3 we define
+                          µ0 (A) = (1/2 − 1/2A) 1 − ζA−1/3
+                                                           
+(1.2)
+and define ϑ0 (A) < 1/2 by the equation
+                                                     1
+(1.3)                       H (ϑ0 (A)) = 1 −                 ,
+                                               (1 − µ0 (A))A
+where H(ρ) is the binary entropy function defined by
+                                     log ρ           log(1 − ρ)
+(1.4)                    H(ρ) = −ρ         − (1 − ρ)            .
+                                     log 2              log 2
+In particular, notice that ϑ0 (A) → 1/2 as A → ∞.
+  We are interested in the existence of smooth integers with only few non-zero binary
+digits. Clearly, this question makes sense only for odd integers as otherwise powers of 2
+give a perfect solution.
+Theorem 1.1. There is an absolute constant ζ ⩾ 1 such that for A > ζ 3 the following
+holds: For any ϑ < ϑ0 (A) and sufficiently large n, there exists an odd nA -smooth n-bit
+integer with at least
+                              (µ0 (A) + (1 − µ0 (A)) ϑ) n
+zeros in its binary expansion.
+  The proof of Theorem 1.1 is based on a refinement of the argument of [Shp06, Theo-
+rem 6] combined with the approach of [GS08], which in turn relies on bounds for short
+multiplicative character sums from [Iwa74] (see also [BS19]). It also uses a combinatorial
+argument, which originates from [Shp87] and has been used in [DES13a, DES13b, Nas15].
+  The constant ζ in (1.2) is directly related to the constant in the bound on short
+character sums in [BS19], see Section 3; it is effective and can be explicitly evaluated.
+  Using another approach based on the observation that 2k + 1 is quite smooth if we
+take k as the product of the first r odd primes, we obtain the following further result in
+the same direction:
+Theorem 1.2. Let 0 < α < 1 be fixed. Then there exist infinitely many n-bit integers
+N ⩾ 1 which are Y 1+o(1) -smooth, where
+                                                                    
+                             1/2 −γ −1/2         1/2              −1
+                Y = exp 2 e α            (log N ) (log log log N )
+
+and γ denotes the Euler-Mascheroni constant, which have at most
+                                   αn + O(n1/2 log n)
+non-zero digits in their binary expansion.
+  It is easy to see from the proof of Theorem 1.2 that one can obtain a more uniform
+version of this result when both α and N vary in such a way that α−1 = o(log N ). We
+now make this observation more concrete and use a similar argument to produce another
+construction in a different regime of smoothness and sparseness.
+                     SMOOTH NUMBERS WITH FEW NON-ZERO DIGITS                             3
+
+
+Theorem 1.3. Let 0 ⩽ α ⩽ 1 be fixed. Then there exist infinitely many n-bit integers
+N ⩾ 1 which are Y 1+o(1) -smooth where
+                                             1−α/2                    
+                            −γ        α/2                            −1
+               Y = exp 2e       log 2) (log N        (log log log N )
+and γ denotes the Euler-Mascheroni constant, which have at most
+                                    1
+                                         nα + O(nα/2 log n)
+                                 2 log 2
+non-zero digits in their binary expansion.
+1.3. Notation. Throughout the paper, the notations U = O(V ), U ≪ V and V ≫ U
+are equivalent to |U | ⩽ cV for some positive constant c, which throughout the paper is
+absolute. If U ≪ V and V ≫ U , we write U ≍ V .
+   Moreover, for any quantity V > 1 we write U = V o(1) (as V → ∞) to indicate
+a function of V which satisfies V −ε ⩽ |U | ⩽ V ε for any ε > 0, provided V is large
+enough. One additional advantage of using V o(1) is that it absorbs log V and other
+similar quantities without changing the whole expression.
+   We also write U ∼ V as an equivalent of (1 − ε)V ⩽ U ⩽ (1 + ε)V for any ε > 0,
+provided V is large enough.
+   For a finite set S we denote its cardinality by #S .
+   For n ∈ N, we denote the n-th cyclotomic polynomial by Φn and the Euler function
+by φ. Furthermore, we write An for the largest absolute value of one of the coefficients
+of Φn .
+   For a natural number n, we use s2 (n) to denote the sum of the digits of n in its binary
+representation.
+   We write 2 = p1 < p2 < . . . for the prime numbers.
+   We denote by γ ≈ 0.577 the Euler-Mascheroni constant.
+   Finally, the expressions 1/ab mean 1/(ab) (which deviates from the canonical inter-
+pretation b/a).
+
+                                   2. Preparations
+2.1. Arithmetic functions. We make use of the following well-known upper bound
+on the number τ (w) of divisors of a natural number w , see, for example, in [IK04,
+Equation (1.81)].
+Lemma 2.1. We have
+                                      τ (w) ⩽ wo(1) .
+as w → ∞.
+  Bateman [Bat49] gives the following upper bound on the coefficients of cyclotomic
+polynomials:
+Lemma 2.2. We have                                            
+                                               1
+                                An ⩽ exp         τ (n) log n
+                                               2
+for all n ≥ 1.
+4                            M. HAUCK AND I. E. SHPARLINSKI
+
+    We also need to bound the Euler function of the product of the first odd primes.
+Lemma 2.3. Let k = p2 · · · pr for some integer r ≥ 2. Then
+                                                       k
+                          φ(p2 · · · pr ) = 2e−γ             (1 + o(1))
+                                                   log log k
+as r → ∞.
+Proof. This is a direct application of Mertens’ so-called third theorem, see [Mer74]:
+                             r              r 
+                                                               2e−γ
+                                                         
+           φ(p2 · · · pr ) Y         1      Y          1
+                          =     1−       =2       1−        =        (1 + o(1)).
+              p2 · · · pr   i=2
+                                    pi      i=1
+                                                       pi     log pr
+
+Using that by the prime number theorem
+                                  k = exp ((1 + o(1)) pr )
+we conclude the proof.                                                                  ⊔
+                                                                                        ⊓
+
+  Finally, we need the following elementary result, see [HLS11, Proposition 2.2], which
+asserts that s2 is subadditive,
+Lemma 2.4. For any m, n ∈ N, we have
+                               s2 (m + n) ⩽ s2 (m) + s2 (n).
+2.2. Counting smooth numbers. Let Ψ(x, y) denote the number of y -smooth numbers
+less than or equal to x. We have the following result obtained. after simple manipulations,
+by combining [HT86, Theorem 3] and [HT86, Equation (2.4)]:
+Lemma 2.5. For x ≥ y ≥ 2 and 1 ⩽ c ⩽ y , we have
+                              log c/ log y
+                           y
+  Ψ(cx, y) = Ψ(x, y) 1 +
+                         log x
+                                                                            
+                                       log log(1 + y)             y
+                        × 1+O                         · log 1 +         · log c
+                                             log2 y             log x
+                                                                                 
+                                                                          1 log y
+                                                             × 1+O          +
+                                                                          u      y
+uniformly, where u = log x/ log y .
+  We note that, for completeness, we have presented Lemma 2.5 in full generality, while
+we only use it for a fixed c > 1 and very small (compared to x) values of y . More
+precisely, we use Lemma 2.5 in the following form:
+Lemma 2.6. Fix real numbers α, β > 0, c ≥ 1 and A > 1. Then
+                         Ψ(cαxβ , logA x) ∼ c1−1/A Ψ(αxβ , logA x)
+as x → ∞.
+                         SMOOTH NUMBERS WITH FEW NON-ZERO DIGITS                                             5
+
+Proof. Using Lemma 2.5 with αxβ in place of x and y = logA x, we obtain
+                                                                  log c/A log log x
+                                                      logA x
+                                             
+           β   A                   β     A
+    Ψ(cαx , log x) = (1 + o(1))Ψ(αx , log x) 1 +                                     .
+                                                  β log x + log α
+Finally,
+                                       log c/A log log x
+                     logA x
+           
+                                                                                       log c/A log log x
+            1+                                              = (1/β + o(1)) logA−1 x
+                 β log x + log α
+                                                                                    log c/A log log x
+                                                            = (1 + o(1)) logA−1 x                        .
+                  log c/A log log x
+Since logA−1 x                         = c1−1/A , the result follows.                                        ⊔
+                                                                                                             ⊓
+
+   We also need an asymptotic formula for Ψ(x, logA x), see for example [Gra08, Equa-
+tion (1.14)]:
+Lemma 2.7. For any fixed A > 1, we have
+                                          Ψ(x, logA x) = x1−1/A+o(1)
+as x → ∞.
+   Finally, we need an upper bound of Harper [Har16] on the number of smooth numbers
+in an arithmetic progression. In fact we present it in a very special case tailored to our
+applications. Namely, let Ψ(x, y; q, a) denote the number of y -smooth numbers less than
+or equal to x in the residue class a modulo q . By [Har16, Smooth Number Result 3,
+Section 2.1] we have the following estimate.
+Lemma 2.8. For any fixed A > 1, β > 0 and ε > 0, we have
+                                 Ψ(xβ , logA x; q, a) ⩽ (xβ /q)1−1/A xo(1)
+for all a as q ⩽ xβ−ε and x → ∞.
+2.3. Sums involving binomial coefficients. We recall the definition (1.4). We frequently
+use the following result from [MS77, Chapter 10, Corollary 9]:
+Lemma 2.9. For any natural number n and 0 < ρ ⩽ 1/2, we have
+                               X n
+                                        ⩽ 2nH(ρ) .
+                              0⩽k⩽ρn
+                                     k
+
+  Furthermore, we also need a bound on the product of binomial coefficient or, in other
+words, on the sum of their logarithms:
+Lemma 2.10. For any integer n ≥ 2, we have
+                          n       
+                         X        n    1
+                             log     = n2 + O(n log n).
+                         k=0
+                                  k    2
+6                            M. HAUCK AND I. E. SHPARLINSKI
+
+Proof. By the Stirling formula, we have log n! = n log n − n + O(log n) for n ≥ 2 and
+therefore         
+                   n
+             log       = n log n − k log k − (n − k) log(n − k) + O(log n)
+                   k
+whenever 2 ⩽ k ⩽ n − 2 and n ≥ 2. Summing over all k , we see that
+                    n                        n
+                  X        n       2
+                                              X
+                      log      = n log n − 2      k log k + O(n log n).
+                  k=0
+                           k                  k=1
+For the remaining sum, partial summation yields
+                    n                              Z n
+                   X              n(n + 1)             ⌊t⌋(⌊t⌋ + 1)
+                       k log k =           log n −                  dt
+                   k=1
+                                      2             1       2t
+                                              Z n
+                                  1 2             t
+                               = n log n −          dt + O(n log n)
+                                  2            1 2
+                                  1           1
+                               = n2 log n − n2 + O(n log n)
+                                  2           4
+and hence we obtain          n       
+                            X        n      1
+                                log      = n2 + O(n log n),
+                            k=0
+                                     k      2
+as claimed.                                                                               ⊔
+                                                                                          ⊓
+2.4. Character sums modulo powers of 2. From [BS19, Theorem 2.1], we deduce the
+following estimate for character sums modulo powers of 2:
+Lemma 2.11. There exists an effective constant ξ > 0 such that for all integers k ≥ 1
+and all non-principal characters χ modulo q = 2k , we have
+                                   M +N
+                                                              2    2
+                                   X
+                                            χ(n) ≪ N 1−ξℓ /k
+                                   n=M +1
+
+uniformly for all integers M and N = 2ℓ , where ℓ is an integer such that ℓ ⩽ k , where
+implied constant is absolute.
+Proof. Assume χ is induced by the primitive character χe modulo qe = 2k0 with k0 ≥ 1
+            e ⩽ qe such that N ≡ N
+and let 1 ⩽ N                     e (mod qe), that is, Ne = 2ℓ0 with ℓ0 = ℓ if ℓ ⩽ k0
+and ℓ0 = k0 otherwise. Then
+                          M
+                          X +N              M
+                                            X +N                  M
+                                                                  X +N
+                                                                     e
+
+                                  χ(n) =             χ
+                                                     e(n) =              χ
+                                                                         e(n)
+                         n=M +1             n=M +1            n=M +1
+
+since complete sums of characters (of length qe in this case) vanish. By [BS19, Theorem 2.1],
+there is an effective constant ξ0 > 0 such that
+                                  M +N
+                                     e
+                                                              2    2
+                                  X
+                                                  e 1−ξ0 ℓ0 /k0
+                                           e(n) ≪ N
+                                           χ
+                                  n=M +1
+
+and the implied constant is absolute. Put ξ = min{1/2, ξ0 }.
+                      SMOOTH NUMBERS WITH FEW NON-ZERO DIGITS                                 7
+
+                                                         2   2           2   2
+                                           e 1−ξℓ0 /k0 ⩽ N 1−ξℓ /k , so we are done. Now
+  Assuming first that ℓ0 = ℓ, then clearly N
+assume that k0 < ℓ and ℓ0 = k0 . Then we have
+                      k0 (1 − ξ) ⩽ k0 (1 − ξℓ2 /k 2 ) < ℓ(1 − ξℓ2 /k 2 )
+and therefore once again N e 1−ξℓ0 2 /k02 ⩽ N 1−ξℓ2 /k2 .                                     ⊔
+                                                                                              ⊓
+2.5. Smooth numbers with some bits prescribed. Using techniques from [GS08] and
+modifying the proof of [Shp06, Theorem 6], we prove the following
+Lemma 2.12. Let A > 1 and ε > 0 be fixed real numbers. with 2ε < 1 − 1/A. Then for
+sufficiently large n and any binary string σ of length
+                                                          1/3 !
+                                      (1 − 1/A) (1/A + 2ε)
+                       m ⩽ n0 1 −                                 ,
+                                        ξ (1 − 1/A − 2ε)
+where n0 = ⌊(1/2 − 1/2A − ε)n⌋ and ξ is the constant from Lemma 2.11, there exist at
+least 2n(1−1/A)−m+o(n) odd n-bit integers which are nA -smooth and have the bit pattern σ
+at the positions n0 − 1, . . . , n0 − m.
+Proof. Let W be the set of odd nA -smooth numbers in the interval (2(n−1)/2 , 2n/2 ] and
+let s denote the number defined by the binary string σ . We count the number T (k) of
+solutions w1 , w2 ∈ W of w1 w2 ≡ 2n0 −m s + k (mod 2n0 ) for 0 ⩽ k < 2n0 −m . Then the
+product w1 w2 is nA -smooth and has n bits as well as the desired bit pattern.
+   Let X be the set of multiplicative characters modulo 2n0 . As in [GS08], recalling the
+orthogonality relation
+                                   (
+                       X             0      if u ̸≡ 1 (mod 2n0 ),
+(2.1)                      χ(u) =
+                       χ∈X
+                                     2n0 −1 if u ≡ 1 (mod 2n0 ),
+see, for example, [IK04, Section 3.2], we can express T (k) as
+                             1     X X
+                                             χ (2n0 −m s + k)w1−1 w2−1 ,
+                                                                      
+                   T (k) = n0 −1
+                           2     w ,w ∈W χ∈X
+                                    1   2
+
+where the inverses are taken modulo 2n0 (recall that w1 , w2 ∈ W are odd). Also observe
+that T (k) = 0 if k is even.
+  If k is odd, separating the contribution from the principal character χ0 and changing
+the order of summation, we obtain
+                     (#W)2       1 X                        X
+                                          χ(2n0 −m s + k)         χ w1−1 w2−1
+                                                                              
+             T (k) = n0 −1 + n0 −1
+                      2        2     χ∈X                  w ,w ∈W1   2
+                                            χ̸=χ0
+                                                                                     !2
+                    (#W)2     1 X                                    X
+                                       χ(2n0 −m s + k)                           −1
+                                                                                    
+                   = n0 −1 + n0 −1                                       χ w              .
+                     2      2      χ∈X                           w∈W
+                                            χ̸=χ0
+
+This yields
+                                   −m −1
+                                2n0X
+                                                      (#W)2
+(2.2)                                       T (k) =         +∆,
+                                  k=0
+                                                        2m
+8                                  M. HAUCK AND I. E. SHPARLINSKI
+
+where, using χ (w−1 ) = χ(w), the error term ∆ is given by
+                                           n −m                                                !2
+                           1       X 2 0X−1                                 X
+                  ∆=                                 χ(2n0 −m s + k)            χ(w)                .
+                       2n0 −1 χ∈X            k=0                         w∈W
+                                   χ̸=χ0
+
+    Now we estimate ∆, again following [GS08]. Namely, we have
+                                              n −m                                                  2
+                               1     X 2 0X−1                                X
+                                                           n0 −m
+                  |∆| ⩽                                χ(2         s + k)              χ(w)
+                           2n0 −1 χ∈X          k=0                           w∈W
+                                     χ̸=χ0
+
+by the triangle inequality. By Lemma 2.11, we have the estimate
+                         −m −1
+                      2n0X
+                                                                                   2       2
+                                   χ(2n0 −m s + k) ≪ 2(n0 −m)(1−ξ(n0 −m) /n0 )
+                        k=0
+
+for any non-principal character χ ∈ X and n0 sufficiently large. Moreover, by our choice
+of m and n0 , we may further estimate
+                                                       1/3
+                              n0 (1 − 1/A) (1/A + 2ε)
+                  n0 − m ≥ 1/3
+                             ξ         1 − 1/A − 2ε
+                                                   1/3
+                              n0         1
+                          = 1/3                 −1       (1 − 1/A)1/3
+                             ξ     1 − 1/A − 2ε
+                                                1/3
+                              n0    n
+                          ≥ 1/3        − 1 + o(1)     (1 − 1/A)1/3
+                             ξ     2n0
+                                     2/3
+                                n0
+                               = 1/3 (n/2 − n0 )1/3 (1 − 1/A)1/3 + o(n)
+                                ξ
+and therefore the estimate above becomes
+                      −m −1
+                   2n0X
+                               χ(2n0 −m s + k) ≪ 2n0 −m−(n/2−n0 )(1−1/A)+o(n) .
+                     k=0
+
+    Thus, we can further estimate
+                                                                                       2
+                                                              X X
+                               −m−(n/2−n0 )(1−1/A)+o(n)
+                  |∆| ≪ 2                                                   χ(w)
+                                                             χ∈X w∈W
+                                                             χ̸=χ0
+                                                                                   2
+                                                             X X
+                               −m−(n/2−n0 )(1−1/A)+o(n)
+                       ≪2                                                   χ(w)
+                                                             χ∈X w∈W
+                                                             X       X
+                            −m−(n/2−n0 )(1−1/A)+o(n)
+                       =2                                                    χ(w1 w2−1 ) .
+                                                             χ∈X w1 ,w2 ∈W
+
+To estimate the last sum, we change the order of summation and use the orthogonality
+relations (2.1). Namely, by Lemma 2.8, there are at most 2(n/2−n0 )(1−1/A)+o(n) elements
+                        SMOOTH NUMBERS WITH FEW NON-ZERO DIGITS                             9
+
+of W in any given residue class modulo 2n0 , so we obtain
+         X X
+                  χ(w1 w2−1 ) = 2n0 −1 · #{(w1 , w2 ) ∈ W 2 : w1 ≡ w2         (mod 2n0 )}
+        w1 ,w2 ∈W χ∈X
+
+                                  ⩽ 2n0 +(n/2−n0 )(1−1/A)+o(n) #W .
+Therefore, we overall get
+                                 |∆| ≪ 2n0 −m+o(n) #W .
+  To compare the error term with the main term, we need to determine #W . To do
+this, observe that for any x, there is a bijection
+                                                1:1
+         {w ∈ [1, x/2] : w nA -smooth} ←→ {w ∈ [1, x] : w even, nA -smooth}
+                                     w 7→ 2w
+and thus the number of odd nA -smooth numbers up to x is given by Ψ(x, nA )−Ψ(x/2, nA ).
+Therefore, Lemma 2.6 yields
+             #W = Ψ(2n/2 , nA ) − Ψ(2n/2−1 , nA )
+                                                   
+
+                            − Ψ(2(n−1)/2 , nA ) − Ψ(2(n−1)/2−1 , nA )
+                                                                     
+
+                 ∼ Ψ(2(n−1)/2−1 , nA ) 23(1−1/A)/2 − 21−1/A − 2(1−1/A)/2 + 1
+                                                                             
+
+and due to
+         23(1−1/A)/2 − 21−1/A − 2(1−1/A)/2 + 1 = (2(1−1/A)/2 − 1)2 (2(1−1/A)/2 + 1) ,
+this is a positive proportion of Ψ(2(n−1)/2−1 , nA ). Moreover, according to Lemma 2.7,
+                 Ψ(2(n−1)/2−1 , nA ) ≥ Ψ(2(n−3)/2 , (n − 3)A logA 2/2A )
+                                       = 2(n−3)(1−1/A+o(1))/2 = 2n(1−1/A+o(1))/2 .
+Combining both results, we deduce that
+(2.3)                                  #W ≥ 2n(1−1/A+o(1))/2 .
+  Therefore, the ratio of the error term to the main term in (2.2) can be bounded by
+                     |∆|        2n0 −m+o(n) #W      2n0 +o(n)    2n0 +o(n)
+                             ≪                   =            ⩽
+                (#W)2 /2m         (#W)2 /2m          #W         2n(1−1/A)/2
+                                2n(1−1/A−2ε)/2+o(n)
+                             ⩽                      = 2−εn+o(n) = o(1) .
+                                    2n(1−1/A)/2
+Thus, putting this result back into (2.2), we obtain
+                                  −m −1
+                               2n0X
+                                                    (#W)2
+                                          T (k) =         (1 + o(1)) .
+                                 k=0
+                                                      2m
+Using (2.3) again, we see that this becomes
+                    −m −1
+                 2n0X
+                                      2n(1−1/A+o(1))              2n(1−1/A+o(1))
+                            T (k) ≥                  (1 + o(1)) =                .
+                    k=0
+                                           2m                          2m
+10                             M. HAUCK AND I. E. SHPARLINSKI
+
+  To conclude, it still remains to check how many pairs (w1 , w2 ) yield the same product
+w = w1 w2 . However, any such product w satisfies w ⩽ 2n by construction and hence, by
+Lemma 2.1, it can occur at most 2o(n) times. Therefore, the number of pairwise distinct
+products is at least
+                                  2n0X−m −1
+
+                             o(n)                   2n(1−1/A+o(1))
+                           2                T (k) ≥        m
+                                                                   ,
+                                     k=0
+                                                         2
+as claimed.                                                                                        ⊔
+                                                                                                   ⊓
+
+                               3. Proof of Theorem 1.1
+     Let ε > 0. We set
+                                                $                                       1/3 !%
+                                                                  (1 − 1/A) (1/A + 2ε)
+n0 = ⌊(1/2 − 1/2A − ε)n⌋          and      m = n0        1−                                        .
+                                                                    ξ (1 − 1/A − 2ε)
+It is also convenient to define
+                                          µ = m/n
+and note that there are some constants c2 > c1 > 0 depending only on A, but not on ε
+such that for a sufficiently small ε,
+                                                      1/3
+                 −1/3             (1 − 1/A) (1/A + 2ε)
+            (ξA)       + c1 ε ⩽                             ⩽ (ξA)−1/3 + c2 ε.
+                                    ξ (1 − 1/A − 2ε)
+Note that the positivity of c1 is crucial for us and in particular, this implies that for
+some constants C2 > C1 > 0 depending only on A, we have
+(3.1)                         µ0 (A) − C2 ε ⩽ µ ⩽ µ0 (A) − C1 ε,
+where µ0 (A) is given by (1.2) with ζ = ξ −1/3 .
+   Applying Lemma 2.12 with the above values of n0 and m, we see that the number T of
+odd n-bit nA -smooth numbers with a string of m zeros at the positions n0 −1, . . . , n0 −m
+is at least
+                           2n(1−1/A+o(1))
+(3.2)                 T ≥         m
+                                          = 2(n−m)(1−1/(1−µ)A)+o(n) .
+                                2
+   Now consider the n − m bits we have not prescribed yet. If at most a proportion
+ρ < ϑ0 (A) of them are zeros, where ϑ0 (A) is given by (1.3), then, by Lemma 2.9, we can
+have at most                                  
+                               X        n−m
+                                                 ⩽ 2(n−m)H(ρ)
+                                           k
+                              0⩽k⩽ρ(n−m)
+
+different integers. However, since ρ < ϑ0 (A), we know that
+                                          1                 1
+                       H(ρ) < 1 −                 <1−           .
+                                   (1 − µ0 (A))A       (1 − µ)A
+Recalling (3.2), we conclude that
+                                        2(n−m)H(ρ) < T
+if n is sufficiently large.
+                            SMOOTH NUMBERS WITH FEW NON-ZERO DIGITS                                                          11
+
+  Thus, at least one of the T odd n-bit nA -smooth numbers not only has a string of m
+consecutive zeros, which is by construction, but also has at least a proportion of ρ zeros
+among the remaining n − m digits. That is, we see from (3.1) that its binary expansion
+contains at least
+                     m + ρ(n − m) = (1 − ρ)m + ρn = n (µ(1 − ρ) + ρ)
+                                          ⩾ n (µ0 (A)(1 − ρ) + ρ − C2 (1 − ρ)ε)
+                                          ⩾ n (µ0 (A) + ρ(1 − µ0 (A)) − C2 (1 − ρ)ε)
+zeros. Choosing ρ > ϑ concludes the proof since ε is arbitrarily small.
+
+                                        4. Proof of Theorem 1.2
+  Put k = p2 · · · pr for some r > 2 and consider m = 2k + 1. We assume that r → ∞,
+so we also have k → ∞.
+  We have the following factorisation into cyclotomic polynomials:
+                                               Y
+                                m = 2k + 1 = −    Φd (−2)
+                                                                   d|k
+
+and we can bound the factors using Lemma 2.2 and Lemma 2.1 as
+                                                       
+                                           1
+             |Φd (−2)| ≪ Ad 2φ(d)
+                                  ⩽ exp      τ (d) log d 2φ(d)
+                                           2
+                                                          o(1)     o(1)
+                       ≪ exp k o(1) log k 2φ(d) ≪ 2φ(d)+k ⩽ 2φ(k)+k .
+                                         
+
+Moreover, due to our choice of k , Lemma 2.3 implies
+                             −γ +o(1))k/ log log k            −γ +o(1))/ log log k            −γ +o(1))/ log log log m
+        |Φd (−2)| ≪ 2(2e                             < m(2e                          = m(2e                              .
+                              (2e−γ +o(1))/ log log log m
+In particular, m is m                                       -smooth.
+  Now, we consider the number
+(4.1)                                                    N = mℓ ,
+where ℓ = ⌊βk⌋ for β = 2α log 2. Without loss of generality we assume that k is large
+enough so ℓ ⩾ 2. Thus N has
+(4.2)                                   n = kℓ + O(ℓ) = β −1 ℓ2 + O(ℓ)
+bits, provided that k → ∞. Due to
+                                                        β log m   2α log N
+                                        ℓ ∼ βk ∼                =
+                                                         log 2        ℓ
+we also have ℓ ∼ (2α log N )1/2 . In particular,
+             log log log N = log log (ℓ log m) ⩽ log log (2 log m)2
+                                                                                        
+
+                                = log (2 (log log m + O(1))) = (1 + o(1)) log log log m.
+Therefore, we see that
+                   −γ +o(1))/ log log log m           −γ +o(1))/(ℓ log log log N )
+            m(2e                              = N (2e
+                                              = N (2e           )/((2α log N )1/2 log log log N ) = Y 1+o(1) ,
+                                                        −γ +o(1)
+12                                   M. HAUCK AND I. E. SHPARLINSKI
+
+that is, N is Y 1+o(1) -smooth.
+  We now estimate the sparsity of N . By the binomial theorem, we know that
+                                              ℓ  
+                                     k    ℓ
+                                             X   ℓ kj
+                               N = (2 + 1) =        2 .
+                                             j=0
+                                                 j
+
+Noting that jℓ can have at most log jℓ / log 2+1 binary digits and using the subadditivity
+                                     
+
+of the sum of binary digits guaranteed by Lemma 2.4, we see that Lemma 2.10 shows
+that the total number of non-zero digits of N is at most
+                         ℓ       
+                    1 X          ℓ                  1
+                            log     + (ℓ + 1) =          ℓ2 + O(ℓ log ℓ)
+                  log 2 j=0      j               2 log 2
+                                               = αn + O n1/2 log n ,
+                                                                     
+
+                                        
+where we used that ℓ2 = βn + O n1/2 due to (4.2) in the last step. This proves the
+claim.
+
+
+                                         5. Proof of Theorem 1.3
+ We proceed exactly as in the proof of Theorem 1.2 up to the point where we defined
+N in (4.1). If α = 0, we choose ℓ = 1 and are done; otherwise, let ℓ = ⌊k β ⌋ for
+                                                               α
+                                                       β=         .
+                                                              2−α
+  Without loss of generality we assume that k is large enough so ℓ ⩾ 2. Thus N has
+                           n = kℓ + O(ℓ) = ℓ1+1/β + O ℓ1/β
+                                                           
+(5.1)
+bits, provided that k → ∞. Due to
+                                                               β                    β
+                                            β          log m                 log N
+                                   ℓ∼k ∼                             =
+                                                        log 2                ℓ log 2
+we also have ℓ ∼ (log N/ log 2)β/(1+β) . In particular,
+                                                                                                 
+                                                                                            1+β
+                    log log log N = log log (ℓ log m) ⩽ log log (2 log m)
+                                         = log ((1 + β) (log log m + O(1)))
+                                         = (1 + o(1)) log log log m.
+Therefore, we see that
+              −γ +o(1))/ log log log m          −γ +o(1))/(ℓ log log log N )
+       m(2e                              = N (2e
+                                         = N (2e            )/((log N/ log 2)β/(1+β) log log log N ) = Y 1+o(1)
+                                                   −γ +o(1)
+
+
+
+
+that is, N is Y 1+o(1) -smooth.
+                       SMOOTH NUMBERS WITH FEW NON-ZERO DIGITS                                    13
+
+  As before, we see that the number of non-zero digits of N is at most
+                    1                         1
+                         ℓ2 + O(ℓ log ℓ) =         n2β/(1+β) + O(nβ/(1+β) log n)
+                 2 log 2                   2 log 2
+                                              1
+                                         =         nα + O(nα/2 log n)
+                                           2 log 2
+due to ℓ = nβ/(1+β) + O(1) by (5.1) and this concludes the proof.
+
+                                          6. Comments
+   It is also interesting to study smooth values amongst balanced integers, that is, positive
+integers with equally many ones and zeros in their binary expansion.
+   Using simple counting arguments, one can show that for any integer n, there exist
+2n-bit balanced integers which are Y -smooth, where
+                                                  √
+                                     Y = 22n−(1/ π+o(1))n
+                                                             1/2
+(6.1)                                                              .
+Indeed, first we observe that by the Stirling formula, the number of 2n-bit balanced
+integers is given by
+                                            √          4n
+                                 
+                            2n − 1
+(6.2)                               = 1/2 π + o(1) 1/2 .
+                             n−1                        n
+However, for any u ∈ [1, 2],
+                           Ψ(x, x1/u ) = (1 − log u) x + O(x/ log x),
+see [Gra08, Equations (1.3) and (1.8)]. Thus, if u = 1 + η with η ≍ (log x)−1/2 , then the
+number of non-x1/u -smooth numbers N ⩽ x can be estimated as
+(6.3)                        x − Ψ(x, x1/u ) = (1 + o(1))ηx.
+                                                      √
+Hence, for a sufficiently small ε > 0 with η = (1/2 π − ε) n−1/2 and sufficiently large
+n, we obtain from (6.2) and (6.3) that
+                                         √             2n − 1
+                      n        n n/(1+(1/2 π−ε)n−1/2 )
+                     4 − Ψ 4 ,4                         <         ,
+                                                            n−1
+and since ε > 0 is arbitrary, we see that we can take Y as in (6.1).
+  Furthermore, with a similar technique as in the proofs of Theorem 1.2 and Theorem 1.3,
+one can give an explicit construction of infinitely many rather smooth balanced numbers.
+Namely, taking
+                       k1 = p2 · · · pr    and        k2 = p3 · · · pr = k1 /3,
+                                                                       −γ
+the same argument as above shows that 2k1 + 1 is 2(2e +o(1))k1 / log log k1 -smooth and
+                  −γ
+2k2 − 1 is 2(2e +o(1))k2 / log log k2 -smooth. Thus, the number N = (2k1 + 1)(2k2 − 1) is
+    −γ                            −γ
+2(2e +o(1))k1 / log log k1 = N (3e /2+o(1))/ log log log N -smooth and it has n = k1 + k2 = 4k2 total
+digits, exactly n/2 of which are ones.
+ 14                           M. HAUCK AND I. E. SHPARLINSKI
+
+                                   Acknowledgements
+    The authors are very grateful to Regis de la Bretèche for suggesting to use results
+ from [Har16] and to the referee for the very careful reading of the manuscript.
+    This work started during a very enjoyable visit by the authors to the Max Planck
+ Institute for Mathematics, Bonn, whose hospitality and support is very much appreciated.
+    During the preparation of this work I.S. was also supported in part by the Australian
+ Research Council Grant DP200100355.
+
+                                        References
+   [Bat49] P. T. Bateman, ‘Note on the coefficients of the cyclotomic polynomial’, Bull.
+           Amer. Math. Soc. 55 (1949), 1180–1181. 3
+    [BS19] W. Banks and I. E. Shparlinski, ‘Bounds on short character sums and L-functions
+           with characters to a powerful modulus’, J. d’Anal. Math. 139 (2019), 239–263.
+           2, 6
+  [Bou05] J. Bourgain, ‘Estimates on exponential sums related to Diffie–Hellman distribu-
+           tions’, Geom. Funct. Anal. 15 (2005), 1–34. 1
+  [Bou13] J. Bourgain, ‘Prescribing the binary digits of primes’, Israel J. Math. 194 (2013),
+           935–955. 1
+  [Bou15] J. Bourgain, ‘Prescribing the binary digits of primes, II’, Israel J. Math. 206
+           (2015), 165–182. 1
+  [Bug18] Y. Bugeaud, ‘On the digital representation of integers with bounded prime
+           factors’, Osaka J. Math. 55 (2018), 315–324. 1
+  [Bug21] Y. Bugeaud, ‘On the Zeckendorf representation of smooth numbers’, Mosc. Math.
+           J. 21 (2021), 31–42. 1
+   [BK18] Y. Bugeaud and H. Kaneko, ‘On the digital representation of smooth numbers,
+           Math. Proc. Cambridge Philos. Soc. 165 (2018), 533–540. 1
+ [CKS18] M.-C. Chang, B. Kerr and I. E. Shparlinski, ‘On the exponential large sieve
+           inequality for sparse sequences modulo primes, J. Math. Anal. Appl. 459 (2018)
+           53–81. 1
+   [Col09] S. Col, ‘Palindromes dans les progressions arithmétiques, Acta Arith. 137 (2009),
+           1–41. 1
+[DES13a] R. Dietmann, C. Elsholtz and I. E. Shparlinski, ‘On gaps between primitive
+           roots in the Hamming metric’, Quart. J. Math. 64 (2013), 1043–1055. 1, 2
+[DES13b] R. Dietmann, C. Elsholtz and I. E. Shparlinski, ‘On gaps between quadratic
+           non-residues in the Euclidean and Hamming metrics’, Indag. Math. 24 (2013),
+           930–938. 1, 2
+ [DES17] R. Dietmann, C. Elsholtz and I. E. Shparlinski, ‘Prescribing the binary digits
+           of squarefree numbers and quadratic residues’, Trans. Amer. Math. Soc. 369
+           (2017), 8369–8388. 1
+[DMR20] M. Drmota, C. Mauduit and J. Rivat, ‘Prime numbers in two bases’, Duke Math.
+           J. 169 (2020), 1809–1876. 1
+  [Gra08] A. Granville, ‘Smooth numbers: Computational number theory and beyond’,
+           Proc. MSRI Conf. Algorithmic Number Theory: Lattices, Number Fields, Curves,
+           and Cryptography, Berkeley 2000, Cambridge Univ. Press, 267–323. 1, 5, 13
+                      SMOOTH NUMBERS WITH FEW NON-ZERO DIGITS                             15
+
+    [GS08] S. W. Graham and I. E. Shparlinski, ‘On RSA moduli with almost half of the
+            bits prescribed’, Discr. Appl. Math. 56 (2008), 3150–3154. 1, 2, 7, 8
+ [HLS11] K. G. Hare, S. Laishram and T. Stoll, ‘Stolarsky’s conjecture and the sum of
+            digits of polynomial values’, Proc. Amer. Math. Soc. 139 (2011), 39–49. 4
+  [Har16] A. J. Harper, ‘Minor arcs, mean values, and restriction theory for exponential
+            sums over smooth numbers’, Compos. Math. 152 (2016), 1121–1158. 5, 14
+   [HT86] A. Hildebrand and G. Tenenbaum, ‘On integers free of large prime factors’,
+            Trans. Amer. Math. Soc. 296 (1986), 265–290. 1, 4
+   [Iwa74] H. Iwaniec, ‘On zeros of Dirichlet’s L series’, Invent. Math. 23 (1974), 97–104. 2
+     [IK04] H. Iwaniec and E. Kowalski, Analytic number theory Amer. Math. Soc., Provi-
+            dence, RI, 2004. 3, 7
+  [Kar22] F. Karwatowski, ‘Primes with one excluded digit’, Acta Arith. 202 (2022),
+            105–121. 1
+  [Mer74] F. Mertens, ‘Ein Beitrag zur analytischen Zahlentheorie’, J. Reine Angew. Math.
+            78 (1874), 46–62. 4
+   [MS77] F. J. MacWilliams and N. J. A. Sloane, The theory of error-correcting codes,
+            North-Holland, Amsterdam, 1977. 5
+  [MR09] C. Mauduit and J. Rivat, ‘La somme des chiffres des carrés’, Acta Math. 203
+            (2009), 107–148. 1
+  [MR10] C. Mauduit and J. Rivat, ‘Sur un problème de Gelfond: la somme es chiffres
+            des nombres premiers’, Ann. of Math. 171 (2010), 1591–1646. 1
+ [May19] J. Maynard, ‘Primes with restricted digits’, Invent. Math. 217 (2019), 127–218.
+            1
+ [May22] J. Maynard, ‘Primes and polynomials with restricted digits’, Int. Math. Res.
+            Not. 2022 (2022), 10626–10648. 1
+[Meng13] X. Meng, ‘On RSA moduli with half of the bits prescribed’, J. Number Theory
+            133 (2013), 105–109. 1
+  [Nas15] E. Naslund, ‘The tail distribution of the sum of digits of prime numbers’, Unif.
+            Distrib. Theor. 10 (2015), 63–68. 1, 2
+[Pratt20] K. Pratt, ‘Primes from sums of two squares and missing digits,Proc. Lond. Math.
+            Soc. 120 (2020), 770–830. 1
+  [Shp87] I. E. Shparlinski, ‘On primitive polynomials’, Problemy Peredachi Inform. 23
+            (3) (1987), 100–103 (in Russian). 2
+  [Shp06] I. E. Shparlinski, ‘On RSA moduli with prescribed bit patterns’, Designs, Codes
+            and Cryptography 39 (2006), 113–122. 1, 2, 7
+  [Shp08] I. E. Shparlinski, ‘Exponential sums and prime divisors of sparse integers’,
+            Period. Math. Hungar. 57 (2008), 93–99. 1
+  [Swa20] C. Swaenepoel, ‘Prime numbers with a positive proportion of preassigned digits,
+            Proc. Lond. Math. Soc. 121 (2020), 83–151. 1
+   MH: Universität Bonn, Endenicher Allee 60, 53115 Bonn, Germany
+   Email address: max.hauck01@gmail.com
+
+   IES: Department of Pure Mathematics, University of New South Wales, Sydney, NSW
+ 2052, Australia
+   Email address: igor.shparlinski@unsw.edu.au
+

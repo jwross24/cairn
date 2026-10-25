@@ -1,0 +1,71 @@
+  50 hits, 1500 patterns, 4 with surviving words [140s]
+  100 hits, 3000 patterns, 20 with surviving words [290s]
+  150 hits, 4500 patterns, 20 with surviving words [475s]
+  200 hits, 6000 patterns, 20 with surviving words [626s]
+  250 hits, 7500 patterns, 20 with surviving words [789s]
+  300 hits, 9000 patterns, 31 with surviving words [908s]
+  350 hits, 10500 patterns, 31 with surviving words [1066s]
+  400 hits, 12000 patterns, 36 with surviving words [1226s]
+  450 hits, 13500 patterns, 36 with surviving words [1371s]
+  500 hits, 15000 patterns, 36 with surviving words [1517s]
+  550 hits, 16500 patterns, 36 with surviving words [1666s]
+  600 hits, 18000 patterns, 48 with surviving words [1826s]
+  650 hits, 19500 patterns, 69 with surviving words [1996s]
+  700 hits, 21000 patterns, 73 with surviving words [2130s]
+  750 hits, 22500 patterns, 85 with surviving words [2262s]
+  800 hits, 24000 patterns, 85 with surviving words [2374s]
+  850 hits, 25500 patterns, 86 with surviving words [2532s]
+  900 hits, 27000 patterns, 97 with surviving words [2668s]
+  950 hits, 28500 patterns, 112 with surviving words [2802s]
+  1000 hits, 30000 patterns, 124 with surviving words [2937s]
+  1050 hits, 31500 patterns, 127 with surviving words [3067s]
+  1100 hits, 33000 patterns, 128 with surviving words [3218s]
+  1150 hits, 34500 patterns, 135 with surviving words [3344s]
+  1200 hits, 36000 patterns, 137 with surviving words [3496s]
+  1250 hits, 37500 patterns, 137 with surviving words [3665s]
+  1300 hits, 39000 patterns, 151 with surviving words [3869s]
+  1350 hits, 40500 patterns, 158 with surviving words [4015s]
+  1400 hits, 42000 patterns, 158 with surviving words [4170s]
+  1450 hits, 43500 patterns, 160 with surviving words [4307s]
+  1500 hits, 45000 patterns, 165 with surviving words [4453s]
+RESULT vertex 1811939328: 45000 patterns from 1500 hits (cap 30), 165 survive depth 1 (0.0037); by k: [(13, 0, 56), (14, 8, 804), (15, 0, 2228), (16, 15, 4253), (17, 44, 5395), (18, 31, 6069), (19, 15, 6418), (20, 6, 5213), (21, 12, 4574), (22, 13, 3870), (23, 13, 2250), (24, 2, 1688), (25, 6, 1140), (26, 0, 742), (27, 0, 240), (28, 0, 60)]; by wrap: [(0, 165, 17790), (1, 0, 13020), (9, 0, 7560), (10, 0, 4860), (18, 0, 960), (19, 0, 690), (27, 0, 60), (28, 0, 30), (36, 0, 30)] [4453s]
+  SURV (1134213192, 0, 8, 46, 20, 1)
+  SURV (1134213192, 0, 8, 46, 20, 1)
+  SURV (1134213192, 0, 8, 46, 20, 1)
+  SURV (1134213192, 0, 8, 46, 20, 1)
+  SURV (133923132, 0, 4, 50, 17, 1)
+  SURV (133923132, 0, 4, 50, 17, 1)
+  SURV (133923132, 0, 4, 50, 17, 1)
+  SURV (97258781214, 0, 11, 43, 22, 2)
+  SURV (97258781214, 0, 11, 43, 22, 5)
+  SURV (97258781214, 0, 11, 43, 22, 2)
+  SURV (97258781214, 0, 11, 43, 22, 2)
+  SURV (97258781214, 0, 11, 43, 22, 7)
+  SURV (97258781214, 0, 11, 43, 22, 2)
+  SURV (97258781214, 0, 11, 43, 22, 2)
+  SURV (97258781214, 0, 11, 43, 22, 4)
+  SURV (97258781214, 0, 11, 43, 22, 8)
+  SURV (97258781214, 0, 11, 43, 22, 2)
+  SURV (97258781214, 0, 11, 43, 22, 5)
+  SURV (97258781214, 0, 11, 43, 22, 2)
+  SURV (97258781214, 0, 11, 43, 22, 3)
+  SURV (7231849128, 0, 6, 57, 16, 1)
+  SURV (7231849128, 0, 6, 57, 16, 1)
+  SURV (7231849128, 0, 6, 57, 16, 1)
+  SURV (7231849128, 0, 6, 57, 16, 1)
+  SURV (7231849128, 0, 6, 57, 16, 1)
+  SURV (7231849128, 0, 7, 56, 14, 1)
+  SURV (7231849128, 0, 7, 56, 14, 1)
+  SURV (7231849128, 0, 7, 56, 14, 2)
+  SURV (7231849128, 0, 7, 56, 14, 1)
+  SURV (69441624, 0, 3, 42, 20, 1)
+  SURV (69441624, 0, 3, 42, 20, 1)
+  SURV (12350321424, 0, 5, 49, 17, 1)
+  SURV (12350321424, 0, 5, 49, 17, 1)
+  SURV (12350321424, 0, 5, 49, 17, 1)
+  SURV (12350321424, 0, 5, 49, 17, 1)
+  SURV (12350321424, 0, 5, 49, 17, 1)
+  SURV (363182463, 0, 6, 39, 25, 2)
+  SURV (363182463, 0, 6, 39, 25, 2)
+  SURV (62762119218, 0, 10, 44, 23, 1)
+  SURV (62762119218, 0, 10, 44, 23, 1)

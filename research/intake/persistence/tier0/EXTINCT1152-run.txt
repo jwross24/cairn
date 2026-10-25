@@ -1,0 +1,7 @@
+primes ready: 192 [193, 769, 19841, 976193, 6187457, 834427406578561, 1253224535459902849] 384 [3457, 12289, 418725889, 1265011073] 1152 [19, 3169, 8929, 13249, 52579, 98641, 333667, 1067329, 999999000001, 577, 317752351489, 1153, 23041] [498s]
+14336 227888 0 78121827 k=6: surv384=1 bound 10^(10^239.0); per survivor (|T|, τ, tested, passed T, alive) [(5, 0, 9, 1, 1)]; surv1152=1 bound 10^(10^633.1) -> sandwich at 1152 [967s]
+28672 2227888 0 78121827 k=7: surv384=1 bound 10^(10^239.0); per survivor (|T|, τ, tested, passed T, alive) [(5, 0, 27, 1, 1)]; surv1152=1 bound 10^(10^633.1) -> sandwich at 1152 [1438s]
+28672 2244788 0 78121827 k=7: surv384=1 bound 10^(10^239.0); per survivor (|T|, τ, tested, passed T, alive) [(5, 0, 27, 1, 1)]; surv1152=1 bound 10^(10^633.1) -> sandwich at 1152 [1916s]
+28672 2244788 0 330812181 k=7: surv384=1 bound 10^(10^239.1); per survivor (|T|, τ, tested, passed T, alive) [(5, 0, 81, 1, 0)]; surv1152=0 -> CLOSED-cut at 1152 [1938s]
+28672 22224788 0 330812181 k=8: surv384=1 bound 10^(10^239.1); per survivor (|T|, τ, tested, passed T, alive) [(5, 0, 243, 1, 0)]; surv1152=0 -> CLOSED-cut at 1152 [1969s]
+42336 22334677 1 3281116734 k=8: surv384=1 bound 10^(10^239.2); per survivor (|T|, τ, tested, passed T, alive) [(5, 0, 81, 1, 1)]; surv1152=1 bound 10^(10^633.0) -> sandwich at 1152 [2464s]

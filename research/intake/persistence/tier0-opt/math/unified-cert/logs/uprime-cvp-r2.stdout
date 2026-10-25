@@ -1,0 +1,37 @@
+14336 47888 0 7411887 - - rep 0 done
+28672 78888 2 1411788 - - rep 0 done
+14336 227888 0 78121827 - - rep 0 done
+27216 266679 0 85766121 - - rep 0 done
+28672 247888 0 7411887 - - rep 0 done
+28672 444788 0 7411887 - - rep 0 done
+28672 444788 0 7411887 - - rep 1 done
+32928 446777 1 57177414 - - rep 0 done
+42336 366778 0 1361367 - - rep 0 done
+Traceback (most recent call last):
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/unified-cert/unified.py", line 16, in <module>
+    main()
+    ~~~~^^
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/unified-cert/ucert/run.py", line 116, in main
+    run_rep(p, ri, rep, args.backend, args.maxD, args.min, args.verify, log, cache, args.minmaxD)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/unified-cert/ucert/run.py", line 80, in run_rep
+    log(row)
+    ~~~^^^^^
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/math/unified-cert/ucert/run.py", line 108, in log
+    fo.write(json.dumps(row, sort_keys=True) + '\n')
+             ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/json/__init__.py", line 242, in dumps
+    **kw).encode(obj)
+          ~~~~~~^^^^^
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/json/encoder.py", line 202, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/json/encoder.py", line 263, in iterencode
+    return _iterencode(o, 0)
+  File "/Users/jwross/.local/share/uv/python/cpython-3.14.7-macos-aarch64-none/lib/python3.14/json/encoder.py", line 182, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type mpz is not JSON serializable
+when serializing list item 0
+when serializing dict item 'refused_point'
+when serializing list item 0
+when serializing dict item 'records'

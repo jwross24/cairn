@@ -1,0 +1,72 @@
+## A<64 equations 225 children (exact, from gate) 9821496856 sampled 365888730
+zero residue (child value = 0 mod p) per prime (fraction of all children, weighted; denominators here are all sampled):
+  p=73 zero fraction 0.01373
+  p=137 zero fraction 0.007289
+  p=99990001 zero fraction 3.001e-07
+per-prime marginal fail (residue outside the projection of the allowed coset onto that prime), among nonzero children:
+  p=73 fail 0.9723 [0.9723, 0.9724]   design pass 2/72
+  p=137 fail 0.7501 [0.7499, 0.7502]   design pass 34/136
+  p=99990001 fail 0.999 [0.999, 0.9991]   design pass 111100/99990000
+per l-part joint component marginal fail (hs/size = design survival):
+  comp 0 primes [73, 137, 99990001] mods [8, 8, 16] hs/size=8/1024  fail 0.9924 [0.9923, 0.9924]  design-fail 0.9922
+  comp 1 primes [73, 99990001] mods [9, 9] hs/size=1/81  fail 0.9878 [0.9878, 0.9878]  design-fail 0.9877
+  comp 2 primes [99990001] mods [625] hs/size=25/625  fail 0.9602 [0.9601, 0.9602]  design-fail 0.96
+  comp 3 primes [99990001] mods [11] hs/size=11/11  fail 0 [0, 0]  design-fail 0
+  comp 4 primes [137] mods [17] hs/size=17/17  fail 0 [0, 0]  design-fail 0
+  comp 5 primes [99990001] mods [101] hs/size=101/101  fail 0 [0, 0]  design-fail 0
+all components pass (coset test): 7.463e-06 [6.835e-06, 8.15e-06]   design 1/259200 = 3.858e-06
+cascade, children-weighted survival after each stage (nonzero children):
+  order 2,3,5  0.007801 [0.007776, 0.007826] -> 9.896e-05 [9.619e-05, 0.0001018] -> 7.463e-06 [6.835e-06, 8.15e-06]
+  order 5,3,2  0.04001 [0.03995, 0.04006] -> 0.0004936 [0.0004873, 0.0005] -> 7.463e-06 [6.835e-06, 8.15e-06]
+  order 3,5,2  0.01235 [0.01232, 0.01238] -> 0.0004936 [0.0004873, 0.0005] -> 7.463e-06 [6.835e-06, 8.15e-06]
+  order 2,5,3  0.007801 [0.007776, 0.007826] -> 0.0003135 [0.0003085, 0.0003185] -> 7.463e-06 [6.835e-06, 8.15e-06]
+  order 5,2,3  0.04001 [0.03995, 0.04006] -> 0.0003135 [0.0003085, 0.0003185] -> 7.463e-06 [6.835e-06, 8.15e-06]
+  order 3,2,5  0.01235 [0.01232, 0.01238] -> 9.896e-05 [9.619e-05, 0.0001018] -> 7.463e-06 [6.835e-06, 8.15e-06]
+conditional survival of the 2-part after 5-part, of the 3-part after 5-part, children-weighted:
+  P(c0 ok | c2 ok) = 0.007835
+  P(c1 ok | c2 ok) = 0.01234
+  P(c1 ok | c0 ok) = 0.01269
+  P(c0 ok | c1 ok) = 0.008013
+  P(c2 ok | c0 ok) = 0.04018
+  P(c2 ok | c1 ok) = 0.03997
+  comp 0 per-equation fail min/median/max: 0.9860 / 0.9923 / 0.9936
+  comp 1 per-equation fail min/median/max: 0.9775 / 0.9877 / 0.9897
+  comp 2 per-equation fail min/median/max: 0.9514 / 0.9601 / 0.9663
+zero fraction per equation min/median/max: 0.01003 / 0.02102 / 0.02554
+rho=1 (exact) equations 127 sampled equations 98
+## A>=64 (parents unverified, level-12 audit pending) equations 3 children (exact, from gate) 17356821196 sampled 8993105
+zero residue (child value = 0 mod p) per prime (fraction of all children, weighted; denominators here are all sampled):
+  p=73 zero fraction 0.01368
+  p=137 zero fraction 0.007257
+  p=99990001 zero fraction 2.965e-07
+per-prime marginal fail (residue outside the projection of the allowed coset onto that prime), among nonzero children:
+  p=73 fail 0.9724 [0.9723, 0.9725]   design pass 2/72
+  p=137 fail 0.7502 [0.7499, 0.7505]   design pass 34/136
+  p=99990001 fail 0.9991 [0.9991, 0.9991]   design pass 111100/99990000
+per l-part joint component marginal fail (hs/size = design survival):
+  comp 0 primes [73, 137, 99990001] mods [8, 8, 16] hs/size=8/1024  fail 0.9924 [0.9923, 0.9925]  design-fail 0.9922
+  comp 1 primes [73, 99990001] mods [9, 9] hs/size=1/81  fail 0.9879 [0.9878, 0.9879]  design-fail 0.9877
+  comp 2 primes [99990001] mods [625] hs/size=25/625  fail 0.96 [0.9599, 0.9601]  design-fail 0.96
+  comp 3 primes [99990001] mods [11] hs/size=11/11  fail 0 [0, 0]  design-fail 0
+  comp 4 primes [137] mods [17] hs/size=17/17  fail 0 [0, 0]  design-fail 0
+  comp 5 primes [99990001] mods [101] hs/size=101/101  fail 0 [0, 0]  design-fail 0
+all components pass (coset test): 3.273e-06 [2.225e-06, 4.812e-06]   design 1/259200 = 3.858e-06
+cascade, children-weighted survival after each stage (nonzero children):
+  order 2,3,5  0.007815 [0.007753, 0.007878] -> 9.665e-05 [8.994e-05, 0.0001039] -> 3.273e-06 [2.225e-06, 4.812e-06]
+  order 5,3,2  0.0402 [0.04006, 0.04034] -> 0.000503 [0.0004874, 0.0005191] -> 3.273e-06 [2.225e-06, 4.812e-06]
+  order 3,5,2  0.01235 [0.01227, 0.01243] -> 0.000503 [0.0004874, 0.0005191] -> 3.273e-06 [2.225e-06, 4.812e-06]
+  order 2,5,3  0.007815 [0.007753, 0.007878] -> 0.0003133 [0.000301, 0.000326] -> 3.273e-06 [2.225e-06, 4.812e-06]
+  order 5,2,3  0.0402 [0.04006, 0.04034] -> 0.0003133 [0.000301, 0.000326] -> 3.273e-06 [2.225e-06, 4.812e-06]
+  order 3,2,5  0.01235 [0.01227, 0.01243] -> 9.665e-05 [8.994e-05, 0.0001039] -> 3.273e-06 [2.225e-06, 4.812e-06]
+conditional survival of the 2-part after 5-part, of the 3-part after 5-part, children-weighted:
+  P(c0 ok | c2 ok) = 0.007793
+  P(c1 ok | c2 ok) = 0.01251
+  P(c1 ok | c0 ok) = 0.01237
+  P(c0 ok | c1 ok) = 0.007827
+  P(c2 ok | c0 ok) = 0.04008
+  P(c2 ok | c1 ok) = 0.04073
+  comp 0 per-equation fail min/median/max: 0.9923 / 0.9924 / 0.9925
+  comp 1 per-equation fail min/median/max: 0.9878 / 0.9879 / 0.9879
+  comp 2 per-equation fail min/median/max: 0.9599 / 0.9600 / 0.9601
+zero fraction per equation min/median/max: 0.02088 / 0.02092 / 0.02098
+rho=1 (exact) equations 0 sampled equations 3

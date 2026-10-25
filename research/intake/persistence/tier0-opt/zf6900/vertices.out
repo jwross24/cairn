@@ -1,0 +1,10 @@
+corpus sizes new/old 8807 8807
+vertices new/old 177 177
+vertex set identical True
+k_max identical per vertex True
+new vertices []
+max k_max overall new/old 44 44
+max k_max per tree new {2: 29, 4: 31, 6: 36, 8: 44}
+max k_max per tree old {2: 29, 4: 31, 6: 36, 8: 44}
+vertices with k_max > 44: []
+top k_max vertices new [(44, 727326941773824), (42, 112717121716224), (36, 1438916737499136), (35, 913217421312), (34, 3416267673274176), (31, 128421199872), (29, 1811939328), (28, 2113929216), (27, 3699376128)]

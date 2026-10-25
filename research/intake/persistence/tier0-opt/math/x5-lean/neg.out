@@ -1,0 +1,5 @@
+/private/tmp/claude-501/-Users-jwross-Documents-cairn/ec9f8f52-ce29-4a5c-9caf-2ecbd434509f/scratchpad/x5lean/X5Neg.lean:28:24: error: unsolved goals
+b c : ℤ
+hb : d₁ ∣ b
+hc : d₁ ∣ c
+⊢ False

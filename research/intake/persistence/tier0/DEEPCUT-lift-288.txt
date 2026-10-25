@@ -1,0 +1,9 @@
+level 288: new primes [19, 3169, 8929, 13249, 52579, 98641, 333667, 1067329, 999999000001]
+s=14336    M=227888       a=0 y=78121827    reps=1 lift [(288, 1, 1)] -> 1 alive, bound 10^4.9e+35 [64s]
+s=28672    M=2227888      a=0 y=78121827    reps=1 lift [(288, 1, 1)] -> 1 alive, bound 10^4.9e+35 [159s]
+s=28672    M=2244788      a=0 y=78121827    reps=2 lift [(288, 2, 1)] -> 1 alive, bound 10^4.9e+35 [284s]
+s=28672    M=2244788      a=0 y=330812181   reps=1 lift [(288, 1, 0)] -> CLOSED [381s]
+s=28672    M=22224788     a=0 y=330812181   reps=1 lift [(288, 1, 0)] -> CLOSED [524s]
+s=42336    M=22334677     a=1 y=3281116734  reps=1 lift [(288, 1, 1)] -> 1 alive, bound 10^4.9e+35 [622s]
+
+2 of 6 survivors closed by lifting to [288] + Lemma C

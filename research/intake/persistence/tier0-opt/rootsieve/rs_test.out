@@ -1,0 +1,16 @@
+samples 2000000
+rank 0 pat 1142327 zero 218828 pre 900408 surv 23091 surv_keep 1 openpat 541 openpat_keep 0
+rank 1 pat 762724 zero 146770 pre 600548 surv 15406 surv_keep 121 openpat 373 openpat_keep 0
+rank 2 pat 94949 zero 18160 pre 74835 surv 1954 surv_keep 1954 openpat 33 openpat_keep 33
+cap 60 rank 0 lines 117379 lines_keep 0 open 923 open_keep 0
+cap 60 rank 1 lines 78343 lines_keep 65 open 650 open_keep 0
+cap 60 rank 2 lines 9935 lines_keep 9935 open 47 open_keep 47
+cap 118 rank 0 lines 228998 lines_keep 1 open 1825 open_keep 0
+cap 118 rank 1 lines 152799 lines_keep 121 open 1279 open_keep 0
+cap 118 rank 2 lines 19397 lines_keep 19397 open 89 open_keep 89
+cap 160 rank 0 lines 309839 lines_keep 1 open 2501 open_keep 0
+cap 160 rank 1 lines 206665 lines_keep 166 open 1733 open_keep 0
+cap 160 rank 2 lines 26273 lines_keep 26273 open 124 open_keep 124
+a0hist rank 0: 63/1924 57/1936 50/1941 37/1906 42/1949 44/1965 43/1912 41/1863 39/1984 41/1864 43/1935 41/1912
+a0hist rank 1: 41/1313 33/1281 30/1290 29/1232 40/1271 30/1280 23/1287 37/1332 29/1287 29/1317 26/1255 26/1261
+a0hist rank 2: 4/165 7/182 1/157 2/186 3/181 2/158 1/145 2/174 2/154 2/141 2/168 5/143

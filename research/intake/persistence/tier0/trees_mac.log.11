@@ -1,0 +1,22 @@
+67 vertices, 1.37e+14 patterns
+resuming: 1349 equations already done, 20 vertices to go
+A_8 s=4148928 patterns=5.76e+11 CLOSED BELOW 10^1.3e+27 DIGITS; open 691; children [1783627776] known [1783627776] 922s
+A_2 s=393216 patterns=6.01e+11 CLOSED BELOW 10^1.3e+27 DIGITS; open 2153; children [] known [] 1548s
+A_6 s=1778112 patterns=8.04e+11 CLOSED BELOW 10^1.3e+27 DIGITS; open 1232; children [] known [] 1202s
+A_6 s=2667168 patterns=8.73e+11 CLOSED BELOW 10^1.3e+27 DIGITS; open 1245; children [] known [] 1233s
+A_6 s=19361664 patterns=1.05e+12 CLOSED BELOW 10^1.3e+27 DIGITS; open 711; children [] known [] 2500s
+A_6 s=221184 patterns=1.13e+12 CLOSED BELOW 10^1.3e+27 DIGITS; open 4432; children [] known [] 2176s
+A_6 s=3211264 patterns=1.18e+12 CLOSED BELOW 10^1.3e+27 DIGITS; open 1560; children [] known [] 6398s
+A_6 s=331776 patterns=2.33e+12 CLOSED BELOW 10^1.3e+27 DIGITS; open 7066; children [914838624] known [914838624] 3708s
+A_2 s=11239424 patterns=2.33e+12 CLOSED BELOW 10^1.3e+27 DIGITS; open 1342; children [] known [] 6695s
+A_8 s=3779136 patterns=4.19e+12 CLOSED BELOW 10^1.3e+27 DIGITS; open 4907; children [] known [] 5324s
+A_6 s=2939328 patterns=5.63e+12 CLOSED BELOW 10^1.3e+27 DIGITS; open 6565; children [1792336896, 3699376128] known [1792336896, 3699376128] 5418s
+A_6 s=69441624 patterns=7.47e+12 CLOSED BELOW 10^1.3e+27 DIGITS; open 1710; children [] known [] 8560s
+A_6 s=3281116734 patterns=7.49e+12 CLOSED BELOW 10^1.3e+27 DIGITS; open 466; children [] known [] 7690s
+A_4 s=1161216 patterns=1.00e+13 CLOSED BELOW 10^1.3e+27 DIGITS; open 16727; children [128421199872] known [128421199872] 16456s
+A_2 s=7112448 patterns=1.04e+13 CLOSED BELOW 10^1.3e+27 DIGITS; open 8766; children [] known [] 18396s
+A_6 s=13226976 patterns=1.17e+13 CLOSED BELOW 10^1.3e+27 DIGITS; open 8044; children [] known [] 12451s
+A_6 s=46294416 patterns=1.57e+13 CLOSED BELOW 10^1.3e+27 DIGITS; open 6252; children [] known [] 16389s
+A_2 s=1741824 patterns=1.59e+13 CLOSED BELOW 10^1.3e+27 DIGITS; open 22743; children [368947264] known [368947264] 14601s
+A_6 s=1492992 patterns=1.61e+13 CLOSED BELOW 10^1.3e+27 DIGITS; open 23785; children [4444263936, 23612624896] known [4444263936, 23612624896] 15306s
+A_6 s=9483264 patterns=1.91e+13 CLOSED BELOW 10^1.3e+27 DIGITS; open 13895; children [] known [] 19993s

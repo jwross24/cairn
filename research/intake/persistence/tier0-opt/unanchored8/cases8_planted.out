@@ -1,0 +1,11 @@
+Lambda_96: index 2.810e+56 [0.00s]
+s=11239424   M=2222222222227778 a=1  y=0            reps=1   cases=6912    bound 10^(10^71.29) digits
+s=11239424   M=2222222222227778 a=1  y=0            reps=1   cases=5760    bound 10^(10^71.29) digits
+s=11239424   M=2222222222227778 a=1  y=0            reps=1   cases=4320    bound 10^(10^71.35) digits
+s=11239424   M=222222222444777 a=0  y=0            reps=1   cases=6144    bound 10^(10^71.93) digits
+s=11239424   M=222222222444777 a=0  y=0            reps=1   cases=6144    bound 10^(10^71.85) digits
+s=1161216    M=22222222233667 a=2  y=0            reps=1   cases=1296    bound 10^(10^72.07) digits
+s=1161216    M=22222222233667 a=2  y=0            reps=1   cases=512     bound 10^(10^72.07) digits
+s=1161216    M=22222222233667 a=2  y=0            reps=1   cases=720     bound 10^(10^72.07) digits
+
+8 anchored patterns (8 representations): 0 CLOSED outright by the deep cut; others: bound >= 10^(10^71.29) digits [0s]

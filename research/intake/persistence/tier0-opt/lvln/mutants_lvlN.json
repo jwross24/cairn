@@ -1,0 +1,137 @@
+[
+ {
+  "name": "m_lvlN_L1_crt_coeff",
+  "target": "lvlN",
+  "find": "  for(int j=0;j<nf[i];j++){ ull xq=factor_log(i,j,h); acc+=(u128)xq*phf[i][j].crtc; }",
+  "replace": "  for(int j=0;j<nf[i];j++){ ull xq=factor_log(i,j,h); acc+=(u128)xq*phf[i][j].cof; }",
+  "expect": "kill",
+  "source": "tier0-opt/lvln/mutants",
+  "note": "lift lever mutant"
+ },
+ {
+  "name": "m_lvlN_L1_no_verify_bsgs_shift",
+  "target": "lvlN",
+  "find": "  for(ull i=0;i<m+1;i++){ ull jv; if(hget(f,cur,&jv)) return (i*m+jv)%f->q; cur=mulmod(cur,ginv_m,p); }",
+  "replace": "  for(ull i=0;i<m+1;i++){ ull jv; if(hget(f,cur,&jv)) return (i*m+jv+1)%f->q; cur=mulmod(cur,ginv_m,p); }",
+  "expect": "kill",
+  "source": "tier0-opt/lvln/mutants",
+  "note": "lift lever mutant"
+ },
+ {
+  "name": "m_lvlN_L2_offset_sign",
+  "target": "lvlN",
+  "find": "      idx=idx*m+(ull)(((ll)lg+(ll)m-bm[c][j])%(ll)m); }",
+  "replace": "      idx=idx*m+(ull)(((ll)lg+(ll)bm[c][j])%(ll)m); }",
+  "expect": "kill",
+  "source": "tier0-opt/lvln/mutants",
+  "note": "lift lever mutant"
+ },
+ {
+  "name": "m_lvlN_L2_skip_lin_dead",
+  "target": "lvlN",
+  "find": "    if(key%d){cnt_dead++; return;} ll f=key/d, mm=mq/d; ll s=0; if(mm>1){ ll gi=(g/d)%mm; if(gi<0) gi+=mm; s=(ll)mulmod((ull)(f%mm),(ull)invmod((ull)gi,(ull)mm),(ull)mm); }",
+  "replace": "    if(key%d){cnt_dead++; } ll f=key/d, mm=mq/d; ll s=0; if(mm>1){ ll gi=(g/d)%mm; if(gi<0) gi+=mm; s=(ll)mulmod((ull)(f%mm),(ull)invmod((ull)gi,(ull)mm),(ull)mm); }",
+  "expect": "equivalent-argued",
+  "source": "tier0-opt/lvln/mutants",
+  "note": "Proof (process_rest linear loop). The branch `if(key%d){cnt_dead++; return;}` is taken only if d>1, d=gcd(g,m), g=gcd(lg1,lg2), m=lmod. The only linear component in any level (24, 48, 96 have nlin=0,0,1) is p=75118313082913 with m=29406683 prime, lg1=28249472, lg2=23976715 (both nonzero mod m, identical for every multiset because the lift lattice and prime list depend only on the level; unit/lin_probe.py prints them for 3 multisets). d divides the prime m, so d=m iff m divides g, which divides lg1; lg1<m and lg1>0, so d=1 and key%1==0: the mutated branch is unreachable."
+ },
+ {
+  "name": "m_lvlN_L2_wrong_factor",
+  "target": "lvlN",
+  "find": "    for(int f=0;f<nf[i];f++) if(phf[i][f].qe==(ull)cmod[c][j]) cfac[c][j]=f;",
+  "replace": "    for(int f=0;f<nf[i];f++) if(phf[i][f].qe==(ull)cmod[c][j]) {cfac[c][j]=f; break;} if(cfac[c][j]>0) cfac[c][j]--;",
+  "expect": "kill",
+  "source": "tier0-opt/lvln/mutants",
+  "note": "lift lever mutant"
+ },
+ {
+  "name": "m_lvlN_L3_zero_not_counted",
+  "target": "lvlN",
+  "find": "  for(int i=0;i<np;i++){ ull yy=ycur[i]%P[i]; if(yy==0){cnt_zero++; return;} y[i]=yy; }",
+  "replace": "  for(int i=0;i<np;i++){ ull yy=ycur[i]%P[i]; if(yy==0){return;} y[i]=yy; }",
+  "expect": "kill",
+  "source": "tier0-opt/lvln/mutants",
+  "note": "lift lever mutant"
+ },
+ {
+  "name": "m_lvlN_L4_redc_no_sub",
+  "target": "lvlN",
+  "find": "static inline ull redc(u128 T, ull p, ull ninv){ ull m=(ull)T*ninv; ull t=(ull)((T+(u128)m*p)>>64); return t>=p?t-p:t; }",
+  "replace": "static inline ull redc(u128 T, ull p, ull ninv){ ull m=(ull)T*ninv; ull t=(ull)((T+(u128)m*p)>>64); return t; }",
+  "expect": "equivalent-argued",
+  "source": "tier0-opt/lvln/mutants",
+  "note": "Proof (lvlN.c redc/powmod_mont/powmod_mont_n). p odd, p<2^54. Intermediate REDC outputs are only ever multiplied again; for inputs r,x<2p, t<(4p^2+2^64 p)/2^64<2p, so the lazy value stays <2p, no u128 overflow, and is congruent mod p. Only the final redc(r) is observed (used as the subgroup-table key in factor_log). There T=r<2p, m<=2^64-1, so t>=p needs r+m*p>=p*2^64, i.e. m=2^64-1 and r>=p, i.e. r=p (r<2p<2^64 and m=r*ninv forces r=p mod 2^64). r=p means y^e=0 mod p, impossible for y in [1,p-1] (zero y is counted as cnt_zero before any exponentiation). So the output is identical with and without the subtraction. Evidence: unit/test_redc_equiv.c reaches pre-subtraction values >=p in 20932 of 1.09e9 redc calls over all 15 level primes and finds 0 differing outputs in 3e7 powmods."
+ },
+ {
+  "name": "m_lvlN_L5_prefix_filter_drop_mark",
+  "target": "lvlN",
+  "find": "    #define MARK(ixv) { ull ixx=(ixv); ull ck=0, mul=1; for(int j=cn[c]-1;j>=0;j--){ ull m=(ull)cmod[c][j]; ull dgt=ixx%m; ixx/=m; if(ccheap[c][j]){ ck+=dgt*mul; mul*=m; } } cpm[c][ck]=1; }",
+  "replace": "    #define MARK(ixv) { ull ixx=(ixv); ull ck=0, mul=1; for(int j=cn[c]-1;j>=0;j--){ ull m=(ull)cmod[c][j]; ull dgt=ixx%m; ixx/=m; if(ccheap[c][j]){ ck+=dgt*mul; mul*=m; } } if(ck!=1) cpm[c][ck]=1; }",
+  "expect": "kill",
+  "source": "tier0-opt/lvln/mutants",
+  "note": "lift lever mutant"
+ },
+ {
+  "name": "m_lvlN_L5_prefix_overkill",
+  "target": "lvlN",
+  "find": "if(!cpm[c][ck]){cnt_dead++; return;} }\n    for(int j=0;j<cn[c];j++){",
+  "replace": "if(!cpm[c][ck^1]){cnt_dead++; return;} }\n    for(int j=0;j<cn[c];j++){",
+  "expect": "kill",
+  "source": "tier0-opt/lvln/mutants",
+  "note": "lift lever mutant"
+ },
+ {
+  "name": "m_lvlN_L6_ycur_not_undone",
+  "target": "lvlN",
+  "find": "      for(int i=0;i<np;i++) ycur[i]-=dsum[i]; }",
+  "replace": "      for(int i=0;i<np;i++) ycur[i]-=(k==m?0:dsum[i]); }",
+  "expect": "kill",
+  "source": "tier0-opt/lvln/mutants",
+  "note": "lift lever mutant"
+ },
+ {
+  "name": "m_lvlN_L7_dsum_swapped",
+  "target": "lvlN",
+  "find": "    { ull dsum[MAXP]; for(int i=0;i<np;i++){ ull ds=(ull)(d-1)*((ull)(m-k)*(ull)POW10[i][r]+(ull)k*(ull)POW10[i][r+Lold]); dsum[i]=ds; ycur[i]+=ds; }",
+  "replace": "    { ull dsum[MAXP]; for(int i=0;i<np;i++){ ull ds=(ull)(d-1)*((ull)k*(ull)POW10[i][r]+(ull)(m-k)*(ull)POW10[i][r+Lold]); dsum[i]=ds; ycur[i]+=ds; }",
+  "expect": "kill",
+  "source": "tier0-opt/lvln/mutants",
+  "note": "lift lever mutant"
+ },
+ {
+  "name": "m_lvlN_L7_pattern_has_off",
+  "target": "lvlN",
+  "find": "  memset(pattern_has,0,sizeof pattern_has); for(int j=0;j<q;j++) pattern_has[digits[j]][cureps[j]]++;",
+  "replace": "  memset(pattern_has,0,sizeof pattern_has); for(int j=0;j<q;j++) pattern_has[digits[j]][cureps[j]%Lold]++;",
+  "expect": "kill",
+  "source": "tier0-opt/lvln/mutants",
+  "note": "lift lever mutant"
+ },
+ {
+  "name": "m_lvlN_L8_drop_last_lane",
+  "target": "lvlN",
+  "find": "  for(int l=0;l<n;l++) out[l]=redc((u128)r[l],p,ni);",
+  "replace": "  for(int l=0;l<n-1;l++) out[l]=redc((u128)r[l],p,ni);",
+  "expect": "kill",
+  "source": "tier0-opt/lvln/mutants",
+  "note": "lift lever mutant"
+ },
+ {
+  "name": "m_lvlN_L8_memo_wrong_lane",
+  "target": "lvlN",
+  "find": "  for(int l=0;l<nbq;l++){ memcpy(cureps,bq[l].eps,sizeof(int)*q); memo_i=bi0; memo_f=bf0; memo_hq=hb[l]; process_rest(bq[l].y); memo_i=-1; }",
+  "replace": "  for(int l=0;l<nbq;l++){ memcpy(cureps,bq[l].eps,sizeof(int)*q); memo_i=bi0; memo_f=bf0; memo_hq=hb[(l+1)%nbq]; process_rest(bq[l].y); memo_i=-1; }",
+  "expect": "kill",
+  "source": "tier0-opt/lvln/mutants",
+  "note": "lift lever mutant"
+ },
+ {
+  "name": "m_lvlN_L8_no_final_flush",
+  "target": "lvlN",
+  "find": "    for(int dn=0;dn<2;dn++){ nu_cur=nu+dn*Lold; for(int i=0;i<np;i++) ycur[i]=(ull)R[i][nu_cur]; rec_groups(0,0); flush_bq(); }",
+  "replace": "    for(int dn=0;dn<2;dn++){ nu_cur=nu+dn*Lold; for(int i=0;i<np;i++) ycur[i]=(ull)R[i][nu_cur]; rec_groups(0,0); }",
+  "expect": "kill",
+  "source": "tier0-opt/lvln/mutants",
+  "note": "lift lever mutant"
+ }
+]

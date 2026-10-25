@@ -1,0 +1,3 @@
+#!/bin/zsh
+D="${0:A:h}"
+exec nice -n 10 uv run --no-project --with gmpy2 --with sympy python "$D/gatev2.py" "$@"

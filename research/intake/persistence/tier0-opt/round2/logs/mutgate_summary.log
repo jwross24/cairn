@@ -1,0 +1,4 @@
+m01_skip_9901_lookup 5 DIFF-lines; DIFF eq6.jsonl DIFF v189.jsonl DIFF v294.jsonl DIFF v72.jsonl DIFF c_oracle.jsonl 
+m02_skip_37_lookup 5 DIFF-lines; DIFF eq6.jsonl DIFF v189.jsonl DIFF v294.jsonl DIFF v72.jsonl DIFF c_oracle.jsonl 
+m03_lane_offset 5 DIFF-lines; DIFF eq6.jsonl DIFF v189.jsonl DIFF v294.jsonl DIFF v72.jsonl DIFF c_oracle.jsonl 
+m04_movemask_shift 5 DIFF-lines; DIFF eq6.jsonl DIFF v189.jsonl DIFF v294.jsonl DIFF v72.jsonl DIFF c_oracle.jsonl 

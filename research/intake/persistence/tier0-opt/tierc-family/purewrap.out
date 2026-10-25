@@ -1,0 +1,2 @@
+{"(False, False, 'CLOSED-cut')": 2, "(False, False, 'CLOSED-sandwich')": 11, "(False, True, 'CLOSED-cut')": 239, "(True, False, 'CLOSED-sandwich')": 171, "(True, True, 'CLOSED-cut')": 912}
+{"(False, False, 'CLOSED-sandwich')": 1166, "(False, True, 'CLOSED-cut')": 372, "(False, True, 'CLOSED-sandwich')": 1, "(True, False, 'CLOSED-sandwich')": 2250, "(True, True, 'CLOSED-cut')": 531}

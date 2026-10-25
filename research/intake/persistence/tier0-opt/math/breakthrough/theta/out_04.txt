@@ -1,0 +1,31 @@
+rank-3 lattice {2^a 3^b 7^c = 1 mod 5^L}: L=  1 verified=True  lambda_1(sup)=10^0.00   3*log10(lambda_1)/(L log10 5)=0.000
+rank-3 lattice {2^a 3^b 7^c = 1 mod 5^L}: L=  2 verified=True  lambda_1(sup)=10^0.30   3*log10(lambda_1)/(L log10 5)=0.646
+rank-3 lattice {2^a 3^b 7^c = 1 mod 5^L}: L=  3 verified=True  lambda_1(sup)=10^0.30   3*log10(lambda_1)/(L log10 5)=0.431
+rank-3 lattice {2^a 3^b 7^c = 1 mod 5^L}: L=  4 verified=True  lambda_1(sup)=10^0.70   3*log10(lambda_1)/(L log10 5)=0.750
+rank-3 lattice {2^a 3^b 7^c = 1 mod 5^L}: L=  6 verified=True  lambda_1(sup)=10^1.20   3*log10(lambda_1)/(L log10 5)=0.861
+rank-3 lattice {2^a 3^b 7^c = 1 mod 5^L}: L=  8 verified=True  lambda_1(sup)=10^1.58   3*log10(lambda_1)/(L log10 5)=0.848
+rank-3 lattice {2^a 3^b 7^c = 1 mod 5^L}: L= 12 verified=True  lambda_1(sup)=10^2.73   3*log10(lambda_1)/(L log10 5)=0.975
+rank-3 lattice {2^a 3^b 7^c = 1 mod 5^L}: L= 16 verified=True  lambda_1(sup)=10^3.62   3*log10(lambda_1)/(L log10 5)=0.971
+rank-3 lattice {2^a 3^b 7^c = 1 mod 5^L}: L= 24 verified=True  lambda_1(sup)=10^4.56   3*log10(lambda_1)/(L log10 5)=0.816
+rank-3 lattice {2^a 3^b 7^c = 1 mod 5^L}: L= 32 verified=True  lambda_1(sup)=10^7.10   3*log10(lambda_1)/(L log10 5)=0.952
+rank-3 lattice {2^a 3^b 7^c = 1 mod 5^L}: L= 48 verified=True  lambda_1(sup)=10^10.85   3*log10(lambda_1)/(L log10 5)=0.970
+rank-3 lattice {2^a 3^b 7^c = 1 mod 5^L}: L= 64 verified=True  lambda_1(sup)=10^14.56   3*log10(lambda_1)/(L log10 5)=0.977
+rank-3 lattice {2^a 3^b 7^c = 1 mod 5^L}: L= 96 verified=True  lambda_1(sup)=10^22.25   3*log10(lambda_1)/(L log10 5)=0.995
+rank-3 lattice {2^a 3^b 7^c = 1 mod 5^L}: L=128 verified=True  lambda_1(sup)=10^29.57   3*log10(lambda_1)/(L log10 5)=0.992
+planted negative (shift a basis vector by one): still satisfies the congruence? False
+
+true max 5-adic valuation of 2^a 3^b 7^c - 1 over the box sup<=B (largest L with lambda_1(L) <= B) versus the proved-type bound C_Yu*log2*log3*log7*log B:
+  B=10^ 3  true L* >=  12 (grid)   proved-type allowance 1.266e+16   slack >= 10^15.0   (true L*/log B = 1.74)
+  B=10^ 6  true L* >=  24 (grid)   proved-type allowance 2.532e+16   slack >= 10^15.0   (true L*/log B = 1.74)
+  B=10^12  true L* >=  48 (grid)   proved-type allowance 5.064e+16   slack >= 10^15.0   (true L*/log B = 1.74)
+  B=10^24  true L* >=  96 (grid)   proved-type allowance 1.013e+17   slack >= 10^15.0   (true L*/log B = 1.74)
+  B=10^48  true L* >= 128 (grid)   proved-type allowance 2.026e+17   slack >= 10^15.2   (true L*/log B = 1.16)
+
+10-adic rank-2 lattice {3^b 7^c = 1 mod 10^L} (this is the object whose shortest vector is ~sqrt(det)):
+  L=  4 verified=True det=10^3.30 lambda_1=10^1.38   L/log10(lambda_1)=2.898
+  L=  8 verified=True det=10^7.30 lambda_1=10^3.36   L/log10(lambda_1)=2.382
+  L= 16 verified=True det=10^15.30 lambda_1=10^7.39   L/log10(lambda_1)=2.165
+  L= 32 verified=True det=10^31.30 lambda_1=10^15.57   L/log10(lambda_1)=2.055
+  L= 48 verified=True det=10^47.30 lambda_1=10^23.50   L/log10(lambda_1)=2.042
+  L= 64 verified=True det=10^63.30 lambda_1=10^31.40   L/log10(lambda_1)=2.038
+  L= 96 verified=True det=10^95.30 lambda_1=10^47.34   L/log10(lambda_1)=2.028

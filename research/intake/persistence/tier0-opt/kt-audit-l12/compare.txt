@@ -1,0 +1,56 @@
+139968_233334666 A 56 {'prod': 10020, 'fix1': 10020, 'fix2': 10020} {'prod': '76e0085a0b50', 'fix1': '76e0085a0b50', 'fix2': '76e0085a0b50'}
+   prod_vs_fix1 IDENTICAL
+   prod_vs_fix2 IDENTICAL
+   fix1_vs_fix2 IDENTICAL
+393216_222222222222222223 A 58 {'prod': 99806, 'fix1': 99806, 'fix2': 99806} {'prod': 'fd838f9d4bc6', 'fix1': 'fd838f9d4bc6', 'fix2': 'fd838f9d4bc6'}
+   prod_vs_fix1 IDENTICAL
+   prod_vs_fix2 IDENTICAL
+   fix1_vs_fix2 IDENTICAL
+1417176_23333333669 A 61 {'prod': 55283, 'fix1': 55283, 'fix2': 55283} {'prod': '3d12582cf819', 'fix1': '3d12582cf819', 'fix2': '3d12582cf819'}
+   prod_vs_fix1 IDENTICAL
+   prod_vs_fix2 IDENTICAL
+   fix1_vs_fix2 IDENTICAL
+3211264_222222222222222277 A 60 {'prod': 436870, 'fix1': 436870, 'fix2': 436870} {'prod': '80da69c33c15', 'fix1': '80da69c33c15', 'fix2': '80da69c33c15'}
+   prod_vs_fix1 IDENTICAL
+   prod_vs_fix2 IDENTICAL
+   fix1_vs_fix2 IDENTICAL
+393216_22222222222222234 A 66 {'prod': 2858343, 'fix1': 470870, 'fix2': 493449} {'prod': '52f6c070b963', 'fix1': '26a34796e546', 'fix2': '396f64f9a52b'}
+   prod_vs_fix1 first_only=2387473 (a>=64:2387473) second_only=0 (a>=64:0, a<64:0/0) common=470870
+   prod_vs_fix2 first_only=2364894 (a>=64:2364894) second_only=0 (a>=64:0, a<64:0/0) common=493449
+   fix1_vs_fix2 first_only=0 (a>=64:0) second_only=22579 (a>=64:22579, a<64:0/0) common=470870
+3779136_233333334666 A 64 {'prod': 1981162, 'fix1': 338084, 'fix2': 343200} {'prod': '7230a43ed930', 'fix1': '4fd8b5c85894', 'fix2': '8c09d4d635f5'}
+   prod_vs_fix1 first_only=1643078 (a>=64:1643078) second_only=0 (a>=64:0, a<64:0/0) common=338084
+   prod_vs_fix2 first_only=1637962 (a>=64:1637962) second_only=0 (a>=64:0, a<64:0/0) common=343200
+   fix1_vs_fix2 first_only=0 (a>=64:0) second_only=5116 (a>=64:5116, a<64:0/0) common=338084
+2939328_23333346667 A 65 {'prod': 3472789, 'fix1': 559960, 'fix2': 577539} {'prod': 'b9a8e5df3bf9', 'fix1': '528413bcb69c', 'fix2': 'cc7c4a78459b'}
+   prod_vs_fix1 first_only=2912829 (a>=64:2912829) second_only=0 (a>=64:0, a<64:0/0) common=559960
+   prod_vs_fix2 first_only=2895250 (a>=64:2895250) second_only=0 (a>=64:0, a<64:0/0) common=577539
+   fix1_vs_fix2 first_only=0 (a>=64:0) second_only=17579 (a>=64:17579, a<64:0/0) common=559960
+331776_22222222233338 A 65 {'prod': 4201366, 'fix1': 1128918, 'fix2': 1163628} {'prod': '1ea81c4130d2', 'fix1': 'a8aa6d604b91', 'fix2': '8922a247aa14'}
+   prod_vs_fix1 first_only=3072448 (a>=64:3072448) second_only=0 (a>=64:0, a<64:0/0) common=1128918
+   prod_vs_fix2 first_only=3037738 (a>=64:3037738) second_only=0 (a>=64:0, a<64:0/0) common=1163628
+   fix1_vs_fix2 first_only=0 (a>=64:0) second_only=34710 (a>=64:34710, a<64:0/0) common=1128918
+11239424_222222222222222777 A 64 {'prod': 4056812, 'fix1': 1317572, 'fix2': 1337945} {'prod': 'dacf9d30f8be', 'fix1': '40e4c3f8a03b', 'fix2': '6018178a7bb9'}
+   prod_vs_fix1 first_only=2739240 (a>=64:2739240) second_only=0 (a>=64:0, a<64:0/0) common=1317572
+   prod_vs_fix2 first_only=2718867 (a>=64:2718867) second_only=0 (a>=64:0, a<64:0/0) common=1337945
+   fix1_vs_fix2 first_only=0 (a>=64:0) second_only=20373 (a>=64:20373, a<64:0/0) common=1317572
+69441624_33333333334677 A 67 {'prod': 12011356, 'fix1': 235555, 'fix2': 249532} {'prod': '54728c95c438', 'fix1': '6c6e4aa57842', 'fix2': 'a1427f71e7dd'}
+   prod_vs_fix1 first_only=11775801 (a>=64:11775801) second_only=0 (a>=64:0, a<64:0/0) common=235555
+   prod_vs_fix2 first_only=11761824 (a>=64:11761824) second_only=0 (a>=64:0, a<64:0/0) common=249532
+   fix1_vs_fix2 first_only=0 (a>=64:0) second_only=13977 (a>=64:13977, a<64:0/0) common=235555
+1492992_222222222223399 A 67 {'prod': 15271104, 'fix1': 2133735, 'fix2': 2271772} {'prod': '466972fd091e', 'fix1': '881366fcace2', 'fix2': 'b20049f1338f'}
+   prod_vs_fix1 first_only=13137369 (a>=64:13137369) second_only=0 (a>=64:0, a<64:0/0) common=2133735
+   prod_vs_fix2 first_only=12999332 (a>=64:12999332) second_only=0 (a>=64:0, a<64:0/0) common=2271772
+   fix1_vs_fix2 first_only=0 (a>=64:0) second_only=138037 (a>=64:138037, a<64:0/0) common=2133735
+46294416_3333333346677 A 64 {'prod': 5888384, 'fix1': 558897, 'fix2': 567523} {'prod': 'f7b825456a28', 'fix1': '0ab919d90c7f', 'fix2': '12ed4dd7cc34'}
+   prod_vs_fix1 first_only=5329487 (a>=64:5329487) second_only=0 (a>=64:0, a<64:0/0) common=558897
+   prod_vs_fix2 first_only=5320861 (a>=64:5320861) second_only=0 (a>=64:0, a<64:0/0) common=567523
+   fix1_vs_fix2 first_only=0 (a>=64:0) second_only=8626 (a>=64:8626, a<64:0/0) common=558897
+11239424_2222222222227778 A 64 {'prod': 8440846, 'fix1': 2722445, 'fix2': 2764491} {'prod': '1f04a5ba25ce', 'fix1': '8bd44590e9cf', 'fix2': '378c4950ff6d'}
+   prod_vs_fix1 first_only=5718401 (a>=64:5718401) second_only=0 (a>=64:0, a<64:0/0) common=2722445
+   prod_vs_fix2 first_only=5676355 (a>=64:5676355) second_only=0 (a>=64:0, a<64:0/0) common=2764491
+   fix1_vs_fix2 first_only=0 (a>=64:0) second_only=42046 (a>=64:42046, a<64:0/0) common=2722445
+3779136_22223333333366 A 65 {'prod': 11450175, 'fix1': 2767056, 'fix2': 2855362} {'prod': '436259fae5d0', 'fix1': 'ebf93c8263c1', 'fix2': 'ee49a1812986'}
+   prod_vs_fix1 first_only=8683119 (a>=64:8683119) second_only=0 (a>=64:0, a<64:0/0) common=2767056
+   prod_vs_fix2 first_only=8594813 (a>=64:8594813) second_only=0 (a>=64:0, a<64:0/0) common=2855362
+   fix1_vs_fix2 first_only=0 (a>=64:0) second_only=88306 (a>=64:88306, a<64:0/0) common=2767056

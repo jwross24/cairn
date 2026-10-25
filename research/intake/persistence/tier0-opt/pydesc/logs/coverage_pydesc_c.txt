@@ -1,0 +1,17 @@
+Filename                                      Regions    Missed Regions     Cover   Functions  Missed Functions  Executed       Lines      Missed Lines     Cover    Branches   Missed Branches     Cover
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/private/tmp/persist-pydesc/work/pydesc.c        1504               128    91.49%          53                 0   100.00%         982                10    98.98%         773               172    77.75%
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+TOTAL                                            1504               128    91.49%          53                 0   100.00%         982                10    98.98%         773               172    77.75%
+
+uncovered lines:
+  324:        mpz_set_ui(k1b, 1); mpz_set_ui(k1c, 0); mpz_set_ui(k2b, 0); mpz_set_ui(k2c, 1);
+  804:        code = 9;
+  805:        sv_clear(sols);
+  806:        sv_init(sols);
+  807:    }
+ 1027:            for (int k = 0; k < 4; k++) mpz_clear(ul[k]);
+ 1028:            mpz_clear(vb); mpz_clear(vc);
+ 1029:            free(work);
+ 1030:            return 2;
+ 1031:        }

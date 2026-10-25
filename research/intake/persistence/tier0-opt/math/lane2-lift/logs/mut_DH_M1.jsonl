@@ -1,0 +1,228 @@
+{"eq": "28672_78888", "name": "DH", "mut": "M1", "count": 2, "outputs": 1, "caught": false, "cpu": 0.026119999999999997, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "14336_47888", "name": "DH", "mut": "M1", "count": 2, "outputs": 1, "caught": false, "cpu": 0.020197, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "14336_444478", "name": "DH", "mut": "M1", "count": 2, "outputs": 0, "caught": false, "cpu": 0.022001}
+{"eq": "124416_666889", "name": "DH", "mut": "M1", "count": 0, "outputs": 0, "caught": false, "cpu": 0.033089}
+{"eq": "14336_227888", "name": "DH", "mut": "M1", "count": 1, "outputs": 1, "caught": false, "cpu": 0.03458, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "28672_4444447", "name": "DH", "mut": "M1", "count": 4, "outputs": 0, "caught": false, "cpu": 0.028628999999999998}
+{"eq": "124416_388899", "name": "DH", "mut": "M1", "count": 1, "outputs": 0, "caught": false, "cpu": 0.030772}
+{"eq": "28672_444788", "name": "DH", "mut": "M1", "count": 2, "outputs": 1, "caught": false, "cpu": 0.023745999999999996, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "14336_244788", "name": "DH", "mut": "M1", "count": 1, "outputs": 0, "caught": false, "cpu": 0.030414999999999998}
+{"eq": "28672_247888", "name": "DH", "mut": "M1", "count": 7, "outputs": 2, "caught": false, "cpu": 0.019545, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_468899", "name": "DH", "mut": "M1", "count": 1, "outputs": 1, "caught": false, "cpu": 0.026046, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_3338889", "name": "DH", "mut": "M1", "count": 2, "outputs": 0, "caught": false, "cpu": 0.01707}
+{"eq": "124416_4466666", "name": "DH", "mut": "M1", "count": 6, "outputs": 2, "caught": false, "cpu": 0.017396, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "14336_2444447", "name": "DH", "mut": "M1", "count": 7, "outputs": 1, "caught": false, "cpu": 0.016835, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_2666668", "name": "DH", "mut": "M1", "count": 9, "outputs": 4, "caught": false, "cpu": 0.024972, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_4444699", "name": "DH", "mut": "M1", "count": 6, "outputs": 1, "caught": false, "cpu": 0.019908, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_33333888", "name": "DH", "mut": "M1", "count": 0, "outputs": 0, "caught": false, "cpu": 0.016375999999999998}
+{"eq": "124416_4446669", "name": "DH", "mut": "M1", "count": 9, "outputs": 2, "caught": false, "cpu": 0.018496, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "28672_2227888", "name": "DH", "mut": "M1", "count": 5, "outputs": 4, "caught": false, "cpu": 0.028575, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_3366688", "name": "DH", "mut": "M1", "count": 9, "outputs": 3, "caught": false, "cpu": 0.017692, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "28672_2444478", "name": "DH", "mut": "M1", "count": 7, "outputs": 0, "caught": false, "cpu": 0.017984}
+{"eq": "124416_3444899", "name": "DH", "mut": "M1", "count": 10, "outputs": 4, "caught": false, "cpu": 0.017633, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_3466668", "name": "DH", "mut": "M1", "count": 22, "outputs": 10, "caught": false, "cpu": 0.025509, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_2268899", "name": "DH", "mut": "M1", "count": 7, "outputs": 3, "caught": false, "cpu": 0.024287999999999997, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "28672_2244788", "name": "DH", "mut": "M1", "count": 11, "outputs": 8, "caught": false, "cpu": 0.018788, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "14336_2224788", "name": "DH", "mut": "M1", "count": 32, "outputs": 10, "caught": false, "cpu": 0.030895, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "14336_2244478", "name": "DH", "mut": "M1", "count": 41, "outputs": 17, "caught": false, "cpu": 0.016965, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_2348899", "name": "DH", "mut": "M1", "count": 24, "outputs": 3, "caught": false, "cpu": 0.027496, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_3346889", "name": "DH", "mut": "M1", "count": 25, "outputs": 4, "caught": false, "cpu": 0.017916, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "28672_22444447", "name": "DH", "mut": "M1", "count": 20, "outputs": 9, "caught": false, "cpu": 0.04165, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "14336_22222788", "name": "DH", "mut": "M1", "count": 26, "outputs": 10, "caught": false, "cpu": 0.016273, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_2446899", "name": "DH", "mut": "M1", "count": 28, "outputs": 7, "caught": false, "cpu": 0.019063999999999998, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_2466689", "name": "DH", "mut": "M1", "count": 44, "outputs": 11, "caught": false, "cpu": 0.03177, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_2366889", "name": "DH", "mut": "M1", "count": 24, "outputs": 1, "caught": false, "cpu": 0.031043, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_22466666", "name": "DH", "mut": "M1", "count": 24, "outputs": 10, "caught": false, "cpu": 0.016717999999999997, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_3446689", "name": "DH", "mut": "M1", "count": 50, "outputs": 20, "caught": false, "cpu": 0.028884999999999997, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "14336_22244447", "name": "DH", "mut": "M1", "count": 24, "outputs": 9, "caught": false, "cpu": 0.029094000000000002, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_33444469", "name": "DH", "mut": "M1", "count": 14, "outputs": 7, "caught": false, "cpu": 0.027919, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_23444499", "name": "DH", "mut": "M1", "count": 28, "outputs": 15, "caught": false, "cpu": 0.030177999999999996, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_33344489", "name": "DH", "mut": "M1", "count": 22, "outputs": 13, "caught": false, "cpu": 0.031467999999999996, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_33334688", "name": "DH", "mut": "M1", "count": 21, "outputs": 9, "caught": false, "cpu": 0.028260999999999998, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_33444666", "name": "DH", "mut": "M1", "count": 13, "outputs": 5, "caught": false, "cpu": 0.020172999999999996, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_333334448", "name": "DH", "mut": "M1", "count": 11, "outputs": 4, "caught": false, "cpu": 0.027628, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "9437184_334888888", "name": "DH", "mut": "M1", "count": 10, "outputs": 2, "caught": false, "cpu": 0.021464, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "393216_23448888", "name": "DH", "mut": "M1", "count": 13, "outputs": 8, "caught": false, "cpu": 0.027238, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "9437184_228888889", "name": "DH", "mut": "M1", "count": 12, "outputs": 2, "caught": false, "cpu": 0.021852, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "28672_22224788", "name": "DH", "mut": "M1", "count": 45, "outputs": 14, "caught": false, "cpu": 0.026696, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_23446666", "name": "DH", "mut": "M1", "count": 32, "outputs": 13, "caught": false, "cpu": 0.025935999999999997, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "14336_22224478", "name": "DH", "mut": "M1", "count": 71, "outputs": 24, "caught": false, "cpu": 0.018756, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "393216_22468888", "name": "DH", "mut": "M1", "count": 20, "outputs": 12, "caught": false, "cpu": 0.019243, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_22366668", "name": "DH", "mut": "M1", "count": 41, "outputs": 15, "caught": false, "cpu": 0.021536999999999997, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "28672_222222788", "name": "DH", "mut": "M1", "count": 33, "outputs": 12, "caught": false, "cpu": 0.028765, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_33344668", "name": "DH", "mut": "M1", "count": 22, "outputs": 14, "caught": false, "cpu": 0.030835, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_333344446", "name": "DH", "mut": "M1", "count": 11, "outputs": 5, "caught": false, "cpu": 0.021503, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_22238899", "name": "DH", "mut": "M1", "count": 38, "outputs": 3, "caught": false, "cpu": 0.02115, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "393216_24446888", "name": "DH", "mut": "M1", "count": 39, "outputs": 6, "caught": false, "cpu": 0.019471, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_23336688", "name": "DH", "mut": "M1", "count": 32, "outputs": 17, "caught": false, "cpu": 0.024978, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_222266666", "name": "DH", "mut": "M1", "count": 28, "outputs": 0, "caught": false, "cpu": 0.02567}
+{"eq": "28672_22244478", "name": "DH", "mut": "M1", "count": 82, "outputs": 29, "caught": false, "cpu": 0.028599, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_22444699", "name": "DH", "mut": "M1", "count": 62, "outputs": 29, "caught": false, "cpu": 0.03375, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_22266689", "name": "DH", "mut": "M1", "count": 58, "outputs": 28, "caught": false, "cpu": 0.028598, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "393216_2344444444", "name": "DH", "mut": "M1", "count": 6, "outputs": 0, "caught": false, "cpu": 0.030010999999999996}
+{"eq": "124416_23334889", "name": "DH", "mut": "M1", "count": 71, "outputs": 40, "caught": false, "cpu": 0.031483, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_22446669", "name": "DH", "mut": "M1", "count": 72, "outputs": 38, "caught": false, "cpu": 0.035011, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "9437184_444488889", "name": "DH", "mut": "M1", "count": 28, "outputs": 11, "caught": false, "cpu": 0.026232, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "14336_2222222278", "name": "DH", "mut": "M1", "count": 14, "outputs": 6, "caught": false, "cpu": 0.040916, "forced": {"0": false, "1": false, "2": true, "3": false, "4": true}}
+{"eq": "9437184_236888888", "name": "DH", "mut": "M1", "count": 26, "outputs": 6, "caught": false, "cpu": 0.021967999999999998, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "3211264_444447788", "name": "DH", "mut": "M1", "count": 47, "outputs": 11, "caught": false, "cpu": 0.029092, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "14336_222224447", "name": "DH", "mut": "M1", "count": 25, "outputs": 3, "caught": false, "cpu": 0.04617, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_233333488", "name": "DH", "mut": "M1", "count": 21, "outputs": 8, "caught": false, "cpu": 0.021476, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "393216_244444468", "name": "DH", "mut": "M1", "count": 44, "outputs": 21, "caught": false, "cpu": 0.025992, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "28672_222244447", "name": "DH", "mut": "M1", "count": 42, "outputs": 12, "caught": false, "cpu": 0.025658, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "14336_222222478", "name": "DH", "mut": "M1", "count": 47, "outputs": 14, "caught": false, "cpu": 0.026661999999999998, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "393216_222268888", "name": "DH", "mut": "M1", "count": 16, "outputs": 2, "caught": false, "cpu": 0.04278799999999999, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_23444669", "name": "DH", "mut": "M1", "count": 106, "outputs": 60, "caught": false, "cpu": 0.024995999999999997, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_22246899", "name": "DH", "mut": "M1", "count": 106, "outputs": 24, "caught": false, "cpu": 0.029865, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_23346668", "name": "DH", "mut": "M1", "count": 73, "outputs": 34, "caught": false, "cpu": 0.035773, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_22344899", "name": "DH", "mut": "M1", "count": 126, "outputs": 53, "caught": false, "cpu": 0.031792999999999995, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "9437184_44444444466", "name": "DH", "mut": "M1", "count": 6, "outputs": 2, "caught": false, "cpu": 0.020429, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "14336_222222222227", "name": "DH", "mut": "M1", "count": 6, "outputs": 0, "caught": false, "cpu": 0.03086}
+{"eq": "124416_22336889", "name": "DH", "mut": "M1", "count": 118, "outputs": 47, "caught": false, "cpu": 0.04575799999999999, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_233344449", "name": "DH", "mut": "M1", "count": 52, "outputs": 18, "caught": false, "cpu": 0.032254, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "9437184_4444444889", "name": "DH", "mut": "M1", "count": 28, "outputs": 10, "caught": false, "cpu": 0.027972999999999998, "forced": {"0": false, "1": true, "2": true, "3": true, "4": true}}
+{"eq": "9437184_244888889", "name": "DH", "mut": "M1", "count": 50, "outputs": 25, "caught": false, "cpu": 0.040163, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "9437184_344688888", "name": "DH", "mut": "M1", "count": 45, "outputs": 16, "caught": false, "cpu": 0.041588, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "393216_234444488", "name": "DH", "mut": "M1", "count": 85, "outputs": 46, "caught": false, "cpu": 0.051733999999999995, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "9437184_444668888", "name": "DH", "mut": "M1", "count": 24, "outputs": 10, "caught": false, "cpu": 0.050724, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "28672_222224478", "name": "DH", "mut": "M1", "count": 104, "outputs": 35, "caught": false, "cpu": 0.04394, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "14336_2222222447", "name": "DH", "mut": "M1", "count": 35, "outputs": 7, "caught": true, "cpu": 0.032115}
+{"eq": "124416_222226899", "name": "DH", "mut": "M1", "count": 75, "outputs": 29, "caught": false, "cpu": 0.034357, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_23344689", "name": "DH", "mut": "M1", "count": 217, "outputs": 97, "caught": false, "cpu": 0.038672, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "9437184_246688888", "name": "DH", "mut": "M1", "count": 48, "outputs": 14, "caught": false, "cpu": 0.049575, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "393216_2244444446", "name": "DH", "mut": "M1", "count": 29, "outputs": 3, "caught": false, "cpu": 0.036826, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "28672_22222222278", "name": "DH", "mut": "M1", "count": 30, "outputs": 9, "caught": false, "cpu": 0.025612, "forced": {"0": false, "1": true, "2": true, "3": true, "4": true}}
+{"eq": "9437184_334444444444", "name": "DH", "mut": "M1", "count": 14, "outputs": 2, "caught": false, "cpu": 0.023222, "forced": {"0": false, "1": true, "2": true, "3": true, "4": true}}
+{"eq": "9633792_344778888", "name": "DH", "mut": "M1", "count": 72, "outputs": 27, "caught": false, "cpu": 0.04001, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_2333334444", "name": "DH", "mut": "M1", "count": 42, "outputs": 22, "caught": false, "cpu": 0.034946, "forced": {"0": false, "1": true, "2": true, "3": true, "4": true}}
+{"eq": "14336_22222222247", "name": "DH", "mut": "M1", "count": 26, "outputs": 4, "caught": false, "cpu": 0.037646, "forced": {"0": false, "1": true, "2": true, "3": true, "4": true}}
+{"eq": "393216_222348888", "name": "DH", "mut": "M1", "count": 80, "outputs": 24, "caught": false, "cpu": 0.050821, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_22346689", "name": "DH", "mut": "M1", "count": 292, "outputs": 127, "caught": false, "cpu": 0.057152999999999995, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_223333688", "name": "DH", "mut": "M1", "count": 53, "outputs": 19, "caught": false, "cpu": 0.052468, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "3211264_224778888", "name": "DH", "mut": "M1", "count": 53, "outputs": 17, "caught": false, "cpu": 0.057557, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_222333889", "name": "DH", "mut": "M1", "count": 104, "outputs": 61, "caught": false, "cpu": 0.043939, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_222246669", "name": "DH", "mut": "M1", "count": 134, "outputs": 48, "caught": false, "cpu": 0.055868999999999995, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "9633792_444677888", "name": "DH", "mut": "M1", "count": 51, "outputs": 22, "caught": false, "cpu": 0.048033, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "28672_2222222222227", "name": "DH", "mut": "M1", "count": 13, "outputs": 1, "caught": false, "cpu": 0.03393, "forced": {"0": false, "1": true, "2": true, "3": true, "4": true}}
+{"eq": "124416_222346666", "name": "DH", "mut": "M1", "count": 108, "outputs": 23, "caught": false, "cpu": 0.047872, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "28672_2222224447", "name": "DH", "mut": "M1", "count": 67, "outputs": 21, "caught": true, "cpu": 0.03195}
+{"eq": "9437184_2233888888", "name": "DH", "mut": "M1", "count": 35, "outputs": 16, "caught": false, "cpu": 0.038, "forced": {"0": false, "1": true, "2": true, "3": true, "4": true}}
+{"eq": "28672_2222222478", "name": "DH", "mut": "M1", "count": 77, "outputs": 22, "caught": false, "cpu": 0.047516, "forced": {"0": false, "1": true, "2": true, "3": true, "4": true}}
+{"eq": "124416_222244699", "name": "DH", "mut": "M1", "count": 139, "outputs": 49, "caught": false, "cpu": 0.05909, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_222344499", "name": "DH", "mut": "M1", "count": 146, "outputs": 56, "caught": false, "cpu": 0.049392, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "3211264_244477888", "name": "DH", "mut": "M1", "count": 141, "outputs": 42, "caught": false, "cpu": 0.045015, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_233344466", "name": "DH", "mut": "M1", "count": 100, "outputs": 26, "caught": false, "cpu": 0.045721, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "393216_224444688", "name": "DH", "mut": "M1", "count": 188, "outputs": 77, "caught": false, "cpu": 0.064264, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_2222226669", "name": "DH", "mut": "M1", "count": 115, "outputs": 30, "caught": false, "cpu": 0.041618999999999996, "forced": {"0": false, "1": false, "2": true, "3": true, "4": true}}
+{"eq": "124416_233334468", "name": "DH", "mut": "M1", "count": 98, "outputs": 32, "caught": false, "cpu": 0.052493, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "393216_2222238888", "name": "DH", "mut": "M1", "count": 58, "outputs": 17, "caught": true, "cpu": 0.035289}
+{"eq": "9437184_4444446688", "name": "DH", "mut": "M1", "count": 81, "outputs": 29, "caught": false, "cpu": 0.054138, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "393216_223444888", "name": "DH", "mut": "M1", "count": 196, "outputs": 71, "caught": false, "cpu": 0.054811, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_222336668", "name": "DH", "mut": "M1", "count": 111, "outputs": 22, "caught": false, "cpu": 0.077224, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_2223333388", "name": "DH", "mut": "M1", "count": 77, "outputs": 40, "caught": true, "cpu": 0.033097999999999995}
+{"eq": "9633792_246778888", "name": "DH", "mut": "M1", "count": 128, "outputs": 51, "caught": false, "cpu": 0.067083, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_2222236666", "name": "DH", "mut": "M1", "count": 85, "outputs": 43, "caught": true, "cpu": 0.035257}
+{"eq": "393216_222446888", "name": "DH", "mut": "M1", "count": 174, "outputs": 50, "caught": false, "cpu": 0.060448999999999996, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_222234899", "name": "DH", "mut": "M1", "count": 252, "outputs": 110, "caught": false, "cpu": 0.072804, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "9633792_4444446778", "name": "DH", "mut": "M1", "count": 94, "outputs": 30, "caught": true, "cpu": 0.05152299999999999}
+{"eq": "28672_22222222447", "name": "DH", "mut": "M1", "count": 61, "outputs": 9, "caught": true, "cpu": 0.027339999999999996}
+{"eq": "124416_222236689", "name": "DH", "mut": "M1", "count": 205, "outputs": 87, "caught": false, "cpu": 0.073283, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "124416_22222222699", "name": "DH", "mut": "M1", "count": 98, "outputs": 27, "caught": false, "cpu": 0.038096, "forced": {"0": false, "1": true, "2": true, "3": true, "4": true}}
+{"eq": "124416_223344666", "name": "DH", "mut": "M1", "count": 146, "outputs": 41, "caught": false, "cpu": 0.094094, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "9437184_3344448888", "name": "DH", "mut": "M1", "count": 52, "outputs": 16, "caught": true, "cpu": 0.038662}
+{"eq": "124416_2222223899", "name": "DH", "mut": "M1", "count": 121, "outputs": 44, "caught": false, "cpu": 0.058782, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "28672_222222222247", "name": "DH", "mut": "M1", "count": 42, "outputs": 6, "caught": true, "cpu": 0.028145999999999997}
+{"eq": "3211264_2444444778", "name": "DH", "mut": "M1", "count": 38, "outputs": 15, "caught": true, "cpu": 0.061}
+{"eq": "124416_223334489", "name": "DH", "mut": "M1", "count": 201, "outputs": 79, "caught": false, "cpu": 0.105568, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "393216_2234444448", "name": "DH", "mut": "M1", "count": 64, "outputs": 17, "caught": false, "cpu": 0.046629, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "3211264_2222778888", "name": "DH", "mut": "M1", "count": 65, "outputs": 18, "caught": true, "cpu": 0.051029}
+{"eq": "9437184_2226688888", "name": "DH", "mut": "M1", "count": 67, "outputs": 25, "caught": true, "cpu": 0.06542099999999999}
+{"eq": "124416_2222224699", "name": "DH", "mut": "M1", "count": 169, "outputs": 49, "caught": true, "cpu": 0.057609999999999995}
+{"eq": "124416_223344469", "name": "DH", "mut": "M1", "count": 230, "outputs": 69, "caught": false, "cpu": 0.117504, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "9437184_34444444468", "name": "DH", "mut": "M1", "count": 54, "outputs": 12, "caught": true, "cpu": 0.031637}
+{"eq": "124416_223334668", "name": "DH", "mut": "M1", "count": 206, "outputs": 62, "caught": false, "cpu": 0.144922, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "9437184_24444444489", "name": "DH", "mut": "M1", "count": 79, "outputs": 32, "caught": true, "cpu": 0.042227999999999995}
+{"eq": "124416_222344669", "name": "DH", "mut": "M1", "count": 364, "outputs": 122, "caught": false, "cpu": 0.145683, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "9633792_3444447788", "name": "DH", "mut": "M1", "count": 128, "outputs": 25, "caught": true, "cpu": 0.07401}
+{"eq": "124416_2233333448", "name": "DH", "mut": "M1", "count": 183, "outputs": 80, "caught": true, "cpu": 0.066168}
+{"eq": "9437184_2444448889", "name": "DH", "mut": "M1", "count": 121, "outputs": 37, "caught": true, "cpu": 0.08036399999999999}
+{"eq": "9437184_2224888889", "name": "DH", "mut": "M1", "count": 145, "outputs": 58, "caught": true, "cpu": 0.071476}
+{"eq": "393216_22234444444", "name": "DH", "mut": "M1", "count": 86, "outputs": 14, "caught": false, "cpu": 0.032950999999999994, "forced": {"0": false, "1": true, "2": true, "3": true, "4": true}}
+{"eq": "9437184_3444446888", "name": "DH", "mut": "M1", "count": 141, "outputs": 37, "caught": true, "cpu": 0.057819999999999996}
+{"eq": "9437184_33444444488", "name": "DH", "mut": "M1", "count": 84, "outputs": 31, "caught": true, "cpu": 0.036441}
+{"eq": "393216_22222226888", "name": "DH", "mut": "M1", "count": 112, "outputs": 31, "caught": true, "cpu": 0.036021}
+{"eq": "9437184_2334488888", "name": "DH", "mut": "M1", "count": 133, "outputs": 43, "caught": true, "cpu": 0.056194}
+{"eq": "3211264_22444444477", "name": "DH", "mut": "M1", "count": 71, "outputs": 0, "caught": false, "cpu": 0.032229}
+{"eq": "393216_2224444468", "name": "DH", "mut": "M1", "count": 224, "outputs": 88, "caught": true, "cpu": 0.08282}
+{"eq": "393216_2222246888", "name": "DH", "mut": "M1", "count": 251, "outputs": 75, "caught": true, "cpu": 0.093197}
+{"eq": "124416_2222234499", "name": "DH", "mut": "M1", "count": 281, "outputs": 99, "caught": true, "cpu": 0.082173}
+{"eq": "124416_222334689", "name": "DH", "mut": "M1", "count": 481, "outputs": 196, "caught": false, "cpu": 0.23380499999999999, "forced": {"0": false, "1": false, "2": false, "3": false, "4": false}}
+{"eq": "9437184_224444444449", "name": "DH", "mut": "M1", "count": 67, "outputs": 2, "caught": false, "cpu": 0.030920999999999997, "forced": {"0": false, "1": true, "2": true, "3": false, "4": true}}
+{"eq": "124416_222222222399", "name": "DH", "mut": "M1", "count": 146, "outputs": 43, "caught": true, "cpu": 0.0448}
+{"eq": "124416_2233334446", "name": "DH", "mut": "M1", "count": 295, "outputs": 116, "caught": true, "cpu": 0.10164599999999999}
+{"eq": "9437184_22222888889", "name": "DH", "mut": "M1", "count": 122, "outputs": 33, "caught": true, "cpu": 0.038114999999999996}
+{"eq": "393216_22224444446", "name": "DH", "mut": "M1", "count": 160, "outputs": 21, "caught": true, "cpu": 0.049698}
+{"eq": "9633792_2226778888", "name": "DH", "mut": "M1", "count": 197, "outputs": 81, "caught": true, "cpu": 0.10167699999999999}
+{"eq": "124416_2223334449", "name": "DH", "mut": "M1", "count": 307, "outputs": 128, "caught": true, "cpu": 0.08440299999999999}
+{"eq": "9437184_2244488889", "name": "DH", "mut": "M1", "count": 270, "outputs": 67, "caught": true, "cpu": 0.10296399999999999}
+{"eq": "124416_2222333668", "name": "DH", "mut": "M1", "count": 336, "outputs": 123, "caught": true, "cpu": 0.100288}
+{"eq": "393216_2223444488", "name": "DH", "mut": "M1", "count": 401, "outputs": 169, "caught": true, "cpu": 0.10076399999999999}
+{"eq": "9633792_24444444677", "name": "DH", "mut": "M1", "count": 188, "outputs": 60, "caught": true, "cpu": 0.044402000000000004}
+{"eq": "393216_2222344888", "name": "DH", "mut": "M1", "count": 434, "outputs": 177, "caught": true, "cpu": 0.12181099999999999}
+{"eq": "124416_22222223499", "name": "DH", "mut": "M1", "count": 293, "outputs": 96, "caught": true, "cpu": 0.056119999999999996}
+{"eq": "124416_2222233689", "name": "DH", "mut": "M1", "count": 457, "outputs": 112, "caught": true, "cpu": 0.160333}
+{"eq": "124416_2222334666", "name": "DH", "mut": "M1", "count": 348, "outputs": 124, "caught": true, "cpu": 0.13153299999999998}
+{"eq": "9437184_2444466888", "name": "DH", "mut": "M1", "count": 331, "outputs": 82, "caught": true, "cpu": 0.128245}
+{"eq": "9437184_234444444446", "name": "DH", "mut": "M1", "count": 150, "outputs": 26, "caught": true, "cpu": 0.049578}
+{"eq": "9437184_2234688888", "name": "DH", "mut": "M1", "count": 276, "outputs": 83, "caught": true, "cpu": 0.140417}
+{"eq": "393216_2222444688", "name": "DH", "mut": "M1", "count": 483, "outputs": 190, "caught": true, "cpu": 0.118311}
+{"eq": "3211264_2244447788", "name": "DH", "mut": "M1", "count": 422, "outputs": 152, "caught": true, "cpu": 0.111522}
+{"eq": "9437184_24444444668", "name": "DH", "mut": "M1", "count": 253, "outputs": 79, "caught": true, "cpu": 0.081235}
+{"eq": "124416_22222223669", "name": "DH", "mut": "M1", "count": 328, "outputs": 111, "caught": true, "cpu": 0.081569}
+{"eq": "124416_2222234669", "name": "DH", "mut": "M1", "count": 543, "outputs": 180, "caught": true, "cpu": 0.186912}
+{"eq": "124416_22222233666", "name": "DH", "mut": "M1", "count": 249, "outputs": 57, "caught": true, "cpu": 0.05987}
+{"eq": "124416_22233333444", "name": "DH", "mut": "M1", "count": 258, "outputs": 68, "caught": true, "cpu": 0.04912999999999999}
+{"eq": "3211264_2224477888", "name": "DH", "mut": "M1", "count": 486, "outputs": 156, "caught": true, "cpu": 0.139588}
+{"eq": "9437184_2244668888", "name": "DH", "mut": "M1", "count": 387, "outputs": 91, "caught": true, "cpu": 0.15112199999999998}
+{"eq": "9437184_2344468888", "name": "DH", "mut": "M1", "count": 386, "outputs": 88, "caught": true, "cpu": 0.13729}
+{"eq": "393216_222222223888", "name": "DH", "mut": "M1", "count": 269, "outputs": 64, "caught": true, "cpu": 0.053571999999999995}
+{"eq": "9633792_2234778888", "name": "DH", "mut": "M1", "count": 397, "outputs": 163, "caught": true, "cpu": 0.136743}
+{"eq": "9633792_2444467788", "name": "DH", "mut": "M1", "count": 543, "outputs": 126, "caught": true, "cpu": 0.202869}
+{"eq": "9633792_2344477888", "name": "DH", "mut": "M1", "count": 394, "outputs": 75, "caught": true, "cpu": 0.178637}
+{"eq": "9437184_224444444466", "name": "DH", "mut": "M1", "count": 306, "outputs": 25, "caught": true, "cpu": 0.06895}
+{"eq": "393216_2222222222688", "name": "DH", "mut": "M1", "count": 383, "outputs": 59, "caught": true, "cpu": 0.07516699999999998}
+{"eq": "9437184_22444444889", "name": "DH", "mut": "M1", "count": 602, "outputs": 171, "caught": true, "cpu": 0.098983}
+{"eq": "9437184_22223688888", "name": "DH", "mut": "M1", "count": 440, "outputs": 69, "caught": true, "cpu": 0.11278099999999999}
+{"eq": "9437184_233444444448", "name": "DH", "mut": "M1", "count": 382, "outputs": 45, "caught": true, "cpu": 0.126946}
+{"eq": "9633792_2244677888", "name": "DH", "mut": "M1", "count": 879, "outputs": 272, "caught": true, "cpu": 0.282788}
+{"eq": "9633792_23444444778", "name": "DH", "mut": "M1", "count": 719, "outputs": 164, "caught": true, "cpu": 0.14773}
+{"eq": "393216_22222222222222226", "name": "DH", "mut": "M1", "count": 380, "outputs": 33, "caught": true, "cpu": 0.094453}
+{"eq": "9437184_23344444888", "name": "DH", "mut": "M1", "count": 807, "outputs": 231, "caught": true, "cpu": 0.133711}
+{"eq": "9437184_22233488888", "name": "DH", "mut": "M1", "count": 732, "outputs": 156, "caught": true, "cpu": 0.13460399999999997}
+{"eq": "3211264_222222277888", "name": "DH", "mut": "M1", "count": 547, "outputs": 103, "caught": true, "cpu": 0.12330899999999999}
+{"eq": "9633792_22223778888", "name": "DH", "mut": "M1", "count": 639, "outputs": 117, "caught": true, "cpu": 0.14792099999999997}
+{"eq": "9437184_23444444688", "name": "DH", "mut": "M1", "count": 1038, "outputs": 282, "caught": true, "cpu": 0.162333}
+{"eq": "393216_222222222222268", "name": "DH", "mut": "M1", "count": 548, "outputs": 52, "caught": true, "cpu": 0.104349}
+{"eq": "9437184_22224488889", "name": "DH", "mut": "M1", "count": 1025, "outputs": 177, "caught": true, "cpu": 0.19768599999999997}
+{"eq": "9437184_2233444444444", "name": "DH", "mut": "M1", "count": 693, "outputs": 87, "caught": true, "cpu": 0.194949}
+{"eq": "9437184_22224668888", "name": "DH", "mut": "M1", "count": 1075, "outputs": 175, "caught": true, "cpu": 0.256034}
+{"eq": "9437184_22244448889", "name": "DH", "mut": "M1", "count": 1401, "outputs": 305, "caught": true, "cpu": 0.24359299999999998}
+{"eq": "9437184_222223388888", "name": "DH", "mut": "M1", "count": 953, "outputs": 138, "caught": true, "cpu": 0.19529}
+{"eq": "9437184_22444446688", "name": "DH", "mut": "M1", "count": 1545, "outputs": 376, "caught": true, "cpu": 0.254014}
+{"eq": "393216_222222222222222223", "name": "DH", "mut": "M1", "count": 813, "outputs": 81, "caught": true, "cpu": 0.154515}
+{"eq": "9437184_222444444489", "name": "DH", "mut": "M1", "count": 1157, "outputs": 216, "caught": true, "cpu": 0.24805199999999997}
+{"eq": "9437184_222222668888", "name": "DH", "mut": "M1", "count": 1059, "outputs": 115, "caught": true, "cpu": 0.24537399999999998}
+{"eq": "9437184_22334448888", "name": "DH", "mut": "M1", "count": 1615, "outputs": 363, "caught": true, "cpu": 0.33813099999999996}
+{"eq": "9633792_223444444477", "name": "DH", "mut": "M1", "count": 1062, "outputs": 80, "caught": true, "cpu": 0.259663}
+{"eq": "9437184_2222444444449", "name": "DH", "mut": "M1", "count": 1184, "outputs": 99, "caught": true, "cpu": 0.255133}
+{"eq": "9437184_2222222288889", "name": "DH", "mut": "M1", "count": 1154, "outputs": 102, "caught": true, "cpu": 0.227875}
+{"eq": "9633792_22444446778", "name": "DH", "mut": "M1", "count": 2119, "outputs": 486, "caught": true, "cpu": 0.432631}
+{"eq": "9437184_222222488889", "name": "DH", "mut": "M1", "count": 1789, "outputs": 195, "caught": true, "cpu": 0.406815}
+{"eq": "9633792_22224677888", "name": "DH", "mut": "M1", "count": 2875, "outputs": 493, "caught": true, "cpu": 0.6533729999999999}
+{"eq": "9633792_222444444677", "name": "DH", "mut": "M1", "count": 2896, "outputs": 278, "caught": true, "cpu": 0.663395}
+{"eq": "9633792_222222677888", "name": "DH", "mut": "M1", "count": 3071, "outputs": 379, "caught": true, "cpu": 0.715037}
+{"eq": "3211264_222222222222222277", "name": "DH", "mut": "M1", "count": 4446, "outputs": 328, "caught": true, "cpu": 0.7884589999999999}
+{"eq": "9437184_222222222228889", "name": "DH", "mut": "M1", "count": 7165, "outputs": 585, "caught": true, "cpu": 1.471685}
+{"eq": "9437184_222222222222222222229", "name": "DH", "mut": "M1", "count": 10859, "outputs": 870, "caught": true, "cpu": 2.1084590000000003}
+{"eq": "9437184_2222222222222222289", "name": "DH", "mut": "M1", "count": 23995, "outputs": 1856, "caught": true, "cpu": 4.266224}
+{"eq": "9437184_22222222222222222266", "name": "DH", "mut": "M1", "count": 31444, "outputs": 2553, "caught": true, "cpu": 5.751715}

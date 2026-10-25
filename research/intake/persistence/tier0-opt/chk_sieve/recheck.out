@@ -1,0 +1,5 @@
+survivor lines 5693741 unique triples 5689277 torn/other lines 6
+rejected by low 600 digits 5685382 full checks 3895
+zero-free in survivors 91 digit range 80 140
+equals chat found.txt: True extra: [] missing: []
+nice -n 10 uv run --no-project --with gmpy2 python -I recheck.py  132.94s user 0.76s system 68% cpu 3:16.55 total

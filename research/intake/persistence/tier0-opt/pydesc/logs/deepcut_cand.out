@@ -1,0 +1,34 @@
+Λ_96: shortest 7.850e+27, index 2.810e+56, base bound -1.00e+00 digits [0s]
+s=6          M=23           a=2  y=111132       reps=1   cases=4       CLOSED
+s=12         M=223          a=1  y=13122        reps=1   cases=8       CLOSED
+s=12         M=223          a=2  y=111132       reps=1   cases=8       CLOSED
+s=24         M=2223         a=1  y=13122        reps=1   cases=16      CLOSED
+s=24         M=2223         a=2  y=111132       reps=1   cases=16      CLOSED
+s=48         M=22223        a=1  y=13122        reps=1   cases=24      CLOSED
+s=48         M=22223        a=2  y=111132       reps=1   cases=32      CLOSED
+s=162        M=2339         a=2  y=111132       reps=1   cases=12      CLOSED
+s=168        M=2267         a=4  y=27216        reps=1   cases=16      CLOSED
+s=144        M=466          a=4  y=11664        reps=1   cases=8       CLOSED
+s=224        M=22247        a=3  y=122472       reps=1   cases=32      CLOSED
+s=224        M=2447         a=1  y=71442        reps=1   cases=16      CLOSED
+s=216        M=22239        a=2  y=111132       reps=1   cases=16      CLOSED
+s=216        M=2349         a=2  y=111132       reps=1   cases=12      CLOSED
+s=216        M=2366         a=2  y=111132       reps=1   cases=12      CLOSED
+s=216        M=2366         a=2  y=61236        reps=1   cases=16      CLOSED
+s=216        M=3346         a=1  y=33614        reps=1   cases=16      CLOSED
+s=378        M=23337        a=2  y=111132       reps=1   cases=16      CLOSED
+s=324        M=22339        a=1  y=13122        reps=1   cases=16      CLOSED
+s=324        M=22339        a=2  y=111132       reps=1   cases=16      CLOSED
+s=324        M=22339        a=2  y=111132       reps=1   cases=24      CLOSED
+s=784        M=2778         a=6  y=1778112      reps=1   cases=16      CLOSED
+s=1372       M=4777         a=0  y=177147       reps=1   cases=16      CLOSED
+s=1176       M=3778         a=0  y=137781       reps=1   cases=16      CLOSED
+s=1176       M=4677         a=3  y=1417176      reps=1   cases=16      CLOSED
+s=1764       M=23677        a=3  y=1417176      reps=1   cases=24      CLOSED
+s=2744       M=24777        a=0  y=177147       reps=1   cases=32      CLOSED
+Traceback (most recent call last):
+  File "/private/tmp/persist-pydesc/dc_cand/deepcut.py", line 174, in <module>
+    f"others: bound ≥ 10^(10^{min(w for v in per_vertex.values() for (*_, c, w, t) in v if not c and w and w > 0):.2f}) digits [{time.time()-t0:.0f}s]")
+                              ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: min() iterable argument is empty
+rc=1 secs=4

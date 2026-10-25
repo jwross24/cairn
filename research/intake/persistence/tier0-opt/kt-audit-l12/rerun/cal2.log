@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/kt-audit-l12/rerun/rerun.py", line 42, in <module>
+    import run_c
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/run_c.py", line 5, in <module>
+    from export_cfg import export
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/export_cfg.py", line 5, in <module>
+    from tier0v2 import PrimeData, primes_for_level, two_adic_bound, ten_adic_K, chain_step
+  File "/Users/jwross/Documents/cairn/research/intake/persistence/tier0/tier0v2.py", line 32, in <module>
+    import sympy
+ModuleNotFoundError: No module named 'sympy'

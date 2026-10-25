@@ -1,0 +1,35 @@
+LINE 42336 2237789 2 111132 - - 
+  py: s=42336      M=2237789      a=2  y=111132       reps=11  cases=364     CLOSED 
+   c: s=42336      M=2237789      a=2  y=111132       reps=10  cases=316     CLOSED
+REPCOUNT 42336 2237789 2 111132 - - 10 11
+LINE 41472 2236889 2 111132 - - 
+  py: s=41472      M=2236889      a=2  y=111132       reps=10  cases=344     CLOSED 
+   c: s=41472      M=2236889      a=2  y=111132       reps=9   cases=296     CLOSED
+REPCOUNT 41472 2236889 2 111132 - - 9 10
+LINE 111132 22337779 1 13122 - - 
+  py: s=111132     M=22337779     a=1  y=13122        reps=16  cases=958     CLOSED 
+   c: s=111132     M=22337779     a=1  y=13122        reps=14  cases=834     CLOSED
+REPCOUNT 111132 22337779 1 13122 - - 14 16
+LINE 148176 22347779 1 13122 - - 
+  py: s=148176     M=22347779     a=1  y=13122        reps=22  cases=1414    CLOSED 
+   c: s=148176     M=22347779     a=1  y=13122        reps=19  cases=1218    CLOSED
+REPCOUNT 148176 22347779 1 13122 - - 19 22
+LINE 666792 23477799 2 111132 - - 
+  py: s=666792     M=23477799     a=2  y=111132       reps=15  cases=926     CLOSED 
+   c: s=666792     M=23477799     a=2  y=111132       reps=12  cases=774     CLOSED
+REPCOUNT 666792 23477799 2 111132 - - 12 15
+LINE 112896 22337788 1 13122 - - 
+  py: s=112896     M=22337788     a=1  y=13122        reps=10  cases=612     CLOSED 
+   c: s=112896     M=22337788     a=1  y=13122        reps=8   cases=488     CLOSED
+REPCOUNT 112896 22337788 1 13122 - - 8 10
+LINE 112896 22346778 2 111132 - - 
+  py: s=112896     M=22346778     a=2  y=111132       reps=19  cases=875     CLOSED 
+   c: s=112896     M=22346778     a=2  y=111132       reps=17  cases=755     CLOSED
+REPCOUNT 112896 22346778 2 111132 - - 17 19
+LINE 163296 23346679 2 61236 - - 
+  py: s=163296     M=23346679     a=2  y=61236        reps=23  cases=1502    CLOSED 
+   c: s=163296     M=23346679     a=2  y=61236        reps=22  cases=1422    CLOSED
+REPCOUNT 163296 23346679 2 61236 - - 22 23
+deepcut: python records finished 1112, compared 1112, rep(-depth) entries 5871, mismatches 16; python-finished but absent from C output: 0
+exact nearest-norm integers (+ survivor-count lists for sandwich) compared: 95, equal: 95
+C records without a python reference (not compared): 1708

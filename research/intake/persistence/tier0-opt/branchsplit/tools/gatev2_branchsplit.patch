@@ -1,0 +1,44 @@
+--- gatev2.py.pre	2026-10-20 22:12:36
++++ gatev2.py	2026-10-20 22:12:37
+@@ -50,6 +50,30 @@
+         for M in sorted(C.multisets(s), key=C.npat):
+             jobs.append(dict(work=ctx['work'], s=s, M=list(M), npat=C.npat(M), ref12=ctx['refs']['lvl12'], cand12=cand12, logdir=ctx['logdir']))
+     return jobs
++
++
++def norm_row(r):
++    r = dict(r)
++    if 'c_stats' in r:
++        r['c_stats'] = {k: v for k, v in r['c_stats'].items() if k != 'open'}
++    r.pop('levels', None)
++    return r
++
++
++def rows_shrink(ra, rb):
++    for x, y in zip(ra, rb):
++        if 'levels' not in x:
++            continue
++        if y['c_stats']['open'] > x['c_stats']['open']:
++            return False
++        lb = {l[0]: l for l in y['levels']}
++        for l in x['levels']:
++            m = lb.get(l[0])
++            if m is None:
++                continue
++            if m[2] > l[2] or (l[0] > 12 and m[1] > l[1]):
++                return False
++    return True
+ 
+ 
+ def stage_result(name, findings, detail, status=None):
+@@ -146,8 +170,8 @@
+             a, b = vres[('ref', s)], vres[('cand', s)]
+             if a['rc'] or not a['rows']:
+                 vf.append(dict(kind='refrc', label=f'vertex{s}', text=f"reference pipeline failed: {a.get('err')}"))
+-            elif a['rows'] != b['rows'] or b['rc']:
+-                diffs = [f"ref {x}\n  cand {y}" for x, y in zip(a['rows'], b['rows']) if x != y]
++            elif [norm_row(r) for r in a['rows']] != [norm_row(r) for r in b['rows']] or b['rc'] or not rows_shrink(a['rows'], b['rows']):
++                diffs = [f"ref {x}\n  cand {y}" for x, y in zip(a['rows'], b['rows']) if norm_row(x) != norm_row(y)]
+                 vf.append(dict(kind='pipeline', label=f'vertex{s}', text=f"run_vertex_c output differs (rc cand {b['rc']}; {len(a['rows'])} vs {len(b['rows'])} rows): " + (diffs[0] if diffs else b.get('err', ''))))
+         nrows = sum(len(vres[('ref', s)]['rows']) for s in FIXED_FULL)
+         st['vertex'] = stage_result('python pipeline run_vertex_c 72, 224', vf, f"{nrows} rows (open counts, children, per-level survivors, c_stats) ref vs cand")

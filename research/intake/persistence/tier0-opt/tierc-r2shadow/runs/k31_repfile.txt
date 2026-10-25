@@ -1,0 +1,6 @@
+REPFILE y=7626831723 a=0 b=3 c=10 k=31 nu=2 log10 U''=246.0183
+rep0: wrap=0 words=6 (notappl=0 taubad=0) T=7 units=15 space=2.398e+16 |G|=1 shadow=1 compat(word,child)=6 notshadow_compat=0 passchain=3 windows=3 alive=3 wordsalive=3 notshadow_alive=0 win_budget=0
+min nn=312884813607185182894582010157162378381231979401295740024789... (606 digits)
+VERDICT CLOSED-sandwich bound 10^(10^302.28 log10 U''=246.0183 [4s]
+
+1 of 1 representations closed [4s]

@@ -1,0 +1,36 @@
+{
+ "s_units_below_R24": 18636,
+ "c1_111132": {
+  "y": 111132,
+  "abc": [
+   2,
+   4,
+   3
+  ],
+  "kappa": 0,
+  "pass": true
+ },
+ "c1_planted_anchored": {
+  "n": 1200,
+  "built": 1200,
+  "pass": 1200,
+  "fail": []
+ },
+ "c2_random_patterns": {
+  "n": 100000,
+  "classified_shadow": 0,
+  "examples": []
+ },
+ "c3_perturbed_real_shadows": {
+  "shadows_available": 32056,
+  "tested": 40000,
+  "still_shadow": 267
+ },
+ "c4_false_anchor_refusals": {
+  "5_times_unit_is_refused": true,
+  "prime_11_refused": true,
+  "zero_refused": true,
+  "V_multiple_of_R24_refused": true,
+  "V_5y_refused": true
+ }
+}

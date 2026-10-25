@@ -1,0 +1,5 @@
+{"stage": "difftest", "vertex": "72", "rc": 0, "secs": 1.9, "out": "vertex 72: IDENTICAL (9 equations)"}
+{"stage": "difftest", "vertex": "10800", "rc": 0, "secs": 61.5, "out": "vertex 10800: IDENTICAL (17 equations)"}
+{"stage": "difftest", "vertex": "6", "rc": 0, "secs": 3.6, "out": "vertex 6: IDENTICAL (2 equations)"}
+{"stage": "difftest", "vertex": "224", "rc": 0, "secs": 4.1, "out": "vertex 224: IDENTICAL (5 equations)"}
+{"stage": "difftest", "vertex": "162", "rc": 0, "secs": 3.1, "out": "vertex 162: IDENTICAL (5 equations)"}

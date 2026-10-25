@@ -1,0 +1,3 @@
+== gate b: tag=L1 bin=/private/tmp/persist-lvl12-r2/bin/L1 load=12.31 9.99 7.09
+vertex 72: IDENTICAL (9 equations)
+vertex 10800: IDENTICAL (17 equations)

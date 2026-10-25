@@ -1,0 +1,5 @@
+67 vertices, 1.37e+14 patterns
+resuming: 1192 equations already done, 23 vertices to go
+A_6 s=96768 patterns=2.07e+11 CLOSED BELOW 10^1.3e+27 DIGITS; open 1343; children [184473632] known [184473632] 322s
+A_6 s=3687936 patterns=3.90e+11 CLOSED BELOW 10^1.3e+27 DIGITS; open 481; children [] known [] 3010s
+A_8 s=124416 patterns=4.28e+11 CLOSED BELOW 10^1.3e+27 DIGITS; open 2353; children [1194891264] known [1194891264] 2048s

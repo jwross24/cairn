@@ -1,0 +1,33 @@
+{
+ "report": {
+  "rep_rows": 0,
+  "dual": {
+   "rows": 186,
+   "status_eq": 186,
+   "min_rows": 134,
+   "min_eq": 134,
+   "lab_rows": 145,
+   "lab_eq": 145,
+   "cert_nodes": 395,
+   "verified_nodes": 395,
+   "pattern_summary_eq": 43
+  },
+  "cvp": {
+   "rows": 186,
+   "status_eq": 186,
+   "min_rows": 142,
+   "min_eq": 142,
+   "cert_nodes": 395,
+   "verified_nodes": 395,
+   "pattern_summary_eq": 43
+  },
+  "dual_vs_cvp": {
+   "rows": 186,
+   "status_eq": 186,
+   "min_rows": 134,
+   "min_eq": 134,
+   "node_digest_eq": 186
+  }
+ },
+ "mismatches": []
+}

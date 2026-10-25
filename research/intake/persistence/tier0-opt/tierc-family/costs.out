@@ -1,0 +1,9 @@
+unit costs: ref window+lattice at level 96 per prefiltered word 0.00018018746826176842 s (n=60); levels 192+384+480 per valid word 0.007789532685532205 s (n=310)
+patterns 131
+geometric mean ratio (rep DP excluded) 717.8974497841974 CI (604.9013960050917, 850.48753649668)
+geometric mean ratio (rep DP included) 9.867825159294934 CI (8.48770765116075, 11.488753715401517)
+totals: ref est 149.87884020667676 s; family 0.231454664375633 s; rep DP 26.85951966443099 s; ratio of totals 647.5516084801601 with DP 6.523883479642025
+k 5 8 n 34 gmean ratio 1015.1780008496443 median words 144 median t_reps 0.0026714170817285776
+k 9 11 n 36 gmean ratio 661.3994439360793 median words 2268 median t_reps 0.02071229205466807
+k 12 14 n 36 gmean ratio 575.9177017154373 median words 10512 median t_reps 0.1443318750243634
+k 15 18 n 25 gmean ratio 692.6003681589625 median words 22824 median t_reps 0.5435942090116441

@@ -1,0 +1,141 @@
+--- research/intake/persistence/tier0-opt/tierc-r2shadow/src/cport_r2.c	2026-10-24 05:33:15
++++ research/intake/persistence/tier0-opt/sandwich-cong/src/cport_cong.c	2026-10-24 16:06:10
+@@ -2459,7 +2459,68 @@
+     free(B.ci);
+     return same ? 0 : 1;
+ }
++
++static int g_wordmitm = 0;
++static FILE *g_repdump;
++static double g_wm_calls, g_wm_space;
+ 
++static int mitm480_words(const UnitSet *S, const unsigned char *fufix, int nmin, GList *G, u64 target) {
++    int nun = S->nun;
++    G->nun = nun; G->n = 0;
++    g_wm_calls = 0; g_wm_space = 0;
++    for (int wq = 0; wq < nmin; wq++) {
++        const unsigned char *fu = fufix + (size_t)wq * nun;
++        UnitSet S2 = *S;
++        int *nc2 = calloc((size_t)nun, sizeof(int));
++        int **map = calloc((size_t)nun, sizeof(int *));
++        for (int u = 0; u < nun; u++) {
++            const Unit *U = &S->u[u];
++            if (U->isnu || fu[u] == 0) {
++                map[u] = malloc((size_t)U->nc * sizeof(int));
++                S2.u[u].val = malloc((size_t)U->nc * sizeof(u64));
++                for (int c = 0; c < U->nc; c++) { map[u][c] = c; S2.u[u].val[c] = U->val[c]; }
++                nc2[u] = U->nc;
++            } else {
++                int cnt = 0;
++                for (int c = 0; c < U->nc; c++) if (U->n[c][0] >= fu[u]) cnt++;
++                map[u] = malloc((size_t)cnt * sizeof(int));
++                S2.u[u].val = malloc((size_t)cnt * sizeof(u64));
++                int q = 0;
++                for (int c = 0; c < U->nc; c++) if (U->n[c][0] >= fu[u]) { map[u][q] = c; S2.u[u].val[q] = U->val[c]; q++; }
++                nc2[u] = cnt;
++            }
++            S2.u[u].nc = nc2[u];
++        }
++        GList G2 = {0, 0, 0, NULL};
++        int bud = mitm480(&S2, &G2, target);
++        g_wm_calls += 1; g_wm_space += g_mitm_space;
++        if (!bud) {
++            for (long r = 0; r < G2.n; r++) {
++                uint32_t *row = G2.ci + (size_t)r * nun;
++                for (int u = 0; u < nun; u++) row[u] = (uint32_t)map[u][row[u]];
++                gl_push(G, row);
++            }
++        }
++        for (int u = 0; u < nun; u++) { free(S2.u[u].val); free(map[u]); }
++        free(map); free(nc2); free(G2.ci);
++        if (bud) return 1;
++    }
++    if (G->n > 1) {
++        g_cmpw = nun;
++        qsort(G->ci, (size_t)G->n, (size_t)nun * 4, cmp_row);
++        long w = 1;
++        for (long r = 1; r < G->n; r++) {
++            if (memcmp(G->ci + (size_t)r * nun, G->ci + (size_t)(w - 1) * nun, (size_t)nun * 4) != 0) {
++                if (w != r) memcpy(G->ci + (size_t)w * nun, G->ci + (size_t)r * nun, (size_t)nun * 4);
++                w++;
++            }
++        }
++        G->n = w;
++    }
++    g_mitm_space = g_wm_space;
++    return 0;
++}
++
+ typedef struct {
+     int nwords, nonappl, taubad, budget, nT, nun, shadow_ok;
+     double space; long nG, compat, passchain, nwin, alive, wordsalive, notshadow_compat, notshadow_alive, win_budget;
+@@ -2638,7 +2699,36 @@
+     }
+     u64 tau_true = (PT - mulm(mpz_fdiv_ui(wrap, PT), invm_gen(9, PT), PT)) % PT;
+     u64 tau_rep = (g_mut_oldtau || g_mut_target0) ? 0 : tau_true;
+-    if (mitm480(&S, &G, tau_rep)) { rr->budget = 1; goto cleanup; }
++    int any_wok = 1, mitm_bud;
++    if (g_wordmitm) {
++        int nunit = S.nun, nwk = 0, nmin = 0;
++        unsigned char *fuall = calloc((size_t)(s.nsv + 1) * nunit, 1);
++        unsigned char *fumin = calloc((size_t)(s.nsv + 1) * nunit, 1);
++        for (int wi = 0; wi < s.nsv; wi++) {
++            if (!wok[wi]) continue;
++            unsigned char *fu = fuall + (size_t)nwk * nunit;
++            for (int j = 0; j < k; j++) if (fmask[wi] >> j & 1) fu[S.dunit[j]]++;
++            nwk++;
++        }
++        for (int i = 0; i < nwk; i++) {
++            const unsigned char *fi = fuall + (size_t)i * nunit;
++            int dominated = 0;
++            for (int j = 0; j < nwk && !dominated; j++) {
++                if (j == i) continue;
++                const unsigned char *fj = fuall + (size_t)j * nunit;
++                int le = 1, eq = 1;
++                for (int u = 0; u < nunit; u++) { if (fj[u] > fi[u]) le = 0; if (fj[u] != fi[u]) eq = 0; }
++                if (le && (!eq || j < i)) dominated = 1;
++            }
++            if (!dominated) { memcpy(fumin + (size_t)nmin * nunit, fi, (size_t)nunit); nmin++; }
++        }
++        any_wok = nwk > 0;
++        if (!any_wok) { mitm_bud = 0; G.nun = S.nun; G.n = 0; g_mitm_space = 0; }
++        else mitm_bud = mitm480_words(&S, fumin, nmin, &G, tau_rep);
++        if (g_verbose480) fprintf(stderr, "WORDMITM key=[%s] rep=%d words=%d minimal=%d calls=%.0f space=%.4g G=%ld\n", key, ri, nwk, nmin, g_wm_calls, g_mitm_space, G.n);
++        free(fuall); free(fumin);
++    } else mitm_bud = mitm480(&S, &G, tau_rep);
++    if (mitm_bud) { rr->budget = 1; goto cleanup; }
+     rr->space = g_mitm_space; rr->nG = G.n;
+     if (g_verbose480) fprintf(stderr, "MITM480 key=[%s] rep=%d wrap=%ld target=%llu units=%d space=%.3g left=%.3g right=%.3g bloom_cands=%ld matches=%ld [%.1fs]\n", key, ri, rr->wrap, (unsigned long long)tau_rep, S.nun, g_mitm_space, g_mitm_left, g_mitm_right, g_bloom_cands, g_true_matches, cpu_s() - tm0);
+     if (g_brute480) {
+@@ -2671,7 +2761,7 @@
+         if (sh) shadow_found = 1;
+     }
+     rr->shadow_ok = shadow_found;
+-    if (tau_rep == 0 && !shadow_found) die("shadow480: the shadow composition is missing from the zero-sum set");
++    if (tau_rep == 0 && any_wok && !shadow_found) die("shadow480: the shadow composition is missing from the zero-sum set");
+     if (tau_rep != 0 && shadow_found) die("shadow480: the shadow composition is present at a nonzero target");
+ 
+     for (int wi = 0; wi < s.nsv; wi++) {
+@@ -2795,6 +2885,8 @@
+         else if (!strcmp(argv[i], "--rep-file")) repf = argv[++i];
+         else if (!strcmp(argv[i], "--mitm-space-cap")) g_cap_space = atof(argv[++i]);
+         else if (!strcmp(argv[i], "--mitm-right-cap")) g_cap_right = atof(argv[++i]);
++        else if (!strcmp(argv[i], "--word-mitm")) g_wordmitm = 1;
++        else if (!strcmp(argv[i], "--dump-reps")) g_repdump = fopen(argv[++i], "w");
+         else if (!strcmp(argv[i], "--no480")) no480 = 1;
+         else if (!strcmp(argv[i], "--brute480")) g_brute480 = 1;
+         else if (!strcmp(argv[i], "--brute-max")) g_brute_max = atof(argv[++i]);
+@@ -2950,6 +3042,13 @@
+         for (int ri = 0; ri < reps.n; ri++) {
+             R480 rr; r480_init(&rr);
+             run_rep480(c.fullkey, ri, &reps.v[ri], &co0, c.a, maxcases, &rr);
++            if (g_repdump) {
++                const Rep *rp = &reps.v[ri];
++                fprintf(g_repdump, "%ld\t%d\t%s\t%d\t%d\t%d\t", nall, ri, ys, c.a, rp->nu, rp->n);
++                for (int j = 0; j < rp->n; j++) fprintf(g_repdump, "%s%d:%d", j ? " " : "", rp->d[j], rp->e[j]);
++                fprintf(g_repdump, "\t%ld\t%d\t%d\t%ld\t%ld\t%ld\t%ld\t%ld\t%ld\t%ld\t%d\t%s\n", rr.wrap, rr.nwords, rr.nonappl, rr.alive, rr.notshadow_alive, rr.compat, rr.notshadow_compat, rr.passchain, rr.nwin, rr.nG, rr.budget, rr.have_nn ? "nn" : "-");
++                fflush(g_repdump);
++            }
+             if (g_verbose480) fprintf(stderr, "REP480 key=[%s] rep=%d wrap=%ld words=%d notappl=%d G=%ld shadow=%d compat=%ld notshadow_compat=%ld passchain=%ld windows=%ld alive=%ld notshadow_alive=%ld\n", c.fullkey, ri, rr.wrap, rr.nwords, rr.nonappl, rr.nG, rr.shadow_ok, rr.compat, rr.notshadow_compat, rr.passchain, rr.nwin, rr.alive, rr.notshadow_alive);
+             totwords += rr.nwords;
+             if (rr.nwords) dn += snprintf(detail + dn, sizeof detail - dn, "%s(w=%d,T=%d,G=%ld,compat=%ld,chain=%ld,win=%ld,alive=%ld%s%s)", dn ? " " : "", rr.nwords, rr.nT, rr.nG, rr.compat, rr.passchain, rr.nwin, rr.alive, rr.nonappl ? ",NONAPPL" : "", rr.budget ? ",BUDGET" : "");

@@ -1,0 +1,9 @@
+Registered 2026-10-20 22:11:18 EDT before the gate runs. Candidate: lvl12.c (opt-in 5th argv "bs"), run_c.py (passes "bs" unless BRANCHSPLIT=off).
+G1 difftest.py 72, 224, 10800 (candidate dir): IDENTICAL.
+G2 candidate vs production vertex rows for 72, 224, 14336, 8192, 28672: solutions, children, bounds, exceptional, open, per-level open class counts and every c_stats field except open identical; changed fields listed exactly (levels[*] n_in/survived/class counts, c_stats.open).
+   Final open sets and open_patterns identical (run_c r['open_patterns'] compared per equation).
+G3 gatev2 (dylib-aware overlay, GATE_PY_OVERLAY = candidate run_c.py) --fast and default stage, jobs 2; vertex-stage rows compared with the documented fields normalized; plants N/N.
+G4 the lane's 608 planted children (bsplant enumeration, cap from plants_on.jsonl) all recovered through the candidate pipeline.
+G5 mutants swap37 and drop3 built into lvl12 copies: vertex 224 must refuse (POSITIVE CONTROL LOST) and the plants must lose children (60 and 142 expected per the lane); stronger check: kernel differential against reference-filtered-by-Python must flag them.
+G6 kernel differential: for every equation of 14336 and 28672, candidate lvl12 with bs: OPEN lines equal the reference kernel's OPEN lines filtered by the prototype branchsplit.keep (math/r1-branch-split/engine/branchsplit.py, unmodified), EXACT lines and every counter except open/bsdrop equal; open+bsdrop equals reference open. Without bs the candidate is byte-identical to the reference kernel's output on the gatev2 corpus (gatev2 corpus12 stage).
+G7 wall time per vertex, production vs candidate, best of 3, 2 cores, load noted.

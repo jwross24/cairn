@@ -1,0 +1,1 @@
+3 survivor points checked with Python integers: 3 satisfy every congruence, 0 do not; level-96 primes 20, level-480 primes 22

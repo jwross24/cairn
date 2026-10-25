@@ -1,0 +1,5 @@
+s=1843968      open-patterns=104    CLOSED-cut=84     CLOSED-sandwich=20    open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=0 -> CLOSED
+s=2667168      open-patterns=387    CLOSED-cut=303    CLOSED-sandwich=84    open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=0 -> CLOSED
+s=368947264    open-patterns=12     CLOSED-cut=10     CLOSED-sandwich=2     open=0 BUDGET=0 UNSUPPORTED=0 UNFINISHED=0 -> CLOSED
+
+3 vertices: 3 fully CLOSED, 0 not; 503 open patterns: 397 closed by Lemma C depth 1, 106 closed by the sandwich, 0 left (open 0, budget 0, unsupported 0, timeout 0, unrun 0, error 0); survivors of depth 1: 106; wall 28.4s (deepcut 11.4s, sandwich 16.1s) on 1 processes

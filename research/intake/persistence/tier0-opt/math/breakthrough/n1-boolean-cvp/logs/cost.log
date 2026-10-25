@@ -1,0 +1,22 @@
+Tier-C q = 31 classes 10 types 14
+depth-1 survivors 6 block fillings (unlabeled) 5184
+E 1 depth-E bases 6 log10 0.78
+E 2 depth-E bases 3072 log10 3.49
+E 3 depth-E bases 440640 log10 5.64
+E 4 depth-E bases 33882112 log10 7.53
+E 5 depth-E bases 1648320000 log10 9.22
+E 6 depth-E bases 55706517504 log10 10.75
+pure enumeration D 1 sub-cosets 6.000e+00
+pure enumeration D 2 sub-cosets 3.072e+03
+pure enumeration D 3 sub-cosets 4.406e+05
+pure enumeration D 4 sub-cosets 3.388e+07
+pure enumeration D 5 sub-cosets 1.648e+09
+pure enumeration D 6 sub-cosets 5.571e+10
+pure enumeration D 7 sub-cosets 1.412e+12
+pure enumeration D 8 sub-cosets 2.828e+13
+pure enumeration D 9 sub-cosets 4.611e+14
+pure enumeration D 10 sub-cosets 6.222e+15
+q 31 fillings/block 5184 N_E (p1 as Tier C): {2: '3.11e+04', 3: '3.66e+07', 4: '1.45e+10', 5: '2.76e+12'} pure D=6,8: {6: '2.91e+14', 8: '8.74e+17'}
+q 36 fillings/block 5184 N_E (p1 as Tier C): {2: '3.11e+04', 3: '3.66e+07', 4: '1.73e+10', 5: '4.33e+12'} pure D=6,8: {6: '6.66e+14', 8: '4.71e+18'}
+q 40 fillings/block 5184 N_E (p1 as Tier C): {2: '3.11e+04', 3: '6.27e+07', 4: '5.97e+10', 5: '2.95e+13'} pure D=6,8: {6: '8.55e+15', 8: '2.00e+20'}
+q 44 fillings/block 5184 N_E (p1 as Tier C): {2: '3.11e+04', 3: '7.17e+07', 4: '8.72e+10', 5: '5.48e+13'} pure D=6,8: {6: '1.97e+16', 8: '6.89e+20'}

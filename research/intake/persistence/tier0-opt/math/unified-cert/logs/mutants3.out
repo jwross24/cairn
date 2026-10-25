@@ -1,0 +1,7 @@
+unmutated dual failures 0 cvp failures 0
+dual_interval_off_by_one false certifications or crashes caught by the suite: 32 CAUGHT
+dual_zbox_shrunk false certifications or crashes caught by the suite: 22 CAUGHT
+dual_groups_ignored false certifications or crashes caught by the suite: 9 CAUGHT
+cvp_first_candidate_only false certifications or crashes caught by the suite: 4 CAUGHT
+cvp_radius_quartered false certifications or crashes caught by the suite: 21 CAUGHT
+cvp_lattice_missing_modulus_row false certifications or crashes caught by the suite: 39 CAUGHT

@@ -1,0 +1,590 @@
+                                              A HASSE-TYPE PRINCIPLE FOR EXPONENTIAL
+                                                  DIOPHANTINE EQUATIONS AND ITS
+                                                           APPLICATIONS
+
+
+
+
+arXiv:1407.6499v1 [math.NT] 24 Jul 2014
+                                                                CSANÁD BERTÓK AND LAJOS HAJDU
+
+                                                   Abstract. We propose a conjecture, similar to Skolem’s conjec-
+                                                   ture, on a Hasse-type principle for exponential diophantine equa-
+                                                   tions. We prove that in a sense the principle is valid for ”almost
+                                                   all” equations. Based upon this we propose a general method for
+                                                   the solution of exponential diophantine equations. Using a gener-
+                                                   alization of a result of Erdős, Pomerance and Schmutz concerning
+                                                   Carmichael’s λ function, we can make our search systematic for
+                                                   certain moduli needed in the method.
+
+
+
+
+                                                                              1. Introduction
+                                            Let a1 , . . . , ak , b11 , . . . , b1ℓ , . . . , bk1 , . . . , bkℓ be non-zero integers, c be
+                                          an integer, and consider the exponential diophantine equation
+                                          (1.1)                a1 bα1111 . . . bα1ℓ1ℓ + · · · + ak bαk1k1 . . . bαkℓkℓ = c
+                                          in non-negative integers α11 , . . . , α1ℓ , . . . , αk1 , . . . , αkℓ .
+                                             The effective and ineffective theory of (1.1) has a long history. In case
+                                          of k = 2, one can apply Baker’s method to give explicit bounds for the
+                                          exponents α11 , . . . , α1ℓ , α21 , . . . , α2ℓ ; see e.g. results of Győry [10, 11].
+                                          Note that by results of Vojta [17] and Bennett [6], the solutions to (1.1)
+                                          can still be ”effectively determined” for k = 3, 4, under some further
+                                          restrictive assumptions. On the other hand, it is also known that for
+                                          any k, the number of those solutions to equation (1.1) for which the left
+                                          hand side of has no vanishing subsum is finite, and it can be bounded
+                                          explicitly in terms of k and ℓ (see [9] and [4], and the references given
+                                          there).
+                                             In this paper we propose the following
+
+                                             2010 Mathematics Subject Classification. 11D61, 11D72, 11D79.
+                                             Key words and phrases. Exponential diophantine equations, Hasse-principle,
+                                          Carmichael’s function.
+                                             Research supported in part by the OTKA grants K100339 and NK101680, and
+                                          by the TÁMOP-4.2.2.C-11/1/KONV-2012-0001 project. The project has been sup-
+                                          ported by the European Union, co-financed by the European Social Fund.
+                                                                                           1
+2                       CSANÁD BERTÓK AND LAJOS HAJDU
+
+Conjecture. Suppose that equation (1.1) has no solutions. Then
+there exists an integer m with m ≥ 2 such that the congruence
+
+(1.2)        a1 bα1111 . . . bα1ℓ1ℓ + · · · + ak bαk1k1 . . . bαkℓkℓ ≡ c   (mod m)
+
+has no solutions in non-negative integers α11 , . . . , α1ℓ , . . . , αk1, . . . , αkℓ .
+The conjecture is a variant of a classical conjecture of Skolem [15].
+Note that the original formulation of Skolem is not completely precise;
+for an exact formulation one should e.g. see [14], pp. 398–399. If
+true, then the conjecture can be considered as a Hasse-type principle
+for exponential diophantine equations. There are several results in the
+literature about Skolem’s conjecture; we only mention a theorem of
+Schinzel [14] and a recent paper of Bartolome, Bilu and Luca [5], and
+the references given there.
+   The results of Schinzel [14] also imply that in case of k = 1 our con-
+jecture is true. In this paper first we show that for any fixed a1 , . . . , ak ,
+b11 , . . . , b1ℓ , . . . , bk1 , . . . , bkℓ , the set of integers c for which the above
+conjecture fails, has density zero even inside the set of those values c
+for which equation (1.1) is not solvable. Moreover, here the appropriate
+moduli m can be chosen to have the extra property that they are all
+divisible by r, for any preliminary chosen integer r. The main tools in
+the proof are a generalization of a classical result of Erdős, Pomerance
+and Schmutz [8] concerning small values of Carmichael’s λ-function,
+and a result of Ádám, Hajdu and Luca [1] about the number of values
+c up to any x, for which equation (1.1) is solvable. Further, we also give
+some ”numerical evidence” for the conjecture, by checking its validity
+in different settings, and for a relatively large set of the parameters
+involved.
+   As an application, we present a general method for the solution
+of concrete equations of the type (1.1) under certain assumptions.
+Namely, if the Conjecture is true, then assuming that (1.1) has only
+finitely many solutions, our method makes it possible to find all these
+solutions, at least in principle. In fact the assumption about the finite-
+ness of solutions can be relaxed. To illustrate the method, we present
+some concrete examples, as well. We mention that in the literature one
+can find several sparse results of this type. For example, Alex, Brenner
+and Foster in a series of papers (see e.g. [7, 2, 3] and the references
+there) solved several equations of type (1.1), with typically k = 4, 5 and
+choices of b11 , . . . , b1ℓ , . . . , bk1 , . . . , bkℓ as small primes. However, their
+way to find appropriate moduli like in (1.2) is rather ad-hoc, while in
+our method such moduli can be constructed systematically, based upon
+generalizations of arguments of Erdős, Pomerance and Schmutz [8].
+              A HASSE-TYPE PRINCIPLE AND ITS APPLICATIONS                                 3
+
+  Finally, we mention that we have implemented our algorithm in Sage
+[16]. The program, together with a complete description can be down-
+loaded from the link www.math.unideb.hu/∼hajdul/expeqsolver.zip.
+
+                                  2. New results
+   In our first result we show that the Conjecture formulated in the
+Introduction is true for ”almost all” cases. For the precise formulation,
+we need the following notion. If A ⊆ B ⊆ Z and B, then the density
+of A inside B is defined as
+                            #{a ∈ A : |a| ≤ x}
+                        lim                       ,
+                       x→∞ #{b ∈ B : |b| ≤ x}
+
+if the limit exists. Here and later on, #C denotes the number of ele-
+ments of a set C.
+Theorem 2.1. Let a1 , . . . , ak and b11 , . . . , b1ℓ , . . . , bk1 , . . . , bkℓ be fixed,
+and let H be the set of right hand sides in (1.1) for which the Conjecture
+is violated, that is
+ H = {c ∈ Z : (1.1) is not solvable, but (1.2) is solvable for all m}.
+Then H has density zero inside the set
+                     H0 = {c ∈ Z : (1.1) is not solvable}.
+   Note that Theorem 2.1 obviously implies that H has density zero
+inside Z.
+   In the proof of Theorem 2.1 the following result plays an important
+role. This statement is a variant of a theorem of Erdős, Pomerance and
+Schmutz [8] and Hajdu and Tijdeman [12]. The important difference is
+the extra requirement that the appropriate moduli should be divisible
+by a fixed number r. This relation will play an important role in our
+method.
+   Let λ(m) be the Carmichael function of the positive integer m, that
+is the least positive integer for which
+                                bλ(m) ≡ 1 (mod m)
+for all b ∈ Z with gcd(b, m) = 1. Later, we shall need the following
+information on small values of the Carmichael function.
+Theorem 2.2. There exist positive constants C1 > 1 and C2 such that
+for any integer r and for every large integer i there is an integer m
+with r | m, such that
+                     log m ∈ [log i + log r, (log i)C1 + log r]
+4                      CSANÁD BERTÓK AND LAJOS HAJDU
+
+and
+                        λ(m) < r(log m/r)C2 log log log m/r .
+   Our next theorem provides numerical evidence for the Conjecture,
+for various settings.
+Theorem 2.3. Let c be an integer with 0 ≤ c ≤ 1000. Then the
+Conjecture is valid for the following cases of equation (1.1):
+   (1) pα1 1 −pα2 2 = c and pα1 1 + pα2 2 −pα3 3 = c where p1 , p2 , p3 are distinct
+       primes less than 100,
+                           αt−1
+   (2) pα1 1 + · · · + pt−1      − pαt t = c where p1 < · · · < pt are primes less
+       than 30 with 4 ≤ t ≤ 8,
+   (3) pα1 1 pα2 2 + pα3 3 pα4 4 − pα5 5 pα6 6 = c where p1 , p2 , p3 , p4 , p5 , p6 are the
+       primes 2, 3, 5, 7, 11, 13 in some order,
+   (4) 2α1 + 3α2 + 5α3 + 7α4 + 11α5 + 13α6 + 17α7 + 19α8 − 23α9 = 55191.
+
+Remark. The last equation in Theorem 2.3 has no solutions, but it
+has solutions if 55191 is replaced by any c with 0 ≤ c < 55191.
+
+    3. The application of the Conjecture to the explicit
+        solution of exponential diophantine equations
+  We propose the following principal strategy to find all solutions of
+equations of type (1.1). For the moment, for simplicity assume that
+the equation has only finitely many solutions. We shall discuss the
+question that with what settings the strategy may work later.
+Principal strategy.
+      (I) Find the suspected list of all solutions to equation (1.1) by an
+          exhaustive search. [Note: Of course, at this point we cannot be
+          sure that the list is complete. However, based upon the finite-
+          ness results concerning (1.1), heuristically we may be strongly
+          confident about it.]
+     (II) Choose one of the unknowns, αij say, and based upon the sus-
+          pected list of all solutions take an integer α0 with αij < α0 .
+          [Note: By choosing more than one unknowns we can speed
+          up the calculations in an obvious way. However, to keep the
+          presentation at this point simple, now we work only with one
+          exponent.
+    (III) Instead of equation (1.1) consider the equation obtained by re-
+          placing the coefficient ai with ai bαij0 . [Note: If our suspected list
+          contained all solutions to (1.1) indeed, then the new equation
+          has no solutions in non-negative integer exponents.]
+            A HASSE-TYPE PRINCIPLE AND ITS APPLICATIONS                     5
+
+  (IV) Find an m such that the new equation has no solution modulo
+        m. Having such an m, conclude that αij < α0 holds for all
+        solutions of (1.1). [Note: If the Conjecture is true, then such
+        a modulus exists. One can try to construct an appropriate
+        m by the help of Theorem 2.2 (and its proof). Observe that
+        for the unsolvability of the congruence modulo m the relation
+        r := bαij0 | m should hold, hence the importance of this property
+        comes from.]
+   Observe that though the strategy contains heuristic points, once we
+succeed to find an appropriate modulus m in the last step, it is justified
+that the original equation (1.1) has no solutions with αij ≥ α0 . Hence
+we could get rid of an unknown, and we can repeat the whole procedure
+for an equation in one less variables than the original one. Finally, if
+everything works out well, we get all solutions.
+   This strategy works, at least in principle, if there exists a (not at all
+preliminary computable) constant A, such that for all solutions of (1.1)
+we have      min       αij < A. (Since then we can eliminate one of the
+         1≤i≤k,1≤j≤ℓ
+unknowns by the above method, etc.) This is the case, for example, if
+(1.1) has no solution with vanishing subsum.
+  At this point we mention that one can find in the literature several
+sparse results of this type; see e.g. the papers [7, 2, 3] and the references
+there. However, in these papers the appropriate moduli are found in
+a rather ad-hoc way, at least no clear strategy is explained to choose
+them. In our results we could use the moduli provided by Theorem
+2.2. We give a detailed explanation in the proofs of our forthcoming
+theorems.
+  We illustrate our method by applying it to three branches of prob-
+lems. In each case, we give two types of results. The first one always
+only shows that in the equations considered, one of the exponents can
+be bounded. To solve these equations completely one should iterate
+the method. The second type is where this iteration is executed, and
+the complete solution of a particular equation is presented.
+  Our next result concerns the representation of c = 0 in (1.1) as sums
+and differences of powers of several distinct primes. Note that this
+result is closely related to a question of Brenner and Foster [7].
+Theorem 3.1.
+  (1) Let 3 ≤ t ≤ 6 and let p1 , . . . , pt be distinct primes with pi ≤
+      19 (i = 1, . . . , t). Then for the non-negative integer solutions
+      α1 , . . . , αt of the equation
+                                       α
+                        pα1 1 + · · · + pt−1
+                                          t−1
+                                              − pαt t = 0
+6                     CSANÁD BERTÓK AND LAJOS HAJDU
+
+         we have min αi ≤ 15.
+                    1≤i≤t
+     (2) The equation
+                 3α1 + 5α2 + 11α3 + 13α4 + 17α5 − 19α6 = 0
+         has only two solutions in non-negative integers α1 , . . . , α6 , given
+         by
+          (α1 , α2 , α3 , α4 , α5 , α6 ) = (0, 1, 1, 0, 0, 1), (1, 0, 0, 1, 0, 1).
+  The following theorem concerns the case where all but one primes
+are equal. Obviously, in this case the exponents of these primes can
+be arranged in a non-decreasing way. Further, the smallest exponent
+must always be zero, that is why the constant 1 appears on the left
+hand side.
+Theorem 3.2.
+  (1) Let 3 ≤ t ≤ 9 and let p, q be distinct primes with p, q ≤ 19.
+      Then for the non-negative integer solutions α1 , . . . , αt of the
+      equation
+                         1 + pα1 + · · · + pαt−1 − q αt = 0
+         we have min αi ≤ 6.
+                    1≤i≤t
+     (2) The diophantine equation
+      1 + 5α1 + 5α2 + 5α3 + 5α4 + 5α5 + 5α6 + 5α7 + 5α8 − 17α9 = 0
+         has only two solutions in non-negative integers α1 , . . . , α9 with
+         α1 ≤ · · · ≤ α8 , given by
+                       (α1 , α2 , α3 , α4 , α5 , α6 , α7 , α8 , α9 ) =
+               = (0, 0, 0, 0, 0, 0, 1, 1, 1), (0, 0, 0, 1, 1, 2, 3, 3, 2).
+    Our final result concerns the case ℓ = 2 in (1.1).
+Theorem 3.3.
+  (1) Let p1 , . . . , p6 be distinct primes with pi ≤ 19 (i = 1, . . . , 6).
+      Then for the non-negative integer solutions α1 , . . . , α6 of the
+      equation
+                         pα1 1 pα2 2 + pα3 3 pα4 4 − pα5 5 pα6 6 = 1
+         we have min αi ≤ 5.
+                    1≤i≤6
+     (2) The equation
+                         2α1 3α2 + 5α3 7α4 − 11α5 13α6 = 1
+            A HASSE-TYPE PRINCIPLE AND ITS APPLICATIONS                             7
+
+        has only two solutions in non-negative integers α1 , . . . , α6 , given
+        by
+         (α1 , α2 , α3 , α4 , α5 , α6 ) = (0, 0, 0, 0, 0, 0), (0, 2, 1, 0, 0, 1).
+
+                                     4. Proofs
+  We start with the proof of Theorem 2.2.
+Proof of Theorem 2.2. Theorem 5 of [12] is just the statement with
+r = 1. So let C1 and C2 be the constants implied by Theorem 5 of [12],
+let r be an arbitrary positive integer, and let i be sufficiently large.
+Then by Theorem 5 of [12] there exists an n such that
+         log n ∈ [log i, (log i)C1 ] and λ(n) < (log n)C2 log log log n .
+Put m := rn. Then obviously, r | m. Further, we immediately obtain
+                   log m ∈ [log i + log r, (log i)C1 + log r].
+Finally, as it is well-known, for any positive integers a, b we have
+λ(ab) ≤ aλ(b). Hence
+    λ(m) ≤ rλ(n) < r(log n)C2 log log log n = r(log m/r)C2 log log log m/r ,
+and the theorem follows.                                                            
+   Now we continue with the proof of Theorem 2.1. For this, beside
+Theorem 2.2 we need the following results of Ádám, Hajdu and Luca
+[1].
+Lemma 4.1. Using the notation of Theorem 2.1, write H0 (x) for the
+elements h of H0 with |h| ≤ x where x is a positive real number. Then
+for all large x we have
+                          #H0 (x) > 2x − C3 (log x)C4
+where C3 and C4 are constants depending only on the parameters k, ai
+and bij occurring in (1.1).
+Proof. The statement is a simple consequence of Theorem 1 of [1]. 
+  We also need the following
+Lemma 4.2. Let m = q1β1 · · · qzβz where q1 , . . . , qz are distinct primes,
+β1 , . . . , βz are positive integers, and let b ∈ Z. Then we have
+               #{bu      (mod m) : u ≥ 0} ≤ λ(m) + max αi .
+                                                               1≤i≤z
+
+Proof. The statement is Lemma 1 in [1].                                             
+  Now we are ready to prove Theorem 2.1.
+8                   CSANÁD BERTÓK AND LAJOS HAJDU
+
+Proof of Theorem 2.1. For a positive real number x set
+    H(x) := {h ∈ H : |h| ≤ x} and H0 (x) := {h ∈ H0 : |h| ≤ x}.
+We apply Lemmas 4.1 and 4.2, and Theorem 2.2 with r = 1 to prove
+our statement. Partly we follow the argument of Theorem 1 of [13]; see
+also the proof of Theorem 3 in [1].
+   Throughout the proof, we assume that x is large enough for the argu-
+ments√to hold. By Theorem 2.2 we can choose an integer m, satisfying
+m ≤ x and
+(4.1)                   λ(m) < (log m)C2 log log log m .
+We may assume that m is the largest integer with these properties.
+Then by Theorem 2.2 we have that m > f (x), with some monotone
+increasing function f of x, tending to infinity as x goes to infinity.
+   Let m = q1β1 · · · qzβz be the prime factorization of m, where q1 , . . . , qz
+are distinct primes and β1 , . . . , βz are positive integers. Write C(m)
+for the collection of the modulo m residue classes of those integers c
+for which the congruence (1.2) is solvable. Lemma 4.2 implies that we
+have
+(4.2)                  #C(m) ≤ (λ(m) + max βi )kℓ .
+                                             1≤i≤z
+
+On the other hand, by (4.1) we easily get that
+                                                           log m
+(4.3)         λ(m) + max βi ≤ (log m)C2 log log log m +           .
+                       1≤i≤z                                log 2
+Now by inequalities (4.2) and (4.3) we get that
+(4.4)                  #C(m) < (log m)C5 log log log m ,
+where C5 is a constant depending only on k and ℓ.
+  Write now x = um + v where u is a positive integer and v is a non-
+negative real number with v < m. Observe that by our choice of m, u
+and v we have that
+         log u ≥ (log(u + 1))/2 ≥ (log x − log m)/2 ≥ (log x)/4.
+Let now ε be an arbitrary positive real number. Then the above in-
+equality implies
+                      εx/3 ≥ εum/3 > m > v.
+Further, we also have
+                           εx/3 > C3 (log x)C4 /2,
+where C3 and C4 are given in Lemma 4.1. Finally, the lower bound
+m > f (x) also gives
+                  εx/3 ≥ εum/3 > u(log m)C5 log log log m .
+            A HASSE-TYPE PRINCIPLE AND ITS APPLICATIONS                   9
+
+Thus, since by (4.4) and x = um + v we have that
+               #H(x) ≤ 2(u(log m)C5 log log log m + v) + 1,
+the statement immediately follows by comparing the above inequality
+with
+                   #H0 (x) > 2x − C3 (log x)C4 ,
+given by Lemma 4.1.                                                      
+Proof of Theorem 2.3. Since the proofs of the parts (1) to (4) are simi-
+lar, we only give details in case of (3). Moreover, here we consider only
+the equations
+(4.5)                2α1 3α2 + 5α3 7α4 − 11α5 13α6 = c
+with 0 ≤ c ≤ 1000. First, letting the exponents αi (i = 1, . . . , 6) vary
+between 0 and 12, we find a list L (with #L = 224) of c values for
+which we expect equation (4.5) not to have solutions. (Note that some
+equations in (3) have solutions with max αi = 12.) At this stage, at
+                                        1≤i≤6
+least we are certain that for integers c with 0 ≤ c ≤ 1000 not in the
+list L, equation (4.5) is solvable. Now we investigate the values c ∈ L
+one by one. The smallest such value is c = 11, we shall work only with
+this, the others can be handled similarly. Take the modulus
+        m := 7031324575728 = 24 · 32 · 17 · 19 · 37 · 73 · 97 · 577.
+(Later we shall explain how to find this m.) Now we could simply say
+that as one can easily check, equation (4.5) has no solutions modulo
+m. However, as this check is not that easy for some of the instances
+in (1) to (4), it is worth to do it in a sophisticated way. (In particular,
+since the appropriate modulus m can be much larger than the one given
+above.)
+   First observe that all the factors of m have λ values composed ex-
+clusively of 2-s and 3-s. (This is the choice indicated by the proof of
+Erdős, Pomerance and Schmutz [8].) This makes it possible to com-
+bine the information obtained for the coefficients α1 , . . . , α6 modulo
+the separate factors. (It is highly not economic to work with m as a
+modulus directly.) For example, modulo 24 we immediately get that
+α1 = 0 must hold, and we also get some congruence conditions for the
+other exponents, modulo a power of 2 (since the orders of all the factors
+modulo 24 are certainly powers of 2). Then, modulo 32 we get further
+conditions on α3 , α4 , α5 and α6 , modulo ord9 (5) = 6, ord9 (7) = 2,
+ord9 (11) = 6 and ord9 (13) = 3, respectively. Finally, using all the fac-
+tors of m as modulus, the resulting system of congruences obtained for
+10                   CSANÁD BERTÓK AND LAJOS HAJDU
+
+the exponents α1 , . . . , α6 proves to be non-solvable. This shows that
+equation (4.5) with c = 11 has no solutions modulo m indeed.
+  In all the other cases the proof goes along the same lines. In some
+cases one really needs to work with huge moduli. However, in all cases
+we encountered, the modulus
+                                           Y
+                           m∗ = 24 · 32 ·         p
+                                                p−1=2u 3v 5w
+                                                 3<p<20000
+
+proved to be appropriate. That is, the m we found was always a divisor
+of m∗ .
+   Finally, we explain how we found the appropriate moduli m. In fact
+the outlined procedure in many cases could be simplified, e.g. starting
+with a shorter list of prime powers.
+   Let M be the list of all prime power divisors of m∗ . Consider an
+equation of the form
+(4.6)                    bα1 1 bα2 2 + bα3 3 bα4 4 − bα5 5 bα6 6 = c
+(in all the other instances the procedure is similar). Define a heuristic
+measurement f (t) for the ”goodness” of the elements t of M, with
+respect to the bases b1 , . . . , b6 . We take the function f (t) defined as
+                               f (t) = o1 o2 o3 o4 o5 o6
+where oi = ordt (bi ) (i = 1, . . . , 6), with the convention oi = ordt (bi ) = 1
+if gcd(t, bi ) > 1. Then we take the first t from M as modulus, for which
+f (t) is minimal. By this modulus, we obtain some conditions for the
+exponents αi modulo oi (i = 1, . . . , 6). In particular, if t is a power of
+the prime bi , then we know that either αi is smaller than the exponent
+of bi in t, or bαi i ≡ 0 (mod t).
+   For simplicity, suppose that gcd(bi , t) = 1 (i = 1, . . . , 6) and that we
+have
+                         αi ≡ βi (mod oi ) (i = 1, . . . , 6),
+with some βi subject to 0 ≤ βi < oi . Then we can rewrite equation 4.6
+as
+              a1 (b′1 )γ1 (b′2 )γ2 + a2 (b′3 )γ3 (b′4 )γ4 − a3 (b′5 )γ5 (b′6 )γ6 = c
+with
+                        a1 = bβ1 1 bβ2 2 , a2 = bβ3 1 bβ4 2 , a3 = bβ5 1 bβ6 2 ,
+and
+                     b′i = boi i , γi = (αi − βi )/oi (i = 1, . . . , 6).
+Now we can apply the above method for this equation with M re-
+placed by M \ {t}, etc. In this way we could always guarantee that the
+                   A HASSE-TYPE PRINCIPLE AND ITS APPLICATIONS                                 11
+
+next modulus t is the actually ”best”, which makes the computation
+relatively fast.
+   Note that all the necessary exponentiations can be made locally,
+which keeps the procedure economic. The calculations have been per-
+formed by the program package Sage [16].                         
+Proof of Theorem 3.1. We only deal with the second statement, since it
+asserts the complete solution of an equation. Deriving an upper bound
+for one of the exponents will be a part of our method, so part (1) of
+the theorem can be proved in a similar way.
+   First, according to (I) of our Principal strategy, we find a suspected
+list of all solutions of the equation
+(4.7)                     3α1 + 5α2 + 11α3 + 13α4 + 17α5 − 19α6 = 0
+with 0 ≤ α1 , . . . , α6 < 15. We get only two solutions, namely
+                (α1 , α2 , α3 , α4 , α5 , α6 ) = (0, 1, 1, 0, 0, 1), (1, 0, 0, 1, 0, 1).
+So we strongly suspect that there are no other solutions. Now, following
+steps (II) and (III) of the strategy, but shifting the powers of all bases,
+we consider the equation
+            ′               ′                ′               ′             ′               ′
+32 · 3α1 + 52 · 5α2 + 112 · 11α3 + 132 · 13α4 + 17 · 17α5 − 192 · 19α6 = 0.
+If our list of two solutions is complete, then the above equation has no
+solutions in non-negative integers α1′ , . . . , α6′ . To show this, we find a
+modulus m such that the congruence
+        ′             ′               ′             ′            ′             ′
+32 ·3α1 +52 ·5α2 +112 ·11α3 +132 ·13α4 +17·17α5 −192 ·19α6 ≡ 0 (mod m)
+has no solutions. By a similar strategy as in the proof of Theorem 2.3,
+we find that
+                 m = 2 · 32 · 5 · 7 · 13 · 17 · 19 · 37 · 73 · 109 · 163 · 433
+is an appropriate modulus. This means that in any solution of (4.7),
+one of
+                α1 ≤ 1, α2 ≤ 1, α3 ≤ 1, α4 ≤ 1, α5 = 0, α6 ≤ 1
+must be valid. This means that one of the exponents α1 , . . . , α6 is fixed,
+and may take at most two values. We consider only the possibility
+α1 = 0, the other cases can be treated similarly. In this case our
+equation reads as
+                          1 + 5α2 + 11α3 + 13α4 + 17α5 − 19α6 = 0.
+Based upon our previous calculations, we suspect that this new equa-
+tion has the only solution
+                                (α2 , α3 , α4 , α5 , α6 ) = (1, 1, 0, 0, 1).
+12                CSANÁD BERTÓK AND LAJOS HAJDU
+
+Now similarly as above, but shifting only the exponent of 13, if the
+conjecture is true, then there exists a modulus m such that the con-
+gruence
+                                     ′
+       1 + 5α2 + 11α3 + 13 · 13α4 + 17α5 − 19α6 ≡ 0 (mod m)
+has no solutions modulo m. Now by the same method as previously,
+we get that the modulus
+                 m = 24 · 32 · 7 · 13 · 37 · 73 · 109 · 433
+verifies this assertion. Hence we obtain that α4 = 0 must be valid, and
+our equation reduces to
+                  2 + 5α2 + 11α3 + 17α5 − 19α6 = 0.
+  By our earlier calculations, we strongly suspect that this equation
+has the only solution
+                      (α2 , α3 , α5 , α6 ) = (1, 1, 0, 1).
+Shifting now the exponent of 17 by one, the modulus
+                m = 2 · 3 · 7 · 17 · 37 · 73 · 97 · 109 · 163
+witnesses that the equation arising has no solutions - in other words,
+we must have α5 = 0.
+  Hence we obtain the equation
+                       3 + 5α2 + 11α3 − 19α6 = 0,
+with the only expected solution
+                         (α2 , α3 , α6 ) = (1, 1, 1).
+Now we shift the exponent of 5 to get the equation
+                                 ′
+                    3 + 52 · 5α2 + 11α3 − 19α6 = 0,
+which turns out to have no solutions modulo
+                            m = 33 · 52 · 7 · 31.
+This leaves us with the equations
+           4 + 11α3 − 19α6 = 0 and 8 + 11α3 − 19α6 = 0.
+The first equation has no solutions modulo 3. Further, we suspect that
+the only solution of the second equation is
+                             (α3 , α6 ) = (1, 1).
+Now we shift the exponent of 11 to obtain the equation
+                                         ′
+                       8 + 112 · 11α3 − 19α6 = 0,
+             A HASSE-TYPE PRINCIPLE AND ITS APPLICATIONS                  13
+
+which has no solutions modulo
+                               m = 52 · 112 · 31 · 61.
+This means that α3 = 0 or α3 = 1. From this we easily get that
+α3 = α6 = 1 must be valid. By following similar arguments, we could
+solve all the encountered equations and we get that the solutions are
+those listed in the statement.                                     
+Proof of Theorem 3.2. The proof of this theorem is very similar to that
+of Theorem 3.1, so we only indicate the main steps. Again, we only
+deal with part (2) of the statement, part (1) could be handled similarly.
+   After finding the suspected solutions
+                      (α1 , α2 , α3 , α4 , α5 , α6 , α7 , α8 , α9 ) =
+            = (0, 0, 0, 0, 0, 0, 1, 1, 1), (0, 0, 0, 1, 1, 2, 3, 3, 2),
+using the modulus
+                         m = 2 · 3 · 52 · 7 · 13 · 31 · 601
+we successively get α1 = α2 = α3 = 0 and α4 ≤ 1.
+   In case of α4 = 0, using again m we successively obtain α5 = α6 = 0
+and α7 = α8 = 1, whence α9 = 1, and we obtain the first solution
+calculated preliminary. Note that in some of the above arguments, m
+could be replaced by m/5 or m/601.
+   When α4 = 1, a similar calculation (but with rather more com-
+plicated moduli) leads to the second solution, and the theorem fol-
+lows.                                                               
+Proof of Theorem 3.3. Again, we only deal with part (2) of the state-
+ment. Since the proof is very similar to the previous ones, we only give
+the moduli used, and the information deduced for the exponents.
+  We start with the equation
+                       2α1 3α2 + 5α3 7α4 − 11α5 13α6 = 1.
+Then modulo 2 we get that α1 = 0. So the equation reduces to
+                         3α2 + 5α3 7α4 − 11α5 13α6 = 1.
+Now taking
+                 m = 25 · 7 · 17 · 19 · 37 · 73 · 97 · 193
+we obtain that α4 = 0. Then our equation takes the form
+                           3α2 + 5α3 − 11α5 13α6 = 1.
+Taking
+                m = 7 · 11 · 17 · 19 · 31 · 37 · 41 · 73 · 97 · 193
+14                   CSANÁD BERTÓK AND LAJOS HAJDU
+
+we get that α5 = 0, that is, we have to solve
+                             3α2 + 5α3 − 13α6 = 1.
+This equation modulo
+                            m = 52 · 7 · 11 · 31 · 41
+yields that α3 ≤ 1. The equality α3 = 0 trivially leads to α2 = α6 = 0.
+This gives the first solution. So we are left with the case α3 = 1, when
+the equation is of the shape
+                               3α2 − 13α6 = −4.
+Then modulo
+                               m = 27 · 7 · 19 · 37
+we get that α2 ≤ 2, which easily yields α2 = 2 and α6 = 1. Thus we
+get the second solution, and the theorem follows.                
+
+                                 References
+ 1. Zs. Ádám, L. Hajdu and F. Luca, Representing integers as linear combinations
+    of S-units, Acta Arith. 138 (2009), 101–107.
+ 2. L. J. Alex and L. L. Foster, On the diophantine equation 1 + x + y = z, Rocky
+    Mountain J. Math. 22 (1992), 11–62.
+ 3. L. J. Alex and L. L. Foster, On the diophantine equation w + x + y = z, with
+    wxyz = 2r 3s 5t , Revista Mat. Univ. Comp. Madrid 8 (1995), 13–48.
+ 4. F. Amoroso and E. Viada, Small points on subvariaties of a torus, Duke Math.
+    J. 150 (2009), 407–442.
+ 5. B. Bartolome, Y. Bilu and F. Luca, On the exponential local-global principle,
+    Acta Arith. 159 (2013), 101–111.
+ 6. M. Bennett, Effective S-unit equations and a conjecture of Newman, unpub-
+    lished conference talk, Marseille-Luminy, 2010.
+ 7. J. L. Brenner and L. L. Foster, Exponential diophantine equations, Pacific J.
+    Math. 101 (1982), 263–301.
+ 8. P. Erdős, C. Pomerance and E. Schmutz, Carmichael’s lambda function, Acta
+    Arith. 58 (1991), 365–385.
+ 9. J. H. Evertse, H. P. Schlickewei and W. M Schmidt, Linear equations in vari-
+    ables which lie in a multiplicative group, Annals of Math. 155 (2002), 807–836.
+10. K. Győry, On the number of solutions of linear equations in units of an alge-
+    braic number field, Comment. Math. Helv. 54 (1979), 583–600.
+11. K. Győry, Résultats effectifs sur la représentation des entiers par des formes
+    décomposables, Queen’s Papers in Pure and Appl. Math. 56 (1980).
+12. L. Hajdu and R. Tijdeman, Representing integers as linear combinations of
+    powers, Publ. Math. Debrecen 79 (2011), 461–468.
+13. L. Hajdu and R. Tijdeman, Representing integers as linear combinations of
+    power products, Archiv der Math. 98 (2012), 527–533.
+14. A. Schinzel, On power residues and exponential congruences, Acta Arith. 27
+    (1975), 397–420.
+            A HASSE-TYPE PRINCIPLE AND ITS APPLICATIONS                         15
+
+15. T. Skolem, Anwendung exponentieller Kongruenzen zum Beweis der Unls-
+    barkeit gewisser diophantischer Gleichungen, Vid. akad. Avh. Oslo I 1937 nr
+    12.
+16. W. A. Stein et al., Sage Mathematics Software (Version 6.1.1), The Sage De-
+    velopment Team, 2014, http://www.sagemath.org.
+17. P. Vojta, Integral Points on Varieties, Dissertation, Harvard University, 1983.
+
+  Institute of Mathematics, University of Debrecen, H-4010 Debre-
+cen, P.O. Box 12, Hungary
+  E-mail address: bertok.csanad@gmail.com
+
+  Institute of Mathematics, University of Debrecen, H-4010 Debre-
+cen, P.O. Box 12, Hungary
+  E-mail address: hajdul@science.unideb.hu
+

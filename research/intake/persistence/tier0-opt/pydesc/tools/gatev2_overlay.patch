@@ -1,0 +1,77 @@
+--- /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/gatev2/gv_lib.py	2026-10-20 16:20:50
++++ gatev2x/gv_lib.py	2026-10-20 18:28:58
+@@ -1,7 +1,8 @@
+ import os, sys, hashlib, json, subprocess, time, shutil, re, glob, threading
+ 
+ HERE = os.path.dirname(os.path.abspath(__file__))
+-PERSIST = os.path.abspath(os.path.join(HERE, '..', '..'))
++PERSIST = '/Users/jwross/Documents/cairn/research/intake/persistence'
++OVERLAY = os.environ.get('GATE_PY_OVERLAY')
+ TIER0 = os.path.join(PERSIST, 'tier0')
+ REF_DIR = os.path.join(PERSIST, 'tier0-opt', 'reference')
+ PINS = {'lvl12.c': '35528aabe055f6f92b696cfae66c930b', 'lvlN.c': '3493e68c1fdc5756d4a01f0e6ed46c74'}
+@@ -85,7 +86,18 @@
+                 lvl12_md5=PINS['lvl12.c'], lvlN_md5=PINS['lvlN.c'])
+ 
+ 
+-def make_pipe(work, name, lvl12, lvlN):
++def overlay_digest(ov):
++    h = hashlib.md5()
++    for f in sorted(os.listdir(ov)):
++        fp = os.path.join(ov, f)
++        if os.path.isfile(fp) and (f.endswith('.py') or f.endswith('.dylib') or f.endswith('.so')):
++            h.update(f.encode()); h.update(open(fp, 'rb').read())
++    return h.hexdigest()[:10]
++
++
++def make_pipe(work, name, lvl12, lvlN, overlay=None):
++    if overlay:
++        name = name + '_ov' + overlay_digest(overlay)
+     d = os.path.join(work, 'pipes', name)
+     os.makedirs(d, exist_ok=True)
+     for f in glob.glob(os.path.join(work, 'src', '*')):
+@@ -94,6 +106,13 @@
+         dst = os.path.join(d, os.path.basename(f))
+         if not os.path.exists(dst):
+             os.symlink(f, dst) if f.endswith('.txt') else shutil.copy2(f, dst)
++    if overlay:
++        for f in sorted(os.listdir(overlay)):
++            fp = os.path.join(overlay, f)
++            if os.path.isfile(fp) and (f.endswith('.py') or f.endswith('.dylib') or f.endswith('.so')):
++                dst = os.path.join(d, f)
++                if not os.path.exists(dst) or md5file(dst) != md5file(fp):
++                    shutil.copy2(fp, dst)
+     for nm, tgt in (('lvl12', lvl12), ('lvlN', lvlN)):
+         dst = os.path.join(d, nm)
+         if os.path.lexists(dst):
+--- /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/gatev2/gatev2.py	2026-10-20 16:48:43
++++ gatev2x/gatev2.py	2026-10-20 18:28:58
+@@ -137,7 +137,7 @@
+     if vertices:
+         pj = []
+         for pid, (l12, lN) in (('ref', (refs['lvl12'], refs['lvlN'])), ('cand', (cand12 or refs['lvl12'], candN or refs['lvlN']))):
+-            pipe = make_pipe(work, f"{pid}_{os.path.basename(os.path.dirname(l12))}_{os.path.basename(l12)}_{md5file(l12)[:8]}_{md5file(lN)[:8]}", l12, lN)
++            pipe = make_pipe(work, f"{pid}_{os.path.basename(os.path.dirname(l12))}_{os.path.basename(l12)}_{md5file(l12)[:8]}_{md5file(lN)[:8]}", l12, lN, overlay=(OVERLAY if pid == 'cand' else None))
+             for s in FIXED_FULL:
+                 pj.append((pid, s, pool.submit(S.vertex_task, dict(work=work, pipe=pipe, s=s, pipe_id=(md5file(l12) + md5file(lN)), cache=(pid == 'ref')))))
+         vres = {(pid, s): f.result() for pid, s, f in pj}
+@@ -155,7 +155,7 @@
+     if early and any(s_['findings'] for k, s_ in st.items() if isinstance(s_, dict) and 'findings' in s_):
+         return st
+     if plants:
+-        pipe = make_pipe(work, f"plant_{md5file(cand12 or refs['lvl12'])[:8]}_{md5file(candN or refs['lvlN'])[:8]}", cand12 or refs['lvl12'], candN or refs['lvlN'])
++        pipe = make_pipe(work, f"plant_{md5file(cand12 or refs['lvl12'])[:8]}_{md5file(candN or refs['lvlN'])[:8]}", cand12 or refs['lvl12'], candN or refs['lvlN'], overlay=OVERLAY)
+         pl = ctx['plants']
+         pf = [pool.submit(S.plant_task, dict(work=work, pipe=pipe, plant=p)) for p in pl]
+         pres = []
+--- /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/gatev2/gv_corpus.py	2026-10-20 16:17:34
++++ gatev2x/gv_corpus.py	2026-10-20 18:32:32
+@@ -62,7 +62,7 @@
+ 
+ def tierA_vertices():
+     out = []
+-    for ln in open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tier0', 'FRONTIER.md')):
++    for ln in open('/Users/jwross/Documents/cairn/research/intake/persistence/tier0/FRONTIER.md'):
+         m = re.match(r'\|\s*A\s*\|\s*A_\d\s*\|\s*(\d+)\s*\|', ln)
+         if m:
+             out.append(int(m.group(1)))

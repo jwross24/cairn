@@ -1,0 +1,6 @@
+BK script formula, arithmetic only: 1236800976048334.0 15.092299819307302
+2013 C1 lane/correct factor: 1.4927113702623904 log10: 0.1739758409330602
+2013 C2 correct/lane factor: 4.494910710010105 log10: 0.6527210690314154
+C1 lane exact exponent: 10.09631062734006
+C2 lane exact exponent: 7.369784362568586
+Paper references: Yu 2013 (1.28)-(1.29),p.324 set a1=7(p-1)/(p-2),a2=7. The script uses8 in both. Equation (1.10),p.320 uses M2=max(5/delta,e^3/27*L^4); the script incorrectly reuses M1=max(5/(delta*L^4),e^3/27).

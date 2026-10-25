@@ -1,0 +1,506 @@
+Lambda_96: index 2.810e+56 [0.00s]
+s=368947264  M=22222277777777 a=5  y=81352871712  reps=1   cases=1920    CLOSED
+s=368947264  M=22222277777777 a=0  y=103355177121 reps=2   cases=4080    bound 10^(10^71.84) digits
+s=368947264  M=2222477777777 a=9  y=99574272     reps=1   cases=1280    CLOSED
+s=368947264  M=2222477777777 a=0  y=73222472421  reps=2   cases=4608    CLOSED
+s=368947264  M=2222477777777 a=0  y=103355177121 reps=1   cases=1440    bound 10^(10^71.82) digits
+s=368947264  M=2222477777777 a=0  y=2542277241   reps=2   cases=2048    CLOSED
+s=1843968    M=2222222237777 a=1  y=13122        reps=36  cases=12490   CLOSED
+s=1843968    M=2222222237777 a=2  y=111132       reps=37  cases=13504   CLOSED
+s=1843968    M=2222222237777 a=0  y=290667031221 reps=3   cases=4608    CLOSED
+s=1843968    M=2222222237777 a=5  y=81352871712  reps=2   cases=3168    CLOSED
+s=2667168    M=2222233333777 a=14 y=11519532122112 reps=1   cases=2304    CLOSED
+s=2667168    M=2222233333777 a=4  y=551227611312 reps=1   cases=1536    bound 10^(10^71.60) digits
+s=2667168    M=2222233333777 a=1  y=13122        reps=109 cases=29782   CLOSED
+s=2667168    M=2222233333777 a=2  y=111132       reps=130 cases=44550   CLOSED
+s=2667168    M=2222233333777 a=1  y=44471322     reps=5   cases=7344    CLOSED
+s=2667168    M=2222233333777 a=4  y=1037232      reps=66  cases=35926   CLOSED
+s=2667168    M=2222233333777 a=2  y=2333772      reps=37  cases=37432   bound 10^(10^72.12) digits
+s=368947264  M=222777777778 a=3  y=172872       reps=8   cases=2860    CLOSED
+s=368947264  M=222777777778 a=6  y=1778112      reps=9   cases=3172    CLOSED
+s=368947264  M=222777777778 a=4  y=1067311728   reps=2   cases=1152    CLOSED
+s=368947264  M=224477777777 a=9  y=99574272     reps=1   cases=960     CLOSED
+s=368947264  M=224477777777 a=1  y=57177414     reps=3   cases=1104    CLOSED
+s=1843968    M=222222267777 a=3  y=1417176      reps=8   cases=4476    CLOSED
+s=1843968    M=222222267777 a=2  y=69177612     reps=1   cases=720     CLOSED
+s=1843968    M=222222267777 a=7  y=45177216     reps=1   cases=384     CLOSED
+s=1843968    M=222222347777 a=1  y=13122        reps=90  cases=20054   CLOSED
+s=1843968    M=222222347777 a=2  y=111132       reps=64  cases=17852   CLOSED
+s=1843968    M=222222347777 a=0  y=177147       reps=18  cases=6472    CLOSED
+s=1843968    M=222222347777 a=0  y=290667031221 reps=4   cases=4560    CLOSED
+s=1843968    M=222222347777 a=5  y=1613472      reps=30  cases=14244   CLOSED
+s=1843968    M=222222347777 a=3  y=4374822312   reps=6   cases=8352    CLOSED
+s=1843968    M=222222347777 a=9  y=1481421312   reps=22  cases=11588   CLOSED
+s=1843968    M=222222347777 a=5  y=81352871712  reps=2   cases=2448    CLOSED
+s=1843968    M=222222347777 a=0  y=73222472421  reps=4   cases=7680    bound 10^(10^71.63) digits
+s=1843968    M=222222347777 a=0  y=103355177121 reps=7   cases=7488    bound 10^(10^71.71) digits
+s=1843968    M=222222347777 a=0  y=2542277241   reps=8   cases=9216    bound 10^(10^71.94) digits
+s=2667168    M=222223337779 a=1  y=44471322     reps=36  cases=25116   bound 10^(10^71.91) digits
+s=2667168    M=222223337779 a=5  y=130691232    reps=10  cases=10672   CLOSED
+s=2667168    M=222223337779 a=9  y=384072192    reps=2   cases=2448    CLOSED
+s=2667168    M=222223337779 a=2  y=133923132    reps=166 cases=136736  bound 10^(10^69.77) digits
+s=2667168    M=222223337779 a=3  y=1134213192   reps=50  cases=43844   CLOSED
+s=2667168    M=222223337779 a=4  y=59521392     reps=11  cases=8988    CLOSED
+s=2667168    M=222223337779 a=7  y=158723712    reps=18  cases=16096   CLOSED
+s=2667168    M=222223337779 a=4  y=457419312    reps=8   cases=6684    CLOSED
+s=2667168    M=222223337779 a=3  y=8716379112   reps=6   cases=4704    bound 10^(10^71.90) digits
+s=2667168    M=222223337779 a=10 y=154893312    reps=10  cases=9336    CLOSED
+s=2667168    M=222223337779 a=5  y=81352871712  reps=1   cases=1728    bound 10^(10^71.43) digits
+s=2667168    M=222223337779 a=0  y=103355177121 reps=4   cases=4896    bound 10^(10^71.64) digits
+s=2667168    M=222333334777 a=1  y=13122        reps=136 cases=28693   CLOSED
+s=2667168    M=222333334777 a=2  y=111132       reps=137 cases=34664   CLOSED
+s=2667168    M=222333334777 a=4  y=1037232      reps=92  cases=41608   CLOSED
+s=2667168    M=222333334777 a=2  y=2333772      reps=19  cases=13568   CLOSED
+s=2667168    M=222333334777 a=0  y=413343       reps=90  cases=39326   CLOSED
+s=2667168    M=222333334777 a=0  y=177147       reps=34  cases=12636   CLOSED
+s=2667168    M=222333334777 a=0  y=290667031221 reps=5   cases=5248    CLOSED
+s=2667168    M=222333334777 a=5  y=81352871712  reps=2   cases=2304    CLOSED
+s=2667168    M=222333334777 a=4  y=551227611312 reps=1   cases=1152    CLOSED
+s=2667168    M=222333334777 a=5  y=2343119117472 reps=3   cases=5184    CLOSED
+s=2667168    M=222333334777 a=0  y=103355177121 reps=6   cases=7200    bound 10^(10^71.56) digits
+s=2667168    M=222233336777 a=1  y=13122        reps=167 cases=36599   CLOSED
+s=2667168    M=222233336777 a=2  y=111132       reps=149 cases=40269   CLOSED
+s=2667168    M=222233336777 a=4  y=1037232      reps=64  cases=32032   CLOSED
+s=2667168    M=222233336777 a=2  y=2333772      reps=9   cases=7884    CLOSED
+s=2667168    M=222233336777 a=4  y=27216        reps=121 cases=34527   CLOSED
+s=2667168    M=222233336777 a=3  y=1417176      reps=13  cases=7584    CLOSED
+s=2667168    M=222233336777 a=2  y=69177612     reps=6   cases=4288    bound 10^(10^71.93) digits
+s=2667168    M=222233336777 a=0  y=290667031221 reps=2   cases=2304    CLOSED
+s=2667168    M=222233336777 a=7  y=45177216     reps=20  cases=10416   CLOSED
+s=2667168    M=222233336777 a=3  y=10503948371112 reps=1   cases=1728    bound 10^(10^71.49) digits
+s=2667168    M=222233336777 a=11 y=53331167232  reps=16  cases=21696   CLOSED
+s=2667168    M=222233336777 a=3  y=4374822312   reps=5   cases=7584    CLOSED
+s=2667168    M=222233336777 a=9  y=1481421312   reps=35  cases=20296   CLOSED
+s=2667168    M=222233336777 a=4  y=1764331632   reps=18  cases=20512   CLOSED
+s=2667168    M=222233336777 a=5  y=81352871712  reps=7   cases=8496    CLOSED
+s=2667168    M=222233336777 a=4  y=551227611312 reps=1   cases=960     bound 10^(10^70.90) digits
+s=2667168    M=222233336777 a=0  y=7626831723   reps=2   cases=3072    bound 10^(10^72.02) digits
+s=2667168    M=222233336777 a=0  y=103355177121 reps=9   cases=10272   bound 10^(10^71.69) digits
+s=368947264  M=24777777778  a=0  y=177147       reps=4   cases=582     CLOSED
+s=1843968    M=22222377778  a=1  y=44471322     reps=2   cases=1224    CLOSED
+s=1843968    M=22222377778  a=6  y=1778112      reps=23  cases=6920    CLOSED
+s=1843968    M=22222377778  a=7  y=158723712    reps=5   cases=2400    CLOSED
+s=1843968    M=22222377778  a=4  y=1067311728   reps=11  cases=5728    bound 10^(10^71.26) digits
+s=1843968    M=22222377778  a=0  y=78121827     reps=16  cases=5414    bound 10^(10^71.53) digits
+s=1843968    M=22222377778  a=0  y=330812181    reps=9   cases=3654    bound 10^(10^72.01) digits
+s=1843968    M=22222467777  a=2  y=69177612     reps=5   cases=3024    CLOSED
+s=1843968    M=22222467777  a=1  y=242121642    reps=2   cases=1248    CLOSED
+s=1843968    M=22222467777  a=7  y=45177216     reps=2   cases=896     CLOSED
+s=1843968    M=22222467777  a=7  y=224042112    reps=5   cases=2046    CLOSED
+s=1843968    M=22222467777  a=14 y=6772211712   reps=28  cases=13040   CLOSED
+s=1843968    M=22222467777  a=6  y=34012224     reps=12  cases=4524    CLOSED
+s=1843968    M=22222467777  a=0  y=43046721     reps=3   cases=1152    CLOSED
+s=1843968    M=22222467777  a=0  y=60761421     reps=9   cases=5992    CLOSED
+s=1843968    M=22222467777  a=0  y=177147       reps=6   cases=3312    CLOSED
+s=1843968    M=22223447777  a=1  y=13122        reps=78  cases=13594   CLOSED
+s=1843968    M=22223447777  a=2  y=111132       reps=61  cases=12118   CLOSED
+s=1843968    M=22223447777  a=0  y=177147       reps=8   cases=2556    CLOSED
+s=1843968    M=22223447777  a=5  y=1613472      reps=24  cases=7440    CLOSED
+s=1843968    M=22223447777  a=8  y=952342272    reps=1   cases=864     CLOSED
+s=1843968    M=22223447777  a=3  y=4374822312   reps=2   cases=2016    CLOSED
+s=1843968    M=22223447777  a=7  y=224042112    reps=22  cases=9600    CLOSED
+s=1843968    M=22223447777  a=7  y=158723712    reps=12  cases=5136    CLOSED
+s=1843968    M=22223447777  a=9  y=1481421312   reps=12  cases=5912    CLOSED
+s=1843968    M=22223447777  a=0  y=103355177121 reps=4   cases=3040    bound 10^(10^71.80) digits
+s=1843968    M=22223447777  a=0  y=2542277241   reps=3   cases=2816    bound 10^(10^71.79) digits
+s=2667168    M=22222377799  a=1  y=13122        reps=121 cases=22776   CLOSED
+s=2667168    M=22222377799  a=2  y=111132       reps=144 cases=29152   CLOSED
+s=2667168    M=22222377799  a=2  y=6377292      reps=12  cases=5992    CLOSED
+s=2667168    M=22222377799  a=3  y=2571912      reps=23  cases=5686    CLOSED
+s=2667168    M=22222377799  a=3  y=472392       reps=12  cases=3534    CLOSED
+s=2667168    M=22222377799  a=7  y=158723712    reps=2   cases=1152    CLOSED
+s=2667168    M=22222377799  a=2  y=266827932    reps=3   cases=3456    CLOSED
+s=2667168    M=22222377799  a=3  y=1134213192   reps=4   cases=3456    CLOSED
+s=2667168    M=22222377799  a=3  y=8716379112   reps=1   cases=864     CLOSED
+s=2667168    M=22333337778  a=1  y=44471322     reps=10  cases=4656    CLOSED
+s=2667168    M=22333337778  a=1  y=12208015311282 reps=1   cases=864     CLOSED
+s=2667168    M=22333337778  a=2  y=133923132    reps=16  cases=8416    CLOSED
+s=2667168    M=22333337778  a=7  y=158723712    reps=7   cases=3808    CLOSED
+s=2667168    M=22333337778  a=8  y=38723328     reps=10  cases=5600    CLOSED
+s=2667168    M=22333337778  a=0  y=78121827     reps=26  cases=8544    bound 10^(10^71.97) digits
+s=2667168    M=22333337778  a=4  y=1067311728   reps=3   cases=1312    CLOSED
+s=2667168    M=22333337778  a=0  y=103355177121 reps=1   cases=864     bound 10^(10^71.84) digits
+s=2667168    M=23333344777  a=2  y=111132       reps=21  cases=3808    CLOSED
+s=2667168    M=23333344777  a=5  y=1613472      reps=22  cases=6470    CLOSED
+s=2667168    M=23333344777  a=5  y=2343119117472 reps=1   cases=1152    CLOSED
+s=2667168    M=23333344777  a=0  y=2711943423   reps=5   cases=2784    CLOSED
+s=2667168    M=22233366777  a=7  y=45177216     reps=7   cases=3232    CLOSED
+s=2667168    M=22233366777  a=1  y=44471322     reps=22  cases=10320   bound 10^(10^71.91) digits
+s=2667168    M=22233366777  a=2  y=100461232161612 reps=1   cases=1152    CLOSED
+s=2667168    M=22233366777  a=11 y=53331167232  reps=3   cases=3040    CLOSED
+s=2667168    M=22233366777  a=2  y=133923132    reps=49  cases=28120   bound 10^(10^72.10) digits
+s=2667168    M=22233366777  a=7  y=158723712    reps=11  cases=7056    CLOSED
+s=2667168    M=22233366777  a=4  y=551227611312 reps=3   cases=2304    CLOSED
+s=2667168    M=22233366777  a=6  y=102036672    reps=7   cases=5408    CLOSED
+s=2667168    M=22233366777  a=4  y=1764331632   reps=1   cases=1152    bound 10^(10^71.38) digits
+s=2667168    M=22233366777  a=0  y=85766121     reps=16  cases=6296    bound 10^(10^72.08) digits
+s=2667168    M=22233366777  a=0  y=7626831723   reps=2   cases=2304    bound 10^(10^71.66) digits
+s=2667168    M=22233366777  a=6  y=520693137216 reps=4   cases=4480    CLOSED
+s=2667168    M=22233366777  a=7  y=672126336    reps=15  cases=9792    CLOSED
+s=2667168    M=22233366777  a=10 y=22127616     reps=35  cases=16300   CLOSED
+s=2667168    M=22233366777  a=1  y=94517766     reps=3   cases=1728    bound 10^(10^71.38) digits
+s=2667168    M=22233366777  a=7  y=476171136    reps=10  cases=3264    CLOSED
+s=2667168    M=22233366777  a=2  y=111132       reps=122 cases=35862   CLOSED
+s=2667168    M=22233366777  a=1  y=13122        reps=168 cases=39514   CLOSED
+s=2667168    M=22223367779  a=1  y=44471322     reps=6   cases=3150    bound 10^(10^72.10) digits
+s=2667168    M=22223367779  a=4  y=1037232      reps=116 cases=34582   CLOSED
+s=2667168    M=22223367779  a=2  y=6377292      reps=61  cases=30160   bound 10^(10^71.95) digits
+s=2667168    M=22223367779  a=5  y=130691232    reps=43  cases=18214   CLOSED
+s=2667168    M=22223367779  a=3  y=472392       reps=70  cases=21270   CLOSED
+s=2667168    M=22223367779  a=3  y=2571912      reps=78  cases=20968   CLOSED
+s=2667168    M=22223367779  a=2  y=2333772      reps=103 cases=49944   bound 10^(10^72.12) digits
+s=2667168    M=22223367779  a=2  y=133923132    reps=28  cases=15302   bound 10^(10^72.10) digits
+s=2667168    M=22223367779  a=2  y=266827932    reps=6   cases=6784    bound 10^(10^71.87) digits
+s=2667168    M=22223367779  a=4  y=59521392     reps=10  cases=5512    CLOSED
+s=2667168    M=22223367779  a=9  y=1481421312   reps=23  cases=10992   CLOSED
+s=2667168    M=22223367779  a=7  y=158723712    reps=26  cases=15040   CLOSED
+s=2667168    M=22223367779  a=3  y=8716379112   reps=12  cases=9792    bound 10^(10^71.37) digits
+s=2667168    M=22223367779  a=3  y=1134213192   reps=14  cases=8432    bound 10^(10^71.94) digits
+s=2667168    M=22223367779  a=4  y=457419312    reps=2   cases=1088    CLOSED
+s=2667168    M=22223367779  a=5  y=81352871712  reps=1   cases=1152    bound 10^(10^71.43) digits
+s=2667168    M=22223367779  a=0  y=103355177121 reps=1   cases=768     bound 10^(10^71.84) digits
+s=2667168    M=22223367779  a=5  y=3429216      reps=31  cases=10200   CLOSED
+s=2667168    M=22223367779  a=3  y=1417176      reps=70  cases=18674   CLOSED
+s=2667168    M=22223367779  a=6  y=3779136      reps=23  cases=8904    CLOSED
+s=2667168    M=22223367779  a=6  y=979776       reps=30  cases=9840    CLOSED
+s=2667168    M=22223367779  a=8  y=35271936     reps=8   cases=4064    CLOSED
+s=2667168    M=22223367779  a=9  y=6273179136   reps=3   cases=2496    CLOSED
+s=2667168    M=22223367779  a=7  y=476171136    reps=13  cases=4728    CLOSED
+s=2667168    M=22333346777  a=2  y=111132       reps=144 cases=28172   CLOSED
+s=2667168    M=22333346777  a=1  y=13122        reps=154 cases=24904   CLOSED
+s=2667168    M=22333346777  a=1  y=242121642    reps=20  cases=10616   bound 10^(10^72.16) digits
+s=2667168    M=22333346777  a=5  y=1613472      reps=46  cases=12990   CLOSED
+s=2667168    M=22333346777  a=7  y=45177216     reps=24  cases=9848    CLOSED
+s=2667168    M=22333346777  a=11 y=53331167232  reps=6   cases=5568    CLOSED
+s=2667168    M=22333346777  a=7  y=224042112    reps=31  cases=15120   CLOSED
+s=2667168    M=22333346777  a=2  y=133923132    reps=46  cases=19504   bound 10^(10^72.10) digits
+s=2667168    M=22333346777  a=9  y=1481421312   reps=17  cases=7528    CLOSED
+s=2667168    M=22333346777  a=7  y=158723712    reps=19  cases=8896    CLOSED
+s=2667168    M=22333346777  a=4  y=1764331632   reps=3   cases=3456    bound 10^(10^71.38) digits
+s=2667168    M=22333346777  a=14 y=6772211712   reps=52  cases=21152   CLOSED
+s=2667168    M=22333346777  a=0  y=2542277241   reps=4   cases=3648    CLOSED
+s=2667168    M=22333346777  a=6  y=2352442176   reps=1   cases=768     CLOSED
+s=2667168    M=22333346777  a=7  y=476171136    reps=34  cases=13464   bound 10^(10^70.84) digits
+s=2667168    M=22333346777  a=4  y=252047376    reps=3   cases=2496    CLOSED
+s=2667168    M=22333346777  a=3  y=26149137336  reps=5   cases=5632    bound 10^(10^71.73) digits
+s=2667168    M=22333346777  a=1  y=3281116734   reps=13  cases=6720    bound 10^(10^71.93) digits
+s=2667168    M=22233347779  a=5  y=1613472      reps=73  cases=27000   CLOSED
+s=2667168    M=22233347779  a=3  y=941192       reps=158 cases=37912   CLOSED
+s=2667168    M=22233347779  a=1  y=44471322     reps=22  cases=10336   bound 10^(10^71.91) digits
+s=2667168    M=22233347779  a=5  y=130691232    reps=8   cases=5136    CLOSED
+s=2667168    M=22233347779  a=2  y=6377292      reps=24  cases=12368   CLOSED
+s=2667168    M=22233347779  a=9  y=99574272     reps=3   cases=2496    CLOSED
+s=2667168    M=22233347779  a=7  y=224042112    reps=47  cases=24360   CLOSED
+s=2667168    M=22233347779  a=9  y=384072192    reps=5   cases=4128    CLOSED
+s=2667168    M=22233347779  a=2  y=2333772      reps=99  cases=42576   CLOSED
+s=2667168    M=22233347779  a=4  y=15431472     reps=62  cases=27008   CLOSED
+s=2667168    M=22233347779  a=3  y=2571912      reps=123 cases=30942   CLOSED
+s=2667168    M=22233347779  a=2  y=266827932    reps=1   cases=1152    bound 10^(10^71.84) digits
+s=2667168    M=22233347779  a=5  y=6223392      reps=53  cases=24258   CLOSED
+s=2667168    M=22233347779  a=4  y=59521392     reps=5   cases=2952    CLOSED
+s=2667168    M=22233347779  a=2  y=133923132    reps=50  cases=27600   bound 10^(10^71.90) digits
+s=2667168    M=22233347779  a=7  y=158723712    reps=6   cases=3968    CLOSED
+s=2667168    M=22233347779  a=9  y=1481421312   reps=58  cases=25568   CLOSED
+s=2667168    M=22233347779  a=3  y=1134213192   reps=14  cases=8128    bound 10^(10^71.83) digits
+s=2667168    M=22233347779  a=6  y=203297472    reps=21  cases=15424   CLOSED
+s=2667168    M=22233347779  a=4  y=457419312    reps=5   cases=2688    CLOSED
+s=2667168    M=22233347779  a=10 y=109734912    reps=38  cases=21376   CLOSED
+s=2667168    M=22233347779  a=6  y=784147392    reps=4   cases=3456    CLOSED
+s=2667168    M=22233347779  a=3  y=8716379112   reps=2   cases=1728    bound 10^(10^71.37) digits
+s=2667168    M=22233347779  a=0  y=1594323      reps=103 cases=33414   CLOSED
+s=2667168    M=22233347779  a=0  y=103355177121 reps=3   cases=2496    bound 10^(10^71.64) digits
+s=2667168    M=22233347779  a=0  y=2542277241   reps=1   cases=1152    CLOSED
+s=2667168    M=22233347779  a=1  y=2722734      reps=75  cases=27030   CLOSED
+s=2667168    M=22233347779  a=1  y=14823774     reps=10  cases=7168    CLOSED
+s=1843968    M=2222677778   a=6  y=1778112      reps=8   cases=1224    CLOSED
+s=1843968    M=2222677778   a=1  y=2117682      reps=2   cases=256     CLOSED
+s=1843968    M=2222677778   a=0  y=78121827     reps=12  cases=4484    bound 10^(10^72.29) digits
+s=1843968    M=2222677778   a=4  y=1067311728   reps=10  cases=3792    CLOSED
+s=1843968    M=2222677778   a=2  y=38118276     reps=1   cases=384     CLOSED
+s=1843968    M=2222677778   a=0  y=330812181    reps=2   cases=340     bound 10^(10^72.40) digits
+s=1843968    M=2222677778   a=3  y=1417176      reps=5   cases=740     CLOSED
+s=1843968    M=2224467777   a=7  y=45177216     reps=1   cases=384     CLOSED
+s=1843968    M=2224467777   a=8  y=952342272    reps=1   cases=576     CLOSED
+s=1843968    M=2224467777   a=6  y=34012224     reps=6   cases=1536    CLOSED
+s=1843968    M=2224467777   a=3  y=69441624     reps=2   cases=640     CLOSED
+s=1843968    M=2224467777   a=0  y=43046721     reps=1   cases=240     CLOSED
+s=1843968    M=2224467777   a=0  y=60761421     reps=1   cases=240     bound 10^(10^72.13) digits
+s=1843968    M=2224467777   a=9  y=23514624     reps=2   cases=528     CLOSED
+s=1843968    M=2224467777   a=3  y=1417176      reps=15  cases=2148    CLOSED
+s=1843968    M=2234447777   a=5  y=1613472      reps=8   cases=1872    CLOSED
+s=1843968    M=2234447777   a=4  y=15431472     reps=12  cases=3352    CLOSED
+s=1843968    M=2234447777   a=0  y=103355177121 reps=1   cases=512     bound 10^(10^71.56) digits
+s=1843968    M=2234447777   a=1  y=14823774     reps=14  cases=4208    CLOSED
+s=1843968    M=2234447777   a=1  y=57177414     reps=7   cases=1968    bound 10^(10^72.13) digits
+s=1843968    M=2223477778   a=1  y=44471322     reps=2   cases=768     CLOSED
+s=1843968    M=2223477778   a=1  y=121522842    reps=1   cases=384     bound 10^(10^72.28) digits
+s=1843968    M=2223477778   a=6  y=1778112      reps=30  cases=5876    CLOSED
+s=1843968    M=2223477778   a=7  y=158723712    reps=2   cases=816     CLOSED
+s=1843968    M=2223477778   a=3  y=208324872    reps=2   cases=1152    CLOSED
+s=1843968    M=2223477778   a=9  y=1481421312   reps=2   cases=768     CLOSED
+s=1843968    M=2223477778   a=4  y=15431472     reps=5   cases=1312    CLOSED
+s=1843968    M=2223477778   a=4  y=756142128    reps=3   cases=1088    CLOSED
+s=1843968    M=2223477778   a=0  y=78121827     reps=14  cases=3492    bound 10^(10^72.15) digits
+s=1843968    M=2223477778   a=5  y=648121824    reps=4   cases=1380    CLOSED
+s=1843968    M=2223477778   a=4  y=1067311728   reps=13  cases=4816    bound 10^(10^71.26) digits
+s=1843968    M=2223477778   a=5  y=14521248     reps=7   cases=1816    CLOSED
+s=1843968    M=2223477778   a=1  y=2722734      reps=10  cases=2768    CLOSED
+s=1843968    M=2223477778   a=0  y=330812181    reps=17  cases=4148    bound 10^(10^71.94) digits
+s=1843968    M=2223477778   a=3  y=25412184     reps=11  cases=2552    CLOSED
+s=1843968    M=2223477778   a=1  y=14823774     reps=5   cases=1904    CLOSED
+s=1843968    M=2223477778   a=0  y=903981141    reps=6   cases=1168    bound 10^(10^72.05) digits
+s=2667168    M=3333347778   a=0  y=903981141    reps=3   cases=864     bound 10^(10^71.81) digits
+s=2667168    M=2222677799   a=3  y=2571912      reps=4   cases=948     CLOSED
+s=2667168    M=2222677799   a=3  y=1417176      reps=6   cases=1192    CLOSED
+s=2667168    M=2222677799   a=4  y=27216        reps=12  cases=1512    CLOSED
+s=2667168    M=2222677799   a=2  y=69177612     reps=5   cases=1568    CLOSED
+s=2667168    M=2222677799   a=7  y=45177216     reps=2   cases=480     CLOSED
+s=2667168    M=3333446777   a=1  y=3281116734   reps=3   cases=1328    bound 10^(10^71.75) digits
+s=2667168    M=3333446777   a=7  y=476171136    reps=4   cases=1056    CLOSED
+s=2667168    M=3333446777   a=4  y=830131344    reps=1   cases=240     CLOSED
+s=2667168    M=3333446777   a=4  y=252047376    reps=1   cases=576     CLOSED
+s=2667168    M=3333446777   a=5  y=43563744     reps=1   cases=576     CLOSED
+s=2667168    M=3333446777   a=1  y=57177414     reps=6   cases=1920    bound 10^(10^72.16) digits
+s=2667168    M=2233666777   a=7  y=158723712    reps=4   cases=1920    CLOSED
+s=2667168    M=2233666777   a=2  y=2333772      reps=33  cases=11664   bound 10^(10^72.12) digits
+s=2667168    M=2233666777   a=4  y=551227611312 reps=1   cases=576     CLOSED
+s=2667168    M=2233666777   a=6  y=102036672    reps=1   cases=320     CLOSED
+s=2667168    M=2233666777   a=0  y=85766121     reps=5   cases=1216    bound 10^(10^72.08) digits
+s=2667168    M=2233666777   a=0  y=103355177121 reps=1   cases=512     bound 10^(10^71.69) digits
+s=2667168    M=2233666777   a=0  y=1361367      reps=21  cases=4200    bound 10^(10^72.18) digits
+s=2667168    M=2233666777   a=3  y=1417176      reps=35  cases=6164    CLOSED
+s=2667168    M=2233666777   a=7  y=672126336    reps=4   cases=2240    CLOSED
+s=2667168    M=2233666777   a=10 y=22127616     reps=15  cases=3568    CLOSED
+s=2667168    M=2233666777   a=9  y=211631616    reps=8   cases=2292    CLOSED
+s=2667168    M=2233666777   a=7  y=476171136    reps=6   cases=1648    CLOSED
+s=2667168    M=2233666777   a=3  y=2410616376   reps=1   cases=512     CLOSED
+s=2667168    M=2333367778   a=2  y=2333772      reps=10  cases=3072    CLOSED
+s=2667168    M=2333367778   a=6  y=1778112      reps=14  cases=2020    CLOSED
+s=2667168    M=2333367778   a=1  y=2117682      reps=20  cases=3880    CLOSED
+s=2667168    M=2333367778   a=0  y=7626831723   reps=2   cases=1536    bound 10^(10^71.93) digits
+s=2667168    M=2333367778   a=4  y=1067311728   reps=6   cases=1712    CLOSED
+s=2667168    M=2333367778   a=2  y=38118276     reps=4   cases=916     CLOSED
+s=2667168    M=2333367778   a=2  y=207532836    reps=2   cases=1088    CLOSED
+s=2667168    M=2333367778   a=0  y=330812181    reps=12  cases=2864    bound 10^(10^71.76) digits
+s=2667168    M=2333367778   a=3  y=1417176      reps=22  cases=3644    CLOSED
+s=2667168    M=2333367778   a=8  y=49787136     reps=2   cases=816     CLOSED
+s=2667168    M=2333367778   a=7  y=476171136    reps=4   cases=1008    CLOSED
+s=2667168    M=2333367778   a=2  y=19131876     reps=9   cases=1744    bound 10^(10^71.89) digits
+s=2667168    M=2223477799   a=2  y=111132       reps=129 cases=19858   CLOSED
+s=2667168    M=2223477799   a=1  y=13122        reps=125 cases=17185   CLOSED
+s=2667168    M=2223477799   a=2  y=6377292      reps=8   cases=3008    CLOSED
+s=2667168    M=2223477799   a=4  y=15431472     reps=2   cases=864     CLOSED
+s=2667168    M=2223477799   a=3  y=2571912      reps=13  cases=3012    CLOSED
+s=2667168    M=2223477799   a=2  y=777924       reps=8   cases=2136    bound 10^(10^71.48) digits
+s=2667168    M=2223477799   a=0  y=177147       reps=31  cases=5075    CLOSED
+s=2667168    M=2223477799   a=1  y=14823774     reps=4   cases=1632    CLOSED
+s=2667168    M=2223477799   a=2  y=3294172      reps=17  cases=4708    CLOSED
+s=2667168    M=2223477799   a=6  y=1106841792   reps=5   cases=2480    CLOSED
+s=2667168    M=2223667779   a=1  y=13122        reps=114 cases=15225   CLOSED
+s=2667168    M=2223667779   a=2  y=111132       reps=100 cases=13783   CLOSED
+s=2667168    M=2223667779   a=2  y=6377292      reps=10  cases=3824    bound 10^(10^71.95) digits
+s=2667168    M=2223667779   a=5  y=130691232    reps=19  cases=5344    CLOSED
+s=2667168    M=2223667779   a=3  y=666792       reps=31  cases=7872    CLOSED
+s=2667168    M=2223667779   a=3  y=2571912      reps=27  cases=5440    CLOSED
+s=2667168    M=2223667779   a=7  y=158723712    reps=4   cases=2240    CLOSED
+s=2667168    M=2223667779   a=3  y=500188017672 reps=2   cases=1536    CLOSED
+s=2667168    M=2223667779   a=2  y=61236        reps=61  cases=7887    CLOSED
+s=2667168    M=2223667779   a=4  y=27216        reps=45  cases=5429    CLOSED
+s=2667168    M=2223667779   a=5  y=3429216      reps=10  cases=2732    CLOSED
+s=2667168    M=2223667779   a=3  y=1417176      reps=33  cases=5592    CLOSED
+s=2667168    M=2223667779   a=0  y=1361367      reps=28  cases=5824    bound 10^(10^72.18) digits
+s=2667168    M=2223667779   a=2  y=236196       reps=21  cases=3196    CLOSED
+s=2667168    M=2223667779   a=2  y=147027636    reps=2   cases=864     CLOSED
+s=2667168    M=2223667779   a=6  y=979776       reps=10  cases=2824    CLOSED
+s=2667168    M=2223667779   a=4  y=3111696      reps=5   cases=1176    CLOSED
+s=2667168    M=2223667779   a=6  y=3779136      reps=4   cases=1120    CLOSED
+s=2667168    M=2223667779   a=3  y=2410616376   reps=1   cases=768     CLOSED
+s=2667168    M=2223667779   a=2  y=69177612     reps=31  cases=8704    bound 10^(10^71.87) digits
+s=2667168    M=2233377789   a=1  y=13122        reps=101 cases=13107   CLOSED
+s=2667168    M=2233377789   a=2  y=111132       reps=114 cases=15859   CLOSED
+s=2667168    M=2233377789   a=4  y=1037232      reps=31  cases=6744    CLOSED
+s=2667168    M=2233377789   a=2  y=6377292      reps=5   cases=1760    CLOSED
+s=2667168    M=2233377789   a=2  y=78732        reps=60  cases=10804   CLOSED
+s=2667168    M=2233377789   a=3  y=472392       reps=20  cases=4503    CLOSED
+s=2667168    M=2233377789   a=3  y=172872       reps=27  cases=4928    CLOSED
+s=2667168    M=2233377789   a=2  y=2333772      reps=10  cases=3824    bound 10^(10^72.12) digits
+s=2667168    M=2233377789   a=6  y=1778112      reps=36  cases=6055    CLOSED
+s=2667168    M=2233377789   a=3  y=2571912      reps=20  cases=3540    CLOSED
+s=2667168    M=2233377789   a=0  y=7626831723   reps=1   cases=768     CLOSED
+s=2667168    M=2233377789   a=0  y=137781       reps=37  cases=5948    CLOSED
+s=2667168    M=2233377789   a=0  y=27783        reps=39  cases=7432    CLOSED
+s=2667168    M=2233377789   a=0  y=330812181    reps=13  cases=3728    CLOSED
+s=2667168    M=2333447779   a=3  y=941192       reps=53  cases=8917    CLOSED
+s=2667168    M=2333447779   a=3  y=2571912      reps=32  cases=6104    CLOSED
+s=2667168    M=2333447779   a=2  y=2333772      reps=23  cases=7488    CLOSED
+s=2667168    M=2333447779   a=4  y=15431472     reps=10  cases=2752    CLOSED
+s=2667168    M=2333447779   a=10 y=109734912    reps=4   cases=1632    CLOSED
+s=2667168    M=2333447779   a=12 y=725594112    reps=1   cases=432     CLOSED
+s=2667168    M=2333447779   a=2  y=777924       reps=43  cases=10188   bound 10^(10^71.48) digits
+s=2667168    M=2333447779   a=7  y=2519424      reps=18  cases=4572    CLOSED
+s=2667168    M=2333447779   a=9  y=33191424     reps=18  cases=4988    CLOSED
+s=2667168    M=2333447779   a=0  y=413343       reps=68  cases=13176   CLOSED
+s=2667168    M=2333447779   a=0  y=531441       reps=57  cases=9664    CLOSED
+s=2667168    M=2333447779   a=1  y=14823774     reps=2   cases=960     CLOSED
+s=2667168    M=2333447779   a=8  y=21337344     reps=10  cases=3872    CLOSED
+s=2667168    M=2333447779   a=1  y=57177414     reps=8   cases=2928    bound 10^(10^72.13) digits
+s=2667168    M=2333447779   a=4  y=830131344    reps=25  cases=6344    CLOSED
+s=2667168    M=2333447779   a=3  y=11206773144  reps=4   cases=2176    bound 10^(10^71.84) digits
+s=2667168    M=2333447779   a=2  y=3294172      reps=22  cases=4804    CLOSED
+s=2667168    M=2333466777   a=5  y=1613472      reps=16  cases=3856    CLOSED
+s=2667168    M=2333466777   a=7  y=45177216     reps=3   cases=816     CLOSED
+s=2667168    M=2333466777   a=4  y=1764331632   reps=1   cases=512     CLOSED
+s=2667168    M=2333466777   a=4  y=551227611312 reps=3   cases=1728    bound 10^(10^71.66) digits
+s=2667168    M=2333466777   a=2  y=2333772      reps=21  cases=6100    CLOSED
+s=2667168    M=2333466777   a=4  y=15431472     reps=10  cases=3024    CLOSED
+s=2667168    M=2333466777   a=0  y=60761421     reps=10  cases=2672    bound 10^(10^72.14) digits
+s=2667168    M=2333466777   a=0  y=85766121     reps=7   cases=1936    bound 10^(10^72.08) digits
+s=2667168    M=2333466777   a=0  y=43046721     reps=1   cases=240     CLOSED
+s=2667168    M=2333466777   a=6  y=520693137216 reps=1   cases=768     CLOSED
+s=2667168    M=2333466777   a=0  y=2542277241   reps=1   cases=576     CLOSED
+s=2667168    M=2333466777   a=3  y=1417176      reps=45  cases=8332    CLOSED
+s=2667168    M=2333466777   a=0  y=1361367      reps=32  cases=5724    CLOSED
+s=2667168    M=2333466777   a=1  y=14823774     reps=1   cases=384     CLOSED
+s=2667168    M=2333466777   a=4  y=252047376    reps=2   cases=1088    CLOSED
+s=2667168    M=2333466777   a=9  y=211631616    reps=19  cases=4472    CLOSED
+s=2667168    M=2333466777   a=10 y=15676416     reps=6   cases=1632    CLOSED
+s=2667168    M=2333466777   a=7  y=476171136    reps=11  cases=2864    CLOSED
+s=2667168    M=2333466777   a=1  y=94517766     reps=2   cases=816     bound 10^(10^71.38) digits
+s=2667168    M=2333466777   a=3  y=624974616    reps=2   cases=1152    CLOSED
+s=2667168    M=2333466777   a=1  y=3281116734   reps=7   cases=2880    bound 10^(10^72.00) digits
+s=2667168    M=2333466777   a=6  y=185177664    reps=1   cases=576     CLOSED
+s=2667168    M=2333466777   a=5  y=184473632    reps=1   cases=512     CLOSED
+s=2667168    M=2233467779   a=2  y=71172243193212 reps=1   cases=768     CLOSED
+s=2667168    M=2233467779   a=3  y=941192       reps=100 cases=14212   CLOSED
+s=2667168    M=2233467779   a=1  y=33614        reps=82  cases=13826   CLOSED
+s=2667168    M=2233467779   a=1  y=44471322     reps=10  cases=3504    CLOSED
+s=2667168    M=2233467779   a=2  y=111132       reps=168 cases=20531   CLOSED
+s=2667168    M=2233467779   a=4  y=1037232      reps=96  cases=20464   CLOSED
+s=2667168    M=2233467779   a=2  y=6377292      reps=32  cases=11584   bound 10^(10^71.95) digits
+s=2667168    M=2233467779   a=3  y=472392       reps=45  cases=9934    CLOSED
+s=2667168    M=2233467779   a=2  y=133923132    reps=7   cases=2532    CLOSED
+s=2667168    M=2233467779   a=2  y=266827932    reps=2   cases=1536    CLOSED
+s=2667168    M=2233467779   a=1  y=661624362    reps=4   cases=2368    CLOSED
+s=2667168    M=2233467779   a=4  y=59521392     reps=2   cases=768     CLOSED
+s=2667168    M=2233467779   a=7  y=158723712    reps=6   cases=2864    CLOSED
+s=2667168    M=2233467779   a=3  y=2571912      reps=59  cases=12200   CLOSED
+s=2667168    M=2233467779   a=9  y=4741632      reps=8   cases=2284    CLOSED
+s=2667168    M=2233467779   a=2  y=2333772      reps=27  cases=9248    CLOSED
+s=2667168    M=2233467779   a=4  y=15431472     reps=16  cases=5104    CLOSED
+s=2667168    M=2233467779   a=6  y=203297472    reps=4   cases=2176    CLOSED
+s=2667168    M=2233467779   a=3  y=1134213192   reps=6   cases=2496    CLOSED
+s=2667168    M=2233467779   a=3  y=5272018014312 reps=1   cases=768     CLOSED
+s=2667168    M=2233467779   a=3  y=8716379112   reps=2   cases=1152    bound 10^(10^71.90) digits
+s=2667168    M=2233467779   a=4  y=457419312    reps=2   cases=816     CLOSED
+s=2667168    M=2233467779   a=10 y=109734912    reps=3   cases=1152    CLOSED
+s=2667168    M=2233467779   a=3  y=500188017672 reps=4   cases=2304    CLOSED
+s=2667168    M=2233467779   a=1  y=214326       reps=96  cases=17128   CLOSED
+s=2667168    M=2233467779   a=0  y=60761421     reps=61  cases=13012   bound 10^(10^72.14) digits
+s=2667168    M=2233467779   a=2  y=777924       reps=45  cases=10384   bound 10^(10^71.48) digits
+s=2667168    M=2233467779   a=0  y=43046721     reps=12  cases=3536    CLOSED
+s=2667168    M=2233467779   a=0  y=177147       reps=70  cases=12864   CLOSED
+s=2667168    M=2233467779   a=1  y=2722734      reps=28  cases=8836    bound 10^(10^71.67) digits
+s=2667168    M=2233467779   a=0  y=3268642167   reps=2   cases=1536    CLOSED
+s=2667168    M=2233467779   a=6  y=3779136      reps=21  cases=5568    CLOSED
+s=2667168    M=2233467779   a=3  y=1417176      reps=85  cases=16059   CLOSED
+s=2667168    M=2233467779   a=1  y=14823774     reps=12  cases=4784    CLOSED
+s=2667168    M=2233467779   a=8  y=35271936     reps=9   cases=3488    CLOSED
+s=2667168    M=2233467779   a=6  y=979776       reps=25  cases=6812    CLOSED
+s=2667168    M=2233467779   a=1  y=3281116734   reps=1   cases=768     CLOSED
+s=2667168    M=2233467779   a=9  y=6273179136   reps=1   cases=768     CLOSED
+s=2667168    M=2233467779   a=4  y=252047376    reps=1   cases=512     CLOSED
+s=2667168    M=2233467779   a=2  y=3294172      reps=36  cases=8808    CLOSED
+s=2667168    M=2233467779   a=2  y=69177612     reps=25  cases=7344    bound 10^(10^72.16) digits
+s=2667168    M=2233467779   a=0  y=1977326743   reps=1   cases=1024    bound 10^(10^72.29) digits
+s=1843968    M=244467777    a=0  y=43046721     reps=1   cases=288     CLOSED
+s=1843968    M=244467777    a=3  y=1417176      reps=8   cases=952     CLOSED
+s=1843968    M=244467777    a=5  y=2074464      reps=1   cases=160     CLOSED
+s=1843968    M=244467777    a=1  y=57177414     reps=2   cases=448     bound 10^(10^71.66) digits
+s=1843968    M=223777788    a=2  y=111132       reps=2   cases=216     CLOSED
+s=1843968    M=223777788    a=0  y=7411887      reps=1   cases=256     CLOSED
+s=1843968    M=223777788    a=10 y=361417728    reps=1   cases=288     CLOSED
+s=1843968    M=223777788    a=2  y=1411788      reps=9   cases=1112    CLOSED
+s=1843968    M=224677778    a=6  y=1778112      reps=17  cases=1964    CLOSED
+s=1843968    M=224677778    a=1  y=2117682      reps=1   cases=160     CLOSED
+s=1843968    M=224677778    a=3  y=1417176      reps=6   cases=680     CLOSED
+s=1843968    M=224677778    a=2  y=69177612     reps=5   cases=1120    CLOSED
+s=1843968    M=234477778    a=2  y=111132       reps=16  cases=1290    CLOSED
+s=1843968    M=234477778    a=3  y=98018424     reps=4   cases=714     CLOSED
+s=1843968    M=234477778    a=0  y=177147       reps=8   cases=904     CLOSED
+s=1843968    M=234477778    a=0  y=137781       reps=17  cases=2120    CLOSED
+s=1843968    M=234477778    a=0  y=330812181    reps=2   cases=352     CLOSED
+s=1843968    M=234477778    a=3  y=25412184     reps=1   cases=160     CLOSED
+s=1843968    M=234477778    a=0  y=903981141    reps=2   cases=264     bound 10^(10^72.24) digits
+s=1843968    M=234477778    a=2  y=63011844     reps=20  cases=3148    CLOSED
+s=1843968    M=234477778    a=3  y=11206773144  reps=1   cases=384     CLOSED
+s=2667168    M=236666777    a=0  y=85766121     reps=2   cases=408     bound 10^(10^72.29) digits
+s=2667168    M=236666777    a=0  y=1361367      reps=6   cases=904     bound 10^(10^72.18) digits
+s=2667168    M=236666777    a=3  y=1417176      reps=10  cases=1272    CLOSED
+s=2667168    M=236666777    a=2  y=69177612     reps=8   cases=1672    bound 10^(10^71.93) digits
+s=2667168    M=226667779    a=3  y=666792       reps=13  cases=2536    CLOSED
+s=2667168    M=226667779    a=3  y=1417176      reps=9   cases=1568    CLOSED
+s=2667168    M=226667779    a=2  y=69177612     reps=7   cases=1856    CLOSED
+s=2667168    M=226667779    a=7  y=45177216     reps=3   cases=592     CLOSED
+s=2667168    M=333667778    a=0  y=1361367      reps=5   cases=768     bound 10^(10^72.18) digits
+s=2667168    M=333667778    a=0  y=137781       reps=16  cases=1558    CLOSED
+s=2667168    M=333667778    a=3  y=1417176      reps=7   cases=816     CLOSED
+s=2667168    M=333667778    a=4  y=92236816     reps=1   cases=288     CLOSED
+s=2667168    M=334666777    a=0  y=1361367      reps=3   cases=392     bound 10^(10^72.18) digits
+s=2667168    M=334666777    a=3  y=2410616376   reps=1   cases=384     CLOSED
+s=2667168    M=334666777    a=0  y=177147       reps=8   cases=816     CLOSED
+s=2667168    M=334666777    a=3  y=1417176      reps=13  cases=1544    CLOSED
+s=2667168    M=334666777    a=0  y=1162261467   reps=1   cases=384     CLOSED
+s=2667168    M=334666777    a=1  y=94517766     reps=1   cases=288     CLOSED
+s=2667168    M=333477789    a=0  y=137781       reps=11  cases=1072    CLOSED
+s=2667168    M=333477789    a=0  y=177147       reps=6   cases=568     CLOSED
+s=2667168    M=223777899    a=5  y=130691232    reps=4   cases=816     CLOSED
+s=2667168    M=223777899    a=4  y=1067311728   reps=2   cases=544     CLOSED
+s=2667168    M=223777899    a=0  y=330812181    reps=2   cases=416     CLOSED
+s=2667168    M=224677799    a=3  y=1417176      reps=3   cases=504     CLOSED
+s=2667168    M=224677799    a=2  y=69177612     reps=4   cases=960     CLOSED
+s=2667168    M=234477799    a=2  y=111132       reps=19  cases=1830    CLOSED
+s=2667168    M=234477799    a=0  y=177147       reps=10  cases=1376    CLOSED
+s=2667168    M=234477799    a=2  y=3294172      reps=4   cases=792     CLOSED
+s=2667168    M=234477799    a=3  y=11206773144  reps=1   cases=256     CLOSED
+s=2667168    M=334467779    a=1  y=33614        reps=18  cases=1930    CLOSED
+s=2667168    M=334467779    a=6  y=3779136      reps=3   cases=544     CLOSED
+s=2667168    M=334467779    a=3  y=17496        reps=8   cases=732     CLOSED
+s=2667168    M=334467779    a=0  y=531441       reps=22  cases=2502    CLOSED
+s=2667168    M=334467779    a=3  y=1417176      reps=14  cases=1460    CLOSED
+s=2667168    M=334467779    a=0  y=177147       reps=15  cases=1520    CLOSED
+s=2667168    M=334467779    a=0  y=117649       reps=6   cases=800     CLOSED
+s=2667168    M=233677789    a=2  y=78732        reps=45  cases=5450    CLOSED
+s=2667168    M=233677789    a=2  y=111132       reps=24  cases=2280    CLOSED
+s=2667168    M=233677789    a=0  y=137781       reps=38  cases=4080    CLOSED
+s=2667168    M=233677789    a=3  y=1417176      reps=5   cases=688     CLOSED
+s=2667168    M=233677789    a=0  y=27783        reps=38  cases=4940    CLOSED
+s=2667168    M=233677789    a=2  y=69177612     reps=3   cases=736     bound 10^(10^71.93) digits
+s=2667168    M=233677789    a=7  y=45177216     reps=3   cases=672     CLOSED
+s=2667168    M=234667779    a=4  y=551227611312 reps=1   cases=288     CLOSED
+s=2667168    M=234667779    a=3  y=941192       reps=6   cases=900     CLOSED
+s=2667168    M=234667779    a=2  y=111132       reps=62  cases=6058    CLOSED
+s=2667168    M=234667779    a=3  y=666792       reps=30  cases=5824    CLOSED
+s=2667168    M=234667779    a=0  y=60761421     reps=21  cases=3444    bound 10^(10^72.48) digits
+s=2667168    M=234667779    a=1  y=214326       reps=16  cases=1938    CLOSED
+s=2667168    M=234667779    a=2  y=777924       reps=2   cases=384     bound 10^(10^71.48) digits
+s=2667168    M=234667779    a=2  y=61236        reps=63  cases=6440    CLOSED
+s=2667168    M=234667779    a=6  y=3779136      reps=2   cases=384     CLOSED
+s=2667168    M=234667779    a=4  y=11664        reps=29  cases=2914    CLOSED
+s=2667168    M=234667779    a=0  y=1361367      reps=16  cases=2764    bound 10^(10^72.18) digits
+s=2667168    M=234667779    a=0  y=177147       reps=22  cases=2872    CLOSED
+s=2667168    M=234667779    a=3  y=1417176      reps=23  cases=3010    CLOSED
+s=2667168    M=234667779    a=2  y=236196       reps=21  cases=2340    CLOSED
+s=2667168    M=234667779    a=2  y=3294172      reps=8   cases=1704    bound 10^(10^72.13) digits
+s=2667168    M=234667779    a=6  y=1106841792   reps=1   cases=288     CLOSED
+s=2667168    M=234667779    a=2  y=69177612     reps=14  cases=3008    bound 10^(10^72.16) digits
+s=1843968    M=26777788     a=2  y=1411788      reps=4   cases=408     CLOSED
+s=1843968    M=44677778     a=0  y=177147       reps=2   cases=160     CLOSED
+s=2667168    M=46667779     a=3  y=17496        reps=2   cases=136     CLOSED
+s=2667168    M=46667779     a=0  y=117649       reps=2   cases=192     CLOSED
+s=2667168    M=26777899     a=1  y=2117682      reps=2   cases=256     CLOSED
+s=2667168    M=26777899     a=3  y=2571912      reps=4   cases=324     CLOSED
+s=2667168    M=26777899     a=3  y=1417176      reps=3   cases=240     CLOSED
+s=2667168    M=26777899     a=11 y=1088391168   reps=1   cases=192     CLOSED
+s=2667168    M=34777899     a=0  y=903981141    reps=3   cases=432     bound 10^(10^72.01) digits
+
+503 anchored patterns (10657 representations): 397 CLOSED outright by the deep cut; others: bound >= 10^(10^69.77) digits [10s]

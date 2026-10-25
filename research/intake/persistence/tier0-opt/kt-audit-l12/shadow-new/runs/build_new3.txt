@@ -1,0 +1,10 @@
+raw_new_only 2825 distinct 344 to_run 64 flagged_solution 0 string_y 0
+vertex 11239424 raw 504 distinct 72
+vertex 1161216 raw 809 distinct 64
+vertex 13226976 raw 0 distinct 0
+vertex 2939328 raw 621 distinct 52
+vertex 331776 raw 37 distinct 7
+vertex 3779136 raw 67 distinct 20
+vertex 393216 raw 24 distinct 6
+vertex 69441624 raw 763 distinct 123
+vertex 7112448 raw 0 distinct 0

@@ -1,0 +1,21 @@
+PLANT-MITM 1 target=99699543447370069 solutions=1 planted_found=1 brute_same=1 (space 5.742e+07, bloom candidates 1)
+PLANT-MITM 2 target=32708020601214658 solutions=1 planted_found=1 brute_same=1 (space 5.742e+07, bloom candidates 1)
+PLANT-MITM 3 target=62044838120321014 solutions=1 planted_found=1 brute_same=1 (space 5.742e+07, bloom candidates 1)
+PLANT-MITM 1 target=25027231729507095 solutions=1 planted_found=1 brute_same=1 (space 1.23e+08, bloom candidates 1)
+PLANT-MITM 2 target=101282505176712509 solutions=1 planted_found=1 brute_same=1 (space 1.23e+08, bloom candidates 1)
+PLANT-MITM 3 target=41678659850703526 solutions=3 planted_found=1 brute_same=1 (space 1.23e+08, bloom candidates 1)
+PLANT-MITM 1 target=83864095785890938 solutions=1 planted_found=1 brute_same=1 (space 2.051e+08, bloom candidates 1)
+PLANT-MITM 2 target=58693163197657080 solutions=1 planted_found=1 brute_same=1 (space 2.051e+08, bloom candidates 1)
+PLANT-MITM 3 target=103222796146211976 solutions=1 planted_found=1 brute_same=1 (space 2.051e+08, bloom candidates 1)
+PLANT-MITM 1 target=26885403433221373 solutions=1 planted_found=1 brute_same=1 (space 8.203e+07, bloom candidates 1)
+PLANT-MITM 2 target=2966075866786792 solutions=1 planted_found=1 brute_same=1 (space 8.203e+07, bloom candidates 1)
+PLANT-MITM 3 target=12424683651218668 solutions=1 planted_found=1 brute_same=1 (space 8.203e+07, bloom candidates 1)
+PLANT-MITM 1 target=82487721668392560 solutions=1 planted_found=1 brute_same=1 (space 1.367e+08, bloom candidates 1)
+PLANT-MITM 2 target=47154885313001741 solutions=2 planted_found=1 brute_same=1 (space 1.367e+08, bloom candidates 1)
+PLANT-MITM 3 target=37179861938911128 solutions=1 planted_found=1 brute_same=1 (space 1.367e+08, bloom candidates 1)
+PLANT-MITM 1 target=95967869447812812 solutions=1 planted_found=1 brute_same=1 (space 7.324e+08, bloom candidates 12)
+PLANT-MITM 2 target=325767645036415 solutions=1 planted_found=1 brute_same=1 (space 7.324e+08, bloom candidates 2)
+PLANT-MITM 3 target=92530535875008672 solutions=1 planted_found=1 brute_same=1 (space 7.324e+08, bloom candidates 6)
+s=393216   M=222222244468 a=0 y=330812181   k=12 log10 U=95.0 reps=14 words=39 -> CLOSED-sandwich bound 10^(10^301.62 (w=3,T=7,G=1,compat=3,chain=3,win=3,alive=3) (w=3,T=7,G=1,compat=3,chain=3,win=3,alive=3) (w=11,T=7,G=1,compat=11,chain=3,win=3,alive=3) (w=11,T=7,G=1,compat=11,chain=9,win=9,alive=9) (w=7,T=7,G=1,compat=7,chain=6,win=6,alive=6) (w=4,T=7,G=1,compat=2,chain=2,win=4,alive=4) alive=28 [7s]
+
+1 of 1 patterns closed by the level-480 step; discrete logs 126 [7s]

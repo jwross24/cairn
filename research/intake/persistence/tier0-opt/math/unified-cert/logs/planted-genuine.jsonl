@@ -1,0 +1,11 @@
+{"D": 2, "E": 1, "a": 0, "b": 1328, "c": 825, "cvp_certified": false, "cvp_point_ok": true, "dual_certified": false, "kind": "genuine-S-unit", "ok": true, "remaining": 88, "rho2": "2444209"}
+{"D": 3, "E": 2, "a": 9, "b": 1121, "c": 743, "cvp_certified": false, "cvp_point_ok": true, "dual_certified": false, "kind": "genuine-S-unit", "ok": true, "remaining": 87, "rho2": "1808690"}
+{"D": 3, "E": 2, "a": 0, "b": 1417, "c": 770, "cvp_certified": false, "cvp_point_ok": true, "dual_certified": false, "kind": "genuine-S-unit", "ok": true, "remaining": 89, "rho2": "2600789"}
+{"D": 2, "E": 1, "a": 0, "b": 914, "c": 689, "cvp_certified": false, "cvp_point_ok": true, "dual_certified": false, "kind": "genuine-S-unit", "ok": true, "remaining": 86, "rho2": "1310117"}
+{"D": 3, "E": 2, "a": 5, "b": 970, "c": 574, "cvp_certified": false, "cvp_point_ok": true, "dual_certified": false, "kind": "genuine-S-unit", "ok": true, "remaining": 86, "rho2": "1270376"}
+{"D": 2, "E": 1, "a": 0, "b": 943, "c": 723, "cvp_certified": false, "cvp_point_ok": true, "dual_certified": false, "kind": "genuine-S-unit", "ok": true, "remaining": 86, "rho2": "1411978"}
+{"D": 3, "E": 2, "a": 5, "b": 1352, "c": 517, "cvp_certified": false, "cvp_point_ok": true, "dual_certified": false, "kind": "genuine-S-unit", "ok": true, "remaining": 90, "rho2": "2095193"}
+{"D": 3, "E": 2, "a": 9, "b": 1018, "c": 832, "cvp_certified": false, "cvp_point_ok": true, "dual_certified": false, "kind": "genuine-S-unit", "ok": true, "remaining": 87, "rho2": "1728548"}
+{"D": 3, "E": 2, "a": 0, "b": 1058, "c": 879, "cvp_certified": false, "cvp_point_ok": true, "dual_certified": false, "kind": "genuine-S-unit", "ok": true, "remaining": 92, "rho2": "1892005"}
+{"D": 2, "E": 1, "a": 0, "b": 920, "c": 732, "cvp_certified": false, "cvp_point_ok": true, "dual_certified": false, "kind": "genuine-S-unit", "ok": true, "remaining": 87, "rho2": "1382224"}
+{"counts": {"genuine": 10, "genuine_cvp_point_ok": 10, "genuine_refused_cvp": 10, "genuine_refused_dual": 10}, "kind": "total"}

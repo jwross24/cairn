@@ -1,0 +1,6 @@
+patterns in dump 25813 open&keep patterns 9529
+pattern pass 4561 / 9529 rate 0.4786 [0.4686, 0.4887] capped patterns 0
+line pass 4561 / 20076
+by a mod 12 (line pass/total): 0:565/1995 1:356/1787 2:489/1595 3:423/1510 4:394/1528 5:421/1639 6:323/1586 7:344/1584 8:341/1693 9:318/1823 10:309/1727 11:278/1609
+uniform survivor subsample 16304
+rank 2 survivors 731 chain-any 203 tail-any 20 both 10 capped lines 0

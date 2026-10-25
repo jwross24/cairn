@@ -1,0 +1,3 @@
+{"s": 294, "M": [6, 7, 7], "npat": 11232, "open": 0, "sols": [], "bounds": [], "exceptional": [], "c_stats": {"patterns": 11232, "zero": 1097, "prefilter-dead": 9842, "(a,pattern)": 235, "tail-dead": 234, "open": 0, "exact": 0}, "levels": [[12, 11232, 0, {}]], "secs": 0}
+{"s": 294, "M": [2, 3, 7, 7], "npat": 134784, "open": 0, "sols": [], "bounds": [], "exceptional": [], "c_stats": {"patterns": 134784, "zero": 30072, "prefilter-dead": 102140, "(a,pattern)": 2988, "tail-dead": 2981, "open": 2, "exact": 0}, "levels": [[12, 134784, 2, {"RESOLVED(descent)": 1, "OPEN": 1}], [24, 32, 0, {}]], "secs": 0}
+{"vertex": 294, "done": 2, "total": 2, "open_patterns": 0, "children": [], "known": [], "complete": true}

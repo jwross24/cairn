@@ -1,0 +1,53 @@
+p-adic logarithmic forms and a problem of erdős 325
+and
+a(2)
+=
+
+8, if p>2,
+16, if p=2.
+(1.33)
+Comparing (1.9) and (1.10) with (1.6)♣
+and (1.7)♣
+, and (1.28) and (1.29) with (1.32)
+and (1.33), one can see the numerical refinements.
+1.4. Outline of the paper
+Obviously the main theorem is equivalent to the following two theorems.
+Theorem I. Under the hypotheses of the main theorem, we have
+ordp(Ξ−1)<C1(n,d,p,a)h0(α1)...h0(αn)h(1)
+.
+Theorem II. Under the hypotheses of the main theorem, we have
+ordp(Ξ−1)<C2(n,d,p,a)h0(α1)...h0(αn)h(1)
+.
+In §§2–7 below, we give a proof of Theorem I.
+Then we deduce Theorem 1 from Theorem I in §8. We have also carefully worked
+out a proof of Theorem II, which implies Theorem 2 and which is obtained following
+the same line of argumentation as in Part II of [40] and utilizing the three refinements
+upon [40] explained in §1.1. In order to reduce the size of the present paper, we have
+skipped the proofs of Theorems II and 2. We remark further that one can deduce from
+Theorem I (resp. Theorem II) a theorem, which is an improvement upon Theorem 2♣
+(resp. Theorem 4♣
+), following the argumentation in §12♣
+. Finally, in §9 we give further
+remarks on the solution of the problem of Erdős, in order to be more streamlined with
+respect to the p-adic theory of logarithmic forms.
+2. Basic hypothesis
+From now on till the end of this paper, we always assume (1.5). Let  be defined by
+(1.2), q by (1.3), u and α0 by (1.4). Set ϑ and θ to be
+ϑ=
+
+  
+  
+p−2
+p−1
+, if p⩾5 with ep =1,
+p
+2ep
+, otherwise
+and θ=
+
+1+
+1
+2n
+10−26
+ −1
+ϑ. (2.1)

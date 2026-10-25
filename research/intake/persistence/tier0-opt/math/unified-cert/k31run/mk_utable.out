@@ -1,0 +1,1 @@
+nice -n 10 uv run --no-project --with mpmath --with sympy python -I -u  --kma  0.88s user 0.03s system 85% cpu 1.064 total

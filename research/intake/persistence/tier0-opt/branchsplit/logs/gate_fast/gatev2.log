@@ -1,0 +1,12 @@
+[22:20:52] gate v2: 103 equations, 21 plants, jobs=2, logs /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/branchsplit/logs/gate_fast
+[22:20:52] candidate lvl12=/Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/branchsplit/lvl12 lvlN=None
+[22:21:23] differential + plants done in 32s
+[22:21:23] 
+STAGE                                 VERDICT  DETAIL
+----------------------------------------------------------------------------
+lvl12 differential (corpus + 72/224)  PASS     118 equations, raw sorted stdout + stderr counters
+lvlN differential (corpus + 72/224)   SKIP     118 equations, parents from reference chain + wild parents; raw sorted stdout, counters, python-side reconstruction; 136 genuine-parent chains (true child must reappear)
+off-nominal configs (K != 3, np = 7)  PASS     8 configs: {'EQUIVALENT': 8, 'REFUSES': 0, 'DIVERGED': 0, 'CRASH': 0}
+python pipeline run_vertex_c 72, 224  PASS     16 rows (open counts, children, per-level survivors, c_stats) ref vs cand
+planted children (pipeline)           PASS     21/21 recovered
+[22:21:23] GATE v2: PASS

@@ -1,0 +1,25 @@
+{12: '2.083e-03', 24: '8.038e-09', 48: '5.286e-16', 96: '7.257e-38'}
+L=12 inputs=1340094360204 observed_survivors=365447250 predicted_random=2.792e+09 obs/pred=0.131
+L=24 inputs=79575975434 observed_survivors=41611 predicted_random=3.07e+05 obs/pred=0.136
+L=48 inputs=98275144 observed_survivors=7952 predicted_random=6.463 obs/pred=1.23e+03
+L=96 inputs=6654944 observed_survivors=6990 predicted_random=9.138e-16 obs/pred=7.65e+18
+equations 1628 sum mu96 1.985e-13
+1 2.675e-33
+2 1.415e-30
+3 2.663e-28
+4 3.169e-26
+5 2.152e-24
+6 1.989e-22
+7 1.494e-20
+8 5.456e-19
+9 1.015e-17
+10 9.993e-17
+11 5.305e-16
+12 1.507e-15
+13 2.425e-15
+14 3.916e-15
+15 1.501e-14
+16 8.683e-14
+17 3.814e-14
+18 3.594e-14
+19 1.410e-14

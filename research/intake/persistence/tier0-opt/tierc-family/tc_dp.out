@@ -1,0 +1,7 @@
+{"tag": "A/B k=12", "k": 12, "trials": 12, "expected": 0.055, "mean_zero_minus_shadow": 0.0, "min_zero": 0, "max_zero": 0, "mean_tau": 0.083, "min_tau": 0, "max_tau": 1, "sd_tau": 0.289, "poisson_sd": 0.235}
+{"tag": "A/B k=16", "k": 16, "trials": 12, "expected": 0.883, "mean_zero_minus_shadow": 1.5, "min_zero": 0, "max_zero": 4, "mean_tau": 0.917, "min_tau": 0, "max_tau": 2, "sd_tau": 0.669, "poisson_sd": 0.94}
+{"tag": "A/B k=20", "k": 20, "trials": 12, "expected": 14.13, "mean_zero_minus_shadow": 12.5, "min_zero": 3, "max_zero": 23, "mean_tau": 15.083, "min_tau": 3, "max_tau": 29, "sd_tau": 7.305, "poisson_sd": 3.759}
+{"tag": "C 128421199872 k=31", "k": 31, "trials": 12, "expected": 28938.513, "mean_zero_minus_shadow": 28965.5, "min_zero": 28088, "max_zero": 30341, "mean_tau": 29091.833, "min_tau": 28129, "max_tau": 31054, "sd_tau": 697.928, "poisson_sd": 170.113}
+{"tag": "C 3416267673274176 k=34", "k": 34, "trials": 12, "expected": 231508.105, "mean_zero_minus_shadow": 232037.583, "min_zero": 230274, "max_zero": 235090, "mean_tau": 231896.25, "min_tau": 230242, "max_tau": 236640, "sd_tau": 1661.772, "poisson_sd": 481.153}
+{"tag": "C 727326941773824 k=44", "k": 44, "trials": 12, "expected": 237064299.163, "mean_zero_minus_shadow": 237090702.5, "min_zero": 236978915, "max_zero": 237250145, "mean_tau": 237062239.083, "min_tau": 236912507, "max_tau": 237258226, "sd_tau": 88063.64, "poisson_sd": 15396.893}
+seconds 7.5

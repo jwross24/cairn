@@ -1,0 +1,782 @@
+                                             DOUBLE CHARACTER SUMS OVER SUBGROUPS
+                                                        AND INTERVALS
+
+
+
+
+arXiv:1401.6611v2 [math.NT] 15 Feb 2014
+                                                        MEI-CHU CHANG AND IGOR E. SHPARLINSKI
+
+                                                 Abstract. We estimate double sums
+                                                                     XX
+                                                      Sχ (a, I, G) =     χ(x + aλ),           1 ≤ a < p − 1,
+                                                                        x∈I λ∈G
+
+                                                 with a multiplicative character χ modulo p where I = {1, . . . , H}
+                                                 and G is a subgroup of order T of the multiplicative group of the
+                                                 finite field of p elements. A nontrivial upper bound on Sχ (a, I, G)
+                                                 can be derived from the Burgess bound if H ≥ p1/4+ε and from
+                                                 some standard elementary arguments if T ≥ p1/2+ε , where ε > 0
+                                                 is arbitrary. We obtain a nontrivial estimate in a wider range of
+                                                 parameters H and T . We also estimate double sums
+                                                                        X
+                                                           Tχ (a, G) =      χ(a + λ + µ),     1 ≤ a < p − 1,
+                                                                       λ,µ∈G
+
+                                                 and give an application to primitive roots modulo p with 3 non-zero
+                                                 binary digits.
+
+
+
+
+                                                                         1. Introduction
+                                          1.1. Background and motivation. For a prime p, we use Fp to de-
+                                          note the finite field of p elements, which we always assume to be rep-
+                                          resented by the set {0, . . . , p − 1}.
+                                            Since the spectacular results of Bourgain, Glibichuk & Konyagin [8],
+                                          Heath-Brown & Konyagin [19] and Konyagin [25] on bounds of expo-
+                                          nential sums
+                                                                X
+                                          (1)                       exp(2πiaλ/p),     a ∈ F∗p ,
+                                                                 λ∈G
+
+                                          over small multiplicative subgroups G of F∗p , there has been a remark-
+                                          able progress in this direction, also involving sums over consecutive
+                                          powers g i , i = 1, . . . , N, of elements g ∈ F∗p , see the survey [17] and
+
+                                             Date: September 30, 2018.
+                                             2010 Mathematics Subject Classification. 11L40.
+                                             Key words and phrases. character sums, intervals, multiplicative subgroups of
+                                          finite fields.
+                                                                                  1
+2                M.-C. CHANG AND IGOR E. SHPARLINSKI
+
+also very recent results of Bourgain [4, 5] and Shkredov [28, 29]. Expo-
+nential sums over short segments of consecutive powers g, . . . , g N of a
+fixed element g ∈ F∗p , have also been studied, see [24, 26] and references
+therein. However the multiplicative analogues of the sums (1), that is,
+the sums
+                         X
+                             χ(a + λ),     a ∈ F∗p ,
+                         λ∈G
+
+with a nonprincipal multiplicative character χ of Fp have been resisting
+all attempts to improve the classical bound
+                            X                     √
+(2)                                  χ(a + λ) ≤       p.
+                               λ∈G
+
+Note that (2) is instant from the Weil bound, see [20, Theorem 11.23],
+if one notices that
+                X                T X
+                    χ(a + λ) =            χ(a + µ(p−1)/T ),
+                λ∈G
+                               p − 1 µ∈F∗    p
+
+
+where T = #G (but can also be obtained via elementary arguments).
+  We now recall that Bourgain [3, Section 4] has shown that double
+sums over short intervals and short segments of consecutive powers
+              H X
+              X N
+                        exp(2πiaxg n /p),         1 ≤ a < p − 1,
+              x=1 n=1
+
+can be estimated for much smaller values of N than for single sums
+over consecutive powers. Here we show that similar mixing can also
+be applied to the sums of multiplicative characters and thus lead to
+nontrivial estimates of the sums
+                         XX
+          Sχ (a, I, G) =       χ(x + aλ),    1 ≤ a < p − 1,
+                          x∈I λ∈G
+
+where I = {1, . . . , H} is an interval of H consecutive integers and
+G ⊆ F∗p is a multiplicative subgroup of order T for the values of H
+and T to which previous bounds do not apply. More precisely, one
+can immediately estimate the sums Sχ (a, I, G) nontrivially if for some
+fixed ε > 0 we have H ≥ p1/4+ε , by using the Burgess bound, see [20,
+Theorem 12.6], or T ≥ p1/2+ε , by using (2).
+
+1.2. Main results. Here we obtain a nontrivial estimate in a wider
+range of parameters H and T .
+     DOUBLE CHARACTER SUMS OVER SUBGROUPS AND INTERVALS                   3
+
+Theorem 1. For every fixed real ε > 0 there are some δ > 0 and η > 0
+such that if H > pε and T > p1/2−δ then for the interval I = {1, . . . , H}
+and the multiplicative subgroup G ⊆ F∗p of order T , we have
+                        Sχ (a, I, G) = O(HT p−η )
+uniformly over a ∈ F∗p and nonprincipal multiplicative characters χ of
+Fp .
+   We also obtain a similar estimate at the other end of region of H
+and T , namely for a very small T and H that is still below the reach
+of the Burgess bound (see [20, Theorem 12.6]). In fact in this case we
+are able to estimate a more general sums
+                                 XX
+                  Sχ (f, I, G) =       χ(x + f (λ)),
+                                  x∈I λ∈G
+
+with a non-constant polynomial f ∈ Fp [X].
+Theorem 2. For every fixed real ε > 0 and integer d ≥ 1 there are
+some δ > 0 and η > 0 such that if T > pε and H > p1/4−δ then for the
+interval I = {1, . . . , H}, the multiplicative subgroup G ⊆ F∗p of order
+T , we have
+                          Sχ (f, I, G) = O(HT p−η )
+uniformly over polynomials f ∈ Fp [X] of degree d and nonprincipal
+multiplicative characters χ of Fp .
+   We also give an explicit version of Theorem 1 in the case when H =
+p1/4+o(1) and T = p1/2+o(1) , that is, when other methods just start to
+fail.
+Theorem 3. Let H = p1/4+o(1) and T = p1/2+o(1) . Then for the interval
+I = {1, . . . , H} and the multiplicative subgroup G ⊆ F∗p of order T , we
+have
+                       |Sχ (a, I, G)| ≤ HT p−5/48+o(1)
+uniformly over a ∈ F∗p and nonprincipal multiplicative characters χ of
+Fp .
+  Furthermore, we also consider double sums
+                     X
+         Tχ (a, G) =     χ(a + λ + µ),     1 ≤ a < p − 1,
+                       λ,µ∈G
+
+where both variables run over a multiplicative subgroup G ⊆ F∗p .
+  Using recent estimates of Shkredov [28] on the so-called additive
+energy of multiplicative subgroups we also estimate them below the
+obvious range T ≥ p1/2 , where T = #G, given by the estimate
+                           |Tχ (a, G)| ≤ T p1/2 ,
+4               M.-C. CHANG AND IGOR E. SHPARLINSKI
+
+which follows from (2).
+Theorem 4. Let T ≤ p2/3 . Then for the multiplicative subgroup G ⊆
+F∗p of order T , we have
+                        19/26 1/2+o(1)
+                        T       p        , if T ≤ p1/2 ,
+         |Tχ (a, G)| ≤   T 9/13 p27/52+o(1) , if p1/2 < T ≤ p29/48 ,
+                         T p1/3+o(1) ,        if p29/48 < T ≤ p2/3 ,
+                       
+
+uniformly over a ∈ F∗p and nonprincipal multiplicative characters χ of
+Fp .
+   Note that Theorem 4 nontrivial provided that T ≥ p13/33+ε for some
+fixed ε > 0.
+   We also give an application of Theorem 4 to primitive roots modulo
+p with few non-zero binary digits. More precisely, let up denote the
+smallest u such that there exists a primitive root modulo p with up
+non-zero binary digits. It is shows in [16, Theorem 5] that up ≤ 2
+for all but o(Q/ log Q) primes p ≤ Q, as Q → ∞ (note that in [16]
+the result is formulated only for quadratic non-residues but it is easy
+to see that the argument also holds for primitive roots). Instead of
+o(Q/ log Q), can obtain a slightly more explicit but still rather weak
+bound on the size of the exceptional set. Here we show that Theorem 4
+implies a rather strong bound on the set of primes p ≤ Q for which
+up ≤ 3 does not hold.
+Theorem 5. For all but at most Q26/33+o(1) primes p ≤ Q, we have
+up ≤ 3 as Q → ∞.
+  We also note that one may attempt to treat the sums Sχ (a, I, G)
+and Tχ (a, G) within the general theory of double sums of multiplicative
+characters, see [6, 7, 11, 12, 15, 21, 22, 23] and references therein.
+However it seems that none of the presently known results implies a
+nontrivial estimate in the range of Theorems 1 and 4.
+
+                          2. Preparations
+2.1. Notation and general conventions. Throughout the paper, p
+always denotes a sufficiently large prime number and χ denotes an
+non-principal multiplicative character modulo p. We assume that Fp is
+represented by the set {0, . . . , p − 1}.
+  Furthermore, G always denotes a multiplicative subgroup of F∗p of
+order #G = T and I always denotes the set I = {1, . . . , H}.
+  We also assume that f ∈ Fp [X] is a of degree d ≥ 1. In particular,
+f is not a constant.
+     DOUBLE CHARACTER SUMS OVER SUBGROUPS AND INTERVALS                                         5
+
+   The notations U = O(V ) and U ≪ V are both equivalent to the
+inequality |U| ≤ c V with some constant c > 0 that may depend on the
+real parameter ε > 0 and the integer parameters d ≥ 1 and ν ≥ 1 and
+is absolute otherwise.
+   In particular, all our estimates are uniform with respect to the poly-
+nomial f and the character χ.
+2.2. Bounds of some exponential and character sums. First we
+recall the classical result of Davenport and Erdős [13], which follows
+from the Weil bound of multiplicative character sums, see [20, Theo-
+rem 11.23].
+Lemma 6. For a fixed integer ν ≥ 1 and an integer R < p, we have
+                       R                       2ν
+                     X X
+                                  χ (v + r)          ≪ R2ν p1/2 + Rν p.
+                     v∈Fp r=1
+
+   The following result is a version of Lemma 6 with ν = 1 which is
+slightly more precise in this case.
+Lemma 7. For any set V ⊆ Fp and complex numbers αv of such that
+|αv | ≤ 1 for v ∈ V, we have
+                                                          2
+                            X X
+                                           χ(u + v)           ≪ #Vp.
+                           u∈Fp v∈V
+
+Proof. Denoting by χ the conjugate character and recalling that χ(w) =
+χ(w −1) for w ∈ F∗p , we obtain
+                                   2
+          X X                              X                  X
+                     χ(u + v)          =           αv α w            χ(u + v)χ(u + w).
+          u∈Fp v∈V                         v,w∈V              u∈Fp
+
+If v = w the inner sum is equal to p − 1. So the total contribution from
+such terms is O(Mp). Otherwise, we derive
+    X                        X
+        χ(u + v)χ(u + w) =       χ(u + v − w)χ(u)
+   u∈Fp                                u∈Fp
+                         X                                           X
+                                                                         χ 1 + (v − w)u−1
+                                                                                            
+                     =           χ(u + v − w)χ(u) =
+                         u∈F∗p                                   u∈F∗p
+                         X                         X
+                     =           χ (1 + u) =              χ (1 + u) − χ(1) = −χ(1).
+                         u∈F∗p                     u∈Fp
+
+So the total contribution from such terms is O(M 2 ) = O(Mp) and the
+result follows.                                                    ⊔
+                                                                   ⊓
+6                   M.-C. CHANG AND IGOR E. SHPARLINSKI
+
+    We also need the following bound of Bourgain [2, Theorem 1].
+Lemma 8. For every fixed real ε > 0 and integer r ≥ 1 there is some
+ξ > 0 such that for any integers k1 , . . . , kr ≥ 1 with
+      gcd(ki , p − 1) < p1−ε ,        and       gcd(ki − kj , p − 1) < p1−ε ,
+for i, j = 1, . . . , r, i 6= j, uniformly over the coefficients a1 , . . . , ar ∈ Fp ,
+not all equal to zero, we have
+                 p−1                                     
+                X             2πi      k1             kr
+                                                            ≪ p1−ξ .
+                                                         
+                       exp         a1 x + . . . + ar x
+                x=1
+                               p
+
+  Clearly for any F ∈ Fp [X] and a multiplicative subgroup G ⊆ F∗p of
+order #G = T we have
+                                p−1                       
+   1 X          2πi           1 X           2πi     (p−1)/T
+         exp        F (λ) =           exp       F (x        ) ≪ p−ξ .
+  #G λ∈G         p          p − 1 x=1        p
+so we derive from Lemma 8:
+Corollary 9. For every fixed real ε > 0 and integer d ≥ 1 there is
+some ξ > 0 such that for T ≥ pε , uniformly over a ∈ F∗p , we have
+                                      
+                   X         2πi
+                       exp       af (λ) ≪ T p−ξ .
+                   λ∈G
+                              p
+
+2.3. Bound on the number of solutions to some congruences.
+First we note that combining Corollary 9 with the Erdős-Turán inequal-
+ity (see, for example, [14, Theorem 1.21]) that relates the uniformity
+of distribution to exponential sums, we immediately obtain:
+Lemma 10. For every fixed real ε > 0 and integer r ≥ 1 there is some
+κ > 0 such that for T ≥ pε , we have
+                                                   HT
+                                                        + O T 1−κ ,
+                                                                  
+#{λ ∈ G : f (λ) ≡ b + x (mod p), where x ∈ I} =
+                                                    p
+uniformly over b ∈ Fp .
+    Let N(I, G) be the number of solutions to the congruence
+                   λx ≡ y     (mod p),         x, y ∈ I, λ ∈ G.
+  Some of our results rely on an upper bound on N(I, G) which is
+given in [9, Theorem 1], see also [10] for some other bounds.
+Lemma 11. Let ν ≥ 1 be a fixed integer. Then
+       N(I, G) ≤ Ht(2ν+1)/2ν(ν+1) p−1/2(ν+1)+o(1) + H 2 t1/ν p−1/ν+o(1) ,
+      DOUBLE CHARACTER SUMS OVER SUBGROUPS AND INTERVALS                        7
+
+as p → ∞, where
+                              t = max{T, p1/2 }.
+  We also use the following bound which is due to Ayyad, Cochrane
+and Zheng [1, Theorem 1].
+Lemma 12. Let Ji = {bi +1, . . . , bi +hi } for some integers p > hi +bi >
+bi ≥ 1, i = 1, 2, 3, 4. Then
+ #{(x1 , x2 , x3 , x4 ) ∈ J1 × J2 × J3 × J4 : x1 x2 ≡ x3 x4 (mod p)}
+                                  1                                       
+                               = h1 h2 h3 h4 + O (h1 h2 h3 h4 )1/2 (log p)2 .
+                                  p
+   We now fix some real L > 1 and denote by L the set of primes of
+the interval [L, 2L]. We need an upper bound on the quantity
+               n
+       W = # (u1 , u2 , ℓ1 , ℓ2 , s1 , s2 ) ∈ I 2 × L2 × S 2 :
+(3)                                         u 1 + s1   u 2 + s2         o
+                                                     ≡          (mod p)
+                                                ℓ1         ℓ2
+for some special class of sets.
+   We say that a set S ⊆ Fp is h-spaced if no elements s1 , s2 ∈ S and
+positive integer k ≤ h satisfy the equality s1 + k = s2 .
+   The following result is given in [11] and is based on some ideas of
+Shao [27].
+Lemma 13. If L < H and 2HL < p then for any H-spaced set S for
+W , given by (3) we have
+                              (#SHL)2
+                      W ≪             + #SHLpo(1) .
+                                 p
+  We also define
+                                      X
+(4)                            U=          U(v)2 ,
+                                    v∈Fp
+
+where
+                                                                       
+                                     u + f (λ)
+(5) U(v) = # (u, ℓ, λ) ∈ I × L × G :           ≡v              (mod p) .
+                                        ℓ
+Lemma 14. For every fixed real ε > 0 and integer d ≥ 1 there are
+some δ > and η > 0 such that if
+                     T > pε     and        p1/2−ε ≥ H ≥ L
+then for U, given by (4) we have
+                               U ≪ HLT 2 p−η .
+8               M.-C. CHANG AND IGOR E. SHPARLINSKI
+
+Proof. Let S1 be the largest H-separated subset of F0 = {f (λ) : λ ∈
+G}. By Lemma 10 we have #S1 ≫ pκ for some fixed κ > 0.
+  Inductively, we define Sk+1 as the largest H-separated subset of
+                                     k
+                                     [
+                 Fk = Fk−1 \               Sj ,         k = 1, 2, . . . .
+                                     j=1
+
+Clearly for some b ∈ Fp and a set J = {b + 1, . . . , b + H} we have
+                                                    #Fk
+                             # (Fk ∩ J ) ≥               .
+                                                   #Fk+1
+On the other hand, by Lemma 10
+                 # (Fk ∩ J ) ≤ # (F1 ∩ J ) ≪ T p−κ .
+Hence there is a partition
+                                              K
+                                              [
+                                    F0 =           Sk
+                                             k=0
+
+into disjoined sets with K ≤ T p−κ/2 such that
+     • #S0 ≤ T p−κ/2 ,
+     • Sk is H-separated with #Sk ≥ pκ/2 , k = 1, . . . , K.
+For k = 0, . . . , K we define
+                                                            
+                                           u+s
+     Uk (v) = # (u, ℓ, s) ∈ I × L × Sk :       ≡ v (mod p) .
+                                            ℓ
+We have
+                             K
+                             X                              K
+                                                            X
+                U(v) =             Uk (v) = U0 (v) +               Uk (v).
+                             k=0                             k=1
+So, squaring out and summing over all v ∈ Fp , we obtain
+                                       K
+                                                 !2
+                    X            X X
+               U≪      U0 (v)2 +          Uk (v)
+                      v∈Fp                  v∈Fp    k=1
+
+                      X                      K
+                                           X X
+                  =          U0 (v)2 +                    Uk (v)Um (v).
+                      v∈Fp                 v∈Fp k,m=1
+
+Now, changing the order of summation in the second term in the above
+and then using the Cauchy inequality, yields
+(6)                                U ≪ V1 + V22 ,
+      DOUBLE CHARACTER SUMS OVER SUBGROUPS AND INTERVALS                                          9
+
+where
+                                                                                     1/2
+               X                                               K
+                                                               X         X
+        V1 =            U0 (v)2       and            V2 =                      Uk (v)2     .
+               v∈Fp                                            k=1       v∈Fp
+
+We have,
+            n
+      V1 = # (u1, u2 , ℓ1 , ℓ2 , s1 , s2 ) ∈ I 2 × L2 × S02 :
+                                                 u 1 + s1   u 2 + s2                          o
+                                                          ≡                         (mod p)
+                                                     ℓ1         ℓ2
+               n
+        ≤ max # (u1 , u2, ℓ1 , ℓ2 ) ∈ I 2 × L2 :
+           s1 ,s2 ∈Fp
+                                                 u 1 + s1   u 2 + s2                          o
+                                                          ≡                         (mod p) .
+                                                     ℓ1         ℓ2
+Since L ≤ H ≤ p1/2−ε , by Lemma 12 we obtain
+(7)            V1 ≪ (#S0 )2 HL(log p)2 ≪ HLT 2 p−ε (log p)2 .
+  Furthermore, Lemma 13 implies that for k = 1, . . . , K we have
+           X
+                Uk (v)2 ≪ (#Sk HL)2 p−1 + #Sk HLpo(1) .
+                v∈Fp
+
+Hence, applying the Cauchy inequality, we derive
+                        K
+                        X
+                              #Sk HLp−1/2 + (#Sk )1/2 H 1/2 L1/2 po(1)
+                                                                                        
+            V2 ≪
+                        k=1
+                                                                K
+                                                                X
+                ≤ HLT p−1/2 + H 1/2 L1/2 po(1)                         (#Sk )1/2
+                                                                 k=1
+                                                                         K
+                                                                                    !1/2
+                                                                         X
+                ≤ HLT p−1/2 + H 1/2 L1/2 po(1)                       K       #Sk
+                                                                        k=1
+                               −1/2        1/2       1/2   1/2       1/2 o(1)
+                ≤ HLT p               +H         K         L     T       p      .
+Since K ≤ T p−κ/2 and L ≤ H ≤ p1/3 , we see that
+(8)   V2 ≪ HLT p−1/2 + H 1/2 L1/2 T p−κ/2+o(1) ≤ H 1/2 L1/2 T p−κ/2+o(1)
+(assuming that κ is small enough). Substituting (7) and (8) in (6),
+leads us to the bound
+                        U ≪ HLT 2 p−ε log p + HLT 2 p−κ+o(1)
+and the result follows.                                                                           ⊔
+                                                                                                  ⊓
+10              M.-C. CHANG AND IGOR E. SHPARLINSKI
+
+  Let E(G) be the additive energy of a multiplicative subgroup G ⊆ F∗p ,
+that is
+        E(G) = #{(λ1 , µ1 , λ2 , µ2 ) ∈ G 4 : λ1 + µ1 = λ2 + µ2 }.
+By a result of Heath-Brown and Konyagin [19], if #G = T ≤ p2/3 we
+have
+                          E(G) ≪ T 5/2 .
+Recently, Shkredov [28] has given an improvement which we present
+in the following slightly less precise form (which supreses logarithmic
+factors in po(1) ).
+Lemma 15. For T ≤ p2/3 we have
+               32/13 o(1)
+               T        p ,          if T ≤ p1/2 ,
+       E(G) ≤    T 31/13 p1/26+o(1) , if p1/2 < T ≤ p29/48 ,
+               3 −1/3+o(1)
+                 T p           ,      if p29/48 < T ≤ p2/3 .
+  .
+
+                    3. Proofs of main results
+3.1. Proof of Theorem 1. We have
+                                                  1
+(9)                         Sχ (a, I, G) =          W,
+                                                  T
+where                       X X
+                    W =                   χ(µ)χ(µx + aλ).
+                            x∈I λ,µ∈G
+
+(since χ(µ) = χ(µ ) for µ ∈ F∗p ). Hence
+                  −1
+
+
+                            X X X
+                   |W | ≤                      χ(xµ + aλ) .
+                            x∈I λ,µ∈G λ∈G
+
+Collecting the products µx with the same value u ∈ Fp , we obtain
+                            X               X
+                   |W | ≤          R(u)           χ(u + aλ) ,
+                            u∈Fp            λ∈G
+
+where
+                R(u) = #{(x, µ) ∈ I × G : µx = u}.
+So, by the Cauchy inequality,
+                                                                2
+                        X                 X X
+                   2                  2
+               |W | ≤          R(u)                  χ(u + aλ) .
+                        u∈Fp              u∈Fp λ∈G
+     DOUBLE CHARACTER SUMS OVER SUBGROUPS AND INTERVALS                 11
+
+Thus applying Lemma 7 we derive
+                                       X
+                           W 2 ≤ pT           R(u)2 .
+                                       u∈Fp
+
+Clearly                       X
+                                     R(u)2 = Q,
+                              u∈Fp
+
+where
+         Q = #{(x, y, λ, µ) ∈ I × I × G × G : λx = µy}.
+Furthermore, it is clear that Q = T N(I, G), where N(I, G) is as
+in Lemma 11. Putting everything together and using the bound of
+Lemma 11, we see that for any fixed ν ≥ 1 we have
+(10) W 2 ≤ pT 2 Ht(2ν+1)/2ν(ν+1) p−1/2(ν+1)+o(1) + H 2 t1/ν p−1/ν+o(1) ,
+                                                                      
+
+where
+                            t = max{T, p1/2 }.
+We can certainly assume that T ≤ p1/2+ε as otherwise the result follows
+from the bound (2). Thus t ≤ p1/2+ε and we obtain
+   W 2 ≤ pT 2 Hp1/4ν(ν+1)+ε(2ν+1)/2ν(ν+1)+o(1) + H 2 p−1/2ν+ε/ν+o(1) .
+                                                                    
+
+Since H ≥ pε , taking a sufficiently large ν we can achieve the inequality
+               Hp1/4ν(ν+1)+ε(2ν+1)/2ν(ν+1) ≤ H 2 p−1/2ν+ε/ν .
+We can also assume that ε < 1/3 as otherwise the result follows from
+the Burgess bound, see [20, Theorem 12.6], so the bound becomes
+                W 2 ≤ H 2 T 2 p1−1/6ν+o(1) ≪ H 2 T 2 p1−1/7ν .
+Recalling (9), we obtain
+                 Sχ (a, I, G) ≪ Hp1/2−1/7ν ≤ HT p−1/14ν
+for T ≥ p1/2−1/14ν .
+3.2. Proof of Theorem 2. Clearly we can assume that H < p1/3
+as otherwise the Burgess bound, (see [20, Theorem 12.6]) implies the
+desired result. We can also assume that ε > 0 is small enough, thus
+the conditions of Lemma 14 are satisfied.
+   We set
+                              γ = η/3,
+where η is as in Lemma 14 (which we assume to e sufficiently small).
+   Let L = Hp−2γ , R = ⌈pγ ⌉,and let L be the set of primes of the
+interval [L, 2L].
+12                  M.-C. CHANG AND IGOR E. SHPARLINSKI
+
+     Clearly
+                              1                 1
+(11)      Sχ (f, I, G) =         Σ + O(LRT ) =     Σ + O(HT p−γ ),
+                             #LR               #LR
+where
+        X R
+         XXX
+ Σ=                        χ(x + f (λ) + ℓr)
+         ℓ∈L r=1 x∈I λ∈G
+                     R                             R
+        XXX X               x + f (λ)      X        X
+      ≤                 χ             +r =     U(v)     χ (v + r) ,
+        ℓ∈L x∈I λ∈G r=1
+                               ℓ           v∈F      r=1
+                                                     p
+
+
+where U(v) is given by (5). We now fix some integer ν ≥ 1 Writ-
+ing U(v) = U(v)(ν−1)/ν (U(v)2 )1/2ν and using the Hölder inequality, we
+derive
+                        2ν−2                               2ν
+               X                 X         X X  R
+       Σ2ν =      U(v)             U(v)2         χ (v + r) .
+                    v∈Fp              v∈Fp     v∈Fp r=1
+
+We obviously have
+                           X
+                                  U(v) ≤ H#LT ≪ HLT.
+                           v∈Fp
+
+Hence, using Lemmas 6 and 14 we derive
+                  Σ2ν ≪ (HLT )2ν−2 HLT 2 R2ν p1/2 + Rν p .
+                                                        
+
+Taking ν sufficiently large (depending on γ), we arrive to the inequality
+(12)       Σ2ν ≪ (HL)2ν−1 T 2ν R2ν p1/2−η = (HLRT )2ν (HL)−1 p1/2−η .
+So taking δ = κ/4, we see that
+                    (HL)−1 p1/2−η = H −2 p1/2−2η/3 ≤ p−η/6 .
+Hence we infer from (12) that Σ ≪ (HLRT )p−η/12ν , which after sub-
+stitution in (11) concludes the proof.
+
+3.3. Proof of Theorem 3. We proceed as before and use that t, T =
+p1/2+o(1) , so (10) becomes
+                W 2 ≤ p2 p1/4+1/4ν(ν+1)+o(1) + p1/2−1/2ν+o(1) .
+                                                             
+
+Taking ν = 2 we obtain
+               W 2 ≤ p2 p1/4+1/24+o(1) + p1/4+o(1) = p55/24+o(1) ,
+                                                  
+
+which after substitution in (9) implies the result.
+       DOUBLE CHARACTER SUMS OVER SUBGROUPS AND INTERVALS                    13
+
+3.4. Proof of Theorem 4. As before, we have
+                                                1
+(13)                          Tχ (a, G) =         W,
+                                                T
+where                        X
+                    W =               χ(ϑ)χ(aϑ + µ + λ).
+                            λ,µ,ϑ∈G
+
+Hence
+                           X X
+                  |W | ≤                  χ(ϑ)χ(aϑ + λ + µ) .
+                           λ,µ∈G ϑ∈G
+
+Collecting the sum λ + µ with the same value u ∈ Fp , we obtain
+                           X              X
+                  |W | ≤          F (u)         χ(aϑ + λ + µ) ,
+                           u∈Fp           λ∈G
+
+where
+                  F (u) = #{(λ, µ) ∈ G 2 : λ + µ = u}.
+So, as in the proof of Theorem 1 we obtain
+                             X
+                    W 2 ≤ pT     R(u)2 = pT E(G).
+                                   u∈Fp
+
+Recalling Lemma 15 and using (13), we conclude the proof.
+
+3.5. Proof of Theorem 5. Let us fix an arbitrary ε > 0. Let ℓp
+denote the multiplicative order of 2 modulo p. We see from Theorem 4
+that if for a sufficiently large prime p we have ℓp ≥ p13/33+ε then
+                                   ℓp
+       X                           X
+              m      k
+            χ(2 + 2 + 1) =                χ(2m + 2k + 1) + O(ℓp ) = O(ℓp2−δ ).
+ 1≤k<m≤ℓp                         k,m=1
+
+Using a standard method of detecting primitive roots via multiplicative
+charactes, we conclude that if for a sufficiently large prime p we have
+ℓp ≥ p13/33+ε then up ≤ 3. It remains to estimate the number of primes
+p ≤ Q with ℓp ≥ p13/33+ε . Let L = Q13/33+ε . Clearly for every such
+prime we have p | W where
+                           Y
+                     W =       (2ℓ − 1) ≤ 2L(L+1)/2 .
+                             ℓ≤L
+
+Since W has O(log W ) = O(L2 ) = O(Q26/33+2ε ) prime divisors and
+since ε is arbitrary, the result now follows.
+14                  M.-C. CHANG AND IGOR E. SHPARLINSKI
+
+                                4. Comments
+  It is easy to see that the full analogues of Theorems 1 and 2 can also
+be obtained for the sums
+                  XX
+                          χ (λx + a) ,    1 ≤ a < p − 1,
+                   x∈I λ∈G
+
+without any changes in the proof. Using a version of Lemma 11 given
+in [26, Lemma 9], one can also obtain analogues of our results for
+sums over the consecutive powers g, . . . , g N of a fixed element g ∈ F∗p ,
+provided that N is smaller than the multiplicative order of g modulo
+p and in the same ranges as T in Theorems 1 and 2.
+  Furthermore, without any changes in the proof, Theorem 2 can ex-
+tended to the double sums
+                XX
+                       χ (ax + u) ,       1 ≤ a < p − 1,
+                   x∈I u∈U
+
+where U ⊆ Fp is an arbitrary set of cardinality U ≥ pε and an interval
+I of length H ≤ p1/3 , such that for some κ > 0 we have
+       #{u ∈ U : u ≡ b + x (mod p), where x ∈ I} ≪ U 1−κ
+(which replaces Lemma 10 in our argument).
+  It is also interesting to estimate sums
+                 XX
+(14)                     χ (f (x) + λ) ,  1 ≤ a < p − 1,
+                  x∈I λ∈G
+
+with a nontrivial polynomial f (X) ∈ Fp [X], for H > p1/2−η and #G >
+p1/2−η for some fixed η > 0 (depending only on deg f ). To estimate
+these sums, one needs a nontrivial bound on the number of solutions
+to the congruence
+             λf (x) ≡ f (y) (mod p),         x, y ∈ I, λ ∈ G,
+                            2
+which is better than H . In fact, using some ideas and results of [18, 30]
+one can get such a bound, but not in a range in which the sums (14)
+can be estimated nontrivially.
+  Finally, it is interesting to investigate whether one can estimate the
+sums          X
+                     χ(a + λ1 + . . . + λν ),   1 ≤ a < p − 1,
+           λ1 ,...,λν ∈G
+with ν ≥ 3 in a shorter range than that of Theorem 4 by using bounds
+on the higher order additive energy of multiplicative subgroups, see [28,
+29] for such bounds. Clearly, for any ε > 0 if #G > pε then for a
+sufficiently large ν such a result follows instantly from [8], as if ν is
+large enough, the sums λ1 + . . . + λν , λ1 , . . . , λν ∈ G, represent each
+     DOUBLE CHARACTER SUMS OVER SUBGROUPS AND INTERVALS                          15
+
+element of Fp with the asymptotically equal frequency. We however
+hope that the approach via the higher order additive energy can lead
+to better estimates for smaller values of ν and ε.
+
+
+                            Acknowledgements
+   During the preparation of this paper, the first author was supported
+by the NSF Grants DMS 1301608 and by the NSF Grant 0932078000
+while she was in residence at the Mathematical Science Research In-
+stitute in Berkeley, California, during the spring 2014 semester. This
+author would also like to thank the Mathematics Department of the
+University of California at Berkeley for its hospitality.
+   The second author was supported by the ARC Grant DP130100237.
+This author would also to thank the Max Planck Institute for Math-
+ematics, Bonn, for support and hospitality during his work on this
+project.
+
+
+                                 References
+[1] A. Ayyad, T. Cochrane and Z. Zheng, ‘The congruence x1 x2 ≡ x3 x4 (mod p),
+    the equation x1 x2 = x3 x4 and the mean value of character sums’, J. Number
+    Theory, 59 (1996), 398–413.
+[2] J. Bourgain, ‘Mordell’s exponential sum estimate revisited’, J. Amer. Math.
+    Soc., 18 (2005), 477–499.
+[3] J. Bourgain, ‘On the distribution of the residues of small multiplicative sub-
+    groups of Fp ’, Israel J. Math., 172 (2009), 61–74.
+[4] J. Bourgain, ‘Sum-product theorems and applications’, Additive Number The-
+    ory, Springer-Verlag, Berlin, 2010, 9–38.
+[5] J. Bourgain, ‘On exponential sums in finite fields’, An Irregular Mind , Bolyai
+    Soc. Math. Stud., vol. 21, János Bolyai Math. Soc., Budapest, 2010, 219–242.
+[6] J. Bourgain, M. Z. Garaev, S. V. Konyagin and I. E. Shparlinski, ‘On the
+    hidden shifted power problem’, SIAM J. Comp., 41 (2012), 1524–1557.
+[7] J. Bourgain, M. Z. Garaev, S. V. Konyagin and I. E. Shparlinski, ‘On congru-
+    ences with products of variables from short intervals and applications’, Proc.
+    Steklov Math. Inst., 280 (2013), 67–96.
+[8] J. Bourgain, A. A. Glibichuk and S. V. Konyagin, ‘Estimates for the number of
+    sums and products and for exponential sums in fields of prime order’, J. Lond.
+    Math. Soc., 73 (2006), 380–398.
+[9] J. Bourgain, S. V. Konyagin and I. E. Shparlinski, ‘Product sets of rationals,
+    multiplicative translates of subgroups in residue rings and fixed points of the
+    discrete logarithm’, Intern. Math. Res. Notices, 2008 (2008), Article rnn090,
+    1–29. (Corrigenda: Intern. Math. Res. Notices, 2009 (2009), 3146–3147).
+[10] J. Bourgain, S. V. Konyagin and I. E. Shparlinski, ‘Distribution of elements of
+    cosets of small subgroups and applications’, Intern. Math. Res. Notices, 2012
+    (2012), Article rnn097, 1968–2009.
+16                  M.-C. CHANG AND IGOR E. SHPARLINSKI
+
+[11] J. Bourgain, S. V. Konyagin and I. E. Shparlinski, ‘Character sums and deter-
+    ministic polynomial root finding in finite fields’, Preprint , 2013 (available from
+    http://arxiv.org/abs/1308.4803).
+[12] M.-C. Chang, ‘On a question of Davenport and Lewis and new character sum
+    bounds in finite fields’, Duke Math. J., 145 (2008), 409–442.
+[13] H. Davenport and P. Erdős, ‘The distribution of quadratic and higher residues’,
+    Publ. Math. Debrecen, 2 (1952), 252–265.
+[14] M. Drmota and R. Tichy, Sequences, discrepancies and applications, Springer-
+    Verlag, Berlin, 1997.
+[15] J. B. Friedlander and H. Iwaniec, ‘Estimates for character sums’, Proc. Amer.
+    Math. Soc., 119 (1993), 365–372.
+[16] R. Dietmann, C. Elsholtz and I. E. Shparlinski, ‘On gaps between quadratic
+    non-residues in the Euclidean and Hamming metrics’, Indagationes Mathemat-
+    icae, 24 (2013), 930–938.
+[17] M. Z. Garaev, ‘Sums and products of sets and estimates of rational trigonomet-
+    ric sums in fields of prime order’, Russian Math. Surveys, 65 (2010), 599–658
+    (Transl. from Uspekhi Mat. Nauk ).
+[18] D. Gómez-Pérez and I. E. Shparlinski,                  ‘Subgroups generated
+    by polynomials in finite fields’, Preprint , 2013 (available from
+    http://arxiv.org/abs/1309.7378).
+[19] D. R. Heath-Brown and S. V. Konyagin, ‘New bounds for Gauss sums derived
+    from kth powers, and for Heilbronn’s exponential sum’, Quart. J. Math., 51
+    (2000), 221–235.
+[20] H. Iwaniec and E. Kowalski, Analytic number theory, Amer. Math. Soc., Prov-
+    idence, RI, 2004.
+[21] A. A. Karatsuba, ‘The distribution of values of Dirichlet characters on additive
+    sequences’, Doklady Acad. Sci. USSR, 319 (1991), 543–545 (in Russian).
+[22] A. A. Karatsuba, ’Weighted character sums’, Izv. Ross. Akad. Nauk Ser. Mat.
+    (Transl. as Izv. Math.), 64(2) (2000), 29–42 (in Russian).
+[23] A. A. Karatsuba, ‘Arithmetic problems in the theory of Dirichlet characters’,
+    Uspekhi Mat. Nauk. (Transl. as Russian Math. Surveys), 63(4) (2008), 43–92
+    (in Russian).
+[24] B. Kerr, ‘Incomplete exponential sums over exponential functions’, Preprint ,
+    2013, (available from http://arxiv.org/abs/1302.4170 ).
+[25] S. V. Konyagin, ‘Bounds of exponential sums over subgroups and Gauss sums’,
+    Proc. 4th Intern. Conf. Modern Problems of Number Theory and Its Applica-
+    tions, Moscow Lomonosov State Univ., Moscow, 2002, 86–114 (in Russian).
+[26] S. V. Konyagin and I. E. Shparlinski, ‘On the consecutive powers of a primitive
+    root: Gaps and exponential sums’, Mathematika, 58 (2012), 11–20.
+[27] X. Shao, ‘Character sums over unions of intervals’, Preprint , 2013 (available
+    from http://arxiv.org/abs/1302.0348).
+[28] I. D. Shkredov, ‘Some new inequalities in additive combinatorics’, Moscow J.
+    Comb. and Number Theory, (to appear).
+[29] I. D. Shkredov, ‘On exponential sums over multiplicative subgroups of medium
+    size’, Preprint , 2013 (available from http://arxiv.org/abs/1311.5726).
+[30] I. E. Shparlinski, ‘Polynomial values in small subgroups of finite fields’,
+    Preprint , 2014 (available from http://arxiv.org/abs/1401.0964).
+    DOUBLE CHARACTER SUMS OVER SUBGROUPS AND INTERVALS         17
+
+  Department of Mathematics, University of California, Riverside,
+CA 92521, USA
+  E-mail address: mcc@math.ucr.edu
+
+  Department of Pure Mathematics, University of New South Wales,
+Sydney, NSW 2052, Australia
+  E-mail address: igor.shparlinski@unsw.edu.au
+

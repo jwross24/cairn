@@ -1,0 +1,24 @@
+(lldb) command script import /Users/jwross/Documents/cairn/research/intake/persistence/tier0-opt/kt-audit/tally.py
+(lldb) command script add -f tally.arm arm
+(lldb) target create /Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN
+Current executable set to '/Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN' (arm64).
+(lldb) breakpoint set -n main
+Breakpoint 1: where = lvlN`main, address = 0x00000001000005c0
+(lldb) process launch -o /dev/null -- /private/tmp/claude-501/-Users-jwross-Documents-cairn/ec9f8f52-ce29-4a5c-9caf-2ecbd434509f/scratchpad/h12/9437184_222222222222222222229/cfgL24.txt /private/tmp/claude-501/-Users-jwross-Documents-cairn/ec9f8f52-ce29-4a5c-9caf-2ecbd434509f/scratchpad/h12/9437184_222222222222222222229/parents24.txt
+Process 71384 launched: '/Users/jwross/Documents/cairn/research/intake/persistence/tier0/lvlN' (arm64)
+Process 71384 stopped
+* thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+       frame #0: 0x00000001000005c0 lvlN`main
+lvlN`main:
+->  0x1000005c0 <+0>:  stp    x28, x27, [sp, #-0x60]!
+    0x1000005c4 <+4>:  stp    x26, x25, [sp, #0x10]
+    0x1000005c8 <+8>:  stp    x24, x23, [sp, #0x20]
+    0x1000005cc <+12>: stp    x22, x21, [sp, #0x30]
+Target 0: (lvlN) stopped.
+(lldb) arm
+slide 0x0 bp resolved 1
+(lldb) continue
+parents 44087 children 2853259024 zero 59073634 dead 2794174531 tail-dead 9930 open 929 exact 0
+Process 71384 resuming
+Process 71384 exited with status = 0 (0x00000000)
+(lldb) script tally.dump()

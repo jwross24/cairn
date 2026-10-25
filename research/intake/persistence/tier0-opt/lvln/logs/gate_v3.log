@@ -1,0 +1,7 @@
+binary sha256 42ff34d43dd45fe8c9f9d5d6d21c78cb4fd9b8bdfd93a70f9a3e053f3f195dea
+vertex 72: IDENTICAL (9 equations)
+vertex 10800: IDENTICAL (17 equations)
+vertex 224: IDENTICAL (5 equations)
+14336 compare: 16 equations ref, 16 cand; IDENTICAL (raw stdout sha, sorted sha, stderr counters, open, sols, levels)
+lvlN calls compared: 42
+GATE DONE v3

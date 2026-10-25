@@ -1,0 +1,8 @@
+STAGE                                 VERDICT  DETAIL
+----------------------------------------------------------------------------
+lvl12 differential (corpus + 72/224)  PASS     118 equations, raw sorted stdout + stderr counters
+lvlN differential (corpus + 72/224)   PASS     118 equations, parents from reference chain + wild parents; raw sorted stdout, counters, python-side reconstruction; 136 genuine-parent chains (true child must reappear)
+off-nominal configs (K != 3, np = 7)  PASS     18 configs: {'EQUIVALENT': 18, 'REFUSES': 0, 'DIVERGED': 0, 'CRASH': 0}
+python pipeline run_vertex_c 72, 224  FAIL     16 rows (open counts, children, per-level survivors, c_stats) ref vs cand
+planted children (pipeline)           FAIL     15/21 recovered
+GATE v2: FAIL

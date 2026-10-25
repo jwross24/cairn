@@ -1,0 +1,3 @@
+rows 43 43 verdict-column differences 0
+sha256 ref aa15a347de7ab852 new aa15a347de7ab852 whole-file byte equal True
+VERDICTS_43 C-full column mismatches 0 of 43

@@ -1,0 +1,1 @@
+{"max_t": 0.2869, "mean_t": 0.02319973129992738, "mean_t_verify": 0.02166669526143791, "p50_t": 0.019, "p95_t": 0.0433, "projected_core_hours_A_only": 2.8396471111111112, "projected_core_hours_A_plus_verify_all": 5.491650611111112, "rows": 440640, "sizes": [8, 20], "sum_t": 10222.7296, "verdicts": {"certified": 440640}, "verified_false": 0, "verified_true": 440640}

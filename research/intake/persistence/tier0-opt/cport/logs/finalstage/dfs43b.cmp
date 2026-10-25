@@ -1,0 +1,3 @@
+sandwich: python records finished 36, compared 36, rep(-depth) entries 145, mismatches 0; python-finished but absent from C output: 0
+exact nearest-norm integers (+ survivor-count lists for sandwich) compared: 113, equal: 113
+C records without a python reference (not compared): 7

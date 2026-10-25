@@ -1,0 +1,21 @@
+Lambda_96: index 2.810e+56 [0.00s]
+s=6          M=23           a=2  y=111132       reps=1   cases=4       CLOSED
+s=12         M=223          a=1  y=13122        reps=1   cases=8       CLOSED
+s=12         M=223          a=2  y=111132       reps=1   cases=8       CLOSED
+s=24         M=2223         a=1  y=13122        reps=1   cases=16      CLOSED
+s=24         M=2223         a=2  y=111132       reps=1   cases=16      CLOSED
+s=48         M=22223        a=1  y=13122        reps=1   cases=24      CLOSED
+s=48         M=22223        a=2  y=111132       reps=1   cases=32      CLOSED
+s=162        M=2339         a=2  y=111132       reps=1   cases=12      CLOSED
+s=168        M=2267         a=4  y=27216        reps=1   cases=16      CLOSED
+s=144        M=466          a=4  y=11664        reps=1   cases=8       CLOSED
+s=224        M=22247        a=3  y=122472       reps=1   cases=32      CLOSED
+s=224        M=2447         a=1  y=71442        reps=1   cases=16      CLOSED
+s=216        M=22239        a=2  y=111132       reps=1   cases=16      CLOSED
+s=216        M=2349         a=2  y=111132       reps=1   cases=12      CLOSED
+s=216        M=2366         a=2  y=111132       reps=1   cases=12      CLOSED
+s=216        M=2366         a=2  y=61236        reps=1   cases=16      CLOSED
+s=216        M=3346         a=1  y=33614        reps=1   cases=16      CLOSED
+s=378        M=23337        a=2  y=111132       reps=1   cases=16      CLOSED
+s=324        M=22339        a=1  y=13122        reps=1   cases=16      CLOSED
+s=324        M=22339        a=2  y=111132       reps=1   cases=16      CLOSED

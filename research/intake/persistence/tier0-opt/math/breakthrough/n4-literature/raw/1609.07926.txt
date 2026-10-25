@@ -1,0 +1,515 @@
+                                                On the digital representation of integers with bounded prime factors
+
+
+
+                                                                                   Yann BUGEAUD
+
+
+
+
+arXiv:1609.07926v1 [math.NT] 26 Sep 2016
+                                                     Abstract. Let b ≥ 2 be an integer. Not much is known on the
+                                                     representation in base b of prime numbers or of numbers whose prime
+                                                     factors belong to a given, finite set. Among other results, we establish
+                                                     that any sufficiently large integer which is not a multiple of b and has
+                                                     only small (in a suitable sense) prime factors has at least four nonzero
+                                                     digits in its representation in base b.
+
+
+
+
+                                                                          1. Introduction and results
+
+                                                 We still do not know whether there are infinitely many prime numbers of the form
+                                           2n + 1 (that is, with only two nonzero binary digits) or of the form 11 . . . 11 (that is,
+                                           with only the digit 1 in their decimal representation). Both questions are notorious, very
+                                           difficult open problems, which at present seem to be completely out of reach. However,
+                                           there have been recently several spectacular advances on the digital representation of prime
+                                           numbers. In 2010, Mauduit and Rivat [16] established that the sum of digits of primes
+                                           is well-distributed. Subsequently, Bourgain [7] showed the existence of prime numbers in
+                                           the sparse set defined by prescribing a positive proportion of the binary digits. This year,
+                                           Maynard [17] proved that, if d is any digit in {0, 1, . . . , 9}, then there exist infinitely many
+                                           prime numbers which do not have the digit d in their decimal representation. The proofs
+                                           of all these results depend largely on Fourier analysis techniques.
+                                                 In the present note we study a related problem, namely the digital representation of
+                                           integers all of whose prime factors belong to a finite, given set S of prime numbers. We
+                                           apply techniques from Diophantine approximation to discuss the following general (and
+                                           left intentionally vague) question:
+                                                Do there exist arbitrarily large integers which have only small prime factors and, at
+                                           the same time, few nonzero digits in their representation in some integer base?
+                                                The expected answer is no and our results are a modest step in this direction.
+
+                                                2010 Mathematics Subject Classification : 11A63, 11J86, 11J87.
+
+                                                                                           1
+     Let n be a positive integer n and P [n] denote its greatest prime factor, with the
+convention that P [1] = 1. Let S = {q1 , . . . , qs } be a finite, non-empty set of distinct prime
+numbers. Write n = q1r1 . . . qsrs M , where r1 , . . . , rs are non-negative integers and M is an
+integer relatively prime to q1 . . . qs . We define the S-part [n]S of n by
+
+                                          [n]S := q1r1 . . . qsrs .
+
+The S-parts of linear recurrence sequences and of integer polynomials and decomposable
+forms evaluated at integer points have been studied in [13, 8, 9].
+                                                              (k)
+     In the sequel, for a given integer k ≥ 2, we denote by (uj )j≥1 the sequence, arranged
+in increasing order, of all positive integers which are not divisible by b and have at most
+                                                                       (k)
+k nonzero digits in their b-ary representation. Said differently, (uj )j≥1 is the ordered
+sequence composed of the integers of the form
+
+dk bnk + . . . + d2 bn2 + d1 ,   nk > . . . > n2 > 0,       d1 , . . . , dk ∈ {0, 1, . . . , b − 1},   d1 dk 6= 0.
+
+We stress that, for the questions investigated in the present note, it is natural to restrict
+                                                                         (k)
+our attention to integers not divisible by b. Obviously, the sequence (uj )j≥1 depends on
+b, but, for shortening the notation, we have decided not to mention this dependence.
+     Our first result shows that, for any base b, there are only finitely many integers not
+divisible by b which have a given number of nonzero b-ary digits and whose prime divisors
+belong to a given finite set.
+
+Theorem 1.1. Let b ≥ 2, k ≥ 2 be integers and ε a positive real number. Let S be a
+finite, non-empty set of prime numbers. Then, we have
+
+                                             (k)           (k)
+                                          [uj ]S < (uj )ε ,
+
+                                                                                                       (k)
+for every sufficiently large integer j. In particular, the greatest prime factor of uj                       tends
+to infinity as j tends to infinity.
+
+     The proof of Theorem 1.1 rests on the Schmidt Subspace Theorem and does not allow
+                                         (k)
+us to estimate the speed with which P [uj ] tends to infinity with j. It turns out that, by
+means of the theory of linear forms in logarithms, we are able to derive such an estimate,
+but (apparently) only for k ≤ 3.
+     The case k = 2 has already been considered. It reduces to the study of a finite union
+of binary linear recurrences of the form
+
+                 (d2 bn + d1 1n )n≥1 ,   where d1 , d2 are digits in {1, . . . , b − 1}.
+
+We gather in the next theorem a recent result of Bugeaud and Evertse [8] and an immediate
+consequence of a lower bound for the greatest prime factor of terms of binary recurrence
+sequences, established by Stewart [22].
+
+                                                     2
+Theorem BES. Let b ≥ 2 be an integer. Let S be a finite, non-empty set of prime
+numbers. Then, there exist an effectively computable positive number c1 , depending only
+on b, and an effectively computable positive number c2 , depending only on b and S, such
+that
+                            (2)      (2)
+                          [uj ]S ≤ (uj )1−c1 , for every j ≥ c2 .
+Furthermore, there exists an effectively computable positive number c3 , depending only
+on b and S, such that
+
+                                                               (2)
+                   (2)         (2)
+                                                     log log uj          
+               P [uj ] > (log uj )1/2 exp                             (2)
+                                                                           ,     for j > c3 .
+                                                105 log log log uj
+
+    We point out that the constant c1 in Theorem BES does not depend on S.
+                                                                                       (3)
+    The main new result of the present note is an estimate of the speed with which P [uj ]
+tends to infinity with j.
+Theorem 1.2. Let b ≥ 2 be an integer. Let S be a finite, non-empty set of prime numbers.
+Then, there exist effectively computable positive numbers c4 and c5 , depending only on b
+and S, such that
+                             (3)     (3)
+                          [uj ]S ≤ (uj )1−c4 , for every j ≥ c5 .
+Furthermore, for every positive real number ε, there exists an effectively computable pos-
+itive number c6 , depending only on b and ε, such that
+
+                                                                     (3)
+                    (3)                    (3)     log log log uj
+                P [uj ] > (1 − ε) log log uj                           (3)
+                                                                             ,   for j > c6 .   (1.1)
+                                                 log log log log uj
+
+    The proof of Theorem 1.2 yields a very small admissible value for c4 .
+    We point out the following reformulation of the second assertion of Theorem 1.2.
+Recall that a positive integer is called B-smooth if all its prime factors are less than or
+equal to B.
+Corollary 1.3. Let b ≥ 2 be an integer. Let ε be a positive integer. There exists
+an effectively computable positive integer n0 , depending only on b and ε, such that any
+integer n > n0 which is not divisible by b and is
+
+                                                 log log log n
+                          (1 − ε)(log log n)                     -smooth
+                                               log log log log n
+
+has at least four nonzero digits in its b-ary representation.
+     It is very likely that any large integer cannot be ‘very’ smooth and, simultaneously,
+have only few nonzero digits in its b-ary representation. Corollary 1.3 provides a first result
+in this direction.
+     The proofs of our theorems are obtained by direct applications of classical deep tools
+of Diophantine approximation, namely the Schmidt Subspace Theorem and the theory of
+
+                                                  3
+linear forms in the logarithms of algebraic numbers. The latter theory has already been
+applied to get lower bounds for the greatest prime factor of linear recurrence sequences
+(under some assumptions, see [21]) and for the greatest prime factor of integer polynomials
+and decomposable forms evaluated at integer points (see e.g. [14]). The bounds obtained
+in [21, 14] have exactly the same order of magnitude as our bound in Theorem 1.2, that is,
+they involve a double logarithm times a triple logarithm divided by a quadruple logarithm.
+A brief explanation is given at the end of Section 2.
+     An interesting feature of the proof of Theorem 1.2 is that it combines estimates for
+Archimedean and non-Archimedean linear forms in logarithms. Similar arguments ap-
+peared when searching for perfect powers with few digits; see [3, 4].
+
+                 2. Auxiliary results from Diophantine approximation
+
+     The Schmidt Subspace Theorem [18, 19, 20] is a powerful multidimensional extension
+of the Roth Theorem. We quote below a version of it which is suitable for our purpose,
+but the reader should keep in mind that there are more general formulations.
+Theorem 2.1. Let m ≥ 2 be an integer. Let S ′ be a finite set of prime numbers. Let
+L1,∞ , . . . , Lm,∞ be m linearly independent linear forms in m variables with integer coeffi-
+cients. For any prime ℓ in S ′ , let L1,ℓ , . . . , Lm,ℓ be m linearly independent linear forms in m
+variables with integer coefficients. Let ε be a positive real number. Then, there are an inte-
+ger T and proper subspaces S1 , . . . , ST of Qm such that all the solutions x = (x1 , . . . , xm )
+in Zm to the inequality
+                   m
+                 Y Y                         m
+                                             Y
+                             |Li,ℓ (x)|ℓ ·         |Li,∞ (x)| ≤ (max{1, |x1 |, . . . , |xm |})−ε
+                 ℓ∈S ′ i=1                   i=1
+
+are contained in the union S1 ∪ . . . ∪ ST .
+      We quote an immediate corollary of a theorem of Matveev [15].
+Theorem 2.2. Let n ≥ 2 be an integer. Let x1 /y1 , . . . , xn /yn be positive rational num-
+bers. Let b1 , . . . , bn be integers such that (x1 /y1 )b1 . . . (xn /yn )bn 6= 1. Let A1 , . . . , An be
+real numbers with
+                                 Ai ≥ max{|xi |, |yi |, e}, 1 ≤ i ≤ n.
+Set                                 n      n      log Aj       oo
+                             B = max 1, max |bj |        :1≤j≤n .
+                                                  log An
+Then, we have
+                 x b1          x bn
+                  1               n
+          log             ...             − 1 > −8 × 30n+3 n9/2 log(eB) log A1 . . . log An .
+                 y1              yn
+
+     The next statement was proved by Yu [23]. For a prime number p and a nonzero
+rational number z we denote by vp (z) the exponent of p in the decomposition of z in
+product of prime factors.
+
+                                                           4
+Theorem 2.3. Let n ≥ 2 be an integer. Let x1 /y1 , . . . , xn /yn be nonzero rational num-
+bers. Let b1 , . . . , bn be nonzero integers such that (x1 /y1 )b1 . . . (xn /yn )bn 6= 1. Let B and
+Bn be real numbers such that
+
+                           B ≥ max{|b1 |, . . . , |bn |, 3} and       B ≥ Bn ≥ |bn |.
+
+Assume that
+                                       vp (bn ) ≤ vp (bj ),   j = 1, . . . , n.
+Let δ be a real number with 0 < δ ≤ 1/2. Then, we have
+                 x b1          x bn                                                    p
+                    1              n
+           vp              ...             − 1 < (16e)2(n+1) n3/2 (log(2n))2
+                  y1              yn                                                      (log p)2
+                                                         n                                   δB o
+                                                      max (log A1 ) · · · (log An )(log T ),      ,
+                                                                                             Bn
+where
+                        T = 2Bn δ −1 e(n+1)(6n+5) pn+1 (log A1 ) · · · (log An−1 ).
+      There are two key ingredients in Theorems 2.2 and 2.3 which explain the quality of the
+estimates in Theorem 1.2. A first one is the dependence on n, which is only exponential:
+this allows us to get the extra factor triple logarithm over quadruple logarithm. The use
+of earlier estimates for linear forms in logarithms would give only the factor involving the
+double logarithm in (1.1). A second one is the factor log An occurring in the denominator
+in the definition of B in the statement of Theorem 2.2. The formulation of Theorem 2.3
+is slightly different, but, in our special case, it yields a similar refinement. This allows us
+                                (3)
+to save a (small) power of uj when estimating its S-part. Without this refinement, the
+                                                                                   (3)
+saving would be much smaller, namely less than any power of uj .
+
+                                                   3. Proofs
+
+Proof of Theorem 1.1.
+      Let k ≥ 2 be an integer and ε a positive real number. Let N1 be the set of k-tuples
+(nk , . . . , n2 , n1 ) such that nk > . . . > n2 > n1 = 0 and
+
+                    [dk bnk + · · · + d2 bn2 + d1 ]S > (dk bnk + · · · + d2 bn2 + d1 )ε ,
+
+for some integers d1 , . . . , dk in {0, . . . , b − 1} such that d1 dk 6= 0.
+       Assume that N1 is infinite. Then, there exist an integer h ≥ 2, positive integers
+D1 , . . . , Dh , an infinite set N2 , contained in N1 , of h-tuples (nh,i , . . . , n1,i) such that nh,i >
+. . . > n1,i ≥ 0,
+
+                 [Dh bnh,i + · · · + D1 bn1,i ]S > (Dh bnh,i + · · · + D1 bn1,i )ε ,           i ≥ 1,
+
+and
+                                 lim (nℓ,i − nℓ−1,i ) = +∞,           ℓ = 2, . . . , h.                 (3.1)
+                              i→+∞
+
+
+                                                         5
+We are in position to apply Theorem 2.1.
+    Let S1 denote the set of prime divisors of b. Without any loss of generality, we may
+assume that S and S1 are disjoint. Consider the linear forms in X = (X1 , . . . , Xh ) given
+by
+                             Lj,∞ (X) := Xj , 1 ≤ j ≤ h,
+and, for every prime number p in S1 ,
+
+                                      Lj,p (X) := Xj ,      1 ≤ j ≤ h,
+
+and, for every prime number p in S,
+
+               Lj,p (X) := Xj ,       1 ≤ j ≤ h − 1,       Lh,p (X) := Dh Xh + . . . + D1 X1 .
+
+By Theorem 2.1 applied with S ′ = S ∪ S1 , the set of tuples b = (bnh , . . . , bn2 , bn1 ) such
+that nh > . . . > n1 ≥ 0 and
+                            h
+                            Y                     Y        h
+                                                           Y
+                                  |Lj,∞ (b)| ×                 |Lj,p (b)|p < b−εnh                     (3.2)
+                            j=1                  p∈S∪S1 j=1
+
+
+is contained in a finite union of proper subspaces of Zh . Since the left hand side of (3.2)
+is equal to [Dh bnh + · · · + D1 bn1 ]−1                         nh         n1
+                                        S , the set of tuples (b , . . . , b ), where (nh , . . . , n1 ) lies
+                                                                         h
+in N2 , is contained in a finite union of proper subspaces of Z .
+     Thus, there exist integers t1 , . . . , th , not all zero, and an infinite set N3 , contained in
+N2 , of integer tuples (nh , . . . , n1 ) such that nh > . . . > n1 ≥ 0 and
+
+                                          th bnh + · · · + t1 bn1 = 0.
+
+We then deduce from (3.1) that t1 = . . . = th = 0, a contradiction. Consequently, the set
+N1 must be finite. This establishes the theorem.
+
+
+Proof of Theorem 1.2.
+     Below, the constants c1 , c2 , . . . are effectively computable and depend at most on b
+and the constants C1 , C2 , . . . are absolute and effectively computable.
+     Let q1 , . . . , qs be distinct prime numbers written in increasing order. Let j ≥ b4 be an
+integer and write
+     (3)
+   uj      = d3 b m + d2 b n + d1 ,    where d1 , d2 , d3 ∈ {0, 1, . . . , b − 1}, d1 d3 6= 0, m > n > 0.
+
+There exist non-negative integers r1 , . . . , rs and a positive integer M coprime with q1 . . . qs
+such that
+                                       (3)
+                                    uj = q1r1 · · · qsrs M.
+Assume first that m ≥ 2n. Since
+
+                     Λa := |q1r1 · · · qsrs b−m (M d−1
+                                                    3 ) − 1| ≤ b
+                                                                 1+n−m
+                                                                       ≤ b−(m−2)/2 ,
+
+                                                       6
+we get the upper bound                        m    
+                                    log Λa ≤ −   − 1 log b.
+                                               2
+For the lower bound, setting
+
+                    Q := (log q1 ) · · · (log qs )    and    A := max{M, d3 , 2},
+
+and using that rj log qj ≤ (m + 1) log b for j = 1, . . . , s, Theorem 2.2 implies that
+                                                                       m
+                              log Λa ≥ −c1 C1s Q (log A) log               .
+                                                                     log A
+
+Comparing both estimates, we deduce that
+
+                                   m ≤ c2 C2s Q (log Q) (log A).                          (3.3)
+
+       Assume now that m ≤ 2n. Let p be the smallest prime divisor of b. Set
+
+                                r1       rs M       bn
+                         Λu := q1 · · · qs     − 1 = (d2 + d3 bm−n )
+                                            d1      d1
+
+and
+                       A = max{M, d1 , 2},            B = max{r1 , . . . , rs , 3}.
+Observe that
+                                                     log b   m   log b
+                                vp (Λu ) ≥ n −             ≥   −       .                  (3.4)
+                                                     log p   2   log p
+It follows from Theorem 2.3 applied with
+
+                                                     Q(log A)
+                                            δ=
+                                                        B
+that
+                                    B < 2Q log A,         if δ > 1/2,                     (3.5)
+and, otherwise,
+                                                      n  B  o
+                        vp (Λu ) < c3 C3s Q(log A) max log       ,1                       (3.6)
+                                                           log A
+Observe that
+                                          c4 m ≤ B ≤ c5 m.                                (3.7)
+We deduce from (3.5) and (3.7) that
+
+                                           m < c6 Q log A,                                (3.8)
+
+and, by combining (3.4), (3.6), and (3.7), we get
+
+                                   m ≤ c7 C4s Q (log Q) (log A).                          (3.9)
+
+                                                      7
+       Observe that A ≤ max{M, b}. It then follows from (3.3), (3.8), and (3.9) that if
+                                     m > c8 C5s Q (log Q) (log b),
+                                                       (3)
+then A = M and, using that m log b ≤ log uj , we conclude that
+                                             (3)             s      −1
+                                     M ≥ (uj )(c9 C5 Q (log Q)) ,
+thus
+                                        (3)
+                                (3)    uj       (3)       s           −1
+                              [uj ]S =      ≤ (uj )1−(c9 C5 Q (log Q)) .
+                                          M
+        In the particular case where M = 1 and q1 , . . . , qs are the first s prime numbers
+p1 , . . . , ps , written in increasing order, the above proof shows that
+                                                Ys
+                                             s
+                                                          
+                                   m ≤ c10 C6       log pk (log log ps ).              (3.10)
+                                                 k=1
+
+Let ε be a positive real number. We deduce from (3.10), the Prime Number Theorem, and
+                    (3)
+the inequality log uj < (m + 1) log b that
+                                                 s
+                          (3)
+                                                 X                                     log log ps
+                 log log uj     ≤ c11 + C7 s +         log log pk ≤ (1 + ε)ps                     ,
+                                                                                         log ps
+                                                 k=1
+
+if j is sufficiently large in terms of ε. This establishes (1.1) and completes the proof of
+Theorem 1.2.
+
+
+                                      4. Additional remarks
+
+     In this section, we present additional results, discuss related problems, and make some
+suggestions for further research.
+     Arguing as Stewart did in [21], we can apply the arithmetic-geometric mean inequality
+                                                                              (3)
+in the course of the proof of Theorem 1.2 to derive a lower bound for Q[uj ], where Q[n]
+denotes the greatest square-free divisor of a positive integer n.
+Theorem 4.1. Let b ≥ 2 be an integer. There exist effectively computable positive
+numbers c1 , c2 , depending only on b, such that
+                                                                     (3)
+                   (3)
+                                 
+                                              (3)       log log log uj         
+                Q[uj ] > exp      c1 log log uj                          (3)
+                                                                                   ,   for j > c2 .
+                                                    log log log log uj
+     It is not difficult to make Theorem 1.2 completely explicit. Even in the special case
+where the cardinality of the set S is small, the bounds obtained are rather large, since
+estimates for linear forms in three or more logarithms are needed. Thus, it is presumably
+not straightforward to solve completely an equation like
+            2a + 2b + 1 = 3x 5y ,    in non-negative integers a, b, x, y with a > b > 0.
+     Presumably, other techniques, based on the hypergeometric method, could yield ef-
+fective improvements of Theorem 1.2 in some special cases.
+
+                                                       8
+Problem 4.2. Take S = {3, 5}. Prove that there exists an effectively computable integer
+m0 such that, for any integers m, n with m > m0 and m > n > 0, we have
+
+                                   [2m + 2n + 1]S ≤ 23m/4 .                             (4.1)
+
+     No importance should be attached to the value 3/4 in (4.1). Similar questions have
+been successfully addressed in [5, 6].
+     Perfect powers with few nonzero digits in some given integer base have been studied
+in [10, 12, 1, 3, 4, 2]; see also the references given therein. We briefly discuss a related
+problem. Let a, b be integers such that a > b > 1. Perfect powers in the bi-infinite sequence
+(am + bn + 1)m,n≥1 have been considered by Corvaja and Zannier [11] and also in [3, 4].
+All the general results obtained so far have been established under the assumption that a
+and b are not coprime. To remove this coprimeness assumption seems to be a very difficult
+problem.
+     We note that the methods of the proof of Theorem 1.2 allows us to establish the
+following result.
+Theorem 4.3. Let a, b be distinct integers with gcd(a, b) ≥ 2. Let v = (vj )j≥1 denote the
+increasing sequence composed of all the integers of the form am + bn + 1, with m, n ≥ 1.
+Then, for every positive ε, we have
+
+                                                          log log log vj
+                         P [vj ] > (1 − ε) log log vj                      ,
+                                                        log log log log vj
+
+when j exceeds some effectively computable constant depending only on a and b.
+    We point out the following problem, which is probably rather difficult.
+Problem 4.4. Give an effective lower bound for the greatest prime factor of 2m + 3n + 1
+in terms of max{m, n}.
+
+
+                                         References
+
+
+  [1] M. A. Bennett, Perfect powers with few ternary digits, Integers 12A (Selfridge Memo-
+      rial Volume), 8pp., 2012.
+  [2] M. A. Bennett and Y. Bugeaud, Perfect powers with three digits, Mathematika 60
+      (2014), 66–84.
+  [3] M. A. Bennett, Y. Bugeaud and M. Mignotte, Perfect powers with few binary digits
+      and related Diophantine problems, II, Math. Proc. Cambridge Philos. Soc. 153
+      (2012), 525–540.
+  [4] M. A. Bennett, Y. Bugeaud and M. Mignotte, Perfect powers with few binary digits
+      and related Diophantine problems, Ann. Sc. Norm. Super. Pisa Cl. Sci. 12 (2013),
+      525–540.
+
+                                                9
+ [5] M. A. Bennett, M. Filaseta, and O. Trifonov, Yet another generalization of the
+     Ramanujan-Nagell equation, Acta Arith. 134 (2008), 211–217.
+ [6] M. A. Bennett, M. Filaseta, and O. Trifonov, On the factorization of consecutive
+     integers, J. Reine Angew. Math. 629 (2009), 171–200.
+ [7] J. Bourgain, Prescribing the binary digits of primes, II, Israel J. Math. 206 (2015),
+     165–182.
+ [8] Y. Bugeaud and J.-H. Evertse, On the S-part of integer recurrent sequences. In
+     preparation.
+ [9] Y. Bugeaud, J.-H. Evertse, and K. Győry, On S-parts of decomposable forms at
+     integral points. In preparation.
+[10] P. Corvaja and U. Zannier, On the Diophantine equation f (am , y) = bn , Acta Arith.
+     94 (2000), 25–40.
+[11] P. Corvaja and U. Zannier, S-unit points on analytic hypersurfaces, Ann. Sci. École
+     Norm. Sup. 38 (2005), 76–92.
+[12] P. Corvaja and U. Zannier, Finiteness of odd perfect powers with four nonzero binary
+     digits, Ann. Inst. Fourier (Grenoble) 63 (2013), 715–731.
+[13] S. S. Gross and A. F. Vincent, On the factorization of f (n) for f (x) in Z[x], Int. J.
+     Number Theory 9 (2013), 1225–1236.
+[14] K. Győry and K. Yu, Bounds for the solutions of S-unit equations and decomposable
+     form equations, Acta Arith. 123 (2006), 9–41.
+[15] E. M. Matveev, An explicit lower bound for a homogeneous rational linear form
+     in logarithms of algebraic numbers. II, Izv. Ross. Acad. Nauk Ser. Mat. 64 (2000),
+     125–180 (in Russian); English translation in Izv. Math. 64 (2000), 1217–1269.
+[16] Ch. Mauduit and J. Rivat, Sur un problème de Gelfond : la somme des chiffres des
+     nombres premiers, Ann. of Math. 171 (2010), 1591–1646.
+[17] J. Maynard, Primes with restricted digits. Preprint. Available at:
+     http://arxiv.org/pdf/1604.01041v1.pdf
+[18] W. M. Schmidt, Simultaneous approximations to algebraic numbers by rationals, Acta
+     Math. 125 (1970), 189–201.
+[19] W. M. Schmidt, Norm form equations, Ann. of Math. 96 (1972), 526–551.
+[20] W. M. Schmidt, Diophantine Approximation, Lecture Notes in Math. 785, Springer,
+     Berlin, 1980.
+[21] C. L. Stewart, On the greatest square-free factor of terms of a linear recurrence
+     sequence. In: Diophantine equations, 257–264, Tata Inst. Fund. Res. Stud. Math.,
+     20, Tata Inst. Fund. Res., Mumbai, 2008.
+
+                                            10
+ [22] C. L. Stewart, On prime factors of terms of linear recurrence sequences. In: Number
+      theory and related fields, 341–359, Springer Proc. Math. Stat., 43, Springer, New
+      York, 2013.
+ [23] K. Yu, p-adic logarithmic forms and group varieties. III, Forum Math. 19 (2007),187–
+      280.
+
+
+
+Yann Bugeaud
+Institut de Recherche Mathématique Avancée, U.M.R. 7501
+Université de Strasbourg et C.N.R.S.
+7, rue René Descartes
+67084 STRASBOURG (France)
+e-mail : bugeaud@math.unistra.fr
+
+
+
+
+                                           11
+
