@@ -1,0 +1,7 @@
+lattice: 20 primes, index 280999509749509611991995562563818636457519792000000000000
+REPFILE y=2324522934 a=1 b=19 c=0 k=15 nu=6 log10 U''=400.0000
+rep0: wrap=0 words=2 (notappl=0 taubad=0) T=7 units=12 space=2.188e+05 |G|=1 shadow=1 compat(word,child)=2 notshadow_compat=0 passchain=1 windows=1 alive=1 wordsalive=1 notshadow_alive=0 win_budget=0
+min nn=273829533009606920718655454284870720579252805231837254700883... (606 digits)
+VERDICT open bound 10^(10^302.25 log10 U''=400.0000 [0s]
+
+0 of 1 representations closed [0s]

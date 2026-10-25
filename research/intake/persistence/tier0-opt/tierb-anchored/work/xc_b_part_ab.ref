@@ -1,0 +1,5 @@
+reduced 0
+('wrap0', 'C=0', 'exact=0') 1546
+('wrap0', 'C=1', 'exact=1') 1
+('wrap>=1', 'C=0', 'exact=0') 1553
+total 3100 mismatches 0 identity_fail 0 sec 4722

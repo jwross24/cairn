@@ -1,0 +1,6 @@
+lattice: 20 primes, index 280999509749509611991995562563818636457519792000000000000
+REPFILE y=12208015311282 a=1 b=2 c=14 k=15 nu=3 log10 U''=400.0000
+rep0: wrap=0 words=16 (notappl=0 taubad=0) T=7 units=14 space=5.493e+10 |G|=1 shadow=1 compat(word,child)=16 notshadow_compat=0 passchain=0 windows=0 alive=0 wordsalive=0 notshadow_alive=0 win_budget=0
+VERDICT CLOSED-cut log10 U''=400.0000 [0s]
+
+1 of 1 representations closed [0s]

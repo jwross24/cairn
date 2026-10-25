@@ -1,0 +1,7 @@
+lattice: 20 primes, index 280999509749509611991995562563818636457519792000000000000
+REPFILE y=290667031221 a=0 b=1 c=13 k=15 nu=6 log10 U''=120.6552
+rep0: wrap=0 words=24 (notappl=0 taubad=0) T=7 units=14 space=4.272e+10 |G|=1 shadow=1 compat(word,child)=24 notshadow_compat=0 passchain=12 windows=12 alive=12 wordsalive=12 notshadow_alive=0 win_budget=0
+min nn=692810383969525688195040843742491230806192702535261130209916... (605 digits)
+VERDICT CLOSED-sandwich bound 10^(10^301.95 log10 U''=120.6552 [0s]
+
+1 of 1 representations closed [0s]
