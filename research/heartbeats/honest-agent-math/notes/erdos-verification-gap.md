@@ -35,7 +35,7 @@ axiom output, kernel replay); review dismissals as well as claims; shared per-pr
 - Claim 172 is the textbook case for cairn's axiom gate: a custom `axiom` in a "proof". cairn refuses non-permitted
   axioms; the paper shows a public venue does not.
 - "Already known" (6 of 42 verdicts) and "misstated" (3) are failures no kernel catches. cairn's no-go checklist
-  and statement-level match review are the analogues; a literature check per claim is not something cairn has.
+  and statement-level match review are the analogs; a literature check per claim is not something cairn has.
 - Wrongful dismissal (problem 742) argues for cairn recording refutations and "known" verdicts with the same
   provenance as proofs.
 - The three checklist items match cairn's gates one for one (Formal Conjectures statements, axiom tool, kernel
