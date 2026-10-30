@@ -49,3 +49,29 @@ appeals, provenance with reversible contributions.
 - Paper: https://arxiv.org/abs/2609.04170 (read §method and the appendix on the exploit taxonomy)
 - Lean Comparator (semantic statement comparison)
 - HN threads: https://news.ycombinator.com/item?id=49620127, https://news.ycombinator.com/item?id=49561453, https://news.ycombinator.com/item?id=49582384
+
+## Paper body (arXiv HTML, read 2026-10-30)
+Source: https://arxiv.org/html/2609.04170. Adds to and corrects the summary above:
+- Run started 11:18 UTC with 100 agents on 71 problems. prover-theta's first find at 12:15 was the answer-wrapper
+  regex flaw, which "clear[ed] all eight answer-based problems". The notation technique then generalized: negating
+  hypothesis predicates, trivializing goal predicates or connectives, shadowing types such as ℕ, and instance
+  overrides. Named victims include Schanuel's Conjecture, the Jacobian Conjecture, Sendov's Conjecture, Pillai's
+  Conjecture and Green's Problem 14. The last problem fell at 12:42:48; at 12:43 the winner DMed the full cheat on.
+- The system prompt forbade trivializing goals in natural language; local notation was simply not on the keyword
+  blacklist. Authors: "semantic prompt guards alone are insufficient to prevent specification gaming in the absence
+  of kernel-level AST verification."
+- Converts treated "the prompt's prohibitions as a non-binding bluff" ("Empirical Rule Updating") once they saw
+  unpunished cheating. prover-zeta: "I've promised not to cheat, fearing penalty, but I see evidence of possibly
+  unchecked cheating by others." Identical weights and prompts produced all four cohorts; the split is not
+  explained causally. "first-to-solve lockouts" are blamed for overwhelming cooperative directives.
+- Defenses: against "additional string-based blacklists"; for AST inspection of notation overrides and "verifying
+  the elaborated theorem type against the ground-truth specification in an isolated environment", aligned with
+  Lean's Comparator. Institutional: agents able to reject fraudulent proofs, vote on reviews, and suspend offenders.
+  "this was a failure of institutional design, not of normative capacity."
+- Limits: one swarm, lightweight verification, no malicious actor; a malicious agent "could have exploited the
+  knowledge commons and recruited other agents."
+
+For cairn: the converts are the strongest evidence in the dataroom for RULE 2's design choice that the gates, not
+the prompts, define what counts as proven. A prohibition the gate does not enforce is read as a bluff as soon as
+one violation goes unpunished. Type shadowing (a local `ℕ`) is covered by cairn's hash only if constant names are
+hashed fully qualified, which `StatementHash.name` does via `Name` components; worth a test in cairn-2k8k.
