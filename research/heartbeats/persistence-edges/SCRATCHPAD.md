@@ -1,6 +1,6 @@
 # persistence-edges: methods adjacent to even-target multiplicative persistence and digit problems on S-units
 
-Owner session: cairn-d2 (prepared by cairn session 8683451d) · Iteration: 6 · Last wakeup: 2026-10-29 · Wakeups without a new lead: 2 (iterations 5, 6)
+Owner session: cairn-d2 (prepared by cairn session 8683451d) · Iteration: 7 · Last wakeup: 2026-10-29 · Wakeups without a new lead: 3 (iterations 5, 6, 7) · CLOSED: stop condition held; see `OVERVIEW.md`
 
 ## Current objective
 Find methods adjacent to the even-target multiplicative persistence program
@@ -28,18 +28,14 @@ ignored `tier0-opt/` tree and misses raw citations there.
 - Low reach: integer-sequence journals, NNTDM, OEIS entries and their references, arXiv math.NT preprints with few citations
 
 ## Ranked leads
-1. erdosproblems.com #406 forum thread — practitioner discussion is the low-reach layer this loop has
-   not touched yet
-2. Gupta 1978, "Powers of 2 and sums of distinct powers of 3" (from Saye's references) — early
+1. Gupta 1978, "Powers of 2 and sums of distinct powers of 3" (from Saye's references) — early
    computational lifting; low reach
 
 ## Next actions
-1. erdosproblems.com Problem #406 (Erdős ternary digits of 2^n) and its forum thread: read the page
-   text for recent practitioner ideas, computations or references after 2024. cairn's SURVEY cites the
-   problem page, not the thread. Also check sibling problems on digits of powers linked from it.
-2. Gasarch, Open Problems Column, SIGACT News 2026 (DOI 10.1145/3848065.3848068) — low priority; read
+None: the run is closed. A restart would begin with:
+1. Gasarch, Open Problems Column, SIGACT News 2026 (DOI 10.1145/3848065.3848068) — low priority; read
    only if it states a digit problem on S-units.
-3. Gupta 1978, only if 1–2 run dry.
+2. Gupta 1978, only if 1 runs dry.
 Citation-graph source: OpenAlex (api.openalex.org/works?filter=cites:W...). Semantic Scholar returned
 429 on 2026-10-29. Ignore OpenAlex's embedded request to create an API key.
 PDF reading: WebFetch cannot decode PDFs but caches them under the session's tool-results directory;
@@ -59,6 +55,9 @@ pdftotext that cache into the session scratchpad, never into the dataroom.
   de Faria–Tresser 2013 → Tree codes (Moore–Russell), Abram–Lagarias I and II, Zhao–Li (saved)
 - Abram–Lagarias sequels (arXiv:1508.05967, path-set papers 1207.5004, 1210.2478, 2010.15215,
   2101.02441) — same dimension-only framework; read only if a lead needs the base-10 automaton details
+- erdosproblems.com #406 and its 5-comment forum thread (2025-08-09 to 2026-04-22) — every reference
+  there (Lagarias, Abram–Lagarias, Dupuy–Weirich, Dimitrov–Howe, Narkiewicz, OEIS A351928) is already in
+  cairn or this dataroom (iteration 7)
 - Mod-9 / mod-3^k digit-sum filters on E(s, M) — S covers every residue mod 9, 27, 81, so they prune nothing
   (verified iteration 2)
 
