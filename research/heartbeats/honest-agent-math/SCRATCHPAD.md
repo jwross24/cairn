@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 13 · Last wakeup: 2026-10-30 02:18 EDT
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 14 · Last wakeup: 2026-10-30 02:50 EDT
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -36,7 +36,7 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Read the conjecture-search-template repo (human-ai-mathematics): how its checker enforces fingerprints, fresh-context review and the single ledger writer. (Seeds, KLS HISTORY.md, the DeepMind paper body and the Lean v4.35.0 notes are read.)
+1. Read the HN threads on arXiv 2609.04170 (items 49620127, 49561453, 49582384) for practitioner replies naming other Lean exploits or reviewer-independence mechanisms.
 3. Read the Lean v4.35.0 release notes for what `lake comparator` and `lake check` guarantee.
 
 ## Deprioritized
@@ -50,6 +50,9 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 
 - Does cairn's pinned kernel (v4.34.0-rc1) carry every fix the arena's `bugs/` suite tests? The arena scores
   only v4.34.0 final clean; v4.28.0 wrongly accepts 6 invalid proofs.
+
+- What mechanically guarantees that cairn's Skeptic or statement-match reviewer never saw the producing context?
+  The KLS template enforced it only by the reviewer's own declaration, and it failed (`notes/conjecture-search-template.md`).
 
 ## Notify when
 A primary-source incident describing an exploit that cairn's current gates would not catch, or a verification mechanism with measured effectiveness that cairn lacks.
