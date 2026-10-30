@@ -35,3 +35,20 @@ invalid tests, with five passing every test.
 - https://github.com/leanprover/lean-kernel-arena: test sources for `bugs/`, and which bug each one encodes
 - The `bugs/` entry, if any, that encodes Kumar's July double-kernel exploit
 - https://roclocality.org/2026/05/01/university-of-rochester-takes-lean-kernel-arena-top-spot/ (a nanoda cache port)
+
+## Which bugs, and cairn's pin (read 2026-10-29)
+- Arena page https://arena.lean-lang.org/round/2026-09/checker/official-v4.28.0/ lists what v4.28.0 wrongly
+  accepts: `nested-unused-param`, `proj-of-imax-prop`, `proj-of-stuck-prop`, `proj-of-subst-prop`,
+  `rec-missing-ih`, `rec-of-subst-prop` (all proofs of `False`); it crashes on `constlevels`
+  (lean4 issue 10577, memory corruption in `lazy_delta_reduction_step`).
+- No arena test names Kumar or Collatz; the July exploit cannot be tied to a specific test from the repo text.
+- Release dates (GitHub releases): `v4.34.0-rc1` 2026-08-10, `v4.34.0` 2026-09-14.
+- `gh api repos/leanprover/lean4/compare/v4.34.0-rc1...v4.34.0` lists these kernel fixes, all after rc1:
+  #14582 check uniformity of occurrences of the datatypes being declared; #14806 make kernel `is_def_eq`
+  caching order-independent; #14807 make the kernel `is_prop` check require a sort; #14808 type-check
+  generated recursors in the kernel; #14847 test for the `is_prop` bug; #14849 bound the size of `Nat`
+  numerals computed by the kernel.
+- Inferred, not verified: these fixes correspond to the arena families v4.28.0 fails (`rec-missing-ih` reads
+  like #14808; `nested-unused-param` like #14582; the `*-subst-prop` / `*-stuck-prop` family like
+  #14806/#14807). If so, cairn's pinned kernel accepts some arena proofs of `False`. Settling it needs one run:
+  the rc1 checker against the arena's `tests/bugs/` exports.
