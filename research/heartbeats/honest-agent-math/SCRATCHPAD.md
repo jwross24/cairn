@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 8 · Last wakeup: 2026-10-29 23:40 EDT
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 9 · Last wakeup: 2026-10-30 00:12 EDT
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -36,7 +36,7 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Read the cfky.dev "three days of agent-driven mathematics" write-up and follow its outbound links.
+1. Read chenyang.co/blog/math-research.html and follow its outbound links.
 2. Read KLS HISTORY.md for how the 34 unwritten proofs were found and how long each stood.
 3. Read the Lean v4.35.0 release notes for what `lake comparator` and `lake check` guarantee.
 
