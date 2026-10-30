@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 23 · Last wakeup: 2026-10-30 07:35 EDT · Sources saved: 20
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 24 · Last wakeup: 2026-10-30 08:07 EDT · Sources saved: 20
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -36,8 +36,7 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Read the three post-pin nanoda commits (`check proj ty_name`, `validate restored recursor`, `harden Quot and unique temp name checks`) and any arena tests they added: does a post-2026-09-22 arena `bugs/` test fail on cairn's pinned nanoda?
-2. Estimate the misformalization rate per statement in Formal Conjectures: count statements in the tree against distinct files touched by `misformalization` PRs.
+1. Estimate the misformalization rate per statement in Formal Conjectures: count statements in the tree against distinct files touched by `misformalization` PRs.
 
 ## Deprioritized
 - HN threads 49620127, 49561453, 49582384 on the DeepMind paper — zero comments each (2026-10-30)

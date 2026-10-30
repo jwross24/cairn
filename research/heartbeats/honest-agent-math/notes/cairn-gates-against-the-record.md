@@ -43,3 +43,23 @@ config at `src/cairn/solutionbuild.py:292`. So a proof must pass the pinned offi
 2. No literature or novelty check; "already known" is the costliest verdict in the Erdős census.
 3. Citations pass through no gate.
 4. A two-kernel gate is the configuration Kumar beat; v4.35.0's `--paranoid` runs five (cairn-2k8k).
+
+## The post-pin nanoda holes (read 2026-10-30)
+Three arena `bugs/` tests added after cairn's nanoda pin (2026-09-22) are axiom-free proofs of `False` that nanoda
+accepted until fixed:
+- `nested-rec-rule-nfields` (added 2026-10-23): a recursor rule of a nested inductive lies about its field count;
+  "Nanoda validated the rules of non-nested inductives, but not of nested ones, until it was fixed" (nanoda_lib#60).
+- `forged-quot-ind` (2026-10-27): a hand-written export declares `Quot.ind` before `Quot` and `Quot.mk`. "The official
+  kernel installs the quotient declarations together and rejects the file."
+- `nested-name-capture` (2026-10-27): a later definition takes the name of a temporary `_nested.*.rec`. "The official
+  kernel rejects the file." rc1 carries #14616 (reject declarations naming `_nested` auxiliary types).
+All found by "a differential run of Pestka against other checkers": new kernels are still finding bugs in old ones.
+
+The gate is an intersection, so what decides exposure is whether a proof passes BOTH pinned kernels:
+- `forged-quot-ind` and `nested-name-capture`: the official kernel rejects them, so they should stop at rc1. Not run.
+- `nested-rec-rule-nfields`: pinned nanoda accepts (by the test's own history). Whether rc1 rejects it is not
+  established, and rc1 lacks #14808, which type-checks generated recursors. This is the one to run first.
+- In the other direction, rc1's own bugs (#14806, #14807) were each tested against nanoda only at the time of the
+  postmortem, and nanoda accepted the #14807 exploit then.
+So the intersection is untested. No claim that a proof of `False` passes cairn's gate is established, and none that it
+cannot. Only running both pinned kernels on the arena suite settles it; that is AC 1 of cairn-p76j.
