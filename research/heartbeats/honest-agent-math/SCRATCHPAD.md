@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 18 · Last wakeup: 2026-10-30 04:58 EDT · Sources saved: 17
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 19 · Last wakeup: 2026-10-30 05:30 EDT · Sources saved: 18
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -36,8 +36,8 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Read the ubmids/erdos-verification-gap dataset README and per-claim schema: which fields distinguish AI-made, verified, already-known and misstated, and whether claim 172's custom axiom is flagged.
-2. Read Paulson's "Why is it all in the kernel?" in full for the counterargument to kernel diversity.
+1. Read Paulson's "Why is it all in the kernel?" in full for the counterargument to kernel diversity.
+2. Read the Lean Formal Conjectures repo's review process: how a statement is checked before it enters the list cairn's linters come from.
 3. Read the Lean v4.35.0 release notes for what `lake comparator` and `lake check` guarantee.
 
 ## Deprioritized

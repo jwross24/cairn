@@ -46,3 +46,21 @@ axiom output, kernel replay); review dismissals as well as claims; shared per-pr
 - https://github.com/teorth/erdosproblems/wiki (Tao's AI-contributions ledger)
 - https://github.com/mehmetmars7/Erdosproblems-llm-hunter (2,112 attempts, 22 reviews)
 - arXiv 2609.25050 (FrontierMath Erdős), 2608.16753 (Tao ICM)
+
+## Downgrades across Tao's ledger (own analysis, 2026-10-30)
+Data: `data/ledger_events.json` from https://github.com/ubmids/erdos-verification-gap (1,086 parsed events across the
+wiki's edit history, frozen 2026-06-30; 174,984 bytes, not stored here). Script: a one-off over that file.
+- 727 distinct (section, problem) rows were ever added. 150 were first added green (full resolution), 33 of them
+  labeled Lean.
+- Colors changed 33 times; 16 of those are rows gaining a parsable color and carry no status change. The other 17
+  are 8 upgrades and 9 downgrades. 3 of the 150 first-green rows were downgraded from green (problem 1190 in two
+  sections, and 202), all to partial or candidate status, none to red. 0 of the 33 Lean-labeled green rows were
+  downgraded. The one move into red was ⚪ → 🔴 on 503, "Argument with major gaps made", after 6 days.
+- Downgrades came fast: 1, 5, 6, 7, 7, 7, 34, 35, 35 days after the row was added.
+- 65 green or yellow rows were removed; 58 of those problems remain elsewhere in the final ledger, so these read as
+  reclassifications between sections. 7 vanish entirely (2 green: 391, 1077; 5 yellow). Their reason is not recorded.
+Limits: 359 rows were first added with no parsable color, so the denominator is uncertain. Rows here passed a human
+curator, unlike the raw claims in the census above, so this measures survival after curation: at most 5 of 150
+(about 3%) first-green rows lost their status, against 13.8% of raw claims ever reaching verified.
+Consistent with "Verdicts arrive quickly or not at all", but a row the ledger stopped tracking after 2026-06-30 has
+no further chance of a downgrade. I have not established how many downgrades would have followed.
