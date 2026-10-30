@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 17 · Last wakeup: 2026-10-30 04:27 EDT
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 18 · Last wakeup: 2026-10-30 04:58 EDT · Sources saved: 17
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -36,7 +36,8 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Read Tao's AI-contributions ledger (github.com/teorth/erdosproblems/wiki) for how a maintainer records AI claims and corrections.
+1. Read the ubmids/erdos-verification-gap dataset README and per-claim schema: which fields distinguish AI-made, verified, already-known and misstated, and whether claim 172's custom axiom is flagged.
+2. Read Paulson's "Why is it all in the kernel?" in full for the counterargument to kernel diversity.
 3. Read the Lean v4.35.0 release notes for what `lake comparator` and `lake check` guarantee.
 
 ## Deprioritized
