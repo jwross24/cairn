@@ -1,6 +1,6 @@
 # persistence-edges: methods adjacent to even-target multiplicative persistence and digit problems on S-units
 
-Owner session: cairn-d2 (prepared by cairn session 8683451d) · Iteration: 4 · Last wakeup: 2026-10-29 · Wakeups without a new lead: 0 (iteration 4 found Abram–Lagarias)
+Owner session: cairn-d2 (prepared by cairn session 8683451d) · Iteration: 5 · Last wakeup: 2026-10-29 · Wakeups without a new lead: 1 (iteration 5 saved Abram–Lagarias but opened no lead)
 
 ## Current objective
 Find methods adjacent to the even-target multiplicative persistence program
@@ -28,21 +28,17 @@ ignored `tier0-opt/` tree and misses raw citations there.
 - Low reach: integer-sequence journals, NNTDM, OEIS entries and their references, arXiv math.NT preprints with few citations
 
 ## Ranked leads
-1. Abram & Lagarias (2014), intersections of multiplicative translates of 3-adic Cantor sets (cited by
-   Idowu; absent from cairn) — the published framework closest to "S-units whose digits all lie in a
-   restricted set", which is the even-target condition with digit set {1} ∪ M; check for a 10-adic or
-   multi-generator version and any Hausdorff-dimension bound on the exceptional set
-2. Forward citations of Bonuccelli–Colucci–de Faria (2020) and of Saye (2022) — the likeliest route to
+1. Forward citations of Bonuccelli–Colucci–de Faria (2020) and of Saye (2022) — the likeliest route to
    2020–2026 persistence or S-unit-digit work cairn lacks
-3. Gupta 1978, "Powers of 2 and sums of distinct powers of 3" (from Saye's references) — early
+2. Gupta 1978, "Powers of 2 and sums of distinct powers of 3" (from Saye's references) — early
    computational lifting; low reach
 
 ## Next actions
-1. Find and read Abram & Lagarias (2014) (arXiv abstract and HTML, or pdftotext of the cached PDF):
-   main theorems, whether the method generalizes to base 10 or to several generators, and whether any
-   bound concerns digit sets of size 2 to 3 out of 10. Note in `notes/abram-lagarias-cantor.md`.
-2. Forward citations of Bonuccelli–Colucci–de Faria (JIS 2020): Semantic Scholar title search, then
-   /citations. Saye's forward citations are done (iteration 4: Idowu, Gasarch only).
+1. Forward citations of Bonuccelli–Colucci–de Faria (JIS 2020): Semantic Scholar title search
+   (api.semanticscholar.org/graph/v1/paper/search?query=...), then /citations. Saye's forward citations
+   are done (iteration 4: Idowu, Gasarch only).
+2. Forward citations of Fonga arXiv:2608.27802 (the v2 bound cairn relies on): anyone extending its
+   digit-by-digit recursion to v3 or v7 would bear directly on the program.
 3. Gasarch, Open Problems Column, SIGACT News 2026 (DOI 10.1145/3848065.3848068) — low priority; read
    only if it states a digit problem on S-units.
 4. Gupta 1978, only if 1–3 run dry.
@@ -59,6 +55,8 @@ pdftotext that cache into the session scratchpad, never into the dataroom.
   2026-09-30) — base-4 repunit restatement of Saye's three-lifts/two-admissible recursion (credited to
   Saye), a 3-adic isometry Φ, v_3(R_s(4)) = v_3(s); computations only to n = 20; no multi-generator
   case. Its base-10 counterpart v_3(R_n) = v_3(n) is standard lifting-the-exponent (iteration 4)
+- Abram–Lagarias sequels (arXiv:1508.05967, path-set papers 1207.5004, 1210.2478, 2010.15215,
+  2101.02441) — same dimension-only framework; read only if a lead needs the base-10 automaton details
 - Mod-9 / mod-3^k digit-sum filters on E(s, M) — S covers every residue mod 9, 27, 81, so they prune nothing
   (verified iteration 2)
 
@@ -83,5 +81,6 @@ wakeup (2026-10-31), whichever comes first.
 ## Constraints
 Disk is a hard constraint on this machine: save links and notes only, nothing over 5 MB, no PDF downloads.
 Cairn RULE 1: never delete a file in this dataroom; rewrite SCRATCHPAD.md in place.
-Commits: never bypass the doctor gate. If `br doctor` hangs, iCloud has likely evicted a file under
+Git: run status checks as `git --no-optional-locks status`; a plain status takes `.git/index.lock` and
+leaves it behind if killed (cairn-ae, 2026-10-29). Commits: never bypass the doctor gate. If `br doctor` hangs, iCloud has likely evicted a file under
 `.beads/` (cairn-ae's diagnosis, 2026-10-29); report it rather than working around it.
