@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 6 · Last wakeup: 2026-10-29 22:50 EDT
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 7 · Last wakeup: 2026-10-29 23:10 EDT
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -36,7 +36,7 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Read the subomi.net census of 224 open-problem claims: base rates for claimed vs confirmed vs accepted, and how confirmation was done.
+1. Read the metafunctor post on AI over 1,000 Erdős problems: how adversarial agents caught false conjectures, with numbers.
 2. Read KLS HISTORY.md for how the 34 unwritten proofs were found and how long each stood.
 3. Read the Lean v4.35.0 release notes for what `lake comparator` and `lake check` guarantee.
 
