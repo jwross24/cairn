@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 12 · Last wakeup: 2026-10-30 01:45 EDT
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 13 · Last wakeup: 2026-10-30 02:18 EDT
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -36,7 +36,7 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Read the Lean v4.35.0 release notes: what `lake comparator` / `lake check` guarantee, and whether the release ships multiple kernels by default. (Seeds, KLS HISTORY.md and the DeepMind paper body are read.)
+1. Read the conjecture-search-template repo (human-ai-mathematics): how its checker enforces fingerprints, fresh-context review and the single ledger writer. (Seeds, KLS HISTORY.md, the DeepMind paper body and the Lean v4.35.0 notes are read.)
 3. Read the Lean v4.35.0 release notes for what `lake comparator` and `lake check` guarantee.
 
 ## Deprioritized
