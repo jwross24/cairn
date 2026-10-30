@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 16 · Last wakeup: 2026-10-30 03:55 EDT
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 17 · Last wakeup: 2026-10-30 04:27 EDT
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -36,8 +36,7 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Read the Lean Zulip thread on #14576 (202 messages) for practitioner proposals beyond kernel diversity.
-2. Read Tao's AI-contributions ledger (github.com/teorth/erdosproblems/wiki) for how a maintainer records AI claims and corrections.
+1. Read Tao's AI-contributions ledger (github.com/teorth/erdosproblems/wiki) for how a maintainer records AI claims and corrections.
 3. Read the Lean v4.35.0 release notes for what `lake comparator` and `lake check` guarantee.
 
 ## Deprioritized

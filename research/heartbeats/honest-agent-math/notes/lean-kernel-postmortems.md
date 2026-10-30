@@ -69,3 +69,21 @@ For cairn: v4.33.1 (2026-08-21) carries every fix; v4.34.0-rc1 (2026-08-10) does
 number. cairn's container (`bundle/Containerfile`) installs the official Linux aarch64 rc1 release, and #14833 is
 in the rc1→v4.34.0 diff, so the GMP 6.1.2 exploit plausibly reaches cairn's gold-arm checker. Not verified: which
 GMP the rc1 Linux release statically links.
+
+## The community discussion (read 2026-10-30, via search extracts; the Zulip thread itself not read)
+- de Moura, first postmortem, on proposals to restrict metaprogramming: "This is misguided. The elaborator is
+  untrusted by design. Soundness cannot depend on an untrusted component refusing to build a bad term. An attacker
+  who wants to submit a malicious proof can also write `.olean` files directly or modify memory, both of which bypass
+  the elaborator entirely. The kernel has to reject ill-typed declarations on its own, in its own process."
+- Elliot Glazer on X, 2026-07-29: the kernel was fixed "though it appears Comparator itself is still vulnerable" at
+  that point; de Moura, quoted there: "This is going to keep happening. AIs are really good at exploiting soundness
+  bugs in the kernels."
+- Martin Dvořák listed 24 stable Lean releases, 4.22.0 through 4.32.1, that reproduce the bug (per the
+  Lozano-Robledo video summary at https://postcutoff.com/v/lozano-robledo-collatz-false-for-2-5-days-july/).
+- Lobsters (https://lobste.rs/s/ojcl8j/postmortem_for_lean_kernel_soundness_bug): a commenter reports Kumar said
+  he was aware of the bug before the Collatz work and declined to answer whether the proof was built to target it
+  (citing Zulip message 613480821). Unverified secondhand; it bears on whether the artifact was adversarial by intent.
+
+For cairn: cairn's vendored Formal Conjectures linters run on source text, so per de Moura they are a prefilter,
+never a soundness gate; a candidate can bypass the elaborator by writing `.olean` files. That matches cairn's gold
+arm, which replays the kernel on the export rather than trusting the build (commit fb91dcc5, cairn-nndn).
