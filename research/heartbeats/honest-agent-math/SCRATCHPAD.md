@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 22 · Last wakeup: 2026-10-30 07:05 EDT · Sources saved: 20
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 23 · Last wakeup: 2026-10-30 07:35 EDT · Sources saved: 20
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -36,7 +36,7 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Check cairn itself: how the Skeptic and statement-match reviewers are isolated from the producing context (`bundle/role_templates.json`, `bundle/worker_roles.json`, and the code that launches them), so the dataroom's main open question gets a file and line.
+1. Read the three post-pin nanoda commits (`check proj ty_name`, `validate restored recursor`, `harden Quot and unique temp name checks`) and any arena tests they added: does a post-2026-09-22 arena `bugs/` test fail on cairn's pinned nanoda?
 2. Estimate the misformalization rate per statement in Formal Conjectures: count statements in the tree against distinct files touched by `misformalization` PRs.
 
 ## Deprioritized
@@ -52,8 +52,8 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 - Does cairn's pinned kernel (v4.34.0-rc1) carry every fix the arena's `bugs/` suite tests? The arena scores
   only v4.34.0 final clean; v4.28.0 wrongly accepts 6 invalid proofs.
 
-- What mechanically guarantees that cairn's Skeptic or statement-match reviewer never saw the producing context?
-  The KLS template enforced it only by the reviewer's own declaration, and it failed (`notes/conjecture-search-template.md`).
+- (Answered 2026-10-30) cairn's Skeptic is isolated by construction and its statement review is a human-only typed
+  node bound to the statement hash: `notes/cairn-gates-against-the-record.md`.
 
 ## Notify when
 A primary-source incident describing an exploit that cairn's current gates would not catch, or a verification mechanism with measured effectiveness that cairn lacks.
