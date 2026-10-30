@@ -87,3 +87,17 @@ GMP the rc1 Linux release statically links.
 For cairn: cairn's vendored Formal Conjectures linters run on source text, so per de Moura they are a prefilter,
 never a soundness gate; a candidate can bypass the elaborator by writing `.olean` files. That matches cairn's gold
 arm, which replays the kernel on the export rather than trusting the build (commit fb91dcc5, cairn-nndn).
+
+## Paulson's dissent, and how it aged (full post read 2026-10-30)
+Paulson's position, 2026-07-30: the root problem is features in the kernel. LCF-style systems keep inference rules
+behind an abstract type and build inductive types and recursion from primitives by "honest toil", so "proof objects
+are unnecessary" and "The opposite is clearly true" of the claim that they aid soundness. "I am not aware of a single
+instance where an independent proof checker detected a soundness error" past a kernel. "If soundness is your main
+concern, you should go for HOL Light or HOL4." He makes no concession for independent checkers.
+
+The later record contradicts the empirical claim: de Moura's 2026-08-24 postmortem lists bogus proofs accepted by the
+official kernel and rejected by nanoda (#14613, #14616, #14806) and by every non-Lean-runtime checker (#14838,
+#14833). His structural point stands: the bugs cluster in kernel features (nested inductives, `is_prop`, recursors).
+This is the dataroom's main live disagreement: diversity of checkers (Lean FRO) against minimality of the kernel
+(Paulson). For cairn, which is committed to Lean, only the first is available; the second argues for keeping
+cairn's own statement and axiom tooling out of the trusted path.

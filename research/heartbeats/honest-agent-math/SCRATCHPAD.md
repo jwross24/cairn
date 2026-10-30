@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 19 · Last wakeup: 2026-10-30 05:30 EDT · Sources saved: 18
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 20 · Last wakeup: 2026-10-30 06:00 EDT · Sources saved: 18
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -36,8 +36,7 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Read Paulson's "Why is it all in the kernel?" in full for the counterargument to kernel diversity.
-2. Read the Lean Formal Conjectures repo's review process: how a statement is checked before it enters the list cairn's linters come from.
+1. Read the Lean Formal Conjectures repo's review process: how a statement is checked before it enters the list cairn's linters come from.
 3. Read the Lean v4.35.0 release notes for what `lake comparator` and `lake check` guarantee.
 
 ## Deprioritized
