@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 14 · Last wakeup: 2026-10-30 02:50 EDT
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 15 · Last wakeup: 2026-10-30 03:22 EDT
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -36,10 +36,12 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Read the HN threads on arXiv 2609.04170 (items 49620127, 49561453, 49582384) for practitioner replies naming other Lean exploits or reviewer-independence mechanisms.
+1. Read the full 2026-08-24 bug-hunt postmortem (only search extracts read): every PR, which kernels caught each, and what the OpenAI model's method was.
+2. Read the Lean Zulip thread on #14576 (202 messages) for practitioner proposals beyond kernel diversity.
 3. Read the Lean v4.35.0 release notes for what `lake comparator` and `lake check` guarantee.
 
 ## Deprioritized
+- HN threads 49620127, 49561453, 49582384 on the DeepMind paper — zero comments each (2026-10-30)
 - (none yet)
 
 ## Open questions
