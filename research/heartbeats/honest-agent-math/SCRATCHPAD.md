@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 20 · Last wakeup: 2026-10-30 06:00 EDT · Sources saved: 18
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 21 · Last wakeup: 2026-10-30 06:35 EDT · Sources saved: 20
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -36,8 +36,8 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Read the Lean Formal Conjectures repo's review process: how a statement is checked before it enters the list cairn's linters come from.
-3. Read the Lean v4.35.0 release notes for what `lake comparator` and `lake check` guarantee.
+1. Read Palomar's `prompts/03-definition-fidelity.md` and `prompts/materiality.md`, and PalomarReviewer's handling of hostile submissions (prompt-injection defenses in review).
+2. Estimate the misformalization rate per statement in Formal Conjectures: count statements in the tree against distinct files touched by `misformalization` PRs.
 
 ## Deprioritized
 - HN threads 49620127, 49561453, 49582384 on the DeepMind paper — zero comments each (2026-10-30)
