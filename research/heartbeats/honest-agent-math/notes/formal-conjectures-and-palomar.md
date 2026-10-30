@@ -67,6 +67,14 @@ Formal Conjectures requires a Palomar entry for formal proofs of research proble
 
 For cairn: this answers the open question from the KLS record by example. KLS enforced reviewer independence by the
 reviewer's own declaration and it failed; Palomar enforces it with a namespace that gives the reviewer no access to
-the producing context. Whether cairn's Skeptic runs under an equivalent mechanism is still unchecked. A literature and
+the producing context. cairn's Skeptic is isolated by construction (`notes/cairn-gates-against-the-record.md`). A literature and
 notability pass is the "already known" check cairn lacks (`notes/erdos-verification-gap.md`). The retryable treatment of
 resource exhaustion is a useful distinction: an out-of-memory verifier is an infrastructure outcome, not a refutation.
+
+## Misformalization rate, order of magnitude (2026-10-30)
+`FormalConjectures/` holds 1,713 Lean files (998 Erdős, 251 OEIS, 184 Wikipedia; tree at HEAD, not truncated). Against
+515 merged `misformalization` PRs that is about 0.30 PRs per file. This is not a per-statement error rate: a file can
+hold several statements and receive several fixes, a PR can touch several files, and the label includes minor
+corrections. Mapping PRs to files would take one API call per PR, which this loop does not spend. Among the 100 newest
+merged PR titles a keyword pass finds bounds and index issues most often (24), then missing hypotheses (10) and
+quantifier or order issues (9); titles are a weak signal and most match no keyword.

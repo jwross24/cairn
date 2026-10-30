@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 24 · Last wakeup: 2026-10-30 08:07 EDT · Sources saved: 20
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 26 · Last wakeup: 2026-10-30 09:10 EDT · Sources saved: 21 · Closed 2026-10-30; OVERVIEW.md holds the synthesis
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -36,17 +36,16 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Estimate the misformalization rate per statement in Formal Conjectures: count statements in the tree against distinct files touched by `misformalization` PRs.
+None. The loop is closed at 21 sources, below the 25 in the stop condition, because the seeds and ranked leads are read and later units refined rather than added. Open work is in beads `cairn-p76j` and `cairn-2k8k` and in the open questions of `OVERVIEW.md`.
 
 ## Deprioritized
 - HN threads 49620127, 49561453, 49582384 on the DeepMind paper — zero comments each (2026-10-30)
-- (none yet)
 
 ## Open questions
 - Which of the reported exploits would cairn's current gates (verifier subprocess, green Lean check, statement-level match review, axiom tool) catch, and which would pass?
 - Does any group fingerprint the exact statement text the way cairn's `StatementHash.lean` does?
-- Does cairn's statement match hash source text or the elaborated type? DeepMind's swarm passed a byte-identical
-  statement whose meaning a preamble `local notation` had changed (`notes/deepmind-swarm-cheating.md`).
+- (Answered 2026-10-30) cairn's statement match hashes the elaborated `Expr`, not source text, so a preamble
+  `local notation` that changes the meaning changes the hash: `lean/Cairn/StatementHash.lean`, `notes/lean-comparator.md`.
 
 - Does cairn's pinned kernel (v4.34.0-rc1) carry every fix the arena's `bugs/` suite tests? The arena scores
   only v4.34.0 final clean; v4.28.0 wrongly accepts 6 invalid proofs.
