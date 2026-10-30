@@ -1,6 +1,6 @@
 # persistence-edges: methods adjacent to even-target multiplicative persistence and digit problems on S-units
 
-Owner session: cairn-d2 (prepared by cairn session 8683451d) · Iteration: 5 · Last wakeup: 2026-10-29 · Wakeups without a new lead: 1 (iteration 5 saved Abram–Lagarias but opened no lead)
+Owner session: cairn-d2 (prepared by cairn session 8683451d) · Iteration: 6 · Last wakeup: 2026-10-29 · Wakeups without a new lead: 2 (iterations 5, 6)
 
 ## Current objective
 Find methods adjacent to the even-target multiplicative persistence program
@@ -28,20 +28,20 @@ ignored `tier0-opt/` tree and misses raw citations there.
 - Low reach: integer-sequence journals, NNTDM, OEIS entries and their references, arXiv math.NT preprints with few citations
 
 ## Ranked leads
-1. Forward citations of Bonuccelli–Colucci–de Faria (2020) and of Saye (2022) — the likeliest route to
-   2020–2026 persistence or S-unit-digit work cairn lacks
+1. erdosproblems.com #406 forum thread — practitioner discussion is the low-reach layer this loop has
+   not touched yet
 2. Gupta 1978, "Powers of 2 and sums of distinct powers of 3" (from Saye's references) — early
    computational lifting; low reach
 
 ## Next actions
-1. Forward citations of Bonuccelli–Colucci–de Faria (JIS 2020): Semantic Scholar title search
-   (api.semanticscholar.org/graph/v1/paper/search?query=...), then /citations. Saye's forward citations
-   are done (iteration 4: Idowu, Gasarch only).
-2. Forward citations of Fonga arXiv:2608.27802 (the v2 bound cairn relies on): anyone extending its
-   digit-by-digit recursion to v3 or v7 would bear directly on the program.
-3. Gasarch, Open Problems Column, SIGACT News 2026 (DOI 10.1145/3848065.3848068) — low priority; read
+1. erdosproblems.com Problem #406 (Erdős ternary digits of 2^n) and its forum thread: read the page
+   text for recent practitioner ideas, computations or references after 2024. cairn's SURVEY cites the
+   problem page, not the thread. Also check sibling problems on digits of powers linked from it.
+2. Gasarch, Open Problems Column, SIGACT News 2026 (DOI 10.1145/3848065.3848068) — low priority; read
    only if it states a digit problem on S-units.
-4. Gupta 1978, only if 1–3 run dry.
+3. Gupta 1978, only if 1–2 run dry.
+Citation-graph source: OpenAlex (api.openalex.org/works?filter=cites:W...). Semantic Scholar returned
+429 on 2026-10-29. Ignore OpenAlex's embedded request to create an API key.
 PDF reading: WebFetch cannot decode PDFs but caches them under the session's tool-results directory;
 pdftotext that cache into the session scratchpad, never into the dataroom.
 
@@ -55,6 +55,8 @@ pdftotext that cache into the session scratchpad, never into the dataroom.
   2026-09-30) — base-4 repunit restatement of Saye's three-lifts/two-admissible recursion (credited to
   Saye), a 3-adic isometry Φ, v_3(R_s(4)) = v_3(s); computations only to n = 20; no multi-generator
   case. Its base-10 counterpart v_3(R_n) = v_3(n) is standard lifting-the-exponent (iteration 4)
+- Forward citations, exhausted (iteration 6, OpenAlex): Colucci 2020 → Fonga only; Fonga 2608.27802 → none;
+  de Faria–Tresser 2013 → Tree codes (Moore–Russell), Abram–Lagarias I and II, Zhao–Li (saved)
 - Abram–Lagarias sequels (arXiv:1508.05967, path-set papers 1207.5004, 1210.2478, 2010.15215,
   2101.02441) — same dimension-only framework; read only if a lead needs the base-10 automaton details
 - Mod-9 / mod-3^k digit-sum filters on E(s, M) — S covers every residue mod 9, 27, 81, so they prune nothing
