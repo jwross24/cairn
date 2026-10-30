@@ -48,3 +48,24 @@ that a model is documented to have exploited into a proof of `False`.
   `--paranoid` with all bundled kernels (v4.35.0) is the configuration no documented exploit has beaten.
 - Paulson's counterpoint: he knows of no prior case where an independent checker caught a soundness error that got
   past a proof assistant's kernel, and argues for a smaller kernel instead of proof-object rechecking.
+
+## Full bug-hunt postmortem (read 2026-10-30)
+- Ran 2026-07-30 to 2026-08-20, when the AI "could not find additional issues". Daniel Selsam (OpenAI) with internal
+  models; a document explaining comparator and external checkers was in the agents' prompt, which told them "not to
+  spend time trying to corrupt memory". "None of the groups using publicly available models reported any bugs."
+- Runtime soundness, exploited to corrupt memory and prove `False`: #14838 (freeze objects on reference-count
+  overflow, Koka-style sticky counts; "rejected by `nanoda`, and any other external checker not based on the Lean
+  runtime") and #14833 (require GMP 6.3.0: Linux CI built binaries against GMP 6.1.2, which has an exploitable bug;
+  the model found it by noticing the distribution's GMP version). #14849 bounds kernel `Nat` numerals after the model
+  built a multi-gigabyte numeral hitting another GMP 6.1.2 bug.
+- Not soundness: #14607, #14608, #14609, #14615.
+- "Lean v4.33.1 (released August 21) contains fixes for all issues found in the kernel bug hunt." `lake check` from
+  v4.35.0; two lean4checker builds planned (GMP and mpn); `lean-inductive-models` (Breitner) models inductive types
+  from first principles; verified kernels "are not immune to bugs in the Lean runtime".
+- Threat model: "We consider AI-generated proofs a potential source of malicious proofs." "`lake build` does not
+  protect users from adversarial proofs."
+
+For cairn: v4.33.1 (2026-08-21) carries every fix; v4.34.0-rc1 (2026-08-10) does not, despite the higher version
+number. cairn's container (`bundle/Containerfile`) installs the official Linux aarch64 rc1 release, and #14833 is
+in the rc1→v4.34.0 diff, so the GMP 6.1.2 exploit plausibly reaches cairn's gold-arm checker. Not verified: which
+GMP the rc1 Linux release statically links.
