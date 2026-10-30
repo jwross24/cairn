@@ -1,0 +1,682 @@
+[
+ {
+  "name": "bugs__closure-level-subst",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'lower':\n(kernel) declaration type mismatch, 'lower' has type\n  Family\nbut it is expected to have type\n  Family\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'lower':\n(kernel) declaration type mismatch, 'lower' has type\n  Family\nbut it is expected to have type\n  Family\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'lower':\n(kernel) declaration type mismatch, 'lower' has type\n  Family\nbut it is expected to have type\n  Family\n"
+ },
+ {
+  "name": "bugs__constlevels",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration '_test':\n(kernel) let-declaration type mismatch 'x'\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration '_test':\n(kernel) let-declaration type mismatch 'x'\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration '_test':\n(kernel) let-declaration type mismatch 'x'\n"
+ },
+ {
+  "name": "bugs__ctor-num-fields",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration '_private.Test.0.h':\n(kernel) declaration type mismatch, '_private.Test.0.h' has type\n  @Eq _private.Test.0.S (_private.Test.0.S.mk Bool.true) (_private.Test.0.S.mk Bool.true)\nbut it is expected to",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration '_private.Test.0.h':\n(kernel) declaration type mismatch, '_private.Test.0.h' has type\n  @Eq _private.Test.0.S (_private.Test.0.S.mk Bool.true) (_private.Test.0.S.mk Bool.true)\nbut it is expected to",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration '_private.Test.0.h':\n(kernel) declaration type mismatch, '_private.Test.0.h' has type\n  Eq (S.mk\u271d Bool.true) (S.mk\u271d Bool.true)\nbut it is expected to have type\n  Eq (S.mk\u271d Bool.true) (S.mk\u271d Bool.fal"
+ },
+ {
+  "name": "bugs__eta-ctor-alias",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'etaCtorAlias':\n(kernel) declaration type mismatch, 'etaCtorAlias' has type\n  (f : BoxFn) \u2192 @Eq BoxFn f f\nbut it is expected to have type\n  (f : BoxFn) \u2192 @Eq BoxFn f Box.mk\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'etaCtorAlias':\n(kernel) declaration type mismatch, 'etaCtorAlias' has type\n  (f : BoxFn) \u2192 @Eq BoxFn f f\nbut it is expected to have type\n  (f : BoxFn) \u2192 @Eq BoxFn f Box.mk\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'etaCtorAlias':\n(kernel) declaration type mismatch, 'etaCtorAlias' has type\n  \u2200 (f : BoxFn), Eq f f\nbut it is expected to have type\n  \u2200 (f : BoxFn), Eq f Box.mk\n"
+ },
+ {
+  "name": "bugs__forged-quot-ind",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'fakeQuotFalse':\n(kernel) unknown constant 'Quot.ind'\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'fakeQuotFalse':\n(kernel) unknown constant 'Quot.ind'\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'fakeQuotFalse':\n(kernel) unknown constant 'Quot.ind'\n"
+ },
+ {
+  "name": "bugs__k-rec-conv",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'bad':\n(kernel) declaration type mismatch, 'bad' has type\n  @Eq T t1 t1\nbut it is expected to have type\n  @Eq T t1 t2\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'bad':\n(kernel) declaration type mismatch, 'bad' has type\n  @Eq T t1 t1\nbut it is expected to have type\n  @Eq T t1 t2\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'bad':\n(kernel) declaration type mismatch, 'bad' has type\n  Eq t1 t1\nbut it is expected to have type\n  Eq t1 t2\n"
+ },
+ {
+  "name": "bugs__large-elim-param",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'false_proof':\n(kernel) incorrect number of universe levels parameters for 'MyBool.rec', #1 expected, #2 provided\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'false_proof':\n(kernel) incorrect number of universe levels parameters for 'MyBool.rec', #1 expected, #2 provided\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'false_proof':\n(kernel) incorrect number of universe levels parameters for 'MyBool.rec', #1 expected, #2 provided\n"
+ },
+ {
+  "name": "bugs__large-elim-prop-bool",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'pick':\n(kernel) incorrect number of universe levels parameters for 'NewBool.rec', #0 expected, #1 provided\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'pick':\n(kernel) incorrect number of universe levels parameters for 'NewBool.rec', #0 expected, #1 provided\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'pick':\n(kernel) incorrect number of universe levels parameters for 'NewBool.rec', #0 expected, #1 provided\n"
+ },
+ {
+  "name": "bugs__level-imax-leq",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'down':\n(kernel) declaration type mismatch, 'down' has type\n  Type (imax u v) \u2192 Type (imax u v)\nbut it is expected to have type\n  Type (imax u v) \u2192 Sort (imax u v)\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'down':\n(kernel) declaration type mismatch, 'down' has type\n  Type (imax u v) \u2192 Type (imax u v)\nbut it is expected to have type\n  Type (imax u v) \u2192 Sort (imax u v)\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'down':\n(kernel) declaration type mismatch, 'down' has type\n  Type (imax u v) \u2192 Type (imax u v)\nbut it is expected to have type\n  Type (imax u v) \u2192 Sort (imax u v)\n"
+ },
+ {
+  "name": "bugs__level-imax-normalization",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'down':\n(kernel) declaration type mismatch, 'down' has type\n  Type (imax 0 v) \u2192 Type (imax 0 v)\nbut it is expected to have type\n  Type (imax 0 v) \u2192 Sort (imax 0 v)\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'down':\n(kernel) declaration type mismatch, 'down' has type\n  Type (imax 0 v) \u2192 Type (imax 0 v)\nbut it is expected to have type\n  Type (imax 0 v) \u2192 Sort (imax 0 v)\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'down':\n(kernel) declaration type mismatch, 'down' has type\n  Type (imax 0 v) \u2192 Type (imax 0 v)\nbut it is expected to have type\n  Type (imax 0 v) \u2192 Sort (imax 0 v)\n"
+ },
+ {
+  "name": "bugs__loose-bvar-value",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'f':\n(kernel) type checker does not support loose bound variables, replace them with free variables before invoking it\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'f':\n(kernel) type checker does not support loose bound variables, replace them with free variables before invoking it\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'f':\n(kernel) type checker does not support loose bound variables, replace them with free variables before invoking it\n"
+ },
+ {
+  "name": "bugs__nat-rec-k-lie",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'k1':\n(kernel) declaration type mismatch, 'k1' has type\n  Nat \u2192 True\nbut it is expected to have type\n  (n : Nat) \u2192 g n\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'k1':\n(kernel) declaration type mismatch, 'k1' has type\n  Nat \u2192 True\nbut it is expected to have type\n  (n : Nat) \u2192 g n\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'k1':\n(kernel) declaration type mismatch, 'k1' has type\n  \u2200 (n : Nat), True\nbut it is expected to have type\n  \u2200 (n : Nat), g n\n"
+ },
+ {
+  "name": "bugs__nat-rec-rules",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'proof_of_false':\n(kernel) application type mismatch\n  @Nat.rec (fun n => @Bool.rec (fun x => Prop) False True (Nat.beq n 0)) True.intro fun n ih => True.intro\nargument has type\n  (n : Nat) \u2192 (@fun",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'proof_of_false':\n(kernel) application type mismatch\n  @Nat.rec (fun n => @Bool.rec (fun x => Prop) False True (Nat.beq n 0)) True.intro fun n ih => True.intro\nargument has type\n  (n : Nat) \u2192 (@fun",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'proof_of_false':\n(kernel) application type mismatch\n  Nat.rec True.intro fun n ih => True.intro\nargument has type\n  \u2200 (n : Nat), (fun n => Bool.rec False True (n.beq 0)) n \u2192 True\nbut function has "
+ },
+ {
+  "name": "bugs__nested-name-capture",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'boom':\n(kernel) declaration type mismatch, 'boom' has type\n  P (fold sample).1\nbut it is expected to have type\n  False\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'boom':\n(kernel) declaration type mismatch, 'boom' has type\n  P (fold sample).1\nbut it is expected to have type\n  False\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'boom':\n(kernel) declaration type mismatch, 'boom' has type\n  P (fold sample).1\nbut it is expected to have type\n  False\n"
+ },
+ {
+  "name": "bugs__nested-rec-rule-nfields",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'bad':\n(kernel) application type mismatch\n  _private.Test.0.propRepresentationFalse _private.Test.0.badProp fun b => b\nargument has type\n  Bool \u2192 Bool\nbut function has type\n  (encode : Bool \u2192 _priv",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'bad':\n(kernel) application type mismatch\n  _private.Test.0.propRepresentationFalse _private.Test.0.badProp fun b => b\nargument has type\n  Bool \u2192 Bool\nbut function has type\n  (encode : Bool \u2192 _priv",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'bad':\n(kernel) application type mismatch\n  propRepresentationFalse\u271d badProp\u271d fun b => b\nargument has type\n  Bool \u2192 Bool\nbut function has type\n  \u2200 (encode : \u2200 (a : Bool), badProp\u271d) (decode : badPro"
+ },
+ {
+  "name": "bugs__nested-unused-param",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'E':\n(kernel) invalid projection\n  w.1\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'E':\n(kernel) invalid projection\n  w.1\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'E':\n(kernel) invalid projection\n  w.1\n"
+ },
+ {
+  "name": "bugs__orphan-rec",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'inconsistent':\n(kernel) unknown constant 'rogue'\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'inconsistent':\n(kernel) unknown constant 'rogue'\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'inconsistent':\n(kernel) unknown constant 'rogue'\n"
+ },
+ {
+  "name": "bugs__pi-closure-context",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'bad':\n(kernel) declaration type mismatch, 'bad' has type\n  TrueTy \u2192 Prop\nbut it is expected to have type\n  TrueTy \u2192 FalseTy\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'bad':\n(kernel) declaration type mismatch, 'bad' has type\n  TrueTy \u2192 Prop\nbut it is expected to have type\n  TrueTy \u2192 FalseTy\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'bad':\n(kernel) declaration type mismatch, 'bad' has type\n  TrueTy \u2192 Prop\nbut it is expected to have type\n  TrueTy \u2192 FalseTy\n"
+ },
+ {
+  "name": "bugs__proj-non-structure",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'bad':\n(kernel) invalid projection\n  (Bad.mk2 True.intro).1\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'bad':\n(kernel) invalid projection\n  (Bad.mk2 True.intro).1\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'bad':\n(kernel) invalid projection\n  \u22ef.1\n"
+ },
+ {
+  "name": "bugs__proj-of-imax-prop",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'imaxProjBool':\n(kernel) invalid projection\n  p.1\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'imaxProjBool':\n(kernel) invalid projection\n  p.1\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'imaxProjBool':\n(kernel) invalid projection\n  p.1\n"
+ },
+ {
+  "name": "bugs__proj-of-stuck-prop",
+  "outcome": "reject",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 164\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'Native64ResultSortOwner':\n(kernel) type expected\n  @Native64ResultSortGate.rec x (fun index index_1 index_2 index_3 proof => Type) Prop\n    (Native64SortGateB.0.3766726852 ((@fun salt => x) 125330",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'Native64ResultSortOwner':\n(kernel) type expected\n  Native64ResultSortGate.rec Prop h\n"
+ },
+ {
+  "name": "bugs__proj-of-subst-prop",
+  "outcome": "reject",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 155\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'PR14806Subst.observe':\n(kernel) type expected\n  PR14806Subst.gate PR14806Subst.witness\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'PR14806Subst.observe':\n(kernel) type expected\n  PR14806Subst.gate PR14806Subst.witness\n"
+ },
+ {
+  "name": "bugs__rec-k-lie",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'bad':\n(kernel) declaration type mismatch, 'bad' has type\n  True\nbut it is expected to have type\n  disc MyBool.true\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'bad':\n(kernel) declaration type mismatch, 'bad' has type\n  True\nbut it is expected to have type\n  disc MyBool.true\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'bad':\n(kernel) declaration type mismatch, 'bad' has type\n  True\nbut it is expected to have type\n  disc MyBool.true\n"
+ },
+ {
+  "name": "bugs__rec-missing-ih",
+  "outcome": "reject",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 167\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'Native64TwoHashOwner':\n(kernel) arg #3 of 'Native64TwoHashOwner.step' contains a non valid occurrence of the datatypes being declared\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'Native64TwoHashOwner':\n(kernel) arg #3 of 'Native64TwoHashOwner.step' contains a non valid occurrence of the datatypes being declared\n"
+ },
+ {
+  "name": "bugs__rec-of-subst-prop",
+  "outcome": "reject",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 177\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'Issue.forallFalse':\n(kernel) type expected\n  Issue.resultSort Issue.gateWitness\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'Issue.forallFalse':\n(kernel) type expected\n  Issue.resultSort Issue.gateWitness\n"
+ },
+ {
+  "name": "bugs__unit-rec-rule",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'badR':\n(kernel) declaration type mismatch, 'badR' has type\n  PUnit\nbut it is expected to have type\n  @PUnit.rec (fun a => Prop) EmptyProp PUnit.unit\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'badR':\n(kernel) declaration type mismatch, 'badR' has type\n  PUnit\nbut it is expected to have type\n  @PUnit.rec (fun a => Prop) EmptyProp PUnit.unit\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'badR':\n(kernel) declaration type mismatch, 'badR' has type\n  PUnit\nbut it is expected to have type\n  PUnit.rec EmptyProp PUnit.unit\n"
+ },
+ {
+  "name": "corner-cases__alg-conv-trans-acc",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'trans':\n(kernel) declaration type mismatch, 'trans' has type\n  (a : @Acc Nat (fun x1 x2 => @LT.lt Nat instLTNat x1 x2) 1) \u2192 @Eq Bool (f 1 a) (f 1 a)\nbut it is expected to have type\n  (a : @Acc Nat",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'trans':\n(kernel) declaration type mismatch, 'trans' has type\n  (a : @Acc Nat (fun x1 x2 => @LT.lt Nat instLTNat x1 x2) 1) \u2192 @Eq Bool (f 1 a) (f 1 a)\nbut it is expected to have type\n  (a : @Acc Nat",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'trans':\n(kernel) declaration type mismatch, 'trans' has type\n  \u2200 (a : Acc (fun x1 x2 => LT.lt x1 x2) 1), Eq (f 1 a) (f 1 a)\nbut it is expected to have type\n  \u2200 (a : Acc (fun x1 x2 => LT.lt x1 x2) "
+ },
+ {
+  "name": "corner-cases__alg-conv-trans-acc-left",
+  "outcome": "either",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 68\n",
+  "v4.34.1": "ACCEPT",
+  "v4.34.1_text": "ACCEPT 68\n",
+  "v4.35.0": "ACCEPT",
+  "v4.35.0_text": "ACCEPT 68\n"
+ },
+ {
+  "name": "corner-cases__alg-conv-trans-acc-right",
+  "outcome": "either",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 68\n",
+  "v4.34.1": "ACCEPT",
+  "v4.34.1_text": "ACCEPT 68\n",
+  "v4.35.0": "ACCEPT",
+  "v4.35.0_text": "ACCEPT 68\n"
+ },
+ {
+  "name": "corner-cases__alg-conv-trans-quot",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'trans':\n(kernel) declaration type mismatch, 'trans' has type\n  {P : Prop} \u2192\n    {r : P \u2192 P \u2192 Prop} \u2192\n      {\u03b1 : Type} \u2192\n        (f : P \u2192 \u03b1) \u2192\n          (h : (x y : P) \u2192 r x y \u2192 @Eq \u03b1 (f x) (f y)) ",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'trans':\n(kernel) declaration type mismatch, 'trans' has type\n  {P : Prop} \u2192\n    {r : P \u2192 P \u2192 Prop} \u2192\n      {\u03b1 : Type} \u2192\n        (f : P \u2192 \u03b1) \u2192\n          (h : (x y : P) \u2192 r x y \u2192 @Eq \u03b1 (f x) (f y)) ",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'trans':\n(kernel) declaration type mismatch, 'trans' has type\n  \u2200 {P : Prop} {r : P \u2192 P \u2192 Prop} {\u03b1 : Type} (f : P \u2192 \u03b1) (h : \u2200 (x y : P), r x y \u2192 Eq (f x) (f y)) (q : Quot r),\n    P \u2192 Eq (Quot.lift "
+ },
+ {
+  "name": "corner-cases__alg-conv-trans-quot-left",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'left':\n(kernel) declaration type mismatch, 'left' has type\n  {P : Prop} \u2192\n    {r : P \u2192 P \u2192 Prop} \u2192\n      {\u03b1 : Type} \u2192\n        (f : P \u2192 \u03b1) \u2192\n          (h : (x y : P) \u2192 r x y \u2192 @Eq \u03b1 (f x) (f y)) \u2192\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'left':\n(kernel) declaration type mismatch, 'left' has type\n  {P : Prop} \u2192\n    {r : P \u2192 P \u2192 Prop} \u2192\n      {\u03b1 : Type} \u2192\n        (f : P \u2192 \u03b1) \u2192\n          (h : (x y : P) \u2192 r x y \u2192 @Eq \u03b1 (f x) (f y)) \u2192\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'left':\n(kernel) declaration type mismatch, 'left' has type\n  \u2200 {P : Prop} {r : P \u2192 P \u2192 Prop} {\u03b1 : Type} (f : P \u2192 \u03b1) (h : \u2200 (x y : P), r x y \u2192 Eq (f x) (f y)) (q : Quot r),\n    P \u2192 Eq (Quot.lift f "
+ },
+ {
+  "name": "corner-cases__alg-conv-trans-quot-left-def",
+  "outcome": "either",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 10\n",
+  "v4.34.1": "ACCEPT",
+  "v4.34.1_text": "ACCEPT 10\n",
+  "v4.35.0": "ACCEPT",
+  "v4.35.0_text": "ACCEPT 10\n"
+ },
+ {
+  "name": "corner-cases__alg-conv-trans-quot-right",
+  "outcome": "either",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 9\n",
+  "v4.34.1": "ACCEPT",
+  "v4.34.1_text": "ACCEPT 9\n",
+  "v4.35.0": "ACCEPT",
+  "v4.35.0_text": "ACCEPT 9\n"
+ },
+ {
+  "name": "corner-cases__eta-ctor",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'etaCtor':\n(kernel) declaration type mismatch, 'etaCtor' has type\n  (x : True \u2192 T) \u2192 @Eq (True \u2192 T) x x\nbut it is expected to have type\n  (x : True \u2192 T) \u2192 @Eq (True \u2192 T) (T.mk (T.val (x True.intro)",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'etaCtor':\n(kernel) declaration type mismatch, 'etaCtor' has type\n  (x : True \u2192 T) \u2192 @Eq (True \u2192 T) x x\nbut it is expected to have type\n  (x : True \u2192 T) \u2192 @Eq (True \u2192 T) (T.mk (T.val (x True.intro)",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'etaCtor':\n(kernel) declaration type mismatch, 'etaCtor' has type\n  \u2200 (x : True \u2192 T), Eq x x\nbut it is expected to have type\n  \u2200 (x : True \u2192 T), Eq (T.mk (x True.intro).val) x\n"
+ },
+ {
+  "name": "corner-cases__eta-rec-struct",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'etaRecStruct':\n(kernel) declaration type mismatch, 'etaRecStruct' has type\n  (a : @Prod Bool Bool \u2192 Bool) \u2192 @Eq (@Prod Bool Bool \u2192 Bool) a a\nbut it is expected to have type\n  (a : @Prod Bool Bool ",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'etaRecStruct':\n(kernel) declaration type mismatch, 'etaRecStruct' has type\n  (a : @Prod Bool Bool \u2192 Bool) \u2192 @Eq (@Prod Bool Bool \u2192 Bool) a a\nbut it is expected to have type\n  (a : @Prod Bool Bool ",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'etaRecStruct':\n(kernel) declaration type mismatch, 'etaRecStruct' has type\n  \u2200 (a : Prod Bool Bool \u2192 Bool), Eq a a\nbut it is expected to have type\n  \u2200 (a : Prod Bool Bool \u2192 Bool), Eq (Prod.rec fun"
+ },
+ {
+  "name": "corner-cases__eta-rule-k",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'etaRuleK':\n(kernel) declaration type mismatch, 'etaRuleK' has type\n  (a : @Eq Bool Bool.true Bool.true \u2192 Bool) \u2192 @Eq (@Eq Bool Bool.true Bool.true \u2192 Bool) a a\nbut it is expected to have type\n  (a ",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'etaRuleK':\n(kernel) declaration type mismatch, 'etaRuleK' has type\n  (a : @Eq Bool Bool.true Bool.true \u2192 Bool) \u2192 @Eq (@Eq Bool Bool.true Bool.true \u2192 Bool) a a\nbut it is expected to have type\n  (a ",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'etaRuleK':\n(kernel) declaration type mismatch, 'etaRuleK' has type\n  \u2200 (a : Eq Bool.true Bool.true \u2192 Bool), Eq a a\nbut it is expected to have type\n  \u2200 (a : Eq Bool.true Bool.true \u2192 Bool), Eq (Eq.r"
+ },
+ {
+  "name": "corner-cases__eta-struct-major-and",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'andMajorEta':\n(kernel) declaration type mismatch, 'andMajorEta' has type\n  (P Q : Prop) \u2192\n    (A : Type) \u2192 (f : P \u2192 Q \u2192 A) \u2192 (x : And P Q) \u2192 @Eq A (@And.rec P Q (fun x => A) f x) (@And.rec P Q (fu",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'andMajorEta':\n(kernel) declaration type mismatch, 'andMajorEta' has type\n  (P Q : Prop) \u2192\n    (A : Type) \u2192 (f : P \u2192 Q \u2192 A) \u2192 (x : And P Q) \u2192 @Eq A (@And.rec P Q (fun x => A) f x) (@And.rec P Q (fu",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'andMajorEta':\n(kernel) declaration type mismatch, 'andMajorEta' has type\n  \u2200 (P Q : Prop) (A : Type) (f : P \u2192 Q \u2192 A) (x : And P Q), Eq (And.rec f x) (And.rec f x)\nbut it is expected to have type\n "
+ },
+ {
+  "name": "corner-cases__eta-struct-major-and-no-whnf",
+  "outcome": "either",
+  "v4.34.0-rc1": "TIMEOUT",
+  "v4.34.0-rc1_text": "",
+  "v4.34.1": "TIMEOUT",
+  "v4.34.1_text": "",
+  "v4.35.0": "TIMEOUT",
+  "v4.35.0_text": ""
+ },
+ {
+  "name": "corner-cases__eta-struct-major-no-whnf",
+  "outcome": "either",
+  "v4.34.0-rc1": "TIMEOUT",
+  "v4.34.0-rc1_text": "",
+  "v4.34.1": "TIMEOUT",
+  "v4.34.1_text": "",
+  "v4.35.0": "TIMEOUT",
+  "v4.35.0_text": ""
+ },
+ {
+  "name": "corner-cases__eta-unit-like-nested",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'unitLikeNested':\n(kernel) declaration type mismatch, 'unitLikeNested' has type\n  Mixed Nat (Bool \u2192 UnitField) \u2192 (q : Mixed Nat (Bool \u2192 UnitField)) \u2192 @Eq (Mixed Nat (Bool \u2192 UnitField)) q q\nbut it i",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'unitLikeNested':\n(kernel) declaration type mismatch, 'unitLikeNested' has type\n  Mixed Nat (Bool \u2192 UnitField) \u2192 (q : Mixed Nat (Bool \u2192 UnitField)) \u2192 @Eq (Mixed Nat (Bool \u2192 UnitField)) q q\nbut it i",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'unitLikeNested':\n(kernel) declaration type mismatch, 'unitLikeNested' has type\n  \u2200 (p q : Mixed Nat (Bool \u2192 UnitField)), Eq q q\nbut it is expected to have type\n  \u2200 (p q : Mixed Nat (Bool \u2192 UnitFie"
+ },
+ {
+  "name": "corner-cases__eta-unit-like-pi",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'unitLikePi':\n(kernel) declaration type mismatch, 'unitLikePi' has type\n  (\u03b1 : Type) \u2192 (\u03b1 \u2192 Unit) \u2192 (q : \u03b1 \u2192 Unit) \u2192 @Eq (\u03b1 \u2192 Unit) q q\nbut it is expected to have type\n  (\u03b1 : Type) \u2192 (p q : \u03b1 \u2192 Uni",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'unitLikePi':\n(kernel) declaration type mismatch, 'unitLikePi' has type\n  (\u03b1 : Type) \u2192 (\u03b1 \u2192 Unit) \u2192 (q : \u03b1 \u2192 Unit) \u2192 @Eq (\u03b1 \u2192 Unit) q q\nbut it is expected to have type\n  (\u03b1 : Type) \u2192 (p q : \u03b1 \u2192 Uni",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'unitLikePi':\n(kernel) declaration type mismatch, 'unitLikePi' has type\n  \u2200 (\u03b1 : Type) (p q : \u03b1 \u2192 Unit), Eq q q\nbut it is expected to have type\n  \u2200 (\u03b1 : Type) (p q : \u03b1 \u2192 Unit), Eq p q\n"
+ },
+ {
+  "name": "corner-cases__eta-unit-like-proof-field",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'unitLikeProofField':\n(kernel) declaration type mismatch, 'unitLikeProofField' has type\n  ProofField \u2192 (q : ProofField) \u2192 @Eq ProofField q q\nbut it is expected to have type\n  (p q : ProofField) \u2192 @",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'unitLikeProofField':\n(kernel) declaration type mismatch, 'unitLikeProofField' has type\n  ProofField \u2192 (q : ProofField) \u2192 @Eq ProofField q q\nbut it is expected to have type\n  (p q : ProofField) \u2192 @",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'unitLikeProofField':\n(kernel) declaration type mismatch, 'unitLikeProofField' has type\n  \u2200 (p q : ProofField), Eq q q\nbut it is expected to have type\n  \u2200 (p q : ProofField), Eq p q\n"
+ },
+ {
+  "name": "corner-cases__eta-unit-like-struct",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'unitLikeStruct':\n(kernel) declaration type mismatch, 'unitLikeStruct' has type\n  UnitField \u2192 (q : UnitField) \u2192 @Eq UnitField q q\nbut it is expected to have type\n  (p q : UnitField) \u2192 @Eq UnitField",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'unitLikeStruct':\n(kernel) declaration type mismatch, 'unitLikeStruct' has type\n  UnitField \u2192 (q : UnitField) \u2192 @Eq UnitField q q\nbut it is expected to have type\n  (p q : UnitField) \u2192 @Eq UnitField",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'unitLikeStruct':\n(kernel) declaration type mismatch, 'unitLikeStruct' has type\n  \u2200 (p q : UnitField), Eq q q\nbut it is expected to have type\n  \u2200 (p q : UnitField), Eq p q\n"
+ },
+ {
+  "name": "corner-cases__imax-right-successor",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'imaxRightOne':\n(kernel) declaration type mismatch, 'imaxRightOne' has type\n  Type (imax u 1)\nbut it is expected to have type\n  Type (max u 1)\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'imaxRightOne':\n(kernel) declaration type mismatch, 'imaxRightOne' has type\n  Type (imax u 1)\nbut it is expected to have type\n  Type (max u 1)\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'imaxRightOne':\n(kernel) declaration type mismatch, 'imaxRightOne' has type\n  Type (imax u 1)\nbut it is expected to have type\n  Type (max u 1)\n"
+ },
+ {
+  "name": "corner-cases__let-value-type-mismatch",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'EcosystemCase':\n(kernel) let-declaration type mismatch 'u'\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'EcosystemCase':\n(kernel) let-declaration type mismatch 'u'\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'EcosystemCase':\n(kernel) let-declaration type mismatch 'u'\n"
+ },
+ {
+  "name": "corner-cases__nested-nonuniform-param",
+  "outcome": "either",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 14\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'E':\n(kernel) invalid occurrence of datatype 'E' being declared: it must be applied to the parameters and universe levels of the mutual declaration\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'E':\n(kernel) invalid occurrence of datatype 'E' being declared: it must be applied to the parameters and universe levels of the mutual declaration\n"
+ },
+ {
+  "name": "corner-cases__positivity-whnf",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'LALReduciblePositivity':\n(kernel) arg #1 of 'LALReduciblePositivity.mk' has a non positive occurrence of the datatypes being declared\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'LALReduciblePositivity':\n(kernel) arg #1 of 'LALReduciblePositivity.mk' has a non positive occurrence of the datatypes being declared\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'LALReduciblePositivity':\n(kernel) arg #1 of 'LALReduciblePositivity.mk' has a non positive occurrence of the datatypes being declared\n"
+ },
+ {
+  "name": "corner-cases__proj-maybe-prop",
+  "outcome": "either",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 13\n",
+  "v4.34.1": "ACCEPT",
+  "v4.34.1_text": "ACCEPT 13\n",
+  "v4.35.0": "ACCEPT",
+  "v4.35.0_text": "ACCEPT 13\n"
+ },
+ {
+  "name": "corner-cases__proj-maybe-prop-past",
+  "outcome": "either",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 13\n",
+  "v4.34.1": "ACCEPT",
+  "v4.34.1_text": "ACCEPT 13\n",
+  "v4.35.0": "ACCEPT",
+  "v4.35.0_text": "ACCEPT 13\n"
+ },
+ {
+  "name": "corner-cases__proof-param-ok",
+  "outcome": "accept",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 3\n",
+  "v4.34.1": "ACCEPT",
+  "v4.34.1_text": "ACCEPT 3\n",
+  "v4.35.0": "ACCEPT",
+  "v4.35.0_text": "ACCEPT 3\n"
+ },
+ {
+  "name": "corner-cases__proof-param-swap",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'LALProofParameterSwap':\n(kernel) invalid return type for 'LALProofParameterSwap.mk'\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'LALProofParameterSwap':\n(kernel) invalid occurrence of datatype 'LALProofParameterSwap' being declared: it must be applied to the parameters and universe levels of the mutual declaration\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'LALProofParameterSwap':\n(kernel) invalid occurrence of datatype 'LALProofParameterSwap' being declared: it must be applied to the parameters and universe levels of the mutual declaration\n"
+ },
+ {
+  "name": "corner-cases__subject-reduction-redex",
+  "outcome": "either",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 67\n",
+  "v4.34.1": "ACCEPT",
+  "v4.34.1_text": "ACCEPT 67\n",
+  "v4.35.0": "ACCEPT",
+  "v4.35.0_text": "ACCEPT 67\n"
+ },
+ {
+  "name": "corner-cases__subject-reduction-reduct",
+  "outcome": "either",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'reduct':\n(kernel) application type mismatch\n  k x0\nargument has type\n  D (f 1 a)\nbut function has type\n  D (f 0 (redex._proof_1 a)) \u2192 Unit\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'reduct':\n(kernel) application type mismatch\n  k x0\nargument has type\n  D (f 1 a)\nbut function has type\n  D (f 0 (redex._proof_1 a)) \u2192 Unit\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'reduct':\n(kernel) application type mismatch\n  k x0\nargument has type\n  D (f 1 a)\nbut function has type\n  D (f 0 \u22ef) \u2192 Unit\n"
+ },
+ {
+  "name": "init-prelude",
+  "outcome": "accept",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 2094\n",
+  "v4.34.1": "ACCEPT",
+  "v4.34.1_text": "ACCEPT 2094\n",
+  "v4.35.0": "ACCEPT",
+  "v4.35.0_text": "ACCEPT 2094\n"
+ },
+ {
+  "name": "other__extra-rec",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'inconsistent':\n(kernel) unknown constant 'rogue'\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'inconsistent':\n(kernel) unknown constant 'rogue'\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'inconsistent':\n(kernel) unknown constant 'rogue'\n"
+ },
+ {
+  "name": "other__inductive-undeclared-universe",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'U':\n(kernel) invalid reference to undefined universe level parameter 'u'\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'U':\n(kernel) invalid reference to undefined universe level parameter 'u'\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'U':\n(kernel) invalid reference to undefined universe level parameter 'u'\n"
+ },
+ {
+  "name": "other__level-index-out-of-order",
+  "outcome": "accept",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 1\n",
+  "v4.34.1": "ACCEPT",
+  "v4.34.1_text": "ACCEPT 1\n",
+  "v4.35.0": "ACCEPT",
+  "v4.35.0_text": "ACCEPT 1\n"
+ },
+ {
+  "name": "other__nat-lit-add",
+  "outcome": "accept",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 27\n",
+  "v4.34.1": "ACCEPT",
+  "v4.34.1_text": "ACCEPT 27\n",
+  "v4.35.0": "ACCEPT",
+  "v4.35.0_text": "ACCEPT 27\n"
+ },
+ {
+  "name": "other__nat-lit-add-bad",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'natAddLitBad':\n(kernel) declaration type mismatch, 'natAddLitBad' has type\n  @Eq Nat (Nat.add 123456789 987654321) (Nat.add 123456789 987654321)\nbut it is expected to have type\n  @Eq Nat (Nat.add ",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'natAddLitBad':\n(kernel) declaration type mismatch, 'natAddLitBad' has type\n  @Eq Nat (Nat.add 123456789 987654321) (Nat.add 123456789 987654321)\nbut it is expected to have type\n  @Eq Nat (Nat.add ",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'natAddLitBad':\n(kernel) declaration type mismatch, 'natAddLitBad' has type\n  Eq (Nat.add 123456789 987654321) (Nat.add 123456789 987654321)\nbut it is expected to have type\n  Eq (Nat.add 123456789 "
+ },
+ {
+  "name": "other__nat-lit-ble",
+  "outcome": "accept",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 31\n",
+  "v4.34.1": "ACCEPT",
+  "v4.34.1_text": "ACCEPT 31\n",
+  "v4.35.0": "ACCEPT",
+  "v4.35.0_text": "ACCEPT 31\n"
+ },
+ {
+  "name": "other__nat-lit-sub",
+  "outcome": "accept",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 31\n",
+  "v4.34.1": "ACCEPT",
+  "v4.34.1_text": "ACCEPT 31\n",
+  "v4.35.0": "ACCEPT",
+  "v4.35.0_text": "ACCEPT 31\n"
+ },
+ {
+  "name": "other__orphan-ctor",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'inconsistent':\n(kernel) unknown constant 'rogue'\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'inconsistent':\n(kernel) unknown constant 'rogue'\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'inconsistent':\n(kernel) unknown constant 'rogue'\n"
+ },
+ {
+  "name": "other__proj-of-prop",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'badFalse':\n(kernel) application type mismatch\n  Wrapper.mk True.intro\nargument has type\n  True\nbut function has type\n  False \u2192 Wrapper\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'badFalse':\n(kernel) application type mismatch\n  Wrapper.mk True.intro\nargument has type\n  True\nbut function has type\n  False \u2192 Wrapper\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'badFalse':\n(kernel) application type mismatch\n  Wrapper.mk True.intro\nargument has type\n  True\nbut function has type\n  False \u2192 Wrapper\n"
+ },
+ {
+  "name": "other__sparse-name-index",
+  "outcome": "accept",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 1\n",
+  "v4.34.1": "ACCEPT",
+  "v4.34.1_text": "ACCEPT 1\n",
+  "v4.35.0": "ACCEPT",
+  "v4.35.0_text": "ACCEPT 1\n"
+ },
+ {
+  "name": "perf__refute-cheap-first",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'kernel_refute_cheap_first':\n(kernel) declaration type mismatch, 'kernel_refute_cheap_first' has type\n  @Eq (@Prod Bool N)\n    (@Prod.mk Bool N Bool.false\n      (count\n        (N.S\n          (N.S\n ",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'kernel_refute_cheap_first':\n(kernel) declaration type mismatch, 'kernel_refute_cheap_first' has type\n  @Eq (@Prod Bool N)\n    (@Prod.mk Bool N Bool.false\n      (count\n        (N.S\n          (N.S\n ",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'kernel_refute_cheap_first':\n(kernel) declaration type mismatch, 'kernel_refute_cheap_first' has type\n  Eq\n    (Prod.mk Bool.false\n      (count \u22ef.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S"
+ },
+ {
+  "name": "perf__refute-cheap-last",
+  "outcome": "reject",
+  "v4.34.0-rc1": "REJECT",
+  "v4.34.0-rc1_text": "REJECT kernel: while replaying declaration 'kernel_refute_cheap_last':\n(kernel) declaration type mismatch, 'kernel_refute_cheap_last' has type\n  @Eq (@Prod N Bool)\n    (@Prod.mk N Bool\n      (count\n        (N.S\n          (N.S\n            (N",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'kernel_refute_cheap_last':\n(kernel) declaration type mismatch, 'kernel_refute_cheap_last' has type\n  @Eq (@Prod N Bool)\n    (@Prod.mk N Bool\n      (count\n        (N.S\n          (N.S\n            (N",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'kernel_refute_cheap_last':\n(kernel) declaration type mismatch, 'kernel_refute_cheap_last' has type\n  Eq\n    (Prod.mk (count \u22ef.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S.S."
+ },
+ {
+  "name": "pr14806_2",
+  "outcome": "reject",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 164\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'Native64ResultSortOwner':\n(kernel) type expected\n  @Native64ResultSortGate.rec x (fun index index_1 index_2 index_3 proof => Type) Prop\n    (Native64SortGateB.0.3766726852 ((@fun salt => x) 125330",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'Native64ResultSortOwner':\n(kernel) type expected\n  Native64ResultSortGate.rec Prop h\n"
+ },
+ {
+  "name": "pr14807",
+  "outcome": "reject",
+  "v4.34.0-rc1": "ACCEPT",
+  "v4.34.0-rc1_text": "ACCEPT 155\n",
+  "v4.34.1": "REJECT",
+  "v4.34.1_text": "REJECT kernel: while replaying declaration 'PR14806Subst.observe':\n(kernel) type expected\n  PR14806Subst.gate PR14806Subst.witness\n",
+  "v4.35.0": "REJECT",
+  "v4.35.0_text": "REJECT kernel: while replaying declaration 'PR14806Subst.observe':\n(kernel) type expected\n  PR14806Subst.gate PR14806Subst.witness\n"
+ }
+]

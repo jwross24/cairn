@@ -3,6 +3,7 @@ research/convergence/r*/seats.json linguist-generated
 research/convergence/r*/seats/openrouter-*.md linguist-generated
 research/grounding/small-numbers-floor-2026-09-30/summary.json linguist-generated
 research/grounding/process-tree-cpu-2026-09-29/raw/*.json linguist-generated
+research/grounding/kernel-intersection-2026-10-30/results/* linguist-generated
 research/grounding/paired-rate-ratio-*.json linguist-generated
 research/grounding/deployed-rate-ratio-*.json linguist-generated
 research/grounding/deployed-cpu-ratio-*.json linguist-generated

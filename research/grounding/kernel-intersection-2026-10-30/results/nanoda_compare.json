@@ -1,0 +1,546 @@
+[
+ {
+  "name": "bugs__closure-level-subst",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361366) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__constlevels",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361371) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__ctor-num-fields",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361376) panicked at src/inductive.rs:1300:25:\nassertion failed: old.aux_data_ck(new)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__eta-ctor-alias",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361381) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__forged-quot-ind",
+  "outcome": "reject",
+  "image_pin": "ACCEPT",
+  "native_pin": "ACCEPT",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361387) panicked at src/tc.rs:235:17:\ninfer_const: declaration Quot.ind depends on Quot which was not found in the environment\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__k-rec-conv",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361393) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__large-elim-param",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361399) panicked at src/expr.rs:455:9:\nassertion `left == right` failed\n  left: 2\n right: 1\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__large-elim-prop-bool",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361406) panicked at src/expr.rs:455:9:\nassertion `left == right` failed\n  left: 1\n right: 0\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__level-imax-leq",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361411) panicked at src/inductive.rs:1338:21:\nassertion failed: old_r.aux_data_ck(new_r)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__level-imax-normalization",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361427) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__loose-bvar-value",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361432) panicked at src/tc.rs:554:27:\nno loose bvars allowed in infer\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__nat-rec-k-lie",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361437) panicked at src/inductive.rs:1338:21:\nassertion failed: old_r.aux_data_ck(new_r)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__nat-rec-rules",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361445) panicked at src/inductive.rs:1338:21:\nassertion failed: old_r.aux_data_ck(new_r)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__nested-name-capture",
+  "outcome": "reject",
+  "image_pin": "ACCEPT",
+  "native_pin": "ACCEPT",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361450) panicked at src/tc.rs:237:17:\ninfer_const: declaration _nested.Cov_1.rec was not found in the environment\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__nested-rec-rule-nfields",
+  "outcome": "reject",
+  "image_pin": "ACCEPT",
+  "native_pin": "ACCEPT",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361455) panicked at src/inductive.rs:1713:21:\nassertion `left == right` failed: recursor rule field count mismatch for T.mk in T.rec\n  left: 1\n right: 2\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__nested-unused-param",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361460) panicked at src/tc.rs:501:13:\nInvalid projection: W != C\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__orphan-rec",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "CONFIG",
+  "head_text": "Error: invalid inductive block at line 18: recursor 2 must list exactly the block's types without duplicates\n\nrun with `-h` or `--help` for help\n"
+ },
+ {
+  "name": "bugs__pi-closure-context",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361471) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__proj-non-structure",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361476) panicked at src/tc.rs:499:59:\ncalled `Option::unwrap()` on a `None` value\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__proj-of-imax-prop",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361481) panicked at src/tc.rs:535:21:\ninfer_proj prop\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__proj-of-stuck-prop",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361486) panicked at src/tc.rs:293:18:\nensur_sort could not produce a sort\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__proj-of-subst-prop",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361491) panicked at src/tc.rs:1362:18:\nexpected a sort\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__rec-k-lie",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361496) panicked at src/inductive.rs:1338:21:\nassertion failed: old_r.aux_data_ck(new_r)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__rec-missing-ih",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361501) panicked at src/inductive.rs:774:21:\nassertion failed: self.which_valid_ind_app(st, ctor_type_cursor).is_some()\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__rec-of-subst-prop",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361506) panicked at src/tc.rs:1362:18:\nexpected a sort\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "bugs__unit-rec-rule",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361511) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__alg-conv-trans-acc",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361517) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__alg-conv-trans-acc-left",
+  "outcome": "either",
+  "image_pin": "ACCEPT",
+  "native_pin": "ACCEPT",
+  "native_head": "ACCEPT",
+  "head_text": ""
+ },
+ {
+  "name": "corner-cases__alg-conv-trans-acc-right",
+  "outcome": "either",
+  "image_pin": "ACCEPT",
+  "native_pin": "ACCEPT",
+  "native_head": "ACCEPT",
+  "head_text": ""
+ },
+ {
+  "name": "corner-cases__alg-conv-trans-quot",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361533) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__alg-conv-trans-quot-left",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361538) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__alg-conv-trans-quot-left-def",
+  "outcome": "either",
+  "image_pin": "ACCEPT",
+  "native_pin": "ACCEPT",
+  "native_head": "ACCEPT",
+  "head_text": ""
+ },
+ {
+  "name": "corner-cases__alg-conv-trans-quot-right",
+  "outcome": "either",
+  "image_pin": "ACCEPT",
+  "native_pin": "ACCEPT",
+  "native_head": "ACCEPT",
+  "head_text": ""
+ },
+ {
+  "name": "corner-cases__eta-ctor",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361553) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__eta-rec-struct",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361558) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__eta-rule-k",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361563) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__eta-struct-major-and",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223361568) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__eta-struct-major-and-no-whnf",
+  "outcome": "either",
+  "image_pin": "TIMEOUT",
+  "native_pin": "TIMEOUT",
+  "native_head": "TIMEOUT",
+  "head_text": ""
+ },
+ {
+  "name": "corner-cases__eta-struct-major-no-whnf",
+  "outcome": "either",
+  "image_pin": "TIMEOUT",
+  "native_pin": "TIMEOUT",
+  "native_head": "TIMEOUT",
+  "head_text": ""
+ },
+ {
+  "name": "corner-cases__eta-unit-like-nested",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445283) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__eta-unit-like-pi",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445288) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__eta-unit-like-proof-field",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445293) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__eta-unit-like-struct",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445298) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__imax-right-successor",
+  "outcome": "either",
+  "image_pin": "ACCEPT",
+  "native_pin": "ACCEPT",
+  "native_head": "ACCEPT",
+  "head_text": ""
+ },
+ {
+  "name": "corner-cases__let-value-type-mismatch",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445309) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__nested-nonuniform-param",
+  "outcome": "either",
+  "image_pin": "ACCEPT",
+  "native_pin": "ACCEPT",
+  "native_head": "ACCEPT",
+  "head_text": ""
+ },
+ {
+  "name": "corner-cases__positivity-whnf",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445319) panicked at src/inductive.rs:766:25:\nnon-positive occurrence\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__proj-maybe-prop",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445329) panicked at src/tc.rs:535:21:\ninfer_proj prop\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__proj-maybe-prop-past",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445336) panicked at src/tc.rs:520:27:\ninfer_proj prop\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__proof-param-ok",
+  "outcome": "accept",
+  "image_pin": "ACCEPT",
+  "native_pin": "ACCEPT",
+  "native_head": "ACCEPT",
+  "head_text": ""
+ },
+ {
+  "name": "corner-cases__proof-param-swap",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445346) panicked at src/inductive.rs:916:9:\nassertion failed: self.is_valid_ind_app(st, parent_ind_name, ctor_type_cursor)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "corner-cases__subject-reduction-redex",
+  "outcome": "either",
+  "image_pin": "ACCEPT",
+  "native_pin": "ACCEPT",
+  "native_head": "ACCEPT",
+  "head_text": ""
+ },
+ {
+  "name": "corner-cases__subject-reduction-reduct",
+  "outcome": "either",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445356) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "init-prelude",
+  "outcome": "accept",
+  "image_pin": "NONZERO",
+  "native_pin": "CONFIG",
+  "native_head": "CONFIG",
+  "head_text": "Error: export file declares unpermitted axiom \"sorryAx\"\n\nrun with `-h` or `--help` for help\n"
+ },
+ {
+  "name": "other__extra-rec",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "thread 'thread_0' (223445366) panicked at src/inductive.rs:163:13:\nfor inductive type False,\nexpected recursors [False.rec],\nwhile export file contained recursors [rogue, False.rec]\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "other__inductive-undeclared-universe",
+  "outcome": "reject",
+  "image_pin": "ACCEPT",
+  "native_pin": "ACCEPT",
+  "native_head": "ACCEPT",
+  "head_text": ""
+ },
+ {
+  "name": "other__level-index-out-of-order",
+  "outcome": "accept",
+  "image_pin": "NONZERO",
+  "native_pin": "DECLINED",
+  "native_head": "DECLINED",
+  "head_text": "Declined: Level back-reference mismatch, expected Il(1), found Il(2). Back-refs must be continuous.\n"
+ },
+ {
+  "name": "other__nat-lit-add",
+  "outcome": "accept",
+  "image_pin": "ACCEPT",
+  "native_pin": "ACCEPT",
+  "native_head": "ACCEPT",
+  "head_text": ""
+ },
+ {
+  "name": "other__nat-lit-add-bad",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445387) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "other__nat-lit-ble",
+  "outcome": "accept",
+  "image_pin": "ACCEPT",
+  "native_pin": "ACCEPT",
+  "native_head": "ACCEPT",
+  "head_text": ""
+ },
+ {
+  "name": "other__nat-lit-sub",
+  "outcome": "accept",
+  "image_pin": "ACCEPT",
+  "native_pin": "ACCEPT",
+  "native_head": "ACCEPT",
+  "head_text": ""
+ },
+ {
+  "name": "other__orphan-ctor",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "CONFIG",
+  "head_text": "Error: invalid inductive block at line 19: constructor 2 must belong to an inductive in the same block\n\nrun with `-h` or `--help` for help\n"
+ },
+ {
+  "name": "other__proj-of-prop",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445414) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "other__sparse-name-index",
+  "outcome": "accept",
+  "image_pin": "NONZERO",
+  "native_pin": "DECLINED",
+  "native_head": "DECLINED",
+  "head_text": "Declined: Name back-reference mismatch, expected In(1), found In(2). Back-refs must be continuous.\n"
+ },
+ {
+  "name": "perf__refute-cheap-first",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445425) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "perf__refute-cheap-last",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445434) panicked at src/tc.rs:985:71:\nassertion failed: self.def_eq(u, v)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "pr14806_2",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445441) panicked at src/tc.rs:293:18:\nensur_sort could not produce a sort\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ },
+ {
+  "name": "pr14807",
+  "outcome": "reject",
+  "image_pin": "NONZERO",
+  "native_pin": "KERNEL-REFUSE",
+  "native_head": "KERNEL-REFUSE",
+  "head_text": "\nthread 'thread_0' (223445446) panicked at src/tc.rs:1362:18:\nexpected a sort\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n"
+ }
+]

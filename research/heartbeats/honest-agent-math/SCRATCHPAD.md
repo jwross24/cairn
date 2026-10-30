@@ -47,8 +47,8 @@ None. The loop is closed at 21 sources, below the 25 in the stop condition, beca
 - (Answered 2026-10-30) cairn's statement match hashes the elaborated `Expr`, not source text, so a preamble
   `local notation` that changes the meaning changes the hash: `lean/Cairn/StatementHash.lean`, `notes/lean-comparator.md`.
 
-- Does cairn's pinned kernel (v4.34.0-rc1) carry every fix the arena's `bugs/` suite tests? The arena scores
-  only v4.34.0 final clean; v4.28.0 wrongly accepts 6 invalid proofs.
+- (Answered 2026-10-30) cairn's pinned kernel lacks them: rc1 accepts six proofs of `False`, none of which passes
+  pinned nanoda: `research/grounding/kernel-intersection-2026-10-30/`.
 
 - (Answered 2026-10-30) cairn's Skeptic is isolated by construction and its statement review is a human-only typed
   node bound to the statement hash: `notes/cairn-gates-against-the-record.md`.

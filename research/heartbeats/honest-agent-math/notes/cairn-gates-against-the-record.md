@@ -55,11 +55,13 @@ accepted until fixed:
   kernel rejects the file." rc1 carries #14616 (reject declarations naming `_nested` auxiliary types).
 All found by "a differential run of Pestka against other checkers": new kernels are still finding bugs in old ones.
 
-The gate is an intersection, so what decides exposure is whether a proof passes BOTH pinned kernels:
-- `forged-quot-ind` and `nested-name-capture`: the official kernel rejects them, so they should stop at rc1. Not run.
-- `nested-rec-rule-nfields`: pinned nanoda accepts (by the test's own history). Whether rc1 rejects it is not
-  established, and rc1 lacks #14808, which type-checks generated recursors. This is the one to run first.
-- In the other direction, rc1's own bugs (#14806, #14807) were each tested against nanoda only at the time of the
-  postmortem, and nanoda accepted the #14807 exploit then.
-So the intersection is untested. No claim that a proof of `False` passes cairn's gate is established, and none that it
-cannot. Only running both pinned kernels on the arena suite settles it; that is AC 1 of cairn-p76j.
+The gate is an intersection, so what decides exposure is whether a proof passes BOTH pinned kernels. Measured in the
+pinned image on the comparator's code path (`research/grounding/kernel-intersection-2026-10-30/`): **0 of 82 invalid
+proofs pass both.**
+- rc1 accepts six proofs of `False`, including the #14807 and #14806 exploits, and `leanchecker --fresh` exits 0 on the
+  five it can read. Pinned nanoda refuses all six.
+- Pinned nanoda accepts `forged-quot-ind`, `nested-name-capture`, `nested-rec-rule-nfields` and
+  `inductive-undeclared-universe`. rc1 rejects all four.
+- `v4.34.1` and `v4.35.0` accept none of the 82. nanoda HEAD `8de7e0c` accepts one, which is not a proof of `False`.
+So each pinned kernel is the only barrier against the other's bugs. The result covers these 82 at kernel level: it is
+not a full-gate run, and the runtime exploits #14838 and #14833 were not run.

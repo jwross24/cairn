@@ -71,15 +71,17 @@ statement hashing (`notes/lean-comparator.md`), two kernels, prefilters that "re
 (`notes/cairn-gates-against-the-record.md`).
 
 Gaps:
-1. Both kernel pins lag fixes for bugs exploited to prove `False`; which proofs pass both is untested (cairn-p76j, P1).
+1. Both kernel pins lag fixes for bugs exploited to prove `False`. rc1 accepts six proofs of `False` and pinned nanoda
+   four; none of 82 passes both, so each is the only barrier against the other (cairn-p76j, P1;
+   `research/grounding/kernel-intersection-2026-10-30/`).
 2. The candidate build can rewrite the compiled Challenge before comparison (cairn-nndn, P1, already filed).
 3. No planted-negative test for notation attacks or vacuous statements (cairn-2k8k).
-4. No novelty or literature check, and citations pass through no gate.
+4. No novelty or literature check is built, and citations pass through no gate. PLAN.md:392 specifies a `prior_art`
+   note before Tier 2 and a Librarian at M4 (`cairn-m4-djr`); no code enforces either (cairn-28zl).
 5. "No proof found" should be scored as an honest outcome anywhere a worker can see a score.
 
 ## Open questions
 
-- Which arena invalid proofs pass both of cairn's pinned kernels?
 - What is the misformalization rate per statement, as opposed to per PR?
 - What separated whistleblowers from exploiters with identical weights and prompts? The paper does not explain it.
 - Does Zulip hold defenses the postmortems omit? The 202-message thread was not read.

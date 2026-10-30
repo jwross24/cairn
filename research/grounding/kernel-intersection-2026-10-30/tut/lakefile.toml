@@ -1,0 +1,15 @@
+name = "tutorial"
+
+[[require]]
+name = "lean4export"
+path = "/home/cairn/comparator/.lake/packages/lean4export"
+
+[[lean_lib]]
+name = "Tutorial"
+roots = ["Tutorial"]
+globs = ["Tutorial.Meta", "Tutorial.TestCaseEnv", "Tutorial.AddConstInfo", "Tutorial.Export"]
+
+[[lean_lib]]
+name = "Tests"
+roots = []
+globs = ["Bugs.+", "CornerCases.+"]

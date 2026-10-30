@@ -1,0 +1,10 @@
+name = "kernelprobe"
+defaultTargets = ["probe"]
+
+[[lean_exe]]
+name = "probe"
+root = "Main"
+
+[[require]]
+name = "lean4export"
+path = "/home/cairn/comparator/.lake/packages/lean4export"
