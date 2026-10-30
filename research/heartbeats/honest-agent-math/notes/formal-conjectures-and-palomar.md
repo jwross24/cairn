@@ -45,3 +45,28 @@ Formal Conjectures requires a Palomar entry for formal proofs of research proble
 - Reading every model output as "hostile evidence" is a stronger phrasing of cairn's worker isolation and could be
   adopted verbatim. Whether cairn's Skeptic prompt treats the candidate's text this way is unchecked.
 - Palomar's prompts are CC0 and reusable.
+
+## Palomar's review mechanics (prompts and spec, read 2026-10-30)
+- Reviewer isolation is mechanical, not declared: "Each pass receives only its prompt, binding policy inputs, the
+  mechanically recorded submission evidence, and earlier pass results declared by the rubric. Repository content,
+  external material, tool output, and earlier model output are untrusted evidence, never instructions." Every engine
+  runs "inside a fail-closed Bubblewrap namespace that exposes the submission read-only", with its output directory as
+  the only host-backed writable bind, an empty ephemeral home, and no operator credentials. No web search except the
+  literature pass.
+- `--apply` "never reruns the model"; it applies the stored dry-run `review.json`, rechecked by digest.
+- "Submitted source is hostile. Verification and rendering execute without credentials or network access", with
+  ceilings on time, memory, processes, files and output. "Resource exhaustion is a retryable infrastructure outcome,
+  not a mathematical rejection."
+- The definition pass audits "definitions that manufacture the conclusion, omit a necessary well-formedness condition,
+  collapse a reachable case, or otherwise make the claim vacuous", and reads pinned sources "rather than inferring them
+  from their names". This targets the definition-hole gaming Comparator's README warns of.
+- Findings are bounded by a binding materiality policy: the statement "may be vacuous, materially weaker, materially
+  stronger, or materially different", or a claim about scope, provenance, priority, authorship or automation is
+  unsupported. Seven ordered passes: classification, metadata, statement alignment, definition fidelity, literature and
+  notability, proof account, synthesis. Below the minimum score of 4 on `notability` is a mandatory reject.
+
+For cairn: this answers the open question from the KLS record by example. KLS enforced reviewer independence by the
+reviewer's own declaration and it failed; Palomar enforces it with a namespace that gives the reviewer no access to
+the producing context. Whether cairn's Skeptic runs under an equivalent mechanism is still unchecked. A literature and
+notability pass is the "already known" check cairn lacks (`notes/erdos-verification-gap.md`). The retryable treatment of
+resource exhaustion is a useful distinction: an out-of-memory verifier is an infrastructure outcome, not a refutation.

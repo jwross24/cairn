@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 21 · Last wakeup: 2026-10-30 06:35 EDT · Sources saved: 20
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 22 · Last wakeup: 2026-10-30 07:05 EDT · Sources saved: 20
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -36,7 +36,7 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Read Palomar's `prompts/03-definition-fidelity.md` and `prompts/materiality.md`, and PalomarReviewer's handling of hostile submissions (prompt-injection defenses in review).
+1. Check cairn itself: how the Skeptic and statement-match reviewers are isolated from the producing context (`bundle/role_templates.json`, `bundle/worker_roles.json`, and the code that launches them), so the dataroom's main open question gets a file and line.
 2. Estimate the misformalization rate per statement in Formal Conjectures: count statements in the tree against distinct files touched by `misformalization` PRs.
 
 ## Deprioritized
