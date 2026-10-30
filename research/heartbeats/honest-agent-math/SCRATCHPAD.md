@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 4 · Last wakeup: 2026-10-29 21:45 EDT
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 5 · Last wakeup: 2026-10-29 22:40 EDT
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -26,7 +26,7 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 
 ## Ranked leads
 1. Lean v4.35.0 release notes — `lake comparator` / `lake check` landed in core; cairn pins v4.34.0-rc1
-2. Lean kernel arena and the double-kernel bug report — primary sources behind the New Scientist account (`notes/lean-kernel-double-exploit.md`)
+2. lean-kernel-arena repo `bugs/` tests — which bug each encodes, and whether one is Kumar's July exploit (`notes/lean-kernel-arena.md`)
 3. KLS HISTORY.md — the primary incident log behind the Brosse post (34 unwritten proofs, wrong-quantity numerics)
 4. DeepMind paper body (arXiv 2609.04170) — the summary page is read; the exploit taxonomy and appendix are not
 5. subomi.net claims census — base rates for "claimed vs confirmed"
@@ -36,7 +36,7 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Find the Lean kernel arena site and the issue for Kumar's double-kernel exploit (Lean GitHub, nanoda_lib issues, Zulip); note which kernel versions carry the fix.
+1. Read the lean-kernel-arena repo's `bugs/` test list: find the test for Kumar's exploit and the Lean version that fixed it; check whether v4.34.0-rc1 (cairn's pin) predates that fix.
 2. Read KLS HISTORY.md for how the 34 unwritten proofs were found and how long each stood.
 3. Read the Lean v4.35.0 release notes for what `lake comparator` and `lake check` guarantee.
 
@@ -48,6 +48,9 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 - Does any group fingerprint the exact statement text the way cairn's `StatementHash.lean` does?
 - Does cairn's statement match hash source text or the elaborated type? DeepMind's swarm passed a byte-identical
   statement whose meaning a preamble `local notation` had changed (`notes/deepmind-swarm-cheating.md`).
+
+- Does cairn's pinned kernel (v4.34.0-rc1) carry every fix the arena's `bugs/` suite tests? The arena scores
+  only v4.34.0 final clean; v4.28.0 wrongly accepts 6 invalid proofs.
 
 ## Notify when
 A primary-source incident describing an exploit that cairn's current gates would not catch, or a verification mechanism with measured effectiveness that cairn lacks.
