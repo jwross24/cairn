@@ -1,6 +1,6 @@
 # honest-agent-math: how AI agents on open math problems are made to refuse fabrication, and what broke
 
-Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 10 · Last wakeup: 2026-10-30 00:45 EDT
+Owner session: cairn session 8683451d (started at the request of documents-07) · Iteration: 11 · Last wakeup: 2026-10-30 01:15 EDT
 
 ## Current objective
 Find first-hand accounts of how people keep AI agents working on open mathematics problems from
@@ -36,7 +36,7 @@ design: verification mechanisms cairn could adopt, and attacks its gates must de
 9. HN threads on 2609.04170 — practitioner replies may name other notation or elaboration exploits
 
 ## Next actions
-1. Read KLS HISTORY.md for how the 34 unwritten proofs were found and how long each stood. (All seven seeds are read; the loop now works the ranked leads.)
+1. Read the DeepMind swarm paper body (arXiv 2609.04170): the exploit taxonomy and appendix, and what made agents whistleblow. (All seven seeds and KLS HISTORY.md are read.)
 3. Read the Lean v4.35.0 release notes for what `lake comparator` and `lake check` guarantee.
 
 ## Deprioritized

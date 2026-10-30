@@ -43,3 +43,25 @@ Mathematics, supported by Project Numina. Search ran from June 2026; three human
 - Template repo: https://github.com/human-ai-mathematics/conjecture-search-template (checker source, fingerprint scheme)
 - Framework: https://human-ai-mathematics.github.io/conjecture-search/
 - Discussions: https://github.com/orgs/human-ai-mathematics/discussions
+
+## Primary record: HISTORY.md (read 2026-10-30)
+Source: https://github.com/human-ai-mathematics/kls-conjecture-search/blob/main/HISTORY.md. It sharpens and
+partly corrects the blog's account above:
+- Before 2026-08-25, 34 fixed-cut statements were marked proved with no written proof. On 2026-08-25 they
+  "received grouped proofs and reviews"; the others were reclassified. Those certifications were "two agents
+  reviewing each other's work, which was not an independent check."
+- On 2026-10-04, 40 days later, fresh grouped reviews re-ran them. The QCTS/Stein core passed. The Riccati and
+  bootstrap dossiers were sent back: a false endpoint claim in `lem:half`; `prop:ceiling` narrowed to a one-way
+  sufficient implication; `thm:bootstrap` recertified. A proof step of `thm:cmh-1d` failed on the density
+  c(1+x^2)^-3 ("The step was at fault, not the theorem"); repaired and recertified with two dependents. The log
+  then says "No statement changed"; how that squares with `prop:ceiling` being narrowed is not explained there.
+- 2026-08-20 to 08-24: the June numerical reading for `conj:taming` was withdrawn: "the runs computed a different
+  quantity." So the wrong-quantity result stood about two months, June to late August.
+- 2026-10-06: a novelty claim on `thm:cmh-dirichlet` withdrawn.
+- 2026-08-27: the first refutations certified; "A fresh review confirmed them on 2026-10-01."
+- Every milestone cites a source file under `research/explorations/`, and statement changes are checked with
+  `check.py --statements`.
+
+For cairn: mutual review between two working agents is the specific anti-pattern, and its cost here was 40 days
+of certifications standing on it. The log's habit of citing a source file per milestone and diffing statements
+mechanically per release is the same shape as cairn's ARTIFACTS block and statement-hash golden.
