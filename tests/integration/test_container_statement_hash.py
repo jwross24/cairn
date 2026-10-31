@@ -198,9 +198,18 @@ def test_linux_candidate_closure_comparison_matches_exact_statement(
     solutionbuild.assert_unchanged(compilation.project)
     solutionbuild.assert_dependencies(linux_bundle, compilation.project)
     popen_spy.clear()
+    real_run = container.run
+
+    def stalled_run(ctx, image, argv, **kwargs):
+        return real_run(ctx, image, ["sh", "-c", 'sleep 600; exec "$@"', "sh", *argv], **kwargs)
+
+    # The budget must expire inside a started container on any machine. A real comparator's run time
+    # varies by more than a factor of two, and a container start can outlast a tight budget.
+    monkeypatch.setattr(container, "assert_pinned", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(container, "run", stalled_run)
     with pytest.raises(solutionplan.StepTimeout) as expired:
-        solutionchecks.observe_container_comparison(linux_bundle, compilation, timeout_s=2.0)
-    assert (expired.value.step, expired.value.timeout_s) == (solutionplan.KIND_CLOSURE_COMPARISON, 2.0)
+        solutionchecks.observe_container_comparison(linux_bundle, compilation, timeout_s=30.0)
+    assert (expired.value.step, expired.value.timeout_s) == (solutionplan.KIND_CLOSURE_COMPARISON, 30.0)
     timed_comparison = [argv for argv in popen_spy if solutionchecks.CONTAINER_COMPARATOR_BINARY in argv]
     assert len(timed_comparison) == 1
     assert any("stop" in argv for argv in popen_spy)
