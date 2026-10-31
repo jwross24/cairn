@@ -304,3 +304,34 @@ def test_dependency_links_cannot_escape_the_private_copy(gate, statement, tmp_pa
         _assemble(gate, statement, root, dependency_project=source)
     assert not root.exists()
     assert outside.read_text() == "not a package input"
+
+
+def _package_tree(root):
+    (root / "nested").mkdir(parents=True)
+    (root / "nested" / "module.olean").write_bytes(b"compiled")
+    (root / "link").symlink_to("nested/module.olean")
+    return root
+
+
+@pytest.mark.parametrize("clones", [True, False])
+def test_a_copied_tree_keeps_its_links_and_never_writes_back(tmp_path, monkeypatch, clones):
+    source = _package_tree(tmp_path / "source")
+    if not clones:
+        monkeypatch.setattr(solutionbuild, "_clone_tree", lambda *_: False)
+    destination = tmp_path / "project" / ".lake" / "packages" / "mathlib"
+    solutionbuild.copy_tree(source, destination)
+    assert (destination / "link").is_symlink()
+    assert (destination / "link").read_bytes() == b"compiled"
+    (destination / "nested" / "module.olean").write_bytes(b"rebuilt")
+    assert (source / "nested" / "module.olean").read_bytes() == b"compiled"
+
+
+def test_a_clone_failure_falls_back_to_a_copy(tmp_path, monkeypatch):
+    source = _package_tree(tmp_path / "source")
+    monkeypatch.setattr(solutionbuild, "_clone_tree", lambda *_: False)
+    calls = []
+    real = solutionbuild.shutil.copytree
+    monkeypatch.setattr(solutionbuild.shutil, "copytree", lambda *a, **k: (calls.append(a), real(*a, **k))[1])
+    solutionbuild.copy_tree(source, tmp_path / "destination")
+    assert calls[0][:2] == (source, tmp_path / "destination")
+    assert (tmp_path / "destination" / "nested" / "module.olean").read_bytes() == b"compiled"

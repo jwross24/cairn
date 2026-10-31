@@ -1,7 +1,9 @@
+import ctypes
 import json
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 from dataclasses import dataclass, replace
@@ -212,6 +214,22 @@ def _dependency_packages(project, manifest, pins):
     return packages
 
 
+def _clone_tree(source, destination):
+    if sys.platform != "darwin":
+        return False
+    flags = 1  # CLONE_NOFOLLOW
+    libc = ctypes.CDLL(None, use_errno=True)
+    return libc.clonefile(os.fsencode(source), os.fsencode(destination), flags) == 0
+
+
+def copy_tree(source, destination):
+    # A Mathlib package tree is gigabytes, and a clone shares its blocks until either side writes.
+    destination = Path(destination)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if not _clone_tree(source, destination):
+        shutil.copytree(source, destination, symlinks=True)
+
+
 def _write_project(gate, root, dependency_project):
     pins = gate.lean
     manifest = gate.lake_manifest if dependency_project is not None else None
@@ -229,7 +247,7 @@ def _write_project(gate, root, dependency_project):
         )
         (root / MANIFEST_NAME).write_text(json.dumps(manifest, sort_keys=True, indent=2) + "\n")
         for package in packages:
-            shutil.copytree(package, root / ".lake" / "packages" / package.name, symlinks=True)
+            copy_tree(package, root / ".lake" / "packages" / package.name)
         _dependency_packages(root, manifest, pins)
     (root / LAKEFILE_NAME).write_text(lakefile)
     return manifest

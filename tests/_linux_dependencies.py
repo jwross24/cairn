@@ -3,7 +3,6 @@ import fcntl
 import hashlib
 import json
 import os
-import shutil
 import stat
 import tempfile
 import time
@@ -161,7 +160,7 @@ def prepare(gate, image, cache):
                 raise CacheRefused(f"dependency-cache-provision-config-changed:{name}")
             (root / name).write_text(content)
         for package in packages:
-            shutil.copytree(package, root / ".lake/packages" / package.name, symlinks=True)
+            solutionbuild.copy_tree(package, root / ".lake/packages" / package.name)
         record = {"inputs": key_inputs(gate, image), "inventory": inventory(root)}
         (partial / "inventory.json").write_text(json.dumps(record, sort_keys=True) + "\n")
         validate(gate, image, partial)
@@ -175,7 +174,7 @@ def restore(gate, image, cache, destination):
     expected = validate(gate, image, entry)
     start = time.monotonic()
     destination = Path(destination)
-    shutil.copytree(entry / "project", destination, symlinks=True)
+    solutionbuild.copy_tree(entry / "project", destination)
     if inventory(destination) != expected:
         raise CacheRefused("dependency-cache-copy-mismatch")
     solutionbuild._dependency_packages(destination, gate.lake_manifest, gate.lean)
