@@ -75,6 +75,7 @@ CONTAINER_TEST_PATHS = (
     "tests/integration/test_container_candidate_steps.py",
     "tests/integration/test_container_challenge_hash.py",
     "tests/integration/test_lean_container.py",
+    "tests/integration/test_kernel_negatives.py",
     "tests/integration/test_proven_derivation.py",
 )
 PROVEN_TEST_PATH = CONTAINER_TEST_PATHS[-1]

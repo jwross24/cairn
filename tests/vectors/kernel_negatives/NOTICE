@@ -1,0 +1,9 @@
+The `.ndjson.gz` files are Lean exports of tests from two Apache-2.0 projects:
+
+- leanprover/lean-kernel-arena, https://github.com/leanprover/lean-kernel-arena
+- leanprover/lean4, `tests/elab/kernel_is_prop_ensure_sort.lean` and
+  `tests/elab/kernel_is_def_eq_equiv_manager_2.lean`, with `#guard_msgs` removed so the
+  declaration reaches the export.
+
+`probe.lean` carries `runBuiltinKernel` from leanprover/lean4's comparator, Apache-2.0.
+`manifest.json` pins the revisions and the SHA-256 of each uncompressed export.

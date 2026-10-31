@@ -13,9 +13,9 @@ pre-filter battery runs:
   FormalConjecturesUtil/Linters/ExistsImplicationLinter.lean
   FormalConjecturesUtil/Linters/StubLinter.lean
 
-Upstream pins mathlib v4.27.0; this repository pins leanprover/lean4:v4.34.0-rc1, so a
+Upstream pins mathlib v4.27.0; this repository pins leanprover/lean4:v4.35.0, so a
 lake `require` on the upstream package would drag the toolchain backward. The four files
-build against v4.34.0-rc1 with no mathlib and two import edits, reproduced literally here.
+build against v4.35.0 with no mathlib and two import edits, reproduced literally here.
 `withSetOptionIn` moved from Lean.Elab.Command to Lean.Linter.Basic between those versions.
 
 --- upstream/FormalConjecturesForMathlib/Tactic/Linter/Term.lean

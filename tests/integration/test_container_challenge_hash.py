@@ -45,7 +45,7 @@ def test_linux_dependency_cache_restores_without_provisioning(
     prepared = solutionchecks.prepare_container(
         linux_bundle, linux_image, statement, ("challenge_curve",), root=tmp_path / "prepared", dependency_project=root
     )
-    assert prepared.formal_statement_hash == "050203449ae9ec911926c65bcbb8786f41e86730ca16b2427bb240662b0b2b4d"
+    assert prepared.formal_statement_hash == "cf664db883dba4f9a7eeac837d9b41b594afc134a942a0627a4901cfb4e1995f"
     docker = [argv for argv in popen_spy if "--network" in argv]
     assert docker
     assert all(argv[argv.index("--network") + 1] == "none" for argv in docker)
@@ -54,16 +54,15 @@ def test_linux_dependency_cache_restores_without_provisioning(
     artifact.write_bytes(b"private mutation")
     assert dependencies.inventory(entry / "project") == before
     dependencies.validate(linux_bundle, linux_image, entry)
-    real_copy = dependencies.shutil.copytree
+    real_copy = solutionbuild.copy_tree
 
-    def copy_then_change(source, destination, *args, **kwargs):
-        copied = real_copy(source, destination, *args, **kwargs)
+    def copy_then_change(source, destination):
+        real_copy(source, destination)
         if Path(source) == entry / "project":
             artifact = next((Path(destination) / ".lake/packages/mathlib").rglob("*.olean"))
             artifact.write_bytes(b"changed during copy")
-        return copied
 
-    monkeypatch.setattr(dependencies.shutil, "copytree", copy_then_change)
+    monkeypatch.setattr(solutionbuild, "copy_tree", copy_then_change)
     with pytest.raises(dependencies.CacheRefused, match="dependency-cache-copy-mismatch"):
         dependencies.restore(linux_bundle, linux_image, linux_dependencies, tmp_path / "corrupt-copy")
     assert dependencies.inventory(entry / "project") == before
@@ -90,7 +89,7 @@ def test_linux_hashes_real_challenges_and_rejects_absent_theorems(
         )
         for index, module in enumerate(modules)
     ]
-    assert hashes[0] == "050203449ae9ec911926c65bcbb8786f41e86730ca16b2427bb240662b0b2b4d"
+    assert hashes[0] == "cf664db883dba4f9a7eeac837d9b41b594afc134a942a0627a4901cfb4e1995f"
     assert hashes[0] != hashes[1]
     with pytest.raises(lean.LeanRejected, match="missing-theorem:absent_theorem"):
         container.formal_statement_hash(
@@ -166,7 +165,7 @@ def test_container_preparation_binds_the_claim_without_host_lean(
         root=tmp_path / "prepared",
         dependency_project=dependencies,
     )
-    assert prepared.formal_statement_hash == "928724caf7b2404b9a79315dc4bb8f65b999726d71a21f212d657ac2d5d490e4"
+    assert prepared.formal_statement_hash == "728bce816daf8b599b0265bc736ccaa9df78799780100a145b7136e57030ddf6"
     assert prepared.statement_hash == statement.hash
     assert prepared.bundle_hash == linux_bundle.hash
     assert prepared.pin_hash == linux_bundle.pin_hash
@@ -268,7 +267,7 @@ def test_container_preparation_rejects_inputs_changed_during_hashing(
 
     def hash_then_change(*args, **kwargs):
         digest = real_hash(*args, **kwargs)
-        assert digest == "050203449ae9ec911926c65bcbb8786f41e86730ca16b2427bb240662b0b2b4d"
+        assert digest == "cf664db883dba4f9a7eeac837d9b41b594afc134a942a0627a4901cfb4e1995f"
         source = challenge.module_path(statement, Path(kwargs["project_dir"]) / "Challenge")
         source.write_bytes(source.read_bytes() + b"\n")
         return digest

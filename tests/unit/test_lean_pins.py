@@ -39,7 +39,7 @@ def test_the_lakefile_requires_mathlib_at_the_pinned_rev():
 def test_the_lean_commit_pin_is_a_full_sha_and_the_toolchain_version_parses():
     pins = lean.source_pins()
     assert len(bytes.fromhex(pins["lean_commit"])) == 20
-    assert lean.toolchain_version(pins["toolchain"]) == "4.34.0-rc1"
+    assert lean.toolchain_version(pins["toolchain"]) == "4.35.0"
 
 
 def test_a_lean_that_exits_zero_without_identifying_a_toolchain_is_reported_missing(monkeypatch):

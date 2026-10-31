@@ -12,10 +12,10 @@
     "sha256": "cb69af0803b04157bc30201c29c12fca882bb3ad8b43476b8d2d3064810bc3ac"
   },
   "toolchain": {
-    "name": "leanprover/lean4:v4.34.0-rc1",
-    "lean_commit": "3447a668783dbce1a8fdb97101dd067687b2b418",
-    "asset": "lean-4.34.0-rc1-linux_aarch64.tar.zst",
-    "sha256": "e5b8ca631c1a5dce9e8477664f01543cf192737d63b3fbef43f3fae176efdabe"
+    "name": "leanprover/lean4:v4.35.0",
+    "lean_commit": "eb6cafb7290e8bd5f2937522d8d804f58f02bafc",
+    "asset": "lean-4.35.0-linux_aarch64.tar.zst",
+    "sha256": "c8f0f8a3920e839718b1343e6781fd80a3e9b1024fbcd7078eb30f54e806b028"
   },
   "go": {
     "version": "1.24.13",
@@ -34,16 +34,16 @@
   },
   "nanoda": {
     "repo": "https://github.com/ammkrn/nanoda_lib",
-    "version": "0.4.19",
-    "commit": "3a2407216ee84a75f9e1aead6803d0578be06ae7"
+    "version": "0.4.31",
+    "commit": "8de7e0c4ed3052745a7f8725164efd9e76d84c56"
   },
   "comparator": {
     "repo": "https://github.com/leanprover/comparator",
-    "rev": "575674928e239f5bc452aab72d1dd7b0f1326494",
-    "lean4export_rev": "b18d673bd29b476466a51a3be1012df2ed322b10"
+    "rev": "e3dcf3083fc53d44b27a4431fabf7d43181583f5",
+    "lean4export_rev": "5a9a355dc6c5fd82b69058d433e2ae2e8dfbf8fe"
   },
   "mathlib": {
-    "rev": "1f29011071772620f612bf5a06433775f06067b8",
+    "rev": "56a005855ea17e0b0958f73ec801ae140b0a1679",
     "mount": "lean"
   }
 }

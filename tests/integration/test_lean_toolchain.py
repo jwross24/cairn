@@ -5,7 +5,7 @@ from cairn import bundle, lean, log
 HELLO_MODULE = "Hello"
 HELLO_SOURCE = "theorem hello (n : Nat) : n + 0 = n := Nat.add_zero n\n"
 LAKEFILE = 'name = "hello"\n\n[[lean_lib]]\nname = "Hello"\n'
-PINNED_VERSION = "4.34.0-rc1"
+PINNED_VERSION = "4.35.0"
 WRONG_COMMIT = "0" * 40
 
 

@@ -32,6 +32,24 @@ and nanoda HEAD refuses them. The fourth is not a proof of `False`, is open as `
 
 **So each pinned kernel is the only barrier against the other's bugs.** The gate holds by intersection alone.
 
+## End to end on the old pins
+
+`old_pin_exploit_test.py` submitted the #14807 exploit as a Solution to the gold-arm entry points on
+`cairn-gate:d6117a22be6f9e25`: the pinned prelude, the exploit, then a real statement proved by
+`False.elim kernel_soundness_target`. Output is in `results/old-pin-exploit.txt`.
+
+| Gate step | Outcome |
+|---|---|
+| `compile_container` | **passed**, rc 0 |
+| `check_container_axioms` | **passed**, `challenge_curve: ['propext']`, no offending axioms |
+| comparator | refused, `closure-mismatch`, `rc:1`, nanoda panic at `src/tc.rs:1328:18` |
+
+A forged proof of a real statement cleared every step but one, and that step was nanoda. `leanchecker --fresh` exited 0
+on the same exploit in `results/pr_results.jsonl`.
+
+On `v4.35.0` the same Solution stops at compilation with `kernel error`
+(`tests/integration/test_kernel_negatives.py`).
+
 ## How refusals are counted
 
 Rows are not all kernel verdicts, and the runner keeps them apart:
@@ -48,9 +66,8 @@ nanoda's rejection path, and the comparator treats any nonzero exit as rejection
 
 ## What was not established
 
-- **Kernel level only.** These runs exercise the two kernels on the comparator's code path. They do not run the full
-  gold arm: no Challenge, no `compareAt`, no `checkAxioms`. Nothing here shows a full-gate pass, and with an empty
-  intersection none was attempted.
+- **Kernel level for the 82.** Those runs exercise the two kernels on the comparator's code path, with no Challenge, no
+  `compareAt` and no `checkAxioms`. One exploit ran end to end, below.
 - **Absence of a known exploit is not soundness.** Zero of 82 bounds these 82. Pinned nanoda is 33 commits behind HEAD,
   and both pinned kernels carry bugs fixed upstream.
 - **Runtime exploits not run.** #14838 (refcount overflow, `tests/elab/14383.lean`) needs depth 30 and about 12 GB free.

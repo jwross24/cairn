@@ -1,0 +1,286 @@
+{
+ "source": {
+  "lean_kernel_arena": "7e8cc90a3bc1ca827f616d038df13592020c6bf0",
+  "lean4_tests": {
+   "pr14807": "7412bc4c852c9a9fafa69b67a11e4bf9f5dcbc24",
+   "pr14806_2": "d108aae3bf7edbaf705b71c01ddb3b264ef72c44"
+  },
+  "exported_with": "lean4export b18d673 on Lean v4.34.0-rc1, research/grounding/kernel-intersection-2026-10-30"
+ },
+ "entries": [
+  {
+   "name": "bugs-closure-level-subst",
+   "invalid": true,
+   "sha256": "ba61ad635f4a1e8929b3ada25df22a8ab854f908d5fac44f9e7bf5f2d91ae3a0",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-constlevels",
+   "invalid": true,
+   "sha256": "2fa6a967f15f76cfdcea3ef1992ff31a4cc4aa647b0f8fabf0ff61eedb3afbf1",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-ctor-num-fields",
+   "invalid": true,
+   "sha256": "5bb3c282eefaa1c27a9043c319bf7d6f9c990bab6e9b4deefa0a117afddc6362",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-eta-ctor-alias",
+   "invalid": true,
+   "sha256": "9f40a6e1c63c004ee1a67164777050b0ebf03f78c73287a015be6728628d84d6",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-forged-quot-ind",
+   "invalid": true,
+   "sha256": "00f3560695f79944f1d45a217e12b0ad0aad30e2a5f038c20441783ea8a911bd",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-k-rec-conv",
+   "invalid": true,
+   "sha256": "366b912f2cdd47e8e9c328cad2774e8b85c24e4fd9265af1814cc5d2ac9aa96c",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-large-elim-param",
+   "invalid": true,
+   "sha256": "df7d23ff199c4956620f3b1b4d17976c6bbe99ec6c1b5a4e803a7f9f415e331f",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-large-elim-prop-bool",
+   "invalid": true,
+   "sha256": "f9fa627e4e87374066f0f8ad3f1477fe2b02abb3623687d4b81151b2ee228aef",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-level-imax-leq",
+   "invalid": true,
+   "sha256": "497eaa80a214386c679356c33a72c8beab5019c4938494b1608e3772a2756191",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-level-imax-normalization",
+   "invalid": true,
+   "sha256": "d368d5569321b717b7ec95bd1f4fa5bbd7d6e1f8d6ebdf1a0644dc8bc76bc2ec",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-loose-bvar-value",
+   "invalid": true,
+   "sha256": "a702608ad2a794f5a4fbac42aa8d3894c2f1ab9707013b9e3ac57b2310a2b328",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-nat-rec-k-lie",
+   "invalid": true,
+   "sha256": "5a49d132bb0c7dca091baa481333f5e97e390fde72c8ec18c6124a690ec47d7c",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-nat-rec-rules",
+   "invalid": true,
+   "sha256": "934e59fdc4f2a978605c4a44e90b94b57e9940f3828620c0db337b7125cdd169",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-nested-name-capture",
+   "invalid": true,
+   "sha256": "9d38f6480b12a9061ac54dec8ea27477414a39c65301dfb7ee5cedaa8d3cffad",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-nested-rec-rule-nfields",
+   "invalid": true,
+   "sha256": "1c10a012044b72bb1c7252700d93c15a186352cfc698a5fb230da6b6e765dacc",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-nested-unused-param",
+   "invalid": true,
+   "sha256": "b2b747f3e8ab8d507487251d6b7ed51027d3e9ec210dbdc739755b59b9deda86",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-orphan-rec",
+   "invalid": true,
+   "sha256": "738f28bc1175d70faf09f4b45ae7ca92e8b8d397f6c5d0183240cd695f6d7bc4",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-pi-closure-context",
+   "invalid": true,
+   "sha256": "730013454f261b1c20e3ee4600821e325715929a6ddca36779f6ce9e5f506520",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-proj-non-structure",
+   "invalid": true,
+   "sha256": "086f0ac184e930aee855cad87da6454c3df9b3b3aeb41c12ac5231cbf8570919",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-proj-of-imax-prop",
+   "invalid": true,
+   "sha256": "1b928b25cfc73b78fc8b8704542d9f62199493445c507453a875e66dc846c740",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-proj-of-stuck-prop",
+   "invalid": true,
+   "sha256": "b532c2ee7e2869d090a3ed29ce7f95c72d3a0b9a7fcf113bf414b4883c457bcd",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-proj-of-subst-prop",
+   "invalid": true,
+   "sha256": "a49e21defc1cc0e8df8169fd9e9209dea2943509d67bc3fe122a78c2abbf593f",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-rec-k-lie",
+   "invalid": true,
+   "sha256": "81808c2d08daa50a602d1f6cda8d5adf77fd780865e9df43eea6b0184b8e8f35",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-rec-missing-ih",
+   "invalid": true,
+   "sha256": "8a240552317ba17d44d175c10531e5f988f55569db5eff734701735ce598fa73",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-rec-of-subst-prop",
+   "invalid": true,
+   "sha256": "1cbfe2b3bfa0c6afb0bf1a4878deab127fc9c92bb8027f0816440ed0693d57d6",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "bugs-unit-rec-rule",
+   "invalid": true,
+   "sha256": "cb6d127a5f0daa9fa2047c338e809d1ffb9cc3d8454956c30eede38091a4a969",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "corner-cases-proof-param-ok",
+   "invalid": false,
+   "sha256": "7f9b3c07a64b441f8dd0f7dd2912274241fdb17118953fb089f796fdd1590af4",
+   "official": "accept",
+   "nanoda": "accept"
+  },
+  {
+   "name": "other-extra-rec",
+   "invalid": true,
+   "sha256": "eab650028a71177bd4d9fcb6a84b4e92dd91cf4e7af67023af458d18729be0e2",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "other-inductive-undeclared-universe",
+   "invalid": true,
+   "sha256": "ca3ad18ba0d1bd8abc4ec86f750ec583912ca657b68389cb2e29611c2888a7c9",
+   "official": "reject",
+   "nanoda": "accept",
+   "open_issue": "ammkrn/nanoda_lib#79"
+  },
+  {
+   "name": "other-nat-lit-add",
+   "invalid": false,
+   "sha256": "e050988dfa89d0110f1e9a086e85d71f2fc7040b424cb8b44289d2582d1061e3",
+   "official": "accept",
+   "nanoda": "accept"
+  },
+  {
+   "name": "other-nat-lit-add-bad",
+   "invalid": true,
+   "sha256": "099da3470b93377b13d72386139815c3ea7dcac8a04bdb6c4b6d7bb2376fe347",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "other-nat-lit-ble",
+   "invalid": false,
+   "sha256": "ac5878b9fb70195deee078e9df5cee83281732c6cdd70f0df05b9862c68bc71f",
+   "official": "accept",
+   "nanoda": "accept"
+  },
+  {
+   "name": "other-nat-lit-sub",
+   "invalid": false,
+   "sha256": "b054a78473465b332bc516439cd1166eafc7f777cfcf23f948c98389300629fa",
+   "official": "accept",
+   "nanoda": "accept"
+  },
+  {
+   "name": "other-orphan-ctor",
+   "invalid": true,
+   "sha256": "2c9b12979ea3da11272d6eca4b0a39523a863d6fb501daf61c4edb8996a97daa",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "other-proj-of-prop",
+   "invalid": true,
+   "sha256": "e0c32036e29ec3886b98ab9ba222cb9cfa0e9988364243cd8c4841665a84004d",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "perf-refute-cheap-first",
+   "invalid": true,
+   "sha256": "c0f237318f47f268ce2d232a3e9da7910d8525d16d5edd1290ed2b8f2bf3f033",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "perf-refute-cheap-last",
+   "invalid": true,
+   "sha256": "d5b1e6241c574fc4f8ce07df6e706e58b07f860899820a5e7f11cfd8975c7cac",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "pr14806_2",
+   "invalid": true,
+   "sha256": "ce6d61aa0e93d9daf11cd096572a94bc9086878a64bc2e91e97eaa2e6c7d9a3e",
+   "official": "reject",
+   "nanoda": "reject"
+  },
+  {
+   "name": "pr14807",
+   "invalid": true,
+   "sha256": "967ae8dd9ac2ffbb98b873877163313c9d933f93655b61d711e9317a80f3d500",
+   "official": "reject",
+   "nanoda": "reject"
+  }
+ ]
+}
