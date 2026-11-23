@@ -8,6 +8,7 @@ import pytest
 
 from cairn import attest, bundle, claims, human_authority, keys, yank
 from cairn.profile import CostProfile, Production, SizeCost, Verification
+from cairn.substrate import blob_hash
 from cairn.tiergate import (
     BOUNDARY_TABLE,
     BUDGET,
@@ -271,7 +272,7 @@ def test_a_waiver_produces_no_ticket_and_admits_no_tier(gate, tmp_path, clear_fl
     clear_flags(log_path)
     attest.init(log_path, gate_bundle.waiver_target())
     waiver = attest.fixture_waiver(gate_bundle.waiver_target())
-    assert attest.attestation_record_matches(log_path, 0, claims.blob_hash(attest.waiver_canonical(waiver)))
+    assert attest.attestation_record_matches(log_path, 0, blob_hash(attest.waiver_canonical(waiver)))
     assert gate_bundle.waivable_checks == []
 
     identity = certify(sub)
