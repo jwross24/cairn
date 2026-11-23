@@ -41,5 +41,5 @@ def add_skeptic(
                 None,
                 "2026-10-13T00:00:01Z",
             )
-            dispatch._write(sub, "worker_result", "worker_results", result, (sent.hash,))
+            dispatch._write(sub, dispatch.RESULT, result, (sent.hash,))
     return sent

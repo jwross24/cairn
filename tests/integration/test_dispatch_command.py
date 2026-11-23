@@ -225,10 +225,10 @@ def test_a_dispatch_whose_result_could_not_be_written_says_so(tmp_path, monkeypa
     monkeypatch.setattr(worker, "_execute", _scripted())
     write = dispatch._write
 
-    def failing_result(sub, kind, table, value, parents):
-        if table == "worker_results":
+    def failing_result(sub, record_kind, value, parents):
+        if record_kind is dispatch.RESULT:
             raise sqlite3.OperationalError("planted result write failure")
-        return write(sub, kind, table, value, parents)
+        return write(sub, record_kind, value, parents)
 
     monkeypatch.setattr(dispatch, "_write", failing_result)
     assert dispatch.main(argv) == exits.BACKEND

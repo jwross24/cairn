@@ -4,8 +4,8 @@ import shutil
 from dataclasses import replace
 
 import pytest
+from _skeptic_isolation_seed import _make_skeptic_bundle
 from test_counterexample_hunt import _setup
-from test_skeptic_isolation import _make_skeptic_bundle
 
 from cairn import bundle, canon, claims, dispatch, hunt, instances, roles, skeptic, skeptic_tools, substrate
 

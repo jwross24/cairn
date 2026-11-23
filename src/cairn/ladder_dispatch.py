@@ -3,7 +3,7 @@ import json
 from dataclasses import asdict, dataclass
 from uuid import uuid4
 
-from cairn import allowlist, bundle, claims, keys, ladderplan, log
+from cairn import allowlist, bundle, claims, keys, ladderplan, log, records
 from cairn.ladder_commit import _hypothesis, check_order
 from cairn.ladder_refusal import (
     ALLOW_LIST_UNBOUND,
@@ -119,33 +119,33 @@ def check_dispatch(sub, gate_bundle, dispatch, plan, *, attest_path=None):
     return dispatch
 
 
+RECORD = records.RecordKind(
+    kind=KIND,
+    table=TABLE,
+    unique_by="record_hash",
+    canonical=lambda value: bundle.canonical_bytes(KIND, value.as_dict()),
+    index_row=lambda value: {
+        "run_id": value.run_id,
+        "arm": value.arm,
+        "nonce": value.nonce,
+        "hypothesis_hash": value.hypothesis_hash,
+        "implementation_revision": value.implementation_revision,
+        "allow_list_hash": value.allow_list_hash,
+        "gate_bundle_hash": value.gate_bundle_hash,
+        "plan_hash": value.plan_hash,
+        "record_json": records.as_json(value),
+    },
+    decode=lambda row: Dispatch(**json.loads(row["record_json"])),
+    root="ledger_row",
+    generated=(("dispatch_id", lambda: str(uuid4())),),
+)
+
+
 def write_dispatch(sub, value):
-    canonical = bundle.canonical_bytes(KIND, value.as_dict())
-    with sub._tx():
-        sub._put_node(KIND, canonical, value.hash, "Replayable", None)
-        sub.conn.execute(
-            f"INSERT INTO {TABLE} (dispatch_id, record_hash, run_id, arm, nonce, hypothesis_hash,"
-            " implementation_revision, allow_list_hash, gate_bundle_hash, plan_hash, record_json)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (
-                str(uuid4()),
-                value.hash,
-                value.run_id,
-                value.arm,
-                value.nonce,
-                value.hypothesis_hash,
-                value.implementation_revision,
-                value.allow_list_hash,
-                value.gate_bundle_hash,
-                value.plan_hash,
-                json.dumps(value.as_dict(), sort_keys=True, separators=(",", ":")),
-            ),
-        )
-        sub._add_root("ledger_row", value.hash)
+    records.put(sub, RECORD, value)
     lg.info("dispatch", run_id=value.run_id, arm=value.arm, record=value.hash)
     return value
 
 
 def dispatches_for(sub, run_id):
-    rows = sub.conn.execute(f"SELECT record_json FROM {TABLE} WHERE run_id = ? ORDER BY rowid", (run_id,)).fetchall()
-    return {d.arm: d for d in (Dispatch(**json.loads(row["record_json"])) for row in rows)}
+    return {d.arm: d for d in records.find(sub, RECORD, run_id=run_id)}

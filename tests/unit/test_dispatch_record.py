@@ -353,7 +353,7 @@ def test_sdk_duration_turns_and_token_usage_are_recorded_with_the_result(tmp_pat
     }
     record = dispatch._record(sub, dispatch._prepare(sub, gate_bundle, role="echo", node_ids=(node,)))
     finished = dispatch.DispatchResult(dispatch_id=record.dispatch_id, at=record.at, **outcome)
-    dispatch._write(sub, "worker_result", "worker_results", finished, (record.hash,))
+    dispatch._write(sub, dispatch.RESULT, finished, (record.hash,))
     assert dispatch.result(sub, record.dispatch_id).run_metrics == outcome["run_metrics"]
     bare = dataclasses.replace(finished, run_metrics=None)
     assert "run_metrics" not in bare.as_dict()
@@ -377,12 +377,12 @@ def test_worker_results_are_append_only(arena, sql):
     sub, gate_bundle, node = arena
     record = dispatch._record(sub, dispatch._prepare(sub, gate_bundle, role="echo", node_ids=(node,)))
     outcome = dispatch.DispatchResult(record.dispatch_id, "error", "TimeoutError", "", (), (), (), None, record.at)
-    dispatch._write(sub, "worker_result", "worker_results", outcome, (record.hash,))
+    dispatch._write(sub, dispatch.RESULT, outcome, (record.hash,))
     with pytest.raises(sqlite3.IntegrityError, match="append-only"):
         sub.conn.execute(sql)
     assert dispatch.result(sub, record.dispatch_id) == outcome
     with pytest.raises(sqlite3.IntegrityError, match="UNIQUE constraint"):
-        dispatch._write(sub, "worker_result", "worker_results", outcome, (record.hash,))
+        dispatch._write(sub, dispatch.RESULT, outcome, (record.hash,))
     assert sub.conn.execute("SELECT COUNT(*) FROM worker_results").fetchone()[0] == 1
 
 

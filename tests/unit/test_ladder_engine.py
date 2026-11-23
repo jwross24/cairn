@@ -10,6 +10,7 @@ import pytest
 
 from cairn import allowlist, bundle, claims, instances, keys, ladder, ladderplan, laddertable, runner, yank
 from cairn.skills import bsgs, rho_dp
+from cairn.substrate import HashMismatch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import _substrate_helpers as helpers
@@ -245,6 +246,46 @@ def test_the_dispatch_record_carries_the_full_dispatched_identity(writer, shippe
     assert (row["run_id"], row["arm"], row["record_hash"]) == (RUN_ID, ladder.CLAIMANT, value.hash)
     assert ladder.dispatches_for(writer, RUN_ID)[ladder.CLAIMANT] == value
     assert popen_spy == []
+
+
+def test_a_dispatch_row_inserted_around_the_writer_with_json_off_its_content_address_is_refused(
+    writer, shipped, seeded
+):
+    value = ladder.dispatch(
+        writer,
+        shipped,
+        plan=seeded["plan"],
+        plan_hash="dd" * 32,
+        hypothesis_hash=seeded["hypothesis"].hash,
+        nonce=seeded["nonce"],
+        run_id=RUN_ID,
+        arm=ladder.CLAIMANT,
+        skill=bsgs.__name__,
+        allow_list=seeded["allow_list"],
+    )
+    named = dataclasses.replace(value, arm=ladder.BASELINE)
+    writer.put_node(ladder.KIND, bundle.canonical_bytes(ladder.KIND, named.as_dict()), hash=named.hash)
+    forged = json.dumps({**named.as_dict(), "skill": rho_dp.__name__}, sort_keys=True, separators=(",", ":"))
+    writer.conn.execute(
+        f"INSERT INTO {ladder.TABLE} (dispatch_id, record_hash, run_id, arm, nonce, hypothesis_hash,"
+        " implementation_revision, allow_list_hash, gate_bundle_hash, plan_hash, record_json)"
+        " VALUES ('forged', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            named.hash,
+            named.run_id,
+            named.arm,
+            named.nonce,
+            named.hypothesis_hash,
+            named.implementation_revision,
+            named.allow_list_hash,
+            named.gate_bundle_hash,
+            named.plan_hash,
+            forged,
+        ),
+    )
+    writer.conn.commit()
+    with pytest.raises(HashMismatch, match="does not match its content address"):
+        ladder.dispatches_for(writer, RUN_ID)
 
 
 @pytest.mark.parametrize("field", ["writable_root", "counted_object"])

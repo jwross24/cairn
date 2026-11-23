@@ -2,7 +2,7 @@ import argparse
 import json
 from decimal import Decimal
 
-from cairn import claims, dispatch, human_authority, hunt, ladder
+from cairn import claims, dispatch, human_authority, hunt, ladder, records
 
 
 class ReportRefused(ValueError):
@@ -104,14 +104,13 @@ def _executor_observations(sub, trial):
 
 
 def _skeptic_records(sub, statement_hash):
-    records = []
-    for row in sub.conn.execute("SELECT dispatch_id FROM worker_dispatches ORDER BY rowid"):
-        sent = dispatch.read(sub, row["dispatch_id"])
+    found = []
+    for sent in records.find(sub, dispatch.DISPATCH):
         if sent.role != "skeptic" or statement_hash not in sent.handed_node_hashes:
             continue
         view = dispatch.skeptic_record(sub, sent.dispatch_id, statement_hash)
-        records.append((sent, dispatch.result(sub, sent.dispatch_id), view))
-    return records
+        found.append((sent, dispatch.result(sub, sent.dispatch_id), view))
+    return found
 
 
 def _require_campaign(kind, statement, skeptic_records):

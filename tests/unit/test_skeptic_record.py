@@ -88,7 +88,7 @@ def record(
         sent.at,
         read_node_hashes=tuple(scoped.read_node_hashes),
     )
-    dispatch._write(sub, "worker_result", "worker_results", finished, (sent.hash,))
+    dispatch._write(sub, dispatch.RESULT, finished, (sent.hash,))
     return sent, finished
 
 
@@ -166,7 +166,7 @@ def test_worker_execute_persists_only_successful_local_mcp_reads(arena, tmp_path
     outcome = asyncio.run(worker._execute(prepared, tmp_path))
     assert outcome.get("read_node_hashes") == (statement.hash,), "missing successful scoped-read observations"
     finished = dispatch.DispatchResult(dispatch_id=sent.dispatch_id, at=sent.at, **outcome)
-    dispatch._write(sub, "worker_result", "worker_results", finished, (sent.hash,))
+    dispatch._write(sub, dispatch.RESULT, finished, (sent.hash,))
     persisted = dispatch.result(sub, sent.dispatch_id)
     assert persisted.read_node_hashes == (statement.hash,)
     row = sub.conn.execute(

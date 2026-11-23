@@ -152,7 +152,7 @@ def test_real_hunt_and_local_mcp_read_produce_typed_campaign_report(tmp_path, bl
             sent.at,
             read_node_hashes=tuple(scoped.read_node_hashes),
         )
-        dispatch._write(sub, "worker_result", "worker_results", finished, (sent.hash,))
+        dispatch._write(sub, dispatch.RESULT, finished, (sent.hash,))
         if blob_state == "missing":
             sub.conn.execute("DELETE FROM blobs WHERE hash = ?", (read_hash,))
         elif blob_state == "changed":

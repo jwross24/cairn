@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from uuid import uuid4
 
-from cairn import bundle, canary, cli, exits, log, roles, skeptic, worker
+from cairn import bundle, canary, cli, exits, log, records, roles, skeptic, worker
 from cairn.substrate import HashMismatch, Substrate, SubstrateError, UnknownNode, blob_hash, node_hash_for
 
 lg = log.get("dispatch")
@@ -95,6 +95,37 @@ class DispatchResult:
         return node_hash_for("worker_result", bundle.canonical_bytes("worker_result", self.as_dict()))
 
 
+def _worker_kind(kind, table, cls, tuple_fields):
+    def decode(row):
+        data = json.loads(row["record_json"])
+        for name in tuple_fields:
+            if name in data:
+                data[name] = tuple(data[name])
+        return cls(**data)
+
+    return records.RecordKind(
+        kind=kind,
+        table=table,
+        unique_by="dispatch_id",
+        canonical=lambda value: bundle.canonical_bytes(kind, value.as_dict()),
+        index_row=lambda value: {"dispatch_id": value.dispatch_id, "record_json": records.as_json(value)},
+        decode=decode,
+        grade="AuditOnly",
+        root="ledger_row",
+    )
+
+
+DISPATCH = _worker_kind(
+    "worker_dispatch", "worker_dispatches", DispatchRecord, ("handed_node_hashes", "tool_allow_list")
+)
+RESULT = _worker_kind(
+    "worker_result",
+    "worker_results",
+    DispatchResult,
+    ("observed_tools", "observed_skills", "observed_plugins", "rerun_requests", "read_node_hashes"),
+)
+
+
 def _prepare(sub, gate_bundle, *, role, node_ids):
     worker._check_version()
     pinned = bundle.GateBundle.open(gate_bundle.path, gate_bundle.pin_path)
@@ -169,75 +200,21 @@ def _record(sub, prepared):
         model=prepared.model,
         at=cli.now_iso(),
     )
-    _write(
-        sub,
-        "worker_dispatch",
-        "worker_dispatches",
-        record,
-        (*prepared.node_ids, prompt_hash, template_hash, config_hash),
-    )
+    _write(sub, DISPATCH, record, (*prepared.node_ids, prompt_hash, template_hash, config_hash))
     return record
 
 
-def _write(sub, kind, table, value, parents):
-    data = json.dumps(value.as_dict(), sort_keys=True, separators=(",", ":"))
-    canonical = bundle.canonical_bytes(kind, value.as_dict())
-    with sub._tx():
-        sub._put_node(kind, canonical, value.hash, "AuditOnly", None)
-        sub.conn.execute(
-            f"INSERT INTO {table} (dispatch_id, record_hash, record_json) VALUES (?, ?, ?)",
-            (value.dispatch_id, value.hash, data),
-        )
-        sub._add_root("ledger_row", value.hash)
-        for parent in parents:
-            sub._add_lineage(value.hash, parent, "input")
-    lg.info("write", table=table, dispatch_id=value.dispatch_id, hash=value.hash)
-
-
-def _read(sub, table, kind, cls, dispatch_id, tuple_fields):
-    row = sub.conn.execute(
-        f"SELECT record_hash, record_json FROM {table} WHERE dispatch_id = ?", (dispatch_id,)
-    ).fetchone()
-    if row is None:
-        return None
-    data = json.loads(row["record_json"])
-    for name in tuple_fields:
-        if name in data:
-            data[name] = tuple(data[name])
-    value = cls(**data)
-    node = sub.get_node(row["record_hash"])
-    expected = bundle.canonical_bytes(kind, value.as_dict())
-    if (
-        value.dispatch_id != dispatch_id
-        or value.hash != row["record_hash"]
-        or node is None
-        or node["kind"] != kind
-        or bytes(node["canonical"]) != expected
-    ):
-        raise HashMismatch(f"{table} record {dispatch_id} does not match its content address")
-    return value
+def _write(sub, record_kind, value, parents):
+    records.put(sub, record_kind, value, parents)
+    lg.info("write", table=record_kind.table, dispatch_id=value.dispatch_id, hash=value.hash)
 
 
 def read(sub, dispatch_id):
-    return _read(
-        sub,
-        "worker_dispatches",
-        "worker_dispatch",
-        DispatchRecord,
-        dispatch_id,
-        ("handed_node_hashes", "tool_allow_list"),
-    )
+    return records.find_one(sub, DISPATCH, dispatch_id=dispatch_id)
 
 
 def result(sub, dispatch_id):
-    return _read(
-        sub,
-        "worker_results",
-        "worker_result",
-        DispatchResult,
-        dispatch_id,
-        ("observed_tools", "observed_skills", "observed_plugins", "rerun_requests", "read_node_hashes"),
-    )
+    return records.find_one(sub, RESULT, dispatch_id=dispatch_id)
 
 
 @dataclass(frozen=True)
@@ -394,9 +371,9 @@ async def run(sub, gate_bundle, *, role, node_ids):
         finished = DispatchResult(dispatch_id=record.dispatch_id, at=cli.now_iso(), **outcome)
     except BaseException as exc:
         failed = DispatchResult(record.dispatch_id, "error", type(exc).__name__, "", (), (), (), None, cli.now_iso())
-        _write(sub, "worker_result", "worker_results", failed, (record.hash,))
+        _write(sub, RESULT, failed, (record.hash,))
         raise
-    _write(sub, "worker_result", "worker_results", finished, (record.hash,))
+    _write(sub, RESULT, finished, (record.hash,))
     return finished
 
 
