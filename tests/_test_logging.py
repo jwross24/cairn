@@ -33,6 +33,37 @@ def _release_append_flags(root):
                 pending.extend(entry.path for entry in entries)
 
 
+def _expiring_scratch(user_root, keep):
+    numbered = {}
+    for entry in user_root.iterdir():
+        suffix = entry.name.removeprefix("pytest-")
+        if suffix != entry.name and suffix.isdigit():
+            numbered[entry] = int(suffix)
+        elif entry.name.startswith("garbage-"):
+            yield entry
+    newest = max(numbered.values(), default=-1)
+    yield from (entry for entry, number in numbered.items() if number <= newest - keep)
+
+
+def pytest_sessionstart(session):
+    from _pytest.tmpdir import get_user
+
+    config = session.config
+    policy = config.getini("tmp_path_retention_policy")
+    keep = 0 if policy == "none" else int(config.getini("tmp_path_retention_count"))
+    if not hasattr(os, "chflags") or config.option.basetemp is not None:
+        return
+    temproot = Path(os.environ.get("PYTEST_DEBUG_TEMPROOT") or tempfile.gettempdir()).resolve()
+    user_root = temproot / f"pytest-of-{get_user() or 'unknown'}"
+    if not user_root.is_dir():
+        return
+    for scratch in _expiring_scratch(user_root, keep):
+        try:
+            _release_append_flags(scratch)
+        except OSError:
+            continue
+
+
 @pytest.fixture
 def tmp_path(tmp_path, request):
     yield tmp_path

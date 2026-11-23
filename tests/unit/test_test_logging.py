@@ -92,6 +92,8 @@ def test_cleanup_preserves_logs_for_every_outcome(pytester, monkeypatch, mode):
             assert (scratch / "payload").stat().st_flags & stat.UF_APPEND
     if mode != "interrupt":
         assert any(record.get("phase") == "end" for record in records)
+    if hasattr(os, "chflags"):
+        _release_append_flags(pytester.path / "temporary")
 
 
 def test_completed_sessions_do_not_overwrite_logs_or_touch_sibling_scratch(pytester, monkeypatch):
@@ -133,3 +135,30 @@ def test_append_flag_release_stays_inside_owned_tree(tmp_path):
         assert external.stat().st_flags & stat.UF_APPEND
     assert payload.read_bytes() == b"owned"
     assert external.read_bytes() == b"external"
+
+
+def _flagged_scratch(root, name):
+    directory = root / name
+    directory.mkdir(parents=True)
+    payload = directory / "payload"
+    payload.write_text("retained scratch")
+    os.chflags(payload, stat.UF_APPEND)
+    return directory
+
+
+@pytest.mark.skipif(not hasattr(os, "chflags"), reason="append-only file flags exist only where chflags does")
+def test_rotation_deletes_expired_flagged_scratch_and_keeps_retained_flags(pytester, monkeypatch):
+    from _pytest.tmpdir import get_user
+
+    _suite(pytester, monkeypatch, "pass")
+    user_root = pytester.path / "temporary" / f"pytest-of-{get_user() or 'unknown'}"
+    scratches = [_flagged_scratch(user_root, f"pytest-{n}") for n in range(5)]
+    scratches.append(_flagged_scratch(user_root, "garbage-planted"))
+    try:
+        result = _run(pytester)
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert "rm_rf" not in result.stdout + result.stderr
+        assert [s.name for s in scratches if s.exists()] == ["pytest-2", "pytest-3", "pytest-4"]
+        assert all((s / "payload").stat().st_flags & stat.UF_APPEND for s in scratches if s.exists())
+    finally:
+        _release_append_flags(user_root)
