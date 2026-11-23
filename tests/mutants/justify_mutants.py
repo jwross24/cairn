@@ -1,16 +1,20 @@
 from contextlib import contextmanager
 
-from cairn import justify
+from cairn import justify, justify_lattice
+
+OWNERS = (justify, justify_lattice)
 
 
 @contextmanager
-def _swap(owner, name, replacement):
-    original = getattr(owner, name)
-    setattr(owner, name, replacement)
+def _swap(name, replacement):
+    originals = [(owner, getattr(owner, name)) for owner in OWNERS]
+    for owner, _ in originals:
+        setattr(owner, name, replacement)
     try:
         yield
     finally:
-        setattr(owner, name, original)
+        for owner, original in originals:
+            setattr(owner, name, original)
 
 
 @contextmanager
@@ -21,7 +25,7 @@ def comparator_strict_containment():
             return False
         return wide[0] < narrow[0] and wide[1] > narrow[1]
 
-    with _swap(justify, "contains", contains):
+    with _swap("contains", contains):
         yield
 
 
@@ -33,7 +37,7 @@ def comparator_checks_lo_only():
             return False
         return wide[0] <= narrow[0]
 
-    with _swap(justify, "contains", contains):
+    with _swap("contains", contains):
         yield
 
 
@@ -45,7 +49,7 @@ def comparator_assumptions_superset():
             return False
         return small >= big
 
-    with _swap(justify, "subset", subset):
+    with _swap("subset", subset):
         yield
 
 
@@ -57,14 +61,14 @@ def derive_takes_last_node():
             None,
         )
 
-    with _swap(justify, "strongest", strongest):
+    with _swap("strongest", strongest):
         yield
 
 
 @contextmanager
 def kind_table_off_by_one():
     table = {**justify.KIND_MAX_CLASS, "statistical": justify.PROVEN}
-    with _swap(justify, "KIND_MAX_CLASS", table):
+    with _swap("KIND_MAX_CLASS", table):
         yield
 
 
@@ -73,7 +77,7 @@ def producer_rule_ignores_range():
     def cross_check_covers(cross_check, inputs):
         return justify.CrossCheckCoverage(isinstance(cross_check, (dict, list, tuple)), {}, {})
 
-    with _swap(justify, "cross_check_covers", cross_check_covers):
+    with _swap("cross_check_covers", cross_check_covers):
         yield
 
 
