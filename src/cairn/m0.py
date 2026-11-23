@@ -1,237 +1,43 @@
 import json
 import os
-from dataclasses import dataclass
 from pathlib import Path
 
 import blake3
 
 from cairn import bundle, canon, claims, cli, exits, gateplan, keys, log, pari, runner, substrate, tiergate, verifier
-from cairn.canon import BOOL, INT, NON_EMPTY_STR, STR, Field, List, Optional, Struct
 from cairn.errors import CliError
+from cairn.m0_nodes import BUDGET_CORE_S as BUDGET_CORE_S
+from cairn.m0_nodes import CLAIM_ID as CLAIM_ID
+from cairn.m0_nodes import DERIVATION_NODE as DERIVATION_NODE
+from cairn.m0_nodes import DERIVE_LABEL as DERIVE_LABEL
+from cairn.m0_nodes import GENERATOR_NODE as GENERATOR_NODE
+from cairn.m0_nodes import GRADE_REPLAYABLE as GRADE_REPLAYABLE
+from cairn.m0_nodes import GRADE_VERIFIABLE as GRADE_VERIFIABLE
+from cairn.m0_nodes import KIND_DERIVATION as KIND_DERIVATION
+from cairn.m0_nodes import KIND_GENERATOR as KIND_GENERATOR
+from cairn.m0_nodes import KIND_VERIFIER_RESULT as KIND_VERIFIER_RESULT
+from cairn.m0_nodes import NEXT_CERTIFY as NEXT_CERTIFY
+from cairn.m0_nodes import NEXT_DEBUG as NEXT_DEBUG
+from cairn.m0_nodes import NEXT_GATE_SELFTEST as NEXT_GATE_SELFTEST
+from cairn.m0_nodes import REASON_UNCERTIFIED as REASON_UNCERTIFIED
+from cairn.m0_nodes import TARGET_FAMILY as TARGET_FAMILY
+from cairn.m0_nodes import VERIFIER_RESULT_NODE as VERIFIER_RESULT_NODE
+from cairn.m0_nodes import AdmissionSummary as AdmissionSummary
+from cairn.m0_nodes import Arm as Arm
+from cairn.m0_nodes import SliceBackend as SliceBackend
+from cairn.m0_nodes import SliceNode as SliceNode
+from cairn.m0_nodes import SliceRefused as SliceRefused
+from cairn.m0_nodes import SliceResult as SliceResult
+from cairn.m0_nodes import _draw as _draw
+from cairn.m0_nodes import _hypothesis as _hypothesis
+from cairn.m0_nodes import _instance as _instance
+from cairn.m0_nodes import _instance_fields as _instance_fields
+from cairn.m0_nodes import _point as _point
+from cairn.m0_nodes import _record_verifier_run as _record_verifier_run
+from cairn.m0_nodes import _refuse_verifier_run as _refuse_verifier_run
 from cairn.skills import toy_curve
 
 lg = log.get("m0")
-
-BUDGET_CORE_S = 3600.0
-DERIVE_LABEL = "derive"
-TARGET_FAMILY = "toy_curve"
-CLAIM_ID = "m0-slice"
-KIND_GENERATOR = "m0_generator"
-KIND_DERIVATION = "m0_derivation"
-KIND_VERIFIER_RESULT = "verifier_result"
-GRADE_REPLAYABLE = "Replayable"
-GRADE_VERIFIABLE = "Verifiable"
-REASON_UNCERTIFIED = "uncertified-revision"
-
-GENERATOR_NODE = Struct(
-    "m0_generator",
-    [
-        Field("skill_identity_hash", NON_EMPTY_STR),
-        Field("output_manifest_hash", NON_EMPTY_STR),
-        Field("certificate_hash", NON_EMPTY_STR),
-        Field("cost_tag", NON_EMPTY_STR),
-        Field("bits", INT),
-        Field("seed", INT),
-    ],
-)
-
-DERIVATION_NODE = Struct(
-    "m0_derivation",
-    [
-        Field("instance_hash", NON_EMPTY_STR),
-        Field("x_commit", NON_EMPTY_STR),
-        Field("Q", List(STR)),
-        Field("source_node", NON_EMPTY_STR),
-    ],
-)
-
-VERIFIER_RESULT_NODE = Struct(
-    "verifier_result",
-    [
-        Field("instance_hash", NON_EMPTY_STR),
-        Field("accepted", BOOL),
-        Field("reason", Optional(STR)),
-        Field("reasons", List(STR)),
-        Field("stdout_digest", Optional(STR)),
-        Field("stderr_digest", Optional(STR)),
-        Field("rc", Optional(INT)),
-        Field("spawned", BOOL),
-        Field("arm", NON_EMPTY_STR),
-    ],
-)
-
-
-@dataclass(frozen=True)
-class SliceNode:
-    label: str
-    kind: str
-    hash: str
-    replay_grade: str
-    cost_tag: str
-    selftest_ref: str | None = None
-
-
-@dataclass(frozen=True)
-class Arm:
-    arm: str
-    accepted: bool
-    reason: str | None
-    reasons: tuple
-    gate_result: str
-    node: str | None
-    gate_run: str
-    spawned: bool
-    instance_hash: str | None
-    stdout_digest: str | None
-    stderr_digest: str | None
-    rc: int | None
-
-
-@dataclass(frozen=True)
-class AdmissionSummary:
-    gate_run_hash: str
-    declared_tier: int
-    cost_tier: int
-
-
-@dataclass(frozen=True)
-class SliceResult:
-    nodes: tuple
-    arms: tuple
-    negatives: tuple
-    refused_submission: str
-    attempt_id: str
-    served_from_cache: bool
-    bundle_hash: str
-    receipt_hash: str | None
-    statement_hash: str
-    instance_hash: str
-    admission: AdmissionSummary
-
-
-NEXT_CERTIFY = "certify"
-NEXT_GATE_SELFTEST = "gate-selftest"
-NEXT_DEBUG = "debug"
-
-
-class SliceBackend(Exception):
-    def __init__(self, reason):
-        super().__init__(reason)
-        self.reason = reason
-
-
-class SliceRefused(Exception):
-    def __init__(self, reason, next_step):
-        super().__init__(reason)
-        self.reason = reason
-        self.next_step = next_step
-
-
-def _draw(seed_bytes, bound, label):
-    counter = 0
-    while True:
-        material = canon.length_prefix(seed_bytes) + canon.length_prefix(label.encode()) + counter.to_bytes(8, "little")
-        value = int.from_bytes(blake3.blake3(material).digest(), "big") % bound
-        if value:
-            return value
-        counter += 1
-
-
-def _instance_fields(out, Q):
-    return {
-        "p": str(out["p"]),
-        "a": str(out["a"]),
-        "b": str(out["b"]),
-        "n": str(out["n"]),
-        "Px": str(out["P"][0]),
-        "Py": str(out["P"][1]),
-        "Qx": str(Q[0]),
-        "Qy": str(Q[1]),
-    }
-
-
-def _instance(fields):
-    return verifier.Instance(
-        p=int(fields["p"]),
-        a=int(fields["a"]),
-        b=int(fields["b"]),
-        n=int(fields["n"]),
-        P=(int(fields["Px"]), int(fields["Py"])),
-        Q=(int(fields["Qx"]), int(fields["Qy"])),
-    )
-
-
-def _point(raw):
-    return tuple(int(coordinate.lift()) for coordinate in raw)
-
-
-def _hypothesis(bits):
-    return {
-        "target_family": TARGET_FAMILY,
-        "claimed": {"model": "c_ln_p_tries"},
-        "method_identity": {"interface_version": toy_curve.INTERFACE_VERSION, "params": {}},
-        "declared_parameter_ranges": {"bits": [bits, bits]},
-        "sampling_distribution": None,
-    }
-
-
-def _record_verifier_run(sub, gate_bundle, result, *, arm):
-    node_hash = sub.put_node(
-        KIND_VERIFIER_RESULT,
-        canon.encode(
-            VERIFIER_RESULT_NODE,
-            {
-                "instance_hash": result.instance_hash,
-                "accepted": result.accepted,
-                "reason": result.reason,
-                "reasons": list(result.reasons),
-                "stdout_digest": result.stdout_digest,
-                "stderr_digest": result.stderr_digest,
-                "rc": result.rc,
-                "spawned": result.spawned,
-                "arm": arm,
-            },
-        ),
-        replay_grade=GRADE_VERIFIABLE,
-    )
-    run = claims.GateRun(
-        gate="verifier",
-        bundle_hash=gate_bundle.hash,
-        pin_hash=gate_bundle.pin_hash,
-        plan_step=arm,
-        instance_hash=result.instance_hash,
-        result=result.gate_result,
-        reasons=tuple(result.reasons),
-        at=cli.now_iso(),
-    )
-    claims.write_gate_run(sub, run)
-    lg.info(
-        "verifier_arm",
-        arm=arm,
-        accepted=result.accepted,
-        reason=result.reason,
-        gate_result=result.gate_result,
-        spawned=result.spawned,
-        node=node_hash,
-        gate_run=run.hash,
-    )
-    return node_hash, run.hash
-
-
-def _refuse_verifier_run(sub, gate_bundle, result, *, arm):
-    run = claims.GateRun(
-        gate="verifier",
-        bundle_hash=gate_bundle.hash,
-        pin_hash=gate_bundle.pin_hash,
-        plan_step=arm,
-        instance_hash=result.instance_hash,
-        result=result.gate_result,
-        reasons=tuple(result.reasons),
-        at=cli.now_iso(),
-    )
-    claims.write_gate_run(sub, run)
-    lg.info("verifier_refused", arm=arm, reasons=list(result.reasons), gate_run=run.hash, spawned=result.spawned)
-    return run.hash
 
 
 def run_slice(sub, gate_bundle, attest_path, *, bits, seed, scratch_root, skip_cache_lookup=False):
