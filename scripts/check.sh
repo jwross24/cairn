@@ -5,6 +5,7 @@
 #   scripts/check.sh --fast   format + lint + spelling   (seconds; the hook)
 #   scripts/check.sh          the above plus the suite   (minutes; CI)
 #   scripts/check.sh --fast --paths <p> ...   the same gates over those paths alone
+#   scripts/check.sh --from-ci --bead <id>    record br's check gate from CI's green run on HEAD
 #
 # Without --paths every gate has the scope it always had, which is the form CI runs.
 # With --paths the gates are scoped to that list, so one lane's red file in the working
@@ -39,6 +40,7 @@ CI_LANE=all
 SCOPED=0
 BEAD=""
 REPORT=0
+FROM_CI=0
 PATHS=()
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -46,6 +48,7 @@ while [ $# -gt 0 ]; do
     --unit) UNIT=1; shift ;;
     --ci-lane) CI_LANE="${2:-}"; shift; [ $# -eq 0 ] || shift ;;
     --bead) REPORT=1; BEAD="${2:-}"; shift; [ $# -eq 0 ] || shift ;;
+    --from-ci) FROM_CI=1; shift ;;
     --paths) SCOPED=1; shift; PATHS=("$@"); break ;;
     *)
       say "DENY usage: unknown argument $1"
@@ -89,6 +92,15 @@ if [ "$REPORT" = "1" ]; then
     echo "[check] claim bead $BEAD before reporting a gate result" >&2
     exit 3
   fi
+fi
+
+if [ "$FROM_CI" = "1" ]; then
+  if [ "$REPORT" != "1" ] || [ "$FAST" = "1" ] || [ "$UNIT" = "1" ] || [ "$SCOPED" = "1" ] || [ "$CI_LANE" != "all" ]; then
+    say "DENY usage: --from-ci takes --bead <id> and no other selection"
+    echo "[check] usage: scripts/check.sh --from-ci --bead <id>" >&2
+    exit 3
+  fi
+  exec uv run python scripts/ci_gate.py --bead "$BEAD"
 fi
 
 report_gate() {

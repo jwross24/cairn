@@ -1,4 +1,4 @@
-Read this before upgrading `br`, editing `BR_VERSION` in `ci.yml`, changing `scripts/beads_doctor_gate.py`, or when `br` reports a schema or asset error.
+Read this before closing a bead (the `check` gate), upgrading `br`, editing `BR_VERSION` in `ci.yml`, changing `scripts/beads_doctor_gate.py`, or when `br` reports a schema or asset error.
 
 # br release lines, schema and doctor detail
 
@@ -12,3 +12,14 @@ Read this before upgrading `br`, editing `BR_VERSION` in `ci.yml`, changing `scr
 - Argument syntax: text arguments starting with `-` need the `=` form (`--description=`, `--notes=`, `--design=`, `--acceptance-criteria=`). `br create` takes `--description`/`-d` only; acceptance criteria are set afterward with `br update <id> --acceptance-criteria=...`.
 - JSON shapes: `br show --json` returns an array (index `.[0]`); `br list --json` returns `{"issues": [...], "has_more": ...}` and omits closed beads without `--all`. Tombstones appear only in `issues.jsonl`.
 - `br doctor` first; `beads.db` is derived state: move it aside and `br sync --import-only` rebuilds it. The real health check is `sqlite3 .beads/beads.db "PRAGMA integrity_check"`.
+
+# The check gate on a close
+
+`.beads/policy.yaml` refuses `in_progress -> closed` until the bead's `check` gate has a pass (ADR-017). The usual reporter is CI's run on the pushed closing commit:
+
+1. Commit the bead's work and push it; `git status` shows up to date with `origin/main`.
+2. Wait for the `ci.yml` push run on that commit to finish green (`gh run list --workflow ci.yml --commit "$(git rev-parse HEAD)"`).
+3. `scripts/check.sh --from-ci --bead <id>` records the pass with provider `ci`, or names why it cannot in a `DENY gate-report` line in `.check.log`: `ci-not-pushed`, `ci-not-green`, `ci-lane-missing` or `ci-unanswered`.
+4. `br close <id> --reason "..."`; the close record rides with the next commit.
+
+For a commit CI cannot run, the full local `scripts/check.sh --bead <id>` (every lane, Docker) reports the gate instead.
