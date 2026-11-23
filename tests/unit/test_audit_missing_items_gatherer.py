@@ -27,10 +27,10 @@ BEAD = FIXTURES / "compliance_pass" / "cairn-m0-e0s.12"
 # digest recorded in that metadata agrees with whatever was cut last and cannot witness the cut
 # itself. These literals sit in source a reviewer reads, which is the one place a regeneration
 # does not reach: a laundered edit to the gatherer has to be typed in here to pass.
-EXCERPT_SHA256 = "064d85e9518a205f57da1da45c482815975e3a2676d74d6a3c9ee81e07beca59"
-EXCERPT_BYTES = 3563
-SOURCE_SHA256 = "15906862d3f08d7fa7712b54a8e5a3161641a2a486f2e4fed7c8f0d70c491888"
-SOURCE_BYTES = 7465
+EXCERPT_SHA256 = "1da867c4719e9da037633cb8ae192a686deb7bf51b360ef264866b223f10a90e"
+EXCERPT_BYTES = 3972
+SOURCE_SHA256 = "3fdd679e5aad522e6f866d2aa94f1a1d3fc5071ab3d9d27498af08fac8bce498"
+SOURCE_BYTES = 7874
 TESTS_MARKER = "# Walk tests (each type)"
 DOC_MARKER = "# Walk documentation / migrations / feature_flags / telemetry / ci_workflows"
 TEST_TYPES = ("unit", "integration", "e2e", "fuzz", "property", "metamorphic", "golden", "conformance")
@@ -77,13 +77,14 @@ def test_the_two_searched_categories_resolve_by_existence_not_by_hint(gatherer):
     assert "expected_path_hints" not in body
 
 
-def test_expected_path_hints_reaches_the_code_artifacts_loop_only(gatherer):
-    readers = [line for line in gatherer.splitlines() if ".expected_path_hints[" in line]
-    assert len(readers) == 1
-    walks = [line for line in gatherer.split(readers[0], 1)[0].splitlines() if line.startswith("# Walk ")]
-    assert walks[-1] == "# Walk code_artifacts"
+def test_expected_path_hints_reaches_the_code_and_tests_loops_and_the_tests_hints_precede_the_guard(gatherer):
+    lines = gatherer.splitlines()
+    readers = [i for i, line in enumerate(lines) if ".expected_path_hints[" in line]
+    walks = [[line for line in lines[:i] if line.startswith("# Walk ")][-1] for i in readers]
+    assert walks == ["# Walk code_artifacts", TESTS_MARKER]
     assert HINT_DRIVEN_CATEGORIES == ("code_artifacts",)
-    assert "expected_path_hints" not in loop(gatherer, TESTS_MARKER)
+    tests_loop = loop(gatherer, TESTS_MARKER)
+    assert tests_loop.index(".expected_path_hints[") < tests_loop.index(f'[ "$NAME" != "{TESTS_GUARD_EXCLUDED_NAME}" ]')
 
 
 def test_every_item_the_recorded_pass_reported_missing_was_never_searched_for():

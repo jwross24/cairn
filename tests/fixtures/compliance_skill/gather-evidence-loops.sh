@@ -42,6 +42,14 @@ for ttype in unit integration e2e fuzz property metamorphic golden conformance; 
     DESC="$(printf '%s' "$item" | jq -r '.description // ""')"
     CITATIONS="[]"
     STATUS="MISSING"
+    HINTS="$(printf '%s' "$item" | jq -r '.expected_path_hints[]?' 2>/dev/null || true)"
+    while IFS= read -r hint; do
+      [ -n "$hint" ] || continue
+      [ -f "$PROJECT/$hint" ] || continue
+      CITATIONS="$(printf '%s' "$CITATIONS" | jq --arg p "$hint" \
+        '. + [{path: $p, line_start: 1, line_end: 1, commit_sha: "unknown", via: "test plan path"}]')"
+      STATUS="FOUND"
+    done <<< "$HINTS"
     # Heuristic: search for the test name (id) in the project
     NAME="$(printf '%s' "$ITEM_ID" | sed 's/.*\.//')"
     if [ -n "$NAME" ] && [ "$NAME" != "primary" ]; then

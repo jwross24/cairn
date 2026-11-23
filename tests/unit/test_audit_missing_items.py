@@ -298,12 +298,24 @@ def test_a_test_item_the_ripgrep_guard_admits_stays_a_measured_gap(tmp_path):
     assert NAMED_TEST_LINE not in unmeasured
 
 
+def test_a_primary_test_item_with_hints_was_searched_and_stays_a_measured_gap(tmp_path):
+    doc = spec()
+    doc["checklist"]["tests"]["e2e"] = [{"id": "tests.e2e.primary", "expected_path_hints": ["tests/e2e/test_none.py"]}]
+    directory = bead(tmp_path, [TESTS_LINE], spec_doc=doc, table=PLAIN_TABLE)
+
+    assert main([str(directory), "--log", str(tmp_path / "log")]) == 0
+
+    gap, unmeasured = sections((directory / "scorecard.md").read_text())
+    assert TESTS_LINE in gap
+    assert TESTS_LINE not in unmeasured
+
+
 def test_the_no_hints_reason_reaches_only_the_loop_that_reads_hints():
     for spec_item_id in ("documentation.primary", "ci_workflows.primary", "telemetry.primary", "tests.e2e.primary"):
         reasons = unresolvable_reasons(spec_item_id, spec_categories(spec()), set())
-        assert not any("expected_path_hints" in reason for reason in reasons), spec_item_id
+        assert REASON_NO_HINTS not in reasons, spec_item_id
     code = unresolvable_reasons("code.primary", spec_categories(spec(code_hints=())), set())
-    assert any("expected_path_hints" in reason for reason in code)
+    assert REASON_NO_HINTS in code
 
 
 def test_a_code_item_with_no_hints_is_unresolvable_rather_than_missing(tmp_path):

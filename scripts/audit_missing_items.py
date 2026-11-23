@@ -5,18 +5,19 @@
 The vendored skill's `scripts/gather-evidence.sh` leaves a checklist item at
 `MISSING` on paths where it performs no search at all:
 
-  * the tests loop (line 148) searches only when the item id's last dot-segment
-    differs from `primary`, and the spec extractor names every test item
-    `tests.<type>.primary`, so the guard is false for the whole population;
+  * the tests loop (line 139) checks each of an item's `expected_path_hints` for
+    existence (line 146), then ripgreps the item id only when its last dot-segment
+    differs from `primary` (line 156); the spec extractor names every test item
+    `tests.<type>.primary`, so a test item carrying no hints gets no search;
   * the documentation / migrations / feature_flags / telemetry / ci_workflows
-    loop (line 168) carries `case` arms for `documentation` and `ci_workflows`
+    loop (line 170) carries `case` arms for `documentation` and `ci_workflows`
     only, so an item in the other three categories reaches `emit_check` with
     the initial `MISSING` untouched;
   * a code artifact carrying no `expected_path_hints` drives the hint loop zero
-    times, so nothing an author writes in a bead body can resolve it. Line 105 is
-    that field's only reader in the whole gatherer: the tests loop resolves an
-    item by ripgrepping its id (line 149) and the doc-family loop by existence
-    checks (lines 170 and 175), so an empty hint list says nothing about either.
+    times, so nothing an author writes in a bead body can resolve it. The hint
+    field has two readers, line 105 in this loop and line 146 in the tests loop;
+    the doc-family loop resolves by existence checks (lines 178 and 183), so an
+    empty hint list says nothing about it.
 
 `score-bead.py` renders every such row under `## Missing items (verbatim)`, and
 `remediate.sh` reads that section verbatim into a minted completion-debt bead's
@@ -82,13 +83,14 @@ GATHERER_CATEGORIES = ("documentation", "migrations", "feature_flags", "telemetr
 GATHERER_SEARCHED_CATEGORIES = ("documentation", "ci_workflows")
 
 # The tests loop guards its ripgrep with `[ "$NAME" != "primary" ]`, and the spec
-# extractor names every test item `tests.<type>.primary`.
+# extractor names every test item `tests.<type>.primary`; such an item is searched
+# only through its expected_path_hints.
 TESTS_GUARD_EXCLUDED_NAME = "primary"
 
-# `expected_path_hints` reaches exactly one reader in gather-evidence.sh: line 105,
-# inside the code_artifacts loop. The tests loop searches by ripgrep on the item id
-# (line 149) and the doc-family loop by existence checks (lines 170 and 175), so a
-# hint list carries no information about whether either of those searched.
+# The code_artifacts loop resolves an item through expected_path_hints alone (line
+# 105). The tests loop also reads hints (line 146) but ripgreps every item the guard
+# admits, so an empty hint list leaves a test item unsearched only when the guard
+# also declines it.
 HINT_DRIVEN_CATEGORIES = ("code_artifacts",)
 
 DIMENSION_OF_CATEGORY = {
@@ -103,7 +105,7 @@ TESTS_DIMENSION = "Required tests present and meaningfully passing"
 
 REASON_TESTS_GUARD = (
     "the tests loop searches only when the item id's last segment differs from "
-    f"{TESTS_GUARD_EXCLUDED_NAME!r}; no ripgrep ran"
+    f"{TESTS_GUARD_EXCLUDED_NAME!r} or the item carries expected_path_hints; no search ran"
 )
 REASON_NO_CASE_ARM = "the gatherer's case statement carries no arm for category {category!r}; no search ran"
 REASON_NO_HINTS = "the code_artifacts loop resolves only expected_path_hints, and spec.json carries none, so the hint loop drove zero iterations"
@@ -181,7 +183,7 @@ def unresolvable_reasons(spec_item_id: str, categories: dict[str, tuple[str, lis
     if category is None:
         return []
     reasons: list[str] = []
-    if category.startswith("tests.") and spec_item_id.rsplit(".", 1)[-1] == TESTS_GUARD_EXCLUDED_NAME:
+    if category.startswith("tests.") and spec_item_id.rsplit(".", 1)[-1] == TESTS_GUARD_EXCLUDED_NAME and not hints:
         reasons.append(REASON_TESTS_GUARD)
     bare = category.split(".", 1)[0]
     if category in GATHERER_CATEGORIES and category not in GATHERER_SEARCHED_CATEGORIES:
