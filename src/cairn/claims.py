@@ -62,8 +62,8 @@ def _insert_once(sub, table, pk_column, values, node_hash, *, write_time=("creat
 
 def write_hypothesis_object(sub, obj):
     canonical = hypothesis_object_canonical(obj)
-    with sub._tx():
-        sub._put_node("hypothesis_object", canonical, obj.hash, "Replayable", None)
+    with sub.transaction():
+        sub.put_node("hypothesis_object", canonical, hash=obj.hash)
         row = sub.conn.execute("SELECT * FROM hypothesis_objects WHERE hash = ?", (obj.hash,)).fetchone()
         if row is not None:
             if row["claim_statement_hash"] != obj.claim_statement_hash or row["supersedes"] != obj.supersedes:
@@ -80,8 +80,8 @@ def write_hypothesis_object(sub, obj):
 
 def write_claim_statement(sub, stmt):
     canonical = claim_statement_canonical(stmt)
-    with sub._tx():
-        sub._put_node("claim_statement", canonical, stmt.hash, "Replayable", None)
+    with sub.transaction():
+        sub.put_node("claim_statement", canonical, hash=stmt.hash)
         _insert_once(
             sub,
             "claim_statements",
@@ -107,8 +107,14 @@ def write_claim_statement(sub, stmt):
 
 def write_evidence_node(sub, node, *, replay_grade="Replayable"):
     canonical = evidence_node_canonical(node)
-    with sub._tx():
-        sub._put_node("evidence_node", canonical, node.hash, replay_grade, node.producer_identity)
+    with sub.transaction():
+        sub.put_node(
+            "evidence_node",
+            canonical,
+            replay_grade=replay_grade,
+            producer_identity=node.producer_identity,
+            hash=node.hash,
+        )
         _insert_once(
             sub,
             "evidence_nodes",
@@ -134,8 +140,8 @@ def write_evidence_node(sub, node, *, replay_grade="Replayable"):
 
 def write_repro_record(sub, rec):
     canonical = repro_record_canonical(rec)
-    with sub._tx():
-        sub._put_node("repro_record", canonical, rec.hash, "Replayable", None)
+    with sub.transaction():
+        sub.put_node("repro_record", canonical, hash=rec.hash)
         _insert_once(
             sub,
             "repro_records",
@@ -148,8 +154,8 @@ def write_repro_record(sub, rec):
 
 def write_review_verdict(sub, verdict):
     canonical = review_verdict_canonical(verdict)
-    with sub._tx():
-        sub._put_node("review_verdict", canonical, verdict.hash, "Replayable", verdict.reviewer)
+    with sub.transaction():
+        sub.put_node("review_verdict", canonical, producer_identity=verdict.reviewer, hash=verdict.hash)
         existing = sub.conn.execute(
             "SELECT row_id FROM review_verdicts WHERE record_digest = ? AND file_offset = ?",
             (verdict.record_digest, verdict.file_offset),
@@ -178,8 +184,8 @@ def write_review_verdict(sub, verdict):
 
 def write_gate_run(sub, run):
     canonical = gate_run_canonical(run)
-    with sub._tx():
-        sub._put_node("gate_run", canonical, run.hash, "Replayable", None)
+    with sub.transaction():
+        sub.put_node("gate_run", canonical, hash=run.hash)
         _insert_once(
             sub,
             "gate_runs",
@@ -207,8 +213,8 @@ def write_gate_run(sub, run):
 
 def write_ticket(sub, ticket):
     canonical = ticket_canonical(ticket)
-    with sub._tx():
-        sub._put_node("ticket", canonical, ticket.hash, "Replayable", None)
+    with sub.transaction():
+        sub.put_node("ticket", canonical, hash=ticket.hash)
         _insert_once(
             sub,
             "tickets",
@@ -229,7 +235,7 @@ def write_ticket(sub, ticket):
 
 
 def append_tag_history(sub, statement_hash, from_tag, to_tag, evidence_hash, justification, actor, *, at=None):
-    with sub._tx():
+    with sub.transaction():
         cur = sub.conn.execute(
             "INSERT INTO tag_history (statement_hash, from_tag, to_tag, evidence_hash, justification, actor, at) VALUES (?, ?, ?, ?, ?, ?, ?)",
             (statement_hash, from_tag, to_tag, evidence_hash, justification, actor, at or _now()),
@@ -242,7 +248,7 @@ def append_tag_history(sub, statement_hash, from_tag, to_tag, evidence_hash, jus
 
 
 def add_tier_refusal(sub, hypothesis_key, declared_tier, ticket_tier, reason, *, at=None):
-    with sub._tx():
+    with sub.transaction():
         cur = sub.conn.execute(
             "INSERT INTO tier_refusals (hypothesis_key, declared_tier, ticket_tier, reason, at) VALUES (?, ?, ?, ?, ?)",
             (hypothesis_key, declared_tier, ticket_tier, reason, at or _now()),
@@ -255,7 +261,7 @@ def add_tier_refusal(sub, hypothesis_key, declared_tier, ticket_tier, reason, *,
 def transition_status(sub, statement_hash, to_status):
     if to_status not in TERMINAL_STATEMENT_STATUSES:
         raise ValueError(f"status must be one of {TERMINAL_STATEMENT_STATUSES}, got {to_status!r}")
-    with sub._tx():
+    with sub.transaction():
         cur = sub.conn.execute("UPDATE claim_statements SET status = ? WHERE hash = ?", (to_status, statement_hash))
         if cur.rowcount == 0:
             raise UnknownStatement(f"no claim statement {statement_hash}")
