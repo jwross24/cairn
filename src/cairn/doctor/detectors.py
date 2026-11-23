@@ -1,82 +1,36 @@
-import os
 import sqlite3
-import stat
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-from cairn import attest, bundle, gateplan, kat, ladderplan, log, pari, substrate
+from cairn import attest, bundle, gateplan, ladderplan, log, pari, substrate
+from cairn.doctor.detectors_base import APPEND_FLAG as APPEND_FLAG
+from cairn.doctor.detectors_base import ATTEST_MODE as ATTEST_MODE
+from cairn.doctor.detectors_base import BREW_LINE as BREW_LINE
+from cairn.doctor.detectors_base import ERROR as ERROR
+from cairn.doctor.detectors_base import F_DIRS as F_DIRS
+from cairn.doctor.detectors_base import F_MODES as F_MODES
+from cairn.doctor.detectors_base import GITIGNORE_ENTRIES as GITIGNORE_ENTRIES
+from cairn.doctor.detectors_base import GP_MAJOR_MINOR as GP_MAJOR_MINOR
+from cairn.doctor.detectors_base import GP_STACK_BYTES as GP_STACK_BYTES
+from cairn.doctor.detectors_base import INFO as INFO
+from cairn.doctor.detectors_base import PIN_MODE as PIN_MODE
+from cairn.doctor.detectors_base import UV_INDEX_LINES as UV_INDEX_LINES
+from cairn.doctor.detectors_base import WARN as WARN
+from cairn.doctor.detectors_base import Context as Context
+from cairn.doctor.detectors_base import Finding as Finding
+from cairn.doctor.detectors_base import _flags_of as _flags_of
+from cairn.doctor.detectors_base import _mode_of as _mode_of
+from cairn.doctor.detectors_base import repin_command as repin_command
+from cairn.doctor.detectors_base import selftest_command as selftest_command
+from cairn.doctor.detectors_store import _gitignore_missing as _gitignore_missing
+from cairn.doctor.detectors_store import d_certificate as d_certificate
+from cairn.doctor.detectors_store import d_dirs as d_dirs
+from cairn.doctor.detectors_store import d_kat as d_kat
+from cairn.doctor.detectors_store import d_substrate as d_substrate
+from cairn.doctor.detectors_store import d_uv_index as d_uv_index
 
 lg = log.get("doctor.detect")
-
-BREW_LINE = "brew install pari"
-PIN_MODE = 0o444
-ATTEST_MODE = 0o644
-APPEND_FLAG = stat.UF_APPEND
-GP_MAJOR_MINOR = "2.17"
-GP_STACK_BYTES = 64_000_000
-GITIGNORE_ENTRIES = (".doctor/", "var/")
-UV_INDEX_LINES = '[[tool.uv.index]]\nname = "pypi"\nurl = "https://pypi.org/simple"\ndefault = true'
-ERROR = "error"
-WARN = "warn"
-INFO = "info"
-
-F_MODES = "F-modes"
-F_DIRS = "F-dirs"
-
-
-@dataclass(frozen=True)
-class Finding:
-    id: str
-    subsystem: str
-    severity: str
-    message: str
-    evidence: str
-    fixable: bool
-    recommended_command: str
-    fixer: str | None = None
-    target: str | None = None
-    want_mode: int | None = None
-    want_flags: int | None = None
-
-    def as_dict(self):
-        return {
-            "id": self.id,
-            "subsystem": self.subsystem,
-            "severity": self.severity,
-            "message": self.message,
-            "evidence": self.evidence,
-            "fixable": self.fixable,
-            "recommended_command": self.recommended_command,
-            "fixer": self.fixer,
-        }
-
-
-@dataclass(frozen=True)
-class Context:
-    root: Path
-    db: Path
-    bundle: Path
-    pin: Path
-    attest: Path
-    quick: bool = False
-    vectors: Path = kat.DEFAULT_VECTORS
-
-
-def selftest_command(ctx):
-    return f"cairn selftest toy-curve --db {ctx.db} --bundle {ctx.bundle} --pin {ctx.pin}"
-
-
-def repin_command(ctx):
-    return bundle.repin_sequence(ctx.bundle, ctx.pin)
-
-
-def _mode_of(path):
-    return stat.S_IMODE(Path(path).stat().st_mode)
-
-
-def _flags_of(path):
-    return Path(path).stat().st_flags
 
 
 def d_gp_binary(ctx):
@@ -386,254 +340,6 @@ def d_attest_mode(ctx):
         )
         return findings
     return findings + _waiver_finding(ctx, parsed[0][1])
-
-
-def d_substrate(ctx):
-    if not Path(ctx.db).exists():
-        return [
-            Finding(
-                "D-substrate/absent",
-                "substrate",
-                INFO,
-                "the substrate does not exist yet; the first certifying run creates it",
-                f"{ctx.db}: absent",
-                False,
-                selftest_command(ctx),
-            )
-        ]
-    if not os.access(ctx.db, os.R_OK):
-        return [
-            Finding(
-                "D-substrate/unreadable",
-                "substrate",
-                ERROR,
-                "this process cannot open the substrate read-only",
-                f"{ctx.db}: mode={_mode_of(ctx.db):04o} uid={Path(ctx.db).stat().st_uid}",
-                False,
-                f"chmod u+r {ctx.db}",
-            )
-        ]
-    findings = []
-    conn = None
-    try:
-        conn = sqlite3.connect(f"file:{ctx.db}?mode=ro", uri=True)
-        conn.row_factory = sqlite3.Row
-        # the connect is lazy, so a file that is not a database first says so here
-        mode = conn.execute("PRAGMA journal_mode").fetchone()[0]
-    except sqlite3.Error as exc:
-        if conn is not None:
-            conn.close()
-        return [
-            Finding(
-                "D-substrate/unopenable",
-                "substrate",
-                ERROR,
-                "the substrate does not open read-only as a SQLite database",
-                f"{ctx.db}: {type(exc).__name__}: {exc}",
-                False,
-                selftest_command(ctx),
-            )
-        ]
-    try:
-        if mode != "wal":
-            findings.append(
-                Finding(
-                    "D-substrate/journal-mode",
-                    "substrate",
-                    ERROR,
-                    "journal_mode is not wal; concurrent readers are not what the substrate assumes",
-                    f"{ctx.db}: journal_mode={mode}",
-                    False,
-                    selftest_command(ctx),
-                )
-            )
-        integrity = conn.execute("PRAGMA integrity_check").fetchone()[0]
-        if integrity != "ok":
-            findings.append(
-                Finding(
-                    "D-substrate/integrity",
-                    "substrate",
-                    ERROR,
-                    "PRAGMA integrity_check did not return ok",
-                    f"{ctx.db}: integrity_check={integrity}",
-                    False,
-                    selftest_command(ctx),
-                )
-            )
-        schema_reasons = substrate.schema_mismatches(conn)
-        if schema_reasons:
-            findings.append(
-                Finding(
-                    "D-substrate/schema",
-                    "substrate",
-                    ERROR,
-                    "the substrate does not match the shipped schema",
-                    f"{ctx.db}: {'; '.join(schema_reasons)}",
-                    False,
-                    selftest_command(ctx),
-                )
-            )
-            return findings
-        running = conn.execute(
-            "SELECT count(*) FROM attempts WHERE status = 'RUNNING' AND ended_at IS NULL"
-        ).fetchone()[0]
-        if running:
-            findings.append(
-                Finding(
-                    "D-substrate/running-attempts",
-                    "substrate",
-                    WARN,
-                    "attempts left RUNNING by a dead harness are still eligible; a startup scan closes them",
-                    f"{ctx.db}: {running} rows with status='RUNNING' and ended_at IS NULL",
-                    False,
-                    f"cairn startup-scan --db {ctx.db}",
-                )
-            )
-    finally:
-        conn.close()
-    return findings
-
-
-def d_kat(ctx):
-    failures = kat.run(ctx.vectors)
-    if not failures:
-        return []
-    return [
-        Finding(
-            "D-kat/mismatch",
-            "gates",
-            ERROR,
-            "the canonicalizer known-answer vectors do not reproduce; every hash downstream is suspect",
-            f"{ctx.vectors}: {'; '.join(failures)}",
-            False,
-            "cairn kat canon --json",
-        )
-    ]
-
-
-def d_certificate(ctx):
-    if not Path(ctx.db).is_file() or not os.access(ctx.db, os.R_OK):
-        return []
-    from cairn.skills import toy_curve
-
-    try:
-        identity = toy_curve.skill_identity_hash()
-    except pari.GpMissing:
-        return []
-    try:
-        with substrate.Substrate.open(ctx.db, role="reader") as sub:
-            certificate = sub.get_certificate(identity)
-    except (sqlite3.Error, substrate.SubstrateError) as exc:
-        return [
-            Finding(
-                "D-certificate/unreadable",
-                "gates",
-                ERROR,
-                "the certificate lookup could not open the substrate; D-substrate names the shape it is in",
-                f"{ctx.db}: {type(exc).__name__}: {exc}",
-                False,
-                selftest_command(ctx),
-            )
-        ]
-    if certificate is not None:
-        return []
-    return [
-        Finding(
-            "D-certificate/uncertified",
-            "gates",
-            ERROR,
-            "the toy_curve identity in this checkout carries no certificate; no run may use it",
-            f"{ctx.db}: no skill_certificates row for identity_bundle_hash {identity}",
-            False,
-            selftest_command(ctx),
-        )
-    ]
-
-
-def _gitignore_missing(root):
-    path = Path(root) / ".gitignore"
-    if not path.is_file():
-        return list(GITIGNORE_ENTRIES)
-    lines = {line.strip() for line in path.read_text().splitlines()}
-    return [entry for entry in GITIGNORE_ENTRIES if entry not in lines]
-
-
-def d_dirs(ctx):
-    findings = []
-    for name in ("deploy", "var"):
-        path = Path(ctx.root) / name
-        if not path.is_dir():
-            findings.append(
-                Finding(
-                    f"D-dirs/{name}-absent",
-                    "dirs",
-                    ERROR,
-                    f"{name}/ does not exist; the commands that write there fail on the open, not on a check",
-                    f"{path}: absent",
-                    True,
-                    "cairn doctor --fix",
-                    F_DIRS,
-                    str(path),
-                )
-            )
-        elif not os.access(path, os.W_OK):
-            findings.append(
-                Finding(
-                    f"D-dirs/{name}-unwritable",
-                    "dirs",
-                    ERROR,
-                    f"{name}/ is not writable by this process",
-                    f"{path}: mode={_mode_of(path):04o}",
-                    False,
-                    f"chmod u+w {path}",
-                )
-            )
-    missing = _gitignore_missing(ctx.root)
-    if missing:
-        findings.append(
-            Finding(
-                "D-dirs/gitignore",
-                "dirs",
-                WARN,
-                "run artifacts and runtime state would be offered to git",
-                f"{Path(ctx.root) / '.gitignore'}: missing {', '.join(missing)}",
-                True,
-                "cairn doctor --fix",
-                F_DIRS,
-                str(Path(ctx.root) / ".gitignore"),
-            )
-        )
-    return findings
-
-
-def d_uv_index(ctx):
-    path = Path(ctx.root) / "pyproject.toml"
-    if not path.is_file():
-        return [
-            Finding(
-                "D-uv-index/absent",
-                "project",
-                INFO,
-                "pyproject.toml is absent, so nothing pins the package index",
-                f"{path}: absent",
-                False,
-                f"add to {path}:\n{UV_INDEX_LINES}",
-            )
-        ]
-    text = path.read_text()
-    if "[[tool.uv.index]]" in text and "https://pypi.org/simple" in text and "default = true" in text:
-        return []
-    return [
-        Finding(
-            "D-uv-index/unpinned",
-            "project",
-            INFO,
-            "pyproject.toml does not pin PyPI as the default index; a corporate mirror in ~/.config/uv/uv.toml wins",
-            f"{path}: no [[tool.uv.index]] naming https://pypi.org/simple as default",
-            False,
-            f"add to {path}:\n{UV_INDEX_LINES}",
-        )
-    ]
 
 
 @dataclass(frozen=True)
