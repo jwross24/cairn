@@ -281,7 +281,7 @@ def test_an_attested_sign_off_meets_the_obligation_and_a_ghost_row_does_not(aren
 
 def test_a_sign_off_row_whose_fields_disagree_with_its_digest_is_absent(arena, statement):
     placed = signoff(arena, statement.hash)
-    with arena["sub"]._tx():
+    with arena["sub"].transaction():
         arena["sub"].conn.execute(
             "INSERT INTO expert_signoffs (statement_hash, expert, gate_bundle_hash, at, record_digest, file_offset) VALUES (?, ?, ?, ?, ?, ?)",
             (statement.hash, "impostor", placed.gate_bundle_hash, placed.at, placed.record_digest, placed.file_offset),

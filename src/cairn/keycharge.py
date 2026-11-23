@@ -39,7 +39,7 @@ def accrue(sub, hypothesis_key, ticket_tier, origin, declared_core_s, *, at=None
     if origin not in ORIGINS:
         raise ChargeError(f"unknown charge origin {origin!r}")
     accrued_at = at or _now()
-    with sub._tx():
+    with sub.transaction():
         cur = sub.conn.execute(
             f"INSERT INTO {TABLE} (hypothesis_key, ticket_tier, origin, declared_core_s, accrued_at) VALUES (?, ?, ?, ?, ?)",
             (hypothesis_key, ticket_tier, origin, declared_core_s, accrued_at),
@@ -89,7 +89,7 @@ def crosses(edge, metered_core_s, launch_core_s):
 
 
 def bind(sub, charge_id, attempt_id):
-    with sub._tx():
+    with sub.transaction():
         cur = sub.conn.execute(
             f"UPDATE {TABLE} SET attempt_id = ? WHERE charge_id = ? AND attempt_id IS NULL", (attempt_id, charge_id)
         )
@@ -100,7 +100,7 @@ def bind(sub, charge_id, attempt_id):
 
 def _reconcile_row(sub, charge_id, measured_core_s, at):
     reconciled_at = at or _now()
-    with sub._tx():
+    with sub.transaction():
         cur = sub.conn.execute(
             f"UPDATE {TABLE} SET measured_core_s = ?, reconciled_at = ? WHERE charge_id = ? AND measured_core_s IS NULL",
             (measured_core_s, reconciled_at, charge_id),

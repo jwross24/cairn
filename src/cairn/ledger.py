@@ -289,8 +289,8 @@ def write_entry(sub, entry):
         raise LedgerError(f"evidence node {entry.evidence_node} is not in the substrate")
     _check_evidence(entry, node)
     canonical = entry_canonical(entry)
-    with sub._tx():
-        sub._put_node(NODE_KIND, canonical, entry.hash, "Replayable", entry.writer)
+    with sub.transaction():
+        sub.put_node(NODE_KIND, canonical, producer_identity=entry.writer, hash=entry.hash)
         row = sub.conn.execute(f"SELECT hash FROM {TABLE} WHERE hash = ?", (entry.hash,)).fetchone()
         if row is None:
             sub.conn.execute(
@@ -311,8 +311,8 @@ def write_entry(sub, entry):
                     _now(),
                 ),
             )
-        sub._add_lineage(entry.hash, entry.evidence_node, EDGE_INPUT)
-        sub._add_root(ROOT_KIND, entry.hash)
+        sub.add_lineage(entry.hash, entry.evidence_node, EDGE_INPUT)
+        sub.add_root(ROOT_KIND, entry.hash)
     lg.info(
         "write",
         table=TABLE,

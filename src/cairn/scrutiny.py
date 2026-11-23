@@ -216,7 +216,7 @@ def request(sub, hypothesis_key, requested, *, assigned_class, requested_by, at=
             f"branch {hypothesis_key} holds scrutiny class {current}; a request for {requested} lowers it and is refused"
         )
     at = at or _now()
-    with sub._tx():
+    with sub.transaction():
         cur = sub.conn.execute(
             f"INSERT INTO {REQUESTS} (hypothesis_key, requested_class, assigned_class, requested_by, at) VALUES (?, ?, ?, ?, ?)",
             (hypothesis_key, requested, assigned_class, requested_by, at),
@@ -360,8 +360,8 @@ def _signoff_of(row):
 
 def write_signoff(sub, signoff):
     canonical = signoff_canonical(signoff)
-    with sub._tx():
-        sub._put_node(SIGNOFF_KIND, canonical, signoff.hash, "Replayable", signoff.expert)
+    with sub.transaction():
+        sub.put_node(SIGNOFF_KIND, canonical, producer_identity=signoff.expert, hash=signoff.hash)
         existing = sub.conn.execute(
             f"SELECT row_id FROM {SIGNOFFS} WHERE record_digest = ? AND file_offset = ?",
             (signoff.record_digest, signoff.file_offset),

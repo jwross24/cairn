@@ -202,7 +202,7 @@ def write(sub, kind, fields, *, gate_bundle_hash, file_offset):
     payload = _decode(kind, record)
     digest = blob_hash(record)
     producer = payload["issued_by"]
-    with sub._tx():
+    with sub.transaction():
         existing = sub.conn.execute(
             f"SELECT kind, canonical, producer_identity FROM {TABLE} WHERE record_digest = ? AND file_offset = ?",
             (digest, file_offset),

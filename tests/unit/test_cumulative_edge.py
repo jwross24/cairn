@@ -18,7 +18,7 @@ class MemorySub:
         self.conn.executescript(substrate.schema_text())
 
     @contextlib.contextmanager
-    def _tx(self):
+    def transaction(self):
         with self.conn:
             yield
 

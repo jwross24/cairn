@@ -70,7 +70,7 @@ def _delete_blobs(sub, hashes):
 def collect(sub, *, dry_run=True, at=None):
     run_id = uuid.uuid4().hex
     deleted = 0
-    with sub._tx():
+    with sub.transaction():
         p = plan(sub)
         hashes = [c["hash"] for c in p["candidates"]]
         if not dry_run:

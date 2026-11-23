@@ -199,7 +199,7 @@ def persist(
         reasons.append(f"{FIRST_FAILURE_PREFIX}{failing.step}")
     if not complete or not bound:
         reasons.append(INCOMPLETE_PLAN_REASON)
-    with sub._tx():
+    with sub.transaction():
         step_hashes = []
         for step in result.steps:
             run = claims.GateRun(

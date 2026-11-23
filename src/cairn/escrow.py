@@ -70,7 +70,7 @@ def spend(sub, attempt_id, *, check_event, at=None):
     if not unsettled(row):
         raise AlreadySettled(f"reservation on {attempt_id} was {_settled_how(row)}")
     spent_at = at or _now()
-    with sub._tx():
+    with sub.transaction():
         cur = sub.conn.execute(
             f"UPDATE {TABLE} SET spent_at = ?, spent_by = ? WHERE attempt_id = ? AND spent_at IS NULL AND released_at IS NULL",
             (spent_at, check_event, attempt_id),
@@ -102,7 +102,7 @@ def release(sub, attempt_id, *, at=None):
             f"attempt {attempt_id} is {attempt['status']} and not disowned; a reservation releases only on status ≠ OK or disown"
         )
     released_at = at or _now()
-    with sub._tx():
+    with sub.transaction():
         cur = sub.conn.execute(
             f"UPDATE {TABLE} SET released_at = ?, released_by = ? WHERE attempt_id = ? AND spent_at IS NULL AND released_at IS NULL",
             (released_at, reason, attempt_id),

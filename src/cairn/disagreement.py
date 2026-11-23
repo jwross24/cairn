@@ -146,8 +146,8 @@ def record(sub, *, statement_hash, left_hash, right_hash, classification, at=Non
         raised_at=raised_at,
     )
     rec_canonical = canonical(rec)
-    with sub._tx():
-        sub._put_node(KIND, rec_canonical, rec.hash, "Replayable", None)
+    with sub.transaction():
+        sub.put_node(KIND, rec_canonical, hash=rec.hash)
         row = sub.conn.execute(
             "SELECT disagreement_id FROM disagreements WHERE disagreement_id = ?", (rec.hash,)
         ).fetchone()

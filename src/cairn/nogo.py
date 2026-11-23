@@ -193,8 +193,8 @@ def write_declaration(sub, declaration, *, attest_path=None, enqueue=True):
     if enqueue and attest_path is None:
         raise NogoError("enqueuing the review needs the attestation path, which decides whether an item is still open")
     canonical = declaration_canonical(declaration)
-    with sub._tx():
-        sub._put_node(DECLARATION_KIND, canonical, declaration.hash, "Replayable", declaration.declared_by)
+    with sub.transaction():
+        sub.put_node(DECLARATION_KIND, canonical, producer_identity=declaration.declared_by, hash=declaration.hash)
         cur = sub.conn.execute(
             f"INSERT OR IGNORE INTO {DECLARATIONS} (hypothesis_key, declaration_hash, declared_by, at) VALUES (?, ?, ?, ?)",
             (declaration.hypothesis_key, declaration.hash, declaration.declared_by, declaration.at),
@@ -230,8 +230,8 @@ def current_declaration(sub, hypothesis_key):
 
 def write_review(sub, review):
     canonical = review_canonical(review)
-    with sub._tx():
-        sub._put_node(REVIEW_KIND, canonical, review.hash, "Replayable", review.reviewer)
+    with sub.transaction():
+        sub.put_node(REVIEW_KIND, canonical, producer_identity=review.reviewer, hash=review.hash)
         existing = sub.conn.execute(
             f"SELECT row_id FROM {REVIEWS} WHERE record_digest = ? AND file_offset = ?",
             (review.record_digest, review.file_offset),

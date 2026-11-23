@@ -155,8 +155,8 @@ def item_canonical(item):
 
 def enqueue(sub, item):
     canonical = item_canonical(item)
-    with sub._tx():
-        sub._put_node(ITEM_KIND, canonical, item.hash, "Replayable", None)
+    with sub.transaction():
+        sub.put_node(ITEM_KIND, canonical, hash=item.hash)
         row = sub.conn.execute(f"SELECT item_id FROM {ITEMS} WHERE item_id = ?", (item.hash,)).fetchone()
         if row is None:
             sub.conn.execute(
@@ -302,7 +302,7 @@ def _require_open(sub, item_id, attest_path):
 
 def _record_closure(sub, item_id, path, *, ref, record_digest=None, file_offset=None, at=None):
     closed_at = at or _now()
-    with sub._tx():
+    with sub.transaction():
         cur = sub.conn.execute(
             f"INSERT INTO {CLOSURES} (item_id, path, ref, record_digest, file_offset, closed_at) VALUES (?, ?, ?, ?, ?, ?)",
             (item_id, path, ref, record_digest, file_offset, closed_at),
@@ -403,8 +403,8 @@ def write_acknowledgment(sub, ack, *, attest_path, file_offset, at=None):
             f"{attest_path} holds no acknowledgment at offset {file_offset} with digest {digest}"
         )
     node_hash = keys.node_hash(ACK_KIND, canonical)
-    with sub._tx():
-        sub._put_node(ACK_KIND, canonical, node_hash, "Replayable", ack["issued_by"])
+    with sub.transaction():
+        sub.put_node(ACK_KIND, canonical, producer_identity=ack["issued_by"], hash=node_hash)
         cur = sub.conn.execute(
             f"INSERT INTO {ACKS} (item_id, issued_by, at, note, record_digest, file_offset) VALUES (?, ?, ?, ?, ?, ?)",
             (ack["item_id"], ack["issued_by"], ack["at"], ack["note"], digest, file_offset),
