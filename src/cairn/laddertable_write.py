@@ -1,6 +1,4 @@
-import json
-
-from cairn import canon, claims, keys, ladderplan, substrate
+from cairn import canon, claims, keys, ladderplan, records, substrate
 from cairn.laddertable_rows import (
     ATTEMPT_MEMBERSHIP,
     ATTEMPT_MEMBERSHIP_KIND,
@@ -65,17 +63,19 @@ def _canonical_members(trial_attempts):
 
 
 def _claimant_dispatch(sub, table):
-    rows = sub.conn.execute("SELECT record_json FROM ladder_dispatches ORDER BY rowid").fetchall()
-    matches = []
-    for row in rows:
-        value = json.loads(row["record_json"])
-        if (
-            value.get("run_id") == table.run_id
-            and value.get("nonce") == table.nonce
-            and value.get("hypothesis_hash") == table.hypothesis_hash
-            and value.get("arm") == ladderplan.ARMS[0]
-        ):
-            matches.append(value)
+    from cairn import ladder_dispatch
+
+    matches = [
+        value.as_dict()
+        for value in records.find(
+            sub,
+            ladder_dispatch.RECORD,
+            run_id=table.run_id,
+            nonce=table.nonce,
+            hypothesis_hash=table.hypothesis_hash,
+            arm=ladderplan.ARMS[0],
+        )
+    ]
     if len(matches) != 1:
         raise LadderTableError(f"table {table.hash} has {len(matches)} claimant dispatches")
     dispatch = matches[0]
@@ -99,7 +99,7 @@ def _expected_trial_slots(plan):
 
 
 def _validate_trial_attempts(sub, table, plan, trial_attempts):
-    from cairn import instances
+    from cairn import instances, ladder_dispatch
 
     members = _canonical_members(trial_attempts)
     expected = _expected_trial_slots(plan)
@@ -111,9 +111,7 @@ def _validate_trial_attempts(sub, table, plan, trial_attempts):
         raise LadderTableError("trial_attempts must name every and only table trial")
     trials = {(t.arm, t.bits, t.trial): t for t in table.trials}
     dispatches = {
-        value["arm"]: value
-        for row in sub.conn.execute("SELECT record_json FROM ladder_dispatches ORDER BY rowid").fetchall()
-        if (value := json.loads(row["record_json"])).get("run_id") == table.run_id
+        value.arm: value.as_dict() for value in records.find(sub, ladder_dispatch.RECORD, run_id=table.run_id)
     }
     for arm, bits, trial, attempt_id in members:
         attempt = sub.get_attempt(attempt_id)
@@ -206,8 +204,8 @@ def _store_membership(sub, table, members):
         raise substrate.HashCollision(f"table {table.hash} exists with different trial_attempts")
     canonical = canon.encode(ATTEMPT_MEMBERSHIP, _members_fields(table.hash, members))
     digest = keys.node_hash(ATTEMPT_MEMBERSHIP_KIND, canonical)
-    sub._put_node(ATTEMPT_MEMBERSHIP_KIND, canonical, digest, "Replayable", None)
-    sub._add_lineage(digest, table.hash, substrate.EDGE_INPUT)
+    sub.put_node(ATTEMPT_MEMBERSHIP_KIND, canonical, hash=digest)
+    sub.add_lineage(digest, table.hash, substrate.EDGE_INPUT)
     return digest
 
 
@@ -244,12 +242,12 @@ def write_evidence_node(sub, table, node):
     if membership_for_table(sub, table.hash) is None:
         raise LadderTableError(f"table {table.hash} has no claimant membership")
     _validate_evidence_node(sub, table, node)
-    with sub._tx():
+    with sub.transaction():
         bindings = _binding_table_hashes(sub, node.hash)
         if bindings and bindings != {table.hash}:
             raise substrate.HashCollision(f"evidence {node.hash} is already bound to another ladder table")
         claims.write_evidence_node(sub, node)
-        sub._add_lineage(node.hash, table.hash, substrate.EDGE_INPUT)
+        sub.add_lineage(node.hash, table.hash, substrate.EDGE_INPUT)
     return node.hash
 
 
@@ -259,8 +257,8 @@ def write(sub, table, plan, *, at=None, attempt_id=None, trial_attempts=None, ev
     canonical = _table_canonical(table)
     created_at = table.created_at or at or _now()
     members = None if trial_attempts is None else _validate_trial_attempts(sub, table, plan, trial_attempts)
-    with sub._tx():
-        sub._put_node(NODE_KIND, canonical, table.hash, grade, None)
+    with sub.transaction():
+        sub.put_node(NODE_KIND, canonical, replay_grade=grade, hash=table.hash)
         inserted = claims._insert_once(
             sub,
             TABLES,

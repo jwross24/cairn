@@ -332,12 +332,12 @@ def record(sub, table, plan, verified, *, attempt_id, at=None):
     repro_record = claims.ReproRecord(
         attempt_id=attempt_id, kind=claims.REPRO_KINDS[0], passed=recomputation.agrees, at=at or _now()
     )
-    with sub._tx():
+    with sub.transaction():
         bindings = _binding_table_hashes(sub, repro_record.hash)
         if bindings and bindings != {table.hash}:
             raise substrate.HashCollision(f"repro record {repro_record.hash} is already bound to another ladder table")
         claims.write_repro_record(sub, repro_record)
-        sub._add_lineage(repro_record.hash, table.hash, substrate.EDGE_INPUT)
+        sub.add_lineage(repro_record.hash, table.hash, substrate.EDGE_INPUT)
     return repro_record, recomputation
 
 

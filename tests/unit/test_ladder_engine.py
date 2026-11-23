@@ -5,6 +5,7 @@ import os
 import sys
 from decimal import Decimal
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -286,6 +287,46 @@ def test_a_dispatch_row_inserted_around_the_writer_with_json_off_its_content_add
     writer.conn.commit()
     with pytest.raises(HashMismatch, match="does not match its content address"):
         ladder.dispatches_for(writer, RUN_ID)
+
+
+def test_the_table_binding_refuses_a_claimant_dispatch_row_off_its_content_address(writer, shipped, seeded):
+    value = ladder.dispatch(
+        writer,
+        shipped,
+        plan=seeded["plan"],
+        plan_hash="dd" * 32,
+        hypothesis_hash=seeded["hypothesis"].hash,
+        nonce=seeded["nonce"],
+        run_id=RUN_ID,
+        arm=ladder.CLAIMANT,
+        skill=bsgs.__name__,
+        allow_list=seeded["allow_list"],
+    )
+    named = dataclasses.replace(value, run_id="run-forged")
+    writer.put_node(ladder.KIND, bundle.canonical_bytes(ladder.KIND, named.as_dict()), hash=named.hash)
+    forged = json.dumps({**named.as_dict(), "identity_bundle_hash": "ee" * 32}, sort_keys=True, separators=(",", ":"))
+    writer.conn.execute(
+        f"INSERT INTO {ladder.TABLE} (dispatch_id, record_hash, run_id, arm, nonce, hypothesis_hash,"
+        " implementation_revision, allow_list_hash, gate_bundle_hash, plan_hash, record_json)"
+        " VALUES ('forged', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            named.hash,
+            named.run_id,
+            named.arm,
+            named.nonce,
+            named.hypothesis_hash,
+            named.implementation_revision,
+            named.allow_list_hash,
+            named.gate_bundle_hash,
+            named.plan_hash,
+            forged,
+        ),
+    )
+    writer.conn.commit()
+    bound = ("run_id", "nonce", "hypothesis_hash", "method_identity", "implementation_revision", "gate_bundle_hash")
+    table = SimpleNamespace(**{k: getattr(named, k) for k in (*bound, "plan_hash")}, hash="t" * 64)
+    with pytest.raises(HashMismatch, match="does not match its content address"):
+        laddertable._claimant_dispatch(writer, table)
 
 
 @pytest.mark.parametrize("field", ["writable_root", "counted_object"])
