@@ -74,6 +74,11 @@ def find_one(sub, record_kind, **where):
     return values[0] if values else None
 
 
+def newest(sub, record_kind):
+    row = sub.conn.execute(f"SELECT * FROM {record_kind.table} ORDER BY rowid DESC LIMIT 1").fetchone()
+    return None if row is None else _verified(sub, record_kind, row)
+
+
 def _verified(sub, record_kind, row):
     value = record_kind.decode(row)
     digest = row[record_kind.hash_column]

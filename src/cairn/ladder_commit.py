@@ -51,8 +51,7 @@ def commit_entropy(sub, *, hypothesis_hash, run_id, nonce=None, at=None):
         at=cli.now_iso() if at is None else at,
     )
     canonical = bundle.canonical_bytes(COMMITMENT_KIND, value.as_dict())
-    with sub._tx():
-        sub._put_node(COMMITMENT_KIND, canonical, value.hash, "Replayable", None)
+    sub.put_node(COMMITMENT_KIND, canonical, hash=value.hash)
     record = instances.commit_nonce(sub, hypothesis_hash, run_id, value.nonce, at=value.at)
     lg.info("commit_entropy", run_id=run_id, hypothesis_hash=hypothesis_hash, commitment=value.hash)
     return value, record

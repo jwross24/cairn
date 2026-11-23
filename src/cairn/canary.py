@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from claude_agent_sdk import ClaudeSDKClient, ResultMessage, SystemMessage
 
-from cairn import bundle, canon, cli, keys, log, worker
+from cairn import bundle, canon, cli, keys, log, records, worker
 from cairn.substrate import node_hash_for
 
 lg = log.get("canary")
@@ -118,6 +118,31 @@ class CanaryRecord:
         return node_hash_for(KIND, bundle.canonical_bytes(KIND, self.as_dict()))
 
 
+def _decode(row):
+    data = json.loads(row["record_json"])
+    for name in ("plantings", "reachable", "leaked"):
+        data[name] = tuple(data[name])
+    return CanaryRecord(**data)
+
+
+RECORD = records.RecordKind(
+    kind=KIND,
+    table=TABLE,
+    unique_by="canary_id",
+    canonical=lambda value: bundle.canonical_bytes(KIND, value.as_dict()),
+    index_row=lambda value: {
+        "canary_id": value.canary_id,
+        "sdk_version": value.sdk_version,
+        "cli_version": value.cli_version,
+        "verdict": value.verdict,
+        "record_json": records.as_json(value),
+    },
+    decode=_decode,
+    grade="AuditOnly",
+    root="ledger_row",
+)
+
+
 def options_for(prepared, cwd, *, settings_enabled):
     options = worker._options(prepared, cwd)
     if not settings_enabled:
@@ -197,34 +222,13 @@ def record(
         ),
         at=cli.now_iso() if at is None else at,
     )
-    canonical = bundle.canonical_bytes(KIND, value.as_dict())
-    with sub._tx():
-        sub._put_node(KIND, canonical, value.hash, "AuditOnly", None)
-        sub.conn.execute(
-            f"INSERT INTO {TABLE} (canary_id, record_hash, sdk_version, cli_version, verdict, record_json)"
-            " VALUES (?, ?, ?, ?, ?, ?)",
-            (
-                value.canary_id,
-                value.hash,
-                value.sdk_version,
-                value.cli_version,
-                value.verdict,
-                json.dumps(value.as_dict(), sort_keys=True, separators=(",", ":")),
-            ),
-        )
-        sub._add_root("ledger_row", value.hash)
+    records.put(sub, RECORD, value)
     lg.info("record", canary_id=value.canary_id, verdict=value.verdict, form=value.form)
     return value
 
 
 def newest(sub):
-    row = sub.conn.execute(f"SELECT record_json FROM {TABLE} ORDER BY rowid DESC LIMIT 1").fetchone()
-    if row is None:
-        return None
-    data = json.loads(row["record_json"])
-    for name in ("plantings", "reachable", "leaked"):
-        data[name] = tuple(data[name])
-    return CanaryRecord(**data)
+    return records.newest(sub, RECORD)
 
 
 def require_grounded(sub, *, sdk_version=None, cli_version=None):

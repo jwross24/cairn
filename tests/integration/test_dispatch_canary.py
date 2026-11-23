@@ -6,12 +6,14 @@ import re
 import sqlite3
 import sys
 import threading
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 from claude_agent_sdk import CLIConnectionError
 
-from cairn import canary, dispatch, worker
+from cairn import bundle, canary, dispatch, worker
+from cairn.substrate import HashMismatch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from research.grounding import probe_dispatch_canary
@@ -225,6 +227,22 @@ def test_a_failed_canary_yanks_the_path_until_a_fresh_one_passes(arena):
         canary.require_grounded(sub)
     assert _pass_record(sub).verdict == canary.PASS
     assert canary.require_grounded(sub).verdict == canary.PASS
+
+
+def test_a_passing_canary_row_inserted_around_the_writer_cannot_ground_the_path(arena):
+    sub, _, _ = arena
+    failed = _pass_record(sub, observed=" ".join(p["token"] for p in _plantings()))
+    named = replace(failed, canary_id="forged")
+    sub.put_node(canary.KIND, bundle.canonical_bytes(canary.KIND, named.as_dict()), hash=named.hash)
+    claimed = json.dumps({**named.as_dict(), "verdict": canary.PASS}, sort_keys=True, separators=(",", ":"))
+    sub.conn.execute(
+        f"INSERT INTO {canary.TABLE} (canary_id, record_hash, sdk_version, cli_version, verdict, record_json)"
+        " VALUES (?, ?, ?, ?, ?, ?)",
+        (named.canary_id, named.hash, named.sdk_version, named.cli_version, canary.PASS, claimed),
+    )
+    sub.conn.commit()
+    with pytest.raises(HashMismatch, match="does not match its content address"):
+        canary.require_grounded(sub)
 
 
 def test_dispatch_refuses_while_the_canary_is_stale_and_writes_no_record(arena):
