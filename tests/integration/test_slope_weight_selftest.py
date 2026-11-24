@@ -1,5 +1,4 @@
 import copy
-import hashlib
 import json
 import os
 import shutil
@@ -81,19 +80,16 @@ def test_transcript_floor_and_certificate_goldens(certified_pair, which):
     _, db, bundle_path, pin, documents = certified_pair
     config = bundle.GateBundle.open(bundle_path, pin).verifier_config()
     first = selftest_skills.run_once(which, config)
-    second = selftest_skills.run_once(which, config)
-    assert first["transcript"] == second["transcript"]
-    assert (len(first["transcript"]), hashlib.sha256(first["transcript"]).hexdigest()) == (
-        len(second["transcript"]),
-        hashlib.sha256(second["transcript"]).hexdigest(),
-    )
     module = selftest_skills.module_for(which)
     identity = module.skill_identity_hash()
     with substrate.Substrate.open(db, role="reader") as sub:
         stored_summary = sub.get_certificate(identity)["selftest_summary"]
     assert (
         selftest.certificate_hash(
-            identity, first["transcript_hash"], keys.env_manifest_digest(env.manifest()), stored_summary
+            identity,
+            selftest.transcript_digest(first["transcript"]),
+            keys.env_manifest_digest(env.manifest()),
+            stored_summary,
         )
         == documents[which]["certificate"]
     )

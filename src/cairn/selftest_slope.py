@@ -144,6 +144,26 @@ def _slope_run_once(which, _config, *, doc=None, root=None):
     lg = log.get(LOG_STEP)
     doc = load_slope_corpus(which) if doc is None else check_slope_corpus(doc)
     seed = _instance_seed(_revision(module, root))
+    # The arms cost a fraction of the corpus, so a broken skill refuses before the corpus runs;
+    # their records still follow the cases, which keeps the transcript and its certificate fixed.
+    ell = slopemodel_b.next_prime(257 + seed % 4096)
+    n = slope_predicates.step_size(ell)
+    if n != slope_hunt_verifier.step_size(ell):
+        raise SelftestFailed("postcondition-arm", "the independent step-size rules disagree")
+    arm_output, independent = module.run(ell, n), peer.run(ell, n)
+    if arm_output != independent:
+        raise SelftestFailed("postcondition-arm", f"independent evaluators disagree: {arm_output} != {independent}")
+    try:
+        module.check_weight(65537, 146, 20644183)
+    except (module.InputError, module.PostconditionFailed) as exc:
+        raise SelftestFailed("verifier-arm", f"the published weight was refused: {exc}") from None
+    try:
+        module.check_weight(65537, 145, 20644183)
+    except module.PostconditionFailed:
+        pass
+    else:
+        raise SelftestFailed("verifier-arm", "the planted weight 20644183 at (65537, 145) was accepted")
+    decisions = _slope_decision_arm(seed, ell, arm_output["weight"])
     records, ledger, passes = [], {}, 0
     for case in doc["cases"]:
         values = _values(case)
@@ -163,27 +183,9 @@ def _slope_run_once(which, _config, *, doc=None, root=None):
     floor = doc["pass_floor"]
     if passes < floor:
         raise SelftestFailed("floor", f"{passes} passing cases is below the floor {floor}")
-    ell = slopemodel_b.next_prime(257 + seed % 4096)
-    n = slope_predicates.step_size(ell)
-    if n != slope_hunt_verifier.step_size(ell):
-        raise SelftestFailed("postcondition-arm", "the independent step-size rules disagree")
-    output, independent = module.run(ell, n), peer.run(ell, n)
-    if output != independent:
-        raise SelftestFailed("postcondition-arm", f"independent evaluators disagree: {output} != {independent}")
-    arm_body = {**output, "independent_match": True, "outcome": OUTCOME_PASS}
+    arm_body = {**arm_output, "independent_match": True, "outcome": OUTCOME_PASS}
     records.append(("arm", "postcondition", arm_body))
     lg.info("arm", name="postcondition", seed=seed, observed=selftest._canonical_json(arm_body))
-    try:
-        module.check_weight(65537, 146, 20644183)
-    except (module.InputError, module.PostconditionFailed) as exc:
-        raise SelftestFailed("verifier-arm", f"the published weight was refused: {exc}") from None
-    try:
-        module.check_weight(65537, 145, 20644183)
-    except module.PostconditionFailed:
-        pass
-    else:
-        raise SelftestFailed("verifier-arm", "the planted weight 20644183 at (65537, 145) was accepted")
-    decisions = _slope_decision_arm(seed, ell, output["weight"])
     ok = sum(record["counterexample_valid"] for record in decisions)
     fail = sum(not record["counterexample_valid"] for record in decisions)
     verifier_body = {
