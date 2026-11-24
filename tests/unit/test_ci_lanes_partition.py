@@ -16,6 +16,7 @@ from _ci_lane_suite import (
 from _ci_lanes import (
     CI_LANES,
     CONTAINER_COMPARISON_TESTS,
+    CONTAINER_IMAGE_TEST_PATHS,
     CONTAINER_PLAN_CASES,
     CONTAINER_PLAN_TESTS,
     CONTAINER_REPLAY_TESTS,
@@ -40,8 +41,10 @@ from _ci_lanes import (
 def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytester):
     write_suite(pytester)
     (pytester.path / SWEEP_PATH).write_text(full_sweep_source(range(396)))
+    for relative in CONTAINER_IMAGE_TEST_PATHS:
+        (pytester.path / relative).write_text("def test_pass():\n    assert True\n")
     default = pytester.runpytest("-q", "--import-mode=importlib")
-    default.assert_outcomes(passed=444)
+    default.assert_outcomes(passed=446)
     populations = {}
     for lane in (
         "all",
@@ -93,6 +96,7 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
     assert populations["solution-library-binding"] == {f"{LIBRARY_GATE_PATH}::{LIBRARY_GATE_BINDING_CASE}"}
     assert populations["solution-library"] == set().union(*(populations[lane] for lane in SOLUTION_LIBRARY_LANES))
     assert populations["container"] == {"tests/integration/test_container_statement_hash.py::test_pass"}
+    assert populations["container-image"] == {f"{path}::test_pass" for path in CONTAINER_IMAGE_TEST_PATHS}
     assert populations["container-replay"] == {
         f"{CONTAINER_TEST_PATHS[0]}::{CONTAINER_REPLAY_TESTS[0]}[rfl]",
         f"{CONTAINER_TEST_PATHS[0]}::{CONTAINER_REPLAY_TESTS[1]}",
@@ -163,6 +167,7 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
         | populations["solution-library"]
         | populations["solution-plan"]
         | populations["container"]
+        | populations["container-image"]
         | populations["container-replay"]
         | populations["container-plan"]
         | manual_validation
@@ -170,7 +175,7 @@ def test_default_runs_every_test_and_lane_collections_are_a_disjoint_union(pytes
     (pytester.path / SOLUTION_PLAN_EXACT_TEST_PATHS[0]).write_text("def test_pass():\n    assert False\n")
     for lane, passed in (("solution-plan-exact", 2), ("solution-plan", 4)):
         result = pytester.runpytest("-q", "--import-mode=importlib", f"--cairn-ci-lane={lane}")
-        result.assert_outcomes(failed=1, passed=passed, deselected=441 if lane == "solution-plan-exact" else 439)
+        result.assert_outcomes(failed=1, passed=passed, deselected=443 if lane == "solution-plan-exact" else 441)
         assert result.ret == pytest.ExitCode.TESTS_FAILED
 
 
@@ -191,6 +196,8 @@ def test_named_lanes_exclude_only_the_exact_manual_sweep_validation(pytester, la
         + f"class TestNeighbor:\n    def {FULL_SWEEP_TEST}(self):\n        assert True\n"
     )
     (pytester.path / "tests/integration/test_unlisted.py").write_text(source)
+    for relative in CONTAINER_IMAGE_TEST_PATHS:
+        (pytester.path / relative).write_text("def test_pass():\n    assert True\n")
     pytester.makeini("[pytest]\nmarkers = slow: slow validation")
     args = ["-q", "--collect-only", "--import-mode=importlib"]
     if lane is not None:

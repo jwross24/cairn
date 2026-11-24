@@ -2,6 +2,7 @@ import pytest
 from _ci_lane_suite import write_suite
 from _ci_lanes import (
     CONTAINER_COMPARISON_TESTS,
+    CONTAINER_IMAGE_TEST_PATHS,
     CONTAINER_PLAN_CASES,
     CONTAINER_PLAN_TESTS,
     CONTAINER_REPLAY_TESTS,
@@ -54,6 +55,17 @@ def test_container_lane_refuses_an_import_error_in_its_own_module(pytester, lane
     result.assert_outcomes(errors=1)
     assert result.ret == pytest.ExitCode.INTERRUPTED
     assert "container-import" in result.stdout.str()
+
+
+def test_a_container_image_failure_keeps_its_own_lane_red_and_no_other(pytester):
+    write_suite(pytester)
+    for relative in CONTAINER_IMAGE_TEST_PATHS:
+        (pytester.path / relative).write_text("def test_planted_failure():\n    assert False\n")
+    result = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=container-image")
+    result.assert_outcomes(failed=2, deselected=11)
+    assert result.ret == pytest.ExitCode.TESTS_FAILED
+    result = pytester.runpytest("-q", "--import-mode=importlib", "--cairn-ci-lane=container")
+    result.assert_outcomes(passed=1, deselected=12)
 
 
 @pytest.mark.parametrize("name", [*CONTAINER_REPLAY_TESTS, *CONTAINER_COMPARISON_TESTS])

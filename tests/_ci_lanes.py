@@ -79,6 +79,10 @@ CONTAINER_TEST_PATHS = (
     "tests/integration/test_proven_derivation.py",
 )
 PROVEN_TEST_PATH = CONTAINER_TEST_PATHS[-1]
+CONTAINER_IMAGE_TEST_PATHS = (
+    "tests/integration/test_container_challenge_hash.py",
+    "tests/integration/test_lean_container.py",
+)
 PROVEN_GOLD_TEST = "test_real_gold_artifact_requires_matching_review_and_records_the_bindings"
 PROVEN_DEV_TEST = "test_real_approved_dev_artifact_stays_at_its_supported_tag_with_the_arm_named"
 LEAN_SOLUTION_TESTS = (
@@ -111,6 +115,7 @@ CI_LANES = (
     *SOLUTION_LIBRARY_LANES,
     *SOLUTION_PLAN_LANES,
     "container",
+    "container-image",
     "container-replay-exact",
     "container-replay-refusals",
     "container-plan-exact",
@@ -169,6 +174,7 @@ def pytest_collection_modifyitems(config, items):
     validate_manifest(ROOT, SOLUTION_TEST_PATHS)
     validate_manifest(ROOT, SOLUTION_LIBRARY_TEST_PATHS)
     validate_manifest(ROOT, CONTAINER_TEST_PATHS)
+    validate_manifest(ROOT, CONTAINER_IMAGE_TEST_PATHS)
     validate_manifest(ROOT, SOLUTION_PLAN_EXACT_TEST_PATHS)
     validate_manifest(
         ROOT,
@@ -248,6 +254,8 @@ def pytest_collection_modifyitems(config, items):
                     if item.originalname == CONTAINER_COMPARISON_TESTS[0]
                     else "container-replay-refusals"
                 )
+            elif path in CONTAINER_IMAGE_TEST_PATHS:
+                item_lane = "container-image"
             else:
                 item_lane = "container"
         elif path.startswith("tests/integration/"):
