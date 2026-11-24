@@ -104,6 +104,15 @@ def check_dispatch(sub, gate_bundle, dispatch, plan, *, attest_path=None):
         raise RunRefused(UNCERTIFIED_REVISION, "the dispatched identity bundle does not hash to its named hash")
     if dispatch.identity_bundle["implementation_revision"] != dispatch.implementation_revision:
         raise RunRefused(UNCERTIFIED_REVISION, "the dispatched identity bundle names another implementation revision")
+    try:
+        running = keys.identity_bundle_hash(dispatch.module.identity_bundle())
+    except ImportError as exc:
+        raise RunRefused(UNCERTIFIED_REVISION, f"skill {dispatch.skill!r} does not import: {exc}") from None
+    if running != dispatch.identity_bundle_hash:
+        raise RunRefused(
+            UNCERTIFIED_REVISION,
+            f"skill {dispatch.skill} hashes to {running[:12]}, which is not the identity the dispatch certifies",
+        )
     if not sub.certified(dispatch.identity_bundle_hash):
         raise RunRefused(
             UNCERTIFIED_REVISION, f"skill identity {dispatch.identity_bundle_hash[:12]} carries no certificate"

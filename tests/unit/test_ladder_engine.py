@@ -329,6 +329,14 @@ def test_the_table_binding_refuses_a_claimant_dispatch_row_off_its_content_addre
         laddertable._claimant_dispatch(writer, table)
 
 
+def test_a_dispatch_naming_a_module_other_than_its_certified_identity_is_refused(writer, shipped, seeded, popen_spy):
+    value = dataclasses.replace(_dispatch(seeded), skill=rho_dp.__name__)
+    with pytest.raises(ladder.RunRefused, match="is not the identity the dispatch certifies") as raised:
+        ladder.check_dispatch(writer, shipped, value, seeded["plan"])
+    assert raised.value.reason == ladder.UNCERTIFIED_REVISION
+    assert popen_spy == []
+
+
 @pytest.mark.parametrize("field", ["writable_root", "counted_object"])
 def test_dispatch_refuses_an_allow_list_with_a_substituted_binding(writer, shipped, seeded, popen_spy, field):
     policy = {**seeded["allow_list"].as_dict(), field: "/substituted"}
