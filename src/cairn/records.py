@@ -80,7 +80,12 @@ def newest(sub, record_kind):
 
 
 def _verified(sub, record_kind, row):
-    value = record_kind.decode(row)
+    try:
+        value = record_kind.decode(row)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise HashMismatch(
+            f"{record_kind.table} record {row[record_kind.unique_by]} does not decode: {type(exc).__name__}"
+        ) from None
     digest = row[record_kind.hash_column]
     node = sub.get_node(digest)
     if (

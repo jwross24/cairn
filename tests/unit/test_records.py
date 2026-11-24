@@ -1,3 +1,5 @@
+import dataclasses
+import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -69,3 +71,16 @@ def test_a_value_naming_another_content_address_writes_nothing(writer):
         records.put(writer, RECORD, Named("d-1", "ab" * 32))
     assert writer.conn.execute("SELECT COUNT(*) FROM nodes").fetchone()[0] == nodes
     assert writer.conn.execute("SELECT COUNT(*) FROM worker_dispatches").fetchone()[0] == 0
+
+
+def test_a_row_inserted_around_the_writer_that_does_not_decode_is_a_content_address_refusal(writer):
+    from_json = dataclasses.replace(
+        RECORD, decode=lambda row: Named(json.loads(row["record_json"])["dispatch_id"], row["record_hash"])
+    )
+    digest = writer.put_node(KIND, b"{}")
+    writer.conn.execute(
+        "INSERT INTO worker_dispatches (dispatch_id, record_hash, record_json) VALUES ('f', ?, '{}')", (digest,)
+    )
+    writer.conn.commit()
+    with pytest.raises(HashMismatch, match="worker_dispatches record f does not decode: KeyError"):
+        records.find(writer, from_json, dispatch_id="f")
