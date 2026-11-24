@@ -18,3 +18,9 @@ Local aggregates, which CI does not call:
 - `--ci-lane solution-plan` runs all three ordered-plan cases in sequence.
 - `--ci-lane container-replay` runs both container replay lanes.
 - `--ci-lane container-plan` runs all three container ordered-plan and PROVEN lanes.
+
+A lane, lane membership or `ci.yml` change runs every contract test that pins them. They live under `tests/unit/`, `tests/integration/` and `tests/hook_contract/`, so select them by what they read rather than by directory:
+
+```bash
+uv run pytest -q $(rg -l "_ci_lanes|cairn-ci-lane|_ci_workflow|ci\.yml" tests -g 'test_*.py')
+```
