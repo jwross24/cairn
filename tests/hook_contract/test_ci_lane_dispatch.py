@@ -393,7 +393,7 @@ def test_lean_container_authority_nodes_have_one_linux_owner(collect):
         result = collect("-q", "--collect-only", f"--cairn-ci-lane={lane}", *nodes, timeout=60)
         nodeids = result.stdout.splitlines()
         for node in nodes:
-            if lane == "container":
+            if lane == "container-image":
                 assert result.returncode == 0, result.stdout + result.stderr
                 assert nodeids.count(node) == 1
                 owners[node].append(lane)
@@ -402,7 +402,7 @@ def test_lean_container_authority_nodes_have_one_linux_owner(collect):
                 assert "deselected" in result.stdout
                 assert node not in nodeids
     assert len(nodes) == 2
-    assert all(lanes == ["container"] for lanes in owners.values())
+    assert all(lanes == ["container-image"] for lanes in owners.values())
 
 
 def test_missing_docker_refuses_both_required_authority_nodes():
@@ -415,7 +415,7 @@ def test_missing_docker_refuses_both_required_authority_nodes():
             "pytest",
             "-q",
             "--tb=short",
-            "--cairn-ci-lane=container",
+            "--cairn-ci-lane=container-image",
             *CONTAINER_AUTHORITY_NODES,
         ],
         cwd=ROOT,
